@@ -25,19 +25,25 @@
 
 package org.broad.igv.ui.javafx;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ToolBar;
 import javafx.scene.layout.HBox;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.event.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.javafx.toolbar.ChromosomeComboBox;
+import org.broad.igv.ui.javafx.toolbar.SearchTextField;
 import org.broad.igv.ui.javafx.toolbar.ZoomSlider;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 // Intended as the rough equivalent of the IGVCommandBar class of the Swing UI.  Work in progress.
 // Will add event handlers (or at least stubs) for all of the included controls.
@@ -48,6 +54,8 @@ public class IGVToolBarManager implements IGVEventObserver {
     private ComboBox<String> genomeSelector;
     private ChromosomeComboBox chromosomeSelector;
     private ZoomSlider zoomSlider;
+    private SearchTextField searchTextField = new SearchTextField();
+    private Button goButton = new Button("Go");
 
     public IGVToolBarManager() {
 
@@ -59,11 +67,9 @@ public class IGVToolBarManager implements IGVEventObserver {
         genomeSelector = new ComboBox<String>(genomes);
 
         chromosomeSelector = new ChromosomeComboBox(GenomeManager.getInstance().getCurrentGenome());
-        
-        TextField jumpToTextField = new TextField();
-        Label jumpToLabel = new Label("Go");
-        jumpToLabel.setLabelFor(jumpToTextField);
-        HBox jumpToPane = new HBox(jumpToTextField, jumpToLabel);
+
+        goButton.setOnAction((event) -> searchByLocus(searchTextField.getText()));
+        HBox jumpToPane = new HBox(3, searchTextField, goButton);
         jumpToPane.setAlignment(Pos.CENTER);
 
         Button homeButton = new Button("");
@@ -128,6 +134,36 @@ public class IGVToolBarManager implements IGVEventObserver {
     }
 
     public void updateCurrentCoordinates() {
-        // Not yet implemented
+        String p = "";
+
+        ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
+        final String chrName = defaultFrame.getChrName();
+        if (!Globals.CHR_ALL.equals(chrName) && !FrameManager.isGeneListMode()) {
+            p = defaultFrame.getFormattedLocusString();
+        }
+        final String position = p;
+        // Not dealing with history or IGV singleton yet
+        //final History history = IGV.getInstance().getSession().getHistory();
+        Platform.runLater(() -> {
+            searchTextField.setText(position);
+            //forwardButton.setEnabled(history.canGoForward());
+            //backButton.setEnabled(history.canGoBack());
+            //roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
+            //zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
+        });
+    }
+
+    public void searchByLocus(final String searchText) {
+
+        if ((searchText != null) && (searchText.length() > 0)) {
+            String homeChr = FrameManager.getDefaultFrame().getChrName();
+            if (searchText.equalsIgnoreCase("home") || searchText.equalsIgnoreCase(homeChr)) {
+                // Not yet implemented
+                //homeButtonActionPerformed(null);
+            } else {
+                searchTextField.setText(searchText);
+                searchTextField.searchByLocus(searchText);
+            }
+        }
     }
 }

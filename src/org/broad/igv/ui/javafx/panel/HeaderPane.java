@@ -25,6 +25,7 @@
 package org.broad.igv.ui.javafx.panel;
 
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import org.apache.log4j.Logger;
@@ -50,12 +51,28 @@ public class HeaderPane extends BorderPane {
 
         if (FrameManager.isGeneListMode()) {
             Label label = new Label(this.frame.getName());
+            label.setStyle("-fx-alignment: center; -fx-text-fill: blue;");
+            label.prefWidthProperty().bind(this.prefWidthProperty());
+            label.setTooltip(new Tooltip(frame.getName()));
             this.geneListPane = new BorderPane();
             cytobandPane = new CytobandPane(frame, false);
             geneListPane.setCenter(cytobandPane);
             geneListPane.setBottom(label);
-            this.getChildren().add(geneListPane);
+            this.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: gray; -fx-background-color: yellow;");
 
+            JavaFXUIUtilities.bindWidthToContainer(geneListPane, label);
+//            JavaFXUIUtilities.bindWidthToContainer(geneListPane, cytobandPane);
+            cytobandPane.prefWidthProperty().bind(geneListPane.prefWidthProperty().subtract(4));
+            cytobandPane.minWidthProperty().bind(geneListPane.minWidthProperty().subtract(4));
+            cytobandPane.maxWidthProperty().bind(geneListPane.maxWidthProperty().subtract(4));
+
+            geneListPane.prefWidthProperty().bind(this.prefWidthProperty().subtract(4));
+            geneListPane.minWidthProperty().bind(this.minWidthProperty().subtract(4));
+            geneListPane.maxWidthProperty().bind(this.maxWidthProperty().subtract(4));
+//            BorderPane.setMargin(cytobandPane, new Insets(0.0, 2.0, 0.0, 2.0));
+//            BorderPane.setMargin(geneListPane, new Insets(3));
+//            BorderPane.setMargin(label, new Insets(2));
+            this.setCenter(geneListPane);
         } else {
             BorderPane pane = new BorderPane();
             cytobandPane = new CytobandPane(frame);
@@ -65,14 +82,14 @@ public class HeaderPane extends BorderPane {
 
             JavaFXUIUtilities.bindWidthToContainer(this, rulerPane);
             rulerPane.backgroundProperty().bind(backgroundProperty());
+            JavaFXUIUtilities.bindWidthToContainer(this, cytobandPane);
 
             Pane roiDummy = new Pane();
             roiDummy.setMinSize(15.0, 15.0);
             pane.setBottom(roiDummy);
-            this.getChildren().add(pane);
+            this.setCenter(pane);
         }
 
-        JavaFXUIUtilities.bindWidthToContainer(this, cytobandPane);
         cytobandPane.backgroundProperty().bind(backgroundProperty());
     }
 }

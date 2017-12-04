@@ -30,9 +30,13 @@ import javafx.scene.text.FontWeight;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.session.Session.GeneListMode;
 import org.broad.igv.ui.Main.IGVArgs;
+import org.broad.igv.ui.javafx.panel.MainContentPane;
+import org.broad.igv.ui.panel.FrameManager;
 
 import java.io.IOException;
 
@@ -41,7 +45,10 @@ import static org.broad.igv.prefs.Constants.DEFAULT_FONT_FAMILY;
 public class IGVBackendPlaceholder {
     private static Logger log = Logger.getLogger(IGVBackendPlaceholder.class);
 
-    public static void startupInit(IGVArgs igvArgs) {
+    private static MainContentPane MAIN_CONTENT_PANE = null;
+
+    public static void startupInit(IGVArgs igvArgs, MainContentPane mainContentPane) {
+        MAIN_CONTENT_PANE = mainContentPane;
         final IGVPreferences preferenceManager = PreferencesManager.getPreferences();
         Genome genome = null;
         if (igvArgs.getGenomeId() != null) {
@@ -63,10 +70,10 @@ public class IGVBackendPlaceholder {
             }
         }
 
-        // Uncomment the following to experiment with the global Tooltip duration setting hack.
-        // Be sure to *also* comment out the MouseEnter/Exit handling code in the RulerPane for
-        // comparison.
-        //JavaFXUIUtilities.setTooltipTimers(50, 60000, 50, false);
+        // Comment/uncomment the following to experiment with the global Tooltip duration setting
+        // hack.  Be sure to *also* adjust the MouseEnter/Exit handling code in the RulerPane for
+        // comparison.  It should not be present if the line below is active (and vice versa).
+        JavaFXUIUtilities.setTooltipTimers(50, 60000, 50, false);
     }
 
     public static final Font getFont(FontWeight fontWeight, double size) {
@@ -81,5 +88,38 @@ public class IGVBackendPlaceholder {
         String fontFamily = prefManager.get(DEFAULT_FONT_FAMILY);
 
         return Font.font(fontFamily, size);
+    }
+
+    // *** Mock Session-related stuff...
+    private static GeneList currentGeneList = null;
+
+    public static GeneList getCurrentGeneList() {
+        return currentGeneList;
+    }
+
+    public static void setCurrentGeneList(GeneList geneList) {
+        boolean frameReset = (geneList != null || FrameManager.isGeneListMode());
+        currentGeneList = geneList;
+
+        if (frameReset) {
+            FrameManager.resetFrames(currentGeneList);
+        }
+    }
+
+    private static GeneListMode geneListMode = GeneListMode.NORMAL;
+
+    public static GeneListMode getGeneListMode() {
+        return geneListMode;
+    }
+
+    public static void setGeneListMode(GeneListMode mode) {
+        geneListMode = mode;
+    }
+
+    // *** end Session-related stuff...
+
+    public static void resetContent() {
+
+        MAIN_CONTENT_PANE.resetContent();
     }
 }

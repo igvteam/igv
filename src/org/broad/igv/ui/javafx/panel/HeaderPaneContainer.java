@@ -27,9 +27,10 @@ package org.broad.igv.ui.javafx.panel;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.javafx.IGVBackendPlaceholder;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
@@ -59,9 +60,12 @@ public class HeaderPaneContainer extends BorderPane {
                 headerPanes.add(headerPane);
                 // TODO: Need to account for multiple frames in width.  The following is wrong.
                 // We need to split the width among all HPs.  Prob extract from the RefFrame?
-                headerPane.prefWidthProperty().bind(prefWidthProperty());
-                headerPane.minWidthProperty().bind(minWidthProperty());
-                headerPane.maxWidthProperty().bind(maxWidthProperty());
+//                headerPane.prefWidthProperty().bind(prefWidthProperty());
+//                headerPane.minWidthProperty().bind(minWidthProperty());
+//                headerPane.maxWidthProperty().bind(maxWidthProperty());
+                headerPane.setPrefWidth(f.getWidthInPixels());
+                headerPane.setMinWidth(f.getWidthInPixels());
+                headerPane.setMaxWidth(f.getWidthInPixels());
                 headerPane.backgroundProperty().bind(backgroundProperty());
                 headerPane.prefHeightProperty().bind(prefHeightProperty());
                 headerPane.minHeightProperty().bind(minHeightProperty());
@@ -70,23 +74,26 @@ public class HeaderPaneContainer extends BorderPane {
             }
         }
         contentPane.prefWidthProperty().bind(prefWidthProperty());
-        
+
+        contentPane.prefHeightProperty().bind(prefHeightProperty());
         if (FrameManager.isGeneListMode()) {
-            GeneList gl = IGV.getInstance().getSession().getCurrentGeneList();
+            GeneList gl = IGVBackendPlaceholder.getCurrentGeneList();
             String name = gl.getDisplayName();
-            Label label = new Label(name);
-            label.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: lightgray");
-            contentPane.prefHeightProperty().bind(prefHeightProperty().subtract(label.heightProperty()));
-            setTop(label);
-        } else {
-            contentPane.prefHeightProperty().bind(prefHeightProperty());
+            if (StringUtils.isNotBlank(name)) {
+                Label label = new Label(name);
+                label.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: lightgray; -fx-text-alignment: center;");
+                contentPane.prefHeightProperty().bind(prefHeightProperty().subtract(label.heightProperty()));
+                setTop(label);
+            }
         }
 
         setCenter(contentPane);
 
         this.prefWidthProperty().addListener((observable, oldValue, newValue) -> computeFrameBounds());
     }
-    
+
+    private int hgap = 5;
+
     private void computeFrameBounds() {
         List<ReferenceFrame> frames = FrameManager.getFrames();
         Double width = prefWidthProperty().get();
@@ -95,7 +102,22 @@ public class HeaderPaneContainer extends BorderPane {
             frames.get(0).setBounds(0, width.intValue());
         }
         else {
-            // Not yet...
+
+            float gap = Math.min(1, 20.0f / ((int) (1.5 * frames.size()))) * hgap;
+            int x = 0;
+
+            // Not dealing with Session for now.
+            double wc = //mode == Session.GeneListMode.NORMAL ?
+                    (width - (frames.size() - 1) * gap) / frames.size(); //:
+            //  20;
+
+            for (int i = 0; i < frames.size(); i++) {
+                ReferenceFrame frame = frames.get(i);
+                int nextX = (int) ((i + 1) * (wc + gap));
+                int w = nextX - x;
+                frame.setBounds(x, w);
+                x = nextX;
+            }
         }
 
         // Here's a thought on splitting the width equally:

@@ -43,13 +43,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang.StringUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.ui.javafx.FontMetrics;
+import org.broad.igv.ui.javafx.IGVBackendPlaceholder;
 import org.broad.igv.ui.javafx.ResizableCanvas;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -62,7 +63,6 @@ import java.util.Map;
 
 public class CytobandPane extends ResizableCanvas {
 
-    private static Logger log = Logger.getLogger(CytobandPane.class);
     private static double fontHeight = 10.0;
     private static final double bandHeight = 10.0;
     private static String fontFamilyName = "Lucida Sans";
@@ -151,6 +151,14 @@ public class CytobandPane extends ResizableCanvas {
         // to get it from the Pane itself.  Do it this way for now, but possibly change later.
         //int dataPanelWidth = frame.getWidthInPixels();
         double dataPanelWidth = this.getPrefWidth();
+
+        // There's currently a bug such that render() is being called while the component has a 
+        // non-positive width.  Still need to track that down - suspect it's coming via an
+        // IGVEventBus call.  For now, bail before trying to draw anything.
+        if (dataPanelWidth <= 0.0) {
+            return;
+        }
+        
         Rectangle2D cytoRect = new Rectangle2D(0.0, 10.0, dataPanelWidth, bandHeight);
 
         draw(currentCytobands, graphicContext, cytoRect, frame);
@@ -192,6 +200,15 @@ public class CytobandPane extends ResizableCanvas {
         if (data.size() > 0) {
 
             // TODO: image export.  Not dealing with this yet
+
+            if (FrameManager.isGeneListMode()) {
+                String locus = frame.getChrName();
+                if (StringUtils.isNotBlank(locus)) {
+                    graphicsContext.setFill(Color.BLACK);
+                    graphicsContext.setFont(IGVBackendPlaceholder.getFont(FontWeight.BOLD, 11));
+                    graphicsContext.fillText(locus, 3, 11);
+                }
+            }
 
             // Draw Cytoband
             drawBands(data, graphicsContext, graphicRect, frame.getMaxCoordinate());

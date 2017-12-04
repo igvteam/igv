@@ -160,6 +160,13 @@ public class MainContentPane extends BorderPane {
     public HeaderRow getHeaderRow() {
         return headerRow;
     }
+
+    public void resetContent() {
+        // Incomplete implementation for now
+        headerRow.getContentContainer().createHeaderPanes();
+
+        // TODO: deal with Tracks, etc.
+    }
     
     public void resetTrackRows() {
         for (TrackRow trackRow : getAllTrackRows()) {

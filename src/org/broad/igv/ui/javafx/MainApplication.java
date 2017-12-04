@@ -37,6 +37,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.DefaultExceptionHandler;
 import org.broad.igv.ui.Main;
 import org.broad.igv.ui.ShutdownThread;
+import org.broad.igv.ui.javafx.panel.MainContentPane;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -148,10 +149,10 @@ public class MainApplication extends Application {
     public void start(Stage primaryStage) throws Exception {
         checkLowMemory();
 
-        IGVStageBuilder.buildStage(primaryStage);
+        MainContentPane mainContentPane = IGVStageBuilder.buildStage(primaryStage);
 
         log.info("About to init JavaFX IGV backend placeholder");
-        IGVBackendPlaceholder.startupInit(igvArgs);
+        IGVBackendPlaceholder.startupInit(igvArgs, mainContentPane);
         log.info("IGV backend init done.");
 
         primaryStage.setTitle("IGV JavaFX port");

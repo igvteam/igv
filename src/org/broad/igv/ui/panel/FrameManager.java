@@ -25,6 +25,10 @@
 
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.Globals;
+import org.broad.igv.event.GenomeChangeEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
@@ -34,9 +38,7 @@ import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
-import org.broad.igv.event.GenomeChangeEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.ui.javafx.IGVBackendPlaceholder;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.util.ArrayList;
@@ -127,7 +129,11 @@ public class FrameManager implements IGVEventObserver {
                 if (locus == null) {
                     lociNotFound.add(loci.get(0));
                 } else {
-                    IGV.getInstance().getSession().setCurrentGeneList(null);
+                    if (Globals.IS_JAVAFX_UI) {
+                        IGVBackendPlaceholder.setCurrentGeneList(null);
+                    } else {
+                        IGV.getInstance().getSession().setCurrentGeneList(null);
+                    }
                     getDefaultFrame().jumpTo(locus.getChr(), locus.getStart(), locus.getEnd());
                     frames.add(getDefaultFrame());
                 }

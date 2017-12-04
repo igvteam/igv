@@ -324,20 +324,21 @@ public class RulerPane extends ResizableCanvas {
     }
 
     private void resetTooltipHandlers() {
-        // Comment out the setOnMouseEntered() and setOnMouseExited calls below to compare
-        // with the cursor timing hack in IGVBackendPlaceholder.
+        // Comment/uncomment the setOnMouseEntered() and setOnMouseExited calls below to compare
+        // with the cursor timing hack in IGVBackendPlaceholder.  These should be commented out
+        // if that hack is active (and vice versa).
         if (isWholeGenomeView()) {
             tooltip.setText(WHOLE_GENOME_TOOLTIP);
-            this.setOnMouseEntered(wgViewMouseEnteredHandler);
+//            this.setOnMouseEntered(wgViewMouseEnteredHandler);
             this.setOnMouseClicked(wgViewMouseClickedHandler);
             this.setOnMouseMoved(wgViewMouseMovedHandler);
         } else {
             tooltip.setText(CHROM_TOOLTIP);
-            this.setOnMouseEntered(chrViewMouseEnteredHandler);
+//            this.setOnMouseEntered(chrViewMouseEnteredHandler);
             this.setOnMouseClicked(chrViewMouseClickedHandler);
             this.setOnMouseMoved(chrViewMouseMovedHandler);
         }
-        this.setOnMouseExited(mouseExitedHandler);
+//        this.setOnMouseExited(mouseExitedHandler);
     }
 
     private final EventHandler<MouseEvent> wgViewMouseClickedHandler = (event) -> {
@@ -349,6 +350,7 @@ public class RulerPane extends ResizableCanvas {
         }
     };
 
+    // Only used if the global tooltip timing hack is inactive.
     private final EventHandler<MouseEvent> wgViewMouseEnteredHandler = (event) -> {
         tooltip.setText(WHOLE_GENOME_TOOLTIP);
         tooltip.show(this, event.getScreenX(), event.getScreenY());
@@ -381,6 +383,7 @@ public class RulerPane extends ResizableCanvas {
     };
 
 
+    // Only used if the global tooltip timing hack is inactive.
     private final EventHandler<MouseEvent> chrViewMouseEnteredHandler = (event) -> {
         tooltip.setText(CHROM_TOOLTIP);
         tooltip.show(this, event.getScreenX(), event.getScreenY());
@@ -400,6 +403,7 @@ public class RulerPane extends ResizableCanvas {
         tooltip.setText(CHROM_TOOLTIP);
     };
 
+    // Only used if the global tooltip timing hack is inactive.
     private final EventHandler<MouseEvent> mouseExitedHandler = (event) -> {
         Bounds bounds = this.getBoundsInLocal();
         if (!bounds.contains(event.getX(), event.getY())) {
