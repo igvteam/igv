@@ -36,7 +36,6 @@ package org.broad.igv.ui.util;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
-import org.broad.igv.google.GoogleCloudStorageHelper;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
 import org.broad.igv.util.RuntimeUtils;

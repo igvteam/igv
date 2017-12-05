@@ -38,6 +38,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandExecutor;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentCounts;
 import org.broad.igv.sam.AlignmentTrack;
@@ -251,12 +253,6 @@ abstract public class TrackPanelComponent extends JPanel {
             menu.add(TrackMenuUtils.getRemoveMenuItem(selectedTracks));
         }
 
-        // if variant review
-        menu.addSeparator();
-        JMenuItem mi = new JMenuItem("Score variant");
-        mi.addActionListener(e13 -> scoreMutationItem(te));
-        menu.add(mi);
-
         menu.show(e.getComponent(), e.getX(), e.getY());
 
     }
@@ -300,37 +296,6 @@ abstract public class TrackPanelComponent extends JPanel {
 
     public void saveImage() {
         IGV.getInstance().saveImage(getTrackPanel().getScrollPane(), "igv_panel");
-    }
-
-
-    /**
-     * /*
-     * public String userID;
-     * public String userEmail;
-     * public String chrom;
-     * public int pos;
-     * public int windowSize;
-     * public int readDepth;
-     * public char ref;
-     * public int refCount;
-     * public String alt;
-     * public String altCount;
-     *
-     * @param te
-     */
-    public void scoreMutationItem(final TrackClickEvent te) {
-
-
-        Optional<Track> opt = getAllTracks().stream().filter(t -> t instanceof AlignmentTrack).findFirst();
-
-        if (opt.isPresent()) {
-
-            AlignmentTrack alignmentTrack = (AlignmentTrack) opt.get();
-
-            VariantReviewAction.scoreMutationItem(this, alignmentTrack, te);
-        }
-
-
     }
 
 

@@ -40,6 +40,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.sam.mutreview.VariantReviewAction;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SubtlyImportant;
@@ -1499,13 +1500,24 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             addShowItems();
 
 
-            if (PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
+            if (getPreferences().get(Constants.EXTVIEW_URL) != null) {
                 addSeparator();
                 addExtViewItem(e);
             }
 
 
+            // if variant review
+            if (PreferencesManager.getPreferences().getAsBoolean(Constants.SCORE_VARIANTS)) {
+                addSeparator();
+                JMenuItem mi = new JMenuItem("Score variant");
+                mi.addActionListener(e13 -> VariantReviewAction.scoreMutationItem(dataPanel, AlignmentTrack.this, e));
+                add(mi);
+            }
+
+
         }
+
+
 
         public JMenuItem addExpandInsertions() {
 

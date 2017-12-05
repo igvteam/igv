@@ -11,6 +11,7 @@ import org.broad.igv.sam.AlignmentCounts;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -88,8 +89,6 @@ public class VariantReviewAction {
 
             metadata.delCount = baseCounts.delCount;
 
-            Gson gson = new Gson();
-            System.out.println(gson.toJson(metadata));
 
             // Create the screenshot
             PreferencesManager.forceDefaults = true;
@@ -107,7 +106,8 @@ public class VariantReviewAction {
             BufferedImage image = SnapshotUtilities.createBufferedImage(component, clipRect, 1000);
             PreferencesManager.forceDefaults = false;
 
-            VariantReviewFX.open(null, image, metadata);
+            Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+            VariantReviewFX.open(parent, image, metadata);
 
         } catch (IOException e) {
             e.printStackTrace();

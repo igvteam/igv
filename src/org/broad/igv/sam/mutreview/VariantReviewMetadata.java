@@ -6,10 +6,10 @@ package org.broad.igv.sam.mutreview;
 public class VariantReviewMetadata {
 
     public VariantReviewMetadata() {
-        id = System.currentTimeMillis();
+        timestamp = System.currentTimeMillis();
     }
 
-    public long id;
+    public long timestamp;
     public int score;
     public String scoreString;
     public String userId;
