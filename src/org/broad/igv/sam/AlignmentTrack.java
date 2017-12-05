@@ -559,6 +559,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         groupNames.clear();
 
+
+        RenderOptions renderOptions = PreferencesManager.forceDefaults ? new RenderOptions() : this.renderOptions;
+
         //log.debug("Render features");
         PackedAlignments groups = dataManager.getGroups(context, renderOptions);
         if (groups == null) {

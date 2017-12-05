@@ -25,12 +25,15 @@ public class PreferencesManager implements IGVEventObserver {
 
     private static List<PreferenceGroup> preferenceGroupList;
     private static Logger log = Logger.getLogger(PreferencesManager.class);
-
     private static Map<String, IGVPreferences> preferencesMap = Collections.synchronizedMap(new HashMap<>());
+    private static IGVPreferences genericDefaults;
+
+    public static boolean forceDefaults = false;
 
     private static String prefFile;  // User preferences file
 
     static Hashtable<String, String> aliasTable = new Hashtable<String, String>();
+
 
     static {
         aliasTable.put("SAM>SORT_OPTION", "SAM.SORT_OPTION");
@@ -49,7 +52,9 @@ public class PreferencesManager implements IGVEventObserver {
         if (preferenceGroupList == null) {
             init();
         }
-        if (preferencesMap.containsKey(category)) {
+        if (forceDefaults) {
+            return genericDefaults;
+        } else if (preferencesMap.containsKey(category)) {
             return preferencesMap.get(category);
         } else {
             return preferencesMap.get(NULL_CATEGORY);
@@ -80,7 +85,7 @@ public class PreferencesManager implements IGVEventObserver {
                 }
             }
 
-            IGVPreferences genericDefaults = new IGVPreferences(defaultPreferences.get(NULL_CATEGORY), null);
+            genericDefaults = new IGVPreferences(defaultPreferences.get(NULL_CATEGORY), null);
             IGVPreferences rnaDefaults = new IGVPreferences(defaultPreferences.get(RNA), genericDefaults);
             IGVPreferences thirdGenDefaults = new IGVPreferences(defaultPreferences.get(THIRD_GEN), genericDefaults);
 
@@ -101,7 +106,7 @@ public class PreferencesManager implements IGVEventObserver {
     }
 
     public static IGVPreferences getPreferences() {
-        return getPreferences(NULL_CATEGORY);
+        return forceDefaults ? genericDefaults : getPreferences(NULL_CATEGORY);
     }
 
     public static Collection<IGVPreferences> getAllPreferences() {

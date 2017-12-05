@@ -6,6 +6,7 @@ import org.broad.igv.batch.CommandExecutor;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentCounts;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.Track;
@@ -90,18 +91,21 @@ public class VariantReviewAction {
             Gson gson = new Gson();
             System.out.println(gson.toJson(metadata));
 
-
+            // Create the screenshot
+            PreferencesManager.forceDefaults = true;
+            
             CommandExecutor cmdExe = new CommandExecutor();
             cmdExe.setSleepInterval("0");
+
             int chrPosition = (int) (te.getChromosomePosition()) + 1;  // Convert to "1" base coords
-            System.out.println(chrPosition);
-            cmdExe.execute("goto " + te.getFrame().getChrName() + ":" + chrPosition);
+            int start = chrPosition - 100;
+            int end = chrPosition + 100;
+
+            cmdExe.execute("goto " + te.getFrame().getChrName() + ":" + start + "-" + end);
             cmdExe.execute("sort base " + chrPosition);
-
-
             Rectangle clipRect = track.alignmentsRect;
-
             BufferedImage image = SnapshotUtilities.createBufferedImage(component, clipRect, 1000);
+            PreferencesManager.forceDefaults = false;
 
             VariantReviewFX.open(null, image, metadata);
 
