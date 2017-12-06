@@ -90,7 +90,6 @@ public class IGVStageBuilder {
         stage.setY(applicationBounds.getMinY());
         stage.setWidth(applicationBounds.getWidth());
         stage.setHeight(applicationBounds.getHeight());
-        log.info("stage Bounds xywh: " + stage.getX() + ":" + stage.getY() + ":" + stage.getWidth() + ":" + stage.getHeight());
 
         // TODO: Need equivalent of GlassPane for the Scene
         // Note: we can use an EventFilter on the Scene instead of doing it as a

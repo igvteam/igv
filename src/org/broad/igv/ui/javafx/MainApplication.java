@@ -150,16 +150,11 @@ public class MainApplication extends Application {
         checkLowMemory();
 
         MainContentPane mainContentPane = IGVStageBuilder.buildStage(primaryStage);
-
-        log.info("About to init JavaFX IGV backend placeholder");
         IGVBackendPlaceholder.startupInit(igvArgs, mainContentPane);
-        log.info("IGV backend init done.");
 
         primaryStage.setTitle("IGV JavaFX port");
 
-        log.info("Showing IGV UI");
         primaryStage.show();
-        log.info("IGV UI shown");
     }
 
     @Override
