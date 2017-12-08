@@ -345,7 +345,7 @@ public class RulerPane extends ResizableCanvas {
         for (final ClickLink link : chromosomeRects) {
             if (link.region.contains(event.getX(), event.getY())) {
                 final String chrName = link.value;
-                frame.changeChromosome(chrName, true);
+                frame.chromosomeNameProperty().set(chrName);
             }
         }
     };
@@ -353,7 +353,7 @@ public class RulerPane extends ResizableCanvas {
     // Only used if the global tooltip timing hack is inactive.
     private final EventHandler<MouseEvent> wgViewMouseEnteredHandler = (event) -> {
         tooltip.setText(WHOLE_GENOME_TOOLTIP);
-        tooltip.show(this, event.getScreenX(), event.getScreenY());
+        tooltip.show(this, event.getScreenX() + 10, event.getScreenY() + 10);
         this.setCursor(Cursor.DEFAULT);
     };
 
@@ -367,7 +367,7 @@ public class RulerPane extends ResizableCanvas {
                 // in that case as well.
                 if (!StringUtils.equals(link.tooltipText, tooltip.getText())) {
                     tooltip.setText(link.tooltipText);
-                    tooltip.show(this, event.getScreenX(), event.getScreenY());
+                    tooltip.show(this, event.getScreenX() + 10, event.getScreenY() + 10);
                     this.setCursor(Cursor.HAND);
                 }
                 return;

@@ -39,6 +39,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.javafx.IGVToolBarManager;
+import org.broad.igv.ui.panel.FrameManager;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -107,6 +108,8 @@ public class MainContentPane extends BorderPane {
 
             centerSplitPane.setDividerPositions(0.9);
         }
+
+        this.resetContent();
     }
 
 
@@ -163,7 +166,11 @@ public class MainContentPane extends BorderPane {
 
     public void resetContent() {
         // Incomplete implementation for now
-        headerRow.getContentContainer().createHeaderPanes();
+        HeaderPaneContainer headerContentContainer = headerRow.getContentContainer();
+        FrameManager.totalDisplayWidthProperty().bind(headerContentContainer.prefWidthProperty());
+        headerContentContainer.frameSpacingProperty().bind(FrameManager.frameSpacingProperty());
+        FrameManager.computeFrameBounds();
+        headerContentContainer.createHeaderPanes();
 
         // TODO: deal with Tracks, etc.
     }

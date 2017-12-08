@@ -29,10 +29,7 @@
  */
 package org.broad.igv.ui.panel;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
@@ -46,7 +43,6 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
 
@@ -141,6 +137,11 @@ public class ReferenceFrame {
                 doSetZoom(newValue.intValue());
             }
         });
+        displayWidthProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                setBounds(0, newValue.intValue());
+            }
+        });
     }
 
     public ReferenceFrame(ReferenceFrame otherFrame) {
@@ -176,6 +177,11 @@ public class ReferenceFrame {
         zoomProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 doSetZoom(newValue.intValue());
+            }
+        });
+        displayWidthProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                setBounds(0, newValue.intValue());
             }
         });
     }
@@ -224,7 +230,7 @@ public class ReferenceFrame {
      * @param widthInPixels
      */
     public synchronized void setBounds(int pixelX, int widthInPixels) {
-        this.pixelX = pixelX;
+        //this.pixelX = pixelX;
 
         if (this.widthInPixels != widthInPixels) {
 
@@ -398,7 +404,8 @@ public class ReferenceFrame {
      * //TODO Should we save history by receiving events in History?
      */
     public void recordHistory() {
-        IGV.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
+        // TODO: for now, not dealing with Session or history
+        //IGV.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
     }
 
 
@@ -793,6 +800,12 @@ public class ReferenceFrame {
 
     private static Genome getGenome() {
         return GenomeManager.getInstance().getCurrentGenome();
+    }
+
+    private DoubleProperty displayWidthProperty = new SimpleDoubleProperty();
+
+    public DoubleProperty displayWidthProperty() {
+        return displayWidthProperty;
     }
 
     // Might be better to have the Chromosome itself be held in the property.

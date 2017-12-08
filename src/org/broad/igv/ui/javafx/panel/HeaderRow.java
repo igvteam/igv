@@ -47,6 +47,6 @@ public class HeaderRow extends IGVRow<NameHeaderPane, AttributeHeaderPane, Heade
         getAttributePane().setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(0, 0, 0)");
 
         // Wait to create the headerPaneContainer content until after layout & sizing is complete.
-        headerPaneContainer.createHeaderPanes();
+        //headerPaneContainer.createHeaderPanes();
     }
 }

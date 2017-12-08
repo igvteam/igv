@@ -111,21 +111,23 @@ public class CytobandPane extends ResizableCanvas {
         
         render();
 
-        this.setOnMouseClicked((event) -> {
-            final double mouseX = event.getX();
-            final int clickCount = event.getClickCount();
-            double newLocation = cytobandScale * mouseX;
-            if (clickCount > 1) {
-                final int newZoom = getReferenceFrame().getZoom() + 1;
-                getReferenceFrame().doSetZoomCenter(newZoom, newLocation);
-            } else {
-                getReferenceFrame().centerOnLocation(newLocation);
-            }
+        if (mouseable) {
+            this.setOnMouseClicked((event) -> {
+                final double mouseX = event.getX();
+                final int clickCount = event.getClickCount();
+                double newLocation = cytobandScale * mouseX;
+                if (clickCount > 1) {
+                    final int newZoom = getReferenceFrame().getZoom() + 1;
+                    getReferenceFrame().doSetZoomCenter(newZoom, newLocation);
+                } else {
+                    getReferenceFrame().centerOnLocation(newLocation);
+                }
 
-            ViewChange result = ViewChange.Result();
-            result.setRecordHistory(true);
-            IGVEventBus.getInstance().post(result);
-        });
+                ViewChange result = ViewChange.Result();
+                result.setRecordHistory(true);
+                IGVEventBus.getInstance().post(result);
+            });
+        }
     }
 
     public void render() {

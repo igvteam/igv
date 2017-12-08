@@ -25,6 +25,8 @@
 
 package org.broad.igv.ui.panel;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -34,6 +36,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.session.Session;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -272,6 +275,51 @@ public class FrameManager implements IGVEventObserver {
         }
     }
 
+    private static DoubleProperty totalDisplayWidthProperty = new SimpleDoubleProperty();
+
+    public static DoubleProperty totalDisplayWidthProperty() {
+        return totalDisplayWidthProperty;
+    }
+
+    private static DoubleProperty frameSpacingProperty = new SimpleDoubleProperty();
+
+    public static DoubleProperty frameSpacingProperty() {
+        return frameSpacingProperty;
+    }
+
+    private static final int hgap = 5;
+
+    public static void computeFrameBounds() {
+        if (frames == null || frames.isEmpty()) {
+            return;
+        }
+
+        int frameCount = frames.size();
+        if (frameCount == 1) {
+            // If there's only one frame, we give it the whole width for display
+            frames.get(0).displayWidthProperty().bind(totalDisplayWidthProperty);
+        } else {
+            // Otherwise we divide up the total space by the number of frames, leaving room
+            // for a dynamically sized spacing between each.
+
+            // Note: this calculation comes from IGV-Swing; I think I understand it correctly.
+            double gap = Math.min(1.0, 20.0 / ((int) (1.5 * frameCount))) * hgap;
+            frameSpacingProperty.set(gap);
+
+            // Not fully dealing with Session for now.
+            Session.GeneListMode mode = IGVBackendPlaceholder.getGeneListMode();
+            if (mode == Session.GeneListMode.NORMAL) {
+                double framePlusSpacingWidth = (frameCount - 1) * gap;
+                for (ReferenceFrame frame : frames) {
+                    frame.displayWidthProperty().bind(totalDisplayWidthProperty.subtract(framePlusSpacingWidth).divide(frameCount));
+                }
+            } else {
+                for (ReferenceFrame frame : frames) {
+                    frame.displayWidthProperty().set(20);
+                }
+            }
+        }
+    }
 
     public static class ChangeEvent {
         List<ReferenceFrame> frames;

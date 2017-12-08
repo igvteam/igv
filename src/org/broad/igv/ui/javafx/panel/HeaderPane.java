@@ -24,11 +24,14 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
+import javafx.event.EventHandler;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.javafx.IGVBackendPlaceholder;
 import org.broad.igv.ui.javafx.JavaFXUIUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -48,6 +51,7 @@ public class HeaderPane extends BorderPane {
     public HeaderPane(ReferenceFrame frame) {
 
         this.frame = frame;
+        JavaFXUIUtilities.bindWidthToProperty(this, frame.displayWidthProperty());
 
         if (FrameManager.isGeneListMode()) {
             Label label = new Label(this.frame.getName());
@@ -61,7 +65,6 @@ public class HeaderPane extends BorderPane {
             this.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: gray; -fx-background-color: yellow;");
 
             JavaFXUIUtilities.bindWidthToContainer(geneListPane, label);
-//            JavaFXUIUtilities.bindWidthToContainer(geneListPane, cytobandPane);
             cytobandPane.prefWidthProperty().bind(geneListPane.prefWidthProperty().subtract(4));
             cytobandPane.minWidthProperty().bind(geneListPane.minWidthProperty().subtract(4));
             cytobandPane.maxWidthProperty().bind(geneListPane.maxWidthProperty().subtract(4));
@@ -69,9 +72,12 @@ public class HeaderPane extends BorderPane {
             geneListPane.prefWidthProperty().bind(this.prefWidthProperty().subtract(4));
             geneListPane.minWidthProperty().bind(this.minWidthProperty().subtract(4));
             geneListPane.maxWidthProperty().bind(this.maxWidthProperty().subtract(4));
-//            BorderPane.setMargin(cytobandPane, new Insets(0.0, 2.0, 0.0, 2.0));
-//            BorderPane.setMargin(geneListPane, new Insets(3));
-//            BorderPane.setMargin(label, new Insets(2));
+
+            this.setOnMouseClicked(geneListModeOnClickHandler);
+            cytobandPane.setOnMouseClicked(geneListModeOnClickHandler);
+            label.setOnMouseClicked(geneListModeOnClickHandler);
+            geneListPane.setOnMouseClicked(geneListModeOnClickHandler);
+            
             this.setCenter(geneListPane);
         } else {
             BorderPane pane = new BorderPane();
@@ -92,4 +98,12 @@ public class HeaderPane extends BorderPane {
 
         cytobandPane.backgroundProperty().bind(backgroundProperty());
     }
+
+    private EventHandler<MouseEvent> geneListModeOnClickHandler = (event) -> {
+        if (event.getClickCount() > 1) {
+            FrameManager.setToDefaultFrame(frame.getName());
+            IGVBackendPlaceholder.resetContent();
+            event.consume();
+        }
+    };
 }
