@@ -98,8 +98,8 @@ public class InsertionManager {
         return (selectedInsertion == null  || insertionMap == null) ? null : insertionMap.get(selectedInsertion);
     }
 
-
-    public void processAlignments(String chr, List<Alignment> alignments) {
+    
+    public synchronized void processAlignments(String chr, List<Alignment> alignments) {
 
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
