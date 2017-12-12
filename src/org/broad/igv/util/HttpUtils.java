@@ -645,13 +645,22 @@ public class HttpUtils {
             url = new URL(newPath);
         }
 
+
+
         Proxy sysProxy = null;
+
         boolean igvProxySettingsExist = proxySettings != null && proxySettings.useProxy;
+        boolean checkSystemProxy =
+                !PreferencesManager.getPreferences().getAsBoolean("PROXY.DISABLE_CHECK") && !igvProxySettingsExist;
+
         //Only check for system proxy if igv proxy settings not found
-        if (!igvProxySettingsExist) {
+        if (checkSystemProxy) {
             sysProxy = getSystemProxy(url.toExternalForm());
         }
-        boolean useProxy = (sysProxy != null && sysProxy.type() != Proxy.Type.DIRECT) ||
+
+
+        boolean useProxy =
+                (sysProxy != null && sysProxy.type() != Proxy.Type.DIRECT) ||
                 (igvProxySettingsExist && !proxySettings.getWhitelist().contains(url.getHost()));
 
         HttpURLConnection conn;
