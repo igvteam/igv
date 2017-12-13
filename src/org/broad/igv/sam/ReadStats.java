@@ -80,14 +80,14 @@ public class ReadStats {
     public void compute() {
 
         if (readLengths.size() > 0) {
-            final double[] downsampled = downsample(readLengths, 1000);
+            final double[] downsampled = downsample(readLengths, 10000);
             medianReadLength = StatUtils.percentile(downsampled, 50);
             readLengthStdDev = Math.sqrt(StatUtils.variance(downsampled));
         }
 
 
         if (refToReadRatios.size() > 0) {
-            medianRefToReadRatio = StatUtils.percentile(downsample(refToReadRatios, 1000), 50);
+            medianRefToReadRatio = StatUtils.percentile(downsample(refToReadRatios, 10000), 50);
         }
 
         fracReadsWithIndels = ((double) indelCount) / readCount;
