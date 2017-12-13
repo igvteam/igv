@@ -95,7 +95,7 @@ public class OAuthUtils {
 
     // dwm08
     // by default this is the google scope
-    private String scope = genomicsScope + "%20" + gsScope  + "%20" + emailScope;
+    private String scope = genomicsScope + "%20" + gsScope + "%20" + emailScope;
 
     // Construct OAuthUtils earcly so Google menu can be updated to the
     // correct oauth provider. dwm08
@@ -434,89 +434,89 @@ public class OAuthUtils {
 
         }
     }
-    
-	/**
-	 * Try to login to secure server. dwm08
-	 */
-	public static void doSecureLogin() {
-		// if user is not currently logged in, attempt to
-		// log in user if not logged in dwm08
-		if (!OAuthUtils.getInstance().isLoggedIn()) {
-			try {
-				OAuthUtils.getInstance().openAuthorizationPage();
-			} catch (Exception ex) {
-				MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
-				log.error("Error fetching oAuth tokens", ex);
-			}
 
-		}
-		// wait until authentication successful or 1 minute -
-		// dwm08
-		int i = 0;
-		while (!OAuthUtils.getInstance().isLoggedIn() && i < 600) {
-			++i;
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e1) {
-				e1.printStackTrace();
-			}
-		}
-	}
-	
-	/**
-	 * Generate a set of all urls in the sessino file
-	 * 
-	 * @param sessionPath
-	 * @return list of urls
-	 */
-	public static Set<String> findUrlsInSessionFile(String sessionPath) {
-		BufferedReader br = null;
-		HashSet<String> urlSet = new HashSet<>();
-		try {
-			br = new BufferedReader(new FileReader(new File(sessionPath)));
-			String line;
-			while ((line = br.readLine()) != null) {
-				int start = line.indexOf("http");
-				if (start != -1) {
-					int mid = line.indexOf("://", start);
-					int end = line.indexOf("/", mid+3);
-					String url = line.substring(start, end);
-					urlSet.add(url);
-				}
-			}
+    /**
+     * Try to login to secure server. dwm08
+     */
+    public static void doSecureLogin() {
+        // if user is not currently logged in, attempt to
+        // log in user if not logged in dwm08
+        if (!OAuthUtils.getInstance().isLoggedIn()) {
+            try {
+                OAuthUtils.getInstance().openAuthorizationPage();
+            } catch (Exception ex) {
+                MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
+                log.error("Error fetching oAuth tokens", ex);
+            }
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException e) {
-				}
-			}
-		}
-		return urlSet;
-	}
+        }
+        // wait until authentication successful or 1 minute -
+        // dwm08
+        int i = 0;
+        while (!OAuthUtils.getInstance().isLoggedIn() && i < 600) {
+            ++i;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
 
-	/**
-	 * Check if any reference in the session file refers to a server protected
-	 * by the oauth protocol. If so, check to see if the user is logged in. If
-	 * user is not logged in, put up login prompt.
-	 * 
-	 * @param sessionPath
-	 */
-	public static void checkServerLogin(String sessionPath) {
-		Set<String> urlSet = findUrlsInSessionFile(sessionPath);
-		if (urlSet.size() > 0) {
-			for (String url: urlSet) {
-        			if (OAuthUtils.isGoogleCloud(url)) {
-        
-        				OAuthUtils.doSecureLogin();
-        				
-        				// user is logged in. Can proceed with the load
-        				return;
-        			}
-			}
-		}
-	}
+    /**
+     * Generate a set of all urls in the sessino file
+     *
+     * @param sessionPath
+     * @return list of urls
+     */
+    public static Set<String> findUrlsInSessionFile(String sessionPath) {
+        BufferedReader br = null;
+        HashSet<String> urlSet = new HashSet<>();
+        try {
+            br = new BufferedReader(new FileReader(new File(sessionPath)));
+            String line;
+            while ((line = br.readLine()) != null) {
+                int start = line.indexOf("http");
+                if (start != -1) {
+                    int mid = line.indexOf("://", start);
+                    int end = line.indexOf("/", mid + 3);
+                    String url = line.substring(start, end);
+                    urlSet.add(url);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        return urlSet;
+    }
+
+    /**
+     * Check if any reference in the session file refers to a server protected
+     * by the oauth protocol. If so, check to see if the user is logged in. If
+     * user is not logged in, put up login prompt.
+     *
+     * @param sessionPath
+     */
+    public static void checkServerLogin(String sessionPath) {
+        Set<String> urlSet = findUrlsInSessionFile(sessionPath);
+        if (urlSet.size() > 0) {
+            for (String url : urlSet) {
+                if (OAuthUtils.isGoogleCloud(url)) {
+
+                    OAuthUtils.doSecureLogin();
+
+                    // user is logged in. Can proceed with the load
+                    return;
+                }
+            }
+        }
+    }
 }

@@ -94,11 +94,11 @@ public class LoadFromURLMenuAction extends MenuAction {
                     }
 
                     if (OAuthUtils.isGoogleCloud(url)) {
-                    	
-                    		// if user is not currently logged in, attempt to 
-                    		// log in user dwm08
-                    		OAuthUtils.doSecureLogin();
-                    	
+
+                        // if user is not currently logged in, attempt to
+                        // log in user dwm08
+                        OAuthUtils.doSecureLogin();
+
                         // Access a few bytes as a means to check authorization
                         if (!ping(url)) return;
                         if (url.indexOf("alt=media") < 0) {
@@ -117,7 +117,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                     } else {
                         ResourceLocator rl = new ResourceLocator(url.trim());
 
-                        if(dlg.getIndexURL() != null) {
+                        if (dlg.getIndexURL() != null) {
                             String indexUrl = dlg.getIndexURL().trim();
                             if (indexUrl.startsWith("gs://")) {
                                 enableGoogleMenu();
