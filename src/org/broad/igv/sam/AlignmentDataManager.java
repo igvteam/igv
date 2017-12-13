@@ -333,7 +333,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments);
-
+//
         if (inferredExperimentType == null && !Globals.VERSION.contains("2.4")) {
             readStats.compute();
             inferType(readStats);

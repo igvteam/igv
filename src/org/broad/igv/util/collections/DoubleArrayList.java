@@ -25,6 +25,8 @@
 
 package org.broad.igv.util.collections;
 
+import java.util.Arrays;
+
 /**
  * Author: jrobinso
  * Date: Jul 22, 2010
@@ -123,6 +125,14 @@ public class DoubleArrayList {
         return elements;
     }
 
+    public double [] toArray(int start, int end) {
+
+        if(end > size) throw new IndexOutOfBoundsException();
+
+        return Arrays.copyOfRange(elements, start, end);
+
+
+    }
 
     private void trimToSize() {
         int oldCapacity = elements.length;
