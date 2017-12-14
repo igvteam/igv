@@ -264,7 +264,7 @@ public class IGV implements IGVEventObserver {
         rootPane.setJMenuBar(menuBar);
         glassPane = rootPane.getGlassPane();
         glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        consumeEvents(glassPane);
+       // consumeEvents(glassPane);
 
         dNdGlassPane = new GhostGlassPane();
 
