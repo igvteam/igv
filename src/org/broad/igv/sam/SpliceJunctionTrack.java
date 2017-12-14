@@ -57,11 +57,6 @@ import java.util.List;
 public class SpliceJunctionTrack extends FeatureTrack {
 
     private static Logger log = Logger.getLogger(SpliceJunctionTrack.class);
-    private AlignmentTrack.RenderOptions renderOptions;
-
-    public void setRenderOptions(AlignmentTrack.RenderOptions renderOptions) {
-        this.renderOptions = renderOptions;
-    }
 
     public enum StrandOption {COMBINE, FORWARD, REVERSE, BOTH}
 
@@ -263,7 +258,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
     }
 
     public void load(ReferenceFrame frame) {
-        dataManager.load(frame, renderOptions, true);
+        dataManager.load(frame, alignmentTrack.renderOptions, true);
 
     }
 

@@ -118,7 +118,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
      */
     private boolean globalAutoScale = true;
 
-    private AlignmentTrack.RenderOptions renderOptions = null;
 
     @SubtlyImportant
     public CoverageTrack() {
@@ -137,7 +136,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         if (track.dataSource != null) this.setDataSource(track.dataSource);
         this.snpThreshold = track.snpThreshold;
         this.prefs = track.prefs;
-        this.renderOptions = track.renderOptions;
     }
 
     public CoverageTrack(ResourceLocator locator, String name, AlignmentTrack alignmentTrack, Genome genome) {
@@ -183,7 +181,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public void load(ReferenceFrame referenceFrame) {
-        dataManager.load(referenceFrame, renderOptions, true);
+        dataManager.load(referenceFrame, alignmentTrack.renderOptions, true);
     }
 
 
@@ -197,15 +195,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public boolean isShowReference() {
         return showReference;
-    }
-
-
-    public void setRenderOptions(AlignmentTrack.RenderOptions renderOptions) {
-        this.renderOptions = renderOptions;
-    }
-
-    AlignmentTrack.RenderOptions getRenderOptions() {
-        return this.renderOptions;
     }
 
     public boolean isRemoved() {
@@ -257,7 +246,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
-                dataManager.load(context.getReferenceFrame(), renderOptions, true);
+                dataManager.load(context.getReferenceFrame(), alignmentTrack.renderOptions, true);
                 interval = dataManager.getLoadedInterval(context.getReferenceFrame());
             }
             if (interval != null) {
@@ -483,7 +472,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             final double colorScaleMax = getColorScale().getMaximum();
             final double scale = context.getScale();
 
-            boolean bisulfiteMode = getRenderOptions().getColorOption() == AlignmentTrack.ColorOption.BISULFITE;
+            boolean bisulfiteMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BISULFITE;
 
 
             // First pass, coverage

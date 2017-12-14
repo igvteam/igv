@@ -123,7 +123,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private CoverageTrack coverageTrack;
     private SpliceJunctionTrack spliceJunctionTrack;
 
-    private RenderOptions renderOptions = new RenderOptions(ExperimentType.OTHER);
+    RenderOptions renderOptions = new RenderOptions(ExperimentType.OTHER);
 
 
     private int expandedHeight = 14;
@@ -313,7 +313,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
-        this.coverageTrack.setRenderOptions(this.renderOptions);
     }
 
     @Override
@@ -332,16 +331,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         this.renderOptions = renderOptions;
 
-        if (this.coverageTrack != null) {
-            this.coverageTrack.setRenderOptions(this.renderOptions);
-        }
-        if (this.spliceJunctionTrack != null) {
-            this.spliceJunctionTrack.setRenderOptions(this.renderOptions);
-        }
     }
 
     @SubtlyImportant
-    private RenderOptions getRenderOptions() {
+    RenderOptions getRenderOptions() {
         return this.renderOptions;
     }
 
