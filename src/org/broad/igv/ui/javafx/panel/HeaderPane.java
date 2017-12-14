@@ -54,15 +54,16 @@ public class HeaderPane extends BorderPane {
         JavaFXUIUtilities.bindWidthToProperty(this, frame.displayWidthProperty());
 
         if (FrameManager.isGeneListMode()) {
+            this.getStyleClass().add("geneListHeaderPane");
+            
             Label label = new Label(this.frame.getName());
-            label.setStyle("-fx-alignment: center; -fx-text-fill: blue;");
+            label.getStyleClass().add("geneListHeaderPaneLabel");
             label.prefWidthProperty().bind(this.prefWidthProperty());
             label.setTooltip(new Tooltip(frame.getName()));
             this.geneListPane = new BorderPane();
             cytobandPane = new CytobandPane(frame, false);
             geneListPane.setCenter(cytobandPane);
             geneListPane.setBottom(label);
-            this.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: gray; -fx-background-color: yellow;");
 
             JavaFXUIUtilities.bindWidthToContainer(geneListPane, label);
             cytobandPane.prefWidthProperty().bind(geneListPane.prefWidthProperty().subtract(4));

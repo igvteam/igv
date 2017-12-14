@@ -64,3 +64,57 @@
 #rulerButton {
     -fx-graphic: url('/images/vertical-line.gif');
 }
+
+#headerRowScrollPane {
+  -fx-border-style: solid;
+  -fx-border-insets: 2;
+  -fx-border-color: rgb(102, 102, 102);
+}
+
+AttributeHeaderPane {
+  -fx-border-style: solid;
+  -fx-border-insets: 2;
+  -fx-border-color: rgb(0, 0, 0);
+}
+
+NameHeaderPane {
+  -fx-border-style: solid;
+  -fx-border-insets: 2;
+  -fx-border-color: rgb(0, 0, 0);
+}
+
+.geneListHeaderPaneContainerLabel {
+  -fx-border-style: solid;
+  -fx-border-insets: 2;
+  -fx-border-color: lightgray;
+  -fx-alignment: center;
+}
+
+.geneListHeaderPane {
+  -fx-border-style: solid;
+  -fx-border-insets: 2;
+  -fx-border-color: gray;
+}
+
+.geneListHeaderPaneLabel {
+  -fx-alignment: center;
+  -fx-text-fill: blue;
+}
+
+TrackNamePane {
+  -fx-border-style: solid;
+  -fx-border-insets: 2;
+  -fx-border-color: black;
+}
+
+AttributePane {
+  -fx-border-style: solid;
+  -fx-border-insets: 2;
+  -fx-border-color: rgb(102, 102, 102);
+}
+
+TrackScrollPane {
+  -fx-border-style: solid;
+  -fx-border-insets: 2;
+  -fx-border-color: rgb(102, 102, 102);
+}

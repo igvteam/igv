@@ -25,28 +25,18 @@
 package org.broad.igv.ui.javafx.panel;
 
 import javafx.scene.control.ScrollPane;
-import org.apache.log4j.Logger;
 
 // Intended as the rough equivalent of the IGVPanel class of the Swing UI, subclassed for handling the Header.  Work in progress.
 public class HeaderRow extends IGVRow<NameHeaderPane, AttributeHeaderPane, HeaderPaneContainer, ScrollPane> {
-    private static Logger log = Logger.getLogger(HeaderRow.class);
-    
     public HeaderRow(MainContentPane mainContentPane) {
         // TODO: determine correct header height setting
         double headerHeight = 140.0;
         this.prefHeightProperty().set(headerHeight);
         ScrollPane scrollPane = new ScrollPane(this);
+        scrollPane.setId("headerRowScrollPane");
         NameHeaderPane namePane = new NameHeaderPane();
         AttributeHeaderPane attributePane = new AttributeHeaderPane();
         HeaderPaneContainer headerPaneContainer = new HeaderPaneContainer();
         init(mainContentPane, namePane, attributePane, headerPaneContainer, scrollPane);
-
-        // TODO: move to CSS file
-        scrollPane.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(102, 102, 102)");
-        getNamePane().setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(0, 0, 0)");
-        getAttributePane().setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(0, 0, 0)");
-
-        // Wait to create the headerPaneContainer content until after layout & sizing is complete.
-        //headerPaneContainer.createHeaderPanes();
     }
 }

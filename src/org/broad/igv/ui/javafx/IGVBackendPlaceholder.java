@@ -54,7 +54,9 @@ public class IGVBackendPlaceholder {
         if (igvArgs.getGenomeId() != null) {
             String genomeId = igvArgs.getGenomeId();
             try {
-                genome = GenomeManager.getInstance().loadGenome(genomeId, null);
+                //genome = GenomeManager.getInstance().loadGenome(genomeId, null);
+                GenomeManager.getInstance().loadGenomeById(genomeId);
+                genome = GenomeManager.getInstance().getCurrentGenome();
             } catch (IOException e) {
                 log.error("Error loading genome: " + genomeId, e);
             }

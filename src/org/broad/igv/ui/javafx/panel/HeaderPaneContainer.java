@@ -72,7 +72,7 @@ public class HeaderPaneContainer extends BorderPane {
             String name = gl.getDisplayName();
             if (StringUtils.isNotBlank(name)) {
                 Label label = new Label(name);
-                label.setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: lightgray; -fx-alignment: center;");
+                label.getStyleClass().add("geneListHeaderPaneContainerLabel");
                 contentPane.prefHeightProperty().bind(prefHeightProperty().subtract(label.heightProperty()));
                 setTop(label);
             }

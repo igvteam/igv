@@ -41,9 +41,6 @@ public class TrackScrollPane extends ScrollPane {
         setFitToHeight(true);
         setFitToWidth(true);
 
-        // TODO: move to CSS file
-        setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(102, 102, 102)");
-
         // Mimic the SB policy of the Swing UI
         setHbarPolicy(ScrollBarPolicy.NEVER);
         setVbarPolicy(ScrollBarPolicy.ALWAYS);

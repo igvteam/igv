@@ -69,6 +69,7 @@ public class IGVToolBarManager implements IGVEventObserver {
         chromosomeSelector = new ChromosomeComboBox(GenomeManager.getInstance().getCurrentGenome());
 
         goButton.setOnAction((event) -> searchByLocus(searchTextField.getText()));
+        goButton.setId("goButton");
         HBox jumpToPane = new HBox(3, searchTextField, goButton);
         jumpToPane.setAlignment(Pos.CENTER);
 

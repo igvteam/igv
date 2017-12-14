@@ -52,10 +52,6 @@ public class TrackRow extends IGVRow<TrackNamePane, AttributePane, DataPaneConta
         nullGroup.setDrawBorder(false);
         trackGroups = Collections.synchronizedList(new LinkedList<TrackGroup>());
         trackGroups.add(nullGroup);
-
-        // TODO: move to CSS file
-        getNamePane().setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: black");
-        getAttributePane().setStyle("-fx-border-style: solid; -fx-border-insets: 2; -fx-border-color: rgb(102, 102, 102)");
     }
 
     public String getName() {
