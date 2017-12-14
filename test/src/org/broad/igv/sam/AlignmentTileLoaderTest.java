@@ -107,7 +107,7 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
 
             AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions(true, 50, actMaxDepth);
 
-            AlignmentTileLoader.AlignmentTile tile = loader.loadTile(sequence, start, end, null, downsampleOptions, null, null, null, true);
+            AlignmentTileLoader.AlignmentTile tile = loader.loadTile(sequence, start, end, null, downsampleOptions, null, null, null);
             List<Alignment> alignments = tile.getAlignments();
             int count = 0;
             Map<String, Integer> pairedReads = new HashMap<String, Integer>();

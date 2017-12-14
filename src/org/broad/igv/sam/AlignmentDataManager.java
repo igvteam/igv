@@ -41,6 +41,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.IntArrayList;
 
 import java.io.IOException;
 import java.util.*;
@@ -57,7 +58,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
 
-    private Collection<AlignmentInterval> intervalCache;
+    private List<AlignmentInterval> intervalCache;
     private ResourceLocator locator;
     private HashMap<String, String> chrMappings = new HashMap();
     private Set<Range> isLoading = new HashSet<>();
@@ -66,7 +67,6 @@ public class AlignmentDataManager implements IGVEventObserver {
     private Map<String, PEStats> peStats;
     private SpliceJunctionHelper.LoadOptions loadOptions;
     private Object loadLock = new Object();
-    private boolean showAlignments = true;
     private AlignmentTrack.ExperimentType inferredExperimentType;
     private Set<Track> subscribedTracks;
 
@@ -86,21 +86,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     public void receiveEvent(Object event) {
 
         if (event instanceof FrameManager.ChangeEvent) {
-
-            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).getFrames();
-            Collection<AlignmentInterval> newCache = Collections.synchronizedList(new ArrayList<>());
-
-            // Trim cache to include only current frames
-
-            for (ReferenceFrame f : frames) {
-                AlignmentInterval i = getLoadedInterval(f);
-                if (i != null) {
-                    newCache.add(i);
-                }
-            }
-            intervalCache = newCache;
-
-
+            trimCache();
         } else if (event instanceof RefreshEvent) {
             clear();
         } else {
@@ -206,7 +192,6 @@ public class AlignmentDataManager implements IGVEventObserver {
             }
         }
 
-
         return null;
     }
 
@@ -306,7 +291,11 @@ public class AlignmentDataManager implements IGVEventObserver {
 
             log.debug("Loading alignments: " + chr + ":" + adjustedStart + "-" + adjustedEnd + " for " + AlignmentDataManager.this);
 
+
             AlignmentInterval loadedInterval = loadInterval(chr, adjustedStart, adjustedEnd, renderOptions);
+
+            trimCache();
+
             intervalCache.add(loadedInterval);
 
             packAlignments(renderOptions);
@@ -314,6 +303,34 @@ public class AlignmentDataManager implements IGVEventObserver {
 
             //  IGVEventBus.getInstance().post(new DataLoadedEvent(referenceFrame));
 
+        }
+    }
+
+
+    /**
+     * Remove out-of-view intervals from the cache.  This is O(N) where N = #frames X #intervals.   It is assumed
+     * that N is small
+     */
+    private synchronized void trimCache() {
+
+        IntArrayList toRemove = new IntArrayList();
+
+        for (int i = 0; i < intervalCache.size(); i++) {
+            boolean keep = false;
+            AlignmentInterval interval = intervalCache.get(i);
+            for (ReferenceFrame frame : FrameManager.getFrames()) {
+                if (interval.contains(frame.getCurrentRange())) {
+                    keep = true;
+                    break;
+                }
+            }
+            if (!keep) {
+                toRemove.add(i);
+            }
+        }
+
+        for (int i : toRemove.toArray()) {
+            intervalCache.remove(i);
         }
     }
 
@@ -332,7 +349,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         ReadStats readStats = new ReadStats();
 
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
-                downsampleOptions, readStats, peStats, bisulfiteContext, showAlignments);
+                downsampleOptions, readStats, peStats, bisulfiteContext);
 //
         if (inferredExperimentType == null && !Globals.VERSION.contains("2.4")) {
             readStats.compute();
@@ -474,19 +491,6 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public void alleleThresholdChanged() {
         coverageTrack.setSnpThreshold(PreferencesManager.getPreferences().getAsFloat(SAM_ALLELE_THRESHOLD));
-    }
-
-    public void setShowAlignments(boolean showAlignments) {
-        if (showAlignments != this.showAlignments) {
-            this.showAlignments = showAlignments;
-            if (showAlignments == false) {
-                dumpAlignments();
-            } else {
-                // Change from false => true,  need to reload
-                intervalCache.clear();
-            }
-        }
-
     }
 
     public boolean isTenX() {
