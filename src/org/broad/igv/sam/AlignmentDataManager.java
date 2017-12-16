@@ -313,24 +313,15 @@ public class AlignmentDataManager implements IGVEventObserver {
      */
     private synchronized void trimCache() {
 
-        IntArrayList toRemove = new IntArrayList();
-
-        for (int i = 0; i < intervalCache.size(); i++) {
-            boolean keep = false;
-            AlignmentInterval interval = intervalCache.get(i);
+       Iterator<AlignmentInterval> iter =  intervalCache.iterator();
+        while(iter.hasNext()) {
+            AlignmentInterval interval = iter.next();
             for (ReferenceFrame frame : FrameManager.getFrames()) {
-                if (interval.contains(frame.getCurrentRange())) {
-                    keep = true;
-                    break;
+                if (!interval.contains(frame.getCurrentRange())) {
+                    iter.remove();
                 }
             }
-            if (!keep) {
-                toRemove.add(i);
-            }
-        }
 
-        for (int i : toRemove.toArray()) {
-            intervalCache.remove(i);
         }
     }
 
