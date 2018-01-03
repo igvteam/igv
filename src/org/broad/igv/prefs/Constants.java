@@ -7,7 +7,6 @@ import java.util.Arrays;
  */
 final public class Constants {
 
-
     private Constants() {}  // Prevent instantiation
 
     // Preference sets
@@ -247,6 +246,10 @@ final public class Constants {
 
     // Letter of support dialog
     public static final String SHOW_LOS = "showLOS";
+
+    // Experimental
+    public static final String SCORE_VARIANTS = "SCORE_VARIANTS";
+
 
     /**
      * List of keys that affect the alignments loaded.  This list is used to trigger a reload, if required.

@@ -142,6 +142,7 @@ CRAM.CACHE_SEQUENCES	Cache reference sequences	boolean	TRUE
 CRAM.CACHE_SIZE	Cache size (MB)	integer	500
 
 #Proxy
+PROXY.DISABLE_CHECK	Disable check for system proxy	boolean	FALSE
 PROXY.USE	Use proxy	boolean	FALSE
 PROXY.HOST	Proxy host	string	null
 PROXY.PORT	Proxy port	integer	0
@@ -168,6 +169,8 @@ TOOLTIP.DISMISS_DELAY	Tooltip dismiss delay (ms)	integer	60000
 ---
 
 #Hidden
+SCORE_VARIANTS	FALSE
+
 SAM.COLOR_BY	UNEXPECTED_PAIR
 SAM.AUTOSORT	FALSE
 SAM.SHADE_CENTER	TRUE

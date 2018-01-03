@@ -121,8 +121,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
                            SpliceJunctionHelper spliceJunctionHelper,
                            AlignmentDataManager.DownsampleOptions downsampleOptions,
                            ReadStats readStats, Map<String, PEStats> peStats,
-                           AlignmentTrack.BisulfiteContext bisulfiteContext,
-                           boolean showAlignments) {
+                           AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
         boolean filterFailedReads = prefMgr.getAsBoolean(SAM_FILTER_FAILED_READS);
@@ -134,7 +133,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
 
         boolean reducedMemory = prefMgr.getAsBoolean(SAM_REDUCED_MEMORY_MODE);
 
-        AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext, showAlignments, reducedMemory);
+        AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext, reducedMemory);
 
 
         //assert (tiles.size() > 0);
@@ -392,7 +391,6 @@ public class AlignmentTileLoader implements IGVEventObserver {
         private static final Random RAND = new Random();
 
         private boolean downsample;
-        private boolean showAlignments;
         private int samplingWindowSize;
         private int samplingDepth;
 
@@ -417,14 +415,12 @@ public class AlignmentTileLoader implements IGVEventObserver {
                       SpliceJunctionHelper spliceJunctionHelper,
                       AlignmentDataManager.DownsampleOptions downsampleOptions,
                       AlignmentTrack.BisulfiteContext bisulfiteContext,
-                      boolean showAlignments,
                       boolean reducedMemory) {
             this.start = start;
             this.end = end;
             this.downsampledIntervals = new ArrayList<DownsampledInterval>();
 
             this.indelLimit = PreferencesManager.getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
-            this.showAlignments = showAlignments;
 
             long seed = System.currentTimeMillis();
             //System.out.println("seed: " + seed);
@@ -485,19 +481,17 @@ public class AlignmentTileLoader implements IGVEventObserver {
                 spliceJunctionHelper.addAlignment(alignment);
             }
 
-            if (showAlignments) {
-                if (downsample) {
-                    final int alignmentStart = alignment.getAlignmentStart();
-                    int currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;
-                    if (currentSamplingWindowStart < 0 || alignmentStart >= currentSamplingBucketEnd) {
-                        setCurrentSamplingBucket(alignmentStart);
-                    }
-
-                    attemptAddRecordDownsampled(alignment);
-
-                } else {
-                    alignments.add(alignment);
+            if (downsample) {
+                final int alignmentStart = alignment.getAlignmentStart();
+                int currentSamplingBucketEnd = currentSamplingWindowStart + samplingWindowSize;
+                if (currentSamplingWindowStart < 0 || alignmentStart >= currentSamplingBucketEnd) {
+                    setCurrentSamplingBucket(alignmentStart);
                 }
+
+                attemptAddRecordDownsampled(alignment);
+
+            } else {
+                alignments.add(alignment);
             }
 
             alignment.finish();

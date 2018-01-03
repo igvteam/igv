@@ -50,6 +50,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.*;
+import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.prefs.IGVPreferences;
@@ -60,6 +61,7 @@ import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionSelectionEvent;
 import org.broad.igv.session.*;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.WaitCursorManager.CursorToken;
 import org.broad.igv.ui.dnd.GhostGlassPane;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
@@ -80,7 +82,6 @@ import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 
 import static org.broad.igv.prefs.Constants.*;
-import static org.broad.igv.ui.WaitCursorManager.CursorToken;
 
 /**
  * Represents an IGV instance, consisting of a main window and associated model.
@@ -262,7 +263,7 @@ public class IGV implements IGVEventObserver {
         rootPane.setJMenuBar(menuBar);
         glassPane = rootPane.getGlassPane();
         glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        consumeEvents(glassPane);
+       // consumeEvents(glassPane);
 
         dNdGlassPane = new GhostGlassPane();
 
@@ -614,10 +615,10 @@ public class IGV implements IGVEventObserver {
     final public void doViewPreferences() {
 
         // 2.x releases -- swing editor
-        if(Globals.VERSION.contains("2.4")) {
-             PreferencesEditor dialog = new PreferencesEditor(this.mainFrame, true);
-             dialog.setVisible(true);
-        }  else {
+        if (Globals.VERSION.contains("2.4")) {
+            PreferencesEditor dialog = new PreferencesEditor(this.mainFrame, true);
+            dialog.setVisible(true);
+        } else {
             // 3.0 releases -- javafx
             try {
                 PreferenceEditorFX.open(this.mainFrame);
@@ -1117,6 +1118,11 @@ public class IGV implements IGVEventObserver {
     public void doRestoreSession(final String sessionPath,
                                  final String locus,
                                  final boolean merge) {
+
+        // check to see if any files in session file are on protected (oauth) server. If
+        // so, make sure user is logged into
+        // server before -proceeding
+        OAuthUtils.checkServerLogin(sessionPath);
 
         Runnable runnable = new Runnable() {
             public void run() {
@@ -1860,7 +1866,7 @@ public class IGV implements IGVEventObserver {
             }
         }
 
-        if(dispose) {
+        if (dispose) {
             for (Track t : tracksToRemove) {
                 t.dispose();
             }

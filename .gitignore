@@ -2,3 +2,4 @@
 .idea/workspace.xml
 *.jar
 igv.sh
+/out/

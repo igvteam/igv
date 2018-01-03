@@ -29,6 +29,8 @@ package org.broad.igv.sam;
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.util.collections.DoubleArrayList;
 
+import java.util.Random;
+
 /**
  * Created by jrobinso on 12/20/16.
  * <p>
@@ -49,6 +51,8 @@ public class ReadStats {
     public double medianRefToReadRatio = 0;
     public double fracReadsWithIndels;
     public double fracReadsWithNs;
+
+    private static final Random RAND = new Random();
 
 
     public void addAlignment(Alignment alignment) {
@@ -76,13 +80,14 @@ public class ReadStats {
     public void compute() {
 
         if (readLengths.size() > 0) {
-            medianReadLength = StatUtils.percentile(readLengths.toArray(), 50);
-            readLengthStdDev = Math.sqrt(StatUtils.variance(readLengths.toArray()));
+            final double[] downsampled = downsample(readLengths, 10000);
+            medianReadLength = StatUtils.percentile(downsampled, 50);
+            readLengthStdDev = Math.sqrt(StatUtils.variance(downsampled));
         }
 
 
         if (refToReadRatios.size() > 0) {
-            medianRefToReadRatio = StatUtils.percentile(refToReadRatios.toArray(), 50);
+            medianRefToReadRatio = StatUtils.percentile(downsample(refToReadRatios, 10000), 50);
         }
 
         fracReadsWithIndels = ((double) indelCount) / readCount;
@@ -96,6 +101,28 @@ public class ReadStats {
             if (charArray[i] == c) return true;
         }
         return false;
+    }
+
+
+    private double[] downsample(DoubleArrayList list, int size) {
+
+        if (list.size() < size) return list.toArray();
+
+        else {
+            double[] ds = list.toArray(0, size);
+
+            for (int i = size; i < list.size(); i++) {
+                double samplingProb = ((double) size) / (size + (i - size) + 1);
+                if (RAND.nextDouble() < samplingProb) {
+                    int idx = (int) (RAND.nextDouble() * (size - 1));
+                    ds[idx] = list.get(i);
+
+                }
+            }
+
+            return ds;
+        }
+
     }
 
 

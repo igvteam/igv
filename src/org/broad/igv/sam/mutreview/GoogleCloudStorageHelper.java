@@ -1,11 +1,10 @@
 
 
-package org.broad.igv.google;
+package org.broad.igv.sam.mutreview;
 
 import com.google.gson.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.ga4gh.OAuthUtils;
-import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -16,8 +15,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Helper class for  Google Cloud Storage API
@@ -30,27 +27,38 @@ public class GoogleCloudStorageHelper {
     private static Logger log = Logger.getLogger(GoogleCloudStorageHelper.class);
 
 
-    public static void uploadJpeg(BufferedImage image) throws IOException {
+    public static void upload(BufferedImage image, VariantReviewMetadata metadata) throws IOException {
 
-        ByteArrayOutputStream stream = new ByteArrayOutputStream(2000000);
+        String filename = "test_" + metadata.userId + "_" + metadata.timestamp + "_" + metadata.score;
 
-        ImageIO.write(image, "jpg", stream);
+        String r1 = uploadJpeg(image, filename);
+        log.info(r1);
 
-        byte [] bytes = stream.toByteArray();
-
-        String response = doPost(bytes);
-
-        System.out.println(response);
+        String json = (new Gson()).toJson(metadata);
+        String r2 = uploadJson(json, filename);
+        log.info(r2);
 
     }
 
+    private static String uploadJpeg(BufferedImage image, String filename) throws IOException {
 
-    private static String doPost(byte [] bytes) throws IOException {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream(2000000);
+        ImageIO.write(image, "jpg", stream);
+        byte [] bytes = stream.toByteArray();
+        return doPost(bytes, "image/jpeg", filename + ".jpeg");
+    }
+
+    private static String uploadJson(String json, String filename) throws IOException {
+        return doPost(json.getBytes(), "text/plain", filename + ".json");
+    }
+
+
+    private static String doPost(byte [] bytes, String contentType, String filename) throws IOException {
 
         String token = OAuthUtils.getInstance().getAccessToken();
 
         String fullUrl = "https://www.googleapis.com/upload/storage/v1/b/igv-screenshots/o?uploadType=media&name=" +
-                "igvtest-" + System.currentTimeMillis();
+                filename;
 
 
         URL url = new URL(fullUrl);
@@ -68,7 +76,7 @@ public class GoogleCloudStorageHelper {
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Length", "" + bytes.length);
-            connection.setRequestProperty("Content-Type", "image/jpeg");
+            connection.setRequestProperty("Content-Type", contentType);
 
 
             if (token != null) {

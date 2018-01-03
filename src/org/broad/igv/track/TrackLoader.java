@@ -1172,14 +1172,7 @@ public class TrackLoader {
             newTracks.add(freqTrack);
         }
 
-        ContinuousColorScale colorScale = null;
-        if (props != null) {
-            Color maxColor = props.getColor();
-            Color minColor = props.getAltColor();
-            if (maxColor != null && minColor != null) {
-                colorScale = IGVPreferences.getDefaultColorScale(minColor, Color.white, maxColor);
-            }
-        }
+
 
         for (String trackName : ds.getSampleNames()) {
             String trackId = path + "_" + trackName;
@@ -1190,9 +1183,6 @@ public class TrackLoader {
 
             if (props != null) {
                 track.setProperties(props);
-            }
-            if (colorScale != null) {
-                track.setColorScale(colorScale);
             }
 
             newTracks.add(track);

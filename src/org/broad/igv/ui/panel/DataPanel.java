@@ -90,7 +90,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     private DataPanelPainter painter;
     private String tooltipText = "";
 
-    private  boolean loadInProgress = false;
+    private boolean loadInProgress = false;
 
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
         init();
@@ -107,18 +107,17 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         ToolTipManager.sharedInstance().registerComponent(this);
 
 
-
-    //    IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
+        //    IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
     }
 
     @Override
     public void receiveEvent(Object event) {
 
-        if(event instanceof  DataLoadedEvent) {
-           if(((DataLoadedEvent) event).referenceFrame == frame) {
-               log.info("Data loaded repaint " + frame);
-               repaint();
-           }
+        if (event instanceof DataLoadedEvent) {
+            if (((DataLoadedEvent) event).referenceFrame == frame) {
+                log.info("Data loaded repaint " + frame);
+                repaint();
+            }
         }
     }
 
@@ -156,7 +155,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                     loadInProgress = true;
                     load();
                 }
-                if(!Globals.isBatch()) return;
+                if (!Globals.isBatch()) return;
             }
 
             Rectangle clipBounds = g.getClipBounds();
@@ -226,7 +225,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                     track.load(frame);
                 };
 
-                if(Globals.isBatch()) {
+                if (Globals.isBatch()) {
                     runnable.run();
                     batchLoaded = true;
                 } else {
@@ -236,16 +235,26 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
 
         if (futures.size() > 0 || batchLoaded) {
+
             final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
+
             WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-            CompletableFuture.allOf(futureArray).thenRun(() -> {
 
-                //log.info("Call repaint " + dataPanel.hashCode() + " " + dataPanel.allTracksLoaded());
-                loadInProgress = false;
-                WaitCursorManager.removeWaitCursor(token);
-                repaint();
+            CompletableFuture.allOf(futureArray)
+                    .thenRun(() -> {
+                        //log.info("Call repaint " + dataPanel.hashCode() + " " + dataPanel.allTracksLoaded());
+                        loadInProgress = false;
+                        WaitCursorManager.removeWaitCursor(token);
+                        repaint();
 
-            });
+                    })
+                    .exceptionally(e -> {
+                        log.error("Error: ", e);
+                        loadInProgress = false;
+                        WaitCursorManager.removeWaitCursor(token);
+                        return null;
+                    });
+
         }
     }
 
@@ -742,7 +751,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                     e.consume();
                 } else if ((e.isMetaDown() || e.isControlDown()) && track != null) {
                     TrackClickEvent te = new TrackClickEvent(e, frame);
-                    if(track.handleDataClick(te)) {
+                    if (track.handleDataClick(te)) {
                         e.consume();
                         return;
                     }

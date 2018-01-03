@@ -40,6 +40,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.sam.mutreview.VariantReviewAction;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SubtlyImportant;
@@ -122,7 +123,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private CoverageTrack coverageTrack;
     private SpliceJunctionTrack spliceJunctionTrack;
 
-    private RenderOptions renderOptions = new RenderOptions(ExperimentType.OTHER);
+    RenderOptions renderOptions = new RenderOptions(ExperimentType.OTHER);
 
 
     private int expandedHeight = 14;
@@ -132,7 +133,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private int minHeight = 50;
     private AlignmentDataManager dataManager;
-    private Rectangle alignmentsRect;
+    public Rectangle alignmentsRect;
     private Rectangle downsampleRect;
     private Rectangle insertionRect;
     private ColorTable readNamePalette;
@@ -312,16 +313,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
-        this.coverageTrack.setRenderOptions(this.renderOptions);
     }
 
     @Override
     public void setVisible(boolean visible) {
         if (visible != this.isVisible()) {
             super.setVisible(visible);
-            if (dataManager != null) {
-                dataManager.setShowAlignments(visible);
-            }
+
             if (IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
         }
     }
@@ -331,16 +329,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         this.renderOptions = renderOptions;
 
-        if (this.coverageTrack != null) {
-            this.coverageTrack.setRenderOptions(this.renderOptions);
-        }
-        if (this.spliceJunctionTrack != null) {
-            this.spliceJunctionTrack.setRenderOptions(this.renderOptions);
-        }
     }
 
     @SubtlyImportant
-    private RenderOptions getRenderOptions() {
+    RenderOptions getRenderOptions() {
         return this.renderOptions;
     }
 
@@ -558,6 +550,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
 
         groupNames.clear();
+
+
+        RenderOptions renderOptions = PreferencesManager.forceDefaults ? new RenderOptions() : this.renderOptions;
 
         //log.debug("Render features");
         PackedAlignments groups = dataManager.getGroups(context, renderOptions);
@@ -1496,15 +1491,24 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             addShowItems();
 
 
-            if (PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
+            if (getPreferences().get(Constants.EXTVIEW_URL) != null) {
                 addSeparator();
                 addExtViewItem(e);
             }
 
-            addScoreMutationItem(e);
+
+            // if variant review
+            if (PreferencesManager.getPreferences().getAsBoolean(Constants.SCORE_VARIANTS)) {
+                addSeparator();
+                JMenuItem mi = new JMenuItem("Score variant");
+                mi.addActionListener(e13 -> VariantReviewAction.scoreMutationItem(dataPanel, AlignmentTrack.this, e));
+                add(mi);
+            }
 
 
         }
+
+
 
         public JMenuItem addExpandInsertions() {
 
@@ -2244,24 +2248,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
         }
 
-        public void addScoreMutationItem(final TrackClickEvent te) {
-            // Change track height by attribute
-            final JMenuItem item = new JMenuItem("Score mutation");
-            add(item);
 
-
-            item.addActionListener(aEvt -> {
-                CommandExecutor cmdExe = new CommandExecutor();
-                cmdExe.setSleepInterval("0");
-
-                int chrPosition = (int) Math.round(te.getChromosomePosition()) + 1;  // Convert to "1" base coords
-                System.out.println(chrPosition);
-                cmdExe.execute("goto " + te.getFrame().getChrName() + ":" + chrPosition);
-                cmdExe.execute("sort base " + chrPosition);
-
-            });
-
-        }
 
     }
 

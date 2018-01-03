@@ -31,12 +31,28 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.batch.CommandExecutor;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.AlignmentCounts;
+import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.mutreview.BaseCounts;
+import org.broad.igv.sam.mutreview.VariantReviewAction;
+import org.broad.igv.sam.mutreview.VariantReviewFX;
+import org.broad.igv.sam.mutreview.VariantReviewMetadata;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.SnapshotUtilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -44,9 +60,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -211,7 +230,7 @@ abstract public class TrackPanelComponent extends JPanel {
             }
         }
 
-        if(menu.includeStandardItems()) {
+        if (menu.includeStandardItems()) {
 
             TrackMenuUtils.addPluginItems(menu, selectedTracks, te);
 

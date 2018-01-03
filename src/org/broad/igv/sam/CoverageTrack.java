@@ -118,7 +118,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
      */
     private boolean globalAutoScale = true;
 
-    private AlignmentTrack.RenderOptions renderOptions = null;
 
     @SubtlyImportant
     public CoverageTrack() {
@@ -137,7 +136,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         if (track.dataSource != null) this.setDataSource(track.dataSource);
         this.snpThreshold = track.snpThreshold;
         this.prefs = track.prefs;
-        this.renderOptions = track.renderOptions;
     }
 
     public CoverageTrack(ResourceLocator locator, String name, AlignmentTrack alignmentTrack, Genome genome) {
@@ -174,17 +172,16 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
 
-        if (frame.getChrName().equals(Globals.CHR_ALL) ||  frame.getScale() > dataManager.getMinVisibleScale()) {
+        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > dataManager.getMinVisibleScale()) {
             return true;   // Nothing to paint
-     }
-        else {
+        } else {
             return dataManager.isLoaded(frame);
         }
     }
 
     @Override
     public void load(ReferenceFrame referenceFrame) {
-        dataManager.load(referenceFrame, renderOptions, true);
+        dataManager.load(referenceFrame, alignmentTrack.renderOptions, true);
     }
 
 
@@ -200,15 +197,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         return showReference;
     }
 
-
-    public void setRenderOptions(AlignmentTrack.RenderOptions renderOptions) {
-        this.renderOptions = renderOptions;
-    }
-
-    AlignmentTrack.RenderOptions getRenderOptions() {
-        return this.renderOptions;
-    }
-
     public boolean isRemoved() {
         return removed;
     }
@@ -217,7 +205,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     public void dispose() {
         super.dispose();
         removed = true;
-        if(dataManager != null) {
+        if (dataManager != null) {
             dataManager.unsubscribe(this);
         }
         dataManager = null;
@@ -258,7 +246,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
-                dataManager.load(context.getReferenceFrame(), renderOptions, true);
+                dataManager.load(context.getReferenceFrame(), alignmentTrack.renderOptions, true);
                 interval = dataManager.getLoadedInterval(context.getReferenceFrame());
             }
             if (interval != null) {
@@ -303,13 +291,12 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             }
             endIdx = Math.max(startIdx + 1, endIdx);
 
-            if(inViewScores.size() > 1) {
+            if (inViewScores.size() > 1) {
                 return startIdx == 0 && endIdx == inViewScores.size() - 1 ?
                         inViewScores :
                         inViewScores.subList(startIdx, endIdx);
-            }
-            else {
-                return  inViewScores;
+            } else {
+                return inViewScores;
             }
         }
         return inViewScores;
@@ -399,6 +386,15 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         return buf.toString();
     }
 
+    public AlignmentCounts getCounts(String chr, double position, ReferenceFrame frame) {
+        AlignmentInterval interval = dataManager.getLoadedInterval(frame);
+        if (interval != null && interval.contains(chr, (int) position, (int) position)) {
+            return interval.getCounts();
+        } else {
+            return null;
+        }
+    }
+
     private String getPrecomputedValueString(String chr, double position, ReferenceFrame frame) {
 
         if (dataSource == null) {
@@ -476,7 +472,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             final double colorScaleMax = getColorScale().getMaximum();
             final double scale = context.getScale();
 
-            boolean bisulfiteMode = getRenderOptions().getColorOption() == AlignmentTrack.ColorOption.BISULFITE;
+            boolean bisulfiteMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BISULFITE;
 
 
             // First pass, coverage
@@ -936,7 +932,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
                         public void run() {
                             setVisible(false);
-                            if(IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
+                            if (IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
 
                         }
                     });

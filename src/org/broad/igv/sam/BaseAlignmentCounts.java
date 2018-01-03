@@ -199,8 +199,8 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         }
 
         return buf.toString();
-
     }
+
 
     /**
      * Return true if the mismatched (with respect to ref) read bases at the given position exceed the threshold.
