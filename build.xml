@@ -28,8 +28,9 @@
 
     <property name="jar.name" value="igv.jar"/>
     <property name="main-class" value="org.broad.igv.ui.javafx.MainApplication"/>
+    <property name="swing-main-class" value="org.broad.igv.ui.Main"/>
 
-    <!-- Source and lib directories -->
+	<!-- Source and lib directories -->
     <property name="src.dir" value="${basedir}/src/"/>
     <property name="lib.dir" value="${basedir}/lib/"/>
     <property name="testsrc.dir" value="${basedir}/test/src"/>
@@ -220,6 +221,7 @@
 
         <classfileset dir="${tmp.dir}" id="files">
             <root classname="${main-class}"/>
+            <root classname="${swing-main-class}"/>
         </classfileset>
 
         <property name="class-path" value="${batik-codec-finame} ${goby-io-finame}"/>
