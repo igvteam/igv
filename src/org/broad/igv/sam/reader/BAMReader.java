@@ -30,6 +30,7 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.sam.cram.IGVReferenceSource;
@@ -185,6 +186,11 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     private String getExplicitIndexPath(ResourceLocator locator) {
         String p = locator.getPath().toLowerCase();
         String idx = locator.getIndexPath();
+
+        if (idx != null && idx.startsWith("gs://")) {
+            idx = GoogleUtils.translateGoogleCloudURL(idx);
+        }
+
         if (idx == null && (p.startsWith("http://") || p.startsWith("https://"))) {
             try {
                 URL url = new URL(locator.getPath());
