@@ -24,6 +24,10 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
+import javafx.event.EventHandler;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.javafx.ResizableCanvas;
@@ -41,29 +45,34 @@ public class DataPane extends ResizableCanvas {
     public DataPane(ReferenceFrame frame, DataPaneContainer parent) {
         this.frame = frame;
         this.parent = parent;
+        init();
+        render();
     }
 
     public ReferenceFrame getFrame() {
         return frame;
     }
 
-    // *** The following methods below this point copied over from TrackPanel as the functionality is the same. ***
 
-    public boolean allTracksLoaded() {
-        return true;
-        // TODO: port to JavaFX
-//        return parent.getTrackGroups().stream().
-//                filter(TrackGroup::isVisible).
-//                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
-//                allMatch(track -> track.isReadyToPaint(frame));
+    private void init() {
+
+        this.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                render();
+            }
+        });
+
+    }
+
+    public void render() {
+        GraphicsContext gc = getCanvas().getGraphicsContext2D();
+
+        gc.setFill(Color.BLUE);
+        gc.fillRect(75,75,100,100);
     }
 
 
-    public List<Track> visibleTracks() {
-        return parent.getTrackGroups().stream().
-                filter(TrackGroup::isVisible).
-                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
-                collect(Collectors.toList());
-    }
+
 
 }
