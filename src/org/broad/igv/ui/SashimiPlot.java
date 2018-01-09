@@ -119,7 +119,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             AlignmentDataManager dataManager = alignmentTrack.getDataManager();
 
             SpliceJunctionTrack spliceJunctionTrack =
-                    new SpliceJunctionTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, null, SpliceJunctionTrack.StrandOption.COMBINE);
+                    new SpliceJunctionTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, alignmentTrack, SpliceJunctionTrack.StrandOption.COMBINE);
             // Override expand/collpase setting -- expanded sashimi plots make no sense
             spliceJunctionTrack.setDisplayMode(Track.DisplayMode.COLLAPSED);
 
