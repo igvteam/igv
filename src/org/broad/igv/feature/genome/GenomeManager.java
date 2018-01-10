@@ -161,17 +161,17 @@ public class GenomeManager {
 
             final ProgressMonitor[] monitor = {new ProgressMonitor()};
             final ProgressBar.ProgressDialog[] progressDialog = new ProgressBar.ProgressDialog[1];
-            UIUtilities.invokeAndWaitOnEventThread(() -> {
-                progressDialog[0] = ProgressBar.showProgressDialog(mainFrame, "Loading Genome...", monitor[0], false);
-            });
+            //UIUtilities.invokeAndWaitOnEventThread(() -> {
+            //    progressDialog[0] = ProgressBar.showProgressDialog(mainFrame, "Loading Genome...", monitor[0], false);
+            //});
 
             try {
                 GenomeListItem item = genomeListManager.getGenomeListItem(genomeId);
                 loadGenome(item.getPath(), monitor[0]);
             } finally {
-                UIUtilities.invokeOnEventThread(() -> {
-                    progressDialog[0].setVisible(false);
-                });
+             //   UIUtilities.invokeOnEventThread(() -> {
+             //       progressDialog[0].setVisible(false);
+             //   });
             }
 
 
