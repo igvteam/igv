@@ -28,25 +28,28 @@ import javafx.event.EventHandler;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackGroup;
+
+import org.apache.log4j.Logger;
+import org.broad.igv.ui.javafx.JavaFXUIUtilities;
 import org.broad.igv.ui.javafx.ResizableCanvas;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 // Intended as the rough equivalent of the DataPanel class of the Swing UI.  Work in progress.
 public class DataPane extends ResizableCanvas {
-
+    private static Logger log = Logger.getLogger(DataPane.class);
+    
     private ReferenceFrame frame;
     private DataPaneContainer parent;
 
     public DataPane(ReferenceFrame frame, DataPaneContainer parent) {
         this.frame = frame;
+        JavaFXUIUtilities.bindWidthToProperty(this, frame.displayWidthProperty());
+
         this.parent = parent;
         init();
         render();
+        this.prefWidthProperty().addListener((observable, oldValue, newValue) -> render());
+        this.prefHeightProperty().addListener((observable, oldValue, newValue) -> render());
     }
 
     public ReferenceFrame getFrame() {

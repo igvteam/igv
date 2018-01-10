@@ -109,6 +109,10 @@ public class MainContentPane extends BorderPane {
             centerSplitPane.setDividerPositions(0.9);
         }
 
+        // For now, just setting a dummy height for the first one; fix this later when we get to dynamically
+        // adding TrackRows.
+        dataTrackRow.prefHeightProperty().set(200);
+        
         this.resetContent();
     }
 
@@ -130,8 +134,8 @@ public class MainContentPane extends BorderPane {
             centerSplitPane.getItems().add(trackScrollPane);
         }
 
-        // Probably need to deal with centerSplitPane divider positions here.
-
+        // TODO: need to deal with centerSplitPane divider positions and properly sizing new TrackRows here.        
+        
         return trackRow;
     }
     

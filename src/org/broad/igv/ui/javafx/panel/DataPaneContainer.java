@@ -28,6 +28,7 @@ import javafx.scene.layout.Pane;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.javafx.JavaFXUIUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
@@ -37,6 +38,8 @@ import java.util.*;
 // Note: Not dealing with DnD yet.
 public class DataPaneContainer extends Pane {
     private TrackRow trackRow = null;
+    private List<DataPane> dataPanes = new ArrayList<DataPane>();
+
 
     public DataPaneContainer(TrackRow trackRow) {
         this.trackRow = trackRow;
@@ -44,11 +47,14 @@ public class DataPaneContainer extends Pane {
     }
 
     public void createDataPanes() {
-        getChildren().removeAll();
+        getChildren().clear();
+        dataPanes.clear();
 
         for (ReferenceFrame f : FrameManager.getFrames()) {
             if (f.isVisible()) {
                 DataPane dp = new DataPane(f, this);
+                dp.backgroundProperty().bind(backgroundProperty());
+                JavaFXUIUtilities.bindHeightToContainer(this, dp);
                 getChildren().add(dp);
             }
         }
