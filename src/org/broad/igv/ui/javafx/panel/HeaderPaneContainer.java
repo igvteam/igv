@@ -46,27 +46,27 @@ public class HeaderPaneContainer extends BorderPane {
     private HBox contentPane = new HBox();
     
     public HeaderPaneContainer() {
+        JavaFXUIUtilities.bindWidthToContainer(this, contentPane);
+        contentPane.prefHeightProperty().bind(prefHeightProperty());
+        setCenter(contentPane);
     }
 
     public void createHeaderPanes() {
-        getChildren().removeAll();
         headerPanes.clear();
-        contentPane.getChildren().removeAll();
+        contentPane.getChildren().clear();
+        log.info("contentPane has : " + contentPane.getChildren().size());
 
         List<ReferenceFrame> frames = FrameManager.getFrames();
         for (ReferenceFrame f : frames) {
             if (f.isVisible()) {
                 HeaderPane headerPane = new HeaderPane(f);
                 headerPanes.add(headerPane);
-//                JavaFXUIUtilities.bindWidthToProperty(headerPane, FrameManager.frameDisplayWidthProperty());
                 headerPane.backgroundProperty().bind(backgroundProperty());
                 JavaFXUIUtilities.bindHeightToContainer(this, headerPane);
                 contentPane.getChildren().add(headerPane);
             }
         }
-        JavaFXUIUtilities.bindWidthToContainer(this, contentPane);
 
-        contentPane.prefHeightProperty().bind(prefHeightProperty());
         if (FrameManager.isGeneListMode()) {
             GeneList gl = IGVBackendPlaceholder.getCurrentGeneList();
             String name = gl.getDisplayName();
@@ -77,8 +77,6 @@ public class HeaderPaneContainer extends BorderPane {
                 setTop(label);
             }
         }
-
-        setCenter(contentPane);
     }
 
     public DoubleProperty frameSpacingProperty() {

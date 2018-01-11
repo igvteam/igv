@@ -309,9 +309,9 @@ public class FrameManager implements IGVEventObserver {
             // Not fully dealing with Session for now.
             Session.GeneListMode mode = IGVBackendPlaceholder.getGeneListMode();
             if (mode == Session.GeneListMode.NORMAL) {
-                double framePlusSpacingWidth = (frameCount - 1) * gap;
+                double totalSpacingWidth = (frameCount - 1) * gap;
                 for (ReferenceFrame frame : frames) {
-                    frame.displayWidthProperty().bind(totalDisplayWidthProperty.subtract(framePlusSpacingWidth).divide(frameCount));
+                    frame.displayWidthProperty().bind(totalDisplayWidthProperty.subtract(totalSpacingWidth).divide(frameCount));
                 }
             } else {
                 for (ReferenceFrame frame : frames) {
