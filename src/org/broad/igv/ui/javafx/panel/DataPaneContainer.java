@@ -24,7 +24,8 @@
  */
 package org.broad.igv.ui.javafx.panel;
 
-import javafx.scene.layout.Pane;
+import javafx.beans.property.DoubleProperty;
+import javafx.scene.layout.HBox;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -36,7 +37,7 @@ import java.util.*;
 
 // Intended as the rough equivalent of the DataPanelContainer class of the Swing UI.  Work in progress.
 // Note: Not dealing with DnD yet.
-public class DataPaneContainer extends Pane {
+public class DataPaneContainer extends HBox {
     private TrackRow trackRow = null;
     private List<DataPane> dataPanes = new ArrayList<DataPane>();
 
@@ -58,6 +59,10 @@ public class DataPaneContainer extends Pane {
                 getChildren().add(dp);
             }
         }
+    }
+
+    public DoubleProperty frameSpacingProperty() {
+        return spacingProperty();
     }
 
     public Collection<TrackGroup> getTrackGroups() {

@@ -170,12 +170,14 @@ public class MainContentPane extends BorderPane {
 
     public void resetContent() {
         // Incomplete implementation for now
-        HeaderPaneContainer headerContentContainer = headerRow.getContentContainer();
-        FrameManager.totalDisplayWidthProperty().bind(headerContentContainer.prefWidthProperty());
-        headerContentContainer.frameSpacingProperty().bind(FrameManager.frameSpacingProperty());
+        HeaderPaneContainer headerPaneContainer = headerRow.getContentContainer();
+        DataPaneContainer dataPaneContainer = dataTrackRow.getContentContainer();
+        FrameManager.totalDisplayWidthProperty().bind(headerPaneContainer.prefWidthProperty());
+        headerPaneContainer.frameSpacingProperty().bind(FrameManager.frameSpacingProperty());
+        dataPaneContainer.frameSpacingProperty().bind(FrameManager.frameSpacingProperty());
         FrameManager.computeFrameBounds();
-        headerContentContainer.createHeaderPanes();
-
+        headerPaneContainer.createHeaderPanes();
+        dataPaneContainer.createDataPanes();
         // TODO: deal with Tracks, etc.
     }
     

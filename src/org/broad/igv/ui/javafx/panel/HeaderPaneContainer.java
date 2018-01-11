@@ -54,7 +54,6 @@ public class HeaderPaneContainer extends BorderPane {
     public void createHeaderPanes() {
         headerPanes.clear();
         contentPane.getChildren().clear();
-        log.info("contentPane has : " + contentPane.getChildren().size());
 
         List<ReferenceFrame> frames = FrameManager.getFrames();
         for (ReferenceFrame f : frames) {
@@ -81,6 +80,5 @@ public class HeaderPaneContainer extends BorderPane {
 
     public DoubleProperty frameSpacingProperty() {
         return contentPane.spacingProperty();
-
     }
 }
