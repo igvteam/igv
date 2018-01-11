@@ -55,6 +55,7 @@ import org.w3c.dom.Node;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -102,8 +103,10 @@ public abstract class AbstractTrack implements Track {
 
     @XmlAttribute
     private String id;
+
     @XmlAttribute
     private String name;
+
     private String url;
     private boolean itemRGB = true;
 
@@ -129,6 +132,7 @@ public abstract class AbstractTrack implements Track {
 
     @XmlAttribute
     private boolean visible = true;
+
     @XmlAttribute
     private boolean sortable = true;
 
@@ -137,7 +141,9 @@ public abstract class AbstractTrack implements Track {
     boolean drawYLine = false;
     float yLine = 0;
 
-    // Map to store attributes specific to this track.  Attributes shared by multiple
+    // Map to store attributes specific to this track.
+    //@XmlElement(name = "Attributes")
+    //@XmlJavaTypeAdapter(MapAdapter.class)
     private Map<String, String> attributes = new HashMap();
 
     // Scale for heatmaps
@@ -149,6 +155,9 @@ public abstract class AbstractTrack implements Track {
     //Not applicable to all tracks.
     @XmlAttribute
     protected boolean autoScale;
+
+    @XmlAttribute
+    String autoscaleGroup;
 
     @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
     @XmlAttribute(name = "color")
@@ -364,13 +373,23 @@ public abstract class AbstractTrack implements Track {
      */
     public void setAttributeValue(String name, String value) {
         String key = name.toUpperCase();
-        attributes.put(key, value);
+        if (key.equals(AttributeManager.GROUP_AUTOSCALE)) {
+            autoscaleGroup = value;
+        } else {
+            attributes.put(key, value);
+        }
         AttributeManager.getInstance().addAttribute(getSample(), name, value);
+
     }
 
     public void removeAttribute(String name) {
         String key = name.toUpperCase();
-        attributes.remove(key);
+        if (key.equals(AttributeManager.GROUP_AUTOSCALE)) {
+            autoscaleGroup = null;
+        }
+        else {
+            attributes.remove(key);
+        }
         AttributeManager.getInstance().removeAttribute(getSample(), name);
     }
 
@@ -387,17 +406,25 @@ public abstract class AbstractTrack implements Track {
      * @return
      */
     public String getAttributeValue(String attributeName) {
+
         String key = attributeName.toUpperCase();
-        String value = attributes.get(key);
-        final AttributeManager attributeManager = AttributeManager.getInstance();
-        if (value == null && getSample() != null) {
-            value = attributeManager.getAttribute(getSample(), key);
+        String value;
+        if (key.equals(AttributeManager.GROUP_AUTOSCALE)) {
+            value = autoscaleGroup;
         }
-        if (value == null) {
-            value = attributeManager.getAttribute(getName(), key);
-        }
-        if (value == null && getResourceLocator() != null && getResourceLocator().getPath() != null) {
-            value = attributeManager.getAttribute(getResourceLocator().getPath(), key);
+        else {
+            value = attributes.get(key);
+
+            final AttributeManager attributeManager = AttributeManager.getInstance();
+            if (value == null && getSample() != null) {
+                value = attributeManager.getAttribute(getSample(), key);
+            }
+            if (value == null) {
+                value = attributeManager.getAttribute(getName(), key);
+            }
+            if (value == null && getResourceLocator() != null && getResourceLocator().getPath() != null) {
+                value = attributeManager.getAttribute(getResourceLocator().getPath(), key);
+            }
         }
         return value;
     }
@@ -708,7 +735,7 @@ public abstract class AbstractTrack implements Track {
         }
         if (properties.getRendererClass() != null) {
             setRendererClass(properties.getRendererClass());
-            if(properties.getRendererClass() == PointsRenderer.class) {
+            if (properties.getRendererClass() == PointsRenderer.class) {
                 setWindowFunction(WindowFunction.none);
             }
         }
@@ -834,12 +861,12 @@ public abstract class AbstractTrack implements Track {
             setName(displayName);
         }
 
-        if(attributes.containsKey("visible")) {
+        if (attributes.containsKey("visible")) {
             this.setVisible(Boolean.parseBoolean(attributes.get("visible")));
         }
 
         // Set DataRange -- legacy (pre V3 sessions)
-        if(version <= 3){
+        if (version <= 3) {
             String scale = attributes.get(IGVSessionReader.SessionAttribute.SCALE.getText());
             if (scale != null) {
                 String[] axis = scale.split(",");
@@ -970,7 +997,7 @@ public abstract class AbstractTrack implements Track {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<html>" + getName());
 
-        if(resourceLocator != null && resourceLocator.getPath() != null) {
+        if (resourceLocator != null && resourceLocator.getPath() != null) {
             buffer.append("<br>" + this.resourceLocator.getPath());
         }
 
@@ -984,7 +1011,7 @@ public abstract class AbstractTrack implements Track {
      * @param chr
      * @param position
      * @param mouseX
-     *@param frame  @return
+     * @param frame    @return
      */
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
         return null;
@@ -1045,7 +1072,7 @@ public abstract class AbstractTrack implements Track {
 
     @Override
     public void dispose() {
-        if(this instanceof IGVEventObserver) {
+        if (this instanceof IGVEventObserver) {
             IGVEventBus.getInstance().unsubscribe((IGVEventObserver) this);
         }
     }
@@ -1063,8 +1090,72 @@ public abstract class AbstractTrack implements Track {
     }
 
     // Start of Roche-Tessella modification
-    public boolean getAutoScale()    {
+    public boolean getAutoScale() {
         return this.autoScale;
     }
     // End of Roche-Tessella modification
+
+
+    // JAXB adapters
+
+    static class Properties {
+
+        @XmlElement(name = "property")
+        private List<KeyValue> entries = new ArrayList<>();
+
+        List<KeyValue> entries() {
+            return Collections.unmodifiableList(entries);
+        }
+
+        void addEntry(KeyValue entry) {
+            entries.add(entry);
+        }
+    }
+
+
+    static class KeyValue {
+
+        @XmlElement(name = "key")
+        private String key;
+
+        @XmlElement(name = "value")
+        private String value;
+
+        public KeyValue() {
+        }
+
+        public KeyValue(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    static class MapAdapter extends XmlAdapter<Properties, Map<String, String>> {
+
+        @Override
+        public HashMap<String, String> unmarshal(Properties v) throws Exception {
+            HashMap<String, String> map = new HashMap<>();
+            for (KeyValue kv : v.entries()) {
+                map.put(kv.getKey(), kv.getValue());
+            }
+            return map;
+        }
+
+        @Override
+        public Properties marshal(Map<String, String> v) throws Exception {
+            Properties keyValues = new Properties();
+            for (Map.Entry<String, String> entry : v.entrySet()) {
+                keyValues.addEntry(new KeyValue(entry.getKey(), entry.getValue()));
+            }
+            return keyValues;
+        }
+    }
 }
