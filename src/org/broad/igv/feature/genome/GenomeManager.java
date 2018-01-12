@@ -165,7 +165,11 @@ public class GenomeManager {
 
             try {
                 GenomeListItem item = genomeListManager.getGenomeListItem(genomeId);
-                loadGenome(item.getPath(), monitor[0]);
+                if(item == null) {
+                    MessageUtils.showMessage("Could not locate genome with ID: " + genomeId);
+                } else {
+                    loadGenome(item.getPath(), monitor[0]);
+                }
             } finally {
                 UIUtilities.invokeOnEventThread(() -> {
                     progressDialog[0].setVisible(false);
