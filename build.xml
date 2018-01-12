@@ -27,7 +27,7 @@
     <import file="build_macros.xml"/>
 
     <property name="jar.name" value="igv.jar"/>
-    <property name="main-class" value="org.broad.igv.ui.javafx.MainApplication"/>
+    <property name="main-class" value="org.igv.ui.MainApplication"/>
     <property name="swing-main-class" value="org.broad.igv.ui.Main"/>
 
 	<!-- Source and lib directories -->

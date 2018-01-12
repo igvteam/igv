@@ -41,7 +41,7 @@ import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
-import org.broad.igv.ui.javafx.IGVBackendPlaceholder;
+import org.igv.ui.IGVBackendPlaceholder;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.util.ArrayList;
