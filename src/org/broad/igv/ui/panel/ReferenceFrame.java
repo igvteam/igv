@@ -186,6 +186,10 @@ public class ReferenceFrame {
         });
     }
 
+    public boolean isWholeGenomeView() {
+        return getChrName().equals(Globals.CHR_ALL);
+    }
+
     public boolean isVisible() {
         return visible;
     }

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2017 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,34 +28,23 @@ import javafx.event.EventHandler;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-
 import org.apache.log4j.Logger;
-import org.igv.ui.JavaFXUIUtilities;
-import org.igv.ui.ResizableCanvas;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 // Intended as the rough equivalent of the DataPanel class of the Swing UI.  Work in progress.
-public class DataPane extends ResizableCanvas {
+public class DataPane extends ContentPane {
     private static Logger log = Logger.getLogger(DataPane.class);
     
-    private ReferenceFrame frame;
     private DataPaneContainer parent;
 
     public DataPane(ReferenceFrame frame, DataPaneContainer parent) {
-        this.frame = frame;
-        JavaFXUIUtilities.bindWidthToProperty(this, frame.displayWidthProperty());
+        super(frame);
 
         this.parent = parent;
         init();
-        render();
-        this.prefWidthProperty().addListener((observable, oldValue, newValue) -> render());
-        this.prefHeightProperty().addListener((observable, oldValue, newValue) -> render());
-    }
 
-    public ReferenceFrame getFrame() {
-        return frame;
+        completeInitialization();
     }
-
 
     private void init() {
 
@@ -68,14 +57,10 @@ public class DataPane extends ResizableCanvas {
 
     }
 
-    public void render() {
+    protected void render() {
         GraphicsContext gc = getCanvas().getGraphicsContext2D();
 
         gc.setFill(Color.BLUE);
         gc.fillRect(75,75,100,100);
     }
-
-
-
-
 }

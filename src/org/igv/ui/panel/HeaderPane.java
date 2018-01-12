@@ -31,14 +31,16 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import org.apache.log4j.Logger;
-import org.igv.ui.IGVBackendPlaceholder;
-import org.igv.ui.JavaFXUIUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.igv.ui.IGVBackendPlaceholder;
+import org.igv.ui.JavaFXUIUtilities;
 
 // Intended as the rough equivalent of the HeaderPanel class of the Swing UI.  Work in progress.
 // TODO: Need to add equivalents of RegionOfInterestPanel, GeneListPanel, etc.
 // TODO: DnD handling
+// Note that HeaderPane does not itself subclass ContentPane but instead holds multiple children
+// which do.
 public class HeaderPane extends BorderPane {
     private static Logger log = Logger.getLogger(HeaderPane.class);
     

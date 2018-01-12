@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2017 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,19 +49,16 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
-import org.igv.ui.FontMetrics;
-import org.igv.ui.IGVBackendPlaceholder;
-import org.igv.ui.ResizableCanvas;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.igv.ui.FontMetrics;
+import org.igv.ui.IGVBackendPlaceholder;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//~--- non-JDK imports --------------------------------------------------------
-
-public class CytobandPane extends ResizableCanvas {
+public class CytobandPane extends ContentPane {
 
     private static double fontHeight = 10.0;
     private static final double bandHeight = 10.0;
@@ -76,7 +73,6 @@ public class CytobandPane extends ResizableCanvas {
     private double viewEnd;
 
     private double cytobandScale;
-    private ReferenceFrame frame;
     private List<Cytoband> currentCytobands;
     private Tooltip tooltip = new Tooltip("Click anywhere on the chromosome\nto center view at that location.");
             
@@ -87,8 +83,8 @@ public class CytobandPane extends ResizableCanvas {
     }
 
     public CytobandPane(ReferenceFrame frame, boolean mouseable) {
+        super(frame);
 
-        this.frame = frame;
         viewOrigin = frame.getOrigin();
         viewEnd = frame.getEnd();
 
@@ -101,26 +97,16 @@ public class CytobandPane extends ResizableCanvas {
         Tooltip.install(this, tooltip);
         this.setCursor(Cursor.HAND);
 
-        // Re-render on change of width/height or chromosome.  Note that the height is fixed and
-        // so that listener should never execute.  However, leaving this in place as a pattern
-        // and also because it may not be fixed in the long run.
-        frame.chromosomeNameProperty().addListener((observable, oldValue, newValue) -> render());
-        frame.zoomProperty().addListener((observable, oldValue, newValue) -> render());
-        this.prefWidthProperty().addListener((observable, oldValue, newValue) -> render());
-        this.prefHeightProperty().addListener((observable, oldValue, newValue) -> render());
-        
-        render();
-
         if (mouseable) {
             this.setOnMouseClicked((event) -> {
                 final double mouseX = event.getX();
                 final int clickCount = event.getClickCount();
                 double newLocation = cytobandScale * mouseX;
                 if (clickCount > 1) {
-                    final int newZoom = getReferenceFrame().getZoom() + 1;
-                    getReferenceFrame().doSetZoomCenter(newZoom, newLocation);
+                    final int newZoom = frame.getZoom() + 1;
+                    frame.doSetZoomCenter(newZoom, newLocation);
                 } else {
-                    getReferenceFrame().centerOnLocation(newLocation);
+                    frame.centerOnLocation(newLocation);
                 }
 
                 ViewChange result = ViewChange.Result();
@@ -128,9 +114,11 @@ public class CytobandPane extends ResizableCanvas {
                 IGVEventBus.getInstance().post(result);
             });
         }
+
+        completeInitialization();
     }
 
-    public void render() {
+    protected void render() {
         Canvas canvas = getCanvas();
         GraphicsContext graphicContext = canvas.getGraphicsContext2D();
         graphicContext.clearRect(0.0, 0.0, canvas.getWidth(), canvas.getHeight());
@@ -139,7 +127,7 @@ public class CytobandPane extends ResizableCanvas {
             return;
         }
 
-        Chromosome chromosome = getReferenceFrame().getChromosome();
+        Chromosome chromosome = frame.getChromosome();
         if (chromosome == null) {
             return;
         }
@@ -165,14 +153,14 @@ public class CytobandPane extends ResizableCanvas {
 
         draw(currentCytobands, graphicContext, cytoRect, frame);
 
-        int chromosomeLength = getReferenceFrame().getMaxCoordinate();
+        int chromosomeLength = frame.getMaxCoordinate();
         cytobandScale = ((double) chromosomeLength) / dataPanelWidth;
 
         // The test is true if we are zoomed in
-        if (getReferenceFrame().getZoom() > 0) {
+        if (frame.getZoom() > 0) {
 
-            double origin = isDragging ? viewOrigin : getReferenceFrame().getOrigin();
-            double end = isDragging ? viewEnd : getReferenceFrame().getEnd();
+            double origin = isDragging ? viewOrigin : frame.getOrigin();
+            double end = isDragging ? viewEnd : frame.getEnd();
 
             double pixelStart = origin / cytobandScale;
             double pixelEnd = end / cytobandScale;
@@ -191,11 +179,6 @@ public class CytobandPane extends ResizableCanvas {
             }
         }
     }
-
-    private ReferenceFrame getReferenceFrame() {
-        return frame;
-    }
-
 
     public void draw(List<Cytoband> data, GraphicsContext graphicsContext, Rectangle2D graphicRect, ReferenceFrame frame) {
 

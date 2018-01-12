@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2017 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,10 +47,9 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.FontMetrics;
 import org.igv.ui.IGVBackendPlaceholder;
-import org.igv.ui.ResizableCanvas;
-import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ import static org.broad.igv.prefs.Constants.DEFAULT_GENOME;
  * @author eby JavaFX port
  */
 // TODO: Not dealing with DnD for now.
-public class RulerPane extends ResizableCanvas {
+public class RulerPane extends ContentPane {
 
     private static Logger log = Logger.getLogger(RulerPane.class);
 
@@ -91,32 +90,18 @@ public class RulerPane extends ResizableCanvas {
     int dragStart;
     int dragEnd;
 
-    private ReferenceFrame frame;
-
     public RulerPane(ReferenceFrame frame) {
-        this.frame = frame;
+        super(frame);
         setMinHeight(80);
         setMaxHeight(80);
         setPrefHeight(80);
 
         Tooltip.install(this, tooltip);
 
-        // Re-render on change of width/height or chromosome.  Note that the height is fixed and
-        // so that listener should never execute.  However, leaving this in place as a pattern
-        // and also because it may not be fixed in the long run.
-        frame.chromosomeNameProperty().addListener((observable, oldValue, newValue) -> render());
-        frame.zoomProperty().addListener((observable, oldValue, newValue) -> render());
-        this.prefWidthProperty().addListener((observable, oldValue, newValue) -> render());
-        this.prefHeightProperty().addListener((observable, oldValue, newValue) -> render());
-
-        render();
+        completeInitialization();
     }
 
-    private boolean isWholeGenomeView() {
-        return frame.getChrName().equals(Globals.CHR_ALL);
-    }
-
-    public void render() {
+    protected void render() {
         resetTooltipHandlers();
 
         Canvas canvas = getCanvas();
@@ -129,7 +114,7 @@ public class RulerPane extends ResizableCanvas {
         graphicsContext.setFill(Color.BLACK);
         graphicsContext.setStroke(Color.BLACK);
 
-        if (isWholeGenomeView()) {
+        if (frame.isWholeGenomeView()) {
             drawChromosomeTicks(graphicsContext);
         } else {
 
@@ -327,7 +312,7 @@ public class RulerPane extends ResizableCanvas {
         // Comment/uncomment the setOnMouseEntered() and setOnMouseExited calls below to compare
         // with the cursor timing hack in IGVBackendPlaceholder.  These should be commented out
         // if that hack is active (and vice versa).
-        if (isWholeGenomeView()) {
+        if (frame.isWholeGenomeView()) {
             tooltip.setText(WHOLE_GENOME_TOOLTIP);
 //            this.setOnMouseEntered(wgViewMouseEnteredHandler);
             this.setOnMouseClicked(wgViewMouseClickedHandler);

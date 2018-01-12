@@ -31,10 +31,10 @@ import javafx.scene.layout.HBox;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.lists.GeneList;
-import org.igv.ui.IGVBackendPlaceholder;
-import org.igv.ui.JavaFXUIUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.igv.ui.IGVBackendPlaceholder;
+import org.igv.ui.JavaFXUIUtilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +61,6 @@ public class HeaderPaneContainer extends BorderPane {
                 HeaderPane headerPane = new HeaderPane(f);
                 headerPanes.add(headerPane);
                 headerPane.backgroundProperty().bind(backgroundProperty());
-                JavaFXUIUtilities.bindHeightToContainer(this, headerPane);
                 contentPane.getChildren().add(headerPane);
             }
         }
