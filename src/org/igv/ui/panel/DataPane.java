@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.igv.ui.panel;
 
-package org.broad.igv.exceptions;
+import javafx.event.EventHandler;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import org.apache.log4j.Logger;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
-/**
- * Author: nazaire
- * Date: Jul 8, 2009
- */
-public class DataLoadException extends RuntimeException {
+// Intended as the rough equivalent of the DataPanel class of the Swing UI.  Work in progress.
+public class DataPane extends ContentPane {
+    private static Logger log = Logger.getLogger(DataPane.class);
+    
+    private DataPaneContainer parent;
 
-    private String message;
-    private String fileName;
+    public DataPane(ReferenceFrame frame, DataPaneContainer parent) {
+        super(frame);
 
-    public DataLoadException(String message) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
+        this.parent = parent;
+        init();
+
+        completeInitialization();
     }
 
-    public DataLoadException(String message, String fileName) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
-        this.fileName = fileName;
+    private void init() {
+
+        this.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                render();
+            }
+        });
+
     }
 
-    public String getMessage() {
-        return fileName == null ? message : "An error occurred while accessing:    " + fileName + "<br>" + message;
+    protected void render() {
+        GraphicsContext gc = getCanvas().getGraphicsContext2D();
+
+        gc.setFill(Color.BLUE);
+        gc.fillRect(75,75,100,100);
     }
 }

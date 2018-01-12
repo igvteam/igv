@@ -156,12 +156,14 @@ public class GenomeManager {
             loadGenome(genomeId, null);
 
         } else {
+            // Hack workaround until we implement a progress monitor for the JavaFX UI.
+            final Frame mainFrame = (Globals.IS_JAVAFX_UI) ? null : IGV.getMainFrame();
 
             final ProgressMonitor[] monitor = {new ProgressMonitor()};
             final ProgressBar.ProgressDialog[] progressDialog = new ProgressBar.ProgressDialog[1];
-            UIUtilities.invokeAndWaitOnEventThread(() -> {
-                progressDialog[0] = ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor[0], false);
-            });
+            //UIUtilities.invokeAndWaitOnEventThread(() -> {
+            //    progressDialog[0] = ProgressBar.showProgressDialog(mainFrame, "Loading Genome...", monitor[0], false);
+            //});
 
             try {
                 GenomeListItem item = genomeListManager.getGenomeListItem(genomeId);
@@ -171,9 +173,9 @@ public class GenomeManager {
                     loadGenome(item.getPath(), monitor[0]);
                 }
             } finally {
-                UIUtilities.invokeOnEventThread(() -> {
-                    progressDialog[0].setVisible(false);
-                });
+             //   UIUtilities.invokeOnEventThread(() -> {
+             //       progressDialog[0].setVisible(false);
+             //   });
             }
 
 

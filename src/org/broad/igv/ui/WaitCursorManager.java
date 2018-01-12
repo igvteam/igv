@@ -29,6 +29,7 @@ package org.broad.igv.ui;
 //~--- JDK imports ------------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.ui.util.UIUtilities;
 
 import java.util.Collections;
@@ -64,7 +65,10 @@ public class WaitCursorManager {
     public static CursorToken showWaitCursor() {
 
 //        log.info("Show wait cursor");
-        UIUtilities.invokeOnEventThread(() -> IGV.getRootPane().getGlassPane().setVisible(true));
+        // TODO: JavaFX equiv
+        if (!Globals.IS_JAVAFX_UI) {
+            UIUtilities.invokeOnEventThread(() -> IGV.getRootPane().getGlassPane().setVisible(true));
+        }
         CursorToken token = new CursorToken();
         tokens.add(token);
         return token;
@@ -84,7 +88,10 @@ public class WaitCursorManager {
         tokens.remove(token);
         if (tokens.isEmpty()) {
 //            log.info("Remove glass pane");
-            UIUtilities.invokeOnEventThread(() -> IGV.getRootPane().getGlassPane().setVisible(false));
+            // TODO: JavaFX equiv
+            if (!Globals.IS_JAVAFX_UI) {
+                UIUtilities.invokeOnEventThread(() -> IGV.getRootPane().getGlassPane().setVisible(false));
+            }
         }
     }
 

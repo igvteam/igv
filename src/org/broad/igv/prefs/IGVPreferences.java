@@ -30,9 +30,12 @@
 package org.broad.igv.prefs;
 
 
+import javafx.geometry.Rectangle2D;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.event.AlignmentTrackEvent;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
@@ -41,12 +44,11 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.event.AlignmentTrackEvent;
-import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -174,6 +176,21 @@ public class IGVPreferences {
         return value;
     }
 
+    // TODO: Refactor this for better performance rather than relying on the AWT Colors and always creating new objects
+    // Refactor to leverage common code from getAsColor() and ColorUtilities.
+    // Maybe not worth the effort, though:
+    // 1) Port to JavaFX makes the old method obsolete, so just port those methods directly
+    // 2) May push all styling to a CSS file, if we're confident that a user can edit
+    // 3) Properties and PropertyEditors may come into play here as well.
+    // 4) Maybe manage these as Backgrounds or BackGroundFills
+    public javafx.scene.paint.Color getAsJavaFxColor(String key) {
+        Color awtColor = getAsColor(key);
+        if (awtColor == null) {
+            return javafx.scene.paint.Color.WHITE;
+        }
+        return javafx.scene.paint.Color.rgb(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
+    }
+    
     /**
      * Return the preference as an float.
      *
@@ -503,6 +520,28 @@ public class IGVPreferences {
         return bounds;
     }
 
+    public Rectangle2D getApplicationFrameBounds_javafx() {
+        Rectangle2D bounds = null;
+
+        // Set the application's previous location and size
+        String applicationBounds = get(FRAME_BOUNDS_KEY, null);
+
+        if (applicationBounds != null) {
+            String[] values = applicationBounds.split(",");
+            double x = Double.parseDouble(values[0]);
+            double y = Double.parseDouble(values[1]);
+            double width = Double.parseDouble(values[2]);
+            double height = Double.parseDouble(values[3]);
+
+            if (width == 0 || height == 0) {
+                return null;  // Don't know bounds
+            }
+            
+            bounds = new Rectangle2D(x, y, width, height);
+        }
+        return bounds;
+    }
+    
     /**
      * @param recentSessions
      */

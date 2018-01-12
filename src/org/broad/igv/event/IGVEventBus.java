@@ -76,7 +76,7 @@ public class IGVEventBus {
 
     public void post(Object event) {
         Set<IGVEventObserver> observerSet = observerMap.get(event.getClass());  // Make a copy in case original is modified during loop
-        if (observerSet == null) {
+        if (observerSet == null || observerSet.isEmpty()) {
             log.info("No observers for event type: " + event.getClass());
         } else {
             // Make a copy in case original is modified during loop

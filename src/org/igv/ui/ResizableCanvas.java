@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2017 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.igv.ui;
 
-package org.broad.igv.exceptions;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.layout.Pane;
 
-/**
- * Author: nazaire
- * Date: Jul 8, 2009
- */
-public class DataLoadException extends RuntimeException {
+// Canvas doesn't resize on its own, so we need to wrap it in a container to handle this on its behalf
+// http://fxexperience.com/2014/05/resizable-grid-using-canvas/
+// https://stackoverflow.com/questions/27808210/java-fx-splitpane
+// Note that this is a simpler approach than presented above: just bind the H&W properties to the wrapper instead of performing calculations and setting values explicitly.
+public class ResizableCanvas extends Pane {
 
-    private String message;
-    private String fileName;
+    private final Canvas canvas = new Canvas();
 
-    public DataLoadException(String message) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
+    public ResizableCanvas() {
+        getChildren().add(canvas);
+        canvas.widthProperty().bind(this.prefWidthProperty());
+        canvas.heightProperty().bind(this.prefHeightProperty());
     }
 
-    public DataLoadException(String message, String fileName) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
-        this.fileName = fileName;
-    }
-
-    public String getMessage() {
-        return fileName == null ? message : "An error occurred while accessing:    " + fileName + "<br>" + message;
+    public Canvas getCanvas() {
+        return canvas;
     }
 }

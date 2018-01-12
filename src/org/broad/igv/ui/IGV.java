@@ -98,7 +98,7 @@ public class IGV implements IGVEventObserver {
     private JRootPane rootPane;
     private IGVContentPane contentPane;
     private IGVMenuBar menuBar;
-
+    
     private StatusWindow statusWindow;
 
     // Glass panes
@@ -154,7 +154,6 @@ public class IGV implements IGVEventObserver {
         return otherToolMenus;
     }
 
-
     public static IGV createInstance(Frame frame) {
         if (theInstance != null) {
             throw new RuntimeException("Only a single instance is allowed.");
@@ -195,7 +194,6 @@ public class IGV implements IGVEventObserver {
         return getInstance().mainFrame;
     }
 
-
     /**
      * Creates new IGV
      */
@@ -206,6 +204,7 @@ public class IGV implements IGVEventObserver {
         final IGVPreferences preferences = PreferencesManager.getPreferences();
 
         genomeManager = GenomeManager.getInstance();
+
         mainFrame = frame;
         mainFrame.addWindowListener(new WindowAdapter() {
 

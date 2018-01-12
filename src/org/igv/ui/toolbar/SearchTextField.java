@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2017 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.igv.ui.toolbar;
 
-package org.broad.igv.exceptions;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
+import org.apache.log4j.Logger;
+import org.broad.igv.ui.panel.FrameManager;
 
 /**
- * Author: nazaire
- * Date: Jul 8, 2009
+ * @author jrobinso on 7/6/17.
+ * @author eby JavaFX port
  */
-public class DataLoadException extends RuntimeException {
+// TODO: need to implement JavaFX version of SearchHints.
+public class SearchTextField extends TextField {
 
-    private String message;
-    private String fileName;
+    private static Logger log = Logger.getLogger(SearchTextField.class);
 
-    public DataLoadException(String message) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
+    public SearchTextField() {
+        setTooltip(new Tooltip("Enter a gene or locus, e.f. EGFR,   chr1,   or chr1:100,000-200,000"));
+        setOnAction(actionevent -> searchByLocus(getText()));
     }
 
-    public DataLoadException(String message, String fileName) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
-        this.fileName = fileName;
-    }
 
-    public String getMessage() {
-        return fileName == null ? message : "An error occurred while accessing:    " + fileName + "<br>" + message;
+    public void searchByLocus(final String searchText) {
+        (new SearchCommand(FrameManager.getDefaultFrame(), searchText)).execute();
     }
 }

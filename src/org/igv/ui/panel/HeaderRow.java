@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2017 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.igv.ui.panel;
 
-package org.broad.igv.exceptions;
+import javafx.scene.control.ScrollPane;
 
-/**
- * Author: nazaire
- * Date: Jul 8, 2009
- */
-public class DataLoadException extends RuntimeException {
-
-    private String message;
-    private String fileName;
-
-    public DataLoadException(String message) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
-    }
-
-    public DataLoadException(String message, String fileName) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
-        this.fileName = fileName;
-    }
-
-    public String getMessage() {
-        return fileName == null ? message : "An error occurred while accessing:    " + fileName + "<br>" + message;
+// Intended as the rough equivalent of the IGVPanel class of the Swing UI, subclassed for handling the Header.  Work in progress.
+public class HeaderRow extends IGVRow<NameHeaderPane, AttributeHeaderPane, HeaderPaneContainer, ScrollPane> {
+    public HeaderRow(MainContentPane mainContentPane) {
+        // TODO: determine correct header height setting
+        double headerHeight = 140.0;
+        this.prefHeightProperty().set(headerHeight);
+        ScrollPane scrollPane = new ScrollPane(this);
+        scrollPane.setId("headerRowScrollPane");
+        NameHeaderPane namePane = new NameHeaderPane();
+        AttributeHeaderPane attributePane = new AttributeHeaderPane();
+        HeaderPaneContainer headerPaneContainer = new HeaderPaneContainer();
+        init(mainContentPane, namePane, attributePane, headerPaneContainer, scrollPane);
     }
 }

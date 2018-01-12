@@ -29,9 +29,11 @@
  */
 package org.broad.igv.ui.panel;
 
+import javafx.beans.property.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.event.ShiftEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
@@ -41,9 +43,6 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.ViewChange;
 import org.broad.igv.ui.util.MessageUtils;
 
 
@@ -126,7 +125,23 @@ public class ReferenceFrame {
         this.name = name;
         Genome genome = getGenome();
         this.chrName = genome == null ? "" : genome.getHomeChromosome();
+        chromosomeNameProperty.set(chrName);
         this.eventBus = IGVEventBus.getInstance();
+        chromosomeNameProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                changeChromosome(newValue, true);
+            }
+        });
+        zoomProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                doSetZoom(newValue.intValue());
+            }
+        });
+        displayWidthProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                setBounds(0, newValue.intValue());
+            }
+        });
     }
 
     public ReferenceFrame(ReferenceFrame otherFrame) {
@@ -140,6 +155,7 @@ public class ReferenceFrame {
      */
     public ReferenceFrame(ReferenceFrame otherFrame, IGVEventBus eventBus) {
         this.chrName = otherFrame.chrName;
+        chromosomeNameProperty.set(chrName);
         this.initialLocus = otherFrame.initialLocus;
         this.scale = otherFrame.scale;
         this.minZoom = otherFrame.minZoom;
@@ -149,8 +165,29 @@ public class ReferenceFrame {
         this.pixelX = otherFrame.pixelX;
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
+        zoomProperty.set(this.zoom);
         this.maxZoom = otherFrame.maxZoom;
+        maxZoomProperty.set(this.maxZoom);
         this.eventBus = eventBus;
+        chromosomeNameProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                changeChromosome(newValue, true);
+            }
+        });
+        zoomProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                doSetZoom(newValue.intValue());
+            }
+        });
+        displayWidthProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                setBounds(0, newValue.intValue());
+            }
+        });
+    }
+
+    public boolean isWholeGenomeView() {
+        return getChrName().equals(Globals.CHR_ALL);
     }
 
     public boolean isVisible() {
@@ -197,7 +234,7 @@ public class ReferenceFrame {
      * @param widthInPixels
      */
     public synchronized void setBounds(int pixelX, int widthInPixels) {
-        this.pixelX = pixelX;
+        //this.pixelX = pixelX;
 
         if (this.widthInPixels != widthInPixels) {
 
@@ -254,6 +291,7 @@ public class ReferenceFrame {
     protected synchronized void setZoomWithinLimits(int newZoom) {
         zoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
         nTiles = Math.pow(2, zoom);
+        zoomProperty().set(this.zoom);
     }
 
     /**
@@ -295,6 +333,7 @@ public class ReferenceFrame {
 
         if (chrName.equals(Globals.CHR_ALL)) {
             chrName = getGenome().getHomeChromosome();
+            chromosomeNameProperty.set(chrName);
         }
 
         if (!chrName.equals(Globals.CHR_ALL)) {
@@ -345,6 +384,7 @@ public class ReferenceFrame {
 
         if (shouldChangeChromosome(name) || force) {
             chrName = name;
+            chromosomeNameProperty.set(chrName);
             origin = 0;
             this.scale = -1;
             this.calculateMaxZoom();
@@ -368,7 +408,8 @@ public class ReferenceFrame {
      * //TODO Should we save history by receiving events in History?
      */
     public void recordHistory() {
-        IGV.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
+        // TODO: for now, not dealing with Session or history
+        //IGV.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
     }
 
 
@@ -428,6 +469,7 @@ public class ReferenceFrame {
         synchronized (this) {
             this.initialLocus = locus;
             this.chrName = chr;
+            chromosomeNameProperty.set(chrName);
             if (start >= 0 && end >= 0) {
                 this.origin = start;
                 beforeScaleZoom(locus);
@@ -492,6 +534,7 @@ public class ReferenceFrame {
     protected void calculateMaxZoom() {
         this.maxZoom = Globals.CHR_ALL.equals(this.chrName) ? 0 :
                 (int) Math.ceil(Math.log(getChromosomeLength() / minBP) / Globals.log2);
+        maxZoomProperty.set(this.maxZoom);
     }
 
     public String getChrName() {
@@ -512,7 +555,7 @@ public class ReferenceFrame {
      * @param screenPosition
      * @return
      */
-    public double getChromosomePosition(int screenPosition) {
+    public double getChromosomePosition(double screenPosition) {
 
         InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(getChrName());
 
@@ -763,6 +806,30 @@ public class ReferenceFrame {
         return GenomeManager.getInstance().getCurrentGenome();
     }
 
+    private DoubleProperty displayWidthProperty = new SimpleDoubleProperty();
 
+    public DoubleProperty displayWidthProperty() {
+        return displayWidthProperty;
+    }
+
+    // Might be better to have the Chromosome itself be held in the property.
+    // Should move this up to the top of the class.
+    private ObjectProperty<String> chromosomeNameProperty = new SimpleObjectProperty<String>();
+
+    public ObjectProperty<String> chromosomeNameProperty() {
+        return chromosomeNameProperty;
+    }
+
+    private IntegerProperty maxZoomProperty = new SimpleIntegerProperty();
+
+    public IntegerProperty maxZoomProperty() {
+        return maxZoomProperty;
+    }
+
+    private IntegerProperty zoomProperty = new SimpleIntegerProperty();
+
+    public IntegerProperty zoomProperty() {
+        return zoomProperty;
+    }
 }
 

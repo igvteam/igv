@@ -29,7 +29,7 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
 	<key>JVMMainClassName</key>
-	<string>org.broad.igv.ui.Main</string>
+	<string>org.igv.ui.MainApplication</string>
 	<key>JVMOptions</key>
 	<array>
 	    <string>-XX:+IgnoreUnrecognizedVMOptions</string>

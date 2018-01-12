@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2017 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.igv.ui.panel;
 
-package org.broad.igv.exceptions;
+import javafx.scene.control.ScrollPane;
 
-/**
- * Author: nazaire
- * Date: Jul 8, 2009
- */
-public class DataLoadException extends RuntimeException {
+// Intended as the rough equivalent of the TrackPanelScrollPane class of the Swing UI.  Work in progress.
+public class TrackScrollPane extends ScrollPane {
+    private TrackRow trackRow;
 
-    private String message;
-    private String fileName;
+    public TrackScrollPane() {
+        // Set up Track-oriented defaults & mouse handling code.
 
-    public DataLoadException(String message) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
     }
 
-    public DataLoadException(String message, String fileName) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
-        this.fileName = fileName;
+    public TrackScrollPane(TrackRow trackRow) {
+        super(trackRow);
+        this.trackRow = trackRow;
+        setFitToHeight(true);
+        setFitToWidth(true);
+
+        // Mimic the SB policy of the Swing UI
+        setHbarPolicy(ScrollBarPolicy.NEVER);
+        setVbarPolicy(ScrollBarPolicy.ALWAYS);
     }
 
-    public String getMessage() {
-        return fileName == null ? message : "An error occurred while accessing:    " + fileName + "<br>" + message;
+    public TrackRow getTrackRow() {
+        return trackRow;
     }
 }

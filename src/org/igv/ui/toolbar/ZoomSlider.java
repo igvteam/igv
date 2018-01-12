@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2017 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,35 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.exceptions;
+package org.igv.ui.toolbar;
 
-/**
- * Author: nazaire
- * Date: Jul 8, 2009
- */
-public class DataLoadException extends RuntimeException {
+import javafx.scene.control.Slider;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
-    private String message;
-    private String fileName;
+// As it stands this custom class may be unnecessary; all of this could be done
+// with a stock instance modified by its owner.  May need to add to it later or
+// further customize, though.
+public class ZoomSlider extends Slider {
 
-    public DataLoadException(String message) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
+    private ReferenceFrame frame;
+
+    public ZoomSlider() {
+        this(null);
     }
 
-    public DataLoadException(String message, String fileName) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
-        this.fileName = fileName;
+    public ZoomSlider(ReferenceFrame frame) {
+        this.frame = frame;
+        this.setBlockIncrement(1.0);
+        this.setShowTickMarks(true);
+        this.setSnapToTicks(true);
+        this.minProperty().set(0);
+        this.maxProperty().bindBidirectional(getReferenceFrame().maxZoomProperty());
+        this.valueProperty().bindBidirectional(getReferenceFrame().zoomProperty());
     }
 
-    public String getMessage() {
-        return fileName == null ? message : "An error occurred while accessing:    " + fileName + "<br>" + message;
+    private ReferenceFrame getReferenceFrame() {
+        if (frame == null) return FrameManager.getDefaultFrame();
+        return frame;
     }
 }

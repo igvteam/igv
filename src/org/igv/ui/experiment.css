@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2017 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,44 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.exceptions;
+.button {
+    -fx-min-height: 40;
+    -fx-min-width: 40;
+    -fx-max-height: 40;
+    -fx-max-width: 40;
+}
 
-/**
- * Author: nazaire
- * Date: Jul 8, 2009
- */
-public class DataLoadException extends RuntimeException {
+.button:hover {
+}
 
-    private String message;
-    private String fileName;
+#homeButton {
+    -fx-graphic: url('/toolbarButtonGraphics/navigation/Home24.gif');
+}
 
-    public DataLoadException(String message) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
-    }
+#leftArrowButton {
+    -fx-graphic: url('/images/left-arrow.gif');
+}
 
-    public DataLoadException(String message, String fileName) {
-        this.message = (message == null) ? "" : message.replace("<html>", "");
-        this.fileName = fileName;
-    }
+#rightArrowButton {
+    -fx-graphic: url('/images/right-arrow.gif');
+}
 
-    public String getMessage() {
-        return fileName == null ? message : "An error occurred while accessing:    " + fileName + "<br>" + message;
-    }
+#refreshScreenButton {
+    -fx-graphic: url('/toolbarButtonGraphics/general/Refresh24.gif');
+}
+
+#regionToolButton {
+    -fx-graphic: url('/images/regionTool.png');
+}
+
+#resizeToWindowButton {
+    -fx-graphic: url('/images/collapseall.gif');
+}
+
+#infoSelectButton {
+    -fx-graphic: url('/images/tooltip.png');
+}
+
+#rulerButton {
+    -fx-graphic: url('/images/vertical-line.gif');
 }

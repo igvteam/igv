@@ -28,7 +28,6 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
