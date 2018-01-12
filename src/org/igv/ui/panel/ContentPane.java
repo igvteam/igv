@@ -50,6 +50,8 @@ public abstract class ContentPane extends ResizableCanvas {
      * Subclasses should call this as the final step of class construction; doing it
      * earlier may result in render() being called before subclass construction is
      * complete.
+     *
+     * Before exiting, this will make the initial render() call.
      */
     // Declared final to prevent overriding.
     protected final void completeInitialization() {
@@ -58,6 +60,7 @@ public abstract class ContentPane extends ResizableCanvas {
         frame.zoomProperty().addListener((observable, oldValue, newValue) -> render());
         this.prefWidthProperty().addListener((observable, oldValue, newValue) -> render());
         this.prefHeightProperty().addListener((observable, oldValue, newValue) -> render());
+        render();
     }
 
     abstract protected void render();
