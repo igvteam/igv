@@ -411,20 +411,31 @@ public abstract class AbstractTrack implements Track {
         String value;
         if (key.equals(AttributeManager.GROUP_AUTOSCALE)) {
             value = autoscaleGroup;
+            if(value == null) {
+                value = getFromAttributeManager(key);
+                autoscaleGroup = value;
+            }
         }
         else {
             value = attributes.get(key);
+            if(value == null) {
+                value = getFromAttributeManager(key);
+            }
+        }
+        return value;
+    }
 
-            final AttributeManager attributeManager = AttributeManager.getInstance();
-            if (value == null && getSample() != null) {
-                value = attributeManager.getAttribute(getSample(), key);
-            }
-            if (value == null) {
-                value = attributeManager.getAttribute(getName(), key);
-            }
-            if (value == null && getResourceLocator() != null && getResourceLocator().getPath() != null) {
-                value = attributeManager.getAttribute(getResourceLocator().getPath(), key);
-            }
+    private String getFromAttributeManager(String key) {
+        final AttributeManager attributeManager = AttributeManager.getInstance();
+        String value = null;
+        if (value == null && getSample() != null) {
+            value = attributeManager.getAttribute(getSample(), key);
+        }
+        if (value == null) {
+            value = attributeManager.getAttribute(getName(), key);
+        }
+        if (value == null && getResourceLocator() != null && getResourceLocator().getPath() != null) {
+            value = attributeManager.getAttribute(getResourceLocator().getPath(), key);
         }
         return value;
     }
