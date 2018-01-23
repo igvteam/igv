@@ -29,6 +29,7 @@ package org.broad.igv.feature;
 import org.broad.igv.track.WindowFunction;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -60,6 +61,17 @@ public class SpliceJunctionFeature extends BasicFeature {
         super(chr, start, end, strand);
         junctionStart = start;
         junctionEnd = end;
+    }
+
+    public SpliceJunctionFeature(SpliceJunctionFeature posFeat) {
+        this(posFeat.getChr(), posFeat.getStart(), posFeat.getEnd());
+        this.junctionDepth = posFeat.junctionDepth;
+        this.startFlankingRegionDepthArray = new int[posFeat.startFlankingRegionDepthArray.length];
+        System.arraycopy(posFeat.startFlankingRegionDepthArray, 0, this.startFlankingRegionDepthArray, 0,
+                posFeat.startFlankingRegionDepthArray.length);
+        this.endFlankingRegionDepthArray = new int[posFeat.endFlankingRegionDepthArray.length];
+        System.arraycopy(posFeat.endFlankingRegionDepthArray, 0, this.endFlankingRegionDepthArray, 0,
+                posFeat.endFlankingRegionDepthArray.length);
     }
 
 
