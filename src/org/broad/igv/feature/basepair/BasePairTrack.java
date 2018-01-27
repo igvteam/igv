@@ -40,7 +40,17 @@ public class BasePairTrack extends AbstractTrack {
     }
 
     public void render(RenderContext context, Rectangle rect) {
-        basePairRenderer.draw(basePairData, context, rect);
+
+        Graphics2D g2d = context.getGraphics();
+        Shape clip = g2d.getClip();
+        g2d.setClip(rect.intersection(clip.getBounds()));
+
+        try {
+            basePairRenderer.draw(basePairData, context, rect);
+        }
+        finally {
+            g2d.setClip(clip);
+        }
     }
 
 
