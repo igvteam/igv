@@ -42,11 +42,13 @@ public class BasePairTrack extends AbstractTrack {
     public void render(RenderContext context, Rectangle rect) {
 
         Graphics2D g2d = context.getGraphics();
-        Shape clip = g2d.getClip();
+        Rectangle clip = new Rectangle(g2d.getClip().getBounds());
         g2d.setClip(rect.intersection(clip.getBounds()));
+        context.clearGraphicsCache();
 
         try {
             basePairRenderer.draw(basePairData, context, rect);
+            context.clearGraphicsCache();
         }
         finally {
             g2d.setClip(clip);
