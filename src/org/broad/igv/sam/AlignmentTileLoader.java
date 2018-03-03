@@ -374,6 +374,10 @@ public class AlignmentTileLoader implements IGVEventObserver {
         }
     }
 
+    public Map<String, Long> getSequenceDictionary() {
+        return reader.getSequenceDictionary();
+    }
+
     /**
      * Caches alignments, coverage, splice junctions, and downsampled intervals
      */

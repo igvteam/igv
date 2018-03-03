@@ -933,8 +933,8 @@ public class TrackLoader {
             // not represented in the genome, buf if there are no matches warn the user.
             List<String> seqNames = dataManager.getSequenceNames();
             if (seqNames != null && seqNames.size() > 0) {
-                if (!checkSequenceNames(locator.getPath(), genome, seqNames)) {
-                    return;
+                if(!dataManager.hasMatchingSequences()) {
+                    showMismatchSequenceNameMessage(locator.getPath(), genome, seqNames);
                 }
             }
 
@@ -1010,50 +1010,33 @@ public class TrackLoader {
     }
 
 
-    /**
-     * Compare the sequence names against sequence (chromosome) names in the genome.  If no matches warn the user.
-     *
-     * @param filename
-     * @param genome
-     * @param seqNames
-     * @return true if there is at least one sequence match, false otherwise
-     */
-    private boolean checkSequenceNames(String filename, Genome genome, List<String> seqNames) {
-        boolean atLeastOneMatch = false;
-        for (String seqName : seqNames) {
-            if (genome.getChromosome(seqName) != null) {
-                atLeastOneMatch = true;
+    private void showMismatchSequenceNameMessage(String filename, Genome genome, List<String> seqNames) {
+        StringBuffer message = new StringBuffer();
+        message.append("<html>File: " + filename +
+                "<br>does not contain any sequence names which match the current genome.");
+        message.append("<br><br>File: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+        int n = 0;
+        for (String sn : seqNames) {
+            message.append(sn + ", ");
+            n++;
+            if (n > 3) {
+                message.append(" ...");
                 break;
             }
         }
-        if (!atLeastOneMatch) {
-            StringBuffer message = new StringBuffer();
-            message.append("<html>File: " + filename +
-                    "<br>does not contain any sequence names which match the current genome.");
-            message.append("<br><br>File: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-            int n = 0;
-            for (String sn : seqNames) {
-                message.append(sn + ", ");
-                n++;
-                if (n > 3) {
-                    message.append(" ...");
-                    break;
-                }
+        message.append("<br>Genome: ");
+        n = 0;
+        for (String cn : genome.getAllChromosomeNames()) {
+            message.append(cn + ", ");
+            n++;
+            if (n > 3) {
+                message.append(" ...");
+                break;
             }
-            message.append("<br>Genome: ");
-            n = 0;
-            for (String cn : genome.getAllChromosomeNames()) {
-                message.append(cn + ", ");
-                n++;
-                if (n > 3) {
-                    message.append(" ...");
-                    break;
-                }
-            }
-            MessageUtils.showMessage(message.toString());
         }
-        return atLeastOneMatch;
+        MessageUtils.showMessage(message.toString());
     }
+
 
 
     /**

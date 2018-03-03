@@ -36,6 +36,7 @@ import org.broad.igv.sam.Alignment;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -49,6 +50,10 @@ public interface AlignmentReader<T extends Alignment> {
      * Return the list of sequence (chromosome) names as defined in the files header or meta-data section.
      */
     List<String> getSequenceNames() throws IOException;
+
+    default Map<String, Long> getSequenceDictionary() {
+        return null;
+    }
 
     /**
      * Return the header of the SAM file. May be null

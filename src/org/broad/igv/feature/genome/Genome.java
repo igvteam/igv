@@ -76,6 +76,7 @@ public class Genome {
         this.descriptor = descriptor;
 
     }
+
     /**
      * @param id
      * @param displayName
@@ -142,14 +143,15 @@ public class Genome {
     public String getCanonicalChrName(String str) {
         if (str == null) {
             return str;
-        } else {
-            //We intern strings used as chromosomes
-            //to prevent storing multiple times
-            if (!chrAliasTable.containsKey(str)) {
-                chrAliasTable.put(str, str);
-            }
+        } else if (chrAliasTable.containsKey(str)){
             return chrAliasTable.get(str);
+        } else {
+            return str;
         }
+    }
+
+    public boolean isKnownChr(String str) {
+        return chrAliasTable.containsKey(str);
     }
 
     public GenomeDescriptor getDescriptor() {
@@ -198,17 +200,20 @@ public class Genome {
 
 
     /**
-     * Update the chromosome alias table with common variations
+     * Update the chromosome alias table with common variations.  Also, add own names.
      */
     void initializeChromosomeAliases() {
         chrAliasTable.putAll(getAutoAliases());
-
     }
 
 
     Map<String, String> getAutoAliases() {
 
         Map<String, String> autoAliases = new HashMap<String, String>();
+
+        for (String name : chromosomeNames) {
+            autoAliases.put(name, name);
+        }
 
         for (String name : chromosomeNames) {
             if (name.startsWith("gi|")) {

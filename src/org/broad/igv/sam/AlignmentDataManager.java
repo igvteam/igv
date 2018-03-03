@@ -28,6 +28,7 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.RefreshEvent;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.IGVPreferences;
@@ -115,15 +116,48 @@ public class AlignmentDataManager implements IGVEventObserver {
      * provided the alias has been defined  (e.g. 1 -> chr1,  etc).
      */
     private void initChrMap(Genome genome) throws IOException {
-        if (genome != null) {
-            List<String> seqNames = reader.getSequenceNames();
-            if (seqNames != null) {
-                for (String chr : seqNames) {
-                    String alias = genome.getCanonicalChrName(chr);
-                    chrMappings.put(alias, chr);
+
+        // Build a chr size -> name lookup table for long sequences.   We will assume sizes are unique.
+        Map<Long, String> inverseDict = null;
+        Map<String, Long> sequenceDictionary = reader.getSequenceDictionary();
+        Set<Long> nonUnique = new HashSet<>();
+        if (sequenceDictionary != null) {
+            inverseDict = new HashMap<>();
+            for (Chromosome chromosome : genome.getChromosomes()) {
+                Long size = new Long(chromosome.getLength());
+                if(!nonUnique.contains(size)) {
+                    if (inverseDict.containsKey(size)) {
+                        inverseDict.remove(size);
+                        nonUnique.add(size);
+                    } else {
+                        inverseDict.put(new Long(size), chromosome.getName());
+                    }
                 }
             }
         }
+
+        if (genome != null) {
+            List<String> seqNames = reader.getSequenceNames();
+            if (seqNames != null) {
+                for (String seq : seqNames) {
+
+                    if (genome.isKnownChr(seq)) {
+                        String chr = genome.getCanonicalChrName(seq);
+                        chrMappings.put(chr, seq);
+                    } else if (sequenceDictionary != null) {
+                        Long size = sequenceDictionary.get(seq);
+                        String chr = inverseDict.get(size);
+                        if (chr != null) {
+                            chrMappings.put(chr, seq);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean hasMatchingSequences() {
+        return chrMappings.size() > 0;
     }
 
     public AlignmentTileLoader getReader() {
@@ -181,6 +215,10 @@ public class AlignmentDataManager implements IGVEventObserver {
      */
     public List<String> getSequenceNames() throws IOException {
         return reader.getSequenceNames();
+    }
+
+    public Map<String, Long> getSequenceDictionary() {
+        return reader.getSequenceDictionary();
     }
 
 
@@ -313,8 +351,8 @@ public class AlignmentDataManager implements IGVEventObserver {
      */
     private synchronized void trimCache() {
 
-       Iterator<AlignmentInterval> iter =  intervalCache.iterator();
-        while(iter.hasNext()) {
+        Iterator<AlignmentInterval> iter = intervalCache.iterator();
+        while (iter.hasNext()) {
             AlignmentInterval interval = iter.next();
             for (ReferenceFrame frame : FrameManager.getFrames()) {
                 if (!interval.contains(frame.getCurrentRange())) {

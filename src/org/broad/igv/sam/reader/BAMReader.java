@@ -62,6 +62,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     htsjdk.samtools.SamReader reader;
     List<String> sequenceNames;
     private boolean indexed = false; // False until proven otherwise
+    private Map<String, Long> sequenceDictionary;
 
     public BAMReader(ResourceLocator locator, boolean requireIndex) throws IOException {
         this.locator = locator;
@@ -143,21 +144,37 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
 
     public List<String> getSequenceNames() {
         if (sequenceNames == null) {
-            SAMFileHeader header = getFileHeader();
-            if (header == null) {
-                return null;
-            }
-            sequenceNames = new ArrayList();
-            List<SAMSequenceRecord> records = header.getSequenceDictionary().getSequences();
-            if (records.size() > 0) {
-                for (SAMSequenceRecord rec : header.getSequenceDictionary().getSequences()) {
-                    String chr = rec.getSequenceName();
-                    sequenceNames.add(chr);
-                }
-            }
+           loadSequenceDictionary();
         }
         return sequenceNames;
     }
+
+    @Override
+    public Map<String, Long> getSequenceDictionary() {
+        if (sequenceDictionary == null) {
+            loadSequenceDictionary();
+        }
+        return sequenceDictionary;
+    }
+
+    private void loadSequenceDictionary () {
+
+        SAMFileHeader header = getFileHeader();
+        sequenceNames = new ArrayList();
+        sequenceDictionary = new HashMap<>();
+
+        List<SAMSequenceRecord> records = header.getSequenceDictionary().getSequences();
+        if (records.size() > 0) {
+            for (SAMSequenceRecord rec : header.getSequenceDictionary().getSequences()) {
+                String chr = rec.getSequenceName();
+                Long size = new Long(rec.getSequenceLength());
+
+                sequenceNames.add(chr);
+                sequenceDictionary.put(chr, size);
+            }
+        }
+    }
+
 
     public CloseableIterator<PicardAlignment> iterator() {
         return new WrappedIterator(reader.iterator());
