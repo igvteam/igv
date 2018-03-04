@@ -112,31 +112,33 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     /**
-     * Create an alias -> chromosome lookup map.  Enable loading BAM files that use alternative names for chromosomes,
-     * provided the alias has been defined  (e.g. 1 -> chr1,  etc).
+     * Create an alias -> chromosome lookup map.  Enables loading BAM files that use alternative names for chromosomes
+     * (e.g. 1 -> chr1,  etc).
      */
     private void initChrMap(Genome genome) throws IOException {
 
-        // Build a chr size -> name lookup table for long sequences.   We will assume sizes are unique.
-        Map<Long, String> inverseDict = null;
-        Map<String, Long> sequenceDictionary = reader.getSequenceDictionary();
-        Set<Long> nonUnique = new HashSet<>();
-        if (sequenceDictionary != null) {
-            inverseDict = new HashMap<>();
-            for (Chromosome chromosome : genome.getChromosomes()) {
-                Long size = new Long(chromosome.getLength());
-                if(!nonUnique.contains(size)) {
-                    if (inverseDict.containsKey(size)) {
-                        inverseDict.remove(size);
-                        nonUnique.add(size);
-                    } else {
-                        inverseDict.put(new Long(size), chromosome.getName());
+        if (genome != null) {
+            // Build a chr size -> name lookup table.   We will assume sizes are unique.  This will be used if no alias
+            // is defined for a sequence.
+            Map<Long, String> inverseDict = null;
+            Map<String, Long> sequenceDictionary = reader.getSequenceDictionary();
+            Set<Long> nonUnique = new HashSet<>();
+            if (sequenceDictionary != null) {
+                inverseDict = new HashMap<>();
+                for (Chromosome chromosome : genome.getChromosomes()) {
+                    Long size = new Long(chromosome.getLength());
+                    if (!nonUnique.contains(size)) {
+                        if (inverseDict.containsKey(size)) {
+                            inverseDict.remove(size);
+                            nonUnique.add(size);
+                        } else {
+                            inverseDict.put(new Long(size), chromosome.getName());
+                        }
                     }
                 }
             }
-        }
 
-        if (genome != null) {
+
             List<String> seqNames = reader.getSequenceNames();
             if (seqNames != null) {
                 for (String seq : seqNames) {
