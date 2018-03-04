@@ -164,7 +164,7 @@ public class PairedEndStats {
                 !alignment.isDuplicate() &&
                 alignment.getMappingQuality() > 0 &&
                 !alignment.isVendorFailedRead() &&
-                alignment.getInferredInsertSize() > 0) {
+                alignment.getInferredInsertSize() != 0) {
             ReadMate mate = alignment.getMate();
             boolean mateMapped = mate != null && mate.isMapped();
             boolean sameChromosome = mateMapped && mate.getChr().equals(alignment.getChr());
