@@ -113,11 +113,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
     @Override
     public void dispose() {
-        super.dispose();
-        removed = true;
-        dataManager = null;
-        alignmentTrack = null;
-        setVisible(false);
+        // SpliceJunctionTracks are not disposed of,  merely hidden.
     }
 
     @Override
