@@ -201,7 +201,7 @@ public class CGIAlignmentReader implements AlignmentReader {
             BufferedInputStream stream = new BufferedInputStream(is, 500000);
             SamInputResource resource = SamInputResource.of(stream);
             SamReader reader = factory.open(resource);
-            
+
             CloseableIterator<SAMRecord> iter = reader.iterator();
             return new SAMQueryIterator(sequence, start, end, contained, iter);
 
@@ -212,7 +212,7 @@ public class CGIAlignmentReader implements AlignmentReader {
     }
 
     public boolean hasIndex() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return true;
     }
 
     public static void main(String[] args) throws IOException {
