@@ -356,13 +356,21 @@ public class AlignmentDataManager implements IGVEventObserver {
         Iterator<AlignmentInterval> iter = intervalCache.iterator();
         while (iter.hasNext()) {
             AlignmentInterval interval = iter.next();
-            for (ReferenceFrame frame : FrameManager.getFrames()) {
-                if (!interval.contains(frame.getCurrentRange())) {
-                    iter.remove();
-                }
+            if (!intervalInView(interval)) {
+                iter.remove();
             }
-
         }
+    }
+
+
+    private boolean intervalInView(AlignmentInterval interval) {
+
+        for (ReferenceFrame frame : FrameManager.getFrames()) {
+            if (interval.contains(frame.getCurrentRange())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
