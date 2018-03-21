@@ -1,0 +1,13 @@
+track type=wiggle_0 name="fixedStep" description="fixedStep format" visibility=full 
+fixedStep chrom=chr19 start=5930740 step=1
+-1000
+-900
+-800
+-700
+-600
+-500
+-400
+-300
+-200
+-100
+ 

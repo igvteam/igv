@@ -143,7 +143,7 @@ public class DataRange{
 
     public static DataRange getFromTracks(Collection<? extends Track> tracks){
         float min = Float.MAX_VALUE;
-        float max = Float.MIN_VALUE;
+        float max = -Float.MAX_VALUE;
         float mid = 0;
         boolean drawBaseline = true;
         boolean isLog = true;
