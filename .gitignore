@@ -3,3 +3,9 @@
 *.jar
 igv.sh
 /out/
+/build
+/bin
+/.gradle
+.project
+.classpath
+igv.log

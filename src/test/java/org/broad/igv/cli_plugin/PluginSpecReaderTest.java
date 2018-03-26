@@ -163,7 +163,7 @@ public class PluginSpecReaderTest {
     //Check that each cli_plugin file is in the contents file
     @Test
     public void testBuiltinPluginsComplete() throws Exception {
-        String pluginsPath = "src/" + PluginSpecReader.class.getPackage().getName().replace('.', '/');
+        String pluginsPath = "src/main/resources/" + PluginSpecReader.class.getPackage().getName().replace('.', '/');
         File pluginResourceDir = new File(pluginsPath, "resources");
         String[] fileNames = pluginResourceDir.list(new FilenameFilter() {
             @Override

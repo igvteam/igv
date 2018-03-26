@@ -36,7 +36,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 // Define the main class for the application
-mainClassName = 'org.igv.ui.MainApplication'
+mainClassName = 'org.broad.igv.ui.Main'
 
 jar {
     manifest {
