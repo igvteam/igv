@@ -42,10 +42,10 @@
     <property name="store-password" value="Broad-storepass"/>
 
     <property name="include.libs" value="true" />
-    <property name="main-class" value="org.igv.ui.MainApplication"/>
+    <property name="main-class" value="org.broad.igv.ui.Main"/>
 
     <property name="lib.dir" value="${basedir}/lib/"/>
-    <property name="tmp.dir" value="${basedir}/tmp/"/>
+    <property name="tmp.dir" value="${basedir}/build/tmp/IGV-dist"/>
     <property name="jar.name" value="igv.jar"/>
     <property name="dist.dir" value="build/IGV-dist/"/>
     <property name="jar.path" value="${dist.dir}${jar.name}"/>
@@ -120,7 +120,7 @@
                 <attribute name="Built-By" value="${user.name}"/>
                 <attribute name="Main-Class" value="${main-class}"/>
 
-                <section name="org/igv/">
+                <section name="org/broad/igv/">
                     <attribute name="Specification-Title" value="${ant.project.name}"/>
                     <attribute name="Specification-Version" value="${version}"/>
                     <attribute name="Specification-Vendor" value="${vendor}"/>
@@ -130,6 +130,7 @@
 
             </manifest>
         </jar>
+        <delete dir="${tmp.dir}" />
         <copy file="${lib.dir}${batik-codec-finame}" tofile="${dist.dir}${batik-codec-finame}" overwrite="true"/>
         <copy file="${lib.dir}${goby-io-finame}" tofile="${dist.dir}${goby-io-finame}" overwrite="true"/>
     </target>

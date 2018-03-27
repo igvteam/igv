@@ -60,13 +60,3 @@ tasks.withType(Test) {
     jvmArgs '-javaagent:test/lib/JavaAgent.jar'
     forkEvery = 1
 }
-
-task unifiedJar {
-    doLast {
-        def proc = "ant -f build-shrink.xml".execute()
-        proc.waitFor();
-        println "return code: ${ proc.exitValue()}"
-        println "stderr: ${proc.err.text}"
-        println "stdout: ${proc.in.text}"
-    }
-}
