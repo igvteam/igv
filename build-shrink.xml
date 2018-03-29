@@ -103,7 +103,6 @@
         
         <classfileset dir="${tmp.dir}" id="rootFiles">
             <rootfileset dir="${tmp.dir}" includes="org/broad/**/*.class" />
-            <rootfileset dir="${tmp.dir}" includes="org/igv/**/*.class" />
         </classfileset>
 
         <property name="class-path" value="${batik-codec-finame} ${goby-io-finame}" />
