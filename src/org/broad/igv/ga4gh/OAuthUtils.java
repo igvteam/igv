@@ -68,7 +68,7 @@ public class OAuthUtils {
 
 
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
-    private static final String PROPERTIES_URL = "https://igvdata.broadinstitute.org/app/oauth_native.json";
+    private static final String PROPERTIES_URL = "https://s3.amazonaws.com/igv.broadinstitute.org/app/desktop_bits";
     private String genomicsScope = "https://www.googleapis.com/auth/genomics";
     private String gsScope = "https://www.googleapis.com/auth/devstorage.read_write";
     private String emailScope = "https://www.googleapis.com/auth/userinfo.email";
@@ -132,7 +132,7 @@ public class OAuthUtils {
         //IGVPreferences.getInstance().get(IGVPreferences.OAUTH_CONFIG);
 
         if (oauthConfig == null || !FileUtils.resourceExists(oauthConfig)) {
-            String propString = HttpUtils.getInstance().getContentsAsString(new URL(PROPERTIES_URL));
+            String propString = HttpUtils.getInstance().getContentsAsGzippedString(new URL(PROPERTIES_URL));
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
             authURI = obj.get("auth_uri").getAsString();
