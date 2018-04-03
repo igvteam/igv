@@ -120,7 +120,7 @@
                 <attribute name="Main-Class" value="${main-class}"/>
 
                 <section name="org/broad/igv/">
-                    <attribute name="Specification-Title" value="${ant.project.name}"/>
+                    <attribute name="Specification-Title" value="IGV"/>
                     <attribute name="Specification-Version" value="${version}"/>
                     <attribute name="Specification-Vendor" value="${vendor}"/>
                     <attribute name="Implementation-Version" value="${version} ${build-number}"/>
