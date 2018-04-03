@@ -1,5 +1,10 @@
 # Created by .gitignore support plugin (hsz.mobi)
 .idea/workspace.xml
-*.jar
 igv.sh
 /out/
+/build
+/bin
+/.gradle
+.project
+.classpath
+igv.log

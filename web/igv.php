@@ -1,11 +1,10 @@
 <?php
-
     $SESSION_URL=$_GET['sessionURL'];
     if($SESSION_URL == null || $SESSION_URL == "")
     {
       $SESSION_URL=$_GET['file'];
     }
-    $LOCUS=$_GET['locus'];
+    $LOCUS= urldecode($_GET['locus']);
     $MAXHEAP=$_GET['maxHeapSize'];
     $INITHEAP=$_GET['initialHeapSize'];
     $GENOME=$_GET['genome'];
@@ -40,20 +39,17 @@
         header( 'Location: ' .$IPAD_URL);
     }
 
-
     $igv_project = htmlspecialchars($_GET['user']);   
     if($igv_project == null) {
       $igv_project = "launcher";
     }
-    $igv_version = "2.3";
+    $igv_version = "2.4";
     $referred_by = $_SERVER['HTTP_USER_AGENT'];
     $user_ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
     if ($user_ip == '') {
         $user_ip = $_SERVER['REMOTE_ADDR'];
     }
 
- 
-    
     header('Content-type: application/x-java-jnlp-file');
     header('Content-Disposition: attachment; filename="igv.jnlp"');
     header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
@@ -68,9 +64,9 @@
 
 <jnlp
   spec="6.0+"
-  codebase="http://igv.broadinstitute.org/app/current">
+  codebase="https://data.broadinstitute.org/igv/projects/2.4">
   <information>
-    <title>IGV 2.3</title>
+    <title>IGV 2.4</title>
     <vendor>The Broad Institute</vendor>
     <homepage href="http://www.broadinstitute.org/igv"/>
     <description>IGV Software</description>
@@ -92,16 +88,15 @@
    if($INITHEAP == null || $INITHEAP == "") {
      $INITHEAP="256m";
    }   
-   print('<java version="1.6+" initial-heap-size="');
+   print('<java version="1.8+" initial-heap-size="');
    print($INITHEAP); 
    print('" max-heap-size="');
    print($MAXHEAP);
    print('"/>');
 ?>
-    <jar href="igv.jar" download="eager" main="true" version="2.3.33"/>
-    <jar href="batik-codec.jar" download="eager" version="1.7"/>
-    <jar href="goby-io-igv.jar" download="lazy" version="1.0"/>  
-    <property name="jnlp.versionEnabled" value="true"/>
+    <jar href="igv.jar" download="eager" main="true"/>
+    <jar href="batik-codec__V1.7.jar" download="eager"/>
+    <jar href="goby-io-igv__V1.0.jar" download="eager"/>   
     <property name="java.net.preferIPv4Stack" value="true"/> 
     <property name="apple.laf.useScreenMenuBar" value="true"/>
     <property name="com.apple.mrj.application.growbox.intrudes" value="false"/>
@@ -142,7 +137,7 @@
         print("    <argument>$PREFS</argument>\n");
     }
     else {
-        print("   <argument>http://www.broadinstitute.org/igv/projects/current/genomespace.properties</argument>\n");
+        print("   <argument>http://data.broadinstitute.org/igv/projects/current/genomespace.properties</argument>\n");
     }
     
 ?>

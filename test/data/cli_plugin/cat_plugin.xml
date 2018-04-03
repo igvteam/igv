@@ -22,7 +22,7 @@
   ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   ~ THE SOFTWARE.
   -->
-<!DOCTYPE cli_plugin SYSTEM "../../../src/org/broad/igv/cli_plugin/resources/cli_plugin.dtd">
+<!DOCTYPE cli_plugin SYSTEM "../../../src/main/resources/org/broad/igv/cli_plugin/resources/cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="1.0" name="cat"
             id="org.broadinstitute.igv.plugin.cat">
     <tool name="cat" defaultPath="cat">

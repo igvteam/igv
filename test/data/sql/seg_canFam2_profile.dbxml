@@ -8,7 +8,7 @@
   ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
   -->
-<!DOCTYPE database SYSTEM "src/org/broad/igv/dev/db/database.dtd">
+<!DOCTYPE database SYSTEM "src/main/resources/org/broad/igv/dev/db/database.dtd">
 <database version="alpha"
           host="test/data"
           path="seg/canFam2_hg18.db"
