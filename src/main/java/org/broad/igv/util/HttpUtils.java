@@ -58,6 +58,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 import static org.broad.igv.prefs.Constants.*;
 import static org.broad.igv.util.stream.SeekableServiceStream.WEBSERVICE_URL;
@@ -156,6 +157,21 @@ public class HttpUtils {
             if (is != null) is.close();
         }
     }
+
+    public String getContentsAsGzippedString(URL url) throws IOException {
+        InputStream is = null;
+        HttpURLConnection conn = openConnection(url, null);
+        try {
+            is = conn.getInputStream();
+            return readContents(new GZIPInputStream(is));
+        } catch (IOException e) {
+            readErrorStream(conn);  // Consume content
+            throw e;
+        } finally {
+            if (is != null) is.close();
+        }
+    }
+
 
 
     public String getContentsAsJSON(URL url) throws IOException {

@@ -651,8 +651,13 @@ public abstract class SAMAlignment implements Alignment {
         buf.append("SupplementaryAlignments");
         String[] records = Globals.semicolonPattern.split(sa);
         for (String rec : records) {
-            SupplementaryAlignment a = new SupplementaryAlignment(rec);
-            buf.append("<br>" + a.printString());
+            try {
+                SupplementaryAlignment a = new SupplementaryAlignment(rec);
+                buf.append("<br>" + a.printString());
+            }
+            catch (Exception e) {
+                buf.append("<br>* Invalid SA entry (not listed) *");
+            }
         }
         return buf.toString();
     }
