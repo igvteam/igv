@@ -16,21 +16,8 @@ Unzip these files to igv/test/largedata. The unzipped size is approximately 1 Gb
 If you push to put these files at a different path, this path must be passed to ant as the property LARGE_DATA_DIR.
 For example, let's say you placed these data files in /user/remote/drive/largedata:
 
-ant -DLARGE_DATA_DIR="/user/remote/drive/largedata/" tests
+./gradlew -DLARGE_DATA_DIR="/user/remote/drive/largedata/" build
 
-To run the tests, simply execute the command:
-
-ant tests
-
-To run specific tests, specify a filesetpattern property:
-
-ant -Dfilesetpattern=*reader* tests
-
-This would run any test class which had "reader" in the name.
-
-ant -Dfilesetpattern=IgvToolsTest tests
-
-would run only those test classes named IgvToolsTest.
-
-The build assumes that Apache BCEL is available.  If you have failing tests, add the BCEL JAR file to your
-$ANT_HOME/lib directory.
+Also, some tests require a local instance of the Mongo executable.  You should pass this to the build as the
+property MONGO_EXEC_PATH, for example:
+./gradlew -DLARGE_DATA_DIR="/user/remote/drive/largedata/" -DMONGO_EXEC_PATH="/path/to/mongodb-2.4.6/bin/mongod" build
