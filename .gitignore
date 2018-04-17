@@ -7,5 +7,9 @@ igv.sh
 igv.log
 /.gradle
 .project
+<<<<<<< Upstream, based on origin/remove_java9_flags_for_java8
 .classpath
 /.idea/
+=======
+.classpath
+>>>>>>> 77b728c Update gitignore to exclude gradle and eclipse files.
