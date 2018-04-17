@@ -27,6 +27,13 @@ package org.broad.igv;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.*;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
+import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -470,32 +477,29 @@ public class DirectoryManager {
 
     public static void initializeLog() {
 
-        Logger logger = Logger.getRootLogger();
-        PatternLayout layout = new PatternLayout();
-        layout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
-
-        //Temp appender just used while initializing log
-        //If something goes wrong here we want a log of it
-        ConsoleAppender tempAppender = new ConsoleAppender(layout, "System.err");
-        logger.addAppender(tempAppender);
-
         // Create a log file that is ready to have text appended to it
         try {
             File logFile = getLogFile();
-            RollingFileAppender appender = new RollingFileAppender();
-            appender.setName("IGV_ROLLING_APPENDER");
-            appender.setFile(logFile.getAbsolutePath());
-            //Will actually inherit from root logger
-            appender.setThreshold(Level.ALL);
-            appender.setMaxFileSize("1000KB");
-            appender.setMaxBackupIndex(1);
-            appender.setLayout(layout);
-            appender.setAppend(true);
-            appender.activateOptions();
-            logger.addAppender(appender);
-            logger.removeAppender(tempAppender);
+            LoggerContext context = LoggerContext.getContext(false);
+            Configuration configuration = context.getConfiguration();
+            LoggerConfig rootLogger = configuration.getRootLogger();
+
+            rootLogger.removeAppender("IGV_ROLLING_APPENDER");
+            PatternLayout layout = PatternLayout.newBuilder().withConfiguration(configuration)
+                    .withPattern("%p [%d{ISO8601}] [%F:%L]  %m%n").build();
+            RollingFileAppender appender = RollingFileAppender.newBuilder().withName("IGV_ROLLING_APPENDER")
+                    .setConfiguration(configuration)
+                    .withFileName(logFile.getAbsolutePath()).withAppend(true)
+                    .withFilePattern(getIgvDirectory().getAbsolutePath() + File.pathSeparator + "igv-%i.log")
+                    .withLayout(layout)
+                    .withPolicy(SizeBasedTriggeringPolicy.createPolicy("1000K"))
+                    .build();
+            appender.start();
+            configuration.addAppender(appender);
+            rootLogger.addAppender(appender, Level.ALL, null);
+            context.updateLoggers();
         } catch (IOException e) {
-            // Can't create log file, just log to console as set in log4j.properties
+            // Can't create log file, just log to console as set in log4j2.xml
             log.error("Error creating log file", e);
         }
     }

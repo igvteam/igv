@@ -35,6 +35,13 @@ import htsjdk.tribble.index.AbstractIndex;
 import jargs.gnu.CmdLineParser;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.*;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureFileUtils;
@@ -213,33 +220,22 @@ public class IgvTools {
     }
 
     private static void initLogger() {
-        if (Logger.getRootLogger().getAppender("R") == null) {
-            RollingFileAppender fileAppender = new RollingFileAppender();
-            PatternLayout fileLayout = new PatternLayout();
-            fileLayout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
-            fileAppender.setName("R");
-            fileAppender.setFile("igv.log");
-            fileAppender.setThreshold(Level.ALL);
-            fileAppender.setMaxFileSize("10KB");
-            fileAppender.setMaxBackupIndex(1);
-            fileAppender.setAppend(true);
-            fileAppender.activateOptions();
-            fileAppender.setLayout(fileLayout);
-
-            //Logger.getRootLogger().addAppender(fileAppender);
-        }
+        LoggerContext context = LoggerContext.getContext(false);
+        Configuration configuration = context.getConfiguration();
+        LoggerConfig rootLogger = configuration.getRootLogger();
 
         if (Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME) == null) {
-            PatternLayout consoleLayout = new PatternLayout();
-            consoleLayout.setConversionPattern("%m%n");
-            ConsoleAppender consoleAppender = new ConsoleAppender();
-            consoleAppender.setThreshold(Level.INFO);
-            consoleAppender.setName(CONSOLE_APPENDER_NAME);
-            consoleAppender.setFollow(true);
-            consoleAppender.activateOptions();
-            consoleAppender.setLayout(consoleLayout);
-
-            Logger.getRootLogger().addAppender(consoleAppender);
+            PatternLayout layout = PatternLayout.newBuilder().withConfiguration(configuration)
+                    .withPattern("%m%n").build();
+            ConsoleAppender consoleAppender = ConsoleAppender.newBuilder().withName(CONSOLE_APPENDER_NAME)
+                    .setConfiguration(configuration)
+                    .setFollow(true)
+                    .withLayout(layout)
+                    .build();
+            consoleAppender.start();
+            configuration.addAppender(consoleAppender);
+            rootLogger.addAppender(consoleAppender, Level.INFO, null);
+            context.updateLoggers();
         }
     }
 
@@ -542,12 +538,25 @@ public class IgvTools {
 
             userMessageWriter = System.err;
 
-            ConsoleAppender appender = (ConsoleAppender) Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME);
-            appender.setTarget(ConsoleAppender.SYSTEM_ERR);
-            appender.activateOptions();
-
-            //See log4j.properties file
-            Logger.getRootLogger().removeAppender("stdout");
+            LoggerContext context = LoggerContext.getContext(false);
+            Configuration configuration = context.getConfiguration();
+            LoggerConfig rootLogger = configuration.getRootLogger();
+            PatternLayout layout = PatternLayout.newBuilder().withConfiguration(configuration)
+                    .withPattern("%m%n").build();
+            ConsoleAppender consoleAppender = ConsoleAppender.newBuilder().withName(CONSOLE_APPENDER_NAME)
+                    .setConfiguration(configuration)
+                    .setFollow(true)
+                    .setTarget(Target.SYSTEM_ERR)
+                    .withLayout(layout)
+                    .build();
+            consoleAppender.start();
+            rootLogger.removeAppender(CONSOLE_APPENDER_NAME);
+            configuration.addAppender(consoleAppender);
+            rootLogger.addAppender(consoleAppender, Level.INFO, null);
+            
+            //See log4j2.xml file
+            rootLogger.removeAppender("stdout");
+            context.updateLoggers();
             return true;
         }
         return false;
