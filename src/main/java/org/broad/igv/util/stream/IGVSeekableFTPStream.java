@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,14 @@ package org.broad.igv.util.stream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPReply;
-import org.broad.igv.util.ftp.FTPUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.UserPasswordInputImpl;
+import org.broad.igv.util.ftp.FTPUtils;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-
-import static junit.framework.Assert.assertTrue;
 
 /**
  * @author jrobinso
@@ -126,7 +124,7 @@ public class IGVSeekableFTPStream extends SeekableStream {
         try {
 
             FTPReply reply = ftp.pasv();
-            assertTrue(reply.isSuccess());
+            assert (reply.isSuccess());
 
             if (position > 0) ftp.setRestPosition(position);
 
