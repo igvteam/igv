@@ -40,11 +40,11 @@ public class BasePairFeature implements Feature{
     int startRight;
     int endLeft;
     int endRight;
-    Color color;
+    int colorIndex;
 
-    public BasePairFeature(String chr,  int startLeft, int startRight, int endLeft, int endRight,  Color color) {
+    public BasePairFeature(String chr,  int startLeft, int startRight, int endLeft, int endRight,  int colorIndex) {
         this.chr = chr;
-        this.color = color;
+        this.colorIndex = colorIndex;
         this.endLeft = endLeft;
         this.endRight = endRight;
         this.startLeft = startLeft;
@@ -79,14 +79,9 @@ public class BasePairFeature implements Feature{
 
     public int getEndRight() { return endRight; }
 
-    public Color getColor() { return color; }
-
-
-    public String toStringNoColor() {
-        return getChr() + "\t" + startLeft + "\t" + startRight + "\t" + endLeft + "\t" + endRight;
-    }
+    public int getColorIndex() { return colorIndex; }
 
     public String toString() {
-        return toStringNoColor() + "\t" + color;
+        return getChr() + "\t" + startLeft + "\t" + startRight + "\t" + endLeft + "\t" + endRight;
     }
 }
