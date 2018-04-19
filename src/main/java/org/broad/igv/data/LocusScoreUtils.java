@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ import java.util.*;
  * @deprecated Use {@link FeatureUtils}
  * @author jrobinso
  */
+@Deprecated
 public class LocusScoreUtils {
 
 
