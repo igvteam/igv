@@ -3,6 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/IGV.iml" filepath="$PROJECT_DIR$/IGV.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/igv.iml" filepath="$PROJECT_DIR$/.idea/modules/igv.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/igv_main.iml" filepath="$PROJECT_DIR$/.idea/modules/igv_main.iml" group="igv" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/igv_test.iml" filepath="$PROJECT_DIR$/.idea/modules/igv_test.iml" group="igv" />
     </modules>
   </component>
 </project>
