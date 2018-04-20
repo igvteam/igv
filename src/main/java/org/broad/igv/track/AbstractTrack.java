@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -69,7 +70,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 @XmlType(factoryClass = IGVSessionReader.class, factoryMethod = "getNextTrack")
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlSeeAlso({CNFreqTrack.class, CoverageTrack.class, AlignmentTrack.class, DataSourceTrack.class, GWASTrack.class, FeatureTrack.class, MergedTracks.class})
+@XmlSeeAlso({CNFreqTrack.class, CoverageTrack.class, AlignmentTrack.class, DataSourceTrack.class, GWASTrack.class, FeatureTrack.class, MergedTracks.class, BasePairTrack.class})
 public abstract class AbstractTrack implements Track {
 
     private static Logger log = Logger.getLogger(AbstractTrack.class);

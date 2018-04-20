@@ -57,6 +57,7 @@ import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
@@ -518,43 +519,112 @@ public class TrackMenuUtils {
     }
 
     /**
-     * Return popup menu with items applicable to arc tracks
+     * Return popup menu with items applicable to BasePairTrack(s)
      *
-     * @return
+     * @author stevenbusan
      */
-    // stevenbusan
     public static void addBasePairItems(JPopupMenu menu, final Collection<Track> tracks) {
+
+        final ArrayList<BasePairTrack> bpTracks = new ArrayList<BasePairTrack>();
+        for (Track track : tracks) {
+            if (track instanceof BasePairTrack) {
+                bpTracks.add((BasePairTrack) track);
+            }
+        }
+
+        JLabel arcColorHeading = new JLabel(LEADING_HEADING_SPACER + "Arc colors (click to change)", JLabel.LEFT);
+        arcColorHeading.setFont(UIConstants.boldFont);
+
+        menu.add(arcColorHeading);
+
+        // aggregate arc color selector/legends for multiple selected tracks
+        ArrayList<Pair<Color, String>> legendList = new ArrayList<Pair<Color, String>>();
+        HashSet<String> keys = new HashSet<String>();
+        for (BasePairTrack track : bpTracks) {
+            List<String> colors = track.getRenderOptions().getColors();
+            List<String> colorLabels = track.getRenderOptions().getColorLabels();
+            // iterate in reverse order so colors appearing first in list are the ones rendered on top
+            for (int i=colors.size()-1; i>=0; --i) {
+                String key = colors.get(i) + ' ' + colorLabels.get(i);
+                if (!keys.contains(key)) {
+                    keys.add(key);
+                    legendList.add(new Pair<Color, String>(ColorUtilities.stringToColor(colors.get(i)), colorLabels.get(i)));
+                }
+            }
+        }
+
+        for (Pair<Color, String> pair : legendList) {
+            final Color color = pair.getFirst();
+            final String label = pair.getSecond();
+
+            JLabel colorBox = new JLabel(LEADING_HEADING_SPACER + "██");
+            colorBox.setFont(UIConstants.boldFont);
+            colorBox.setForeground(color);
+
+            JPanel p = new JPanel();
+            p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+            p.add(colorBox);
+            p.add(Box.createHorizontalStrut(1));
+            p.add(new JLabel(" "+label));
+            p.add(Box.createGlue());
+            p.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            JMenuItem item = new JMenuItem();
+            item.add(p);
+            double w = p.getPreferredSize().getWidth();
+            double h = p.getPreferredSize().getHeight();
+            Dimension size = new Dimension();
+            size.setSize(w, h+8);
+            item.setPreferredSize(size);
+
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    changeBasePairTrackColor(bpTracks, color, label);
+                }
+            });
+
+            menu.add(item);
+        }
+
+        menu.addSeparator();
 
         JLabel arcDirectionHeading = new JLabel(LEADING_HEADING_SPACER + "Arc direction", JLabel.LEFT);
         arcDirectionHeading.setFont(UIConstants.boldFont);
 
         menu.add(arcDirectionHeading);
 
-        final String[] arcDirectionLabels = {"Up", "Down"};
+        // preselect up or down if all selected tracks have the same arc direction
+        int upCount = 0;
+        int downCount = 0;
+        BasePairTrack.ArcDirection currentArcDirection = null; // mixed up and down
+        for (BasePairTrack track: bpTracks) {
+            if (track.getRenderOptions().getArcDirection() == BasePairTrack.ArcDirection.UP) ++upCount;
+            if (track.getRenderOptions().getArcDirection() == BasePairTrack.ArcDirection.DOWN) ++downCount;
+        }
+        if (upCount==0) currentArcDirection = BasePairTrack.ArcDirection.DOWN;
+        if (downCount==0) currentArcDirection = BasePairTrack.ArcDirection.UP;
 
-        for (int i = 0; i < arcDirectionLabels.length; i++) {
-            JCheckBoxMenuItem item = new JCheckBoxMenuItem(arcDirectionLabels[i]);
-            final int n = (i == 0) ? 1 : -1;
-            for (Track track : tracks) {
-                if (track instanceof BasePairTrack) {
-                    if (((BasePairTrack) track).getDirection() == n) {
-                        item.setSelected(true);
-                    }
-                }
-            }
-            item.addActionListener(new ActionListener() {
+        ButtonGroup group = new ButtonGroup();
+        Map<String, BasePairTrack.ArcDirection> arcDirections = new LinkedHashMap<String, BasePairTrack.ArcDirection>(3);
+        arcDirections.put("Up", BasePairTrack.ArcDirection.UP);
+        arcDirections.put("Down", BasePairTrack.ArcDirection.DOWN);
+
+        for (final Map.Entry<String, BasePairTrack.ArcDirection> entry : arcDirections.entrySet()) {
+            JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
+            mm.setSelected(currentArcDirection == entry.getValue());
+            mm.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     for (Track track : tracks) {
                         if (track instanceof BasePairTrack) {
-                            ((BasePairTrack) track).setDirection(n);
+                            ((BasePairTrack) track).getRenderOptions().setArcDirection(entry.getValue());
                         }
                     }
-                    IGV.getInstance().repaint();
+                    refresh();
                 }
             });
-            menu.add(item);
+            group.add(mm);
+            menu.add(mm);
         }
-
         menu.addSeparator();
     }
 
@@ -1264,6 +1334,33 @@ public class TrackMenuUtils {
 
         for (Track track : selectedTracks) {
             track.setAltColor(ColorUtilities.modifyAlpha(color, currentSelection.getAlpha()));
+        }
+        refresh();
+
+    }
+
+    /**
+     *
+     * @author stevenbusan
+     */
+    public static void changeBasePairTrackColor(final List<BasePairTrack> tracks,
+                                                final Color currentColor,
+                                                final String currentLabel) {
+
+        if (tracks.isEmpty()) {
+            return;
+        }
+
+        Color newColor = UIUtilities.showColorChooserDialog(
+                "Select Arc Color ("+currentLabel+")",
+                currentColor);
+
+        if (newColor == null) {
+            return;
+        }
+
+        for (BasePairTrack t : tracks) {
+            t.getRenderOptions().changeColor(currentColor, currentLabel, newColor);
         }
         refresh();
 

@@ -39,7 +39,7 @@ import java.util.*;
 // multiple return from loadDotBracket() and loadConnectTable()
 class SeqLenAndPairs {
     public int seqLen;
-    public  ArrayList<Point> pairs;
+    public ArrayList<Point> pairs;
     public SeqLenAndPairs(int seqLen, ArrayList<Point> pairs) {
         this.seqLen = seqLen;
         this.pairs = pairs;
@@ -65,6 +65,7 @@ public class BasePairFileUtils {
 
     // TODO: support bpseq, stockholm, other formats?
     // TODO: warning dialog on file overwrite
+    // FIXME: some of these might hang with empty file input
 
     /**
      * Convert RNA-based transcript coordinates to stranded chromosome coords for
@@ -80,20 +81,20 @@ public class BasePairFileUtils {
      * @return
      */
     static LinkedList<BasePairFeature> transformArcs(LinkedList<BasePairFeature> arcs,
-                                                    int seqLen,
-                                                    int newLeft,
-                                                    String strand){
-        LinkedList<BasePairFeature> transArcs = new LinkedList<>();
-        for (BasePairFeature arc : arcs){
+                                                     int seqLen,
+                                                     int newLeft,
+                                                     String strand) {
+        LinkedList<BasePairFeature> transArcs = new LinkedList<BasePairFeature>();
+        for (BasePairFeature arc : arcs) {
             String chr = arc.getChr();
-            Color color = arc.getColor();
+            int colorIndex = arc.getColorIndex();
             int startLeft, startRight, endLeft, endRight;
-            if (strand == "+"){
+            if (strand == "+") {
                 startLeft = arc.getStartLeft() + newLeft - 1;
                 startRight = arc.getStartRight() + newLeft - 1;
                 endLeft = arc.getEndLeft() + newLeft - 1;
                 endRight = arc.getEndRight() + newLeft - 1;
-            } else if (strand == "-"){
+            } else if (strand == "-") {
                 startLeft = seqLen - arc.getEndRight() + newLeft;
                 startRight = seqLen - arc.getEndLeft() + newLeft;
                 endLeft = seqLen - arc.getStartRight() + newLeft;
@@ -102,11 +103,11 @@ public class BasePairFileUtils {
                 throw new RuntimeException("Unrecognized strand (options: \"+\",\"-\")");
             }
             BasePairFeature transArc = new BasePairFeature(chr,
-                                                           startLeft,
-                                                           startRight,
-                                                           endLeft,
-                                                           endRight,
-                                                           color);
+                    startLeft,
+                    startRight,
+                    endLeft,
+                    endRight,
+                    colorIndex);
             transArcs.add(transArc);
         }
         return transArcs;
@@ -201,19 +202,18 @@ public class BasePairFileUtils {
 
     static SeqLenAndBinnedPairs loadPairingProb(String inFile) throws
             FileNotFoundException, IOException {
-        // TODO: add probability threshold color legend to track dropdown menu
         // TODO: support alternate thresholds, interactive threshold update from track UI?
 
-        ArrayList<ArrayList<Point>> binnedPairs = new ArrayList<>();
+        ArrayList<ArrayList<Point>> binnedPairs = new ArrayList<ArrayList<Point>>();
         int seqLen = 0;
 
         double[] probThresh = {0.1, 0.3, 0.8};
-        double[] negLogTenProbThresh = {0,0,0};
-        for (int i=0; i<probThresh.length; i++) {
+        double[] negLogTenProbThresh = {0, 0, 0};
+        for (int i = 0; i < probThresh.length; i++) {
             negLogTenProbThresh[i] = -Math.log10(probThresh[i]);
         }
 
-        for (int i=0; i<probThresh.length; i++) binnedPairs.add(new ArrayList<>());
+        for (int i = 0; i < probThresh.length; i++) binnedPairs.add(new ArrayList<java.awt.Point>());
 
         BufferedReader br = null;
 
@@ -229,7 +229,7 @@ public class BasePairFileUtils {
                 int right = Integer.parseInt(s[1]);
                 double negLogTenProb = Double.parseDouble(s[2]);
                 int binIndex = -1;
-                for (int i=probThresh.length-1; i>=0; i--){
+                for (int i = probThresh.length - 1; i >= 0; i--) {
                     if (negLogTenProb <= negLogTenProbThresh[i]) {
                         binIndex = i;
                         break;
@@ -248,21 +248,32 @@ public class BasePairFileUtils {
 
     static void writeBasePairFile(String bpFile,
                                   ArrayList<Color> colors,
+                                  ArrayList<String> colorLabels,
                                   ArrayList<LinkedList<BasePairFeature>> groupedArcs) throws IOException {
         PrintWriter pw = null;
 
         try {
             pw = new PrintWriter(new BufferedWriter(new FileWriter(bpFile)));
             // first write enumerated colors header
-            for (Color color : colors) {
-                pw.println("color:\t" + color.getRed() + "\t" + color.getGreen() + "\t" + color.getBlue());
+            for (int i=0; i<colors.size(); ++i) {
+                Color color = colors.get(i);
+                String label = "";
+                try {
+                    label = colorLabels.get(i);
+                } catch (IndexOutOfBoundsException e) {
+                } catch (NullPointerException e) {
+                }
+                pw.println("color:\t" + color.getRed() +
+                        "\t" + color.getGreen() +
+                        "\t" + color.getBlue() +
+                        "\t" + label);
             }
 
-            // then write arc coordinates
+            // then write arc coordinates and color index
             int colorIndex = 0;
             for (LinkedList<BasePairFeature> colorGroup : groupedArcs) {
                 for (BasePairFeature arc : colorGroup) {
-                    pw.println(arc.toStringNoColor() + "\t" + colorIndex);
+                    pw.println(arc.toString() + "\t" + colorIndex);
                 }
                 colorIndex++;
             }
@@ -359,7 +370,7 @@ public class BasePairFileUtils {
                     startRight,
                     endLeft,
                     endRight,
-                    null));
+                    0));
         }
         return helices;
     }
@@ -368,7 +379,6 @@ public class BasePairFileUtils {
      * Convert a base pairing structure file in dot-bracket notation
      * (also known as Vienna format) to an easily parseable .bp arcs file. Does not
      * currently handle mapping coords to spliced transcripts.
-     *
      */
     public static void dotBracketToBasePairFile(String inFile,
                                                 String bpFile,
@@ -382,11 +392,11 @@ public class BasePairFileUtils {
         int seqLen = s.seqLen;
         LinkedList<BasePairFeature> arcs = pairsToHelices(pairs, chromosome);
         arcs = transformArcs(arcs, seqLen, left, strand);
-        ArrayList<Color> colors = new ArrayList<>();
+        ArrayList<Color> colors = new ArrayList<Color>();
         colors.add(Color.black);
-        ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<>();
+        ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<LinkedList<BasePairFeature>>();
         groupedArcs.add(arcs); // list of length 1 for this case (arcs only have 1 color)
-        writeBasePairFile(bpFile, colors, groupedArcs);
+        writeBasePairFile(bpFile, colors, null, groupedArcs);
     }
 
     /**
@@ -407,11 +417,11 @@ public class BasePairFileUtils {
         int seqLen = s.seqLen;
         LinkedList<BasePairFeature> arcs = pairsToHelices(pairs, chromosome);
         arcs = transformArcs(arcs, seqLen, left, strand);
-        ArrayList<Color> colors = new ArrayList<>();
+        ArrayList<Color> colors = new ArrayList<Color>();
         colors.add(Color.black);
-        ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<>();
+        ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<LinkedList<BasePairFeature>>();
         groupedArcs.add(arcs); // list of length 1 for this case (arcs only have 1 color)
-        writeBasePairFile(bpFile, colors, groupedArcs);
+        writeBasePairFile(bpFile, colors, null, groupedArcs);
     }
 
     /**
@@ -430,16 +440,23 @@ public class BasePairFileUtils {
         SeqLenAndBinnedPairs s = loadPairingProb(inFile);
         ArrayList<ArrayList<Point>> binnedPairs = s.binnedPairs;
         int seqLen = s.seqLen;
-        ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<>();
-        for (ArrayList<Point> pairGroup : binnedPairs){
+        ArrayList<LinkedList<BasePairFeature>> groupedArcs = new ArrayList<LinkedList<BasePairFeature>>();
+        for (ArrayList<Point> pairGroup : binnedPairs) {
             groupedArcs.add(transformArcs(pairsToHelices(pairGroup, chromosome),
-                                           seqLen, left, strand));
+                    seqLen, left, strand));
         }
-        ArrayList<Color> colors = new ArrayList<>();
-        colors.add(new Color(255, 204, 0));
-        colors.add(new Color(72, 143, 205));
-        colors.add(new Color(81, 184, 72));
-        writeBasePairFile(bpFile, colors, groupedArcs);
+        ArrayList<Color> colors = new ArrayList<Color>();
+        //colors.add(new Color(255, 204, 0));
+        //colors.add(new Color(72, 143, 205));
+        //colors.add(new Color(81, 184, 72));
+        colors.add(new Color(255, 218, 125));
+        colors.add(new Color(113, 195, 209));
+        colors.add(new Color(51, 114, 38));
+        ArrayList<String> colorLabels = new ArrayList<String>();
+        colorLabels.add("PP 10 - 30%");
+        colorLabels.add("PP 30 - 80%");
+        colorLabels.add("Pairing probability > 80%");
+        writeBasePairFile(bpFile, colors, colorLabels, groupedArcs);
     }
 
 
