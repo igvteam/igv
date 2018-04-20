@@ -5,3 +5,6 @@ igv.sh
 /build
 /bin
 igv.log
+/.gradle
+.project
+.classpath
