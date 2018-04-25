@@ -6,7 +6,7 @@
 #Script must be in the same directory as igv.jar
 #Add the flag -Ddevelopment = true to use features still in development
 prefix=`dirname $(readlink $0 || echo $0)`
-exec java -Xmx4000m \
+exec java  -classpath "$prefix"/lib --module-path="$prefix"/modules -Xmx4000m \
 	-Dapple.laf.useScreenMenuBar=true \
 	-Djava.net.preferIPv4Stack=true \
-	-jar "$prefix"/igv.jar "$@"
+	--module org.broad.igv/org.broad.igv.ui.Main "$@"
