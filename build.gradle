@@ -21,10 +21,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 apply plugin: 'java'
-apply plugin: 'application'
 import org.apache.tools.ant.filters.ReplaceTokens
 
 ext.moduleName = 'org.broad.igv'
+ext.mainClassName = 'org.broad.igv.ui.Main'
 
 dependencies {
     compile fileTree(dir: 'lib', include: '*.jar')
@@ -38,8 +38,18 @@ task wrapper(type: Wrapper) {
 sourceCompatibility = 1.9
 targetCompatibility = 1.9
 
-// Define the main class for the application
-mainClassName = 'org.broad.igv.ui.Main'
+processResources {
+    // Set the current timestamp for release builds; pass in a blank property to enable (i.e. -Ptimestamp="" at CLI)
+    if (timestamp.equals("")) { timestamp = new Date().format("MM/dd/yyyy hh:mm aa") }
+
+    filesMatching('resources/about.properties') {
+        filter (ReplaceTokens,
+                tokens: [ VERSION: version, BUILD: buildNumber, DEFAULT_MASTER_RESOURCE_URL: dataServerUrl,
+                          TIMESTAMP: timestamp, DEVELOPMENT: development ])
+    }
+
+    from("src/main/resources-jlfgr-1_0") exclude "LICENSE", "META-INF"
+}
 
 compileJava {
     inputs.property("moduleName", moduleName)
@@ -63,6 +73,17 @@ compileTestJava {
         ]
         classpath = fileTree(dir: 'test/lib', include: '*.jar')
     }
+}
+
+tasks.withType(Test) {
+    systemProperties = System.getProperties()
+    systemProperties['java.awt.headless'] = 'true'
+    systemProperties['make.fail'] = 'false'
+    systemProperties['include.longrunning'] = 'false'
+    systemProperties['ignore.ioexceptions'] = 'false'
+    maxHeapSize = '2000m'
+    jvmArgs '-javaagent:test/lib/JavaAgent.jar'
+    forkEvery = 1
 }
 
 test {
@@ -97,26 +118,43 @@ jar {
     }
 }
 
-processResources {
-    // Set the current timestamp for release builds; pass in a blank property to enable (i.e. -Ptimestamp="" at CLI)
-    if (timestamp.equals("")) { timestamp = new Date().format("MM/dd/yyyy hh:mm aa") }
-
-    filesMatching('resources/about.properties') {
-        filter (ReplaceTokens,
-                tokens: [ VERSION: version, BUILD: buildNumber, DEFAULT_MASTER_RESOURCE_URL: dataServerUrl,
-                          TIMESTAMP: timestamp, DEVELOPMENT: development ])
+def classpathContent = copySpec {
+    from ('lib') {
+        include '*.jar'
     }
-
-    from("src/main/resources-jlfgr-1_0") exclude "LICENSE", "META-INF"
+    into "lib"
 }
 
-tasks.withType(Test) {
-    systemProperties = System.getProperties()
-    systemProperties['java.awt.headless'] = 'true'
-    systemProperties['make.fail'] = 'false'
-    systemProperties['include.longrunning'] = 'false'
-    systemProperties['ignore.ioexceptions'] = 'false'
-    maxHeapSize = '2000m'
-    jvmArgs '-javaagent:test/lib/JavaAgent.jar'
-    forkEvery = 1
+def modulepathContent = copySpec {
+    from ("${buildDir}/libs") {
+        include '*.jar'
+    }
+    from ('modules')  {
+        include '*.jar'
+    }
+    into "modules"
 }
+
+task createDist(type: Copy, dependsOn: jar)  {
+    from ('scripts') {
+        include 'igv.bat'
+        include 'igv.command'
+        include 'igv.sh'
+    }
+    
+    with classpathContent
+    with modulepathContent
+
+    into "${buildDir}/dist"
+}
+
+task createDistZip(type: Zip, dependsOn: createDist) {
+    destinationDir = file("${buildDir}/distZip")
+    baseName = "IGV"
+    from "${buildDir}/dist"
+    doLast {
+        project.exec { commandLine('chmod', '775', createDistZip.archivePath ) }
+    }
+}
+
+build.dependsOn createDistZip
