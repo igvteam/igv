@@ -24,6 +24,8 @@ apply plugin: 'java'
 apply plugin: 'application'
 import org.apache.tools.ant.filters.ReplaceTokens
 
+ext.moduleName = 'org.broad.igv'
+
 dependencies {
     compile fileTree(dir: 'lib', include: '*.jar')
     testCompile fileTree(dir: 'test/lib', include: '*.jar')
@@ -33,11 +35,55 @@ task wrapper(type: Wrapper) {
     gradleVersion = '4.4.1'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 1.9
+targetCompatibility = 1.9
 
 // Define the main class for the application
 mainClassName = 'org.broad.igv.ui.Main'
+
+compileJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs = [
+            '--module-path', files(file('modules')).asPath,
+        ]
+    }
+}
+
+FileCollection testModulePath = files(sourceSets.main.java.outputDir, file('modules'), file('test/modules'))
+
+compileTestJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs = [
+            '--module-path',  testModulePath.asPath, 
+            '--add-modules', 'junit',
+            '--add-modules', 'fest.swing',
+            '--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath, 
+        ]
+        classpath = fileTree(dir: 'test/lib', include: '*.jar')
+    }
+}
+
+test {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        jvmArgs = [
+            '--module-path',  testModulePath.asPath, 
+            '--add-modules', 'junit', 
+            '--add-modules', 'fest.swing', 
+            '--add-modules', 'java.xml.bind', 
+            '--add-modules', 'ALL-MODULE-PATH',
+            '--add-reads', "$moduleName=junit", 
+            '--add-reads', "$moduleName=fest.swing",
+            '--add-exports', "$moduleName/org.broad.igv.preprocess=junit",
+            '--add-exports', "$moduleName/org.broad.tribble=junit",
+            '--add-exports', "$moduleName/util=junit",
+            '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath, 
+        ]
+        classpath = fileTree(dir: 'test/lib', include: '*.jar') + fileTree(dir: 'lib', include: '*.jar')
+    }
+}
 
 jar {
     manifest {
@@ -60,6 +106,8 @@ processResources {
                 tokens: [ VERSION: version, BUILD: buildNumber, DEFAULT_MASTER_RESOURCE_URL: dataServerUrl,
                           TIMESTAMP: timestamp, DEVELOPMENT: development ])
     }
+
+    from("src/main/resources-jlfgr-1_0") exclude "LICENSE", "META-INF"
 }
 
 tasks.withType(Test) {

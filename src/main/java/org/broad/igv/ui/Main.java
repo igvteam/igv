@@ -100,12 +100,12 @@ public class Main {
                 }
 
                 String javaVersion = System.getProperty("java.version");
-                if (javaVersion == null || !javaVersion.startsWith("1.8")) {
+                if (javaVersion == null || javaVersion.startsWith("1.8")) {
                     try {
-                        System.out.println("Detected an unsupported Java version.  Only Java 8 is supported at this time.");
+                        System.out.println("Detected an unsupported Java version.  Java 8 is not supported by this release.");
 
                         if (!GraphicsEnvironment.isHeadless()) {
-                            JOptionPane.showMessageDialog(null, "Detected an unsupported Java version.  Only Java 8 is supported at this time.");
+                            JOptionPane.showMessageDialog(null, "Detected an unsupported Java version.  Java 8 is not supported by this release.");
                         }
                     } finally {
                         System.exit(1);
