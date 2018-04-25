@@ -152,6 +152,8 @@ task createDistZip(type: Zip, dependsOn: createDist) {
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGV"
     from "${buildDir}/dist"
+    into createDistZip.baseName + "_${version}"
+
     doLast {
         project.exec { commandLine('chmod', '775', createDistZip.archivePath ) }
     }
