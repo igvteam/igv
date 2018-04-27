@@ -140,6 +140,7 @@ task createDist(type: Copy, dependsOn: jar)  {
         include 'igv.bat'
         include 'igv.command'
         include 'igv.sh'
+        include 'igv.args'
     }
     
     with classpathContent
