@@ -55,12 +55,13 @@ compileJava {
     inputs.property("moduleName", moduleName)
     doFirst {
         options.compilerArgs = [
-            '--module-path', files(file('modules')).asPath,
+            '--module-path', classpath.asPath,
         ]
+        classpath = files()
     }
 }
 
-FileCollection testModulePath = files(sourceSets.main.java.outputDir, file('modules'), file('test/modules'))
+FileCollection testModulePath = files(sourceSets.main.java.outputDir, file('lib'), file('test/modules'))
 
 compileTestJava {
     inputs.property("moduleName", moduleName)
@@ -102,7 +103,7 @@ test {
             '--add-exports', "$moduleName/util=junit",
             '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath, 
         ]
-        classpath = fileTree(dir: 'test/lib', include: '*.jar') + fileTree(dir: 'lib', include: '*.jar')
+        classpath = fileTree(dir: 'test/lib', include: '*.jar')
     }
 }
 
