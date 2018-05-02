@@ -50,8 +50,7 @@
     <property name="dist.dir" value="build/IGV-dist/"/>
     <property name="jar.path" value="${dist.dir}${jar.name}"/>
 
-    <property name="batik-codec-finame" value="batik-codec__V1.7.jar" />
-    <property name="goby-io-finame" value="goby-io-igv__V1.0.jar" />
+    <property name="goby-io-finame" value="goby-io-igv-1.1.jar" />
     
     <!-- These paths are dictated by Gradle. -->
     <property name="class.dir" value="build/classes/java/main" />
@@ -73,7 +72,7 @@
         <unzip dest="${tmp.dir}">
             <!-- Copy almost everything to tmp directory
             Certain jars we include whole, because we need their manifests
-            Batik and Goby get copied later.
+            Goby get copied later.
             Certain jars we just want to ignore (junit, appbundler)-->
             <patternset>
                 <include name="**/*"/>
@@ -84,7 +83,6 @@
                 <include name="**/*.jar"/>
                 <exclude name="appbundler*.jar"/>
                 <exclude name="**/*junit*.jar"/>
-                <exclude name="**/${batik-codec-finame}"/>
                 <exclude name="**/${goby-io-finame}"/>
                 <exclude name="**/*AppleJavaExtensions.jar"/>
             </fileset>
@@ -105,7 +103,7 @@
             <rootfileset dir="${tmp.dir}" includes="org/broad/**/*.class" />
         </classfileset>
 
-        <property name="class-path" value="${batik-codec-finame} ${goby-io-finame}" />
+        <property name="class-path" value="${goby-io-finame}" />
 
         <jar destfile="${jar.path}" basedir="${tmp.dir}" compress="true" duplicate="preserve">
             <fileset refid="rootFiles"/>
@@ -130,7 +128,6 @@
             </manifest>
         </jar>
         <delete dir="${tmp.dir}" />
-        <copy file="${lib.dir}${batik-codec-finame}" tofile="${dist.dir}${batik-codec-finame}" overwrite="true"/>
         <copy file="${lib.dir}${goby-io-finame}" tofile="${dist.dir}${goby-io-finame}" overwrite="true"/>
     </target>
 
@@ -151,15 +148,12 @@
     </macrodef>
 
     <target name="addPerms">
-        <addPermsMacro jarfile="${dist.dir}${batik-codec-finame}"/>
         <addPermsMacro jarfile="${dist.dir}${goby-io-finame}"/>
     </target>
 
     <!-- Sign all jars if a keystore is defined -->
     <target name="signJars" if="keystore">
         <signjar jar="${jar.path}" alias="${alias}" keypass="${key-password}"
-                 storepass="${store-password}" keystore="${keystore}" tsaurl="${tsaurl}"/>
-        <signjar jar="${dist.dir}${batik-codec-finame}" alias="${alias}" keypass="${key-password}"
                  storepass="${store-password}" keystore="${keystore}" tsaurl="${tsaurl}"/>
         <signjar jar="${dist.dir}${goby-io-finame}" alias="${alias}" keypass="${key-password}"
                  storepass="${store-password}" keystore="${keystore}" tsaurl="${tsaurl}"/>

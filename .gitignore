@@ -3,6 +3,7 @@
 igv.sh
 /out/
 /build
+/build_java8
 /bin
 igv.log
 /.gradle

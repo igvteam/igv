@@ -1,0 +1,123 @@
+// The MIT License (MIT)
+//
+// Copyright (c) 2007-2018 Broad Institute
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+apply plugin: 'java'
+import org.apache.tools.ant.filters.ReplaceTokens
+
+// Define the main class for the application
+ext.mainClassName = 'org.broad.igv.ui.Main'
+
+// Put the Java 8 build into a special dir to avoid accidental collisions.
+// Despite this, it is recommended that Java 8 vs. 9 builds be run in different locations.
+buildDir = 'build_java8' 
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', 'src/main/java8']
+        }
+    }
+}
+
+dependencies {
+    // Use the older JIDE lib for Java 8 builds
+    compile fileTree(dir: 'lib', include: '*.jar', exclude: 'jide-oss-2018.04.18-master.jar') + fileTree(dir: 'lib_java8', include: '*.jar')
+    testCompile fileTree(dir: 'test/lib', include: '*.jar')
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.4.1'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+processResources {
+    // Set the current timestamp for release builds; pass in a blank property to enable (i.e. -Ptimestamp="" at CLI)
+    if (timestamp.equals("")) { timestamp = new Date().format("MM/dd/yyyy hh:mm aa") }
+
+    filesMatching('resources/about.properties') {
+        filter (ReplaceTokens,
+                tokens: [ VERSION: version, BUILD: buildNumber, DEFAULT_MASTER_RESOURCE_URL: dataServerUrl,
+                          TIMESTAMP: timestamp, DEVELOPMENT: development ])
+    }
+
+    from("src/main/resources-jlfgr-1_0") exclude "LICENSE", "META-INF"
+}
+
+jar {
+    manifest {
+        attributes(
+            "Permissions": "all-permissions",
+            "Application-Name": "IGV",
+            "Built-By": System.getProperty('user.name'),
+            "Main-Class": mainClassName,
+            "Class-Path": configurations.compile.collect { it.getName() }.join(' ')
+        )
+    }
+}
+
+tasks.withType(Test) {
+    systemProperties = System.getProperties()
+    systemProperties['java.awt.headless'] = 'true'
+    systemProperties['make.fail'] = 'false'
+    systemProperties['include.longrunning'] = 'false'
+    systemProperties['ignore.ioexceptions'] = 'false'
+    maxHeapSize = '2000m'
+    forkEvery = 1
+}
+
+def classpathContent = copySpec {
+    from ('lib') {
+        include '*.jar'
+    }
+    into "lib"
+}
+
+task createDist(type: Copy, dependsOn: jar)  {
+    from ('scripts/java8') {
+        include 'igv.bat'
+        include 'igv.command'
+        include 'igv.sh'
+    }
+    from ('${buildDir}/libs') {
+        include '*.jar'
+    }
+    from ('lib') {
+        include '*.jar'
+    }
+
+    into "${buildDir}/dist"
+}
+
+task createDistZip(type: Zip, dependsOn: createDist) {
+    destinationDir = file("${buildDir}/distZip")
+    baseName = "IGV"
+    from "${buildDir}/dist"
+    into createDistZip.baseName + "_${version}"
+
+    doLast {
+        project.exec { commandLine('chmod', '775', createDistZip.archivePath ) }
+    }
+}
+
+build.dependsOn createDistZip
