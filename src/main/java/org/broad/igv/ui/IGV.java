@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,6 @@
  */
 package org.broad.igv.ui;
 
-import apple.dts.samplecode.osxadapter.OSXAdapter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
@@ -2286,7 +2285,7 @@ public class IGV implements IGVEventObserver {
         private void setAppleDockIcon() {
             try {
                 Image image = getIconImage();
-                OSXAdapter.setDockIconImage(image);
+                OSXIntegration.setDockIcon(image);
             } catch (Exception e) {
                 log.error("Error setting apple dock icon", e);
             }
@@ -2441,7 +2440,6 @@ public class IGV implements IGVEventObserver {
             tp.getScrollPane().getNamePanel().repaint();
         }
     }
-
 
 //
 //    NOTE:  MAC ONLY,  WILL NOT COMPILE ON OTHER PLATFORMS

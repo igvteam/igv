@@ -25,7 +25,6 @@
 
 package org.broad.igv.ui;
 
-import apple.dts.samplecode.osxadapter.OSXAdapter;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -162,13 +161,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         //This is for Macs, so showing the about dialog
         //from the command bar does what we want.
         if (Globals.IS_MAC) {
-            try {
-                OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("showAboutDialog", (Class[]) null));
-                OSXAdapter.setQuitHandler(ShutdownThread.class, ShutdownThread.class.getDeclaredMethod("runS", (Class[]) null));
-            } catch (Exception e) {
-                log.error("Error setting apple-specific about and quit handlers", e);
-            }
-
+            OSXIntegration.setAboutHandler(this);
+            OSXIntegration.setQuitHandler();
         }
     }
 
