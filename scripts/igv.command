@@ -9,7 +9,7 @@
 #Script must be in the same directory as igv.jar
 #Add the flag -Ddevelopment = true to use features still in development
 prefix=`dirname $(readlink $0 || echo $0)`
-exec java  -classpath "$prefix"/lib --module-path="$prefix"/modules -Xmx4000m \
+exec java --module-path="$prefix"/lib -Xmx4000m \
     @igv.args \
     -Xdock:name="IGV" \
 	-Dapple.laf.useScreenMenuBar=true \

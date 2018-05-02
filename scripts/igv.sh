@@ -7,7 +7,7 @@
 #Add the flag -Ddevelopment = true to use features still in development
 #Add the flag -Dsun.java2d.uiScale=2.0 for HiDPI displays
 prefix=`dirname $(readlink $0 || echo $0)`
-exec java  -classpath "$prefix"/lib --module-path="$prefix"/modules -Xmx4000m \
+exec java --module-path="$prefix"/lib -Xmx4000m \
     @igv.args \
 	-Dapple.laf.useScreenMenuBar=true \
 	-Djava.net.preferIPv4Stack=true \

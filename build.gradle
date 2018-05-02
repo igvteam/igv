@@ -61,18 +61,16 @@ compileJava {
     }
 }
 
-FileCollection testModulePath = files(sourceSets.main.java.outputDir, file('lib'), file('test/modules'))
-
 compileTestJava {
     inputs.property("moduleName", moduleName)
     doFirst {
         options.compilerArgs = [
-            '--module-path',  testModulePath.asPath, 
+            '--module-path',  classpath.asPath, 
             '--add-modules', 'junit',
             '--add-modules', 'fest.swing',
             '--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath, 
         ]
-        classpath = fileTree(dir: 'test/lib', include: '*.jar')
+        classpath = files()
     }
 }
 
@@ -83,7 +81,6 @@ tasks.withType(Test) {
     systemProperties['include.longrunning'] = 'false'
     systemProperties['ignore.ioexceptions'] = 'false'
     maxHeapSize = '2000m'
-    jvmArgs '-javaagent:test/lib/JavaAgent.jar'
     forkEvery = 1
 }
 
@@ -91,7 +88,7 @@ test {
     inputs.property("moduleName", moduleName)
     doFirst {
         jvmArgs = [
-            '--module-path',  testModulePath.asPath, 
+            '--module-path',  classpath.asPath, 
             '--add-modules', 'junit', 
             '--add-modules', 'fest.swing', 
             '--add-modules', 'java.xml.bind', 
@@ -103,7 +100,7 @@ test {
             '--add-exports', "$moduleName/util=junit",
             '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath, 
         ]
-        classpath = fileTree(dir: 'test/lib', include: '*.jar')
+        classpath = files()
     }
 }
 
@@ -126,16 +123,6 @@ def classpathContent = copySpec {
     into "lib"
 }
 
-def modulepathContent = copySpec {
-    from ("${buildDir}/libs") {
-        include '*.jar'
-    }
-    from ('modules')  {
-        include '*.jar'
-    }
-    into "modules"
-}
-
 task createDist(type: Copy, dependsOn: jar)  {
     from ('scripts') {
         include 'igv.bat'
@@ -145,7 +132,6 @@ task createDist(type: Copy, dependsOn: jar)  {
     }
     
     with classpathContent
-    with modulepathContent
 
     into "${buildDir}/dist"
 }
