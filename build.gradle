@@ -125,7 +125,10 @@ jar {
 }
 
 def classpathContent = copySpec {
-    from ('lib') {
+    from ("lib") {
+        include '*.jar'
+    }
+    from ("${buildDir}/libs") {
         include '*.jar'
     }
     into "lib"
