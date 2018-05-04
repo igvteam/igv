@@ -1,6 +1,5 @@
 # Created by .gitignore support plugin (hsz.mobi)
 .idea/workspace.xml
-igv.sh
 /out/
 /build
 /build_java8

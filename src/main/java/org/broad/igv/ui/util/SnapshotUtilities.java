@@ -33,10 +33,14 @@
  */
 package org.broad.igv.ui.util;
 
+import org.apache.batik.dom.GenericDOMImplementation;
+import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
 import org.broad.igv.util.RuntimeUtils;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -234,7 +238,34 @@ public class SnapshotUtilities {
 //    }
 
     private static void exportScreenshotSVG(Component target, File selectedFile, int width, int height, boolean paintOffscreen) throws IOException {
-        throw new UnsupportedOperationException("SVG export not currently supported in Java 9+");
+
+        String format = "svg";
+        selectedFile = fixFileExt(selectedFile, new String[]{format}, format);
+
+        // Create an instance of org.w3c.dom.Document.                                                                                      
+        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+        String svgNS = "http://www.w3.org/2000/svg";
+        Document document = domImpl.createDocument(svgNS, format, null);
+
+        // Write image data into document                                                                                                   
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+
+        paintImage(target, svgGenerator, width, height, paintOffscreen);
+
+        Writer out = null;
+        try {
+            // Finally, stream out SVG to the standard output using                                                                         
+            // UTF-8 encoding.                                                                                                              
+            boolean useCSS = true; // we want to use CSS style attributes                                                                   
+            out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(selectedFile), "UTF-8"));
+            svgGenerator.stream(out, useCSS);
+        } finally {
+            if (out != null) try {
+                out.close();
+            } catch (IOException e) {
+                log.error("Error closing svg file", e);
+            }
+        }
     }
 
     private static void paintImage(Component target, Graphics2D g, int width, int height, boolean paintOffscreen) {

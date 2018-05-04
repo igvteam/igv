@@ -32,8 +32,8 @@ import java.awt.Taskbar;
 import javax.swing.JOptionPane;
 
 /**
- * Java version-specific integration with OS X (macOS)
- * @author eby
+  * Java version-specific integration with the platform Desktop and particularly 
+  * for OS X (macOS) specific items. * @author eby
  */
 public class DesktopIntegration {
     public static final void verifyJavaPlatform() {
