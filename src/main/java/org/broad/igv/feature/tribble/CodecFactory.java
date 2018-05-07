@@ -113,10 +113,10 @@ public class CodecFactory {
             return new REPMaskCodec(genome);
         } else if (fn.endsWith(".gff3") || fn.endsWith(".gvf")) {
             return new GFFCodec(GFFCodec.Version.GFF3, genome);
-        } else if (fn.endsWith(".gff") || fn.endsWith(".gtf")) {
+        } else if (fn.endsWith(".gff")) {
             return new GFFCodec(genome);
-            //} else if (fn.endsWith(".sam")) {
-            //return new SAMCodec();
+        } else if (fn.endsWith(".gtf")) {
+            return new GFFCodec(GFFCodec.Version.GTF, genome);
         } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
             return new PSLCodec(genome);
         } else if (MUTCodec.isMutationAnnotationFile(locator)) {

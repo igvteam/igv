@@ -237,6 +237,7 @@ public class BasicFeature extends AbstractFeature {
                     exon.setNonCoding(false);
                     exon.setCodingStart(bf.getStart());
                     exon.setCodingEnd(bf.getEnd());
+                    exon.setReadingFrame(bf.getReadingFrame());
 
                 } else if (SequenceOntology.utrTypes.contains(exonType)) {
                     exon.setNonCoding(true);

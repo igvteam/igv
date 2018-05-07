@@ -79,9 +79,10 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     private Genome genome;
     private boolean fastaSection = false;
     private Version version;
+    boolean gencode = false;
 
     public enum Version {
-        GFF2, GFF3
+        GFF2, GFF3, GTF;
     }
 
 
@@ -96,10 +97,10 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         super(Feature.class);
         this.genome = genome;
         this.version = version;
-        if (version == Version.GFF2) {
-            helper = new GFF2Helper();
-        } else {
+        if (version == Version.GFF3) {
             helper = new GFF3Helper();
+        } else {
+            helper = new GFF2Helper();
         }
     }
 
@@ -117,6 +118,8 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                 version = Version.GFF3;
                 helper = new GFF3Helper();
             }
+        } else if (line.startsWith("##provider") && line.contains("GENCODE")) {
+            gencode = true;
         } else if (line.startsWith("#nodecode") || line.startsWith("##nodecode")) {
             helper.setUrlDecoding(false);
         } else if (line.startsWith("#hide") || line.startsWith("##hide")) {
@@ -250,16 +253,22 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             }
         }
 
-        // Column 8 is phase for gff3,  frame for gff2 & gtf.
+        // Column 8 is phase for gff3,  frame for gff2.
         String phaseString = tokens[7].trim();
         if (!phaseString.equals(".")) {
-            int phaseNum = Integer.parseInt(phaseString);
+            int phaseOrFrame = Integer.parseInt(phaseString);
             int frame;
 
-            if(version == Version.GFF3) {
-                frame = (3 - phaseNum) % 3;
-            } else {
-                frame = phaseNum;
+            if (version == Version.GFF3) {
+                frame = (3 - phaseOrFrame) % 3;
+            } else if (version == Version.GFF2) {
+                frame = phaseOrFrame;
+            } else {   // GTF
+                if(gencode) {
+                    frame = (3 - phaseOrFrame) % 3;   // GTF format is not consistent, GENCODE files use phase for column 8,  spec for gff2/gtf says this should be frame
+                } else {
+                    frame = phaseOrFrame;
+                }
             }
 
             f.setReadingFrame(frame);

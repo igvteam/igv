@@ -233,7 +233,7 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
                 if (exonFrame == -1) {
                     exons.get(i).setNonCoding(true);
                 } else {
-                    exons.get(i).setFrame(exonFrame);
+                    exons.get(i).setReadingFrame(exonFrame);
                 }
             }
         }

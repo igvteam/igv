@@ -175,11 +175,6 @@ public class Exon extends AbstractFeature implements IExon {
         this.codingEnd = Math.min(getEnd(), codingEnd);
     }
 
-    public void setFrame(int frame) {
-        readingFrame = frame;
-    }
-
-
     public int getCdStart() {
         return codingStart;
     }
