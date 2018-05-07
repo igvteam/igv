@@ -53,37 +53,6 @@ import java.util.*;
  */
 public class EmblFeatureTableParser implements FeatureParser {
 
-    /**
-     * Method description
-     *
-     * @param gene
-     */
-    public static void computeReadingShifts(IGVFeature gene) {
-        List<org.broad.igv.feature.Exon> exons = gene.getExons();
-        if (exons.size() == 0) {
-            return;
-        }
-
-        int startIndex = (gene.getStrand() == Strand.POSITIVE) ? 0 : exons.size() - 1;
-        int endIndex = (gene.getStrand() == Strand.POSITIVE) ? exons.size() : -1;
-        int increment = (gene.getStrand() == Strand.POSITIVE) ? 1 : -1;
-        int cds = 0;
-        int exonNumber = 1;
-        for (int i = startIndex; i != endIndex; i += increment) {
-
-            Exon exon = exons.get(i);
-            exon.setNumber(exonNumber++);
-
-            if (exon.getCodingLength() > 0 || cds > 0) {  // Skip until we find the coding start
-                int modCds = cds % 3;
-                int frame = (modCds == 0) ? 0 : 3 - modCds;
-                exon.setReadingFrame(frame);
-                cds += exon.getCodingLength();
-            }
-
-        }
-    }
-
     public TrackProperties getTrackProperties() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -274,7 +243,7 @@ public class EmblFeatureTableParser implements FeatureParser {
         // TODO -- should we be doing this?  It generally works but could there be reading shifts
         // between exons that would throw this off?
         for (IGVFeature gene : genes.values()) {
-            computeReadingShifts(gene);
+            FeatureUtils.computeReadingFrames(gene);
         }
 
         return newFeatureList;

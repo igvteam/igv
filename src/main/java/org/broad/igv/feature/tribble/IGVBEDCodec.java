@@ -146,7 +146,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             try {
                 float score = tokens[4].equals(".") ? 1000 : Float.parseFloat(tokens[4]);
                 feature.setScore(score);
-                if (featureType == FeatureType.SPLICE_JUNCTION ) {
+                if (featureType == FeatureType.SPLICE_JUNCTION) {
                     ((SpliceJunctionFeature) feature).setJunctionDepth((int) score);
                 }
             } catch (NumberFormatException numberFormatException) {
@@ -197,7 +197,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         if (tokenCount > 11) {
             createExons(start, tokens, feature, chr, feature.getStrand());
             //todo: some refactoring that allows this hack to be removed
-            if (featureType == FeatureType.SPLICE_JUNCTION ) {
+            if (featureType == FeatureType.SPLICE_JUNCTION) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
 
                 List<Exon> exons = feature.getExons();
@@ -214,18 +214,16 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             attributes.put("pValue (-log10)", tokens[13]);
             attributes.put("qValue (-log10)", tokens[14]);
             feature.setAttributes(attributes);
-        }
-
-        else if(tokenCount > 13 && featureType == FeatureType.SPLICE_JUNCTION ) {
+        } else if (tokenCount > 13 && featureType == FeatureType.SPLICE_JUNCTION) {
             try {
-                String [] startFlanking = tokens[12].split(",");
-                int [] startFlankingDeptyArray = new int[startFlanking.length];
-                for(int i=0; i<startFlanking.length; i++) {
+                String[] startFlanking = tokens[12].split(",");
+                int[] startFlankingDeptyArray = new int[startFlanking.length];
+                for (int i = 0; i < startFlanking.length; i++) {
                     startFlankingDeptyArray[i] = Integer.parseInt(startFlanking[i]);
                 }
-                String [] endFlanking = tokens[13].split(",");
-                int [] endFlankingDeptyArray = new int[endFlanking.length];
-                for(int i=0; i<endFlanking.length ;i++) {
+                String[] endFlanking = tokens[13].split(",");
+                int[] endFlankingDeptyArray = new int[endFlanking.length];
+                for (int i = 0; i < endFlanking.length; i++) {
                     endFlankingDeptyArray[i] = Integer.parseInt(endFlanking[i]);
                 }
                 ((SpliceJunctionFeature) feature).setStartFlankingRegionDepthArray(startFlankingDeptyArray);
@@ -235,7 +233,27 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             }
         }
 
+        if(isCoding(feature)) {
+            FeatureUtils.computeReadingFrames(feature);
+        }
+
         return feature;
+    }
+
+    /**
+     * Approximate test for a coding feature (transcript).  BED format does not specify this explicitly.
+     * Rules applied are
+     *
+     * (1) feature has exons
+     * (2) feature has possible UTRs at both ends 
+     * (3) feature has strand
+     *
+     * @param feature
+     * @return
+     */
+    private boolean isCoding(BasicFeature feature) {
+        return feature.hasExons() && feature.getThickStart() > feature.getStart() && feature.getThickEnd() < feature.getEnd()
+                && feature.getStrand() != Strand.NONE;
     }
 
     private String[] tokens = new String[50];
@@ -318,9 +336,9 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
      */
     public String encode(Feature feature) {
 
-        if(feature instanceof BasicFeature) {
+        if (feature instanceof BasicFeature) {
             String rep = ((BasicFeature) feature).getRepresentation();
-            if(rep != null) return rep;
+            if (rep != null) return rep;
         }
 
         StringBuffer buffer = new StringBuffer();
@@ -368,12 +386,12 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         }
 
         boolean more = !Float.isNaN(basicFeature.getScore()) || basicFeature.getStrand() != Strand.NONE ||
-                basicFeature.getColor() != null  || basicFeature.getExonCount() > 0;
+                basicFeature.getColor() != null || basicFeature.getExonCount() > 0;
 
         if (more) {
 
             // Must have a non-whitespace name column to proceed
-            if(!hasName) {
+            if (!hasName) {
                 buffer.append("\t.");
             }
 
@@ -400,7 +418,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
                 else if (strand == Strand.POSITIVE) buffer.append("+");
                 else if (strand == Strand.NEGATIVE) buffer.append("-");
 
-                more = basicFeature.getColor() != null  || basicFeature.getExonCount() > 0;
+                more = basicFeature.getColor() != null || basicFeature.getExonCount() > 0;
 
                 if (more) {
                     // Must continue if basicFeature has color or exons
@@ -411,15 +429,15 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
                     if (basicFeature.getColor() != null || exons != null) {
 
                         // Correct "thickStart" and "thickEnd"
-                        if(exons != null && exons.size() > 0) {
-                             thickStart = basicFeature.getEnd();   // This is not a typo
+                        if (exons != null && exons.size() > 0) {
+                            thickStart = basicFeature.getEnd();   // This is not a typo
                             for (Exon ex : exons) {
                                 if (!ex.isNonCoding()) {
                                     thickStart = ex.getCdStart();
                                     break;
                                 }
                             }
-                             thickEnd = basicFeature.getStart();    // Not a typo
+                            thickEnd = basicFeature.getStart();    // Not a typo
                             for (int i = exons.size() - 1; i >= 0; i--) {
                                 Exon ex = exons.get(i);
                                 if (!ex.isNonCoding()) {
@@ -427,8 +445,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
                                     break;
                                 }
                             }
-                        }
-                        else {
+                        } else {
                             thickStart = ((BasicFeature) feature).getThickStart();
                             thickEnd = ((BasicFeature) feature).getThickEnd();
                         }
@@ -462,17 +479,17 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
                         }
                     }
 
-                    if(basicFeature instanceof SpliceJunctionFeature) {
+                    if (basicFeature instanceof SpliceJunctionFeature) {
                         SpliceJunctionFeature spliceJunctionFeature = (SpliceJunctionFeature) basicFeature;
-                        int [] startFlanking = spliceJunctionFeature.getStartFlankingRegionDepthArray();
-                        int [] endFlanking = spliceJunctionFeature.getEndFlankingRegionDepthArray();
-                        if(startFlanking != null && startFlanking.length > 0 && endFlanking != null && endFlanking.length > 0) {
+                        int[] startFlanking = spliceJunctionFeature.getStartFlankingRegionDepthArray();
+                        int[] endFlanking = spliceJunctionFeature.getEndFlankingRegionDepthArray();
+                        if (startFlanking != null && startFlanking.length > 0 && endFlanking != null && endFlanking.length > 0) {
                             buffer.append("\t" + startFlanking[0]);
-                            for(int i=1; i<startFlanking.length; i++) {
+                            for (int i = 1; i < startFlanking.length; i++) {
                                 buffer.append("," + startFlanking[i]);
                             }
                             buffer.append("\t" + endFlanking[0]);
-                            for(int i=1; i<endFlanking.length; i++) {
+                            for (int i = 1; i < endFlanking.length; i++) {
                                 buffer.append("," + endFlanking[i]);
                             }
                         }
