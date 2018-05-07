@@ -267,8 +267,8 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
 
     }
 
-    public void setReadingFrame(int offset) {
-        this.readingFrame = offset;
+    public void setReadingFrame(int frame) {
+        this.readingFrame = frame;
     }
 
     public int getReadingFrame(){

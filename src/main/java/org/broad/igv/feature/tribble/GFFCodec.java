@@ -78,6 +78,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     private Helper helper;
     private Genome genome;
     private boolean fastaSection = false;
+    private Version version;
 
     public enum Version {
         GFF2, GFF3
@@ -94,6 +95,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     public GFFCodec(Version version, Genome genome) {
         super(Feature.class);
         this.genome = genome;
+        this.version = version;
         if (version == Version.GFF2) {
             helper = new GFF2Helper();
         } else {
@@ -112,6 +114,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         } else if (line.startsWith("##gff-version") && line.contains("3")) {
             String[] tokens = Globals.whitespacePattern.split(line);
             if (tokens.length > 1 && tokens[1].startsWith("3")) {
+                version = Version.GFF3;
                 helper = new GFF3Helper();
             }
         } else if (line.startsWith("#nodecode") || line.startsWith("##nodecode")) {
@@ -247,10 +250,19 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             }
         }
 
+        // Column 8 is phase for gff3,  frame for gff2 & gtf.
         String phaseString = tokens[7].trim();
         if (!phaseString.equals(".")) {
             int phaseNum = Integer.parseInt(phaseString);
-            f.setReadingFrame(phaseNum);
+            int frame;
+
+            if(version == Version.GFF3) {
+                frame = (3 - phaseNum) % 3;
+            } else {
+                frame = phaseNum;
+            }
+
+            f.setReadingFrame(frame);
         }
 
         f.setName(helper.getName(attributes));

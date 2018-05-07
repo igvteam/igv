@@ -77,7 +77,7 @@ public class EmblFeatureTableParser implements FeatureParser {
             if (exon.getCodingLength() > 0 || cds > 0) {  // Skip until we find the coding start
                 int modCds = cds % 3;
                 int phase = (modCds == 0) ? 0 : 3 - modCds;
-                exon.setPhase(phase);
+                exon.setFrame(phase);
                 cds += exon.getCodingLength();
             }
 

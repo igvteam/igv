@@ -227,24 +227,15 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
 
 
         if (type == Type.GENEPRED && tokenCount > 15) {
-            try {
-
-                String[] frameBuffer = Globals.commaPattern.split(tokens[frameBufferColumn]);
-                for (int i = 0; i < frameBuffer.length; i++) {
-                    int exonFrame = Integer.parseInt(frameBuffer[i].trim());
-                    if (exonFrame == -1) {
-                        exons.get(i).setNonCoding(true);
-                    } else {
-                        int phase = (exonFrame == 0) ? 0 : 3 - exonFrame;
-                        exons.get(i).setPhase(phase);
-                    }
+            String[] frameBuffer = Globals.commaPattern.split(tokens[frameBufferColumn]);
+            for (int i = 0; i < frameBuffer.length; i++) {
+                int exonFrame = Integer.parseInt(frameBuffer[i].trim());
+                if (exonFrame == -1) {
+                    exons.get(i).setNonCoding(true);
+                } else {
+                    exons.get(i).setFrame(exonFrame);
                 }
-            } catch (Exception e) {
-
-                // Ignore -- not getting the reading frame is not the end of the world.
-                //log.info("Could not parse frame buffer: ", e);
             }
-
         }
     }
 

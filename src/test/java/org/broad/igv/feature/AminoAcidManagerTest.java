@@ -30,6 +30,7 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.tribble.UCSCGeneTableCodec;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -49,6 +50,30 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     public void setUp() throws Exception {
         super.setUp();
         AminoAcidManager.resetToDefaultCodonTables();
+    }
+
+    @Test
+    public void testFoo() {
+
+        String expectedSeq = "LRAAK";
+
+        UCSCGeneTableCodec codec = new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED, null);
+        String str = "1766\tNM_182679\tchr1\t-\t154830723\t154837903\t154831628\t154835462\t8\t154830723,154832496,154832802,154834450,154834642,154834836,154835383,154837824,\t154832265,154832547,154832894,154834537,154834735,154834910,154835520,154837903,\t0\tGPATCH4\tcmpl\tcmpl\t2,2,0,0,0,1,0,-1,";
+        BasicFeature feature = codec.decode(str);
+
+        Exon exon = feature.getExons().get(0);
+        Exon prevExon = null;
+        Exon nextExon = feature.getExons().get(1);
+        AminoAcidSequence aaSeq = exon.getAminoAcidSequence(genome, prevExon, nextExon);
+        assertNotNull(aaSeq);
+
+        int aaSeqLen = aaSeq.getSequence().size();
+        int start = aaSeqLen - expectedSeq.length();
+        for(int i=start; i<aaSeqLen - 1; i++) {
+            char exp = expectedSeq.charAt(i-start);
+            char actual = aaSeq.getSequence().get(i).getSymbol();
+            assertEquals("i=" + i, exp, actual);
+        }
     }
 
     /**
@@ -74,7 +99,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
 
     @Test
     public void testExon2EGFR() {
-        // Note:  readingFrame == 2
+        // Note:  frame == 1,  phase == 2
         String expectedSeq = "VCQGT";
         IGVFeature egfr = (IGVFeature) FeatureDB.getFeature("EGFR");
 
