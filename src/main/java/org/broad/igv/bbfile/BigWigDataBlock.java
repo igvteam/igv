@@ -32,6 +32,7 @@ import org.broad.igv.util.CompressionUtils;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -55,7 +56,7 @@ public class BigWigDataBlock {
     private boolean isLowToHigh;   // if true, data is low to high byte order; else high to low
 
     // defines the bigWig data source
-    private HashMap<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
+    private Map<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
     private RPTreeLeafNodeItem leafHitItem;   // R+ leaf item containing data block location
 
     // uncompressed byte stream buffer and readers
@@ -77,7 +78,7 @@ public class BigWigDataBlock {
     *
     * */
     public BigWigDataBlock(SeekableStream fis, RPTreeLeafNodeItem leafHitItem,
-                           HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize){
+                           Map<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize){
         this.leafHitItem = leafHitItem;
         this.chromosomeMap = chromosomeMap;
         this.isLowToHigh = isLowToHigh;

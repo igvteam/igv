@@ -35,6 +35,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -57,7 +58,7 @@ public class ZoomDataBlock {
 
     // defines the zoom level source chromosomes
     private int zoomLevel;         // zoom level for the R+ chromosome data location tree
-    private HashMap<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
+    private Map<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
     private RPTreeLeafNodeItem leafHitItem;   //R+ leaf item with chromosome region and file data location
 
     // Provides uncompressed byte stream data reader
@@ -84,7 +85,7 @@ public class ZoomDataBlock {
     * */
 
     public ZoomDataBlock(int zoomLevel, SeekableStream fis, RPTreeLeafNodeItem leafHitItem,
-                         HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize) {
+                         Map<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize) {
 
         this.zoomLevel = zoomLevel;
         this.leafHitItem = leafHitItem;

@@ -32,6 +32,7 @@ import org.broad.igv.util.CompressionUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -57,7 +58,7 @@ public class BigWigIterator implements Iterator<WigItem> {
 
     // chromosome region extraction items
     private ArrayList<RPTreeLeafNodeItem> leafHitList; // array of leaf hits for selection region items
-    private HashMap<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
+    private Map<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
     private int leafItemIndex;   // index of current leaf item being processed from leaf hit list
     RPTreeLeafNodeItem leafHitItem;   // leaf item being processed by next
     private RPChromosomeRegion hitRegion;  // hit selection region for iterator

@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ZoomLevelIterator {
 
@@ -53,7 +54,7 @@ public class ZoomLevelIterator {
 
     // chromosome region extraction items
     private ArrayList<RPTreeLeafNodeItem> leafHitList; // array of leaf hits for selection region items
-    private HashMap<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
+    private Map<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
     private int leafItemIndex;   // index of current leaf item being processed from leaf hit list
     RPTreeLeafNodeItem leafHitItem;   // leaf item being processed by next
 

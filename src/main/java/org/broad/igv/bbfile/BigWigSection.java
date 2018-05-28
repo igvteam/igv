@@ -33,6 +33,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -51,7 +52,7 @@ public class BigWigSection {
 
     private RPTreeLeafNodeItem leafHitItem;    // leaf item defines chromosome region and file data location
     private int sectionDataSize;       // byte size of decompressed data for this section
-    private HashMap<Integer, String> chromosomeMap; // map of chromosome ID's and corresponding names
+    private Map<Integer, String> chromosomeMap; // map of chromosome ID's and corresponding names
     private BigWigSectionHeader wigSectionHeader;  // wig section header
 
     /*
@@ -66,7 +67,7 @@ public class BigWigSection {
     *       leafHitItem - contains leaf node information for testing against selection region
     *
     * */
-    public BigWigSection(byte[] sectionBuffer, HashMap<Integer, String> chromosomeMap,
+    public BigWigSection(byte[] sectionBuffer, Map<Integer, String> chromosomeMap,
                          boolean isLowToHigh, RPTreeLeafNodeItem leafHitItem){
 
         this.chromosomeMap =  chromosomeMap;

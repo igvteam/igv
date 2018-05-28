@@ -51,7 +51,7 @@ public class BigBedIterator implements Iterator<BedFeature> {
     private RPTree chromDataTree;  // R+ chromosome data location tree
 
     // chromosome region extraction items
-    private HashMap<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
+    private Map<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
     List<BedFeature> features;
     int currentIdx = 0;
 

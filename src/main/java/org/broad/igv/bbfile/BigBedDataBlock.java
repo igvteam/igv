@@ -36,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.DataInputStream;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -58,7 +59,7 @@ public class BigBedDataBlock {
     private boolean isLowToHigh;   // if true, data is low to high byte order; else high to low
 
     // defines the bigBed/bigWig source chromosomes
-    private HashMap<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
+    private Map<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
     private RPTreeLeafNodeItem leafHitItem;   // R+ tree leaf item containing data block location
 
     // Provides uncompressed byte stream data reader
@@ -83,7 +84,7 @@ public class BigBedDataBlock {
     *       uncompressBufSize - byte size for decompression buffer; else 0 for uncompressed
     * */
     public BigBedDataBlock(SeekableStream fis, RPTreeLeafNodeItem leafHitItem,
-                           HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize) {
+                           Map<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize) {
 
         this.leafHitItem = leafHitItem;
         this.chromosomeMap = chromosomeMap;
