@@ -128,7 +128,7 @@ public class DMUtils {
                 gsPath + "?Content-Length=" + contentLength +
                 "&Content-MD5=" + URLEncoder.encode(base64String, "UTF-8") + "&Content-Type=" + contentType;
 
-        String uploadURL = HttpUtils.getInstance().getContentsAsJSON(new URL(tmp));
+        String uploadURL = HttpUtils.getInstance().getContentsAsJSON(HttpUtils.createURL(tmp));
 
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Content-MD5", base64String);
@@ -147,7 +147,7 @@ public class DMUtils {
         System.out.println(dirMeta.toString());
 
         String body = "{\"isDirectory\":true}";
-        String response = HttpUtils.getInstance().createGenomeSpaceDirectory(new URL(putURL), body);
+        String response = HttpUtils.getInstance().createGenomeSpaceDirectory(HttpUtils.createURL(putURL), body);
 
         JsonParser parser = new JsonParser();
         JsonElement obj = parser.parse(response);
@@ -156,7 +156,7 @@ public class DMUtils {
     }
 
     static void deleteFileOrDirectory(String delURL) throws IOException{
-        HttpUtils.getInstance().delete(new URL(delURL));
+        HttpUtils.getInstance().delete(HttpUtils.createURL(delURL));
     }
 
 

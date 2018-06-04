@@ -138,7 +138,7 @@ public class SeekableSplitStream extends SeekableStream {
                     // Require the files are in the same directory as the list file
                     String listFileName = null;
                     if (HttpUtils.isRemoteURL(path)) {
-                        URL url = new URL(path);
+                        URL url = HttpUtils.createURL(path);
                         listFileName = (new File(url.getPath())).getName();
                     } else {
                         listFileName = (new File(path)).getName();

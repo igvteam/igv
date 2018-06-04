@@ -199,7 +199,7 @@ public class Main {
                 Version thisVersion = Version.getVersion(Globals.VERSION);
                 if (thisVersion != null) {
 
-                    final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+                    final String serverVersionString = HttpUtils.getInstance().getContentsAsString(HttpUtils.createURL(Globals.getVersionURL())).trim();
                     // See if user has specified to skip this update
 
                     final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
@@ -215,7 +215,7 @@ public class Main {
                         log.info("A later version of IGV is available (" + serverVersionString + ")");
                     }
                 } else if (Globals.VERSION.contains("3.0_beta") || Globals.VERSION.contains("snapshot")) {
-                    HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+                    HttpUtils.getInstance().getContentsAsString(HttpUtils.createURL(Globals.getVersionURL())).trim();
                 } else {
                     log.info("Unknown version: " + Globals.VERSION);
                 }

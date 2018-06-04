@@ -47,7 +47,7 @@ public class Cravat {
     static void test() throws IOException {
 
         String jsonString = HttpUtils.getInstance().getContentsAsJSON(
-                new URL("http://www.cravat.us/CRAVAT/rest/service/query?mutation=chr22_30421786_+_A_T"));
+                HttpUtils.createURL("http://www.cravat.us/CRAVAT/rest/service/query?mutation=chr22_30421786_+_A_T"));
 
         JsonParser parser = new JsonParser();
         JsonObject obj = parser.parse(jsonString).getAsJsonObject();

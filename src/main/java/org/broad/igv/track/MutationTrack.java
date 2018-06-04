@@ -149,7 +149,7 @@ public class MutationTrack extends FeatureTrack {
         try {
             String omaWebService = url + "&frm=txt&fts=all";
 
-            String result = HttpUtils.getInstance().getContentsAsString(new URL(omaWebService));
+            String result = HttpUtils.getInstance().getContentsAsString(HttpUtils.createURL(omaWebService));
 
             BufferedReader br = new BufferedReader(new StringReader(result));
             String[] headers = br.readLine().split("\t");

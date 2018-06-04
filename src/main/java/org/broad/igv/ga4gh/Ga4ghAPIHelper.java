@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.HttpUtils;
 
 import javax.swing.*;
 import java.io.BufferedReader;
@@ -244,7 +245,7 @@ public class Ga4ghAPIHelper {
             fullUrl += (authKey == null ? "?" : "&") + fields;
         }
 
-        URL url = new URL(fullUrl);
+        URL url = HttpUtils.createURL(fullUrl);
 
 
         byte[] bytes = content.getBytes();

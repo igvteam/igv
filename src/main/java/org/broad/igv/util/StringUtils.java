@@ -223,7 +223,7 @@ public class StringUtils {
             }
             String encQuery = StringUtils.join(encParms, "&");
             String newPath = parts[0] + "?" + encQuery;
-            url = new URL(newPath);
+            url = HttpUtils.createURL(newPath);
         }
 
         return url;

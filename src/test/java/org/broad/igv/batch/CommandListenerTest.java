@@ -30,6 +30,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.After;
@@ -182,7 +183,7 @@ public class CommandListenerTest extends AbstractHeadedTest {
     }
 
     private HttpURLConnection connect(String urlStr) throws Exception{
-        URL url = new URL(urlStr);
+        URL url = HttpUtils.createURL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Connection", "Keep-Alive");

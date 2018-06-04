@@ -67,7 +67,7 @@ public class ExtendViewClient {
         String $url = PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL);
         String urlString = ($url + "/FeatureRange/");
         try {
-            String result = HttpUtils.getInstance().doPost(new URL(urlString), params);
+            String result = HttpUtils.getInstance().doPost(HttpUtils.createURL(urlString), params);
             MessageUtils.showMessage("results:" + result);
         } catch (IOException e1) {
             MessageUtils.showErrorMessage("Error in opening extend view: FeatureRange ", e1);
@@ -111,7 +111,7 @@ public class ExtendViewClient {
         String $url = PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL);
         String urlString = ($url + "/ExamineReadAlignment/");
         try {
-            String result = HttpUtils.getInstance().doPost(new URL(urlString), params);
+            String result = HttpUtils.getInstance().doPost(HttpUtils.createURL(urlString), params);
             //MessageUtils.showMessage("results:" + result);
         } catch (IOException e1) {
             MessageUtils.showErrorMessage("Error in opening extend view: ExamineReadAlignment", e1);

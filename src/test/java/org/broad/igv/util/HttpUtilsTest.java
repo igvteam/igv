@@ -58,7 +58,7 @@ public class HttpUtilsTest extends AbstractHeadlessTest{
         // Open an input stream just to check permissions
         HttpURLConnection conn = null;
         try {
-            conn = (HttpURLConnection) (new URL(broadURLString)).openConnection();
+            conn = (HttpURLConnection) (HttpUtils.createURL(broadURLString)).openConnection();
             String contentLength = conn.getHeaderField("Content-length");
             assertEquals("249250621", contentLength);
 
@@ -78,7 +78,7 @@ public class HttpUtilsTest extends AbstractHeadlessTest{
      */
     @Test
     public void testBroadURL() throws Exception {
-        assertTrue(HttpUtils.getInstance().useByteRange(new URL(broadURLString)));
+        assertTrue(HttpUtils.getInstance().useByteRange(HttpUtils.createURL(broadURLString)));
     }
 
 
@@ -90,7 +90,7 @@ public class HttpUtilsTest extends AbstractHeadlessTest{
      */
     @Test
     public void testGenericURL() throws Exception {
-        final URL url = new URL(genericURLString);
+        final URL url = HttpUtils.createURL(genericURLString);
         String acceptsRangesValue = HttpUtils.getInstance().getHeaderField(url, "Accept-Ranges");
         boolean acceptsRanges = acceptsRangesValue != null && acceptsRangesValue.contains("bytes");
         assertEquals(acceptsRanges, HttpUtils.getInstance().useByteRange(url));
@@ -104,12 +104,12 @@ public class HttpUtilsTest extends AbstractHeadlessTest{
 
 //        String bamURL =  serverURL + "?file=CDNLtx0vjHKW19PP9E7A1zpmzSg1mrg/rw7ZkE+b8FPuoNLNNLNKyL/94CsspYExn2SAJ5Y0wgL9L2mwf/HsP4IwqsQbtAqVBLxtd2CVclTOkute7VHhzqFPJ2KCzWxUjM+Ecb5XfdGTpKAzya1dq/fAtJuIw8+NHQCPmMVbJWreQx1+6z3VKDT17Fy3RbXxL6X/CfQ/HlTcWFpQVe1p+5LgkojOVagWCImYNk/ErPzi8J2oEYPSm6ilOwDM6rGwHcO47qW8DncaPdf8ohpm/XZwAd+aAJwsqkBR689R+X175QCzmpOI07dHxuvzJ4HPlMwu2h2290QxVAJ8Ix5fVA==.bam";
 //
-//        InputStream is = HttpUtils.getInstance().openConnectionStream(new URL(bamURL));
+//        InputStream is = HttpUtils.getInstance().openConnectionStream(HttpUtils.createURL(bamURL));
 
         String bedblob = StringUtils.decodeURL("c44z7H5E1gDMSm49T7NyGix051qDS7AbgCqicZ%2FpFkLobpmCim95byvYICc5VT%2Bv8Z%2FzE2gHWZkboBuME9eLxjEsfiO4bwnqZGP9fwoWXooK1LC8e3R5%2F6B9KyP9X3PR102PIApQASPfQGnYHqpBLifFPUbeRMqN%2BSxYi3h7udQJ8pli2QPEappIiOVWQ77cjJ6c0h12me6dT81fVrYT1E5CGHpnfUarIWCADRySVUfxqrwADKpnpaozMiWebh4OaWr5QfWHuG%2F%2F%2FhwVs7YxJaAR9S6pMqqfk213JofydHJjUimkv2V8tM3RJk3Q2y7CZ3Dk8X8wLiAJLfTIaXyreQ%3D%3D");
 
         String bedURL = serverURL + "?file=" + bedblob + ".bed";
-        InputStream is = HttpUtils.getInstance().openConnectionStream(new URL(bedURL));
+        InputStream is = HttpUtils.getInstance().openConnectionStream(HttpUtils.createURL(bedURL));
 
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
 

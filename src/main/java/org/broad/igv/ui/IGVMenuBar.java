@@ -908,7 +908,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                 Globals.CONNECT_TIMEOUT = 5000;
                 Globals.READ_TIMEOUT = 1000;
-                final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+                final String serverVersionString = HttpUtils.getInstance().getContentsAsString(HttpUtils.createURL(Globals.getVersionURL())).trim();
                 // See if user has specified to skip this update
 
                 final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
@@ -934,7 +934,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 }
             } else {
                 if (Globals.VERSION.contains("3.0_beta") || Globals.VERSION.contains("snapshot")) {
-                    HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
+                    HttpUtils.getInstance().getContentsAsString(HttpUtils.createURL(Globals.getVersionURL())).trim();
                 }
             }
 

@@ -28,6 +28,7 @@ package org.broad.igv.util.stream;
 import htsjdk.samtools.seekablestream.ISeekableStreamFactory;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.File;
@@ -61,8 +62,15 @@ public class IGVSeekableStreamFactory implements ISeekableStreamFactory {
 
         } else {
             SeekableStream is = null;
-            if (path.toLowerCase().startsWith("http:") || path.toLowerCase().startsWith("https:")) {
-                final URL url = new URL(path);
+
+            if(path.startsWith("gs://")) {
+                path = GoogleUtils.translateGoogleCloudURL(path);
+            }
+
+            if (path.toLowerCase().startsWith("http://") || path.toLowerCase().startsWith("https://") ||
+                    path.toLowerCase().startsWith("gs://")) {
+
+                final URL url = HttpUtils.createURL(path);
                 boolean useByteRange = HttpUtils.getInstance().useByteRange(url);
                 if (useByteRange) {
                     is = new IGVSeekableHTTPStream(url);
@@ -70,7 +78,7 @@ public class IGVSeekableStreamFactory implements ISeekableStreamFactory {
                     is = new SeekableServiceStream(url);
                 }
             } else if (path.toLowerCase().startsWith("ftp:")) {
-                final URL url = new URL(path);
+                final URL url = HttpUtils.createURL(path);
                 is = new IGVSeekableFTPStream(url);
             } else {
                 is = new SeekableFileStream(new File(path));

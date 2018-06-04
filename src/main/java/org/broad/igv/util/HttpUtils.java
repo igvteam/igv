@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;
+import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.prefs.IGVPreferences;
@@ -117,6 +118,39 @@ public class HttpUtils {
         byteRangeTestMap = Collections.synchronizedMap(new HashMap());
     }
 
+    /**
+     * Create a URL from the given string.  Performs various mappings for google buckets,  amazon cNames, and
+     * http -> https conversions
+     *
+     * @param urlString
+     * @return
+     * @throws MalformedURLException
+     */
+    public static URL createURL(String urlString) throws MalformedURLException {
+
+        urlString = urlString.trim();
+
+        if (urlString.startsWith("gs://")) {
+            urlString = GoogleUtils.translateGoogleCloudURL(urlString);
+        }
+
+        String host = new URL(urlString).getHost();
+        if (host.equals("igv.broadinstitute.org")) {
+            urlString = urlString.replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org");
+        } else if (host.equals("igvdata.broadinstitute.org")) {
+            // Cloudfront server
+            urlString = urlString.replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net");
+        } else if (host.equals("www.broadinstitute.org")) {
+            urlString = urlString.replace("www.broadinstitute.org/igvdata", "data.broadinstitute.org/igvdata");
+        }
+
+        // data.broadinstitute.org requires https
+        urlString = urlString.replace("http://data.broadinstitute.org", "https://data.broadinstitute.org");
+
+
+        return new URL(urlString);
+    }
+
     public static boolean isRemoteURL(String string) {
         return FileUtils.isRemote(string);
     }
@@ -146,6 +180,10 @@ public class HttpUtils {
     public String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
         InputStream is = null;
 
+        if (url.getProtocol().startsWith("gs:")) {
+            url = GoogleUtils.translateGoogleCloudURL(url);
+        }
+
         HttpURLConnection conn = openConnection(url, headers);
         try {
             is = conn.getInputStream();
@@ -171,7 +209,6 @@ public class HttpUtils {
             if (is != null) is.close();
         }
     }
-
 
 
     public String getContentsAsJSON(URL url) throws IOException {
@@ -263,7 +300,15 @@ public class HttpUtils {
         }
     }
 
-    public boolean resourceAvailable(URL url) {
+    public boolean resourceAvailable(String urlString) {
+
+        URL url = null;
+        try {
+            url = HttpUtils.createURL(urlString);
+        } catch (MalformedURLException e) {
+            return false;
+        }
+
         log.debug("Checking if resource is available: " + url);
         if (url.getProtocol().toLowerCase().equals("ftp")) {
             return FTPUtils.resourceAvailable(url);
@@ -417,7 +462,8 @@ public class HttpUtils {
      */
     private Proxy getSystemProxy(String uri) {
         try {
-            if(PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) log.info("Getting system proxy for " + uri);
+            if (PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY"))
+                log.info("Getting system proxy for " + uri);
             ProxySelector selector = ProxySelector.getDefault();
             List<Proxy> proxyList = selector.select(new URI(uri));
             return proxyList.get(0);
@@ -491,7 +537,7 @@ public class HttpUtils {
         HttpURLConnection urlconnection = null;
         OutputStream bos = null;
 
-        URL url = new URL(uri);
+        URL url = HttpUtils.createURL(uri);
         urlconnection = openConnection(url, headers, "PUT");
         urlconnection.setDoOutput(true);
         urlconnection.setDoInput(true);
@@ -637,16 +683,14 @@ public class HttpUtils {
      * @throws java.io.IOException
      */
     private HttpURLConnection openConnection(
+
             URL url, Map<String, String> requestProperties, String method, int redirectCount) throws IOException {
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
         // string to dynamically map url - dwm08
-        if (url.getHost().equals(OAuthUtils.GS_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString!= null) {
-        	url = new URL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
+        if (url.getHost().equals(OAuthUtils.GS_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
+            url = HttpUtils.createURL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
         }
-
-        // Map amazon cname aliases to the full hosts -- neccessary to avoid ssl certificate errors in Java 1.8
-        url = mapCname(url);
 
         //Encode query string portions
         url = StringUtils.encodeURLQueryString(url);
@@ -658,9 +702,8 @@ public class HttpUtils {
         //TODO This is a hack and doesn't work for all characters which need it
         if (StringUtils.countChar(url.toExternalForm(), ' ') > 0) {
             String newPath = url.toExternalForm().replaceAll(" ", "%20");
-            url = new URL(newPath);
+            url = HttpUtils.createURL(newPath);
         }
-
 
 
         Proxy sysProxy = null;
@@ -677,7 +720,7 @@ public class HttpUtils {
 
         boolean useProxy =
                 (sysProxy != null && sysProxy.type() != Proxy.Type.DIRECT) ||
-                (igvProxySettingsExist && !proxySettings.getWhitelist().contains(url.getHost()));
+                        (igvProxySettingsExist && !proxySettings.getWhitelist().contains(url.getHost()));
 
         HttpURLConnection conn;
         if (useProxy) {
@@ -685,11 +728,13 @@ public class HttpUtils {
             if (igvProxySettingsExist) {
                 if (proxySettings.type == Proxy.Type.DIRECT) {
 
-                    if(PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {log.info("NO_PROXY");}
+                    if (PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
+                        log.info("NO_PROXY");
+                    }
 
                     proxy = Proxy.NO_PROXY;
                 } else {
-                    if(PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
+                    if (PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
                         log.info("PROXY " + proxySettings.proxyHost + "  " + proxySettings.proxyPort);
                     }
 
@@ -705,11 +750,12 @@ public class HttpUtils {
                 conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
             }
         } else {
-            if(PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
+            if (PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
                 log.info("PROXY NOT USED ");
-                if(proxySettings.getWhitelist().contains(url.getHost())) {
+                if (proxySettings.getWhitelist().contains(url.getHost())) {
                     log.info(url.getHost() + " is whitelisted");
-                };
+                }
+                ;
             }
             conn = (HttpURLConnection) url.openConnection();
         }
@@ -752,7 +798,7 @@ public class HttpUtils {
             if (requestProperties != null && requestProperties.containsKey("Range") && code == 200 && method.equals("GET")) {
                 log.error("Range header removed by client or ignored by server for url: " + url.toString());
 
-                if(!SwingUtilities.isEventDispatchThread()) {
+                if (!SwingUtilities.isEventDispatchThread()) {
                     MessageUtils.showMessage("Warning: unsuccessful attempt to execute 'Range byte' request to host " + url.getHost());
                 }
 
@@ -760,7 +806,7 @@ public class HttpUtils {
                 String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
                 int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
                 requestProperties.remove("Range"); // < VERY IMPORTANT
-                URL wsUrl = new URL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
+                URL wsUrl = HttpUtils.createURL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
                 return openConnection(wsUrl, requestProperties, "GET", redirectCount);
             }
 
@@ -779,7 +825,7 @@ public class HttpUtils {
                 String newLocation = conn.getHeaderField("Location");
                 log.debug("Redirecting to " + newLocation);
 
-                return openConnection(new URL(newLocation), requestProperties, method, ++redirectCount);
+                return openConnection(HttpUtils.createURL(newLocation), requestProperties, method, ++redirectCount);
             }
 
             // TODO -- handle other response codes.
@@ -797,8 +843,7 @@ public class HttpUtils {
                     throw new HttpResponseException(code, message, "");
                 } else if (code == 416) {
                     throw new UnsatisfiableRangeException(conn.getResponseMessage());
-                }
-                else {
+                } else {
                     message = conn.getResponseMessage();
                     String details = readErrorStream(conn);
                     throw new HttpResponseException(code, message, details);
@@ -808,35 +853,6 @@ public class HttpUtils {
         return conn;
     }
 
-    /**
-     * Explicitly map cnames here.  Also fix other url migration issues.
-     *
-     * @param url
-     * @return
-     */
-    private URL mapCname(URL url) {
-
-        String host = url.getHost();
-        String urlString = url.toExternalForm();
-        try {
-            if (host.equals("igv.broadinstitute.org")) {
-                urlString = urlString.replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org");
-            } else if (host.equals("igvdata.broadinstitute.org")) {
-                // Cloudfront server
-                urlString = urlString.replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net");
-            } else if (host.equals("www.broadinstitute.org")) {
-                urlString = urlString.replace("www.broadinstitute.org/igvdata", "data.broadinstitute.org/igvdata");
-            }
-
-            // data.broadinstitute.org requires https
-            urlString = urlString.replace("http://data.broadinstitute.org", "https://data.broadinstitute.org");
-
-            return new URL(urlString);
-        } catch (MalformedURLException e) {
-            log.error("Error modifying url", e);
-        }
-        return url;
-    }
 
 
     //Used for testing sometimes, please do not delete
@@ -847,6 +863,7 @@ public class HttpUtils {
             log.debug(header.getKey() + ": " + StringUtils.join(header.getValue(), ","));
         }
     }
+
 
     public void setDefaultPassword(String defaultPassword) {
         this.defaultPassword = defaultPassword.toCharArray();
@@ -936,7 +953,8 @@ public class HttpUtils {
      * @return
      */
     public static boolean isURL(String f) {
-        return f.startsWith("http:") || f.startsWith("ftp:") || f.startsWith("https:") || URLmatcher.matcher(f).matches();
+        return f.startsWith("http://") || f.startsWith("ftp://") || f.startsWith("https://") || f.startsWith("gs://")
+                || URLmatcher.matcher(f).matches();
     }
 
     public static Map<String, String> parseQueryString(String query) {

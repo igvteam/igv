@@ -170,9 +170,9 @@ public class ResourceLocator {
         } else {
 
             String typeString = path.toLowerCase();
-            if (path.startsWith("http://") || path.startsWith("https://")) {
+            if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("gs://")) {
                 try {
-                    URL url = new URL(path);
+                    URL url = HttpUtils.createURL(path);
 
                     typeString = url.getPath().toLowerCase();
                     String query = url.getQuery();
@@ -272,7 +272,7 @@ public class ResourceLocator {
 
     public String getTrackName() {
         if (name == null) {
-            if (path.startsWith("http://") || path.startsWith("https://")) {
+            if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("gs://")) {
                 int idx = path.lastIndexOf('/');
                 int idx2 = path.indexOf('?');
                 return idx2 > idx ? path.substring(idx + 1, idx2) : path.substring(idx + 1);
@@ -393,10 +393,12 @@ public class ResourceLocator {
 
         if (indexPath != null) return indexPath;
 
-        if (path.toLowerCase().startsWith("http://") || path.toLowerCase().startsWith("https://")) {
+        if (path.toLowerCase().startsWith("http://") ||
+                path.toLowerCase().startsWith("https://") ||
+                path.toLowerCase().startsWith("gs://")) {
             // See if bam file is specified by parameter
             try {
-                URL url = new URL(path);
+                URL url = HttpUtils.createURL(path);
                 String queryString = url.getQuery();
                 if (queryString != null) {
                     Map<String, String> parameters = HttpUtils.parseQueryString(queryString);

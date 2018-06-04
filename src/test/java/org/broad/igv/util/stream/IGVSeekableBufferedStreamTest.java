@@ -31,6 +31,7 @@ import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableHTTPStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.Assume;
 import org.junit.Before;
@@ -260,7 +261,7 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
         assertEquals(length, bytesRead);
 
         byte[] buffer2 = new byte[length];
-        SeekableStream bufferedStream = new IGVSeekableBufferedStream(new SeekableHTTPStream(new URL(BAM_URL_STRING)));
+        SeekableStream bufferedStream = new IGVSeekableBufferedStream(new SeekableHTTPStream(HttpUtils.createURL(BAM_URL_STRING)));
         bufferedStream.seek(startPosition);
         bytesRead = bufferedStream.read(buffer2, 0, length);
         assertEquals(length, bytesRead);
@@ -285,7 +286,7 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
 
 
         byte[] buffer = new byte[length];
-        SeekableStream bufferedStream = new IGVSeekableBufferedStream(new SeekableHTTPStream(new URL(BAM_URL_STRING)));
+        SeekableStream bufferedStream = new IGVSeekableBufferedStream(new SeekableHTTPStream(HttpUtils.createURL(BAM_URL_STRING)));
         bufferedStream.seek(startPosition);
         int bytesRead = bufferedStream.read(buffer, 0, length);
         assertEquals(remainder, bytesRead);

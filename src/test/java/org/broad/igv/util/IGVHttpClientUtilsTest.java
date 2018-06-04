@@ -25,9 +25,9 @@
 
 package org.broad.igv.util;
 
+import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
-import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.prefs.PreferencesManager;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -53,18 +53,18 @@ public class IGVHttpClientUtilsTest {
     public void testGetContentLength() throws IOException {
 
         String url = hg18URL;
-        assertEquals(hg18bytes, HttpUtils.getInstance().getContentLength(new URL(url)));
+        assertEquals(hg18bytes, HttpUtils.getInstance().getContentLength(HttpUtils.createURL(url)));
     }
 
     @Test
     public void testExists() throws IOException {
-        URL url = new URL(hg18URL);
-        assertTrue("Resource unexpectedly does not exist", HttpUtils.getInstance().resourceAvailable(url));
+        String url = hg18URL;
+        assertTrue("Resource unexpectedly does not exist", HttpUtils.getInstance().resourceAvailable(hg18URL));
 
-        url = new URL("http://nosuchserver/genomes/hg18.genome");
+        url = "http://nosuchserver/genomes/hg18.genome";
         assertFalse("Resource unexpectedly found", HttpUtils.getInstance().resourceAvailable(url));
 
-        url = new URL("http://igvdata.broadinstitute.org/nosuchfile.txt");
+        url = "http://igvdata.broadinstitute.org/nosuchfile.txt";
         assertFalse(HttpUtils.getInstance().resourceAvailable(url));
     }
 
@@ -77,7 +77,7 @@ public class IGVHttpClientUtilsTest {
     @Test
     public void testProxy() throws IOException {
 
-        final URL testURL = new URL(hg18URL);
+        final URL testURL = HttpUtils.createURL(hg18URL);
 
         IGVPreferences mgr = PreferencesManager.getPreferences();
         mgr.override(Constants.PROXY_HOST, "igvdev01.broadinstitute.org");
@@ -101,7 +101,7 @@ public class IGVHttpClientUtilsTest {
         // Now try to get a file not on the squid "allowed" domains to verify requests are going through the proxy
         // This should fail and return -1 for the content length
         try {
-            contentLength = HttpUtils.getInstance().getContentLength(new URL("http://www.boston.com"));
+            contentLength = HttpUtils.getInstance().getContentLength(HttpUtils.createURL("http://www.boston.com"));
             junit.framework.Assert.fail("Proxy test is apparently bypassing proxy");
         } catch (HttpResponseException e) {
             // This is expected

@@ -486,7 +486,7 @@ public class PluginSpecReader {
                 //Relative path
                 urlPath = "file://" + absRoot + "/" + urlPath;
             }
-            urls.add(new URL(urlPath));
+            urls.add(HttpUtils.createURL(urlPath));
         }
         return urls.toArray(new URL[0]);
     }

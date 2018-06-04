@@ -173,7 +173,7 @@ public class RuntimeUtils {
         URL[] urls = new URL[files.length];
         for (int pp = 0; pp < files.length; pp++) {
             try {
-                urls[pp] = new URL("file://" + files[0].getAbsolutePath());
+                urls[pp] = HttpUtils.createURL("file://" + files[0].getAbsolutePath());
             } catch (MalformedURLException e) {
                 log.error(e);
             }

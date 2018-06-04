@@ -212,10 +212,10 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
         String queryString = url.getQuery();
         if (queryString == null) {
-            return new URL(url.toExternalForm() + "?start=" + start + "&end=" + end);
+            return HttpUtils.createURL(url.toExternalForm() + "?start=" + start + "&end=" + end);
         } else {
             String newQueryString = queryString + "&start=" + start + "&end" + end;
-            return new URL(url.toExternalForm().replace(queryString, newQueryString));
+            return HttpUtils.createURL(url.toExternalForm().replace(queryString, newQueryString));
         }
     }
 
@@ -227,7 +227,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
     public static void main(String[] args) throws IOException {
 
-        IGVSeekableHTTPStream stream = new IGVSeekableHTTPStream(new URL("http://localhost/igv-web/test/data/misc/BufferedReaderTest.bin"));
+        IGVSeekableHTTPStream stream = new IGVSeekableHTTPStream(HttpUtils.createURL("http://localhost/igv-web/test/data/misc/BufferedReaderTest.bin"));
 
         byte[] buffer = new byte[1000];
 

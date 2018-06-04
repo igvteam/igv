@@ -86,25 +86,7 @@ public class LoadFromURLMenuAction extends MenuAction {
 
                 if (url != null && url.trim().length() > 0) {
 
-                    url = url.trim();
-
-                    if (url.startsWith("gs://")) {
-                        enableGoogleMenu();
-                        url = GoogleUtils.translateGoogleCloudURL(url);
-                    }
-
-                    if (OAuthUtils.isGoogleCloud(url)) {
-
-                        // if user is not currently logged in, attempt to
-                        // log in user dwm08
-                        OAuthUtils.doSecureLogin();
-
-                        // Access a few bytes as a means to check authorization
-                        if (!ping(url)) return;
-                        if (url.indexOf("alt=media") < 0) {
-                            url = url + (url.indexOf('?') > 0 ? "&" : "?") + "alt=media";
-                        }
-                    }
+                    url = mapURL(url.trim());
 
                     if (url.endsWith(".xml") || url.endsWith(".session")) {
                         try {
@@ -144,16 +126,41 @@ public class LoadFromURLMenuAction extends MenuAction {
                 igv.loadTracks(Arrays.asList(rl));
             }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
+
             String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL to .genome or FASTA file",
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
                 try {
+                    url = mapURL(url);
                     GenomeManager.getInstance().loadGenome(url.trim(), null);
                 } catch (Exception e1) {
                     MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
                 }
             }
         }
+    }
+
+    private String mapURL(String url) {
+
+        url = url.trim();
+
+        if (url.startsWith("gs://")) {
+            enableGoogleMenu();
+            url = GoogleUtils.translateGoogleCloudURL(url);
+        }
+
+        if (OAuthUtils.isGoogleCloud(url)) {
+
+            // if user is not currently logged in, attempt to
+            // log in user
+            OAuthUtils.doSecureLogin();
+
+            if (url.indexOf("alt=media") < 0) {
+                url = url + (url.indexOf('?') > 0 ? "&" : "?") + "alt=media";
+            }
+        }
+
+        return url;
     }
 
     private void enableGoogleMenu() {
@@ -171,7 +178,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             Map<String, String> params = new HashMap();
             params.put("Range", "bytes=0-10");
             byte[] buffer = new byte[10];
-            is = HttpUtils.getInstance().openConnectionStream(new URL(url), params);
+            is = HttpUtils.getInstance().openConnectionStream(HttpUtils.createURL(url), params);
             is.read(buffer);
             is.close();
         } catch (HttpResponseException e1) {

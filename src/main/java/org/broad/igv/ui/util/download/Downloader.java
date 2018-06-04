@@ -202,7 +202,7 @@ public class Downloader implements Runnable {
 
     public static void main(String[] args) throws MalformedURLException {
 
-        URL url = new URL(args[0]);
+        URL url = HttpUtils.createURL(args[0]);
         String localFile = args[1];
         JComponent frame = null;
 

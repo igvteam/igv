@@ -132,7 +132,7 @@ public class OAuthUtils {
         //IGVPreferences.getInstance().get(IGVPreferences.OAUTH_CONFIG);
 
         if (oauthConfig == null || !FileUtils.resourceExists(oauthConfig)) {
-            String propString = HttpUtils.getInstance().getContentsAsGzippedString(new URL(PROPERTIES_URL));
+            String propString = HttpUtils.getInstance().getContentsAsGzippedString(HttpUtils.createURL(PROPERTIES_URL));
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
             authURI = obj.get("auth_uri").getAsString();
@@ -258,7 +258,7 @@ public class OAuthUtils {
         // properties moved to early init dwm08
         //if (clientId == null) fetchOauthProperties();
 
-        URL url = new URL(tokenURI);
+        URL url = HttpUtils.createURL(tokenURI);
 
         Map<String, String> params = new HashMap<String, String>();
         params.put("code", authorizationCode);
@@ -294,7 +294,7 @@ public class OAuthUtils {
         // properties moved to early init dwm08
         //if (clientId == null) fetchOauthProperties();
 
-        URL url = new URL(tokenURI);
+        URL url = HttpUtils.createURL(tokenURI);
 
         Map<String, String> params = new HashMap<String, String>();
         params.put("refresh_token", refreshToken);
@@ -343,7 +343,7 @@ public class OAuthUtils {
 
         try {
 
-            URL url = new URL("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken);
+            URL url = HttpUtils.createURL("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken);
             String response = HttpUtils.getInstance().getContentsAsJSON(url);
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(response).getAsJsonObject();

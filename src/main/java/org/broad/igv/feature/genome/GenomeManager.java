@@ -582,8 +582,8 @@ public class GenomeManager {
         if (HttpUtils.isRemoteURL(genomePath.toLowerCase())) {
             // We need a local copy, as there is no http zip file reader
 
-            URL genomeArchiveURL = new URL(genomePath);
-            final String tmp = URLDecoder.decode(new URL(genomePath).getFile(), "UTF-8");
+            URL genomeArchiveURL = HttpUtils.createURL(genomePath);
+            final String tmp = URLDecoder.decode(HttpUtils.createURL(genomePath).getFile(), "UTF-8");
             String cachedFilename = Utilities.getFileNameFromURL(tmp);
 
             if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
@@ -1106,10 +1106,10 @@ public class GenomeManager {
         String filename = Utilities.getFileNameFromURL(fastaPath);
 
         File localFile = new File(targetDir, filename);
-        boolean downloaded = Downloader.download(new URL(fastaPath), localFile, IGV.getMainFrame());
+        boolean downloaded = Downloader.download(HttpUtils.createURL(fastaPath), localFile, IGV.getMainFrame());
 
         if (downloaded) {
-            URL indexUrl = new URL(fastaPath + ".fai");
+            URL indexUrl = HttpUtils.createURL(fastaPath + ".fai");
             File localIndexFile = new File(targetDir, filename + ".fai");
             downloaded = Downloader.download(indexUrl, localIndexFile, IGV.getMainFrame());
         }
@@ -1117,7 +1117,7 @@ public class GenomeManager {
         if (downloaded) {
 
             if (fastaPath.endsWith(".gz")) {
-                URL gziUrl = new URL(fastaPath + ".gzi");
+                URL gziUrl = HttpUtils.createURL(fastaPath + ".gzi");
                 File localGziPath = new File(targetDir, filename + ".gzi");
                 downloaded = Downloader.download(gziUrl, localGziPath, IGV.getMainFrame());
             }

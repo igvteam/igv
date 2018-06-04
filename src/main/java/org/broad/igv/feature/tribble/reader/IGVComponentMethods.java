@@ -39,7 +39,7 @@ public class IGVComponentMethods extends AbstractFeatureReader.ComponentMethods 
         ResourceLocator locator = new ResourceLocator(resourcePath);
         if (tabxIndex == null) {
             if (HttpUtils.isRemoteURL(locator.getPath())) {
-                final URL url = new URL(locator.getPath());
+                final URL url = HttpUtils.createURL(locator.getPath());
                 String path = url.getPath();
                 String indexPath = path + ".tbi";   // Strip off parameters
                 tabxIndex = locator.getPath().replace(path, indexPath);

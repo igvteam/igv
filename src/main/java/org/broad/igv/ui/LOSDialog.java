@@ -31,6 +31,7 @@ package org.broad.igv.ui;
 
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.util.HttpUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -75,7 +76,7 @@ public class LOSDialog extends JDialog {
 
     private void initContent() {
         try {
-            contentPane.setPage(new URL("http://www.broadinstitute.org/igv/projects/los.html"));
+            contentPane.setPage(HttpUtils.createURL("http://www.broadinstitute.org/igv/projects/los.html"));
         } catch (Exception e) {
             e.printStackTrace();
         }

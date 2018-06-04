@@ -158,7 +158,7 @@ public class BlatClient {
 
         Map<String, String> params = new HashMap();
         params.put("userSeq", userSeq);
-        String result = HttpUtils.getInstance().doPost(new URL(urlString), params);
+        String result = HttpUtils.getInstance().doPost(HttpUtils.createURL(urlString), params);
 
         return parseResult(result);
     }

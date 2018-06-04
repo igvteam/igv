@@ -238,7 +238,7 @@ public class RNAIGCTDatasetParser {
     private synchronized static Map<String, String[]> getProbeMap() throws IOException {
         if (rnaiProbeMap == null) {
             rnaiProbeMap = Collections.synchronizedMap(new HashMap<String, String[]>(20000));
-            URL url = new URL(RNAI_MAPPING_URL);
+            URL url = HttpUtils.createURL(RNAI_MAPPING_URL);
 
             InputStream probeMappingStream = null;
             try {

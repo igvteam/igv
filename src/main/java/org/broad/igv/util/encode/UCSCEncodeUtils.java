@@ -134,7 +134,7 @@ public class UCSCEncodeUtils {
                 String dir = nextLine.equals(".") ? rootPath : rootPath + nextLine;
                 String filesDotTxt = dir + "/files.txt";
                 try {
-                    if (HttpUtils.getInstance().resourceAvailable(new URL(filesDotTxt))) {
+                    if (HttpUtils.getInstance().resourceAvailable(filesDotTxt)) {
                         parseFilesDotTxt(filesDotTxt, records);
                     }
                 } catch (IOException e) {

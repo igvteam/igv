@@ -194,7 +194,7 @@ public class TestFileGenerator {
             InputStream is = null;
 
             if (HttpUtils.isRemoteURL(urlString)) {
-                URL url = new URL(urlString);
+                URL url = HttpUtils.createURL(urlString);
                 is = HttpUtils.getInstance().openConnectionStream(url);
             } else {
                 is = new FileInputStream(urlString);

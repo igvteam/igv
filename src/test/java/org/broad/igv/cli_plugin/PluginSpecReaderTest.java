@@ -26,6 +26,7 @@
 package org.broad.igv.cli_plugin;
 
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -61,7 +62,7 @@ public class PluginSpecReaderTest {
 
     public void tstLoadExternalClass(File extDir) throws Exception {
 
-        URL homeURL = new URL("file:" + extDir.getAbsolutePath());
+        URL homeURL = HttpUtils.createURL("file:" + extDir.getAbsolutePath());
 
         ClassLoader loader = URLClassLoader.newInstance(
                 new URL[]{homeURL},

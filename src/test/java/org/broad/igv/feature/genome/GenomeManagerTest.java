@@ -36,6 +36,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -198,7 +199,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         //this file it's one less manual update step
         //String parent = "https://github.com/broadinstitute/IGV/tree/master/test/data/genomes";
         String parent = "http://data.broadinstitute.org/igvdata/test";
-        URL remURL = new URL(parent + "/" + updatedFile.getName());
+        URL remURL = HttpUtils.createURL(parent + "/" + updatedFile.getName());
 
         PreferencesManager.getPreferences().put(Constants.AUTO_UPDATE_GENOMES, true);
         GenomeManager.getInstance().refreshCache(cachedFile, remURL);

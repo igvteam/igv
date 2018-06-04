@@ -52,14 +52,14 @@ public class SeekableServiceStreamTest extends TestCase {
 
         HttpUtils.getInstance().updateProxySettings();
 
-        IGVSeekableHTTPStream hs = new IGVSeekableHTTPStream(new URL(tdfFile));
+        IGVSeekableHTTPStream hs = new IGVSeekableHTTPStream(HttpUtils.createURL(tdfFile));
         final int position = 100;
         hs.seek(position);
         final int range = 1000;
         byte[] expectedBytes = new byte[range];
         hs.read(expectedBytes, 0, expectedBytes.length);
 
-        SeekableServiceStream sss = new SeekableServiceStream(new URL(tdfFile));
+        SeekableServiceStream sss = new SeekableServiceStream(HttpUtils.createURL(tdfFile));
         sss.seek(position);
         byte[] bytes = new byte[range];
         sss.read(bytes, 0, bytes.length);

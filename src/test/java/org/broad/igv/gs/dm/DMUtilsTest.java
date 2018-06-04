@@ -82,9 +82,9 @@ public class DMUtilsTest extends AbstractHeadlessTest{
 
         try {
             String defaultURLStr = PreferencesManager.getPreferences().get(Constants.GENOME_SPACE_DM_SERVER);
-            defaultURL = new URL(defaultURLStr);
-            personaldirectoryURL = new URL(defaultURLStr + DMUtils.PERSONAL_DIRECTORY);
-            fileURL = new URL(defaultURL + "file");
+            defaultURL = HttpUtils.createURL(defaultURLStr);
+            personaldirectoryURL = HttpUtils.createURL(defaultURLStr + DMUtils.PERSONAL_DIRECTORY);
+            fileURL = HttpUtils.createURL(defaultURL + "file");
             System.out.println("Genome space URL: " + defaultURL);
         } catch (MalformedURLException e) {
             e.printStackTrace();

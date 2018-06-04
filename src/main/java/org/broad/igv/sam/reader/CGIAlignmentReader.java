@@ -71,7 +71,7 @@ public class CGIAlignmentReader implements AlignmentReader {
 
     public CGIAlignmentReader(String url) throws MalformedURLException {
 
-        URL u = new URL(url);
+        URL u = HttpUtils.createURL(url);
         int port = u.getPort();
         baseURL = u.getProtocol() + "://" + u.getHost();
         if (port > 0) baseURL += ":" + port;
@@ -110,7 +110,7 @@ public class CGIAlignmentReader implements AlignmentReader {
     private void loadHeader() {
         InputStream is = null;
         try {
-            URL url = new URL(getHeaderURL());
+            URL url = HttpUtils.createURL(getHeaderURL());
             is = HttpUtils.getInstance().openConnectionStream(url);
 
             LineReader reader = new BufferedLineReader(is);
@@ -135,7 +135,7 @@ public class CGIAlignmentReader implements AlignmentReader {
         if (sequenceNames == null) {
             InputStream is = null;
             try {
-                URL url = new URL(getSequenceNamesURL());
+                URL url = HttpUtils.createURL(getSequenceNamesURL());
                 is = HttpUtils.getInstance().openConnectionStream(url);
                 BufferedReader br = new BufferedReader(new InputStreamReader(is));
                 sequenceNames = new ArrayList<String>();
@@ -174,7 +174,7 @@ public class CGIAlignmentReader implements AlignmentReader {
 
     public CloseableIterator<PicardAlignment> iterator() {
         try {
-            URL url = new URL(getQueryURL());
+            URL url = HttpUtils.createURL(getQueryURL());
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
 
             BufferedInputStream stream = new BufferedInputStream(is, 500000);
@@ -195,7 +195,7 @@ public class CGIAlignmentReader implements AlignmentReader {
             final String parameters = "&chr=" + sequence + "&start=" + start + "&end=" + end +
                     "&contained=" + contained;
             //String encodedParameters = URLEncoder.encode(parameters);
-            URL url = new URL(getQueryURL() + parameters);
+            URL url = HttpUtils.createURL(getQueryURL() + parameters);
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
 
             BufferedInputStream stream = new BufferedInputStream(is, 500000);

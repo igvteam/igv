@@ -48,7 +48,7 @@ public class DumpHttpHeaders {
     }
 
     private static void dumpFields(String url) throws IOException {
-        URLConnection conn = (new URL(url)).openConnection();
+        URLConnection conn = (HttpUtils.createURL(url)).openConnection();
         Map<String, List<String>> headerFields = conn.getHeaderFields();
         System.out.println(url);
         for (Map.Entry<String, List<String>> entry : headerFields.entrySet()) {

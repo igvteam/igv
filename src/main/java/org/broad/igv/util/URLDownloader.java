@@ -53,7 +53,7 @@ public class URLDownloader implements Runnable {
     private volatile RunnableResult result;
 
     public URLDownloader(String url, File outputFile) throws MalformedURLException {
-        this.srcUrl = new URL(url);
+        this.srcUrl = HttpUtils.createURL(url);
         this.outputFile = outputFile;
     }
 

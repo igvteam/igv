@@ -36,6 +36,7 @@ import org.broad.igv.gs.dm.GSFileMetadata;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.HttpUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -106,7 +107,7 @@ public class GSFileBrowser extends JDialog {
                 if (e.getClickCount() == 2) {
                     if (md.isDirectory()) {
                         try {
-                            fetchContents(new URL(md.getUrl()));
+                            fetchContents(HttpUtils.createURL(md.getUrl()));
                         } catch (IOException e1) {
                             e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         }
@@ -119,7 +120,7 @@ public class GSFileBrowser extends JDialog {
         fileList.addMouseListener(mouseListener);
 
         String rootdirectory = mode == Mode.OPEN ? DMUtils.DEFAULT_DIRECTORY : DMUtils.PERSONAL_DIRECTORY;
-        URL defaultURL = new URL(PreferencesManager.getPreferences().get(Constants.GENOME_SPACE_DM_SERVER) +
+        URL defaultURL = HttpUtils.createURL(PreferencesManager.getPreferences().get(Constants.GENOME_SPACE_DM_SERVER) +
                 rootdirectory);
         fetchContents(defaultURL);
     }
@@ -196,7 +197,7 @@ public class GSFileBrowser extends JDialog {
             if (selections.length == 1) {
                 GSFileMetadata md = (GSFileMetadata) selections[0];
                 if (md.isDirectory()) {
-                    fetchContents(new URL(md.getUrl()));
+                    fetchContents(HttpUtils.createURL(md.getUrl()));
                     return;
                 }
             }
@@ -237,7 +238,7 @@ public class GSFileBrowser extends JDialog {
                     setSelectedFile(metaData);
                 }
                 // Refresh
-                fetchContents(new URL(putURL));
+                fetchContents(HttpUtils.createURL(putURL));
             } catch (IOException e1) {
                 log.error("Error creating directory: " + putURL, e1);
                 MessageUtils.showMessage("<html>Error creating directory: " + e1 + "<br>" + e1.getMessage());

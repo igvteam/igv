@@ -74,7 +74,7 @@ public class DASFeatureSource implements FeatureSource {
 
 
     public DASFeatureSource(ResourceLocator locator) throws MalformedURLException {
-        URL url = new URL(locator.getPath());
+        URL url = HttpUtils.createURL(locator.getPath());
         String host = url.getHost();
         String protocol = url.getProtocol();
         path = url.getPath();
@@ -197,7 +197,7 @@ public class DASFeatureSource implements FeatureSource {
                     }
                 }
 
-                URL dataQuery = new URL(urlString);
+                URL dataQuery = HttpUtils.createURL(urlString);
                 Document dom = getDocument(dataQuery);
                 if (dom == null) {
                     return Collections.emptyList();

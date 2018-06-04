@@ -91,7 +91,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         if (isLocal) {
             resource = SamInputResource.of(new File(locator.getPath()));
         } else {
-            URL url = new URL(locator.getPath());
+            URL url = HttpUtils.createURL(locator.getPath());
             if (requireIndex) {
                 resource = SamInputResource.of(IGVSeekableStreamFactory.getInstance().getStreamFor(url));
             } else {
@@ -111,7 +111,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
                 File indexFile = new File(indexPath);
                 resource = resource.index(indexFile);
             } else {
-                SeekableStream indexStream = IGVSeekableStreamFactory.getInstance().getStreamFor(new URL(indexPath));
+                SeekableStream indexStream = IGVSeekableStreamFactory.getInstance().getStreamFor(HttpUtils.createURL(indexPath));
                 resource = resource.index(indexStream);
             }
         }
@@ -201,16 +201,13 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
      * @return the index path, or null if no index path is set
      */
     private String getExplicitIndexPath(ResourceLocator locator) {
+
         String p = locator.getPath().toLowerCase();
         String idx = locator.getIndexPath();
 
-        if (idx != null && idx.startsWith("gs://")) {
-            idx = GoogleUtils.translateGoogleCloudURL(idx);
-        }
-
         if (idx == null && (p.startsWith("http://") || p.startsWith("https://"))) {
             try {
-                URL url = new URL(locator.getPath());
+                URL url = HttpUtils.createURL(locator.getPath());
                 String queryString = url.getQuery();
                 if (queryString != null) {
                     Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
@@ -244,7 +241,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
             // Try .bam.bai
             indexPath = getIndexURL(pathOrURL, ".bai");
             pathsTried.add(indexPath);
-            if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))) {
+            if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
                 return indexPath;
             }
 
@@ -252,7 +249,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
             if (pathOrURL.endsWith(".bam")) {
                 indexPath = getIndexURL(pathOrURL.substring(0, pathOrURL.length() - 4), ".bai");
                 pathsTried.add(indexPath);
-                if (HttpUtils.getInstance().resourceAvailable(new URL(indexPath))) {
+                if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
                     return indexPath;
                 }
             }
@@ -327,7 +324,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     private String getIndexURL(String urlString, String extension) {
         String indexPath = null;
         try {
-            URL url = new URL(urlString);
+            URL url = HttpUtils.createURL(urlString);
             String queryString = url.getQuery();
             if (queryString == null) {
                 indexPath = urlString + extension;

@@ -26,6 +26,8 @@
 package org.broad.igv.gs.dm;
 
 
+import org.broad.igv.util.HttpUtils;
+
 import java.io.File;
 import java.net.URL;
 import java.util.List;
@@ -43,10 +45,10 @@ public class GSDirectoryListing {
     public GSDirectoryListing(String url, List<GSFileMetadata> contents) {
 
         // Parse URL to get components.
-        //URL u = new URL(url);
+        //URL u = HttpUtils.createURL(url);
         String path = null;
         try {
-            path = (new URL(url)).getPath();
+            path = (HttpUtils.createURL(url)).getPath();
         } catch (Exception e) {
 
         }

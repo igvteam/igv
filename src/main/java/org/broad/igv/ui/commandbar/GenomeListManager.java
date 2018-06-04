@@ -363,7 +363,7 @@ public class GenomeListManager {
             String genomeListURLString = "";
             try {
                 genomeListURLString = PreferencesManager.getPreferences().getGenomeListURL();
-                URL serverGenomeURL = new URL(genomeListURLString);
+                URL serverGenomeURL = HttpUtils.createURL(genomeListURLString);
 
                 if (HttpUtils.isRemoteURL(genomeListURLString)) {
                     inputStream = HttpUtils.getInstance().openConnectionStream(serverGenomeURL);

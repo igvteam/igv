@@ -27,16 +27,17 @@ package org.broad.igv.util;
 
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPReply;
-import org.broad.igv.util.ftp.FTPUtils;
+import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.MessageUtils;
-import htsjdk.tribble.readers.AsciiLineReader;
+import org.broad.igv.util.ftp.FTPUtils;
 
 import java.awt.*;
 import java.io.*;
@@ -107,7 +108,7 @@ public class ParsingUtils {
 
         InputStream inputStream = null;
         if (HttpUtils.isRemoteURL(locator.getPath())) {
-            URL url = new URL(locator.getPath());
+            URL url = HttpUtils.createURL(locator.getPath());
             inputStream = HttpUtils.getInstance().openConnectionStream(url);
         } else {
             String path = locator.getPath();
@@ -199,7 +200,7 @@ public class ParsingUtils {
         if (HttpUtils.isRemoteURL(path)) {
             String resp = null;
             try {
-                URL url = new URL(path);
+                URL url = HttpUtils.createURL(path);
                 if (path.startsWith("ftp:")) {
                     String host = url.getHost();
                     FTPClient ftp = FTPUtils.connect(host, url.getUserInfo(), new UserPasswordInputImpl());
@@ -231,13 +232,18 @@ public class ParsingUtils {
     public static long getContentLength(String path) {
         try {
             long contentLength = -1;
-            if (path.startsWith("http:") || path.startsWith("https:")) {
-                URL url = new URL(path);
+
+            if (path.startsWith("gs://")) {
+                path = GoogleUtils.translateGoogleCloudURL(path);
+            }
+
+            if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("gs://")) {
+                URL url = HttpUtils.createURL(path);
                 contentLength = HttpUtils.getInstance().getContentLength(url);
 
             } else if (path.startsWith("ftp:")) {
                 // Use JDK url
-                URL url = new URL(path);
+                URL url = HttpUtils.createURL(path);
                 URLConnection connection = url.openConnection();
                 connection.setConnectTimeout(Globals.CONNECT_TIMEOUT);
                 //For reasons beyond my ken, on Java 7 getContentLength
@@ -533,13 +539,10 @@ public class ParsingUtils {
 
     public static boolean pathExists(String covPath) {
         if (covPath == null) return false;
-        try {
-            return (new File(covPath)).exists() ||
-                    (HttpUtils.isRemoteURL(covPath) && HttpUtils.getInstance().resourceAvailable(new URL(covPath)));
-        } catch (MalformedURLException e) {
-            log.error(e.getMessage(), e);
-            return false;
-        }
+
+        return (new File(covPath)).exists() ||
+                (HttpUtils.isRemoteURL(covPath) && HttpUtils.getInstance().resourceAvailable(covPath));
+
     }
 
     /**

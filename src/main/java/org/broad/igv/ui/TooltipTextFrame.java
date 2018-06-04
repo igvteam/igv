@@ -272,7 +272,7 @@ public class TooltipTextFrame extends JFrame {
 
     public static void omaTest() throws IOException {
         String url = "http://mutationassessor.org/v1/?cm=var&var=hg18,7,55178574,G,A&frm=txt";
-        String result = HttpUtils.getInstance().getContentsAsString(new URL(url));
+        String result = HttpUtils.getInstance().getContentsAsString(HttpUtils.createURL(url));
 
         BufferedReader br = new BufferedReader(new StringReader(result));
         String[] headers = br.readLine().split("\t");

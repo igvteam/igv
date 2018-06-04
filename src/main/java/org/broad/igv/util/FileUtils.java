@@ -25,18 +25,15 @@
 
 package org.broad.igv.util;
 
-import org.apache.commons.io.output.StringBuilderWriter;
-import org.broad.igv.util.ftp.FTPUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
+import org.broad.igv.util.ftp.FTPUtils;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.regex.Pattern;
 
 /**
@@ -51,20 +48,16 @@ public class FileUtils {
     final static String[] igvJnlpPrefixes = {"igv", "ichip", "29mammals", "hic"};
 
 
-
     public static boolean resourceExists(String path) {
 
-        if(path == null) return false;
-        try {
-            if (isRemote(path)) {
-                return HttpUtils.getInstance().resourceAvailable(new URL(path));
-            } else {
-                return (new File(path)).exists();
-            }
-        } catch (IOException e) {
-            log.error("Error checking existence of: " + path, e);
-            return false;
+        if (path == null) return false;
+
+        if (isRemote(path)) {
+            return HttpUtils.getInstance().resourceAvailable(path);
+        } else {
+            return (new File(path)).exists();
         }
+
     }
 
 
@@ -437,7 +430,6 @@ public class FileUtils {
     }
 
 
-
     /**
      * Return the length of the file, which might be remote.
      *
@@ -448,7 +440,7 @@ public class FileUtils {
 
         if (isRemote(file)) {
             try {
-                URL url = new URL(file);
+                URL url = HttpUtils.createURL(file);
                 if (file.startsWith("ftp://")) {
                     return FTPUtils.getContentLength(url);
                 } else {
@@ -470,6 +462,7 @@ public class FileUtils {
 
     /**
      * Read and return the file contents as a string
+     *
      * @param path
      * @return
      */
@@ -480,7 +473,7 @@ public class FileUtils {
         StringBuilder contents = new StringBuilder();
         PrintWriter pw = new PrintWriter(new StringBuilderWriter(contents));
         String nextLine;
-        while((nextLine = reader.readLine()) != null) {
+        while ((nextLine = reader.readLine()) != null) {
             pw.println(nextLine);
         }
         return contents.toString();

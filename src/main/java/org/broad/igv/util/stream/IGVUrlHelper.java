@@ -104,12 +104,12 @@ public class IGVUrlHelper implements URLHelper {
         }
         if (log.isTraceEnabled()) {
             log.trace("old url: " + surl);
-            log.trace("new url: " + nurl);
+            log.trace("HttpUtils.createURL: " + nurl);
         }
-        return new URL(nurl);
+        return HttpUtils.createURL(nurl);
     }
 
     public boolean exists() {
-        return HttpUtils.getInstance().resourceAvailable(url);
+        return HttpUtils.getInstance().resourceAvailable(url.toExternalForm());
     }
 }

@@ -46,8 +46,6 @@ public class SeekableServiceStream extends SeekableStream {
 
     public static final String WEBSERVICE_URL = "https://portals.broadinstitute.org/webservices/igv/range";
 
-
-
     private long position = 0;
     private long contentLength = Long.MAX_VALUE;
     private URL  wrappedURL;
@@ -97,7 +95,7 @@ public class SeekableServiceStream extends SeekableStream {
 
         InputStream is = null;
 
-        URL url = new URL(WEBSERVICE_URL + "?file=" + wrappedURL.toExternalForm() + "&position=" + position + "&length=" + length);
+        URL url = HttpUtils.createURL(WEBSERVICE_URL + "?file=" + wrappedURL.toExternalForm() + "&position=" + position + "&length=" + length);
 
         int n = 0;
         try {
