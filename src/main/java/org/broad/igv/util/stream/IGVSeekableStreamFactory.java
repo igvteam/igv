@@ -63,9 +63,9 @@ public class IGVSeekableStreamFactory implements ISeekableStreamFactory {
         } else {
             SeekableStream is = null;
 
-            if(path.startsWith("gs://")) {
-                path = GoogleUtils.translateGoogleCloudURL(path);
-            }
+//            if(path.startsWith("gs://")) {
+//                path = GoogleUtils.translateGoogleCloudURL(path);
+//            }
 
             if (path.toLowerCase().startsWith("http://") || path.toLowerCase().startsWith("https://") ||
                     path.toLowerCase().startsWith("gs://")) {

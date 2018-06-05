@@ -101,15 +101,11 @@ public class LoadFromURLMenuAction extends MenuAction {
 
                         if (dlg.getIndexURL() != null) {
                             String indexUrl = dlg.getIndexURL().trim();
-                            if (indexUrl.startsWith("gs://")) {
-                                enableGoogleMenu();
-                                indexUrl = GoogleUtils.translateGoogleCloudURL(indexUrl);
-                            }
+
                             if (OAuthUtils.isGoogleCloud(indexUrl)) {
-                                if (indexUrl.indexOf("alt=media") < 0) {
-                                    indexUrl = indexUrl + (indexUrl.indexOf('?') > 0 ? "&" : "?") + "alt=media";
-                                }
+                                enableGoogleMenu();
                             }
+
                             rl.setIndexPath(indexUrl);
                         }
                         igv.loadTracks(Arrays.asList(rl));
@@ -144,20 +140,13 @@ public class LoadFromURLMenuAction extends MenuAction {
 
         url = url.trim();
 
-        if (url.startsWith("gs://")) {
-            enableGoogleMenu();
-            url = GoogleUtils.translateGoogleCloudURL(url);
-        }
-
         if (OAuthUtils.isGoogleCloud(url)) {
 
+            enableGoogleMenu();
             // if user is not currently logged in, attempt to
             // log in user
             OAuthUtils.doSecureLogin();
 
-            if (url.indexOf("alt=media") < 0) {
-                url = url + (url.indexOf('?') > 0 ? "&" : "?") + "alt=media";
-            }
         }
 
         return url;

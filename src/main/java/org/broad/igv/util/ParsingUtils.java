@@ -233,9 +233,9 @@ public class ParsingUtils {
         try {
             long contentLength = -1;
 
-            if (path.startsWith("gs://")) {
-                path = GoogleUtils.translateGoogleCloudURL(path);
-            }
+//            if (path.startsWith("gs://")) {
+//                path = GoogleUtils.translateGoogleCloudURL(path);
+//            }
 
             if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("gs://")) {
                 URL url = HttpUtils.createURL(path);

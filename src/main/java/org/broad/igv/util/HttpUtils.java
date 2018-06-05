@@ -133,6 +133,11 @@ public class HttpUtils {
         if (urlString.startsWith("gs://")) {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
         }
+        if (OAuthUtils.isGoogleCloud(urlString)) {
+            if (urlString.indexOf("alt=media") < 0) {
+                urlString = urlString + (urlString.indexOf('?') > 0 ? "&" : "?") + "alt=media";
+            }
+        }
 
         String host = new URL(urlString).getHost();
         if (host.equals("igv.broadinstitute.org")) {
@@ -178,11 +183,8 @@ public class HttpUtils {
 
 
     public String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
-        InputStream is = null;
 
-        if (url.getProtocol().startsWith("gs:")) {
-            url = GoogleUtils.translateGoogleCloudURL(url);
-        }
+        InputStream is = null;
 
         HttpURLConnection conn = openConnection(url, headers);
         try {

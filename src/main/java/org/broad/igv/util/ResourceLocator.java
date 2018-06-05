@@ -322,8 +322,8 @@ public class ResourceLocator {
     public void setPath(String path) {
         if (path != null && path.startsWith("file://")) {
             this.path = path.substring(7);
-        } else if (path != null && path.startsWith("gs://")) {
-            this.path = GoogleUtils.translateGoogleCloudURL(path);
+//        } else if (path != null && path.startsWith("gs://")) {
+//            this.path = GoogleUtils.translateGoogleCloudURL(path);
         } else {
             this.path = path;
         }

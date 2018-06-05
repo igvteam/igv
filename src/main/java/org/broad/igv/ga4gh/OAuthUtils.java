@@ -421,7 +421,7 @@ public class OAuthUtils {
 
     // Doesn't really belong here....
     public static boolean isGoogleCloud(String url) {
-        return url.contains(GS_HOST);
+        return url.startsWith("gs://") || url.contains(GS_HOST);
     }
 
     public void updateSaveOption(boolean aBoolean) {

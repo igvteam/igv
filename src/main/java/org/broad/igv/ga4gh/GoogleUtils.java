@@ -22,16 +22,6 @@ public class GoogleUtils {
 
     private static Logger log = Logger.getLogger(GoogleUtils.class);
 
-
-    public static URL translateGoogleCloudURL(URL gsUrl) {
-        try {
-            return HttpUtils.createURL(translateGoogleCloudURL(gsUrl.toExternalForm()));
-        } catch (MalformedURLException e) {
-            log.error(e);
-            return gsUrl;
-        }
-    }
-
     /**
      * gs://igv-bam-test/NA12878.bam
      * https://www.googleapis.com/storage/v1/b/igv-bam-test/o/NA12878.bam
