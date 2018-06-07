@@ -115,7 +115,7 @@ public class AlignmentRenderer {
         Color c = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_C), Color.blue);
         Color t = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_T), Color.red);
         Color g = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_G), Color.gray);
-        Color n = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_N), Color.gray);
+        Color n = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_N), new Color(64, 64, 64));
 
         nucleotideColors.put('A', a);
         nucleotideColors.put('a', a);
@@ -958,8 +958,13 @@ public class AlignmentRenderer {
                     (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
                 char c = (char) read[idx];
 
-                Color color = nucleotideColors.get(c);
-                if (bisulfiteMode) color = bisinfo.getDisplayColor(idx);
+                Color color = null;
+                if (bisulfiteMode) {
+                    color = bisinfo.getDisplayColor(idx);
+                }
+                else {
+                    color = nucleotideColors.get(c);
+                }
                 if (color == null) {
                     color = Color.black;
                 }
