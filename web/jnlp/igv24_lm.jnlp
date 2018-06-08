@@ -22,8 +22,7 @@
   <update check="always"/>
   <resources>
     <java version="1.8+"
-          java-vm-args="-XX:+IgnoreUnrecognizedVMOptions --illegal-access=permit --add-modules=java.xml.bind"
-          initial-heap-size="256m"
+         initial-heap-size="256m"
           max-heap-size="1800m"/>
     <jar href="igv.jar" download="eager" main="true"/>
     <jar href="batik-codec__V1.7.jar" download="eager"/>
