@@ -26,6 +26,14 @@ import org.apache.tools.ant.filters.ReplaceTokens
 ext.moduleName = 'org.broad.igv'
 ext.mainClassName = 'org.broad.igv.ui.Main'
 
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', 'src/main/java9']
+        }
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'lib', include: '*.jar')
     testCompile fileTree(dir: 'test/lib', include: '*.jar')
