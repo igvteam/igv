@@ -172,7 +172,8 @@ public class TrackLoader {
                 loadRNAiHPScoreFile(locator);
             } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
                 loadSyntentyMapping(locator, newTracks);
-            } else if (isAlignmentTrack(typeString)) {
+            } else if (isAlignmentTrack(typeString) ||
+                       (path.startsWith("http") && path.contains("/query.cgi?"))) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".shape") || typeString.endsWith(".map")) {
                 convertLoadShapeFile(locator, newTracks, genome);
