@@ -25,8 +25,9 @@
           initial-heap-size="256m"
           max-heap-size="750m" />
     <jar href="igv.jar" download="eager" main="true"/>
-    <jar href="batik-codec__V1.7.jar" download="eager"/>
-    <jar href="goby-io-igv__V1.0.jar" download="eager"/>
+    <jar href="batik-codec-1.10.jar" download="eager"/>
+    <jar href="goby-io-igv-1.1.jar" download="eager"/>
+    <jar href="log4j-core-2.11.0.jar" download="eager"/>
     <property name="java.net.preferIPv4Stack" value="true"/>
     <property name="apple.laf.useScreenMenuBar" value="true"/>
     <property name="com.apple.mrj.application.growbox.intrudes" value="false"/>
