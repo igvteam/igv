@@ -37,7 +37,7 @@ import apple.dts.samplecode.osxadapter.OSXAdapter;
  * Java version-specific integration with OS X (macOS)
  * @author eby
  */
-public class OSXIntegration {
+public class DesktopIntegration {
     private static Logger log = Logger.getLogger(OSXIntegration.class);
 
     public static final void verifyJavaPlatform() {
