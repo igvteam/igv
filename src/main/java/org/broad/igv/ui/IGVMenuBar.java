@@ -161,8 +161,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         //This is for Macs, so showing the about dialog
         //from the command bar does what we want.
         if (Globals.IS_MAC) {
-            OSXIntegration.setAboutHandler(this);
-            OSXIntegration.setQuitHandler();
+            DesktopIntegration.setAboutHandler(this);
+            DesktopIntegration.setQuitHandler();
         }
     }
 

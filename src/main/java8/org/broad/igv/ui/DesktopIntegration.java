@@ -24,7 +24,10 @@
  */
 package org.broad.igv.ui;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+
+import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
@@ -36,6 +39,21 @@ import apple.dts.samplecode.osxadapter.OSXAdapter;
  */
 public class OSXIntegration {
     private static Logger log = Logger.getLogger(OSXIntegration.class);
+
+    public static final void verifyJavaPlatform() {
+        String javaVersion = System.getProperty("java.version");
+        if (javaVersion == null || !javaVersion.startsWith("1.8")) {
+            try {
+                System.out.println("Detected an unsupported Java version.  Java 8 is required by this release.");
+
+                if (!GraphicsEnvironment.isHeadless()) {
+                    JOptionPane.showMessageDialog(null, "Detected an unsupported Java version.  Java 8 is required by this release.");
+                }
+            } finally {
+                System.exit(1);
+            }
+        }
+    }
     
     public static void setDockIcon(Image image) {
         OSXAdapter.setDockIconImage(image);

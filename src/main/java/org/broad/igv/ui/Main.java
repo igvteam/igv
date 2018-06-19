@@ -99,19 +99,7 @@ public class Main {
                     UIManager.put("FileChooser.useSystemExtensionHiding", false);
                 }
 
-                String javaVersion = System.getProperty("java.version");
-                if (javaVersion == null || !javaVersion.startsWith("1.8")) {
-                    try {
-                        System.out.println("Detected an unsupported Java version.  Java 8 is required by this release.");
-
-                        if (!GraphicsEnvironment.isHeadless()) {
-                            JOptionPane.showMessageDialog(null, "Detected an unsupported Java version.  Java 8 is required by this release.");
-                        }
-                    } finally {
-                        System.exit(1);
-                    }
-                }
-
+                DesktopIntegration.verifyJavaPlatform();
                 initApplication();
 
                 JFrame frame = new JFrame();

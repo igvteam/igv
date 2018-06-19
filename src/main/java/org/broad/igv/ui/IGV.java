@@ -2285,7 +2285,7 @@ public class IGV implements IGVEventObserver {
         private void setAppleDockIcon() {
             try {
                 Image image = getIconImage();
-                OSXIntegration.setDockIcon(image);
+                DesktopIntegration.setDockIcon(image);
             } catch (Exception e) {
                 log.error("Error setting apple dock icon", e);
             }
