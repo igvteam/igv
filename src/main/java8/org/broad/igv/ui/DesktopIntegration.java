@@ -38,7 +38,7 @@ import apple.dts.samplecode.osxadapter.OSXAdapter;
  * @author eby
  */
 public class DesktopIntegration {
-    private static Logger log = Logger.getLogger(OSXIntegration.class);
+    private static Logger log = Logger.getLogger(DesktopIntegration.class);
 
     public static final void verifyJavaPlatform() {
         String javaVersion = System.getProperty("java.version");
