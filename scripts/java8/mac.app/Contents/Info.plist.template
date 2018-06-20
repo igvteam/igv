@@ -29,23 +29,12 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
 	<key>JVMMainClassName</key>
-	<string></string>
+	<string>org.broad.igv.ui.Main</string>
 	<key>JVMOptions</key>
 	<array>
-		<string>--module-path=$APP_ROOT/Contents/Java</string>
-		<string>--add-exports=java.desktop/com.sun.java.swing.plaf.windows=jide.oss</string>
-		<string>--add-exports=java.desktop/javax.swing.plaf.synth=jide.oss</string>
-		<string>--add-exports=java.desktop/sun.swing=jide.oss</string>
-		<string>--add-exports=java.desktop/sun.awt=jide.oss</string>
-		<string>--add-exports=java.desktop/sun.awt.image=jide.oss</string>
-		<string>--add-exports=java.desktop/sun.awt.shell=jide.oss</string>
-		<string>--add-exports=java.desktop/sun.awt.dnd=jide.oss</string>
-		<string>--add-exports=java.desktop/sun.awt.windows=jide.oss</string>
-		<string>--add-exports=java.base/sun.security.action=jide.oss</string>
 		<string>-Dapple.laf.useScreenMenuBar=true</string>
 		<string>-Xmx4g</string>
 		<string>-Xdock:name=IGV</string>
-		<string>--module=org.broad.igv/org.broad.igv.ui.Main</string>
 	</array>
 	<key>JVMArguments</key>
 	<array/>

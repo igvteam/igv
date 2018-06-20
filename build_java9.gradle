@@ -59,24 +59,23 @@ processResources {
     from("src/main/resources-jlfgr-1_0") exclude "LICENSE", "META-INF"
 }
 
+jar {
+    archiveName = 'igv.jar'
+    manifest {
+        attributes(
+            "Permissions": "all-permissions",
+            "Application-Name": "IGV",
+            "Built-By": System.getProperty('user.name'),
+            "Main-Class": mainClassName,
+        )
+    }
+}
+
 compileJava {
     inputs.property("moduleName", moduleName)
     doFirst {
         options.compilerArgs = [
             '--module-path', classpath.asPath,
-        ]
-        classpath = files()
-    }
-}
-
-compileTestJava {
-    inputs.property("moduleName", moduleName)
-    doFirst {
-        options.compilerArgs = [
-            '--module-path',  classpath.asPath, 
-            '--add-modules', 'junit',
-            '--add-modules', 'fest.swing',
-            '--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath, 
         ]
         classpath = files()
     }
@@ -90,6 +89,19 @@ tasks.withType(Test) {
     systemProperties['ignore.ioexceptions'] = 'false'
     maxHeapSize = '2000m'
     forkEvery = 1
+}
+
+compileTestJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs = [
+            '--module-path',  classpath.asPath, 
+            '--add-modules', 'junit',
+            '--add-modules', 'fest.swing',
+            '--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath, 
+        ]
+        classpath = files()
+    }
 }
 
 test {
@@ -112,24 +124,12 @@ test {
     }
 }
 
-jar {
-    manifest {
-        attributes(
-            "Permissions": "all-permissions",
-            "Application-Name": "IGV",
-            "Built-By": System.getProperty('user.name'),
-            "Main-Class": mainClassName,
-            "Class-Path": configurations.compile.collect { it.getName() }.join(' ')
-        )
-    }
-}
-
-def classpathContent = copySpec {
+def modulepathContent = copySpec {
     from ("lib") {
         include '*.jar'
     }
     from ("${buildDir}/libs") {
-        include '*.jar'
+        include 'igv*.jar'
     }
     into "lib"
 }
@@ -142,7 +142,7 @@ task createDist(type: Copy, dependsOn: jar)  {
         include 'igv.args'
     }
     
-    with classpathContent
+    with modulepathContent
 
     into "${buildDir}/dist"
 }
