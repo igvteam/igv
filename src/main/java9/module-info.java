@@ -125,6 +125,7 @@ module org.broad.igv {
     requires javafx.fxml;
     requires javafx.graphics;
     requires javafx.swing;
+    requires jdk.xml.dom;
     requires jfreechart;
     requires jgrapht;
     requires log4j;
