@@ -1,6 +1,6 @@
 # Mappings of genome id prefix -> species
 hg	Human
-mm 	Mouse
+mm	Mouse
 sacCer	Yeast
 panTro	Chimp
 gorGor	Gorilla
