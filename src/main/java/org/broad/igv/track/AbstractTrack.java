@@ -419,7 +419,7 @@ public abstract class AbstractTrack implements Track {
             }
         }
         else {
-            value = attributes.get(key);
+            value = attributes.get(attributeName);
             if(value == null) {
                 value = getFromAttributeManager(key);
             }
