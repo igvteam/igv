@@ -2,7 +2,7 @@
 <!--
  ~ The MIT License (MIT)
  ~
- ~ Copyright (c) 2007-2017 Broad Institute
+ ~ Copyright (c) 2007-2018 Broad Institute
  ~
  ~ Permission is hereby granted, free of charge, to any person obtaining a copy
  ~ of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,17 @@
  ~ THE SOFTWARE.
   -->
 
-<!-- Ant build script to create a signed, unified IGV JAR, shrunk with BCEL.
+<!-- Ant build script to create a unified IGV JAR, shrunk with BCEL.
      This is difficult to do in Gradle so it's handled here.
      
      We may eventually switch to a different method (e.g. ProGuard) that makes
      this unnecessary.
   -->
-<project name="igv-release" default="allRelease" basedir=".">
+<project name="igv-release" default="allBuild" basedir=".">
     <!-- build specific properties.  Generally set through Jenkins, command line, or properties file-->
     <property name="build-number" value="0"/>
     <property name="version" value="user"/>
     <property name="vendor" value="user"/>
-
-    <!-- Signing properties.  Generally set through Jenkins, command line, or properties file-->
-    <property name="alias" value="Broad-alias"/>
-    <property name="key-password" value="Broad-keypass"/>
-    <property name="store-password" value="Broad-storepass"/>
 
     <property name="include.libs" value="true" />
     <property name="main-class" value="org.broad.igv.ui.Main"/>
@@ -155,15 +150,5 @@
         <addPermsMacro jarfile="${dist.dir}${goby-io-finame}"/>
     </target>
 
-    <!-- Sign all jars if a keystore is defined -->
-    <target name="signJars" if="keystore">
-        <signjar jar="${jar.path}" alias="${alias}" keypass="${key-password}"
-                 storepass="${store-password}" keystore="${keystore}" tsaurl="${tsaurl}"/>
-        <signjar jar="${dist.dir}${batik-codec-finame}" alias="${alias}" keypass="${key-password}"
-                 storepass="${store-password}" keystore="${keystore}" tsaurl="${tsaurl}"/>
-        <signjar jar="${dist.dir}${goby-io-finame}" alias="${alias}" keypass="${key-password}"
-                 storepass="${store-password}" keystore="${keystore}" tsaurl="${tsaurl}"/>
-    </target>
-
-    <target name="allRelease" depends="shrinkJar,addPerms,signJars"/>
+    <target name="allBuild" depends="shrinkJar,addPerms"/>
 </project>
