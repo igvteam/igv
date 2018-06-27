@@ -12,7 +12,7 @@ There are other options but these cover the most common uses:
 - Use './gradlew jar' to build a runnable JAR, which will be created in 'build/lib'.  To run, this JAR 
   expects the third-party library JARs to be present in the same directory.
 - Use './gradlew dist' to build an appropriate "distribution" directory (found in 'build/dist') 
-  containing the runnable JAR plus all of these third-party library JARs as well as helper scripts for 
+  containing the runnable JAR plus all of the third-party library JARs as well as helper scripts for 
   launching.  Launch with 'igv.sh' on UNIX, 'igv.command' on Mac, and 'igv.bat' on Windows.  These 
   scripts can be edited to adjust e.g. JVM flags like maximum memory, etc.
 - Use './gradlew build' to build everything and run the test suite.  See 'src/test/README.txt' for more
