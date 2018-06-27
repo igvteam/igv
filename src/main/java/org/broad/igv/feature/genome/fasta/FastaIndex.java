@@ -95,7 +95,8 @@ public class FastaIndex {
                 String[] tokens =  Globals.singleTabMultiSpacePattern.split(nextLine);
                 int nTokens =  tokens.length;
                 if (nTokens != 5) {
-                    throw new RuntimeException("Error.  Unexpected number of tokens parsing: " + indexFile);
+                    log.info("Skipping fasta index line: " + nextLine);
+                    continue;
                 }
                 // Parse the index line.
                 String contig = tokens[0];
