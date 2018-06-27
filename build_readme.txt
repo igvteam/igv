@@ -15,8 +15,6 @@ There are other options but these cover the most common uses:
   containing the runnable JAR plus all of these third-party library JARs as well as helper scripts for 
   launching.  Launch with 'igv.sh' on UNIX, 'igv.command' on Mac, and 'igv.bat' on Windows.  These 
   scripts can be edited to adjust e.g. JVM flags like maximum memory, etc.
-  From this directory, a command-line like 'java -jar igv.jar' can also be used directly run the JAR
-  without the scripts.
 - Use './gradlew build' to build everything and run the test suite.  See 'src/test/README.txt' for more
   information about running the tests.
 - OPTIONAL: assuming Ant is installed and configured with BCEL, a reduced-footprint version of the JAR
