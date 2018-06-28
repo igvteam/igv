@@ -26,21 +26,20 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // Define the main class for the application
 ext.mainClassName = 'org.broad.igv.ui.Main'
 
-// Put the Java 8 build into a special dir to avoid accidental collisions.
-// Despite this, it is recommended that Java 8 vs. 9 builds be run in different locations.
-buildDir = 'build_java8' 
-
 sourceSets {
     main {
         java {
             srcDirs = ['src/main/java', 'src/main/java8']
         }
+        resources {
+            srcDirs = ['src/main/resources', 'src/main/resources-jlfgr-1_0']
+            exclude "**/*LICENSE*", "**/META-INF"
+        }
     }
 }
 
 dependencies {
-    // Use the older JIDE lib for Java 8 builds
-    compile fileTree(dir: 'lib', include: '*.jar', exclude: 'jide-oss-2018.04.18-master.jar') + fileTree(dir: 'lib_java8', include: '*.jar')
+    compile fileTree(dir: 'lib', include: '*.jar')
     testCompile fileTree(dir: 'test/lib', include: '*.jar')
 }
 
@@ -60,8 +59,6 @@ processResources {
                 tokens: [ VERSION: version, BUILD: buildNumber, DEFAULT_MASTER_RESOURCE_URL: dataServerUrl,
                           TIMESTAMP: timestamp, DEVELOPMENT: development ])
     }
-
-    from("src/main/resources-jlfgr-1_0") exclude "LICENSE", "META-INF"
 }
 
 jar {
@@ -97,9 +94,6 @@ task createDist(type: Copy, dependsOn: jar)  {
         include 'igv*.jar'
     }
     from ("lib") {
-        include '*.jar'
-    }
-    from ("lib_java8") {
         include '*.jar'
     }
 

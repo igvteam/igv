@@ -26,16 +26,25 @@ import org.apache.tools.ant.filters.ReplaceTokens
 ext.moduleName = 'org.broad.igv'
 ext.mainClassName = 'org.broad.igv.ui.Main'
 
+// Put the Java 9 build into a special dir to avoid accidental collisions.
+// Despite this, it is recommended that Java 8 vs. 9 builds be run in different locations.
+buildDir = 'build_java9' 
+
 sourceSets {
     main {
         java {
             srcDirs = ['src/main/java', 'src/main/java9']
         }
+        resources {
+            srcDirs = ['src/main/resources', 'src/main/resources-jlfgr-1_0']
+            exclude "**/*LICENSE*", "**/META-INF"
+        }
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'lib', include: '*.jar')
+    // Use the newer JIDE lib for Java 9 builds
+    compile fileTree(dir: 'lib', include: '*.jar', exclude: 'jide-oss-3.5.5.jar') + fileTree(dir: 'lib_java9', include: '*.jar')
     testCompile fileTree(dir: 'test/lib', include: '*.jar')
 }
 
@@ -55,8 +64,6 @@ processResources {
                 tokens: [ VERSION: version, BUILD: buildNumber, DEFAULT_MASTER_RESOURCE_URL: dataServerUrl,
                           TIMESTAMP: timestamp, DEVELOPMENT: development ])
     }
-
-    from("src/main/resources-jlfgr-1_0") exclude "LICENSE", "META-INF"
 }
 
 jar {
@@ -127,6 +134,10 @@ test {
 def modulepathContent = copySpec {
     from ("lib") {
         include '*.jar'
+        exclude 'jide-oss-3.5.5.jar'
+    }
+    from ("lib_java9") {
+        include '*.jar'
     }
     from ("${buildDir}/libs") {
         include 'igv*.jar'
@@ -135,7 +146,7 @@ def modulepathContent = copySpec {
 }
 
 task createDist(type: Copy, dependsOn: jar)  {
-    from ('scripts') {
+    from ('scripts/java9') {
         include 'igv.bat'
         include 'igv.command'
         include 'igv.sh'

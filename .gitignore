@@ -2,7 +2,7 @@
 .idea/workspace.xml
 /out/
 /build
-/build_java8
+/build_java9
 /bin
 igv.log
 /.gradle
