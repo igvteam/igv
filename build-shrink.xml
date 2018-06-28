@@ -150,5 +150,11 @@
         <addPermsMacro jarfile="${dist.dir}${goby-io-finame}"/>
     </target>
 
-    <target name="allBuild" depends="shrinkJar,addPerms"/>
+    <target name="allBuild" depends="shrinkJar,addPerms">
+        <copy file="scripts/igv.sh" todir="${dist.dir}" />
+        <copy file="scripts/igv.bat" todir="${dist.dir}" />
+        <copy file="scripts/igv.command" todir="${dist.dir}" />
+        <chmod perm="775" file="${dist.dir}igv.sh" />
+        <chmod perm="775" file="${dist.dir}igv.command" />
+     </target>
 </project>
