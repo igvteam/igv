@@ -37,6 +37,7 @@ import org.broad.igv.cli_plugin.ui.SetPluginPathDialog;
 import org.broad.igv.dev.db.DBProfileEditor;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
+import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
@@ -1110,44 +1111,37 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenu menu =  new JMenu(OAuthUtils.authProvider);
 
         final JMenuItem login = new JMenuItem("Login ... ");
-        login.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    OAuthUtils.getInstance().openAuthorizationPage();
-                } catch (Exception ex) {
-                    MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
-                    log.error("Error fetching oAuth tokens", ex);
-                }
-
+        login.addActionListener(e -> {
+            try {
+                OAuthUtils.getInstance().openAuthorizationPage();
+            } catch (Exception ex) {
+                MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
+                log.error("Error fetching oAuth tokens", ex);
             }
+
         });
         login.setEnabled(false);
         menu.add(login);
 
 
         final JMenuItem logout = new JMenuItem("Logout ");
-        logout.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                OAuthUtils.getInstance().logout();
-            }
-        });
+        logout.addActionListener(e -> OAuthUtils.getInstance().logout());
         logout.setEnabled(false);
         menu.add(logout);
 
+        final JMenuItem projectID = new JMenuItem("Enter Project ID ...");
+        projectID.addActionListener(e -> GoogleUtils.enterGoogleProjectID());
+        menu.add(projectID);
+
         final JMenuItem loadReadset = new JMenuItem("Load Genomics ReadGroupSet... ");
-        loadReadset.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String readsetId = MessageUtils.showInputDialog("Enter ReadGroupSet ID (e.g. CMvnhpKTFhCjz9_25e_lCw): ");
-                if (readsetId != null) {
-                    ResourceLocator locator = new ResourceLocator(readsetId);
-                    locator.setName(readsetId);
-                    locator.setType(Ga4ghAPIHelper.RESOURCE_TYPE);
-                    locator.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
-                    IGV.getInstance().loadTracks(Arrays.asList(locator));
-                }
+        loadReadset.addActionListener(e -> {
+            String readsetId = MessageUtils.showInputDialog("Enter ReadGroupSet ID (e.g. CMvnhpKTFhCjz9_25e_lCw): ");
+            if (readsetId != null) {
+                ResourceLocator locator = new ResourceLocator(readsetId);
+                locator.setName(readsetId);
+                locator.setType(Ga4ghAPIHelper.RESOURCE_TYPE);
+                locator.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
+                IGV.getInstance().loadTracks(Arrays.asList(locator));
             }
         });
         loadReadset.setEnabled(false);
@@ -1156,19 +1150,16 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        boolean loggedIn = OAuthUtils.getInstance().isLoggedIn();
-                        if (loggedIn) {
-                            login.setText(OAuthUtils.getInstance().getCurrentUserName());
-                        } else {
-                            login.setText("Login ...");
-                        }
-                        login.setEnabled(!loggedIn);
-                        logout.setEnabled(loggedIn);
-                        loadReadset.setEnabled(loggedIn);
+                Runnable runnable = () -> {
+                    boolean loggedIn = OAuthUtils.getInstance().isLoggedIn();
+                    if (loggedIn) {
+                        login.setText(OAuthUtils.getInstance().getCurrentUserName());
+                    } else {
+                        login.setText("Login ...");
                     }
+                    login.setEnabled(!loggedIn);
+                    logout.setEnabled(loggedIn);
+                    loadReadset.setEnabled(loggedIn);
                 };
 
                 LongRunningTask.submit(runnable);

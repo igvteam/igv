@@ -22,6 +22,9 @@ public class GoogleUtils {
 
     private static Logger log = Logger.getLogger(GoogleUtils.class);
 
+    public static String ProjectID;
+    public static String GOOGLE_API_HOST = "www.googleapis.com";
+
     /**
      * gs://igv-bam-test/NA12878.bam
      * https://www.googleapis.com/storage/v1/b/igv-bam-test/o/NA12878.bam
@@ -43,7 +46,7 @@ public class GoogleUtils {
             object = URLEncoder.encode(object, "UTF8");
         } catch (UnsupportedEncodingException e) {
             // This isn't going to happen
-           log.error(e);
+            log.error(e);
         }
 
         return "https://www.googleapis.com/storage/v1/b/" + bucket + "/o/" + object + "?alt=media";
@@ -51,7 +54,15 @@ public class GoogleUtils {
     }
 
 
+    public static void enterGoogleProjectID() {
 
+        String projectID = MessageUtils.showInputDialog("Enter Google project ID (for \"Requestor Pays\")",
+                GoogleUtils.ProjectID);
+        if (projectID != null) {
+            GoogleUtils.ProjectID = projectID;
+        }
+
+    }
 
 
 }

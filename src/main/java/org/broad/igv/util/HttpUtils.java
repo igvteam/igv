@@ -791,6 +791,10 @@ public class HttpUtils {
             if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
         }
 
+        if(url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && GoogleUtils.ProjectID != null && GoogleUtils.ProjectID.length() > 0) {
+            url = addQueryParameter(url, "userProject", GoogleUtils.ProjectID);
+        }
+
         if (method.equals("PUT")) {
             return conn;
         } else {
@@ -834,6 +838,9 @@ public class HttpUtils {
             else if (code >= 400) {
 
                 String message;
+
+                // TODO -- detect Google requestor pay failure
+
                 if (code == 404) {
                     message = "File not found: " + url.toString();
                     throw new FileNotFoundException(message);
@@ -848,6 +855,11 @@ public class HttpUtils {
                 } else {
                     message = conn.getResponseMessage();
                     String details = readErrorStream(conn);
+
+                    if (url.getHost().equals("www.googleapis.com") && details.contains("requester pays bucket")) {
+                        MessageUtils.showMessage("<html>" + details + "<br>Use Google menu to set project.");
+                    }
+
                     throw new HttpResponseException(code, message, details);
                 }
             }
@@ -855,6 +867,16 @@ public class HttpUtils {
         return conn;
     }
 
+    private URL addQueryParameter(URL url, String userProject, String projectID) {
+        String urlString = url.toExternalForm();
+        urlString = urlString + (urlString.contains("?") ? "&" : "?") + userProject + "=" + projectID;
+        try {
+            return new URL(urlString);
+        } catch (MalformedURLException e) {
+            log.error("Error adding query parameter", e);
+            return url;
+        }
+    }
 
 
     //Used for testing sometimes, please do not delete
@@ -888,7 +910,7 @@ public class HttpUtils {
      *
      * @return
      */
-    public boolean useByteRange(URL url) {
+    public boolean useByteRange(URL url) throws IOException {
 
         if (BYTE_RANGE_DISABLED) return false;
 
@@ -915,12 +937,6 @@ public class HttpUtils {
                     return byteRangeTestSuccess;
 
 
-                } catch (IOException e) {
-                    log.error("Error while testing byte range " + e.getMessage());
-                    // We could not reach the test server, so we can't know if this client can do byte-range tests or
-                    // not.  Take the "pessimistic" view.
-                    byteRangeTestMap.put(host, false);
-                    return false;
                 } finally {
                     if (str != null) try {
                         str.close();
