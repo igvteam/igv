@@ -70,13 +70,13 @@ public class SpliceJunctionHelper {
 
         switch (strandOption) {
             case FORWARD:
-                junctions = new ArrayList<SpliceJunctionFeature>(posStartEndJunctionsMap.values());
+                junctions = new ArrayList<>(posStartEndJunctionsMap.values());
                 break;
             case REVERSE:
-                junctions = new ArrayList<SpliceJunctionFeature>(negStartEndJunctionsMap.values());
+                junctions = new ArrayList<>(negStartEndJunctionsMap.values());
                 break;
             case BOTH:
-                junctions = new ArrayList<SpliceJunctionFeature>(posStartEndJunctionsMap.values());
+                junctions = new ArrayList<>(posStartEndJunctionsMap.values());
                 junctions.addAll(negStartEndJunctionsMap.values());
                 break;
             default:
@@ -98,7 +98,7 @@ public class SpliceJunctionHelper {
             return;
         }
 
-        //there may be other ways in which this is indicated. May have to code for them later
+        // Determine strand.  First check for explicit attribute.
         boolean isNegativeStrand;
         Object strandAttr = alignment.getAttribute("XS");
         if (strandAttr != null) {
@@ -110,17 +110,17 @@ public class SpliceJunctionHelper {
                 isNegativeStrand = alignment.isNegativeStrand(); // <= TODO -- this isn't correct for all libraries.
             }
         }
-
         Table<Integer, Integer, SpliceJunctionFeature> startEndJunctionsTableThisStrand =
                 isNegativeStrand ? negStartEndJunctionsMap : posStartEndJunctionsMap;
 
 
-        //for each skipped region, create or add evidence to a splice junction
+        // For each gap marked "skip" (cigar N), create or add evidence to a splice junction
         List<Gap> gaps = alignment.getGaps();
         if (gaps != null) {
-            //  for (AlignmentBlock block : blocks) {
             for (Gap gap : gaps) {
+
                 if (gap instanceof SpliceGap) {
+
                     SpliceGap spliceGap = (SpliceGap) gap;
                     //only proceed if the flanking regions are both bigger than the minimum
                     if (loadOptions.minReadFlankingWidth == 0 ||
@@ -131,7 +131,9 @@ public class SpliceJunctionHelper {
                         int junctionEnd = junctionStart + spliceGap.getnBases();
                         int flankingStart = junctionStart - spliceGap.getFlankingLeft();
                         int flankingEnd = junctionEnd + spliceGap.getFlankingRight();
+
                         SpliceJunctionFeature junction = startEndJunctionsTableThisStrand.get(junctionStart, junctionEnd);
+
                         if (junction == null) {
                             junction = new SpliceJunctionFeature(alignment.getChr(), junctionStart, junctionEnd,
                                     isNegativeStrand ? Strand.NEGATIVE : Strand.POSITIVE);
@@ -169,36 +171,38 @@ public class SpliceJunctionHelper {
     private List<SpliceJunctionFeature> combineStrandJunctionsMaps() {
 
         // Start with all + junctions
-        Table<Integer, Integer, SpliceJunctionFeature> combinedStartEndJunctionsMap = HashBasedTable.create();
+        Table<Integer, Integer, SpliceJunctionFeature> combinedMap = HashBasedTable.create();
 
-        for (Table.Cell<Integer, Integer, SpliceJunctionFeature> posJunctionCell : posStartEndJunctionsMap.cellSet()) {
-            int junctionStart = posJunctionCell.getRowKey();
-            int junctionEnd = posJunctionCell.getColumnKey();
-            SpliceJunctionFeature posFeat = posJunctionCell.getValue();
-            SpliceJunctionFeature combinedFeature = new SpliceJunctionFeature(posFeat);
-            combinedStartEndJunctionsMap.put(junctionStart, junctionEnd, combinedFeature);
+        for (SpliceJunctionFeature posFeature : posStartEndJunctionsMap.values()) {
+            final int junctionStart = posFeature.getJunctionStart();
+            final int junctionEnd = posFeature.getJunctionEnd();
+
+            SpliceJunctionFeature combinedFeature = new SpliceJunctionFeature(posFeature.getChr(), junctionStart, junctionEnd);
+            combinedFeature.setJunctionDepth(posFeature.getJunctionDepth());
+            combinedMap.put(junctionStart, junctionEnd, combinedFeature);
         }
 
 
         // Merge in - junctions
-        for (Table.Cell<Integer, Integer, SpliceJunctionFeature> negJunctionCell : negStartEndJunctionsMap.cellSet()) {
+        for (SpliceJunctionFeature negFeature: negStartEndJunctionsMap.values()) {
 
-            int junctionStart = negJunctionCell.getRowKey();
-            int junctionEnd = negJunctionCell.getColumnKey();
-            SpliceJunctionFeature negFeat = negJunctionCell.getValue();
+            int junctionStart = negFeature.getJunctionStart();
+            int junctionEnd = negFeature.getJunctionEnd();
 
-            SpliceJunctionFeature junction = combinedStartEndJunctionsMap.get(junctionStart, junctionEnd);
+            SpliceJunctionFeature junction = combinedMap.get(junctionStart, junctionEnd);
 
             if (junction == null) {
                 // No existing (+) junction here, just add the (-) one\
-                combinedStartEndJunctionsMap.put(junctionStart, junctionEnd, negFeat);
+                SpliceJunctionFeature combinedFeature = new SpliceJunctionFeature(negFeature.getChr(), junctionStart, junctionEnd);
+                combinedFeature.setJunctionDepth(negFeature.getJunctionDepth());
+                combinedMap.put(junctionStart, junctionEnd, negFeature);
             } else {
-                int newJunctionDepth = junction.getJunctionDepth() + negFeat.getJunctionDepth();
+                int newJunctionDepth = junction.getJunctionDepth() + negFeature.getJunctionDepth();
                 junction.setJunctionDepth(newJunctionDepth);
             }
         }
 
-        return new ArrayList<SpliceJunctionFeature>(combinedStartEndJunctionsMap.values());
+        return new ArrayList<>(combinedMap.values());
     }
 
 
