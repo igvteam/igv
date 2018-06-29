@@ -1,7 +1,9 @@
+These instructions are meant for developers interested in work on the IGV code.  For normal use,
+we recommend the pre-built releases available at www.igv.org.
+
 The IGV JAR build now uses Gradle instead of Ant.  
 
-Install Gradle for your platform.  See https://gradle.org/ for details.  At this time, *only* Java 8
-is supported; we're working on support for Java 9+ in a future update.
+Install Gradle for your platform.  See https://gradle.org/ for details.
 
 Builds are executed from the IGV project directory.  Files will be created in the 'build' subdirectory.
 You may need to execute 'gradle wrapper' to set up the gradle wrapper.  This should be necessary the 
