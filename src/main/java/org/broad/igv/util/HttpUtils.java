@@ -791,8 +791,8 @@ public class HttpUtils {
             if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
         }
 
-        if(url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && GoogleUtils.ProjectID != null && GoogleUtils.ProjectID.length() > 0) {
-            url = addQueryParameter(url, "userProject", GoogleUtils.ProjectID);
+        if(url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && GoogleUtils.getProjectID() != null && GoogleUtils.getProjectID().length() > 0) {
+            url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
         }
 
         if (method.equals("PUT")) {
