@@ -25,8 +25,8 @@ There are other options but these cover the most common uses:
   helper scripts to run them (as above).
   All three JARs must be in the same location in order to run IGV. 
   These three JARs will be identical to those available in the download bundles from our website, with 
-  the exception that they will not be signed with our certificate (required for JNLP) and will slightly
-  different build properties (timestamp, etc) in about.properties.
+  the exception that they will not be signed with our certificate (required for JNLP) and will have
+  slightly different build properties (timestamp, etc) in about.properties.
 
 
 NOTE: In the above, use './gradlew.bat' on the Windows platform.
