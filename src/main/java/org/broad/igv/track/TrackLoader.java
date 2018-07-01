@@ -50,6 +50,9 @@ import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.basepair.BasePairTrack;
+import org.broad.igv.feature.bedpe.BedPEFeature;
+import org.broad.igv.feature.bedpe.BedPEParser;
+import org.broad.igv.feature.bedpe.InteractionTrack;
 import org.broad.igv.feature.bionano.SMAPParser;
 import org.broad.igv.feature.bionano.SMAPRenderer;
 import org.broad.igv.feature.dranger.DRangerParser;
@@ -149,7 +152,7 @@ public class TrackLoader {
                 loadVCFListFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".trio")) {
                 loadTrioData(locator);
-            }  else if (typeString.endsWith(".rnai.gct")) {
+            } else if (typeString.endsWith(".rnai.gct")) {
                 loadRnaiGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gct") || typeString.endsWith("res") || typeString.endsWith("tab")) {
                 loadGctFile(locator, newTracks, genome);
@@ -198,8 +201,7 @@ public class TrackLoader {
             } else if (typeString.endsWith(".maf")) {
                 if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
                     loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
-                }
-                else {
+                } else {
                     loadMultipleAlignmentTrack(locator, newTracks, genome);
                 }
             } else if (typeString.endsWith(".maf.dict")) {
@@ -228,6 +230,8 @@ public class TrackLoader {
                 loadSMAPFile(locator, newTracks, genome);
             } else if (typeString.endsWith("dsi")) {
                 loadDSIFile(locator, newTracks, genome);
+            } else if (typeString.endsWith("bedpe")) {
+                loadBedPEFile(locator, newTracks, genome);
             } else if (CodecFactory.hasCodec(locator, genome) && !forceNotTribble(typeString)) {
                 loadTribbleFile(locator, newTracks, genome);
             } else if (handler != null) {
@@ -384,6 +388,12 @@ public class TrackLoader {
 
         DRangerParser parser = new DRangerParser();
         newTracks.addAll(parser.loadTracks(locator, genome));
+    }
+
+
+    private void loadBedPEFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+        List<BedPEFeature> features = BedPEParser.parse(locator.getPath());
+        newTracks.add(new InteractionTrack(locator, features, genome));
     }
 
 
@@ -933,7 +943,7 @@ public class TrackLoader {
             // not represented in the genome, buf if there are no matches warn the user.
             List<String> seqNames = dataManager.getSequenceNames();
             if (seqNames != null && seqNames.size() > 0) {
-                if(!dataManager.hasMatchingSequences()) {
+                if (!dataManager.hasMatchingSequences()) {
                     showMismatchSequenceNameMessage(locator.getPath(), genome, seqNames);
                 }
             }
@@ -1036,7 +1046,6 @@ public class TrackLoader {
         }
         MessageUtils.showMessage(message.toString());
     }
-
 
 
     /**
@@ -1156,7 +1165,6 @@ public class TrackLoader {
         }
 
 
-
         for (String trackName : ds.getSampleNames()) {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
@@ -1222,7 +1230,6 @@ public class TrackLoader {
     /**
      * Convert an RNA chemical reactivity file (.shape, .map) into a .wig file
      * and load.
-
      */
     private void convertLoadShapeFile(ResourceLocator locator,
                                       List<Track> newTracks,
@@ -1231,11 +1238,11 @@ public class TrackLoader {
         String fileName = locator.getFileName();
         String outPath = inPath + ".wig";
         String message = "The chemical reactivity file <br> &nbsp;&nbsp;" + fileName + "<br> needs to be converted to IGV chromosome <br>" +
-                         "coordinates and .wig format before loading. <br><br>Click <b>Continue</b> " +
-                         "to save converted file to <br> &nbsp;&nbsp;" + fileName+".wig" +
-                         "<br>and load with the selected options, or <b>Cancel</b> to skip this<br>file.";
+                "coordinates and .wig format before loading. <br><br>Click <b>Continue</b> " +
+                "to save converted file to <br> &nbsp;&nbsp;" + fileName + ".wig" +
+                "<br>and load with the selected options, or <b>Cancel</b> to skip this<br>file.";
 
-        ConvertOptions opts =  ConvertFileDialog.showConvertFileDialog(message);
+        ConvertOptions opts = ConvertFileDialog.showConvertFileDialog(message);
         if (opts.doConvert) {
             ShapeFileUtils.shapeToWigFile(inPath, outPath, opts.chrom, opts.strand, opts.start);
             loadWigFile(new ResourceLocator(outPath), newTracks, genome);
@@ -1245,7 +1252,6 @@ public class TrackLoader {
     /**
      * Convert various RNA structure formats to a more easily parseable format
      * in genomic coordinates, then load converted file.
-
      */
     private void convertLoadStructureFile(ResourceLocator locator,
                                           List<Track> newTracks,
@@ -1256,13 +1262,13 @@ public class TrackLoader {
         String outPath = inPath + ".bp";
 
         String message = "The RNA structure file <br> &nbsp;&nbsp;" + fileName + "<br> needs to be converted to IGV chromosome <br>" +
-                         "coordinates and .bp format before loading. <br><br>Click <b>Continue</b> " +
-                         "to save converted file to <br> &nbsp;&nbsp;" + fileName+".bp" +
-                         "<br>and load with the selected options, or <b>Cancel</b> to skip this<br>file.";
+                "coordinates and .bp format before loading. <br><br>Click <b>Continue</b> " +
+                "to save converted file to <br> &nbsp;&nbsp;" + fileName + ".bp" +
+                "<br>and load with the selected options, or <b>Cancel</b> to skip this<br>file.";
 
-        ConvertOptions opts =  ConvertFileDialog.showConvertFileDialog(message);
+        ConvertOptions opts = ConvertFileDialog.showConvertFileDialog(message);
 
-        if (opts.doConvert){
+        if (opts.doConvert) {
             if (fileType == "connectTable") {
                 BasePairFileUtils.connectTableToBasePairFile(inPath, outPath, opts.chrom, opts.strand, opts.start);
             } else if (fileType == "pairingProb") {
