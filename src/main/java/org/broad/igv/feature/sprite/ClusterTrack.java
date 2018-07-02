@@ -2,15 +2,19 @@ package org.broad.igv.feature.sprite;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.AbstractTrack;
-import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.*;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 
+import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jrobinso on 6/30/18.
@@ -115,10 +119,58 @@ public class ClusterTrack extends AbstractTrack {
             }
             cluster.posMap.put(Globals.CHR_ALL, occupiedBins);
 
-
         }
-
 
     }
 
+
+    @Override
+    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+
+        IGVPopupMenu menu = new IGVPopupMenu();
+
+        menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(ClusterTrack.this)));
+
+        final JMenuItem rowHeightItem = new JMenuItem("Set Row Height...");
+        rowHeightItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String t = MessageUtils.showInputDialog("Row height", String.valueOf(rowHeight));
+                if(t != null) {
+                    try {
+                        int h = Integer.parseInt(t);
+                        rowHeight = h;
+                        IGV.getInstance().repaint();
+                    } catch (NumberFormatException e1) {
+                        MessageUtils.showErrorMessage("Row height must be a number", e1);
+                    }
+                }
+            }
+        });
+        menu.add(rowHeightItem);
+
+        JMenuItem item = new JMenuItem("Set Track Color...");
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                TrackMenuUtils.changeTrackColor(Collections.singleton(ClusterTrack.this));
+            }
+        });
+        menu.add(item);
+
+        return menu;
+    }
+
+    @Override
+    public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
+
+        int row = mouseY / rowHeight;
+
+        if(row < clusters.size()) {
+            return clusters.get(row).name;
+        }
+        else {
+            return "";
+        }
+
+    }
 }
