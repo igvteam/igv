@@ -61,6 +61,9 @@ import org.broad.igv.feature.dsi.DSITrack;
 import org.broad.igv.feature.genome.GenbankParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.sprite.Cluster;
+import org.broad.igv.feature.sprite.ClusterParser;
+import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
@@ -232,6 +235,8 @@ public class TrackLoader {
                 loadDSIFile(locator, newTracks, genome);
             } else if (typeString.endsWith("bedpe")) {
                 loadBedPEFile(locator, newTracks, genome);
+            } else if (typeString.endsWith("clusters")) {
+                loadClusterFile(locator, newTracks, genome);
             } else if (CodecFactory.hasCodec(locator, genome) && !forceNotTribble(typeString)) {
                 loadTribbleFile(locator, newTracks, genome);
             } else if (handler != null) {
@@ -394,6 +399,11 @@ public class TrackLoader {
     private void loadBedPEFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
         List<BedPEFeature> features = BedPEParser.parse(locator.getPath());
         newTracks.add(new InteractionTrack(locator, features, genome));
+    }
+
+    private void loadClusterFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+        List<Cluster> features = ClusterParser.parse(locator.getPath());
+        newTracks.add(new ClusterTrack(locator, features, genome));
     }
 
 
