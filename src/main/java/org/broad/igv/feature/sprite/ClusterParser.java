@@ -2,7 +2,6 @@ package org.broad.igv.feature.sprite;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.collections.IntArrayList;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,8 +14,9 @@ public class ClusterParser {
 
     private static Logger log = Logger.getLogger(ClusterParser.class);
 
-    public static List<Cluster> parse(String file) throws IOException {
+    public static ClusterSet parse(String file) throws IOException {
 
+        int binSize = 1;         // Default => no binning
         List<Cluster> features = new ArrayList<>();
 
         BufferedReader br = null;
@@ -27,6 +27,16 @@ public class ClusterParser {
         while ((nextLine = br.readLine()) != null) {
 
             String[] tokens = ParsingUtils.TAB_PATTERN.split(nextLine);
+
+            if(tokens[0].startsWith("#")) {
+                if(tokens[0].startsWith("#binSize")) {
+                    String [] t = ParsingUtils.EQ_PATTERN.split(tokens[0]);
+                    binSize = Integer.parseInt(t[1].trim());
+                }
+                else {
+                    continue;   // Comment or unrecognized directive
+                }
+            }
 
             if (tokens.length < 2) {
                 log.info("Skipping line: " + nextLine);
@@ -56,9 +66,20 @@ public class ClusterParser {
             features.add(new Cluster(name, positions));
         }
 
-        return features;
+        return new ClusterSet(binSize, features);
+
+    }
 
 
+    static public class ClusterSet {
+
+        int binSize;
+        List<Cluster> clusters;
+
+        public ClusterSet(int binSize, List<Cluster> clusters) {
+            this.binSize = binSize;
+            this.clusters = clusters;
+        }
     }
 
 }

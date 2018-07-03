@@ -403,7 +403,7 @@ public class TrackLoader {
     }
 
     private void loadClusterFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        List<Cluster> features = ClusterParser.parse(locator.getPath());
+        ClusterParser.ClusterSet features = ClusterParser.parse(locator.getPath());
         newTracks.add(new ClusterTrack(locator, features, genome));
     }
 

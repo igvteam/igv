@@ -22,19 +22,59 @@ import java.util.List;
 public class ClusterTrack extends AbstractTrack {
 
 
-    List<Cluster> clusters;
+    int binSize;
+    ClusterParser.ClusterSet clusterSet;
+    List<Cluster> binnedClusters;
+    List<Cluster> wgClusters;
     int rowHeight = 2;
+    Genome genome;
 
 
-    public ClusterTrack(ResourceLocator locator, List<Cluster> clusters, Genome genome) {
+    public ClusterTrack(ResourceLocator locator, ClusterParser.ClusterSet clusterSet, Genome genome) {
         super(locator);
-        this.clusters = clusters;
-        computeWGScores(clusters, genome);
+        this.clusterSet = clusterSet;
+        this.binSize = clusterSet.binSize;
+        this.genome = genome;
+        this.binnedClusters = computeBinnedClusters(clusterSet.binSize, clusterSet.clusters, genome);
+        computeWGScores(this.binnedClusters, genome);
     }
+
+    private List<Cluster> computeBinnedClusters(int binSize, List<Cluster> clusters, Genome genome) {
+
+        List<Cluster> binnedClusters = new ArrayList<>();
+
+        for (Cluster c : clusters) {
+
+            String name = c.name;
+            Map<String, List<Integer>> posMap = new HashMap<>();
+            for (Map.Entry<String, List<Integer>> entry : c.posMap.entrySet()) {
+
+                String chr = genome.getCanonicalChrName(entry.getKey());
+                Set<Integer> bins = new HashSet<>();
+                for (Integer pos : entry.getValue()) {
+                    bins.add((pos / binSize) * binSize);
+                }
+                List<Integer> binList = new ArrayList<>(bins);
+                Collections.sort(binList);
+                posMap.put(chr, binList);
+            }
+            binnedClusters.add(new Cluster(name, posMap));
+        }
+
+        return binnedClusters;
+    }
+
+
+    public void setBinSize(int binSize) {
+        this.binSize = binSize;
+        this.binnedClusters = computeBinnedClusters(this.binSize, clusterSet.clusters, this.genome);
+        computeWGScores(this.binnedClusters, genome);
+    }
+
 
     @Override
     public int getHeight() {
-        return clusters.size() * rowHeight;
+        return binnedClusters.size() * rowHeight;
     }
 
     @Override
@@ -54,9 +94,11 @@ public class ClusterTrack extends AbstractTrack {
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
+        double binSize = chr.equals(Globals.CHR_ALL) ? this.binSize / 1000 : this.binSize;
+
         int y = 0;
 
-        for (Cluster c : clusters) {
+        for (Cluster c : binnedClusters) {
 
             List<Integer> loci = c.posMap.get(chr);
 
@@ -64,7 +106,7 @@ public class ClusterTrack extends AbstractTrack {
                 for (Integer position : loci) {
 
                     double pixelStart = ((position - origin) / locScale);
-                    double pixelEnd = ((position - origin) / locScale);
+                    double pixelEnd = ((position + binSize - origin) / locScale);
 
                     // If the any part of the feature fits in the Track rectangle draw it
                     if (pixelEnd >= rect.getX() && pixelStart <= rect.getMaxX()) {
@@ -88,11 +130,13 @@ public class ClusterTrack extends AbstractTrack {
         }
     }
 
+
     private void computeWGScores(List<Cluster> clusters, Genome genome) {
 
         // Bin whole genome
         int nBins = 1000;
         double binSize = (genome.getTotalLength() / 1000.0) / nBins;
+        Set<String> wgChrNames = new HashSet<>(genome.getLongChromosomeNames());
 
         for (Cluster cluster : clusters) {
 
@@ -102,9 +146,13 @@ public class ClusterTrack extends AbstractTrack {
             for (Map.Entry<String, List<Integer>> entry : cluster.posMap.entrySet()) {
 
                 String chr = entry.getKey();
+
+                if (!wgChrNames.contains(chr)) continue;
+
                 List<Integer> posList = entry.getValue();
 
                 for (Integer pos : posList) {
+
                     int genomeCoordinate = genome.getGenomeCoordinate(chr, pos);
                     int b = (int) (genomeCoordinate / binSize);
                     bins[b]++;
@@ -131,12 +179,30 @@ public class ClusterTrack extends AbstractTrack {
 
         menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(ClusterTrack.this)));
 
+        final JMenuItem binSizeItem = new JMenuItem("Set Bin Size...");
+        binSizeItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String t = MessageUtils.showInputDialog("Bin Size", String.valueOf(ClusterTrack.this.binSize));
+                if (t != null) {
+                    try {
+                        int bs = Integer.parseInt(t);
+                        ClusterTrack.this.setBinSize(bs);
+                        IGV.getInstance().repaint();
+                    } catch (NumberFormatException e1) {
+                        MessageUtils.showErrorMessage("Bin size must be an integer", e1);
+                    }
+                }
+            }
+        });
+        menu.add(binSizeItem);
+
         final JMenuItem rowHeightItem = new JMenuItem("Set Row Height...");
         rowHeightItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String t = MessageUtils.showInputDialog("Row height", String.valueOf(rowHeight));
-                if(t != null) {
+                if (t != null) {
                     try {
                         int h = Integer.parseInt(t);
                         rowHeight = h;
@@ -165,12 +231,12 @@ public class ClusterTrack extends AbstractTrack {
 
         int row = mouseY / rowHeight;
 
-        if(row < clusters.size()) {
-            return clusters.get(row).name;
-        }
-        else {
+        if (row < binnedClusters.size()) {
+            return binnedClusters.get(row).name;
+        } else {
             return "";
         }
 
     }
+
 }
