@@ -1,6 +1,8 @@
 package org.broad.igv.feature.bedpe;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.TrackClickEvent;
@@ -32,7 +34,7 @@ public class InteractionTrack extends AbstractTrack {
         super(locator);
         init(featureList, genome);
         renderer = new PEArcRenderer();
-        setHeight(200);
+        setHeight(250);
         setColor(new Color(180, 25, 137));
     }
 
@@ -61,7 +63,30 @@ public class InteractionTrack extends AbstractTrack {
             features.add(f);
         }
 
+        if(featureMap.containsKey("OTHER")) {
+            featureMap.put(Globals.CHR_ALL, createWGFeatures(featureMap.get("OTHER"), genome));
+        }
+    }
 
+    private List<BedPEFeature> createWGFeatures(List<BedPEFeature> features, Genome genome) {
+
+        List<BedPEFeature> wgFeatures = new ArrayList<>(features.size());
+
+        for (BedPEFeature f : features) {
+
+            BedPEFeature wgFeature = new BedPEFeature();
+            wgFeature.chr1 = Globals.CHR_ALL;
+            wgFeature.chr2 = Globals.CHR_ALL;
+            wgFeature.name = f.name;
+            wgFeature.score = f.score;
+            wgFeature.start1 = genome.getGenomeCoordinate(f.chr1, f.start1);
+            wgFeature.end1 = genome.getGenomeCoordinate(f.chr1, f.end1);
+            wgFeature.start2 = genome.getGenomeCoordinate(f.chr1, f.start2);
+            wgFeature.end2 = genome.getGenomeCoordinate(f.chr1, f.end2);
+            wgFeatures.add(wgFeature);
+
+        }
+        return wgFeatures;
     }
 
     @Override
@@ -103,7 +128,11 @@ public class InteractionTrack extends AbstractTrack {
 
         menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(InteractionTrack.this)));
 
-        JMenuItem item = new JMenuItem("Set Track Color...");
+        JMenuItem item = new JMenuItem("Set Track Height...");
+        item.addActionListener(evt -> TrackMenuUtils.changeTrackHeight(Collections.singleton(InteractionTrack.this)));
+        menu.add(item);
+
+        item = new JMenuItem("Set Track Color...");
         item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(InteractionTrack.this)));
         menu.add(item);
 
@@ -123,7 +152,7 @@ public class InteractionTrack extends AbstractTrack {
             String t = MessageUtils.showInputDialog("Line thickness", String.valueOf(renderer.lineThickness));
             if (t != null) {
                 try {
-                    renderer.lineThickness =Integer.parseInt(t);
+                    renderer.lineThickness = Integer.parseInt(t);
                     IGV.getInstance().repaint();
                 } catch (NumberFormatException e1) {
                     MessageUtils.showErrorMessage("Line thickness must be an integer", e1);
