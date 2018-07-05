@@ -180,47 +180,37 @@ public class ClusterTrack extends AbstractTrack {
         menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(ClusterTrack.this)));
 
         final JMenuItem binSizeItem = new JMenuItem("Set Bin Size...");
-        binSizeItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String t = MessageUtils.showInputDialog("Bin Size", String.valueOf(ClusterTrack.this.binSize));
-                if (t != null) {
-                    try {
-                        int bs = Integer.parseInt(t);
-                        ClusterTrack.this.setBinSize(bs);
-                        IGV.getInstance().repaint();
-                    } catch (NumberFormatException e1) {
-                        MessageUtils.showErrorMessage("Bin size must be an integer", e1);
-                    }
+        binSizeItem.addActionListener(e -> {
+            String t = MessageUtils.showInputDialog("Bin Size", String.valueOf(ClusterTrack.this.binSize));
+            if (t != null) {
+                try {
+                    int bs = Integer.parseInt(t);
+                    ClusterTrack.this.setBinSize(bs);
+                    IGV.getInstance().repaint();
+                } catch (NumberFormatException e1) {
+                    MessageUtils.showErrorMessage("Bin size must be an integer", e1);
                 }
             }
         });
         menu.add(binSizeItem);
 
         final JMenuItem rowHeightItem = new JMenuItem("Set Row Height...");
-        rowHeightItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String t = MessageUtils.showInputDialog("Row height", String.valueOf(rowHeight));
-                if (t != null) {
-                    try {
-                        int h = Integer.parseInt(t);
-                        rowHeight = h;
-                        IGV.getInstance().repaint();
-                    } catch (NumberFormatException e1) {
-                        MessageUtils.showErrorMessage("Row height must be a number", e1);
-                    }
+        rowHeightItem.addActionListener(e -> {
+            String t = MessageUtils.showInputDialog("Row height", String.valueOf(rowHeight));
+            if (t != null) {
+                try {
+                    int h = Integer.parseInt(t);
+                    rowHeight = h;
+                    IGV.getInstance().repaint();
+                } catch (NumberFormatException e1) {
+                    MessageUtils.showErrorMessage("Row height must be a number", e1);
                 }
             }
         });
         menu.add(rowHeightItem);
 
         JMenuItem item = new JMenuItem("Set Track Color...");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                TrackMenuUtils.changeTrackColor(Collections.singleton(ClusterTrack.this));
-            }
-        });
+        item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(ClusterTrack.this)));
         menu.add(item);
 
         return menu;
