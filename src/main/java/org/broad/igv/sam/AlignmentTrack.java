@@ -148,7 +148,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     enum ColorOption {
-        INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, LIBRARY, BISULFITE, NOMESEQ,
+        INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, LIBRARY, MOVIE, ZMW, BISULFITE, NOMESEQ,
         TAG, NONE, UNEXPECTED_PAIR, MAPPED_SIZE, LINK_STRAND, YC_TAG
     }
 
@@ -157,7 +157,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, LIBRARY, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY, BASE_AT_POS
+        STRAND, SAMPLE, READ_GROUP, LIBRARY, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW
     }
 
     public enum BisulfiteContext {
@@ -1672,6 +1672,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("chromosome of mate", GroupOption.MATE_CHROMOSOME);
             mappings.put("pair orientation", GroupOption.PAIR_ORIENTATION);
             mappings.put("supplementary flag", GroupOption.SUPPLEMENTARY);
+            mappings.put("movie", GroupOption.MOVIE);
+            mappings.put("ZMW", GroupOption.ZMW);
 
 
             for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {
@@ -1824,6 +1826,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("read group", ColorOption.READ_GROUP);
             mappings.put("sample", ColorOption.SAMPLE);
             mappings.put("library", ColorOption.LIBRARY);
+            mappings.put("movie", ColorOption.MOVIE);
+            mappings.put("ZMW", ColorOption.ZMW);
 
             for (Map.Entry<String, ColorOption> el : mappings.entrySet()) {
                 JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());

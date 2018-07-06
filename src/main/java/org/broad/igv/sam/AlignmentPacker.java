@@ -374,6 +374,7 @@ public class AlignmentPacker {
         AlignmentTrack.GroupOption groupBy = renderOptions.getGroupByOption();
         String tag = renderOptions.getGroupByTag();
         Range pos = renderOptions.getGroupByPos();
+        String readNameParts[], movieName, zmw;
 
         switch (groupBy) {
             case STRAND:
@@ -431,6 +432,21 @@ public class AlignmentPacker {
                 else { // does not overlap position
                     return "3:";
                 }
+            case MOVIE: // group PacBio reads by movie
+                readNameParts = al.getReadName().split("/");
+                if (readNameParts.length != 3) {
+                    return "";
+                }
+                movieName = readNameParts[0];
+                return movieName;
+            case ZMW: // group PacBio reads by ZMW
+                readNameParts = al.getReadName().split("/");
+                if (readNameParts.length != 3) {
+                    return "";
+                }
+                movieName = readNameParts[0];
+                zmw = readNameParts[1];
+                return movieName + "/" + zmw;
         }
         return null;
     }
