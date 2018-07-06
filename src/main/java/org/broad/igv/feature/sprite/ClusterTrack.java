@@ -123,9 +123,8 @@ public class ClusterTrack extends AbstractTrack {
                         g.fillRect((int) pixelStart, y, w, rowHeight);
 
                     }
-
-                    y += rowHeight;
                 }
+                y += rowHeight;
             }
         }
     }
