@@ -124,8 +124,8 @@ public class ClusterTrack extends AbstractTrack {
 
                     }
                 }
-                y += rowHeight;
             }
+            y += rowHeight;
         }
     }
 
