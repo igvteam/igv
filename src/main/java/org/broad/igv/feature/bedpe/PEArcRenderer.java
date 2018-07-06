@@ -93,4 +93,19 @@ public class PEArcRenderer {
     }
 
 
+
+
+    static void sagittaCalcs() {
+
+        for(double theta = 0; theta <= Math.PI / 2;  theta += Math.PI/100) {
+
+            double num = 1 - Math.cos(theta);
+            double denom = Math.sin(theta);
+
+            System.out.println(theta + "\t" + theta*Math.PI/2 + "\t" + (num / denom));
+        }
+
+
+    }
+
 }
