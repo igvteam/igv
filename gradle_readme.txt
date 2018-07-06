@@ -27,7 +27,8 @@ There are other options but these cover the most common uses:
   helper scripts to run them (as above).
   All three JARs must be in the same location in order to run IGV. 
   These three JARs will be identical to those available in the download bundles from our website, with 
-  the exception that they will not be signed with our certificate (required for JNLP).  
+  the exception that they will not be signed with our certificate (required for JNLP) and will have
+  slightly different build properties (timestamp, etc) in about.properties.
 
 The instructions for Java 9 are nearly identical other than the need to specify the Java 9 build file
 and that the results will be found in 'build_java9' rather than 'build'.  More specifically:
