@@ -569,7 +569,7 @@ public class Genome {
                     if (nextLine.startsWith("#")) continue;
                     String[] tokens = Globals.tabPattern.split(nextLine);
                     if (tokens.length == 2) {
-                        ucscSpeciesMap.put(tokens[0], tokens[1]);
+                        ucscSpeciesMap.put(tokens[0].trim(), tokens[1].trim());
                     } else {
                         log.error("Unexpected number of tokens in species mapping file for line: " + nextLine);
                     }

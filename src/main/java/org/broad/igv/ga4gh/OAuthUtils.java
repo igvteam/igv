@@ -68,7 +68,7 @@ public class OAuthUtils {
 
 
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
-    private static final String PROPERTIES_URL = "https://s3.amazonaws.com/igv.broadinstitute.org/app/desktop_bits";
+    private static final String PROPERTIES_URL = "https://s3.amazonaws.com/igv.org.app/desktop_google";
     private String genomicsScope = "https://www.googleapis.com/auth/genomics";
     private String gsScope = "https://www.googleapis.com/auth/devstorage.read_write";
     private String emailScope = "https://www.googleapis.com/auth/userinfo.email";
@@ -89,8 +89,6 @@ public class OAuthUtils {
 
     private static OAuthUtils theInstance;
     private String currentUserName;
-    private String currentUserEmail;
-    private String currentUserID;
 
 
     // dwm08
@@ -343,14 +341,14 @@ public class OAuthUtils {
 
         try {
 
-            URL url = HttpUtils.createURL("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken);
+            URL url = new URL("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken);
             String response = HttpUtils.getInstance().getContentsAsJSON(url);
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(response).getAsJsonObject();
 
             currentUserName = obj.get("name").getAsString();
-            currentUserEmail = obj.get("email").getAsString();
-            currentUserID = obj.get("id").getAsString();
+            //currentUserEmail = obj.get("email").getAsString();
+            //currentUserID = obj.get("id").getAsString();
 
             return obj;
         } catch (Throwable exception) {

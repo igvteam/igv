@@ -191,7 +191,8 @@ public class BPTree {
     *
     * */
     public int getChromosomeID(String chromKey) {
-        return chromIdMap.get(chromKey);
+        Integer chromId =  chromIdMap.get(chromKey);
+        return chromId == null ? -1 : chromId.intValue();
     }
 
     /*

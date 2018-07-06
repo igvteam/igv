@@ -25,6 +25,8 @@
 
 package org.broad.igv.util.collections;
 
+import org.broad.igv.util.IntComparator;
+
 /**
  * Author: jrobinso
  * Date: Jul 22, 2010
@@ -73,7 +75,6 @@ public class IntArrayList {
     public void addAll(IntArrayList aList) {
         addAll(aList.toArray());
     }
-
 
     public int get(int idx) {
         return elements[idx];

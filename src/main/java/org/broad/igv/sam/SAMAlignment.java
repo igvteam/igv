@@ -343,6 +343,7 @@ public abstract class SAMAlignment implements Alignment {
                 } else if (op.operator == SKIPPED_REGION) {
 
                     // Need the "flanking" regions, i.e. size of blocks either side of splice
+                    // NOTE -- WE'RE ASSUMING HERE THAT THE "N" REGION IS FLANKED BY ALIGNMENT BLOCKS
                     int flankingLeft = 0;
                     int flankingRight = 0;
                     if (i > 0) {

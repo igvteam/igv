@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.renderer;
+package org.broad.igv.sashimi;
 
 //~--- non-JDK imports --------------------------------------------------------
 
@@ -34,6 +34,9 @@ import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.renderer.DataRange;
+import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentInterval;
 import org.broad.igv.sam.CoverageTrack;

@@ -28,7 +28,6 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.batch.CommandExecutor;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
@@ -49,7 +48,7 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
-import org.broad.igv.ui.SashimiPlot;
+import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;

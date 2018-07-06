@@ -223,6 +223,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             if (track.isReadyToPaint(frame) == false) {
                 final Runnable runnable = () -> {
                     track.load(frame);
+                    this.revalidate();
                 };
 
                 if (Globals.isBatch()) {

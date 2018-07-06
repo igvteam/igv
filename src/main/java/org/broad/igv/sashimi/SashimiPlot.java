@@ -23,14 +23,14 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui;
+package org.broad.igv.sashimi;
 
 import org.broad.igv.feature.IExon;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.sam.*;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.event.IGVEventBus;

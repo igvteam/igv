@@ -361,6 +361,8 @@ public class SVGGraphics extends Graphics2D {
     @Override
     public void setClip(Shape shape) {
         this.clip = shape;
+        Rectangle bounds = shape.getBounds();
+        this.setClip(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
     @Override

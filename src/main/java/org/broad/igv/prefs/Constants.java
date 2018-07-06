@@ -214,6 +214,7 @@ final public class Constants {
 
     // Google
     public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
+    public static final String GOOGLE_PROJECT = "GOOGLE_PROJECT";
     public static final String ENABLE_GOOGLE_MENU = "ENABLE_GOOGLE_MENU";
     public static final String SAVE_GOOGLE_CREDENTIALS = "SAVE_GOOGLE_CREDENTIALS";
 
@@ -249,6 +250,8 @@ final public class Constants {
 
     // Experimental
     public static final String SCORE_VARIANTS = "SCORE_VARIANTS";
+
+
 
 
     /**

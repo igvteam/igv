@@ -2,7 +2,7 @@
 <!--
  ~ The MIT License (MIT)
  ~
- ~ Copyright (c) 2007-2017 Broad Institute
+ ~ Copyright (c) 2007-2018 Broad Institute
  ~
  ~ Permission is hereby granted, free of charge, to any person obtaining a copy
  ~ of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
  ~ THE SOFTWARE.
   -->
 
-<!-- Ant build script to create a signed, unified IGV JAR, shrunk with BCEL.
+<!-- Ant build script to create a unified IGV JAR, shrunk with BCEL.
      This is difficult to do in Gradle so it's handled here.
      
      We may eventually switch to a different method (e.g. ProGuard) that makes
