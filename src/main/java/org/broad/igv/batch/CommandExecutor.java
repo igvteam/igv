@@ -377,9 +377,11 @@ public class CommandExecutor {
         if (ParsingUtils.pathExists(genomePath)) {
             try {
                 GenomeManager.getInstance().loadGenome(genomePath, null);
-            } catch (Exception e) {
-                throw new RuntimeException("Error loading genome: " + genomeID);
+            } catch (IOException e) {
+                result = "ERROR: Could not load genome: " + genomeID;
+                MessageUtils.showMessage(result);
             }
+
         } else {
             result = "ERROR: Could not locate genome: " + genomeID;
             MessageUtils.showMessage(result);
@@ -830,7 +832,7 @@ public class CommandExecutor {
 
     private void group(String groupArg, String tagArg) {
         igv.groupAlignmentTracks(getAlignmentGroupOption(groupArg), tagArg, null);
-        UIUtilities.invokeAndWaitOnEventThread (() -> igv.revalidateTrackPanels());
+        UIUtilities.invokeAndWaitOnEventThread(() -> igv.revalidateTrackPanels());
     }
 
 

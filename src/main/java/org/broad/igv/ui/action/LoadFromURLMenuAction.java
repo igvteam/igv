@@ -145,7 +145,11 @@ public class LoadFromURLMenuAction extends MenuAction {
             enableGoogleMenu();
             // if user is not currently logged in, attempt to
             // log in user
-            OAuthUtils.doSecureLogin();
+            try {
+                OAuthUtils.getInstance().doSecureLogin();
+            } catch (IOException e) {
+                log.error("Error connecting to OAuth: " + e.getMessage());
+            }
 
         }
 

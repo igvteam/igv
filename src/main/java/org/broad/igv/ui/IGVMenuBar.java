@@ -184,9 +184,13 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         //extrasMenu.setVisible(false);
         menus.add(extrasMenu);
 
-        googleMenu = createGoogleMenu();
-        googleMenu.setVisible(PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU));
-        menus.add(googleMenu);
+        try {
+            googleMenu = createGoogleMenu();
+            googleMenu.setVisible(PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU));
+            menus.add(googleMenu);
+        } catch (IOException e) {
+            log.error("Error creating google menu: " + e.getMessage());
+        }
 
         menus.add(createHelpMenu());
 
@@ -1098,15 +1102,17 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return menu;
     }
 
-    private JMenu createGoogleMenu() {
+    private JMenu createGoogleMenu() throws IOException {
 
     	// Dynamically name menu - dwm08
-        JMenu menu =  new JMenu(OAuthUtils.authProvider);
+        final OAuthUtils oauth = OAuthUtils.getInstance();
+
+        JMenu menu =  new JMenu(oauth.authProvider);
 
         final JMenuItem login = new JMenuItem("Login ... ");
         login.addActionListener(e -> {
             try {
-                OAuthUtils.getInstance().openAuthorizationPage();
+                oauth.openAuthorizationPage();
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
                 log.error("Error fetching oAuth tokens", ex);
@@ -1119,7 +1125,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         final JMenuItem logout = new JMenuItem("Logout ");
         logout.addActionListener(e -> {
-            OAuthUtils.getInstance().logout();
+            oauth.logout();
             GoogleUtils.setProjectID(null);
         });
         logout.setEnabled(false);
@@ -1147,9 +1153,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             @Override
             public void menuSelected(MenuEvent e) {
                 Runnable runnable = () -> {
-                    boolean loggedIn = OAuthUtils.getInstance().isLoggedIn();
+                    boolean loggedIn = oauth.isLoggedIn();
                     if (loggedIn) {
-                        login.setText(OAuthUtils.getInstance().getCurrentUserName());
+                        login.setText(oauth.getCurrentUserName());
                     } else {
                         login.setText("Login ...");
                     }
