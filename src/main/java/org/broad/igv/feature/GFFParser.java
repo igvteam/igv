@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,22 +25,25 @@
 
 package org.broad.igv.feature;
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.track.*;
-import htsjdk.tribble.Feature;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @deprecated use org.broad.igv.track.GFFFeatureSource
  * User: jrobinso
  */
 
-
+@Deprecated
 public class GFFParser implements FeatureParser {
 
     static Logger log = Logger.getLogger(GFFParser.class);

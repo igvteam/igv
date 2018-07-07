@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,7 @@ import java.sql.SQLException;
  * @date 10/14/11
  * @deprecated See {@link org.broad.igv.dev.SegmentedReader}
  */
+@Deprecated
 public class SegmentedSQLReader extends WholeTableDBReader<SegmentedAsciiDataSet> {
 
     private static Logger log = Logger.getLogger(SegmentedSQLReader.class);

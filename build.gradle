@@ -26,6 +26,18 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // Define the main class for the application
 ext.mainClassName = 'org.broad.igv.ui.Main'
 
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', 'src/main/java8']
+        }
+        resources {
+            srcDirs = ['src/main/resources', 'src/main/resources-jlfgr-1_0']
+            exclude "**/*LICENSE*", "**/META-INF"
+        }
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'lib', include: '*.jar')
     testCompile fileTree(dir: 'test/lib', include: '*.jar')

@@ -1,15 +1,17 @@
 These instructions are meant for developers interested in work on the IGV code.  For normal use,
 we recommend the pre-built releases available at www.igv.org.
 
-The IGV build now uses Gradle instead of Ant.
+The IGV JAR build now uses Gradle instead of Ant.  
 
-Install Gradle for your platform.  See https://gradle.org/ for details.  Java 8 is also required. At
-this time, *only* Java 8 is supported; we're working on support for Java 9+ in a future update.
+Install Gradle for your platform.  See https://gradle.org/ for details.
 
 Builds are executed from the IGV project directory.  Files will be created in the 'build' subdirectory.
 You may need to execute 'gradle wrapper' to set up the gradle wrapper.  This should be necessary the 
 first time only, or if you clean up the local .gradle directory.  Only do this if the './gradlew' calls
 fail.
+
+There are two different build options, one for Java 8 and another for Java 9 and up.  The default is 
+to build for Java 8.  Java 8 builds are *NOT* compatible with Java 9 and vice versa.  
 
 There are other options but these cover the most common uses:
 - Use './gradlew createDist' to build a "distribution" directory (found in 'build/dist') containing 
@@ -28,5 +30,13 @@ There are other options but these cover the most common uses:
   the exception that they will not be signed with our certificate (required for JNLP) and will have
   slightly different build properties (timestamp, etc) in about.properties.
 
+The instructions for Java 9 are nearly identical other than the need to specify the Java 9 build file
+and that the results will be found in 'build_java9' rather than 'build'.  More specifically:
+- Use './gradlew -b build_java9.gradle createDist' to build a distribution directory with helper scripts
+  for launching.  The structure is slightly different but the concept is the same.
+- Use './gradlew -b build_java9.gradle build' to build everything and run the test suite.
+
+The reduced-footprint JAR build option is *NOT* available for Java 9+ at this time.  We will explore 
+alternatives in the future. 
 
 NOTE: In the above, use './gradlew.bat' on the Windows platform.

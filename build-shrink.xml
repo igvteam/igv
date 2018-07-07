@@ -45,8 +45,9 @@
     <property name="dist.dir" value="build/IGV-dist/"/>
     <property name="jar.path" value="${dist.dir}${jar.name}"/>
 
-    <property name="batik-codec-finame" value="batik-codec__V1.7.jar" />
-    <property name="goby-io-finame" value="goby-io-igv__V1.0.jar" />
+    <property name="batik-codec-finame" value="batik-codec-1.10.jar" />
+    <property name="goby-io-finame" value="goby-io-igv-1.1.jar" />
+    <property name="log4j-core-finame" value="log4j-core-2.11.0.jar" />
     
     <!-- These paths are dictated by Gradle. -->
     <property name="class.dir" value="build/classes/java/main" />
@@ -68,8 +69,9 @@
         <unzip dest="${tmp.dir}">
             <!-- Copy almost everything to tmp directory
             Certain jars we include whole, because we need their manifests
-            Batik and Goby get copied later.
-            Certain jars we just want to ignore (junit, appbundler)-->
+            Goby get copied later.
+            Certain jars we just want to ignore (junit, appbundler). 
+            -->
             <patternset>
                 <include name="**/*"/>
                 <exclude name="META-INF/**"/>
@@ -81,6 +83,7 @@
                 <exclude name="**/*junit*.jar"/>
                 <exclude name="**/${batik-codec-finame}"/>
                 <exclude name="**/${goby-io-finame}"/>
+                <exclude name="**/${log4j-core-finame}"/>
                 <exclude name="**/*AppleJavaExtensions.jar"/>
             </fileset>
         </unzip>
@@ -100,7 +103,7 @@
             <rootfileset dir="${tmp.dir}" includes="org/broad/**/*.class" />
         </classfileset>
 
-        <property name="class-path" value="${batik-codec-finame} ${goby-io-finame}" />
+        <property name="class-path" value="${batik-codec-finame} ${goby-io-finame} ${log4j-core-finame}" />
 
         <jar destfile="${jar.path}" basedir="${tmp.dir}" compress="true" duplicate="preserve">
             <fileset refid="rootFiles"/>
@@ -127,6 +130,7 @@
         <delete dir="${tmp.dir}" />
         <copy file="${lib.dir}${batik-codec-finame}" tofile="${dist.dir}${batik-codec-finame}" overwrite="true"/>
         <copy file="${lib.dir}${goby-io-finame}" tofile="${dist.dir}${goby-io-finame}" overwrite="true"/>
+        <copy file="${lib.dir}${log4j-core-finame}" tofile="${dist.dir}${log4j-core-finame}" overwrite="true"/>
     </target>
 
     <!--Add permissions attribute to manifest of jars -->
@@ -148,6 +152,7 @@
     <target name="addPerms">
         <addPermsMacro jarfile="${dist.dir}${batik-codec-finame}"/>
         <addPermsMacro jarfile="${dist.dir}${goby-io-finame}"/>
+        <addPermsMacro jarfile="${dist.dir}${log4j-core-finame}"/>
     </target>
 
     <target name="allBuild" depends="shrinkJar,addPerms">

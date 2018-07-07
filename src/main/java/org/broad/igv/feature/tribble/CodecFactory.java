@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,20 @@
 package org.broad.igv.feature.tribble;
 
 import htsjdk.samtools.util.BlockCompressedInputStream;
-import org.apache.log4j.Logger;
-import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
-import org.broad.igv.feature.FeatureType;
-import org.broad.igv.feature.dsi.DSICodec;
-import org.broad.igv.feature.dsi.DSIFeature;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.gwas.EQTLCodec;
-import org.broad.igv.peaks.PeakCodec;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.FeatureCodec;
 import htsjdk.variant.bcf2.BCF2Codec;
 import htsjdk.variant.vcf.VCF3Codec;
 import htsjdk.variant.vcf.VCFCodec;
+import org.apache.log4j.Logger;
+import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
+import org.broad.igv.feature.FeatureType;
+import org.broad.igv.feature.dsi.DSICodec;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.gwas.EQTLCodec;
+import org.broad.igv.peaks.PeakCodec;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -70,6 +69,7 @@ public class CodecFactory {
      * @deprecated Use {@link #getCodec(org.broad.igv.util.ResourceLocator, org.broad.igv.feature.genome.Genome)}
      * This won't handle URLs with query strings properly for all codecs
      */
+    @Deprecated
     public static FeatureCodec getCodec(String path, Genome genome) {
         return getCodec(new ResourceLocator(path), genome);
     }

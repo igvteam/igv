@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Name: Java look and feel Graphics Repository 1.0
+Created-By: 1.2.2 (Sun Microsystems Inc.)
+

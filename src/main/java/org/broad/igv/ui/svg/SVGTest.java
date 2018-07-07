@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,12 +25,7 @@
 
 package org.broad.igv.ui.svg;
 
-import org.apache.batik.dom.GenericDOMImplementation;
-import org.apache.batik.svggen.SVGGraphics2D;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.util.MessageUtils;
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -102,32 +97,5 @@ public class SVGTest {
         g2d.setColor(Color.black);
         g2d.drawString("Hello World", 0, 0);
     }
-
-    private static void test2() {
-
-        File selecteddFile = new File("test2.svg");
-         try {
-
-             DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
-
-
-             // Create an instance of org.w3c.dom.Document.
-             String svgNS = "http://www.w3.org/2000/svg";
-             Document document = domImpl.createDocument(svgNS, "svg", null);
-
-
-             // Create an instance of the SVG Generator.
-             org.apache.batik.svggen.SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
-
-             draw(svgGenerator);
-
-             Writer out = new BufferedWriter(new FileWriter(selecteddFile));
-             //logger.info("Writing output");
-             svgGenerator.stream(out, false);
-             //logger.info("Done");
-         } catch (Exception e) {
-             MessageUtils.showMessage("Error encountered creating SVG file: " + e.toString());
-         }
-     }
 
 }

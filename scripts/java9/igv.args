@@ -1,0 +1,3 @@
+# Arguments to support JIDE on Java 9 and 10
+
+--add-exports java.desktop/com.sun.java.swing.plaf.windows=jide.oss --add-exports java.desktop/javax.swing.plaf.synth=jide.oss --add-exports java.desktop/sun.swing=jide.oss --add-exports java.desktop/sun.awt=jide.oss --add-exports java.desktop/sun.awt.image=jide.oss --add-exports java.desktop/sun.awt.shell=jide.oss --add-exports java.desktop/sun.awt.dnd=jide.oss --add-exports java.desktop/sun.awt.windows=jide.oss --add-exports java.base/sun.security.action=jide.oss

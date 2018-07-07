@@ -25,9 +25,6 @@
 
 package org.broad.igv.charts;
 
-import org.broad.igv.util.stats.KMPlotFrame;
-import org.omg.CORBA.Bounds;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
