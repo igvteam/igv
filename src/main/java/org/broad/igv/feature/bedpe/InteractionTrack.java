@@ -34,7 +34,7 @@ public class InteractionTrack extends AbstractTrack {
         super(locator);
         init(featureList, genome);
         renderer = new PEArcRenderer();
-        setHeight(200, true);
+        setHeight(250, true);
         setColor(new Color(180, 25, 137));
     }
 
