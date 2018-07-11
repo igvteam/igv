@@ -59,8 +59,8 @@ public class OAuthUtils {
 
     public String authProvider = "Google";
     private String appIdURI = null;
-    public String findString = null;
-    public String replaceString = null;
+    public static String findString = null;
+    public static String replaceString = null;
 
 
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
