@@ -59,7 +59,6 @@ public class BedPEUtils {
             if(pw != null) pw.close();
             if(br != null) br.close();;
         }
-
-
     }
+
 }

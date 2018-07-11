@@ -24,6 +24,11 @@ public class InteractionTrack extends AbstractTrack {
         super(locator);
         init(featureList, genome);
         renderer = new PEArcRenderer();
+<<<<<<< HEAD
+=======
+        setHeight(200, true);
+        setColor(new Color(180, 25, 137));
+>>>>>>> 8c2ed8f98... bedpe
     }
 
     private void init(List<BedPEFeature> featureList, Genome genome) {
