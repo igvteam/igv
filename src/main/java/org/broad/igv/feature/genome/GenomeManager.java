@@ -263,10 +263,12 @@ public class GenomeManager {
 
             if (IGV.hasInstance()) {
                 FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();   // Can be null
-                IGV.getInstance().setGenomeTracks(geneFeatureTrack);
+                if(IGV.hasInstance()) {
+                    IGV.getInstance().setGenomeTracks(geneFeatureTrack);
+                }
 
                 List<ResourceLocator> resources = newGenome.getAnnotationResources();
-                if (resources != null) {
+                if (resources != null && IGV.hasInstance()) {
                     IGV.getInstance().loadResources(resources);
                 }
             }

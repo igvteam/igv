@@ -690,8 +690,9 @@ public class HttpUtils {
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
         // string to dynamically map url - dwm08
-        if (url.getHost().equals(OAuthUtils.GS_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
-            url = HttpUtils.createURL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
+        OAuthUtils oa = OAuthUtils.getInstance();
+        if (url.getHost().equals(OAuthUtils.GS_HOST) && oa.findString != null && oa.replaceString != null) {
+            url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oa.findString, oa.replaceString));
         }
 
         //Encode query string portions

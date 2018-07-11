@@ -353,7 +353,7 @@ public class GenomeListManager {
     public Map<String, GenomeListItem> getServerGenomeMap() {
 
         if (serverGenomeListUnreachable) {
-            return null;
+            return Collections.emptyMap();
         }
 
         if (serverGenomeMap == null) {
@@ -403,7 +403,7 @@ public class GenomeListManager {
                 }
             } catch (Exception e) {
                 serverGenomeListUnreachable = true;
-                serverGenomeMap = null;
+                serverGenomeMap = Collections.emptyMap();
                 log.error("Error fetching genome list: ", e);
                 ConfirmDialog.optionallyShowInfoDialog("Warning: could not connect to the genome server (" +
                                 genomeListURLString + ").    Only locally defined genomes will be available.",

@@ -57,14 +57,10 @@ public class OAuthUtils {
 
     private static Logger log = Logger.getLogger(OAuthUtils.class);
 
-    // dwm08
-    public static String authProvider = "Google";
-    // dwm08
+    public String authProvider = "Google";
     private String appIdURI = null;
-    // dwm08
-    public static String findString = null;
-    // dwm08
-    public static String replaceString = null;
+    public String findString = null;
+    public String replaceString = null;
 
 
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
@@ -90,21 +86,10 @@ public class OAuthUtils {
     private static OAuthUtils theInstance;
     private String currentUserName;
 
-
-    // dwm08
     // by default this is the google scope
     private String scope = genomicsScope + "%20" + gsScope + "%20" + emailScope;
 
-    // Construct OAuthUtils earcly so Google menu can be updated to the
-    // correct oauth provider. dwm08
-    static {
-        if (theInstance == null) {
-            theInstance = new OAuthUtils();
-        }
-    }
-
-
-    public static synchronized OAuthUtils getInstance() {
+    public static synchronized OAuthUtils getInstance() throws IOException {
 
         if (theInstance == null) {
             theInstance = new OAuthUtils();
@@ -113,18 +98,12 @@ public class OAuthUtils {
         return theInstance;
     }
 
-    private OAuthUtils() {
-        // Attempt to fetch refresh token from local store.
+    private OAuthUtils() throws IOException {
         restoreRefreshToken();
-        // do this early -- dwm08
-        try {
-            fetchOauthProperties();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        fetchOauthProperties();
     }
 
-    private void fetchOauthProperties() throws IOException {
+    public void fetchOauthProperties() throws IOException {
 
         String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
         //IGVPreferences.getInstance().get(IGVPreferences.OAUTH_CONFIG);
@@ -436,10 +415,10 @@ public class OAuthUtils {
     /**
      * Try to login to secure server. dwm08
      */
-    public static void doSecureLogin() {
+    public void doSecureLogin() {
         // if user is not currently logged in, attempt to
         // log in user if not logged in dwm08
-        if (!OAuthUtils.getInstance().isLoggedIn()) {
+        if (!isLoggedIn()) {
             try {
                 OAuthUtils.getInstance().openAuthorizationPage();
             } catch (Exception ex) {
@@ -451,7 +430,7 @@ public class OAuthUtils {
         // wait until authentication successful or 1 minute -
         // dwm08
         int i = 0;
-        while (!OAuthUtils.getInstance().isLoggedIn() && i < 600) {
+        while (!isLoggedIn() && i < 600) {
             ++i;
             try {
                 Thread.sleep(100);
@@ -503,13 +482,13 @@ public class OAuthUtils {
      *
      * @param sessionPath
      */
-    public static void checkServerLogin(String sessionPath) {
+    public void checkServerLogin(String sessionPath) {
         Set<String> urlSet = findUrlsInSessionFile(sessionPath);
         if (urlSet.size() > 0) {
             for (String url : urlSet) {
-                if (OAuthUtils.isGoogleCloud(url)) {
+                if (isGoogleCloud(url)) {
 
-                    OAuthUtils.doSecureLogin();
+                    doSecureLogin();
 
                     // user is logged in. Can proceed with the load
                     return;
