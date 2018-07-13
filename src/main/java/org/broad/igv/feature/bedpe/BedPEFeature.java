@@ -1,5 +1,7 @@
 package org.broad.igv.feature.bedpe;
 
+import java.awt.*;
+
 /**
  * Created by jrobinso on 6/29/18.
  */
@@ -13,6 +15,8 @@ public class BedPEFeature {
     int end2;
     String name;
     String score;
+    Color color;
+    int thickness = 1;
 
 
     public int getStart() {
