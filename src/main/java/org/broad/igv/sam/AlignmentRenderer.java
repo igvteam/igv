@@ -102,6 +102,8 @@ public class AlignmentRenderer {
 
     private static ColorTable readGroupColors;
     private static ColorTable sampleColors;
+    private static ColorTable movieColors;
+    private static ColorTable zmwColors;
     private static Map<String, ColorTable> tagValueColors;
     private static ColorTable defaultTagColors;
 
@@ -218,6 +220,8 @@ public class AlignmentRenderer {
         ColorPalette palette = ColorUtilities.getPalette("Pastel 1");  // TODO let user choose
         readGroupColors = new PaletteColorTable(palette);
         sampleColors = new PaletteColorTable(palette);
+        movieColors = new PaletteColorTable(palette);
+        zmwColors = new PaletteColorTable(palette);
         defaultTagColors = new PaletteColorTable(palette);
         tagValueColors = new HashMap();
 
@@ -1225,8 +1229,8 @@ public class AlignmentRenderer {
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
 
         Color c = DEFAULT_ALIGNMENT_COLOR;
-
         ColorOption colorOption = renderOptions.getColorOption();
+        String readNameParts[];
 
         switch (colorOption) {
 
@@ -1323,6 +1327,18 @@ public class AlignmentRenderer {
                 String library = alignment.getLibrary();
                 if (library != null) {
                     c = sampleColors.get(library);
+                }
+                break;
+            case MOVIE:
+                readNameParts = alignment.getReadName().split("/");
+                if (readNameParts.length == 3) {
+                    c = movieColors.get(readNameParts[0]);
+                }
+                break;
+            case ZMW:
+                readNameParts = alignment.getReadName().split("/");
+                if (readNameParts.length == 3) {
+                    c = zmwColors.get(readNameParts[0] + "/" + readNameParts[1]);
                 }
                 break;
             case TAG:
