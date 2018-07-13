@@ -11,7 +11,7 @@ public class BedPEUtils {
 
     public static void main(String [] args) throws IOException {
 
-        interactionToBedPE(args[0], args[1]);
+        juiceboxToBedPE(args[0], args[1]);
 
     }
 
@@ -61,4 +61,47 @@ public class BedPEUtils {
         }
     }
 
+    public static void juiceboxToBedPE(String ifile, String ofile) throws IOException {
+
+        BufferedReader br = null;
+        PrintWriter pw = null;
+
+        try {
+            br = new BufferedReader(new FileReader(ifile));
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(ofile)));
+
+            String nextLine;
+            br.readLine(); // Skipping first line
+
+            pw.println("#columns color=11;thickness=12");
+
+            while ((nextLine = br.readLine()) != null) {
+
+                if (nextLine.startsWith("#")) {
+                    pw.println(nextLine);
+                } else {
+                    String[] tokens = ParsingUtils.WHITESPACE_PATTERN.split(nextLine);
+
+                    if (tokens.length >= 6) {
+
+                        for (int i = 0; i < 6; i++) {
+                            pw.print(tokens[i] + "\t");
+                        }
+                        for (int i = 0; i < 4; i++) {
+                            pw.print(".\t");
+                        }
+                        pw.println(tokens[6] + "\t" + "2\t");
+
+
+                    } else {
+                        System.out.println("Skipping line: " + nextLine);
+                    }
+                }
+            }
+        } finally {
+            if (pw != null) pw.close();
+            if (br != null) br.close();
+            ;
+        }
+    }
 }
