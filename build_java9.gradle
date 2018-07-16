@@ -78,6 +78,20 @@ jar {
     }
 }
 
+task tooljar(type: Jar, dependsOn: jar) {
+    // This jar is the same as the client jar above, just a different jar name and manifest
+    archiveName = 'igvtools.jar'
+    from(sourceSets.main.output) { }
+    
+    manifest {
+        attributes(
+            "Implementation-Title": "IGVTools",
+            "Built-By": System.getProperty('user.name'),
+            "Main-Class": "org.broad.igv.tools.IgvTools",
+        )
+    }
+}
+
 compileJava {
     inputs.property("moduleName", moduleName)
     doFirst {
@@ -131,20 +145,6 @@ test {
     }
 }
 
-def modulepathContent = copySpec {
-    from ("lib") {
-        include '*.jar'
-        exclude 'jide-oss-3.5.5.jar'
-    }
-    from ("lib_java9") {
-        include '*.jar'
-    }
-    from ("${buildDir}/libs") {
-        include 'igv*.jar'
-    }
-    into "lib"
-}
-
 task createDist(type: Copy, dependsOn: jar)  {
     from ('scripts/java9') {
         include 'igv.bat'
@@ -153,15 +153,27 @@ task createDist(type: Copy, dependsOn: jar)  {
         include 'igv.args'
     }
     
-    with modulepathContent
+    with copySpec {
+        from ("lib") {
+            include '*.jar'
+            exclude 'jide-oss-3.5.5.jar'
+        }
+        from ("lib_java9") {
+            include '*.jar'
+        }
+        from ("${buildDir}/libs") {
+            include 'igv.jar'
+        }
+        into "lib"
+    }
 
-    into "${buildDir}/dist"
+    into "${buildDir}/IGV-dist"
 }
 
 task createDistZip(type: Zip, dependsOn: createDist) {
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGV"
-    from "${buildDir}/dist"
+    from "${buildDir}/IGV-dist"
     into createDistZip.baseName + "_${version}"
 
     doLast {
@@ -169,4 +181,47 @@ task createDistZip(type: Zip, dependsOn: createDist) {
     }
 }
 
-build.dependsOn createDistZip
+task createToolsDist(type: Copy, dependsOn: tooljar)  {
+    from ("scripts/java9") {
+        include 'igvtools*'
+        include 'igvtools*.bat'
+        include 'igvtools*.command'
+        include 'igv.args'
+    }
+    from ("${buildDir}/libs") {
+        include 'igvtools.jar'
+    }
+    
+    with copySpec {
+        from ("lib") {
+            include '*.jar'
+            exclude 'jide-oss-3.5.5.jar'
+        }
+        from ("lib_java9") {
+            include '*.jar'
+        }
+        from ("${buildDir}/libs") {
+            include 'igvtools.jar'
+        }
+        into "lib"
+    }
+
+    with copySpec { from ("genomes") { } into "genomes" }
+
+    into "${buildDir}/IGVTools-dist"
+}
+
+task createToolsDistZip(type: Zip, dependsOn: createToolsDist) {
+    destinationDir = file("${buildDir}/distZip")
+    archiveName = "igvtools_${version}.zip"
+    baseName = "IGVTools"
+    
+    from "${buildDir}/IGVTools-dist"
+    into createToolsDistZip.baseName
+
+    doLast {
+        project.exec { commandLine('chmod', '775', createToolsDistZip.archivePath ) }
+    }
+}
+
+build.dependsOn createDistZip,createToolsDistZip

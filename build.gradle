@@ -44,8 +44,7 @@ configurations {
 }
 
 dependencies {
-    jarsToShipUntouched fileTree(dir: 'lib', 
-                                 include: ['batik-codec-1.10.jar', 'goby-io-igv-1.1.jar', 'log4j-core-2.11.0.jar'])
+    jarsToShipUntouched fileTree(dir: 'lib', include: ['batik-codec-1.10.jar', 'goby-io-igv-1.1.jar', 'log4j-core-2.11.0.jar'])
     compile fileTree(dir: 'lib', include: '*.jar')
     testCompile fileTree(dir: 'test/lib', include: '*.jar')
 }
@@ -83,7 +82,6 @@ jar {
 
 task fullJar(type: Jar, dependsOn: jar) {
     // Based on https://discuss.gradle.org/t/removing-dependencies-from-a-jar-file-during-jar-task/5521/3
-    archiveName = 'igv.jar'
     from {
         ((configurations.compile - configurations.jarsToShipUntouched) + "${buildDir}/libs/igv-minimal.jar").collect {
             zipTree(it)
@@ -91,13 +89,33 @@ task fullJar(type: Jar, dependsOn: jar) {
     } {
         exclude "META-INF/**"
     }
-    
+
+    archiveName = 'igv.jar'
     manifest {
         attributes(
             "Permissions": "all-permissions",
             "Application-Name": "IGV",
             "Built-By": System.getProperty('user.name'),
             "Main-Class": mainClassName,
+            "Class-Path": configurations.jarsToShipUntouched.collect { it.getName() }.join(' ')
+        )
+    }
+}
+
+task toolJar(type: Jar, dependsOn: jar) {
+    from {
+        ((configurations.compile - configurations.jarsToShipUntouched) + "${buildDir}/libs/igv-minimal.jar").collect {
+            zipTree(it)
+        }
+    } {
+        exclude "META-INF/**"
+    }
+    archiveName = 'igvtools.jar'
+    manifest {
+        attributes(
+            "Implementation-Title": "IGVTools",
+            "Built-By": System.getProperty('user.name'),
+            "Main-Class": "org.broad.igv.tools.IgvTools",
             "Class-Path": configurations.jarsToShipUntouched.collect { it.getName() }.join(' ')
         )
     }
@@ -122,15 +140,15 @@ task createDist(type: Copy, dependsOn: fullJar)  {
     from ("${buildDir}/libs") {
         include 'igv.jar'
     }
-    from (configurations.jarsToShipUntouched) {}
+    from (configurations.jarsToShipUntouched) { }
 
-    into "${buildDir}/dist"
+    into "${buildDir}/IGV-dist"
 }
 
 task createDistZip(type: Zip, dependsOn: createDist) {
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGV"
-    from "${buildDir}/dist"
+    from "${buildDir}/IGV-dist"
     into createDistZip.baseName + "_${version}"
 
     doLast {
@@ -138,4 +156,33 @@ task createDistZip(type: Zip, dependsOn: createDist) {
     }
 }
 
-build.dependsOn createDistZip
+task createToolsDist(type: Copy, dependsOn: toolJar)  {
+    from ("scripts") {
+        include 'igvtools*'
+        include 'igvtools*.bat'
+        include 'igvtools*.command'
+    }
+    from ("${buildDir}/libs") {
+        include 'igvtools.jar'
+    }
+    from (configurations.jarsToShipUntouched) { }
+    
+    with copySpec { from ("genomes") { } into "genomes" }
+
+    into "${buildDir}/IGVTools-dist"
+}
+
+task createToolsDistZip(type: Zip, dependsOn: createToolsDist) {
+    destinationDir = file("${buildDir}/distZip")
+    archiveName = "igvtools_${version}.zip"
+    baseName = "IGVTools"
+
+    from "${buildDir}/IGVTools-dist"
+    into createToolsDistZip.baseName
+
+    doLast {
+        project.exec { commandLine('chmod', '775', createToolsDistZip.archivePath ) }
+    }
+}
+
+build.dependsOn createDistZip,createToolsDistZip
