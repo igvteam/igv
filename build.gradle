@@ -38,7 +38,14 @@ sourceSets {
     }
 }
 
+configurations {
+    jarsToShipUntouched
+    compile.extendsFrom jarsToShipUntouched
+}
+
 dependencies {
+    jarsToShipUntouched fileTree(dir: 'lib', 
+                                 include: ['batik-codec-1.10.jar', 'goby-io-igv-1.1.jar', 'log4j-core-2.11.0.jar'])
     compile fileTree(dir: 'lib', include: '*.jar')
     testCompile fileTree(dir: 'test/lib', include: '*.jar')
 }
@@ -62,7 +69,7 @@ processResources {
 }
 
 jar {
-    archiveName = 'igv.jar'
+    archiveName = 'igv-minimal.jar'
     manifest {
         attributes(
             "Permissions": "all-permissions",
@@ -70,6 +77,28 @@ jar {
             "Built-By": System.getProperty('user.name'),
             "Main-Class": mainClassName,
             "Class-Path": configurations.compile.collect { it.getName() }.join(' ')
+        )
+    }
+}
+
+task fullJar(type: Jar, dependsOn: jar) {
+    // Based on https://discuss.gradle.org/t/removing-dependencies-from-a-jar-file-during-jar-task/5521/3
+    archiveName = 'igv.jar'
+    from {
+        ((configurations.compile - configurations.jarsToShipUntouched) + "${buildDir}/libs/igv-minimal.jar").collect {
+            zipTree(it)
+        }
+    } {
+        exclude "META-INF/**"
+    }
+    
+    manifest {
+        attributes(
+            "Permissions": "all-permissions",
+            "Application-Name": "IGV",
+            "Built-By": System.getProperty('user.name'),
+            "Main-Class": mainClassName,
+            "Class-Path": configurations.jarsToShipUntouched.collect { it.getName() }.join(' ')
         )
     }
 }
@@ -84,18 +113,16 @@ tasks.withType(Test) {
     forkEvery = 1
 }
 
-task createDist(type: Copy, dependsOn: jar)  {
+task createDist(type: Copy, dependsOn: fullJar)  {
     from ("scripts") {
         include 'igv.bat'
         include 'igv.command'
         include 'igv.sh'
     }
     from ("${buildDir}/libs") {
-        include 'igv*.jar'
+        include 'igv.jar'
     }
-    from ("lib") {
-        include '*.jar'
-    }
+    from (configurations.jarsToShipUntouched) {}
 
     into "${buildDir}/dist"
 }

@@ -15,20 +15,21 @@ to build for Java 8.  Java 8 builds are *NOT* compatible with Java 9 and vice ve
 
 There are other options but these cover the most common uses:
 - Use './gradlew createDist' to build a "distribution" directory (found in 'build/dist') containing 
-  igv.jar, all of the third-party library JARs as well as helper scripts for launching.  
-  Launch with 'igv.sh' on UNIX, 'igv.command' on Mac, and 'igv.bat' on Windows.  These scripts can be
-  edited to adjust e.g. JVM flags like maximum memory, etc.
-  Note that Gradle creates a number of other subdirectories in 'build'.  These can be safely ignored.
+  igv.jar and its third-party library required runtime JAR dependencies (batik-codec, goby, and 
+  log4j-core) as well as helper scripts for launching.
+  - These four JARs will be identical to those available in the download bundles from our website, 
+    with the exception that they will not be signed with our certificate (required for JNLP) and
+    will have slightly different build properties (timestamp, etc) in about.properties.
+  - All four JARs must be in the same location in order to run IGV. 
+  - Launch with 'igv.sh' on UNIX, 'igv.command' on Mac, and 'igv.bat' on Windows.  These scripts can
+    be edited to adjust e.g. JVM flags like maximum memory, etc.
+  - All other runtime dependencies are bundled into igv.jar.  There is also an igv-minimal.jar in
+    'build/libs' containing just the IGV classes and resources for those who prefer to manage 
+    dependencies as separate files.
 - Use './gradlew build' to build everything and run the test suite.  See 'src/test/README.txt' for more
   information about running the tests.
-- OPTIONAL: assuming Ant is installed and configured with BCEL, a reduced-footprint version of the JAR
-  can be produced by running './gradlew jar' or './gradlew build' and then 'ant -f build-shrink.xml'.  
-  This JAR will be found in 'build/IGV-dist' along with two supporting JARs (batik-codec and goby) and
-  helper scripts to run them (as above).
-  All three JARs must be in the same location in order to run IGV. 
-  These three JARs will be identical to those available in the download bundles from our website, with 
-  the exception that they will not be signed with our certificate (required for JNLP) and will have
-  slightly different build properties (timestamp, etc) in about.properties.
+
+Note that Gradle creates a number of other subdirectories in 'build'.  These can be safely ignored.
 
 The instructions for Java 9 are nearly identical other than the need to specify the Java 9 build file
 and that the results will be found in 'build_java9' rather than 'build'.  More specifically:
@@ -36,7 +37,6 @@ and that the results will be found in 'build_java9' rather than 'build'.  More s
   for launching.  The structure is slightly different but the concept is the same.
 - Use './gradlew -b build_java9.gradle build' to build everything and run the test suite.
 
-The reduced-footprint JAR build option is *NOT* available for Java 9+ at this time.  We will explore 
-alternatives in the future. 
+The full JAR build option is *NOT* available for Java 9+ because of modularilty requirements.
 
 NOTE: In the above, use './gradlew.bat' on the Windows platform.
