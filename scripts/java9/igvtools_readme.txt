@@ -3,8 +3,8 @@ feature count density (coverage),  sorting, and indexing data files.
 See also http://www.broadinstitute.org/software/igv/igvtools_commandline.
 
 ***************************************************************************
-Java 9 or 10 is required for this release.  See our website for more
-information about support for Java 8.
+Java 8 is required for this release.  See our website for more information
+about support for Java 9 and up.
 ***************************************************************************
 
 ---------------------------------------------------------------------------
@@ -34,14 +34,13 @@ Starting with java
 Igvtools can also be started directly using java as shown below.  This option
 allows more control over java parameters, such as the maximum memory to
 allocate.  In the example below igvtools is started with 1500 MB of memory
-allocated and /path/to/IGVTools is the location where you have unpacked 
-IGVTools
+allocated
 
-   java -Xmx1500m --module-path=/path/to/IGVTools/lib @igv.args [command] [options][arguments]
+   java -Xmx1500m  -jar igvtools.jar [command] [options][arguments]
 
 To start with a gui the command is
 
-   java -Xmx1500m --module-path=/path/to/IGVTools/lib @igv.args gui
+   java -Xmx1500m  -jar igvtools.jar gui
    
 ---------------------------------------------------------------------------
 Memory settings
