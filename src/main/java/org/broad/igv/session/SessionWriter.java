@@ -55,9 +55,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -95,9 +93,10 @@ public class SessionWriter {
 
         String xmlString = createXmlFromSession(session, outputFile);
 
-        FileWriter fileWriter = null;
+        Writer fileWriter = null;
         try {
-            fileWriter = new FileWriter(outputFile);
+            fileWriter = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(outputFile), "UTF8"));
             fileWriter.write(xmlString);
         } finally {
             if (fileWriter != null) {
