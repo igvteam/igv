@@ -238,28 +238,6 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         tstFeatureTypes(tokens, SearchCommand.ResultType.ERROR);
     }
 
-    @Test
-    public void testInexactMatch() throws Exception{
-        //Search for SOX1* genes. Since SOX1 is a gene and we return only 1 hit for exact matches,
-        //need to search only for SOX and then filter
-        String searchStr = "SOX";
-        String pref = "SOX1";
-        String[] expRes = {"SOX1", "SOX10","SOX11","SOX12","SOX13","SOX14","SOX15","SOX17","SOX18"};
-        SearchCommand cmd = new SearchCommand(null, searchStr, genome);
-        List<SearchCommand.SearchResult> results = cmd.runSearch(cmd.searchString);
-        assertTrue("No results found", results.size() > 0);
-
-        int ind=0;
-        for(SearchCommand.SearchResult result: results){
-            String resName = result.getShortName();
-            if(!resName.startsWith(pref)) continue;
-
-            assertEquals(expRes[ind++], resName);
-        }
-
-        assertEquals("Incorrect number of results found with prefix" + pref, expRes.length, ind);
-
-    }
 
     /**
      * Saving because we might want these test cases, but don't
