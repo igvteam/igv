@@ -332,54 +332,6 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
     }
 
-    /**
-     * Test loading segmented data file from a sql database, using a profile
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testLoadSegProfile() throws Exception {
-        String path = TestUtils.DATA_DIR + "sql/seg_canFam2_profile.dbxml";
-
-        int expectedTracks = 6;
-        List<Track> tracks = trackLoader.load(new ResourceLocator(path), genome);
-        assertEquals(expectedTracks, tracks.size());
-        Set<String> expSampleIds = new HashSet<String>(Arrays.asList("0123-A", "0123-B-1", "0123-C-1", "0123-C-2", "0123-C-3"));
-        Set<String> actSampleIds = new HashSet<String>(5);
-        for (Track track : tracks) {
-            if (track instanceof DataSourceTrack) {
-                actSampleIds.add(track.getName());
-            }
-        }
-        assertEquals(expSampleIds, actSampleIds);
-    }
-
-    /**
-     * Test loading sample information file from a sql database, using a profile
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testLoadSampleInfoProfile() throws Exception {
-
-        AttributeManager.getInstance().clearAllAttributes();
-        String path = TestUtils.DATA_DIR + "sql/sampleinfo_brca_sif_profile.dbxml";
-
-        int expectedTracks = 0;
-        List<Track> tracks = trackLoader.load(new ResourceLocator(path), genome);
-        assertEquals(expectedTracks, tracks.size());
-
-        String[] attrNames = "TCGA_EXPERIMENT	TCGA_BATCH	TUMOR_NORMAL	BIRDSEED_GENDER	LEVEL2_NOISE	LEVEL3_SEGMENT_COUNT	PURITY	PLOIDY	DELTA	CANCER_DNA_FRACTION	SUBCLONAL_GENOME_FRACTION".split("\\s+");
-        Set<String> expAttrNames = new HashSet<String>(Arrays.asList(attrNames));
-        List<String> actAttrNames = AttributeManager.getInstance().getAttributeNames();
-        actAttrNames.remove("NAME");
-        actAttrNames.remove("DATA TYPE");
-        actAttrNames.remove("DATA FILE");
-        assertEquals(actAttrNames.size(), expAttrNames.size());
-        for (String attrName : actAttrNames) {
-            assertTrue(expAttrNames.contains(attrName));
-        }
-    }
 
     //@Test
     public void testLoadScratch() throws Exception {
