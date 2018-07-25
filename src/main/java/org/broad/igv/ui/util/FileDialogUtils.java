@@ -98,18 +98,13 @@ public class FileDialogUtils {
         File[] files = null;
 
         if (Globals.IS_MAC && !Globals.IS_JWS) {
-            try {
-                FileDialog fd = getNativeChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD);
-                if (isMultipleMode(fd)) {
-                    fd.setVisible(true);
-                    Method method = fd.getClass().getMethod("getFiles");
-                    files = (File[]) method.invoke(fd);
-                }
 
-            } catch (Exception e) {
-                //This should never happen
-                log.error(e.getMessage(), e);
+            FileDialog fd = getNativeChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD);
+            if (fd.isMultipleMode()) {
+                fd.setVisible(true);
+                files = fd.getFiles();
             }
+
         }
 
         //Files will be an empty array if user cancelled dialog,
@@ -194,23 +189,6 @@ public class FileDialogUtils {
             Method method = FileDialog.class.getMethod("setMultipleMode", boolean.class);
             method.invoke(fd, b);
             return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /**
-     * Reflectively call FileDialog.getMultipleMode.
-     * Does nothing if method not available
-     *
-     * @param fd
-     * @return Value of fd.getMultipleMode if available, otherwise false
-     */
-    private static boolean isMultipleMode(FileDialog fd) {
-        try {
-            Method [] methods = FileDialog.class.getMethods();
-            Method method = fd.getClass().getMethod("isMultipleMode");
-            return (Boolean) method.invoke(fd);
         } catch (Exception e) {
             return false;
         }

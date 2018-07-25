@@ -193,7 +193,8 @@ public class SnapshotUtilities {
 
             paintImage(target, g, width, height, paintOffscreen);
 
-            graphicsClass.getMethod("close").invoke(g);
+            graphicsClass.close();
+            
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
