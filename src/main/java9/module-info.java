@@ -111,7 +111,6 @@ module org.broad.igv {
     requires goby.io.igv;
     requires gson;
     requires htsjdk;
-    requires jargs;
     requires java.datatransfer;
     requires java.desktop;
     requires java.instrument;
@@ -127,10 +126,7 @@ module org.broad.igv {
     requires javafx.swing;
     requires jdk.xml.dom;
     requires jfreechart;
-    requires jgrapht;
     requires log4j;
-    requires mongo.java.driver;
-    requires na12878kb.utils;
     requires org.apache.logging.log4j;
     requires org.apache.logging.log4j.core;
     requires swing.layout;
