@@ -557,7 +557,7 @@ public class TrackMenuUtils {
             final Color color = pair.getFirst();
             final String label = pair.getSecond();
 
-            JLabel colorBox = new JLabel(LEADING_HEADING_SPACER + "██");
+            JLabel colorBox = new JLabel(LEADING_HEADING_SPACER);
             colorBox.setFont(UIConstants.boldFont);
             colorBox.setForeground(color);
 

@@ -3,7 +3,7 @@
  * Copyright (c) 2002      Vidar Holen.
  * Copyright (c) 2002      Michal Ceresna.
  * Copyright (c) 2005      Ewan Mellor.
- * Copyright (c) 2010-2012 penSec.IT UG (haftungsbeschränkt).
+ * Copyright (c) 2010-2012 penSec.IT UG (haftungsbeschrankt).
  *
  * All rights reserved.
  *
@@ -48,7 +48,7 @@ import java.util.Map;
  * can be explicitly terminated by the argument '--'.
  *
  * @author Steve Purcell
- * @author penSec.IT UG (haftungsbeschränkt)
+ * @author penSec.IT UG (haftungsbeschr•nkt)
  *
  * @version 2.0
  * @see com.sanityinc.jargs.examples.OptionTest
