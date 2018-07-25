@@ -27,7 +27,6 @@ package org.broad.igv.ui;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.batch.CommandListener;
-import org.broad.igv.dev.db.DBManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.Track;
 
@@ -45,7 +44,6 @@ public class ShutdownThread extends Thread {
 
     public static void runS() {
         log.info("Shutting down");
-        DBManager.shutdown();
         CommandListener.halt();
         if (IGV.hasInstance()) {
             IGV.getInstance().saveStateForExit();

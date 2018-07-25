@@ -25,7 +25,6 @@
 
 package org.broad.igv.renderer;
 
-import org.broad.igv.data.rnai.RNAIGeneScore;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
@@ -125,12 +124,6 @@ public class HeatmapRenderer extends DataRenderer {
                 // TODo The instanceof test is very very ugly.   Special RNAi treatment
                 // Refactor  to generalize "confidence" for all datasets
                 if (!Float.isNaN(dataY)) {
-                    if (score instanceof RNAIGeneScore) {
-                        RNAIGeneScore rnaiScore = (RNAIGeneScore) score;
-                        if (rnaiScore.getConfidence() < 2) {
-                            graphColor = getLowConfColor(context.getZoom());
-                        }
-                    }
 
                     Graphics2D g2D = context.getGraphic2DForColor(graphColor);
                     if (pStart < maxX) {

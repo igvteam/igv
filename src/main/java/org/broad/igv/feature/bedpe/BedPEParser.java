@@ -36,7 +36,7 @@ public class BedPEParser {
         while ((nextLine = br.readLine()) != null) {
 
             if (nextLine.startsWith("#")) {
-                if (nextLine.startsWith("#column")) {
+                if (nextLine.startsWith("#columns")) {
                     try {
 
                         String[] t1 = ParsingUtils.WHITESPACE_PATTERN.split(nextLine);

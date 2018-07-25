@@ -43,7 +43,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
-import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.event.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
@@ -2147,10 +2146,6 @@ public class IGV implements IGVEventObserver {
                 }
             }
 
-            //Load plugins
-            //Do this before loading files, hooks might need to be inserted
-            initIGVPlugins();
-
             //If there is an argument assume it is a session file or url
             if (igvArgs.getSessionFile() != null || igvArgs.getDataFileString() != null) {
 
@@ -2303,34 +2298,6 @@ public class IGV implements IGVEventObserver {
         }
 
 
-        private void initIGVPlugins() {
-            List<String> pluginClassNames = new ArrayList<String>(2);
-            InputStream is = IGV.class.getResourceAsStream("resources/builtin_plugin_list.txt");
-            if (is != null) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                String line = null;
-                try {
-                    while ((line = br.readLine()) != null) {
-                        if (line.startsWith("##")) continue;
-                        pluginClassNames.add(line);
-                    }
-                } catch (IOException e) {
-                    log.error("Error reading builtin plugin list", e);
-                }
-            }
-            pluginClassNames.addAll(Arrays.asList(PreferencesManager.getPreferences().getIGVPluginList()));
-            for (String classname : pluginClassNames) {
-                if (classname.startsWith("#")) continue;
-                try {
-                    Class clazz = Class.forName(classname);
-                    IGVPlugin plugin = (IGVPlugin) clazz.newInstance();
-                    plugin.init();
-                } catch (Exception e) {
-                    log.error("Error loading " + classname, e);
-                }
-            }
-
-        }
 
     }
 

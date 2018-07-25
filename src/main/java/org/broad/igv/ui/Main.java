@@ -26,8 +26,8 @@
 package org.broad.igv.ui;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
+import com.sanityinc.jargs.CmdLineParser;
 import htsjdk.samtools.seekablestream.SeekableStreamFactory;
-import jargs.gnu.CmdLineParser;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -432,6 +432,8 @@ public class Main {
             } catch (CmdLineParser.IllegalOptionValueException e) {
                 e.printStackTrace();  // This is not logged because the logger is not initialized yet.
             } catch (CmdLineParser.UnknownOptionException e) {
+                e.printStackTrace();
+            } catch (CmdLineParser.OptionException e) {
                 e.printStackTrace();
             }
             propertyOverrides = getDecodedValue(parser, propertyFileOption);

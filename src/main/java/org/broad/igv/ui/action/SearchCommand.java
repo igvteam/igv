@@ -32,7 +32,6 @@ import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
-import org.broad.igv.dev.api.NamedFeatureSearcher;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -74,12 +73,9 @@ public class SearchCommand {
     Genome genome;
 
 
-    private static Set<NamedFeatureSearcher> nameSearchers;
-
     private static HashMap<ResultType, String> tokenMatchers;
 
     static {
-        resetNamedFeatureSearchers();
 
         //Regexp for a number with commas in it (no periods)
         String num_withcommas = "(((\\d)+,?)+)";
@@ -426,13 +422,6 @@ public class SearchCommand {
                 return results;
             }
 
-            //Check inexact match
-            //We will later want to ask the user which of these to keep
-            features = comprehensiveFeatureSearch(token);
-            if (features.size() > 0) {
-                askUser |= features.size() >= 2;
-                return getResults(features);
-            }
         }
 
         result = new SearchResult();
@@ -442,54 +431,6 @@ public class SearchCommand {
 
     }
 
-    /**
-     * Register a {@link org.broad.igv.dev.api.NamedFeatureSearcher} to be used when searching for features,
-     * such as when the user enters text in the box.
-     * This is idempotent, registering the same searcher multiple times is the same as
-     * adding it once.
-     *
-     * @param searcher
-     * @return Whether the searcher was added
-     * @api
-     */
-    public static boolean registerNamedFeatureSearcher(NamedFeatureSearcher searcher) {
-        return nameSearchers.add(searcher);
-    }
-
-    /**
-     * @param searcher
-     * @return Whether the searcher was removed
-     * @api
-     */
-    public static boolean unregisterNamedFeatureSearcher(NamedFeatureSearcher searcher) {
-        return nameSearchers.remove(searcher);
-    }
-
-    static void resetNamedFeatureSearchers() {
-        nameSearchers = new LinkedHashSet<NamedFeatureSearcher>();
-        registerNamedFeatureSearcher(new InexactLoadedFeatureSearcher());
-    }
-
-    /**
-     * Search all known sources for features with the provided name.
-     * This means our own database which gets updated when files are loaded,
-     * as well as others (possibly plugins)
-     *
-     * @param searchString
-     * @return
-     */
-    private List<NamedFeature> comprehensiveFeatureSearch(String searchString) {
-        List<NamedFeature> features = new ArrayList<NamedFeature>();
-        for (NamedFeatureSearcher searcher : nameSearchers) {
-            Collection<? extends NamedFeature> tmp = searcher.search(searchString, SEARCH_LIMIT);
-            if (tmp == null) {
-                log.warn("Error searching with " + searcher);
-            } else {
-                features.addAll(tmp);
-            }
-        }
-        return features;
-    }
 
     /**
      * Parse a string of locus coordinates.
@@ -627,12 +568,6 @@ public class SearchCommand {
         ERROR
     }
 
-    private static class InexactLoadedFeatureSearcher implements NamedFeatureSearcher {
-        @Override
-        public Collection<NamedFeature> search(String name, int limit) {
-            return FeatureDB.getFeaturesList(name, limit);
-        }
-    }
 
     /*
     Container class for search results

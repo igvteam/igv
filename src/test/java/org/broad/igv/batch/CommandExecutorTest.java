@@ -28,7 +28,6 @@ package org.broad.igv.batch;
 import org.apache.commons.lang.StringUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.dev.api.batch.Command;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.PreferencesManager;
@@ -553,20 +552,4 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         assertTrue("Too much of the snapshot is black", numBlackPix < totalPix * 0.1);
     }
 
-    @Test
-    public void testCustomCommand_Echo() throws Exception {
-        String cmd = EchoCommand.class.getName();
-        String otherArgs = "fly high free bird";
-        String fullCmd = String.format("%s %s", cmd, otherArgs);
-        String response = exec.execute(fullCmd);
-
-        assertEquals(otherArgs, response);
-    }
-
-    public static class EchoCommand implements Command {
-        @Override
-        public String run(List<String> args) {
-            return StringUtils.join(args, " ");
-        }
-    }
 }

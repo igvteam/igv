@@ -31,7 +31,6 @@ import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.Feature;
-import org.broadinstitute.gatk.utils.collections.PrimitivePair;
 
 import java.io.*;
 import java.util.*;

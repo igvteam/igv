@@ -36,17 +36,8 @@ import org.broad.igv.data.*;
 import org.broad.igv.data.cufflinks.*;
 import org.broad.igv.data.expression.ExpressionDataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
-import org.broad.igv.data.rnai.RNAIDataSource;
-import org.broad.igv.data.rnai.RNAIGCTDatasetParser;
-import org.broad.igv.data.rnai.RNAIGeneScoreParser;
-import org.broad.igv.data.rnai.RNAIHairpinParser;
+
 import org.broad.igv.data.seg.*;
-import org.broad.igv.dev.SegmentedReader;
-import org.broad.igv.dev.api.LoadHandler;
-import org.broad.igv.dev.db.DBProfile;
-import org.broad.igv.dev.db.SQLCodecSource;
-import org.broad.igv.dev.db.SampleInfoSQLReader;
-import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.basepair.BasePairTrack;
@@ -61,7 +52,6 @@ import org.broad.igv.feature.dsi.DSITrack;
 import org.broad.igv.feature.genome.GenbankParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.sprite.Cluster;
 import org.broad.igv.feature.sprite.ClusterParser;
 import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.feature.tribble.CodecFactory;
@@ -79,13 +69,12 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.peaks.PeakTrack;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.*;
 import org.broad.igv.sam.reader.IndexNotFoundException;
-import org.broad.igv.synteny.BlastMapping;
-import org.broad.igv.synteny.BlastParser;
+import org.broad.igv.blast.BlastMapping;
+import org.broad.igv.blast.BlastParser;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
@@ -100,7 +89,6 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
 
-import java.awt.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
@@ -141,13 +129,7 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-            String dbUrl = locator.getDBUrl();
-            LoadHandler handler = getTrackLoaderHandler(typeString);
-            if (dbUrl != null) {
-                this.loadFromDatabase(locator, newTracks, genome);
-            } else if (typeString.endsWith(".dbxml")) {
-                loadFromDBProfile(locator, newTracks);
-            } else if (typeString.endsWith(".gmt")) {
+            if (typeString.endsWith(".gmt")) {
                 loadGMT(locator);
             } else if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
@@ -155,8 +137,6 @@ public class TrackLoader {
                 loadVCFListFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".trio")) {
                 loadTrioData(locator);
-            } else if (typeString.endsWith(".rnai.gct")) {
-                loadRnaiGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gct") || typeString.endsWith("res") || typeString.endsWith("tab")) {
                 loadGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gbk") || typeString.endsWith(".gb")) {
@@ -170,16 +150,10 @@ public class TrackLoader {
                 loadSegFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gistic")) {
                 loadGisticFile(locator, newTracks);
-            } else if (typeString.endsWith(".gs")) {
-                loadRNAiGeneScoreFile(locator, newTracks, RNAIGeneScoreParser.Type.GENE_SCORE, genome);
-            } else if (typeString.endsWith(".riger")) {
-                loadRNAiGeneScoreFile(locator, newTracks, RNAIGeneScoreParser.Type.POOLED, genome);
-            } else if (typeString.endsWith(".hp")) {
-                loadRNAiHPScoreFile(locator);
-            } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
-                loadSyntentyMapping(locator, newTracks);
+            }  else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
+                loadBlastMapping(locator, newTracks);
             } else if (isAlignmentTrack(typeString) ||
-                       (path.startsWith("http") && path.contains("/query.cgi?"))) {
+                    (path.startsWith("http") && path.contains("/query.cgi?"))) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".shape") || typeString.endsWith(".map")) {
                 convertLoadShapeFile(locator, newTracks, genome);
@@ -240,10 +214,6 @@ public class TrackLoader {
                 loadClusterFile(locator, newTracks, genome);
             } else if (CodecFactory.hasCodec(locator, genome) && !forceNotTribble(typeString)) {
                 loadTribbleFile(locator, newTracks, genome);
-            } else if (handler != null) {
-                //Custom loader specified
-                log.info(String.format("Loading %s with %s", path, handler));
-                handler.load(path, newTracks);
             } else if (AttributeManager.isSampleInfoFile(locator)) {
                 // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
@@ -377,7 +347,7 @@ public class TrackLoader {
     }
 
 
-    private void loadSyntentyMapping(ResourceLocator locator, List<Track> newTracks) {
+    private void loadBlastMapping(ResourceLocator locator, List<Track> newTracks) {
 
         List<BlastMapping> mappings = (new BlastParser()).parse(locator.getPath());
         List<htsjdk.tribble.Feature> features = new ArrayList<htsjdk.tribble.Feature>(mappings.size());
@@ -500,25 +470,6 @@ public class TrackLoader {
 
     }
 
-
-    private void loadRnaiGctFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
-
-        RNAIGCTDatasetParser parser = new RNAIGCTDatasetParser(locator, genome);
-
-        Collection<RNAIDataSource> dataSources = parser.parse();
-        if (dataSources != null) {
-            String path = locator.getPath();
-            for (RNAIDataSource ds : dataSources) {
-                String trackId = path + "_" + ds.getName();
-                DataSourceTrack track = new DataSourceTrack(locator, trackId, ds.getName(), ds);
-
-                // Set attributes.
-                track.setAttributeValue("SCREEN", ds.getScreen());
-                track.setHeight(80);
-                newTracks.add(track);
-            }
-        }
-    }
 
     private void loadGctFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
@@ -880,50 +831,6 @@ public class TrackLoader {
         newTracks.add(track);
     }
 
-    /**
-     * Load a rnai gene score file and create a datasource and track.
-     * <p/>
-     *
-     * @param locator
-     * @param newTracks
-     */
-    private void loadRNAiGeneScoreFile(ResourceLocator locator,
-                                       List<Track> newTracks, RNAIGeneScoreParser.Type type,
-                                       Genome genome) {
-
-        RNAIGeneScoreParser parser = new RNAIGeneScoreParser(locator.getPath(), type, genome);
-
-        Collection<RNAIDataSource> dataSources = parser.parse();
-        String path = locator.getPath();
-        for (RNAIDataSource ds : dataSources) {
-            String name = ds.getName();
-            String trackId = path + "_" + name;
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, name, ds);
-
-            // Set attributes.  This "hack" is neccessary to register these attributes with the
-            // attribute manager to get displayed.
-            track.setAttributeValue("SCREEN", ds.getScreen());
-            if ((ds.getCondition() != null) && (ds.getCondition().length() > 0)) {
-                track.setAttributeValue("CONDITION", ds.getCondition());
-            }
-            track.setHeight(80);
-            //track.setDataRange(new DataRange(-3, 0, 3));
-            newTracks.add(track);
-        }
-
-    }
-
-    /**
-     * Load a RNAi haripin score file.  The results of this action are hairpin scores
-     * added to the RNAIDataManager.  Currently no tracks are created for hairpin
-     * scores, although this could change.
-     *
-     * @param locator
-     */
-    private void loadRNAiHPScoreFile(ResourceLocator locator) {
-        (new RNAIHairpinParser(locator.getPath())).parse();
-    }
-
     private void loadMultipleAlignmentTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
         MultipleAlignmentTrack t = new MultipleAlignmentTrack(locator, genome);
         t.setName("Multiple Alignments");
@@ -1076,56 +983,6 @@ public class TrackLoader {
         }
     }
 
-    private void loadFromDBProfile(ResourceLocator profileLocator, List<Track> newTracks) throws IOException {
-
-        DBProfile dbProfile = DBProfile.parseProfile(profileLocator.getPath());
-
-        for (DBProfile.DBTable table : dbProfile.getTableList()) {
-            SQLCodecSource source = SQLCodecSource.getFromTable(table);
-            if (source != null) {
-                CachingFeatureSource cachingReader = new CachingFeatureSource(source);
-                FeatureTrack track = new FeatureTrack(profileLocator, cachingReader);
-                track.setName(source.getTableName());
-                newTracks.add(track);
-            } else if (table.getFormat().equals("seg")) {
-                Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                SegmentedAsciiDataSet ds = (new SegmentedReader(table.getDbLocator(), genome)).loadFromDB(table);
-                loadSegTrack(table.getDbLocator(), newTracks, genome, ds);
-
-            } else if (table.getFormat().equals("sample.info")) {
-                //TODO sampleIdColumnLabel was previously hardcoded as "SAMPLE_ID_ARRAY"
-                //TODO Basically I'm shoehorning this information into a field usually used for something else. Only slightly better
-                String sampleIdColumnLabel = table.getBinColName();
-                if (sampleIdColumnLabel == null) {
-                    throw new IllegalArgumentException("Profile must have binColName specifying the sample id column label");
-                }
-                (new SampleInfoSQLReader(table, sampleIdColumnLabel)).load();
-            }
-        }
-
-    }
-
-
-    /**
-     * @param locator
-     * @param newTracks
-     * @param genome
-     * @deprecated See loadFromDBProfile, which loads from an xml file specifying table characteristics
-     */
-    @Deprecated
-    private void loadFromDatabase(ResourceLocator locator, List<Track> newTracks, Genome genome) {
-
-        //For backwards/forwards compatibility
-        //We used to put path in the serverURL field
-        ResourceLocator dbLocator = new ResourceLocator(locator.getDBUrl());
-        if (".seg".equals(locator.getTypeString())) {
-            //TODO Don't hardcode table name, this might note even be right for our target case
-            SegmentedAsciiDataSet ds = (new SegmentedSQLReader(dbLocator, "CNV", genome)).load();
-            loadSegTrack(locator, newTracks, genome, ds);
-        } else {
-            (new SampleInfoSQLReader(dbLocator, "SAMPLE_INFO", "SAMPLE_ID_ARRAY")).load();
-        }
-    }
 
     private void loadSegFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
@@ -1335,38 +1192,6 @@ public class TrackLoader {
         } catch (ClassCastException e) {
             return null;
         }
-    }
-
-    private static Map<String, LoadHandler> handlers = new HashMap<String, LoadHandler>();
-
-    /**
-     * Register a custom handler for the given extension.
-     * Note that this does NOT override built-in IGV behavior
-     *
-     * @param extension
-     * @param loader
-     * @api
-     */
-    public static void registerHandler(String extension, LoadHandler loader) {
-        handlers.put(extension, loader);
-    }
-
-    /**
-     * Get the registered {@link org.broad.igv.dev.api.LoadHandler} for this path/typeString,
-     * or null if one not found
-     *
-     * @param typeString
-     * @return
-     * @api
-     */
-    private LoadHandler getTrackLoaderHandler(String typeString) {
-        String lower = typeString.toLowerCase();
-        for (Map.Entry<String, LoadHandler> entry : handlers.entrySet()) {
-            if (lower.endsWith(entry.getKey().toLowerCase())) {
-                return entry.getValue();
-            }
-        }
-        return null;
     }
 
 

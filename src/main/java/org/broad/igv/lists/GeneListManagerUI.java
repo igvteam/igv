@@ -29,11 +29,8 @@
 
 package org.broad.igv.lists;
 
-import javax.swing.plaf.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.cbio.FilterGeneNetworkUI;
-import org.broad.igv.gitools.Gitools;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -44,7 +41,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -384,29 +380,7 @@ public class GeneListManagerUI extends JDialog {
         }
     }
 
-    private void retrieveNetworkButtonActionPerformed(ActionEvent e) {
-        if (selectedList != null) {
-            GeneList geneList = geneLists.get(selectedList);
-            FilterGeneNetworkUI fgnUI = new FilterGeneNetworkUI(IGV.getMainFrame(), geneList);
-            fgnUI.setVisible(true);
-        }
-    }
 
-    private void exportTDMButtonActionPerformed_deleteme(ActionEvent e) {
-        if (selectedList != null) {
-            GeneList geneList = geneLists.get(selectedList);
-
-            File file = FileDialogUtils.chooseFile("Export TDM file", null, FileDialogUtils.SAVE);
-            if (file != null) {
-                try {
-                    Gitools.exportTDM(geneList.getLoci(), file);
-                } catch (IOException exc) {
-                    log.error("Error exporting TDM data", exc);
-                    MessageUtils.showErrorMessage("Error exporting TDM data", exc);
-                }
-            }
-        }
-    }
 
     class ListListModel extends AbstractListModel {
 
@@ -785,12 +759,6 @@ public class GeneListManagerUI extends JDialog {
             {
                 buttonBar.setBorder(null);
                 buttonBar.setLayout(new FlowLayout(FlowLayout.RIGHT));
-
-                //---- exportTDMButton ----
-                exportTDMButton.setText("Export TDM");
-                exportTDMButton.setVisible(false);
-                exportTDMButton.addActionListener(e -> exportTDMButtonActionPerformed_deleteme(e));
-                buttonBar.add(exportTDMButton);
 
                 //---- actionButton ----
                 actionButton.setText("View");

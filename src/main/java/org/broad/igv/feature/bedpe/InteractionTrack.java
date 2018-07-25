@@ -204,25 +204,25 @@ public class InteractionTrack extends AbstractTrack {
             double origin = context.getOrigin();
             double locScale = context.getScale();
 
-            // Autoscale theta
-            double max = 0;
-            for (BedPEFeature feature : featureList) {
-
-                // Note -- don't cast these to an int until the range is checked.
-                // could get an overflow.
-                double pixelStart = ((feature.getStart() - origin) / locScale);
-                double pixelEnd = ((feature.getEnd() - origin) / locScale);
-                if (pixelEnd >= trackRectangle.getX() && pixelStart <= trackRectangle.getMaxX()) {
-                    max = Math.max(max, pixelEnd - pixelStart);
-                }
-            }
-            double a = Math.min(trackRectangle.width, max) / 2;
-            if (max > 0) {
-                double coa = trackRectangle.height / a;
-                theta = SagittusEstimate.estimateTheta(coa);
-                sinTheta = Math.sin(theta);
-                cosTheta = Math.cos(theta);
-            }
+//            // Autoscale theta
+//            double max = 0;
+//            for (BedPEFeature feature : featureList) {
+//
+//                // Note -- don't cast these to an int until the range is checked.
+//                // could get an overflow.
+//                double pixelStart = ((feature.getStart() - origin) / locScale);
+//                double pixelEnd = ((feature.getEnd() - origin) / locScale);
+//                if (pixelEnd >= trackRectangle.getX() && pixelStart <= trackRectangle.getMaxX()) {
+//                    max = Math.max(max, pixelEnd - pixelStart);
+//                }
+//            }
+//            double a = Math.min(trackRectangle.width, max) / 2;
+//            if (max > 0) {
+//                double coa = trackRectangle.height / a;
+//                theta = SagittusEstimate.estimateTheta(coa);
+//                sinTheta = Math.sin(theta);
+//                cosTheta = Math.cos(theta);
+//            }
 
 
             Graphics2D g = (Graphics2D) context.getGraphics().create();

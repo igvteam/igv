@@ -30,6 +30,7 @@
 package org.broad.igv.tools;
 
 
+import com.sanityinc.jargs.CmdLineParser;
 import htsjdk.samtools.*;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureCodec;
@@ -38,7 +39,6 @@ import htsjdk.tribble.index.AbstractIndex;
 import htsjdk.tribble.index.Index;
 import htsjdk.tribble.index.IndexFactory;
 import htsjdk.tribble.util.LittleEndianOutputStream;
-import jargs.gnu.CmdLineParser;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.logging.log4j.Level;

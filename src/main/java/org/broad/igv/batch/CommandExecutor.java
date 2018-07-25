@@ -32,7 +32,6 @@ package org.broad.igv.batch;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.dev.api.batch.Command;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -87,20 +86,6 @@ public class CommandExecutor {
         return args;
     }
 
-    private String executeCustomCommand(String cmd, List<String> args) {
-
-        List<String> subArgs = Collections.emptyList();
-        if (args.size() > 1) subArgs = args.subList(1, args.size());
-        try {
-            Object ocmmand = RuntimeUtils.loadInstanceForName(cmd, null);
-            Command command = (Command) ocmmand;
-            return command.run(subArgs);
-        } catch (ClassNotFoundException e) {
-            return null;
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-    }
 
     public String execute(String command) {
 
@@ -115,100 +100,96 @@ public class CommandExecutor {
             if (args.size() == 0) {
                 return "Empty command string";
             }
-            //Custom command, user can make own
-            String custRes = executeCustomCommand(args.get(0), args);
-            if (custRes != null) {
-                result = custRes;
-            } else {
-
-                String cmd = args.get(0).toLowerCase();
-                String param1 = args.size() > 1 ? args.get(1) : null;
-                String param2 = args.size() > 2 ? args.get(2) : null;
-                String param3 = args.size() > 3 ? args.get(3) : null;
-                String param4 = args.size() > 4 ? args.get(4) : null;
 
 
-                if (cmd.equalsIgnoreCase("echo")) {
-                    result = cmd;
-                } else if (cmd.equalsIgnoreCase("gotoimmediate")) {
-                    return gotoImmediate(args);
-                } else if (cmd.equalsIgnoreCase("goto")) {
-                    result = goto1(args);
-                } else if (cmd.equalsIgnoreCase("gototrack")) {
-                    boolean res = IGV.getInstance().scrollToTrack(param1);
-                    result = res ? "OK" : String.format("Error: Track %s not found", param1);
-                } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
-                    result = setSnapshotDirectory(param1);
-                } else if (cmd.equalsIgnoreCase("snapshot")) {
-                    String filename = param1;
-                    result = createSnapshot(filename, param2);
-                } else if ((cmd.equalsIgnoreCase("loadfile") || cmd.equalsIgnoreCase("load")) && param1 != null) {
-                    result = load(param1, param2, param3, param4);
-                } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
-                    result = genome(param1);
-                } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
-                    igv.newSession();
-                } else if (cmd.equalsIgnoreCase("region")) {
-                    defineRegion(param1, param2, param3, param4);
-                } else if (cmd.equalsIgnoreCase("sort")) {
-                    sort(param1, param2, param3, param4);
-                } else if (cmd.equalsIgnoreCase("group")) {
-                    group(param1, param2);
-                } else if (cmd.equalsIgnoreCase("collapse")) {
-                    String trackName = parseTrackName(param1);
-                    igv.setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
-                } else if (cmd.equalsIgnoreCase("expand")) {
-                    String trackName = parseTrackName(param1);
-                    igv.setTrackDisplayMode(Track.DisplayMode.EXPANDED, trackName);
-                } else if (cmd.equalsIgnoreCase("squish")) {
-                    String trackName = parseTrackName(param1);
-                    igv.setTrackDisplayMode(Track.DisplayMode.SQUISHED, trackName);
-                } else if (cmd.equalsIgnoreCase("remove")) {
-                    String trackName = parseTrackName(param1);
-                    result = removeTrack(trackName);
-                } else if (cmd.equalsIgnoreCase("tweakdivider")) {
-                    igv.tweakPanelDivider();
-                } else if (cmd.equalsIgnoreCase("setDataRange")) {
-                    result = this.setDataRange(param1, param2);
-                } else if (cmd.equalsIgnoreCase("maxpanelheight") && param1 != null) {
-                    return setMaxPanelHeight(param1);
-                } else if (cmd.equalsIgnoreCase("tofront")) {
-                    return UIUtilities.bringToFront();
-                } else if (cmd.equalsIgnoreCase("viewaspairs")) {
-                    return setViewAsPairs(param1, param2);
-                } else if (cmd.equalsIgnoreCase("samplingwindowsize")) {
-                    return this.setSamplingWindowSize(param1);
-                } else if (cmd.equalsIgnoreCase("maxdepth") || (cmd.equalsIgnoreCase("samplingreadcount"))) {
-                    return this.setSamplingReadCount(param1);
-                } else if (cmd.equalsIgnoreCase("setSleepInterval")) {
-                    return this.setSleepInterval(param1);
-                } else if (cmd.equalsIgnoreCase("setCredentials")) {
-                    return this.setCredentials(param1, param2);
-                } else if (cmd.equalsIgnoreCase("clearCredentials")) {
-                    return this.clearCredentials();
-                } else if (cmd.equals("preference")) {
-                    return this.overridePreference(param1, param2);
-                } else if (cmd.equalsIgnoreCase("version")) {
-                    return Globals.VERSION;
-                } else if (cmd.equals("exit")) {
-                    System.exit(0);
-                } else if (cmd.equals("zoomin")) {
-                    FrameManager.incrementZoom(1);
-                } else if (cmd.equals("zoomout")) {
-                    FrameManager.incrementZoom(-1);
-                } else if ("oauth".equals(cmd)) {
-                    try {
-                        OAuthUtils.getInstance().setAccessToken(param1);
-                    } catch (IOException e1) {
-                        log.error(e1);
-                        return e1.getMessage();
-                    }
-                } else {
-                    result = "UNKOWN COMMAND: " + command;
-                    log.error(result);
-                    return result;
+            String cmd = args.get(0).toLowerCase();
+            String param1 = args.size() > 1 ? args.get(1) : null;
+            String param2 = args.size() > 2 ? args.get(2) : null;
+            String param3 = args.size() > 3 ? args.get(3) : null;
+            String param4 = args.size() > 4 ? args.get(4) : null;
+
+
+            if (cmd.equalsIgnoreCase("echo")) {
+                result = cmd;
+            } else if (cmd.equalsIgnoreCase("gotoimmediate")) {
+                return gotoImmediate(args);
+            } else if (cmd.equalsIgnoreCase("goto")) {
+                result = goto1(args);
+            } else if (cmd.equalsIgnoreCase("gototrack")) {
+                boolean res = IGV.getInstance().scrollToTrack(param1);
+                result = res ? "OK" : String.format("Error: Track %s not found", param1);
+            } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
+                result = setSnapshotDirectory(param1);
+            } else if (cmd.equalsIgnoreCase("snapshot")) {
+                String filename = param1;
+                result = createSnapshot(filename, param2);
+            } else if ((cmd.equalsIgnoreCase("loadfile") || cmd.equalsIgnoreCase("load")) && param1 != null) {
+                result = load(param1, param2, param3, param4);
+            } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
+                result = genome(param1);
+            } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
+                igv.newSession();
+            } else if (cmd.equalsIgnoreCase("region")) {
+                defineRegion(param1, param2, param3, param4);
+            } else if (cmd.equalsIgnoreCase("sort")) {
+                sort(param1, param2, param3, param4);
+            } else if (cmd.equalsIgnoreCase("group")) {
+                group(param1, param2);
+            } else if (cmd.equalsIgnoreCase("collapse")) {
+                String trackName = parseTrackName(param1);
+                igv.setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
+            } else if (cmd.equalsIgnoreCase("expand")) {
+                String trackName = parseTrackName(param1);
+                igv.setTrackDisplayMode(Track.DisplayMode.EXPANDED, trackName);
+            } else if (cmd.equalsIgnoreCase("squish")) {
+                String trackName = parseTrackName(param1);
+                igv.setTrackDisplayMode(Track.DisplayMode.SQUISHED, trackName);
+            } else if (cmd.equalsIgnoreCase("remove")) {
+                String trackName = parseTrackName(param1);
+                result = removeTrack(trackName);
+            } else if (cmd.equalsIgnoreCase("tweakdivider")) {
+                igv.tweakPanelDivider();
+            } else if (cmd.equalsIgnoreCase("setDataRange")) {
+                result = this.setDataRange(param1, param2);
+            } else if (cmd.equalsIgnoreCase("maxpanelheight") && param1 != null) {
+                return setMaxPanelHeight(param1);
+            } else if (cmd.equalsIgnoreCase("tofront")) {
+                return UIUtilities.bringToFront();
+            } else if (cmd.equalsIgnoreCase("viewaspairs")) {
+                return setViewAsPairs(param1, param2);
+            } else if (cmd.equalsIgnoreCase("samplingwindowsize")) {
+                return this.setSamplingWindowSize(param1);
+            } else if (cmd.equalsIgnoreCase("maxdepth") || (cmd.equalsIgnoreCase("samplingreadcount"))) {
+                return this.setSamplingReadCount(param1);
+            } else if (cmd.equalsIgnoreCase("setSleepInterval")) {
+                return this.setSleepInterval(param1);
+            } else if (cmd.equalsIgnoreCase("setCredentials")) {
+                return this.setCredentials(param1, param2);
+            } else if (cmd.equalsIgnoreCase("clearCredentials")) {
+                return this.clearCredentials();
+            } else if (cmd.equals("preference")) {
+                return this.overridePreference(param1, param2);
+            } else if (cmd.equalsIgnoreCase("version")) {
+                return Globals.VERSION;
+            } else if (cmd.equals("exit")) {
+                System.exit(0);
+            } else if (cmd.equals("zoomin")) {
+                FrameManager.incrementZoom(1);
+            } else if (cmd.equals("zoomout")) {
+                FrameManager.incrementZoom(-1);
+            } else if ("oauth".equals(cmd)) {
+                try {
+                    OAuthUtils.getInstance().setAccessToken(param1);
+                } catch (IOException e1) {
+                    log.error(e1);
+                    return e1.getMessage();
                 }
+            } else {
+                result = "UNKOWN COMMAND: " + command;
+                log.error(result);
+                return result;
             }
+
             igv.doRefresh();
 
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.5) {

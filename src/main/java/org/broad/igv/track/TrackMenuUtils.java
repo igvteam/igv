@@ -1150,14 +1150,6 @@ public class TrackMenuUtils {
 
     public static void changeRenderer(final Collection<Track> selectedTracks, Class rendererClass) {
         for (Track track : selectedTracks) {
-
-            // TODO -- a temporary hack to facilitate RNAi development
-            if (track.getTrackType() == TrackType.RNAI) {
-                if (rendererClass == BarChartRenderer.class) {
-                    rendererClass = RNAiBarChartRenderer.class;
-                }
-
-            }
             track.setRendererClass(rendererClass);
         }
         refresh();
