@@ -26,6 +26,16 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // Define the main class for the application
 ext.mainClassName = 'org.broad.igv.ui.Main'
 
+// Set up the ProGuard optimizing task
+buildscript {
+    repositories {
+        flatDir dirs: 'lib_build'
+    }
+    dependencies {
+        classpath ':proguard:'
+    }
+}
+
 sourceSets {
     main {
         java {
@@ -44,7 +54,8 @@ configurations {
 }
 
 dependencies {
-    jarsToShipUntouched fileTree(dir: 'lib', include: ['batik-codec-1.10.jar', 'goby-io-igv-1.1.jar', 'log4j-core-2.11.0.jar'])
+    jarsToShipUntouched fileTree(dir: 'lib', 
+                                 include: ['batik-codec-1.10.jar', 'goby-io-igv-1.1.jar', 'log4j-core-2.11.0.jar'])
     compile fileTree(dir: 'lib', include: '*.jar')
     testCompile fileTree(dir: 'test/lib', include: '*.jar')
 }
@@ -58,7 +69,12 @@ targetCompatibility = 1.8
 
 processResources {
     // Set the current timestamp for release builds; pass in a blank property to enable (i.e. -Ptimestamp="" at CLI)
-    if (timestamp.equals("")) { timestamp = new Date().format("MM/dd/yyyy hh:mm aa") }
+    if (timestamp.equals("")) {
+       ext.date = new Date() 
+       timestamp = date.format("MM/dd/yyyy hh:mm aa")
+       // This is a more filesystem-friendly date format.
+       timestamp_fs = date.format("yyyy-MM-dd_HHmmss")
+    }
 
     filesMatching('resources/about.properties') {
         filter (ReplaceTokens,
@@ -82,6 +98,7 @@ jar {
 
 task fullJar(type: Jar, dependsOn: jar) {
     // Based on https://discuss.gradle.org/t/removing-dependencies-from-a-jar-file-during-jar-task/5521/3
+    archiveName = 'igv.jar'
     from {
         ((configurations.compile - configurations.jarsToShipUntouched) + "${buildDir}/libs/igv-minimal.jar").collect {
             zipTree(it)
@@ -89,8 +106,7 @@ task fullJar(type: Jar, dependsOn: jar) {
     } {
         exclude "META-INF/**"
     }
-
-    archiveName = 'igv.jar'
+    
     manifest {
         attributes(
             "Permissions": "all-permissions",
@@ -121,6 +137,41 @@ task toolJar(type: Jar, dependsOn: jar) {
     }
 }
 
+task optimizeFullJar(type: proguard.gradle.ProGuardTask, dependsOn: fullJar) {
+    // EXPERIMENTAL: Optimize the fullJar to remove unused classes.
+    // This still needs tuning for correctness, and as a result we are not distributing the
+    // jar it creates.  It is still useful because of the reports it generates, however.
+    doFirst { mkdir "proguard_log" }
+    
+    verbose
+    injars "${buildDir}/libs/igv.jar"
+    outjars "${buildDir}/libs/igv-OPT.jar"
+    // Note that this points to the *JRE* jars.
+    libraryjars "${System.getProperty('java.home')}/lib", 
+                jarfilter: 'rt.jar,charsets.jar,jce.jar,jfr.jar,jsse.jar,resources.jar,ext/jfxrt.jar'
+    libraryjars "lib", jarfilter: 'batik-codec-1.10.jar,goby-io-igv-1.1.jar,log4j-core-2.11.0.jar'
+    configuration "lib_build/proguard_full_client.cfg"
+    printusage "proguard_log/proguard_full_client_log_${timestamp_fs}.txt"
+    printseeds "proguard_log/proguard_full_client_seeds_${timestamp_fs}.txt"
+}
+
+task optimizeMinJar(type: proguard.gradle.ProGuardTask, dependsOn: jar) {
+    // EXPERIMENTAL: Optimize the minimal jar to remove unused classes (that is, our code base only).
+    // As above, needs tuning for correctness.  The IGV-focused report it produces is more useful.
+    doFirst { mkdir "proguard_log" }
+    
+    verbose
+    injars "${buildDir}/libs/igv-minimal.jar"
+    outjars "${buildDir}/libs/igv-minimal-OPT.jar"
+    libraryjars "${System.getProperty('java.home')}/lib", 
+                jarfilter: 'rt.jar,charsets.jar,jce.jar,jfr.jar,jsse.jar,resources.jar,ext/jfxrt.jar'
+    // This is the difference from the above: consider all dependencies as libraryjars
+    libraryjars "lib", filter: '!META-INF/**/module-info.class'
+    configuration "lib_build/proguard_min_client.cfg"
+    printusage "proguard_log/proguard_min_client_log_${timestamp_fs}.txt"
+    printseeds "proguard_log/proguard_min_client_seeds_${timestamp_fs}.txt"
+}
+
 tasks.withType(Test) {
     systemProperties = System.getProperties()
     systemProperties['java.awt.headless'] = 'true'
@@ -136,6 +187,7 @@ task createDist(type: Copy, dependsOn: fullJar)  {
         include 'igv.bat'
         include 'igv.command'
         include 'igv.sh'
+        include 'readme.txt'
     }
     from ("${buildDir}/libs") {
         include 'igv.jar'

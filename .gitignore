@@ -10,3 +10,4 @@ igv.log
 .classpath
 /.idea/
 /.settings
+/proguard_log

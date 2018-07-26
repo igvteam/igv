@@ -4,7 +4,6 @@ module org.broad.igv {
     exports org.broad.igv.batch;
     exports org.broad.igv.bbfile;
     exports org.broad.igv.bigwig;
-    exports org.broad.igv.cbio;
     exports org.broad.igv.charts;
     exports org.broad.igv.cli_plugin;
     exports org.broad.igv.cli_plugin.ui;
@@ -12,12 +11,7 @@ module org.broad.igv {
     exports org.broad.igv.data;
     exports org.broad.igv.data.cufflinks;
     exports org.broad.igv.data.expression;
-    exports org.broad.igv.data.rnai;
     exports org.broad.igv.data.seg;
-    exports org.broad.igv.dev;
-    exports org.broad.igv.dev.api;
-    exports org.broad.igv.dev.api.batch;
-    exports org.broad.igv.dev.db;
     exports org.broad.igv.event;
     exports org.broad.igv.exceptions;
     exports org.broad.igv.feature;
@@ -30,7 +24,6 @@ module org.broad.igv {
     exports org.broad.igv.feature.tribble;
     exports org.broad.igv.feature.tribble.reader;
     exports org.broad.igv.ga4gh;
-    exports org.broad.igv.gitools;
     exports org.broad.igv.gs;
     exports org.broad.igv.gs.dm;
     exports org.broad.igv.gs.atm;
@@ -41,9 +34,6 @@ module org.broad.igv {
     exports org.broad.igv.methyl;
     exports org.broad.igv.mupit;
     exports org.broad.igv.peaks;
-    exports org.broad.igv.plugin;
-    exports org.broad.igv.plugin.mongovariant;
-    exports org.broad.igv.plugin.mongocollab;
     exports org.broad.igv.prefs;
     exports org.broad.igv.repeats;
     exports org.broad.igv.renderer;
@@ -54,7 +44,6 @@ module org.broad.igv {
     exports org.broad.igv.sam.mutreview;
     exports org.broad.igv.sam.reader;
     exports org.broad.igv.session;
-    exports org.broad.igv.synteny;
     exports org.broad.igv.tdf;
     exports org.broad.igv.tools;
     exports org.broad.igv.tools.converters;
@@ -93,7 +82,6 @@ module org.broad.igv {
 
     opens org.broad.igv.cli_plugin to java.xml.bind;
     opens org.broad.igv.data to java.xml.bind;
-    opens org.broad.igv.dev.db to java.xml.bind;
     opens org.broad.igv.feature.basepair to java.xml.bind;
     opens org.broad.igv.gwas to java.xml.bind;
     opens org.broad.igv.renderer to java.xml.bind;

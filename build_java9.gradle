@@ -151,6 +151,7 @@ task createDist(type: Copy, dependsOn: jar)  {
         include 'igv.command'
         include 'igv.sh'
         include 'igv.args'
+        include 'readme.txt'
     }
     
     with copySpec {
