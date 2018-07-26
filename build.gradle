@@ -189,22 +189,93 @@ task createDist(type: Copy, dependsOn: fullJar)  {
         include 'igv.sh'
         include 'readme.txt'
     }
-    from ("${buildDir}/libs") {
-        include 'igv.jar'
+    with copySpec {
+            from ("${buildDir}/libs") {
+            include 'igv.jar'
+        }
+        from (configurations.jarsToShipUntouched) { }
+        into "lib"
     }
-    from (configurations.jarsToShipUntouched) { }
 
     into "${buildDir}/IGV-dist"
 }
 
-task createDistZip(type: Zip, dependsOn: createDist) {
+task signJars(dependsOn: createDist) {
+    doLast {
+        // Only sign if the keystoreFile exists 
+        ext.keystoreFile = file("${keystore}")
+        if (keystoreFile.exists()) {
+            ant.jar( update: true, file: "build/IGV-dist/lib/batik-codec-1.10.jar") {
+                delegate.manifest { attribute(name: 'Permissions', value: 'all-permissions') }
+            }
+            ant.jar( update: true, file: "build/IGV-dist/lib/goby-io-igv-1.1.jar") {
+                delegate.manifest { attribute(name: 'Permissions', value: 'all-permissions') }
+            }
+            ant.jar( update: true, file: "build/IGV-dist/lib/log4j-core-2.11.0.jar") {
+                delegate.manifest { attribute(name: 'Permissions', value: 'all-permissions') }
+            }
+            ant.signjar( jar: 'build/IGV-dist/lib/*.jar', keystore:"${keystoreFile.absolutePath}",
+                         alias: "${alias}", keypass: "${keyPassword}", storepass: "${storePassword}", tsaurl: "${tsaurl}"
+            )
+        }
+    }
+}
+
+task createDistZip(type: Zip, dependsOn: [createDist, signJars]) {
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGV"
-    from "${buildDir}/IGV-dist"
+    from "${buildDir}/IGV-dist" exclude "igv.bat"
     into createDistZip.baseName + "_${version}"
 
     doLast {
         project.exec { commandLine('chmod', '775', createDistZip.archivePath ) }
+    }
+}
+
+task createMacDist(type: Copy, dependsOn: [createDist, signJars]) {
+    with copySpec {
+        from ("scripts/mac.app") exclude "Contents/Info.plist.template"
+        into "IGV_${version}.app"
+    }
+    with copySpec {
+        from ("scripts/mac.app/Contents/Info.plist.template")
+        filter (ReplaceTokens, tokens: [ VERSION: version ])
+        rename "Info.plist.template", "Info.plist"
+        into "IGV_${version}.app/Contents"
+    }
+    with copySpec {
+        from ("${buildDir}/IGV-dist/lib") include '*.jar'
+        into "IGV_${version}.app/Contents/Java"
+    }
+
+    into "${buildDir}/IGV-Mac-dist"
+
+    doLast {
+        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-Mac-dist/IGV_${version}.app" ) }
+    }
+}
+
+task createMacDistZip(type: Zip, dependsOn: createMacDist) {
+    archiveName = "IGV_${version}.app.zip"
+    destinationDir = file("${buildDir}/distZip")
+    from "${buildDir}/IGV-Mac-dist"
+    
+    doLast {
+        project.exec { commandLine('chmod', '775', createMacDistZip.archivePath ) }
+    }
+}
+
+task createWinDistZip(type: Zip, dependsOn: [createDist, signJars]) {
+    destinationDir = file("${buildDir}/distZip")
+    baseName = "IGV_Win"
+    from("${buildDir}/IGV-dist") {
+        exclude "igv.sh"
+        exclude "igv.command"
+    }
+    into createWinDistZip.baseName + "_${version}"
+
+    doLast {
+        project.exec { commandLine('chmod', '775', createWinDistZip.archivePath ) }
     }
 }
 
@@ -214,10 +285,13 @@ task createToolsDist(type: Copy, dependsOn: toolJar)  {
         include 'igvtools*.bat'
         include 'igvtools*.command'
     }
-    from ("${buildDir}/libs") {
-        include 'igvtools.jar'
+    with copySpec {
+            from ("${buildDir}/libs") {
+            include 'igvtools.jar'
+        }
+        from (configurations.jarsToShipUntouched) { }
+        into "lib"
     }
-    from (configurations.jarsToShipUntouched) { }
     
     with copySpec { from ("genomes") { } into "genomes" }
 
@@ -237,4 +311,4 @@ task createToolsDistZip(type: Zip, dependsOn: createToolsDist) {
     }
 }
 
-build.dependsOn createDistZip,createToolsDistZip
+build.dependsOn createDistZip,createMacDistZip,createWinDistZip,createToolsDistZip

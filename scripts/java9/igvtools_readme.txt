@@ -3,8 +3,8 @@ feature count density (coverage),  sorting, and indexing data files.
 See also http://www.broadinstitute.org/software/igv/igvtools_commandline.
 
 ***************************************************************************
-Java 8 is required for this release.  See our website for more information
-about support for Java 9 and up.
+Java 9 or 10 is required for this release.  See our website for more
+information about support for Java 8.
 ***************************************************************************
 
 ---------------------------------------------------------------------------
@@ -34,13 +34,14 @@ Starting with java
 Igvtools can also be started directly using java as shown below.  This option
 allows more control over java parameters, such as the maximum memory to
 allocate.  In the example below igvtools is started with 1500 MB of memory
-allocated
+allocated and /path/to/IGVTools is the location where you have unpacked 
+IGVTools
 
-   java -Xmx1500m  -jar igvtools.jar [command] [options][arguments]
+   java -Xmx1500m --module-path=/path/to/IGVTools/lib @igv.args [command] [options][arguments]
 
 To start with a gui the command is
 
-   java -Xmx1500m  -jar igvtools.jar gui
+   java -Xmx1500m --module-path=/path/to/IGVTools/lib @igv.args gui
    
 ---------------------------------------------------------------------------
 Memory settings
@@ -214,15 +215,15 @@ Options:
                 Results are saved in a separate column for .wig output, and a separate track
                 for TDF output.
 
-  --bases		Count the occurrence of each base (A,G,C,T,N). Takes no arguments.
+  --bases       Count the occurrence of each base (A,G,C,T,N). Takes no arguments.
                 Results are saved in a separate column for .wig output, and a separate track for TDF output.
   
-  --query [querystring]	Only count a specific region. Query string has syntax <chr>:<start>-<end>. e.g. chr1:100-1000.
+  --query [querystring] Only count a specific region. Query string has syntax <chr>:<start>-<end>. e.g. chr1:100-1000.
                         Input file must be indexed.
   
-  --minMapQuality [mqual]	Set the minimum mapping quality of reads to include. Default is 0.
+  --minMapQuality [mqual]   Set the minimum mapping quality of reads to include. Default is 0.
 
-  --includeDuplicates 	 Include duplicate alignments in count. Default false.  If this flag is included, duplicates
+  --includeDuplicates    Include duplicate alignments in count. Default false.  If this flag is included, duplicates
                           are counted. Takes no arguments
 
   --pairs  Compute coverage from paired alignments counting the entire insert as covered.  When using this option only
@@ -300,9 +301,9 @@ Format GCT or RES files for display. This should only be used if the file has no
 Supported input file formats are: .gct and .res
 
 Usage:
-	
-	igvtools formatexp [inputFile] [outputFile]
-	
+    
+    igvtools formatexp [inputFile] [outputFile]
+    
 ---------------------------------------------------------------------------
 Command "gui"
 ---------------------------------------------------------------------------
@@ -310,9 +311,9 @@ Command "gui"
 Start the igvtools gui
 
 Usage:
-	
-	igvtools gui
-	
+    
+    igvtools gui
+    
 ---------------------------------------------------------------------------
 Command "help"
 ---------------------------------------------------------------------------
@@ -321,8 +322,8 @@ Command "help"
 displays help on a particular command.
 
 Example:
-	
-	igvtools help index
+    
+    igvtools help index
 
  ---------------------------------------------------------------------------
  Command "version"

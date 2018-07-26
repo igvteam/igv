@@ -174,11 +174,58 @@ task createDist(type: Copy, dependsOn: jar)  {
 task createDistZip(type: Zip, dependsOn: createDist) {
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGV"
-    from "${buildDir}/IGV-dist"
+    from "${buildDir}/IGV-dist" exclude "igv.bat"
     into createDistZip.baseName + "_${version}"
 
     doLast {
         project.exec { commandLine('chmod', '775', createDistZip.archivePath ) }
+    }
+}
+
+task createMacDist(type: Copy, dependsOn: createDist) {
+    with copySpec {
+        from ("scripts/mac.app") exclude "Contents/Info.plist.template"
+        into "IGV_${version}.app"
+    }
+    with copySpec {
+        from ("scripts/java9/mac.app/Contents/Info.plist.template")
+        filter (ReplaceTokens, tokens: [ VERSION: version ])
+        rename "Info.plist.template", "Info.plist"
+        into "IGV_${version}.app/Contents"
+    }
+    with copySpec {
+        from ("${buildDir}/IGV-dist/lib") include '*.jar'
+        into "IGV_${version}.app/Contents/Java"
+    }
+
+    into "${buildDir}/IGV-Mac-dist"
+
+    doLast {
+        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-Mac-dist/IGV_${version}.app" ) }
+    }
+}
+
+task createMacDistZip(type: Zip, dependsOn: createMacDist) {
+    archiveName = "IGV_${version}.app.zip"
+    destinationDir = file("${buildDir}/distZip")
+    from "${buildDir}/IGV-Mac-dist"
+    
+    doLast {
+        project.exec { commandLine('chmod', '775', createMacDistZip.archivePath ) }
+    }
+}
+
+task createWinDistZip(type: Zip, dependsOn: createDist) {
+    destinationDir = file("${buildDir}/distZip")
+    baseName = "IGV_Win"
+    from("${buildDir}/IGV-dist") {
+        exclude "igv.sh"
+        exclude "igv.command"
+    }
+    into createWinDistZip.baseName + "_${version}"
+
+    doLast {
+        project.exec { commandLine('chmod', '775', createWinDistZip.archivePath ) }
     }
 }
 
@@ -189,20 +236,17 @@ task createToolsDist(type: Copy, dependsOn: tooljar)  {
         include 'igvtools*.command'
         include 'igv.args'
     }
-    from ("${buildDir}/libs") {
-        include 'igvtools.jar'
-    }
     
     with copySpec {
+        from ("${buildDir}/libs") {
+            include 'igvtools.jar'
+        }
         from ("lib") {
             include '*.jar'
             exclude 'jide-oss-3.5.5.jar'
         }
         from ("lib_java9") {
             include '*.jar'
-        }
-        from ("${buildDir}/libs") {
-            include 'igvtools.jar'
         }
         into "lib"
     }
@@ -225,4 +269,4 @@ task createToolsDistZip(type: Zip, dependsOn: createToolsDist) {
     }
 }
 
-build.dependsOn createDistZip,createToolsDistZip
+build.dependsOn createDistZip,createMacDistZip,createWinDistZip,createToolsDistZip
