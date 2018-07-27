@@ -189,7 +189,7 @@ task createMacDist(type: Copy, dependsOn: createDist) {
         into "IGV_${version}.app"
     }
     with copySpec {
-        from ("scripts/java9/mac.app/Contents/Info.plist.template")
+        from ("scripts/java9/Info.plist.template")
         filter (ReplaceTokens, tokens: [ VERSION: version ])
         rename "Info.plist.template", "Info.plist"
         into "IGV_${version}.app/Contents"

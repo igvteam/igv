@@ -4,7 +4,7 @@ IGV BINARY DISTRIBUTION
 
 Prerequisites:
 
-Java 8.0 or greater (http://www.java.com).
+Java 8.0 (http://www.java.com).  Not compatible with Java 9+
 
 
 Instructions:
