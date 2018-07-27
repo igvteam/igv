@@ -172,7 +172,7 @@ task createDist(type: Copy, dependsOn: jar)  {
 }
 
 task createDistZip(type: Zip, dependsOn: createDist) {
-    archiveName = "IGV_${version}_java10.zip"
+    archiveName = "IGV_${version}.zip"
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGV"
     from "${buildDir}/IGV-dist" exclude "igv.bat"
@@ -207,7 +207,7 @@ task createMacDist(type: Copy, dependsOn: createDist) {
 }
 
 task createMacDistZip(type: Zip, dependsOn: createMacDist) {
-    archiveName = "IGV_${version}_java10.app.zip"
+    archiveName = "IGV_${version}.app.zip"
     destinationDir = file("${buildDir}/distZip")
     from "${buildDir}/IGV-Mac-dist"
     
@@ -217,7 +217,7 @@ task createMacDistZip(type: Zip, dependsOn: createMacDist) {
 }
 
 task createWinDistZip(type: Zip, dependsOn: createDist) {
-    archiveName = "IGV_Win_${version}_java10.zip"
+    archiveName = "IGV_Win_${version}.zip"
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGV_Win"
     from("${buildDir}/IGV-dist") {
@@ -259,7 +259,7 @@ task createToolsDist(type: Copy, dependsOn: tooljar)  {
 }
 
 task createToolsDistZip(type: Zip, dependsOn: createToolsDist) {
-    archiveName = "igvtools_${version}_java10.zip"
+    archiveName = "igvtools_${version}.zip"
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGVTools"
     
