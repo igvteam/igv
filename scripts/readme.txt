@@ -23,14 +23,14 @@ igv.bat       (for Windows)
 igv.sh        (for LINUX and MAC OsX)
 igv.command   (for MAC OsX, double-click to start)
 
-The bat and shell scripts are configured to start IGV with 750MB of
-memory.  This is a reasonable default for most machines.  If you are
-working with very large datasets you can increase the amount of memory
-available to IGV by editing the first line of the startup script.
+The shell scripts are configured to start IGV with 1500B of memory (1 gb
+for the bat script).  This is a reasonable default for most machines.  If 
+you are working with very large datasets you can increase the amount of 
+memory available to IGV by editing the first line of the startup script.
 Specifically change the value of the "-Xmx" parameter.  For example,
 to start IGV with 1 gigabyte of memory  change the value
 
-   -Xmx750m
+   -Xmx1500m
 
 to
 
