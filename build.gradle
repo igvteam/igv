@@ -222,6 +222,7 @@ task signJars(dependsOn: createDist) {
 }
 
 task createDistZip(type: Zip, dependsOn: [createDist, signJars]) {
+    archiveName = "IGV_${version}.zip"
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGV"
     from "${buildDir}/IGV-dist" exclude "igv.bat"
@@ -266,6 +267,7 @@ task createMacDistZip(type: Zip, dependsOn: createMacDist) {
 }
 
 task createWinDistZip(type: Zip, dependsOn: [createDist, signJars]) {
+    archiveName = "IGV_Win_${version}.zip"
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGV_Win"
     from("${buildDir}/IGV-dist") {
