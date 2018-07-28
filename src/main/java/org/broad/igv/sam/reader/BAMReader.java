@@ -322,27 +322,34 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     }
 
     private String getIndexURL(String urlString, String extension) {
+
         String indexPath = null;
-        try {
-            URL url = HttpUtils.createURL(urlString);
-            String queryString = url.getQuery();
-            if (queryString == null) {
-                indexPath = urlString + extension;
-            } else {
-                Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
-                if (parameters.containsKey("file")) {
-                    String bamFile = parameters.get("file");
-                    String bamIndexFile = bamFile + extension;
-                    String newQueryString = queryString.replace(bamFile, bamIndexFile);
-                    indexPath = urlString.replace(queryString, newQueryString);
-                } else {
-                    indexPath = urlString.replace(url.getPath(), url.getPath() + extension);
-                }
-            }
-        } catch (MalformedURLException e) {
-            log.error(e.getMessage(), e);
+
+        if(urlString.startsWith("gs://")) {
+            return urlString + extension;
         }
-        return indexPath;
+        else {
+            try {
+                URL url = HttpUtils.createURL(urlString);
+                String queryString = url.getQuery();
+                if (queryString == null) {
+                    indexPath = urlString + extension;
+                } else {
+                    Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
+                    if (parameters.containsKey("file")) {
+                        String bamFile = parameters.get("file");
+                        String bamIndexFile = bamFile + extension;
+                        String newQueryString = queryString.replace(bamFile, bamIndexFile);
+                        indexPath = urlString.replace(queryString, newQueryString);
+                    } else {
+                        indexPath = urlString.replace(url.getPath(), url.getPath() + extension);
+                    }
+                }
+            } catch (MalformedURLException e) {
+                log.error(e.getMessage(), e);
+            }
+            return indexPath;
+        }
     }
 
 
