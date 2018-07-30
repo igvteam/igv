@@ -3,6 +3,7 @@ package org.broad.igv.ui.util.download;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 
 import javax.swing.*;
@@ -70,8 +71,10 @@ public class Downloader implements Runnable {
             connection.connect();
 
             // Make sure response code is in the 200 range.
-            if (connection.getResponseCode() / 100 != 2) {
-                // error();
+            final int responseCode = connection.getResponseCode();
+            if (responseCode < 200 || responseCode >= 300) {
+                MessageUtils.showMessage("Error downloading " + url + ". Response code: " + responseCode);
+                return;
             }
 
 
@@ -115,17 +118,6 @@ public class Downloader implements Runnable {
                 }
             }
             file.close();
-
-            if(canceled) {
-                (new File(tmpName)).delete();
-            }
-            else {
-            	File permFile = new File(tmpName);
-            	boolean success = permFile.renameTo(localFile);
-            	if (success == false) {
-            		throw new Exception("Failure renaming '" + tmpName + "' to '" + localFile + "'");
-            	}
-            }
 
         } catch (Exception e) {
             log.error("Error downloading " + url, e);
