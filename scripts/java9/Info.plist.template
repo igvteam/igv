@@ -28,8 +28,6 @@
 	<string></string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
-	<key>JVMMainClassName</key>
-	<string></string>
 	<key>JVMOptions</key>
 	<array>
 		<string>--module-path=$APP_ROOT/Contents/Java</string>
@@ -45,8 +43,9 @@
 		<string>-Dapple.laf.useScreenMenuBar=true</string>
 		<string>-Xmx4g</string>
 		<string>-Xdock:name=IGV</string>
-		<string>--module=org.broad.igv/org.broad.igv.ui.Main</string>
 	</array>
+    <key>JVMMainClassName</key>
+    <string>--module=org.broad.igv/org.broad.igv.ui.Main</string>
 	<key>JVMArguments</key>
 	<array/>
 	<key>NSHighResolutionCapable</key>
