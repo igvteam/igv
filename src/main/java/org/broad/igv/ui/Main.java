@@ -191,7 +191,7 @@ public class Main {
                     // See if user has specified to skip this update
 
                     final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
-                    if(skipString != null) {
+                    if (skipString != null) {
                         HashSet<String> skipVersion = new HashSet<>(Arrays.asList(skipString.split(",")));
                         if (skipVersion.contains(serverVersionString)) return;
                     }
@@ -461,17 +461,21 @@ public class Main {
             }
 
             String forceVersion = (String) parser.getOptionValue(forceVersionOption);
-            if(forceVersion != null) {
+            if (forceVersion != null) {
                 Globals.VERSION = forceVersion;
             }
 
             String[] nonOptionArgs = parser.getRemainingArgs();
 
+            // The Mac app launcher sometimes inserts "" into the command line.  Filter empty strings
+            nonOptionArgs = Arrays.stream(nonOptionArgs).filter(s -> !s.isEmpty()).toArray(String[]::new);
+
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
 
                 String firstArg = maybeDecodePath(nonOptionArgs[0]);
 
-                if (firstArg != null && !firstArg.equals("ignore")) {
+
+                if (firstArg != null) {
                     log.info("Loading: " + firstArg);
                     if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
                             || firstArg.endsWith(".session")) {
@@ -483,8 +487,6 @@ public class Main {
                 if (nonOptionArgs.length > 1) {
                     locusString = nonOptionArgs[1];
                 }
-
-
             }
         }
 
