@@ -176,7 +176,7 @@ task createDistZip(type: Zip, dependsOn: createDist) {
     archiveName = "IGV_${version}.zip"
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGV"
-    from "${buildDir}/IGV-dist" exclude "igv.bat"
+    from "${buildDir}/IGV-dist" exclude "*.bat"
     into createDistZip.baseName + "_${version}"
 
     doLast {
@@ -222,7 +222,7 @@ task createWinDistZip(type: Zip, dependsOn: createDist) {
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGV_Win"
     from("${buildDir}/IGV-dist") {
-        exclude "igv.sh"
+        exclude "*.sh"
         exclude "igv.command"
     }
     into createWinDistZip.baseName + "_${version}"
