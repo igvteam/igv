@@ -10,7 +10,7 @@
 #Add the flag -Ddevelopment = true to use features still in development
 prefix=`dirname $(readlink $0 || echo $0)`
 exec java --module-path="$prefix"/lib -Xmx4g \
-    @igv.args \
+    @"$prefix"/igv.args \
     -Xdock:name="IGV" \
 	-Dapple.laf.useScreenMenuBar=true \
 	-Djava.net.preferIPv4Stack=true \
