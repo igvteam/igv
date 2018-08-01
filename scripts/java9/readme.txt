@@ -21,8 +21,11 @@ executable (chmod a+x igv.sh).
 
 
 igv.bat       (for Windows)
-igv.sh        (for LINUX and MAC OsX)
-igv.command   (for MAC OsX, double-click to start)
+igv.sh        (for Linux and macOS)
+igv.command   (for macOS, double-click to start)
+
+The _hidpi versions of these scripts will scale up the UI for users with HiDPI displays.
+They are unnecessary for Mac users.
 
 The bat and shell scripts are configured to start IGV with 4GB of
 memory.  This is a reasonable default for most machines.  If you are

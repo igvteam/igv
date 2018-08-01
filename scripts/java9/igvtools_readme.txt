@@ -25,6 +25,10 @@ The general form of the command-line version is:
 or
    igvtools.bat [command] [options][arguments]
 
+The _hidpi versions of these scripts will scale up the UI for users with HiDPI displays.
+They are unnecessary for Mac users.
+
+
 Recognized commands, options,arguments, and file types are described below.
 
 ---------------------------------------------------------------------------
