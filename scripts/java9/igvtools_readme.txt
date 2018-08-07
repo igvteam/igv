@@ -12,8 +12,9 @@ Starting with shell scripts
 ---------------------------------------------------------------------------
 The utilities are invoked from one of the following scripts:
 
-   igvtools (command line version for linux and  Mac OS 10.x)
-   igvtools_gui (gui version for linux and  Mac OS 10.x)
+   igvtools (command line version for Linux and  Mac OS 10.x)
+   igvtools_gui (gui version for Linux and  Mac OS 10.x)
+   igvtools_gui_hidpi (HiDPI gui version for Linux)
    igvtools_gui.command (alternative double-clickable gui version for Mac OS 10.x)
 
    igvtools.bat (command line version for windows)
@@ -24,10 +25,6 @@ The general form of the command-line version is:
    igvtools [command] [options][arguments]
 or
    igvtools.bat [command] [options][arguments]
-
-The _hidpi versions of these scripts will scale up the UI for users with HiDPI displays.
-They are unnecessary for Mac users.
-
 
 Recognized commands, options,arguments, and file types are described below.
 
@@ -57,6 +54,24 @@ available on your platform you will get an obscure error along the lines of
 edit the scripts to reduce the amount of memory requested,  or use the java
 startup option.  The memory is set via a "-Xmx" parameter. For example
 -Xmx1500m  requests 1500 MB,  -Xmx1g requests 1 gigabyte.
+   
+---------------------------------------------------------------------------
+HiDPI settings
+---------------------------------------------------------------------------
+
+HiDPI is supported natively by Java on Mac and Windows.  Users on these
+platforms can ignore this section. 
+
+For Linux users, the igvtools_gui_hidpi script is set up for 2x scaling.  
+To modify it to do 4x scaling, for example, change the value
+
+   -Dsun.java2d.uiScale=2
+
+to
+
+   -Dsun.java2d.uiScale=4
+
+Fractional values are *NOT* supported at this time. 
 
 ---------------------------------------------------------------------------
 Genome

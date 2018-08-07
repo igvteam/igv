@@ -22,17 +22,15 @@ executable (chmod a+x igv.sh).
 
 igv.bat       (for Windows)
 igv.sh        (for Linux and macOS)
+igv_hidpi.sh  (for Linux with HiDPI displays)
 igv.command   (for macOS, double-click to start)
-
-The _hidpi versions of these scripts will scale up the UI for users with HiDPI displays.
-They are unnecessary for Mac users.
 
 The bat and shell scripts are configured to start IGV with 4GB of
 memory.  This is a reasonable default for most machines.  If you are
 working with very large datasets you can increase the amount of memory
 available to IGV by editing the first line of the startup script.
 Specifically change the value of the "-Xmx" parameter.  For example,
-to start IGV with 8 gigabyte of memory  change the value
+to start IGV with 8 gigabyte of memory change the value
 
    -Xmx4g
 
@@ -40,3 +38,13 @@ to
 
    -Xmx8g
 
+The igv_hidpi.sh script is set up for 2x scaling.  To modify it to do 4x scaling, for 
+example, change the value
+
+   -Dsun.java2d.uiScale=2
+
+to
+
+   -Dsun.java2d.uiScale=4
+
+Fractional values are *NOT* supported at this time. 
