@@ -468,7 +468,9 @@ public class Main {
             String[] nonOptionArgs = parser.getRemainingArgs();
 
             // The Mac app launcher sometimes inserts "" into the command line.  Filter empty strings
-            nonOptionArgs = Arrays.stream(nonOptionArgs).filter(s -> !s.isEmpty()).toArray(String[]::new);
+            if(nonOptionArgs.length > 0) {
+                nonOptionArgs = Arrays.stream(nonOptionArgs).filter(s -> !s.isEmpty()).toArray(String[]::new);
+            }
 
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
 

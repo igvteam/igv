@@ -332,7 +332,7 @@ public class FeatureUtils {
             return features.size() - 1;
         }
         if (features.get(0).getStart() >= position) {
-            return 0;
+            return -1;
         }
 
         int startIdx = 0;
