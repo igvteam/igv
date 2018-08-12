@@ -118,14 +118,29 @@ public class AlignmentDataManager implements IGVEventObserver {
     private void initChrMap(Genome genome) throws IOException {
 
         if (genome != null) {
+
             // Build a chr size -> name lookup table.   We will assume sizes are unique.  This will be used if no alias
             // is defined for a sequence.
             Map<Long, String> inverseDict = null;
             Map<String, Long> sequenceDictionary = reader.getSequenceDictionary();
-            Set<Long> nonUnique = new HashSet<>();
+
             if (sequenceDictionary != null) {
+
+                Set<Long> nonUnique = new HashSet<>();
+                Set<Long> seen = new HashSet<>();
+                // First find sequences whose size are not unique,  we'll filter these
+                for(Long size : sequenceDictionary.values()) {
+                    if(seen.contains(size)) {
+                        nonUnique.add(size);
+                    } else{
+                        seen.add(size);
+                    }
+                }
+
                 inverseDict = new HashMap<>();
+
                 for (Chromosome chromosome : genome.getChromosomes()) {
+
                     Long size = new Long(chromosome.getLength());
                     if (!nonUnique.contains(size)) {
                         if (inverseDict.containsKey(size)) {
@@ -290,10 +305,10 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public boolean isLoading(ReferenceFrame frame) {
 
-        Range range = frame.getCurrentRange();
-        for (Range r : isLoading) {
-            if (r.contains(range)) return true;
-        }
+//        Range range = frame.getCurrentRange();
+//        for (Range r : isLoading) {
+//            if (r.contains(range)) return true;
+//        }
         return false;
     }
 
