@@ -81,11 +81,11 @@ public class AlignmentPacker {
         } else {
 
             // Separate alignments into groups.
-            Map<String, List<Alignment>> groupedAlignments = new HashMap<String, List<Alignment>>();
+            Map<Object, List<Alignment>> groupedAlignments = new HashMap<Object, List<Alignment>>();
             Iterator<Alignment> iter = alList.iterator();
             while (iter.hasNext()) {
                 Alignment alignment = iter.next();
-                String groupKey = getGroupValue(alignment, renderOptions);
+                Object groupKey = getGroupValue(alignment, renderOptions);
                 if (groupKey == null) {
                     groupKey = NULL_GROUP_VALUE;
                 }
@@ -99,15 +99,15 @@ public class AlignmentPacker {
 
 
             // Now alphabetize (sort) and pack the groups
-            List<String> keys = new ArrayList<String>(groupedAlignments.keySet());
-            Comparator<String> groupComparator = getGroupComparator(renderOptions.getGroupByOption());
+            List<Object> keys = new ArrayList<Object>(groupedAlignments.keySet());
+            Comparator<Object> groupComparator = getGroupComparator(renderOptions.getGroupByOption());
             Collections.sort(keys, groupComparator);
 
-            for (String key : keys) {
+            for (Object key : keys) {
                 List<Row> alignmentRows = new ArrayList<>(10000);
                 List<Alignment> group = groupedAlignments.get(key);
                 pack(group, renderOptions, alignmentRows);
-                packedAlignments.put(key, alignmentRows);
+                packedAlignments.put(key.toString(), alignmentRows);
             }
         }
 
@@ -336,15 +336,15 @@ public class AlignmentPacker {
                 maxEnd);
     }
 
-    private Comparator<String> getGroupComparator(AlignmentTrack.GroupOption groupByOption) {
+    private Comparator<Object> getGroupComparator(AlignmentTrack.GroupOption groupByOption) {
         switch (groupByOption) {
             case PAIR_ORIENTATION:
                 return new PairOrientationComparator();
             default:
                 //Sort null values towards the end
-                return new Comparator<String>() {
+                return new Comparator<Object>() {
                     @Override
-                    public int compare(String o1, String o2) {
+                    public int compare(Object o1, Object o2) {
                         if (o1 == null && o2 == null) {
                             return 0;
                         } else if (o1 == null) {
@@ -355,13 +355,27 @@ public class AlignmentPacker {
                             // no nulls
                             if (o1.equals(o2)) {
                                 return 0;
-                            } else if (NULL_GROUP_VALUE.equals(o1)) {
+                            } else if (o1 instanceof String && NULL_GROUP_VALUE.equals(o1)) {
                                 return 1;
-                            }
-                            if (NULL_GROUP_VALUE.equals(o2)) {
+                            } else if (o2 instanceof String && NULL_GROUP_VALUE.equals(o2)) {
                                 return -1;
                             } else {
-                                return o1.compareToIgnoreCase(o2);
+                                if (o1 instanceof Integer && o2 instanceof Integer) {
+                                    Integer i1 = (Integer) o1, i2 = (Integer) o2;
+                                    return i1.compareTo(i2);
+                                }
+                                else if (o1 instanceof Float && o2 instanceof Float) {
+                                    Float f1 = (Float) o1, f2 = (Float) o2;
+                                    return f1.compareTo(f2);
+                                }
+                                else if (o1 instanceof Double && o2 instanceof Double) {
+                                    Double d1 = (Double) o1, d2 = (Double) o2;
+                                    return d1.compareTo(d2);
+                                }
+                                else {
+                                    String s1 = o1.toString(), s2 = o2.toString();
+                                    return s1.compareToIgnoreCase(s2);
+                                }
                             }
                         }
                     }
@@ -369,7 +383,7 @@ public class AlignmentPacker {
         }
     }
 
-    private String getGroupValue(Alignment al, AlignmentTrack.RenderOptions renderOptions) {
+    private Object getGroupValue(Alignment al, AlignmentTrack.RenderOptions renderOptions) {
 
         AlignmentTrack.GroupOption groupBy = renderOptions.getGroupByOption();
         String tag = renderOptions.getGroupByTag();
@@ -387,7 +401,15 @@ public class AlignmentPacker {
                 return al.getReadGroup();
             case TAG:
                 Object tagValue = al.getAttribute(tag);
-                return tagValue == null ? null : tagValue.toString();
+                if (tagValue == null) {
+                    return null;
+                }
+                else if (tagValue instanceof Integer || tagValue instanceof Float || tagValue instanceof Double) {
+                    return tagValue;
+                }
+                else {
+                    return tagValue.toString();
+                }
             case FIRST_OF_PAIR_STRAND:
                 Strand strand = al.getFirstOfPairStrand();
                 String strandString = strand == Strand.NONE ? null : strand.toString();
@@ -637,7 +659,7 @@ public class AlignmentPacker {
         }
     }
 
-    private class PairOrientationComparator implements Comparator<String> {
+    private class PairOrientationComparator implements Comparator<Object> {
         private final List<AlignmentTrack.OrientationType> orientationTypes;
         //private final Set<String> orientationNames = new HashSet<String>(AlignmentTrack.OrientationType.values().length);
 
@@ -649,7 +671,9 @@ public class AlignmentPacker {
         }
 
         @Override
-        public int compare(String s0, String s1) {
+        public int compare(Object o0, Object o1) {
+            String s0 = o0.toString();
+            String s1 = o1.toString();
             if (s0 != null && s1 != null) {
                 AlignmentTrack.OrientationType t0 = AlignmentTrack.OrientationType.valueOf(s0);
                 AlignmentTrack.OrientationType t1 = AlignmentTrack.OrientationType.valueOf(s1);
