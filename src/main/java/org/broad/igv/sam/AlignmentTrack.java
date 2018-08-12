@@ -1686,6 +1686,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
                     if (tag != null && tag.trim().length() > 0) {
                         IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag, null);
+                        refresh();
                     }
 
                 }
@@ -1710,6 +1711,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     public void actionPerformed(ActionEvent aEvt) {
                         Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
                         IGV.getInstance().groupAlignmentTracks(GroupOption.BASE_AT_POS, null, groupByPos);
+                        refresh();
                     }
                 });
                 groupMenu.add(newGroupByPosOption);
