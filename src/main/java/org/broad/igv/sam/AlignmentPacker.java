@@ -32,6 +32,7 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.sam.AlignmentTrack.GroupOption;
 
 import java.util.*;
 
@@ -74,7 +75,7 @@ public class AlignmentPacker {
             alList = linkByTag(alList, renderOptions.getLinkByTag());
         }
 
-        if (renderOptions.getGroupByOption() == null) {
+        if (renderOptions.getGroupByOption() == AlignmentTrack.GroupOption.NONE) {
             List<Row> alignmentRows = new ArrayList<>(10000);
             pack(alList, renderOptions, alignmentRows);
             packedAlignments.put("", alignmentRows);

@@ -601,7 +601,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         Graphics2D groupBorderGraphics = context.getGraphic2DForColor(AlignmentRenderer.GROUP_DIVIDER_COLOR);
         int nGroups = groups.size();
         int groupNumber = 0;
-        GroupOption groupOption = renderOptions.groupByOption;
+        GroupOption groupOption = renderOptions.getGroupByOption();
 
         for (Map.Entry<String, List<Row>> entry : groups.entrySet()) {
 
@@ -821,7 +821,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (option == GroupOption.BASE_AT_POS && pos != null) {
             renderOptions.setGroupByPos(pos);
         }
-        renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
+        renderOptions.setGroupByOption(option);
         dataManager.packAlignments(renderOptions);
     }
 
@@ -1634,9 +1634,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private JCheckBoxMenuItem getGroupMenuItem(String label, final GroupOption option) {
             JCheckBoxMenuItem mi = new JCheckBoxMenuItem(label);
             mi.setSelected(renderOptions.getGroupByOption() == option);
-            if (option == GroupOption.NONE) {
-                mi.setSelected(renderOptions.getGroupByOption() == null);
-            }
             mi.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
@@ -1689,6 +1686,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
                     if (tag != null && tag.trim().length() > 0) {
                         IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag, null);
+                        refresh();
                     }
 
                 }
@@ -1713,6 +1711,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     public void actionPerformed(ActionEvent aEvt) {
                         Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
                         IGV.getInstance().groupAlignmentTracks(GroupOption.BASE_AT_POS, null, groupByPos);
+                        refresh();
                     }
                 });
                 groupMenu.add(newGroupByPosOption);
@@ -2461,7 +2460,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         public void setGroupByOption(AlignmentTrack.GroupOption groupByOption) {
-            this.groupByOption = groupByOption;
+            this.groupByOption = (groupByOption == null) ? AlignmentTrack.GroupOption.NONE : groupByOption;
         }
 
         public void setShadeBasesOption(AlignmentTrack.ShadeBasesOption shadeBasesOption) {
@@ -2551,7 +2550,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         public AlignmentTrack.GroupOption getGroupByOption() {
-            return groupByOption == null ? defaultValues.groupByOption : groupByOption;
+            AlignmentTrack.GroupOption gbo = groupByOption;
+            // Interpret null as the default option.
+            gbo = (gbo == null) ? defaultValues.groupByOption : gbo;
+            // Add a second check for null in case defaultValues.groupByOption == null
+            gbo = (gbo == null) ? AlignmentTrack.GroupOption.NONE : gbo;
+
+            return gbo;
         }
 
         public boolean isLinkedReads() {
