@@ -60,7 +60,7 @@ public class BisulfiteBaseInfo {
 
     // Private vars
     private DisplayStatus[] displayStatus = null;
-    //private byte[] displayChars = null;
+    private byte[] displayChars = null;
     private Color[] displayColors = null;
     private BisulfiteContext myContext = null;
     private boolean flipRead;
@@ -93,7 +93,7 @@ public class BisulfiteBaseInfo {
             byte[] reference = (flipRead && inReference != null) ? AlignmentUtils.reverseComplementCopy(inReference) : inReference;
 
 
-            //displayChars = new byte[alignmentLen];
+            displayChars = new byte[alignmentLen];
             displayStatus = new DisplayStatus[alignmentLen];
             displayColors = new Color[alignmentLen];
 
@@ -125,13 +125,13 @@ public class BisulfiteBaseInfo {
                 boolean matchesContext = false;
 
 
-                // The logic is organized according to the reference base.
-
-                if (AlignmentUtils.compareBases((byte) 'N', readbase)) {
+                if ((byte) 'N' == readbase) {
                     if (!AlignmentUtils.compareBases(readbase, refbase)) {
                         out = NONCYTOSINE_MISMATCH_COLOR;
                     }
-                } else {
+                }
+                else {
+                    // The logic is organized according to the reference base.
                     switch (refbase) {
                         case 'T':
                         case 'A':
@@ -157,6 +157,7 @@ public class BisulfiteBaseInfo {
                             break;
                     }
                 }
+
                 // Remember, the output should be relative to the FW strand (use idxFw)
                 this.displayColors[idxFw] = out;
                 if (out == null) {
@@ -168,7 +169,7 @@ public class BisulfiteBaseInfo {
                     } else {
                         // Display the character
                         this.displayStatus[idxFw] = DisplayStatus.CHARACTER;
-                        //this.displayChars[idxFw] = 'X';
+                        this.displayChars[idxFw] = 'X';
                     }
                 }
 //			System.err.printf("\tSeting displayStatus[%d] = %s\n", idx, displayStatus[idx]);
