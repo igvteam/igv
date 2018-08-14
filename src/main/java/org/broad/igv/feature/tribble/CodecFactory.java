@@ -137,7 +137,11 @@ public class CodecFactory {
             return new DSICodec(genome);
         } else if (fn.endsWith(".paf")) {
             return new PAFCodec(path, genome);
-        } else {
+        } else if (fn.endsWith(".interval_list")) {
+            return new IntervalListCodec(genome);
+        }
+
+        else {
             return null;
         }
 

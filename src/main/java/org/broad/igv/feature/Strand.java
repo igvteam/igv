@@ -33,5 +33,10 @@ package org.broad.igv.feature;
 
 
 public enum Strand {
-    NONE, POSITIVE, NEGATIVE
+
+    NONE, POSITIVE, NEGATIVE;
+
+    public static Strand fromString(String strandString) {
+        return strandString.equals("+") ? POSITIVE : (strandString.equals("-") ? NEGATIVE : NONE);
+    }
 }
