@@ -325,9 +325,13 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         String indexPath = null;
         try {
             URL url = HttpUtils.createURL(urlString);
+            //note that url may be quite different than urlString due to substitutions
+            //made in createURL (e.g. Google cloud paths are converted), thus we should
+            //use url rather than urlString in subsequent transformations here.
+            urlString = url.toExternalForm();
             String queryString = url.getQuery();
             if (queryString == null) {
-                indexPath = urlString + extension;
+                indexPath = url + extension;
             } else {
                 Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
                 if (parameters.containsKey("file")) {
