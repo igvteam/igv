@@ -28,6 +28,9 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.event.AlignmentTrackEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
@@ -39,7 +42,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.sam.mutreview.VariantReviewAction;
+import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SubtlyImportant;
@@ -48,13 +51,9 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
-import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.event.AlignmentTrackEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -1494,16 +1493,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 addSeparator();
                 addExtViewItem(e);
             }
-
-
-            // if variant review
-            if (PreferencesManager.getPreferences().getAsBoolean(Constants.SCORE_VARIANTS)) {
-                addSeparator();
-                JMenuItem mi = new JMenuItem("Score variant");
-                mi.addActionListener(e13 -> VariantReviewAction.scoreMutationItem(dataPanel, AlignmentTrack.this, e));
-                add(mi);
-            }
-
 
         }
 
