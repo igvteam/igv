@@ -32,7 +32,6 @@ module org.igv {
     exports org.broad.igv.lists;
     exports org.broad.igv.maf;
     exports org.broad.igv.methyl;
-    exports org.broad.igv.mupit;
     exports org.broad.igv.peaks;
     exports org.broad.igv.prefs;
     exports org.broad.igv.repeats;
@@ -41,7 +40,6 @@ module org.igv {
     exports org.broad.igv.sam.cram;
     exports org.broad.igv.sam.cram.old;
     exports org.broad.igv.sam.lite;
-    exports org.broad.igv.sam.mutreview;
     exports org.broad.igv.sam.reader;
     exports org.broad.igv.session;
     exports org.broad.igv.tdf;
