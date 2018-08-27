@@ -32,8 +32,8 @@ There are other options but these cover the most common uses:
   JAR dependencies plus helper scripts for running and launching.
   As above, these JARs will be identical aside from signing, timestamps, etc. and all must be
   present together to run.  See igvtools_readme.txt for more info.
-- Use './gradlew build' to build everything and run the test suite.  See 'src/test/README.txt' for more
-  information about running the tests.
+- Use './gradlew test' to run the test suite.  See 'src/test/README.txt' for more information about running
+  the tests.
 
 Note that Gradle creates a number of other subdirectories in 'build'.  These can be safely ignored.
 
@@ -42,8 +42,8 @@ and that the results will be found in 'build_java9' rather than 'build'.  More s
 - Use './gradlew -b build_java9.gradle createDist' to build a distribution directory with helper scripts
   for launching.  The structure is slightly different but the concept is the same.
 - Use './gradlew -b build_java9.gradle createToolsDist' for the igvtools distribution.
-- Use './gradlew -b build_java9.gradle build' to build everything and run the test suite.
+- Use './gradlew -b build_java9.gradle test' to run the test suite.
 
-The full JAR build option is *NOT* available for Java 9+ because of modularilty requirements.
+The full JAR build option is *NOT* available for Java 9+ because of modularity requirements.
 
 NOTE: In the above, use './gradlew.bat' on the Windows platform.

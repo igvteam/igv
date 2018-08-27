@@ -11,4 +11,4 @@ exec java --module-path="$prefix"/lib -Xmx4g \
     @igv.args \
 	-Dapple.laf.useScreenMenuBar=true \
 	-Djava.net.preferIPv4Stack=true \
-	--module org.broad.igv/org.broad.igv.ui.Main "$@"
+	--module org.igv/org.broad.igv.ui.Main "$@"
