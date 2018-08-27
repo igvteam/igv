@@ -1,4 +1,4 @@
 #!/bin/sh
 java -Djava.awt.headless=true --module-path=`dirname $0`/lib -Xmx1500m \
     @igv.args \
-    --module org.broad.igv/org.broad.igv.tools.IgvTools  "$@"
+    --module org.igv/org.broad.igv.tools.IgvTools  "$@"

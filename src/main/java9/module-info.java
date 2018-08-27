@@ -1,4 +1,4 @@
-module org.broad.igv {
+module org.igv {
     exports org.broad.igv;
     exports org.broad.igv.annotations;
     exports org.broad.igv.batch;

@@ -23,7 +23,7 @@
 apply plugin: 'java'
 import org.apache.tools.ant.filters.ReplaceTokens
 
-ext.moduleName = 'org.broad.igv'
+ext.moduleName = 'org.igv'
 ext.mainClassName = 'org.broad.igv.ui.Main'
 
 // Put the Java 9 build into a special dir to avoid accidental collisions.

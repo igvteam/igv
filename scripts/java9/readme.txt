@@ -13,7 +13,7 @@ Instructions:
 
 2. To start IGV execute the following from the command line,
 
-     java --module-path=lib -Xmx4g @igv.args --module org.broad.igv/org.broad.igv.ui.Main
+     java --module-path=lib -Xmx4g @igv.args --module org.igv/org.broad.igv.ui.Main
 
 Alternatively, you can start IGV with one of the following scripts.  Some of these may not
 be present depending on the distribution you downloaded.  You might have to make the script 

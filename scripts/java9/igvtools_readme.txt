@@ -38,11 +38,11 @@ allocate.  In the example below igvtools is started with 1500 MB of memory
 allocated and /path/to/IGVTools is the location where you have unpacked 
 IGVTools
 
-   java -Xmx1500m --module-path=/path/to/IGVTools/lib @igv.args [command] [options][arguments]
+   java -Xmx1500m --module-path=/path/to/IGVTools/lib @igv.args --module org.igv/org.broad.igv.tools.IgvTools [command] [options][arguments]
 
 To start with a gui the command is
 
-   java -Xmx1500m --module-path=/path/to/IGVTools/lib @igv.args gui
+   java -Xmx1500m --module-path=/path/to/IGVTools/lib  @igv.args --module org.igv/org.broad.igv.tools.IgvTools gui
    
 ---------------------------------------------------------------------------
 Memory settings

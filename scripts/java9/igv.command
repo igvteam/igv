@@ -6,7 +6,6 @@
 #apple.laf.useScreenMenuBar for Macs, to put menu bar at top of screen
 #-Xdock:name again for Macs, sets the name in menu bar
 #-Xmx4g indicates 4 gb of memory, adjust number up or down as needed
-#Script must be in the same directory as igv.jar
 #Add the flag -Ddevelopment = true to use features still in development
 prefix=`dirname $(readlink $0 || echo $0)`
 exec java --module-path="$prefix"/lib -Xmx4g \
@@ -14,4 +13,4 @@ exec java --module-path="$prefix"/lib -Xmx4g \
     -Xdock:name="IGV" \
 	-Dapple.laf.useScreenMenuBar=true \
 	-Djava.net.preferIPv4Stack=true \
-	--module org.broad.igv/org.broad.igv.ui.Main "$@"
+	--module org.igv/org.broad.igv.ui.Main "$@"

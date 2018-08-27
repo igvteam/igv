@@ -45,7 +45,7 @@
 		<string>-Xdock:name=IGV</string>
 	</array>
     <key>JVMMainClassName</key>
-    <string>--module=org.broad.igv/org.broad.igv.ui.Main</string>
+    <string>--module=org.igv/org.broad.igv.ui.Main</string>
 	<key>JVMArguments</key>
 	<array/>
 	<key>NSHighResolutionCapable</key>
