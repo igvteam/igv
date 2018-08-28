@@ -12,12 +12,12 @@ Starting with shell scripts
 ---------------------------------------------------------------------------
 The utilities are invoked from one of the following scripts:
 
-   igvtools (command line version for linux and  Mac OS 10.x)
-   igvtools_gui (gui version for linux and  Mac OS 10.x)
-   igvtools_gui.command (alternative double-clickable gui version for Mac OS 10.x)
+   igvtools (command line version for Linux and  macOS 10.x)
+   igvtools_gui (gui version for Linux and  macOS 10.x)
+   igvtools_gui.command (alternative double-clickable gui version for macOS 10.x)
 
-   igvtools.bat (command line version for windows)
-   igvtools_gui.bat (gui version for windows)
+   igvtools.bat (command line version for Windows)
+   igvtools_gui.bat (gui version for Windows)
 
 The general form of the command-line version is:
 

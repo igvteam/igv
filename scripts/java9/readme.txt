@@ -30,7 +30,7 @@ memory.  This is a reasonable default for most machines.  If you are
 working with very large datasets you can increase the amount of memory
 available to IGV by editing the first line of the startup script.
 Specifically change the value of the "-Xmx" parameter.  For example,
-to start IGV with 8 gigabyte of memory change the value
+to start IGV with 8 GB of memory change the value
 
    -Xmx4g
 
