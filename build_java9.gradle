@@ -203,7 +203,7 @@ task createMacDist(type: Copy, dependsOn: createDist) {
     into "${buildDir}/IGV-Mac-dist"
 
     doLast {
-        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-Mac-dist/IGV_java10_${version}.app" ) }
+        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-Mac-dist/IGV_${version}_java10.app" ) }
     }
 }
 
