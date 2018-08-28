@@ -173,11 +173,11 @@ task createDist(type: Copy, dependsOn: jar)  {
 }
 
 task createDistZip(type: Zip, dependsOn: createDist) {
-    archiveName = "IGV_java10_${version}.zip"
+    archiveName = "IGV_${version}_java10.zip"
     destinationDir = file("${buildDir}/distZip")
-    baseName = "IGV_java10"
+    baseName = "IGV"
     from "${buildDir}/IGV-dist" exclude "*.bat"
-    into createDistZip.baseName + "_${version}"
+    into createDistZip.baseName + "_${version}_java10"
 
     doLast {
         project.exec { commandLine('chmod', '775', createDistZip.archivePath ) }
@@ -187,17 +187,17 @@ task createDistZip(type: Zip, dependsOn: createDist) {
 task createMacDist(type: Copy, dependsOn: createDist) {
     with copySpec {
         from ("scripts/mac.app") exclude "Contents/Info.plist.template"
-        into "IGV_java10_${version}.app"
+        into "IGV_${version}_java10.app"
     }
     with copySpec {
         from ("scripts/java9/Info.plist.template")
         filter (ReplaceTokens, tokens: [ VERSION: version ])
         rename "Info.plist.template", "Info.plist"
-        into "IGV_java10_${version}.app/Contents"
+        into "IGV_${version}_java10.app/Contents"
     }
     with copySpec {
         from ("${buildDir}/IGV-dist/lib") include '*.jar'
-        into "IGV_java10_${version}.app/Contents/Java"
+        into "IGV_${version}_java10.app/Contents/Java"
     }
 
     into "${buildDir}/IGV-Mac-dist"
@@ -208,7 +208,7 @@ task createMacDist(type: Copy, dependsOn: createDist) {
 }
 
 task createMacDistZip(type: Zip, dependsOn: createMacDist) {
-    archiveName = "IGV_java10_${version}.app.zip"
+    archiveName = "IGV_${version}_java10.app.zip"
     destinationDir = file("${buildDir}/distZip")
     from "${buildDir}/IGV-Mac-dist"
     
@@ -218,14 +218,14 @@ task createMacDistZip(type: Zip, dependsOn: createMacDist) {
 }
 
 task createWinDistZip(type: Zip, dependsOn: createDist) {
-    archiveName = "IGV_Win_java10_${version}.zip"
+    archiveName = "IGV_Win_${version}_java10.zip"
     destinationDir = file("${buildDir}/distZip")
-    baseName = "IGV_Win_java10"
+    baseName = "IGV_Win"
     from("${buildDir}/IGV-dist") {
         exclude "*.sh"
         exclude "igv.command"
     }
-    into createWinDistZip.baseName + "_${version}"
+    into createWinDistZip.baseName + "_${version}_java10"
 
     doLast {
         project.exec { commandLine('chmod', '775', createWinDistZip.archivePath ) }
@@ -260,7 +260,7 @@ task createToolsDist(type: Copy, dependsOn: tooljar)  {
 }
 
 task createToolsDistZip(type: Zip, dependsOn: createToolsDist) {
-    archiveName = "igvtools_java10_${version}.zip"
+    archiveName = "igvtools_${version}_java10.zip"
     destinationDir = file("${buildDir}/distZip")
     baseName = "IGVTools_java10"
     
