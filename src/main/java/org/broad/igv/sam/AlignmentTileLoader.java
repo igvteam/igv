@@ -130,6 +130,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
         ReadGroupFilter filter = ReadGroupFilter.getFilter();
         boolean showDuplicates = prefMgr.getAsBoolean(SAM_SHOW_DUPLICATES) || !prefMgr.getAsBoolean(SAM_FILTER_DUPLICATES);
         int qualityThreshold = prefMgr.getAsInt(SAM_QUALITY_THRESHOLD);
+        int alignmentScoreTheshold = prefMgr.getAsInt(SAM_ALIGNMENT_SCORE_THRESHOLD);
 
         boolean reducedMemory = prefMgr.getAsBoolean(SAM_REDUCED_MEMORY_MODE);
 
@@ -216,6 +217,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
                     phased = true;
                 }
 
+
                 if (!record.isMapped() || (!showDuplicates && record.isDuplicate()) ||
                         (filterFailedReads && record.isVendorFailedRead()) ||
                         (filterSecondaryAlignments && !record.isPrimary()) ||
@@ -223,6 +225,20 @@ public class AlignmentTileLoader implements IGVEventObserver {
                         record.getMappingQuality() < qualityThreshold ||
                         (filter != null && filter.filterAlignment(record))) {
                     continue;
+                }
+
+                // Alignment score (optional tag)
+                if(alignmentScoreTheshold > 0) {
+
+                    Object alignmentScoreObj = record.getAttribute("AS");
+
+                    if(alignmentScoreObj != null) {
+                        int as = ((Number) alignmentScoreObj).intValue();
+                        if(as < alignmentScoreTheshold) {
+                            continue;
+                        }
+                    }
+
                 }
 
                 t.addRecord(record, reducedMemory);

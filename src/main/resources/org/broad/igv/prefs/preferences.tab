@@ -55,7 +55,8 @@ SAM.MAX_LEVELS	Number of reads per window	integer	100
 ##Alignment Track Options
 
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visibile
-SAM.QUALITY_THRESHOLD	Mapping quality threshold	float	0
+SAM.QUALITY_THRESHOLD	Mapping quality threshold	int	0
+SAM.ALIGNMENT_SCORE_THRESHOLD	Alignment score threshold	int	0
 ---
 SAM.SHADE_BASE_QUALITY	Shade mismatched bases by quality	boolean	TRUE
 SAM.BASE_QUALITY_MIN	Base quality minimum	integer	5

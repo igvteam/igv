@@ -91,6 +91,7 @@ final public class Constants {
     public static final String SAM_ALLELE_THRESHOLD = "SAM.ALLELE_THRESHOLD";
     public static final String SAM_ALLELE_USE_QUALITY = "SAM.ALLELE_USE_QUALITY";
     public static final String SAM_QUALITY_THRESHOLD = "SAM.QUALITY_THRESHOLD";
+    public static final String SAM_ALIGNMENT_SCORE_THRESHOLD = "SAM.ALIGNMENT_SCORE_THRESHOLD";
     public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
     public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
@@ -260,6 +261,7 @@ final public class Constants {
      */
     static java.util.List<String> SAM_RELOAD_KEYS = Arrays.asList(
             SAM_QUALITY_THRESHOLD,
+            SAM_ALIGNMENT_SCORE_THRESHOLD,
             SAM_FILTER_ALIGNMENTS,
             SAM_FILTER_URL,
             SAM_MAX_VISIBLE_RANGE,
