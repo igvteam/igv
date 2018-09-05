@@ -52,7 +52,7 @@ import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.prefs.IGVPreferences;
-import org.broad.igv.prefs.PreferenceEditorFX;
+import org.broad.igv.prefs.PreferenceEditorNew;
 import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
@@ -620,7 +620,7 @@ public class IGV implements IGVEventObserver {
         } else {
             // 3.0 releases -- javafx
             try {
-                PreferenceEditorFX.open(this.mainFrame);
+                PreferenceEditorNew.open(this.mainFrame);
             } catch (IOException e) {
                 log.error("Error openining preference dialog", e);
             }
