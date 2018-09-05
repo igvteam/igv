@@ -105,11 +105,6 @@ module org.igv {
     requires java.sql;
     requires java.xml;
     requires java.xml.bind;
-    requires javafx.base;
-    requires javafx.controls;
-    requires javafx.fxml;
-    requires javafx.graphics;
-    requires javafx.swing;
     requires jdk.xml.dom;
     requires jfreechart;
     requires log4j;
