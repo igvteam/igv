@@ -136,9 +136,7 @@ test {
             '--add-modules', 'ALL-MODULE-PATH',
             '--add-reads', "$moduleName=junit", 
             '--add-reads', "$moduleName=fest.swing",
-            '--add-exports', "$moduleName/org.broad.igv.preprocess=junit",
-            '--add-exports', "$moduleName/org.broad.tribble=junit",
-            '--add-exports', "$moduleName/util=junit",
+            '@scripts/java9/test_suite.args',
             '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath, 
         ]
         classpath = files()
