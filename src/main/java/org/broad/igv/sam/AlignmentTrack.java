@@ -105,6 +105,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     static final int DOWNAMPLED_ROW_HEIGHT = 3;
     static final int INSERTION_ROW_HEIGHT = 9;
     static final int DS_MARGIN_2 = 5;
+    private final Genome genome;
 
 
     @XmlAttribute
@@ -152,11 +153,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public enum SortOption {
-        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG, SUPPLEMENTARY, NONE;
+        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG, SUPPLEMENTARY, NONE, HAPLOTYPE;
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, LIBRARY, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW
+        STRAND, SAMPLE, READ_GROUP, LIBRARY, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW, HAPLOTYPE
     }
 
     public enum BisulfiteContext {
@@ -216,6 +217,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         this.dataManager = dataManager;
         this.dataManager.subscribe(this);
+        this.genome = genome;
 
         setRenderOptions(new RenderOptions());
 
@@ -1419,6 +1421,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             //         addSeparator();
             //          addExpandInsertions();
 
+            addHaplotype(e);
+
 
             if (dataManager.isTenX()) {
                 addTenXItems();
@@ -1496,6 +1500,56 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         }
 
+
+        /**
+         * Item for exporting "consensus" sequence of region, based
+         * on loaded alignments.
+         *
+         * @param e
+         */
+        private void addHaplotype(TrackClickEvent e) {
+            //Export consensus sequence
+            JMenuItem item = new JMenuItem("Quick Haplotype");
+
+
+            final ReferenceFrame frame;
+            if (e.getFrame() == null && FrameManager.getFrames().size() == 1) {
+                frame = FrameManager.getFrames().get(0);
+            } else {
+                frame = e.getFrame();
+            }
+
+            item.setEnabled(frame != null);
+            add(item);
+
+            item.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    //This shouldn't ever be true, but just in case it's more user-friendly
+                    if (frame == null) {
+                        MessageUtils.showMessage("Unknown region bounds, cannot export consensus");
+                        return;
+                    }
+                    final int start = (int) frame.getOrigin();
+                    final int end = (int) frame.getEnd();
+                    if ((end - start) > 1000000) {
+                        MessageUtils.showMessage("Cannot export region more than 1 Megabase");
+                        return;
+                    }
+                    AlignmentInterval interval = dataManager.getLoadedInterval(frame);
+                    HaplotypeUtils haplotypeUtils = new HaplotypeUtils(interval, AlignmentTrack.this.genome);
+                    haplotypeUtils.clusterAlignments(frame.getChrName(), start, end);
+
+                    AlignmentTrack.this.groupAlignments (GroupOption.HAPLOTYPE, null, null);
+
+                    //dataManager.sortRows(SortOption.HAPLOTYPE, frame, (end + start) / 2, null);
+                    //AlignmentTrack.refresh();
+
+                }
+            });
+
+
+        }
 
 
         public JMenuItem addExpandInsertions() {
@@ -1669,16 +1723,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
             JCheckBoxMenuItem tagOption = new JCheckBoxMenuItem("tag");
-            tagOption.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
-                    if (tag != null && tag.trim().length() > 0) {
-                        IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag, null);
-                        refresh();
-                    }
-
+            tagOption.addActionListener(aEvt -> {
+                String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
+                if (tag != null && tag.trim().length() > 0) {
+                    IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag, null);
+                    refresh();
                 }
+
             });
             tagOption.setSelected(renderOptions.getGroupByOption() == GroupOption.TAG);
             groupMenu.add(tagOption);

@@ -392,6 +392,8 @@ public class AlignmentPacker {
         String readNameParts[], movieName, zmw;
 
         switch (groupBy) {
+            case HAPLOTYPE:
+                return al.getHaplotypeName();
             case STRAND:
                 return al.isNegativeStrand() ? "-" : "+";
             case SAMPLE:

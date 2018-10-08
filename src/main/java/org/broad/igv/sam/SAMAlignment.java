@@ -471,6 +471,8 @@ public abstract class SAMAlignment implements Alignment {
         int basePosition = (int) position;
         StringBuffer buf = new StringBuffer();
 
+        buf.append("Hap name: " + getHaplotypeName() + "<br>");
+        buf.append("Dist: " + getHapDistance() + "<br>");
 
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
@@ -957,6 +959,32 @@ public abstract class SAMAlignment implements Alignment {
             rclipSoft = rclipMatcher.group(2) == null ? 0 : Integer.parseInt(rclipMatcher.group(2), 10);
         }
         return new int[]{lclipHard, lclipSoft, rclipHard, rclipSoft};
+    }
+
+
+
+    ///// EXPERIMENTAL
+
+    String haplotypeName;
+
+    @Override
+    public void setHaplotypeName(String hap) {
+        haplotypeName = hap;
+    }
+
+    @Override
+    public String getHaplotypeName() {
+        return haplotypeName;
+    }
+
+    int hapDistance;
+    @Override
+    public void setHapDistance(int dist) {
+        this.hapDistance = dist;
+    }
+    @Override
+    public int getHapDistance() {
+        return hapDistance;
     }
 
 }

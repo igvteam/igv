@@ -494,7 +494,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
                 int dX = (int) (rectX + (pos + step - origin) / scale) - pX;
                 dX = dX < 1 ? 1 : dX;
-                if (pX + dX > lastpX) {
+              //  if (pX + dX > lastpX) {
                     int pY = (int) rectMaxY - 1;
                     int totalCount = alignmentCounts.getTotalCount(pos);
                     double tmp = range.isLog() ? Math.log10(totalCount + 1) / maxRange : totalCount / maxRange;
@@ -510,7 +510,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
                     }
                     lastpX = pX + dX;
-                }
+             //   }
             }
 
             // Second pass - mark mismatches

@@ -143,7 +143,6 @@ public class PreferenceEditorNew {
                         cb.setSelected(preferences.getAsBoolean(pref.getKey()));
                         cb.addActionListener(event -> {
                             updatedPrefs.put(pref.getKey(), Boolean.toString(cb.isSelected()));
-                            System.out.println("Set " + pref.getLabel() + ": " + cb.isSelected());
                         });
 
                         grid.addLayoutComponent(cb, new GridBagConstraints(0, row, 2, 1, 1.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(3, 5, 2, 5), 2, 2));
