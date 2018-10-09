@@ -1,5 +1,6 @@
 package org.broad.igv.prefs;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
@@ -16,6 +17,8 @@ import java.util.List;
 
 public class PreferenceEditorNew {
 	
+    private static Logger log = Logger.getLogger(PreferenceEditorNew.class);
+    
 	private static final Font labelFont = new Font("Lucida Grande", Font.BOLD, 14);
 
     public static void main(String[] args) throws IOException {
@@ -143,7 +146,7 @@ public class PreferenceEditorNew {
                         cb.setSelected(preferences.getAsBoolean(pref.getKey()));
                         cb.addActionListener(event -> {
                             updatedPrefs.put(pref.getKey(), Boolean.toString(cb.isSelected()));
-                            System.out.println("Set " + pref.getLabel() + ": " + cb.isSelected());
+                            log.debug("Set " + pref.getLabel() + ": " + cb.isSelected());
                         });
 
                         grid.addLayoutComponent(cb, new GridBagConstraints(0, row, 2, 1, 1.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(3, 5, 2, 5), 2, 2));
@@ -159,7 +162,7 @@ public class PreferenceEditorNew {
                         final JComboBox<String> comboBox = new JComboBox<String>(selections);
                         comboBox.setSelectedItem(pref.getDefaultValue().toString());
                         comboBox.addActionListener(event -> {
-                            System.out.println("Set " + pref.getLabel() + " " + comboBox.getSelectedItem());
+                            log.debug("Set " + pref.getLabel() + " " + comboBox.getSelectedItem());
                         });
                         grid.addLayoutComponent(label, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(3, 5, 2, 3), 2, 2));
                         grid.addLayoutComponent(comboBox, new GridBagConstraints(1, row, 3, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 2, 2, 5), 2, 2));
