@@ -91,7 +91,8 @@ public class PreferencesManager implements IGVEventObserver {
 
             Map<String, Map<String, String>> userPrefs = loadUserPreferences();
 
-            preferencesMap.put(NULL_CATEGORY, new IGVPreferences(userPrefs.get(NULL_CATEGORY), genericDefaults));
+            final IGVPreferences nullPrefs = new IGVPreferences(userPrefs.get(NULL_CATEGORY), genericDefaults);
+            preferencesMap.put(NULL_CATEGORY, nullPrefs);
             preferencesMap.put(RNA, new IGVPreferences(userPrefs.get(RNA), rnaDefaults));
             preferencesMap.put(THIRD_GEN, new IGVPreferences(userPrefs.get(THIRD_GEN), thirdGenDefaults));
 
@@ -99,8 +100,6 @@ public class PreferencesManager implements IGVEventObserver {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        loadUserPreferences();
 
         IGVEventBus.getInstance().subscribe(PreferencesChangeEvent.class, theInstance);
     }
@@ -253,7 +252,7 @@ public class PreferencesManager implements IGVEventObserver {
                     String[] tokens = Globals.tabPattern.split(nextLine);
 
                     if (tokens[0].equals("SAM.SHOW_JUNCTION_FLANKINGREGIONS")) {
-                        System.out.println();
+
                     }
 
                     if (tokens.length < 4) {

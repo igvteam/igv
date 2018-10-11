@@ -157,6 +157,10 @@ public class Row implements Comparable<Row> {
                     Object tagValue = centerAlignment.getAttribute(tag);
                     score = tagValue == null ? 0 : tagValue.hashCode();
                     return score;
+                case HAPLOTYPE:
+                    //String hapname = centerAlignment.getHaplotypeName();
+                    //return hapname == null ? 0 : hapname.hashCode();
+                    return centerAlignment.getHapDistance();
                 default:
                     return Integer.MAX_VALUE;
 

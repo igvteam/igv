@@ -119,8 +119,7 @@ S. cerevisiae (sacCer1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/s
 S. cerevisiae (sacCer2)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/sacCer2.genome	sacCer2
 S. cerevisiae (sacCer3)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/sacCer3.genome	sacCer3
 S. cerevisiae (sk1)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/sk1.genome	sk1
-S. pombe (7/09)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/spombe_709.genome	spombe_709
-S. pombe (EF 1.55)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/spombe_1.55.genome	spombe_1.55
+S. pombe (ASM294v2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ASM294v2.genome	ASM294v2
 S. purpuratus (2.5)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/spur_2.5.genome	spur_2.5
 S. purpuratus (3.0)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/spur_3.0.genome	spur_3.0
 S. sclerotiorum (sclerotiorum)	http://s3.amazonaws.com/igv.broadinstitute.org/genomes/sclerotiorum.genome	sclerotiorum

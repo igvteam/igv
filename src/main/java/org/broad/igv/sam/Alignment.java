@@ -121,4 +121,11 @@ public interface Alignment extends LocusScore {
     default AlignmentBlock getInsertionAt(int position) {
         return null;
     }
+
+    default void setHaplotypeName(String hap) {}
+
+    default String getHaplotypeName() {return null;}
+
+    default void setHapDistance(int dist) {};
+    default int getHapDistance() {return 0;}
 }

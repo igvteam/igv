@@ -68,7 +68,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     private Map<String, PEStats> peStats;
     private SpliceJunctionHelper.LoadOptions loadOptions;
     private Object loadLock = new Object();
-    private AlignmentTrack.ExperimentType inferredExperimentType;
+    AlignmentTrack.ExperimentType inferredExperimentType;
     private Set<Track> subscribedTracks;
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
@@ -405,7 +405,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, readStats, peStats, bisulfiteContext);
 //
-        if (inferredExperimentType == null && !Globals.VERSION.contains("2.4")) {
+        if (inferredExperimentType == null) {
             readStats.compute();
             inferType(readStats);
         }
