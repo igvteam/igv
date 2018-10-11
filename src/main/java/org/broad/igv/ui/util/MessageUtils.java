@@ -49,6 +49,8 @@ public class MessageUtils {
 
     private static Logger log = Logger.getLogger(MessageUtils.class);
 
+    public enum InputType {INT, FLOAT, STRING}
+
     // Somewhat silly class, needed to pass values between threads
     static class ValueHolder {
         Object value;
@@ -74,7 +76,7 @@ public class MessageUtils {
         log.log(level, message);
         boolean showDialog = !(Globals.isHeadless() || Globals.isSuppressMessages() || Globals.isTesting() || Globals.isBatch());
         if (showDialog) {
-            UIUtilities.invokeOnEventThread (() -> {
+            UIUtilities.invokeOnEventThread(() -> {
                 // Always use HTML for message displays, but first remove any embedded <html> tags.
                 String dlgMessage = "<html>" + message.replaceAll("<html>", "");
                 Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
@@ -89,7 +91,7 @@ public class MessageUtils {
                 Component dispMessage = content;
 
                 //Really long messages should be scrollable
-                if(dlgMessage.length() > 200){
+                if (dlgMessage.length() > 200) {
                     Dimension size = new Dimension(1000, content.getHeight() + 100);
                     content.setPreferredSize(size);
                     JScrollPane pane = new JScrollPane(content);
@@ -109,12 +111,12 @@ public class MessageUtils {
     }
 
     public static synchronized boolean confirm(final String message) {
-        if(Globals.isHeadless()){
+        if (Globals.isHeadless()) {
             log.error("Attempted to confirm while running headless with the following message:\n" + message);
             return true;
         }
 
-        if(Globals.isBatch()) {
+        if (Globals.isBatch()) {
             return true;
         }
 
@@ -132,7 +134,7 @@ public class MessageUtils {
     public static synchronized boolean confirm(final Component component, final String message) {
 
 
-        if(Globals.isHeadless() || Globals.isBatch()) {
+        if (Globals.isHeadless() || Globals.isBatch()) {
             return true;
         }
 
@@ -166,7 +168,7 @@ public class MessageUtils {
 
         final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
         //Pad message with spaces so it's as wide as the defaultValue
-        if(defaultValue != null && message.length() < defaultValue.length()){
+        if (defaultValue != null && message.length() < defaultValue.length()) {
             message = String.format("%-" + defaultValue.length() + "s", message);
         }
         final String actMsg = message;

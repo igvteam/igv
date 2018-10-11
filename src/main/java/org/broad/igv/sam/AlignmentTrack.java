@@ -1389,8 +1389,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
+    static int nClusters = 2;
 
     class PopupMenu extends IGVPopupMenu {
+
+
 
         PopupMenu(final TrackClickEvent e) {
 
@@ -1421,7 +1424,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             //         addSeparator();
             //          addExpandInsertions();
 
-            addHaplotype(e);
+            if(dataManager.inferredExperimentType == ExperimentType.THIRD_GEN ) {
+                addHaplotype(e);
+            }
 
 
             if (dataManager.isTenX()) {
@@ -1509,7 +1514,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
          */
         private void addHaplotype(TrackClickEvent e) {
             //Export consensus sequence
-            JMenuItem item = new JMenuItem("Quick Haplotype");
+            JMenuItem item = new JMenuItem("Cluster (phase) alignments");
 
 
             final ReferenceFrame frame;
@@ -1522,30 +1527,37 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             item.setEnabled(frame != null);
             add(item);
 
-            item.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    //This shouldn't ever be true, but just in case it's more user-friendly
-                    if (frame == null) {
-                        MessageUtils.showMessage("Unknown region bounds, cannot export consensus");
-                        return;
-                    }
-                    final int start = (int) frame.getOrigin();
-                    final int end = (int) frame.getEnd();
-                    if ((end - start) > 1000000) {
-                        MessageUtils.showMessage("Cannot export region more than 1 Megabase");
-                        return;
-                    }
-                    AlignmentInterval interval = dataManager.getLoadedInterval(frame);
-                    HaplotypeUtils haplotypeUtils = new HaplotypeUtils(interval, AlignmentTrack.this.genome);
-                    haplotypeUtils.clusterAlignments(frame.getChrName(), start, end);
-
-                    AlignmentTrack.this.groupAlignments (GroupOption.HAPLOTYPE, null, null);
-
-                    //dataManager.sortRows(SortOption.HAPLOTYPE, frame, (end + start) / 2, null);
-                    //AlignmentTrack.refresh();
-
+            item.addActionListener(ae -> {
+                //This shouldn't ever be true, but just in case it's more user-friendly
+                if (frame == null) {
+                    MessageUtils.showMessage("Unknown region bounds");
+                    return;
                 }
+
+                String nString = MessageUtils.showInputDialog("Enter the number of clusters", String.valueOf(AlignmentTrack.nClusters));
+                if (nString == null) {
+                    return;
+                }
+                try {
+                    AlignmentTrack.nClusters  = Integer.parseInt(nString);
+                } catch(NumberFormatException e1) {
+                    MessageUtils.showMessage("Clusters size must be an integer");
+                    return;
+                }
+
+                final int start = (int) frame.getOrigin();
+                final int end = (int) frame.getEnd();
+
+                AlignmentInterval interval = dataManager.getLoadedInterval(frame);
+                HaplotypeUtils haplotypeUtils = new HaplotypeUtils(interval, AlignmentTrack.this.genome);
+                haplotypeUtils.clusterAlignments(frame.getChrName(), start, end, AlignmentTrack.nClusters);
+
+                AlignmentTrack.this.groupAlignments(GroupOption.HAPLOTYPE, null, null);
+                AlignmentTrack.refresh();
+
+                //dataManager.sortRows(SortOption.HAPLOTYPE, frame, (end + start) / 2, null);
+                //AlignmentTrack.refresh();
+
             });
 
 
@@ -2289,7 +2301,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 });
             }
         }
-
 
 
     }

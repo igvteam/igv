@@ -2,6 +2,8 @@ package org.broad.igv.sam;
 
 
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.Pair;
 
 import java.util.*;
 
@@ -23,31 +25,59 @@ public class HaplotypeUtils {
         this.genome = genome;
     }
 
-    public void clusterAlignments(String chr, int start, int end) {
+    public void clusterAlignments(String chr, int start, int end, int nClasses) {
+
 
         AlignmentCounts counts = this.alignmentInterval.getCounts();
 
         final byte[] reference = genome.getSequence(chr, start, end);
 
+        // Find snp positions
         List<Integer> snpPos = findVariantPositions(start, end, counts, reference);
 
-        KMeans kMeans = new KMeans(reference, start, end, snpPos);
+        if(snpPos.size() == 0) {
+            MessageUtils.showMessage("No variants in selected range.");
+            return;
+        }
 
-        kMeans.buildMap(this.alignmentInterval.getAlignmentIterator());
+        if(snpPos.size() < nClasses - 1) {
+            nClasses = snpPos.size() + 1;
+            MessageUtils.showMessage("Not enough variants, reducing # of clusters: " + nClasses);
+        }
 
-        List<KMeans.V> clusters = kMeans.findCentroids(10);
 
-        // Now assign all labels to a centroid
+        // Adjust start and end to min and max snp positions, there is no information outside these bounds
+        start = snpPos.get(0) - 1;
+        end = snpPos.get(snpPos.size() - 1) + 1;
+
+        // Label alignments
+        Map<String, List<Alignment>> labelAlignmentMap = labelAlignments(start, end, snpPos, reference, this.alignmentInterval.getAlignmentIterator());
+
+        // Sort labels (entries) by # of associated alignments
+        List<String> labels = new ArrayList(labelAlignmentMap.keySet());
+        labels.sort((o1, o2) -> {
+            return labelAlignmentMap.get(o2).size() - labelAlignmentMap.get(o1).size();
+        });
+
+        // Create initial cluster centroids
+        List<V> clusters = new ArrayList<>();
+        for (int i = 0; i < nClasses; i++) {
+            String label = labels.get(i);
+            V v = new V(i + 1, label);
+            clusters.add(v);
+        }
+
+        // Now assign all labels to a cluster
 
         int n = 0;
-        int max = 10;
+        int max = 50;
         while (true) {
-            for (String label : kMeans.alignmentMap.keySet()) {
+            for (String label : labels) {
 
                 double min = Double.MAX_VALUE;
-                KMeans.V centroid = null;
+                V centroid = null;
 
-                for (KMeans.V c : clusters) {
+                for (V c : clusters) {
                     double dist = c.distance(label);
                     if (dist < min) {
                         centroid = c;
@@ -61,7 +91,7 @@ public class HaplotypeUtils {
             }
 
             boolean movement = false;
-            for (KMeans.V c : clusters) {
+            for (V c : clusters) {
                 if (c.movement()) {
                     movement = true;
                     break;
@@ -69,7 +99,7 @@ public class HaplotypeUtils {
             }
 
             if (movement && n++ < max) {
-                for (KMeans.V c : clusters) {
+                for (V c : clusters) {
                     c.reset();
                 }
             } else {
@@ -77,15 +107,16 @@ public class HaplotypeUtils {
             }
         }
 
+        System.out.println("Converged in: " + n);
+
         // Now label alignments
-        int j = 1;
-        for (KMeans.V c : clusters) {
+        for (int i = 0; i < clusters.size(); i++) {
 
-            String label = "" + j++;
-
+            V c = clusters.get(i);
+            String label = "" + c.id;
             for (String l : c.allLabels) {
 
-                List<Alignment> alignments = kMeans.alignmentMap.get(l);
+                List<Alignment> alignments = labelAlignmentMap.get(l);
                 for (Alignment a : alignments) {
                     a.setHaplotypeName(label);
                 }
@@ -104,12 +135,65 @@ public class HaplotypeUtils {
 
             float mismatchCount = getMismatchCount(counts, i, ref);
 
-            if (mismatchCount > 0.2f && mismatchCount < 0.8f) {
+            if (mismatchCount > 0.2f) {
                 snpPos.add(i);
             }
         }
         return snpPos;
     }
+
+    public Map<String, List<Alignment>> labelAlignments(int start, int end, List<Integer> positions, byte[] reference, Iterator<Alignment> iter) {
+
+        Map<String, List<Alignment>> alignmentMap = new HashMap<>();
+
+        while (iter.hasNext()) {
+
+            Alignment alignment = iter.next();
+
+            if (start >= alignment.getStart() && end <= alignment.getEnd()) {
+
+                String hapName = "";
+                int dist = 0;
+
+                for (Integer pos : positions) {
+
+                    byte ref = reference[pos - start];
+                    boolean found = false;
+                    for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
+
+                        if (block.isSoftClipped()) continue;
+                        if (block.contains(pos)) {
+                            int blockOffset = pos - block.getStart();
+                            hapName += (char) block.getBase(blockOffset);
+                            found = true;
+
+                            if (ref != block.getBase(blockOffset)) {
+                                dist++;
+                            }
+
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        hapName += "_";
+                    }
+                }
+
+                hapName = hapName.toLowerCase();
+
+                List<Alignment> alignments = alignmentMap.get(hapName);
+                if (alignments == null) {
+                    alignments = new ArrayList<>();
+                    alignmentMap.put(hapName, alignments);
+                }
+                alignments.add(alignment);
+
+            }
+        }
+
+        return alignmentMap;
+    }
+
 
     public float getMismatchCount(AlignmentCounts counts, int pos, byte ref) {
 
@@ -128,239 +212,182 @@ public class HaplotypeUtils {
 
     }
 
-
-    static class KMeans {
-
-        private final byte[] reference;
-        private final int start;
-        private final int end;
-        private final List<Integer> positions;
-        private final Map<String, List<Alignment>> alignmentMap;
-
-        public KMeans(byte[] reference, int start, int end, List<Integer> positions) {
-
-            this.reference = reference;
-            this.start = start;
-            this.end = end;
-            this.positions = positions;
-            this.alignmentMap = new HashMap<>();
-        }
+//    List<V> combineClusters(List<V> clusters) {
+//
+//        List<Pair<Integer, Integer>> combine = new ArrayList<>();
+//        for (int i = 0; i < clusters.size(); i++) {
+//            for (int j = i + 1; j < clusters.size(); j++) {
+//                V c1 = clusters.get(i);
+//                V c2 = clusters.get(j);
+//                double d = c1.distance(c2);
+//                //System.out.println("" + c1.id + " - " + c2.id + "  =  " + d);
+//                if (d == 0) {
+//                    combine.add(new Pair(i, j));
+//                }
+//            }
+//        }
+//    }
 
 
-        public void buildMap(Iterator<Alignment> iter) {
+    static class V {
 
-            while (iter.hasNext()) {
+        static byte[] foo = {'a', 'c', 't', 'g', '_'};
 
-                Alignment alignment = iter.next();
+        int id;
+        int n;
+        int total;
+        Map<Byte, int[]> counts;
+        byte[] label;
 
-                if (this.start >= alignment.getStart() && this.end <= alignment.getEnd()) {
+        Set<String> allLabels;
+        Set<String> previousLabels;
 
-                    String hapName = "";
-                    int dist = 0;
+        public V(int id, String s) {
+            this.id = id;
+            this.label = s.toLowerCase().getBytes();
 
-                    for (Integer pos : this.positions) {
+            n = label.length;
 
-                        byte ref = reference[pos - start];
-                        boolean found = false;
-                        for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-
-                            if (block.isSoftClipped()) continue;
-                            if (block.contains(pos)) {
-                                int blockOffset = pos - block.getStart();
-                                hapName += (char) block.getBase(blockOffset);
-                                found = true;
-
-                                if (ref != block.getBase(blockOffset)) {
-                                    dist++;
-                                }
-
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            hapName += "_";
-                        }
-                    }
-
-                    hapName = hapName.toLowerCase();
-
-                    List<Alignment> alignments = alignmentMap.get(hapName);
-                    if (alignments == null) {
-                        alignments = new ArrayList<>();
-                        alignmentMap.put(hapName, alignments);
-                    }
-                    alignments.add(alignment);
-
-                }
+            counts = new HashMap<>();
+            for (byte b : foo) {
+                counts.put(b, new int[n]);
             }
+
+            allLabels = new HashSet<>();
+            previousLabels = new HashSet();
+
+            add(s);
         }
 
+        public void add(String s) {
 
-        private List<V> findCentroids(int n) {
+            byte[] m = s.getBytes();
 
-            List<Map.Entry<String, List<Alignment>>> entries = new ArrayList(alignmentMap.entrySet());
+            if (m.length != n) {
+                System.err.println("Wrong length");
+                return;
+            }
 
-            entries.sort((o1, o2) -> {
+            total++;
 
-                return o2.getValue().size() - o1.getValue().size();
-
-            });
-
-
-            List<V> classes = new ArrayList<>();
             for (int i = 0; i < n; i++) {
 
-                Map.Entry<String, List<Alignment>> e = entries.get(i);
-                V v = new V(e.getKey());
-                classes.add(v);
+                byte b = m[i];
+                if (b < 95) b += 32;  // a fast "toLowercase"
+
+                int[] cts = counts.get(b);
+                if (cts != null) {
+                    cts[i]++;
+                } else {
+                    System.err.println("Unknown nuc: " + ((char) m[i]));
+                }
             }
 
-            return classes;
+            updateLabel();
+
+            allLabels.add(s);
         }
 
+        void updateLabel() {
 
-        static class V {
+            for (int i = 0; i < n; i++) {
 
-            static byte[] foo = {'a', 'c', 't', 'g', '_'};
+                byte bMax = 0;
+                int cMax = 0;
 
-            int n;
-            int total;
-            Map<Byte, int[]> counts;
-            byte[] label;
-
-            Set<String> allLabels;
-            Set<String> previousLabels;
-
-            public V(String s) {
-
-                this.label = s.toLowerCase().getBytes();
-
-                n = label.length;
-
-                counts = new HashMap<>();
                 for (byte b : foo) {
-                    counts.put(b, new int[n]);
-                }
-
-                allLabels = new HashSet<>();
-                previousLabels = new HashSet();
-
-                add(s);
-            }
-
-            public void add(String s) {
-
-                byte[] m = s.getBytes();
-
-                if (m.length != n) {
-                    System.err.println("Wrong length");
-                    return;
-                }
-
-                total++;
-
-                for (int i = 0; i < n; i++) {
-
-                    byte b = m[i];
                     if (b < 95) b += 32;  // a fast "toLowercase"
-
                     int[] cts = counts.get(b);
-                    if (cts != null) {
-                        cts[i]++;
-                    } else {
-                        System.err.println("Unknown nuc: " + ((char) m[i]));
+                    if (cts == null) {
+                        System.out.println("Null: " + ((char) b));
+                    }
+                    if (cts[i] > cMax) {
+                        cMax = counts.get(b)[i];
+                        bMax = b;
                     }
                 }
 
-                updateLabel();
-
-                allLabels.add(s);
-            }
-
-            void updateLabel() {
-
-                for (int i = 0; i < n; i++) {
-
-                    byte bMax = 0;
-                    int cMax = 0;
-
-                    for (byte b : foo) {
-                        if (b < 95) b += 32;  // a fast "toLowercase"
-                        int[] cts = counts.get(b);
-                        if (cts == null) {
-                            System.out.println("Null: " + ((char) b));
-                        }
-                        if (cts[i] > cMax) {
-                            cMax = counts.get(b)[i];
-                            bMax = b;
-                        }
-                    }
-
-                    label[i] = bMax;
-                }
-            }
-
-            double distance(String s) {
-
-                if (s.length() != n) {
-                    System.out.println("Unequal lengths");
-                    return -Integer.MAX_VALUE;
-                }
-
-                // Lowercase
-                byte[] b = s.toLowerCase().getBytes();
-
-                double d = 0;
-                for (int i = 0; i < b.length; i++) {
-
-                    // Uncomment for Hamming distance
-                    //  char c = (char) label[i];
-                    //   char c1 = s.charAt(i);
-                    //  if(c != c1) {
-                    //      d += 1.0;
-                    //  }
-
-                    // % of counts matching
-                    int[] cts = counts.get(b[i]);
-                    double pct = cts[i] / ((double) total);
-                    d += 1 - pct;
-
-                }
-
-                return d;
-            }
-
-            public void reset() {
-
-                counts = new HashMap<>();
-                for (byte b : foo) {
-                    counts.put(b, new int[n]);
-                }
-
-                previousLabels = new HashSet(allLabels);
-                allLabels = new HashSet<>();
-
-                for (int i = 0; i < label.length; i++) {
-                    counts.get(label[i])[i] = 1;
-                }
-
-                total = 1;
-
-            }
-
-            public boolean movement() {
-
-                if (allLabels.size() != previousLabels.size()) {
-                    return true;
-                }
-                for (String l : previousLabels) {
-                    if (!allLabels.contains(l)) return true;
-                }
-                return false;
+                label[i] = bMax;
             }
         }
 
+        double distance(String s) {
 
+            if (s.length() != n) {
+                System.out.println("Unequal lengths");
+                return -Integer.MAX_VALUE;
+            }
+
+            // Lowercase
+            byte[] b = s.toLowerCase().getBytes();
+
+            double d = 0;
+            for (int i = 0; i < b.length; i++) {
+
+                // Uncomment for Hamming distance
+                //  char c = (char) label[i];
+                //   char c1 = s.charAt(i);
+                //  if(c != c1) {
+                //      d += 1.0;
+                //  }
+
+                // % of counts matching
+                int[] cts = counts.get(b[i]);
+                double pct = cts[i] / ((double) total);
+                d += 1 - pct;
+
+            }
+            return d;
+        }
+
+        double distance(V v) {
+
+            byte[] s = v.label;
+
+            if (s.length != n) {
+                System.out.println("Unequal lengths");
+                return -Integer.MAX_VALUE;
+            }
+
+            double d = 0;
+            for (int i = 0; i < s.length; i++) {
+                byte c = label[i];
+                byte c1 = s[i];
+                if (c != c1) {
+                    d += 1.0;
+                }
+            }
+            return d;
+        }
+
+        public void reset() {
+
+            counts = new HashMap<>();
+            for (byte b : foo) {
+                counts.put(b, new int[n]);
+            }
+
+            previousLabels = new HashSet(allLabels);
+            allLabels = new HashSet<>();
+
+            for (int i = 0; i < label.length; i++) {
+                counts.get(label[i])[i] = 1;
+            }
+
+            total = 1;
+
+        }
+
+        public boolean movement() {
+
+            if (allLabels.size() != previousLabels.size()) {
+                return true;
+            }
+            for (String l : previousLabels) {
+                if (!allLabels.contains(l)) return true;
+            }
+            return false;
+        }
     }
 
 }
