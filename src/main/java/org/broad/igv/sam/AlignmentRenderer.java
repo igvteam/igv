@@ -294,7 +294,6 @@ public class AlignmentRenderer {
         initializeGraphics(context);
         double origin = context.getOrigin();
         double locScale = context.getScale();
-        boolean completeReadsOnly = prefs.getAsBoolean(SAM_COMPLETE_READS_ONLY);
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
@@ -310,12 +309,6 @@ public class AlignmentRenderer {
                     continue;
                 }
 
-                // Optionally only draw alignments that are completely in view
-                if (completeReadsOnly) {
-                    if (pixelStart < rowRect.x || pixelEnd > rowRect.getMaxX()) {
-                        continue;
-                    }
-                }
 
                 // If the alignment is 3 pixels or less,  draw alignment as a single block,
                 // further detail would not be seen and just add to drawing overhead

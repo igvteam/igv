@@ -143,7 +143,6 @@ final public class Constants {
     public static final String SAM_FLAG_CLIPPING = "SAM.FLAG_CLIPPING";
     public static final String SAM_CLIPPING_THRESHOLD = "SAM.CLIPPING_THRESHOLD";
     public static final String SAM_SHOW_GROUP_SEPARATOR = "SAM.SHOW_GROUP_SEPARATOR";
-    public static final String SAM_COMPLETE_READS_ONLY = "SAM.COMPLETE_READS_ONLY";
     public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
     public static final String SAM_HIDE_SMALL_INDEL = "SAM.HIDE_SMALL_INDEL";
     public static final String SAM_SMALL_INDEL_BP_THRESHOLD = "SAM.SMALL_INDEL_BP_THRESHOLD";

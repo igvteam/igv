@@ -283,20 +283,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         inputMap.put(forwardKey1, "forward");
         inputMap.put(forwardKey2, "forward");
 
-        // Toggle alignment "complete read only" option
-        final KeyStroke completeReadKey = KeyStroke.getKeyStroke(KeyEvent.VK_1, KeyEvent.CTRL_DOWN_MASK, false);
-        final Action completeReadAction = new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                boolean currentSetting = prefMgr.getAsBoolean(SAM_COMPLETE_READS_ONLY);
-                prefMgr.put(SAM_COMPLETE_READS_ONLY, !currentSetting);
-                igv.revalidateTrackPanels();
-            }
-        };
-        inputMap.put(completeReadKey, "completeReads");
-        actionMap.put("completeReads", completeReadAction);
-
-
     }
 
     /**
