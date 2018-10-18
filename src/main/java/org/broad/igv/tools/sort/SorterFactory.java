@@ -71,7 +71,10 @@ public class SorterFactory {
             return new InteractionSorter(inputFile, outputFile);
         } else if(shortFN.endsWith(".bam")) {
             return new BAMSorter(inputFile, outputFile);
-        } else {
+        } else if(shortFN.contains("refgene")) {
+            return new RefgeneSorter(inputFile, outputFile);
+        }
+        else {
             log.error("Unknown file type or sorting not supported for: " + inputFile.getName());
             return null;
         }
