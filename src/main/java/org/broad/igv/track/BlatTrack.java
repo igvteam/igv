@@ -1,20 +1,12 @@
 package org.broad.igv.track;
 
-import com.google.gson.Gson;
-import org.broad.igv.data.DataTile;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.PSLCodec;
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.IGVFeatureRenderer;
-import org.broad.igv.renderer.SpliceJunctionRenderer;
-import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -22,10 +14,8 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.blat.BlatQueryWindow;
 import org.w3c.dom.Element;
-import sun.plugin2.util.ColorUtil;
 
 import javax.swing.*;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -34,7 +24,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-@XmlType(factoryMethod = "getNextTrack")
 
 public class BlatTrack extends FeatureTrack {
 
@@ -50,10 +39,6 @@ public class BlatTrack extends FeatureTrack {
     Genome genome;
 
     List<PSLRecord> features;
-
-    public BlatTrack() {
-        super("", "");
-    }
 
     public BlatTrack(String species, String sequence, String db, Genome genome) throws IOException {
 
