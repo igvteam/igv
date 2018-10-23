@@ -46,6 +46,7 @@ import org.broad.igv.ui.UIConstants;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.BrowserLauncher;
@@ -112,7 +113,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<String, PackedFeatures<IGVFeature>>());
 
-    private Renderer renderer;
+    protected Renderer renderer;
 
     private DataRenderer coverageRenderer;
 
@@ -1115,5 +1116,18 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     public String getExportTrackLine() {
         return trackLine;
     }
+
+
+    public  FeatureTrack (Element element) {
+
+        super(element);
+
+        String cs = element.getAttribute("color");
+        if(cs != null) {
+            Color c = ColorUtilities.stringToColor(cs);
+            this.posColor = c;
+        }
+    }
+
 }
 

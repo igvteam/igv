@@ -45,6 +45,7 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TooltipTextFrame;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.AttributeHeaderPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
@@ -52,6 +53,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import javax.xml.bind.JAXBException;
@@ -103,7 +105,7 @@ public abstract class AbstractTrack implements Track {
 
 
     @XmlAttribute
-    private String id;
+    protected String id;
 
     @XmlAttribute
     private String name;
@@ -1169,6 +1171,29 @@ public abstract class AbstractTrack implements Track {
                 keyValues.addEntry(new KeyValue(entry.getKey(), entry.getValue()));
             }
             return keyValues;
+        }
+    }
+
+
+    /**
+     * Restore track from XML serialization -- work in progress
+     *
+     * @param element
+     */
+    public  AbstractTrack (Element element) {
+
+        this.name = element.getAttribute("name");
+
+        String dsMode = element.getAttribute("displayMode");
+
+        if(dsMode != null) {
+            this.displayMode = DisplayMode.valueOf(dsMode);
+        }
+
+        String cs = element.getAttribute("color");
+        if(cs != null) {
+            Color c = ColorUtilities.stringToColor(cs);
+            this.posColor = c;
         }
     }
 }

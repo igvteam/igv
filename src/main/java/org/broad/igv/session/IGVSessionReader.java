@@ -1089,48 +1089,61 @@ public class IGVSessionReader implements SessionReader {
 
         if (matchedTracks == null) {
             //Try creating an "absolute" path for the id
-            matchedTracks = allTracks.get(getAbsolutePath(id, rootPath));
+            if (id != null) {
+                matchedTracks = allTracks.get(getAbsolutePath(id, rootPath));
+            }
         }
 
         if (matchedTracks == null) {
 
             String className = getAttribute(element, "clazz");
 
-            //We try anyway, some tracks can be reconstructed without a resource element
-            //They must have children in that case though, either a source (analysis tracks)
-            //or another track (MergedTracks)
-            try {
-                if (className != null && element.hasChildNodes()) {
-                    Track track = null;
-                    if (className.contains("FeatureTrack") || className.contains("DataSourceTrack")) {
-                        Class clazz = Class.forName(className);
-                        Unmarshaller u = getJAXBContext().createUnmarshaller();
-                        track = unmarshalTrackElement(u, element, null, clazz);
-                        matchedTracks = new ArrayList<Track>(Arrays.asList(track));
-                    } else if (className.contains("MergedTracks")) {
-                        List<Track> childTracks = processChildTracks(session, element,
-                                additionalInformation, rootPath, alternateRootPath);
-                        List<DataTrack> memberTracks = new ArrayList<DataTrack>(childTracks.size());
+            if (className.contains("BlatTrack")) {
 
-                        for (Track aTrack : childTracks) {
-                            memberTracks.add((DataTrack) aTrack);
-                        }
-                        track = new MergedTracks(id,
-                                getAttribute(element, SessionAttribute.NAME.getText()), memberTracks);
-                        matchedTracks = Arrays.asList(track);
-                    }
-                    if (track != null) {
-                        allTracks.put(track.getId(), matchedTracks);
-                    } else {
-                        log.info("Warning.  No tracks were found with id: " + id + " in session file");
-                    }
+                try {
+                    BlatTrack track = new BlatTrack(element);
+                    matchedTracks = Arrays.asList(track);
+                    allTracks.put(track.getId(), matchedTracks);
+                } catch (IOException e) {
+                    log.error("Error restoring Blat track ", e);
                 }
-            } catch (JAXBException e) {
-                //pass
-            } catch (ClassNotFoundException e) {
-                //pass
-            }
 
+            } else {
+                //We try anyway, some tracks can be reconstructed without a resource element
+                //They must have children in that case though, either a source (analysis tracks)
+                //or another track (MergedTracks)
+                try {
+                    if (className != null && element.hasChildNodes()) {
+                        Track track = null;
+                        if (className.contains("FeatureTrack") || className.contains("DataSourceTrack")) {
+                            Class clazz = Class.forName(className);
+                            Unmarshaller u = getJAXBContext().createUnmarshaller();
+                            track = unmarshalTrackElement(u, element, null, clazz);
+                            matchedTracks = new ArrayList<Track>(Arrays.asList(track));
+                        } else if (className.contains("MergedTracks")) {
+                            List<Track> childTracks = processChildTracks(session, element,
+                                    additionalInformation, rootPath, alternateRootPath);
+                            List<DataTrack> memberTracks = new ArrayList<DataTrack>(childTracks.size());
+
+                            for (Track aTrack : childTracks) {
+                                memberTracks.add((DataTrack) aTrack);
+                            }
+                            track = new MergedTracks(id,
+                                    getAttribute(element, SessionAttribute.NAME.getText()), memberTracks);
+                            matchedTracks = Arrays.asList(track);
+                        }
+                        if (track != null) {
+                            allTracks.put(track.getId(), matchedTracks);
+                        } else {
+                            log.info("Warning.  No tracks were found with id: " + id + " in session file");
+                        }
+                    }
+                } catch (JAXBException e) {
+                    //pass
+                } catch (ClassNotFoundException e) {
+                    //pass
+                }
+            }
 
         } else {
 

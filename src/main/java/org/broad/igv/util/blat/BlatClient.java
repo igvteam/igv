@@ -249,7 +249,6 @@ public class BlatClient {
                 try {
 
                     Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
-                    PSLCodec codec = new PSLCodec(genome, true);
 
                     String db = genome.getId();
                     String species = genome.getSpecies();
@@ -258,29 +257,16 @@ public class BlatClient {
                         return;
                     }
 
-                    List<String> tokensList = blat(species, db, userSeq);
+                    BlatTrack newTrack = new BlatTrack(species, userSeq, db, genome);
 
-                    // Convert tokens to features
-                    List<PSLRecord> features = new ArrayList<PSLRecord>(tokensList.size());
-                    for (String tokens : tokensList) {
-                        PSLRecord f = codec.decode(tokens);
-                        if (f != null) {
-                            features.add(f);
-                        }
-                    }
 
-                    if (features.isEmpty()) {
+                    if (newTrack.getFeatures().isEmpty()) {
                         MessageUtils.showMessage("No features found");
                     } else {
 
-                        FeatureSource<PSLRecord> source = new FeatureCollectionSource(features, genome);
-                        FeatureTrack newTrack = new FeatureTrack("Blat", "Blat", source);
-                        newTrack.setUseScore(true);
-                        newTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
                         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
 
-
-                        BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), userSeq, features);
+                        BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), userSeq, newTrack.getFeatures());
                         win.setVisible(true);
 
                     }
@@ -294,16 +280,13 @@ public class BlatClient {
 
     public static JMenuItem getMenuItem() {
         JMenuItem menuItem = new JMenuItem("BLAT ...");
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        menuItem.addActionListener(e -> {
 
-                String blatSequence = MessageUtils.showInputDialog("Enter sequence to blat:");
-                if(blatSequence != null) {
-                    doBlatQuery(blatSequence);
-                }
-
+            String blatSequence = MessageUtils.showInputDialog("Enter sequence to blat:");
+            if(blatSequence != null) {
+                doBlatQuery(blatSequence);
             }
+
         });
 
         return menuItem;

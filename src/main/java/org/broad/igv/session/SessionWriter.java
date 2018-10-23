@@ -70,6 +70,8 @@ public class SessionWriter {
 
     private static final String TRACK_TAG = SessionElement.TRACK.getText();
 
+    Document document;
+
     /**
      * Method description
      *
@@ -114,7 +116,7 @@ public class SessionWriter {
 
             // Create a DOM document
             DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = documentBuilder.newDocument();
+            document = documentBuilder.newDocument();
             document.setStrictErrorChecking(true);
 
             // Global root element
@@ -138,7 +140,7 @@ public class SessionWriter {
             }
 
             int nextAutoscaleGroup = session.getNextAutoscaleGroup();
-            if(nextAutoscaleGroup > 1) {
+            if (nextAutoscaleGroup > 1) {
                 globalElement.setAttribute(SessionAttribute.NEXT_AUTOSCALE_GROUP.getText(), String.valueOf(nextAutoscaleGroup));
             }
 
@@ -419,24 +421,36 @@ public class SessionWriter {
      * @param trackParent
      * @throws javax.xml.bind.JAXBException
      */
-    private static void marshalTrack(Marshaller m, Track track, Node trackParent, Class marshalClass) throws JAXBException {
+    private void marshalTrack(Marshaller m, Track track, Node trackParent, Class marshalClass) throws JAXBException {
 
-        if (marshalClass == null || marshalClass.equals(Object.class)) {
-            throw new JAXBException(track.getClass() + " and none of its superclasses are known");
-        }
+        if (marshalClass == BlatTrack.class) {
 
-        if (AbstractTrack.knownUnknownTrackClasses.contains(marshalClass)) {
-            marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
-            return;
-        }
+            Element element = document.createElement("Track");
+            element.setAttribute("clazz", "org.broad.igv.track.BlatTrack");
 
-        JAXBElement el;
-        try {
-            el = new JAXBElement(new QName("", TRACK_TAG), marshalClass, track);
-            m.marshal(el, trackParent);
-        } catch (JAXBException e) {
-            AbstractTrack.knownUnknownTrackClasses.add(marshalClass);
-            marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
+            for(Map.Entry<String, String> entry : track.getPersistentState().entrySet()) {
+                element.setAttribute(entry.getKey(), entry.getValue());
+            }
+
+            trackParent.appendChild(element);
+        } else {
+            if (marshalClass == null || marshalClass.equals(Object.class)) {
+                throw new JAXBException(track.getClass() + " and none of its superclasses are known");
+            }
+
+            if (AbstractTrack.knownUnknownTrackClasses.contains(marshalClass)) {
+                marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
+                return;
+            }
+
+            JAXBElement el;
+            try {
+                el = new JAXBElement(new QName("", TRACK_TAG), marshalClass, track);
+                m.marshal(el, trackParent);
+            } catch (JAXBException e) {
+                AbstractTrack.knownUnknownTrackClasses.add(marshalClass);
+                marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
+            }
         }
     }
 
