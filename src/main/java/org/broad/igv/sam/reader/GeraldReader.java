@@ -229,7 +229,7 @@ public class GeraldReader implements AlignmentReader {
         private void advanceToFirstRecord() {
             nextRecord = parseNextRecord();
             while (nextRecord != null) {
-                if (!nextRecord.getChr().equals(chr)) {
+                if (!nextRecord.getContig().equals(chr)) {
                     break;
                 } else if (withinBounds(nextRecord)) {
                     break;
@@ -266,7 +266,7 @@ public class GeraldReader implements AlignmentReader {
         @Override
         public boolean hasNext() {
             if (nextRecord == null ||
-                    !chr.equals(nextRecord.getChr())) {
+                    !chr.equals(nextRecord.getContig())) {
                 return false;
             } else {
                 return contained ? nextRecord.getEnd() <= end

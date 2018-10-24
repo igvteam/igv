@@ -411,7 +411,7 @@ public class ReferenceFrame {
     }
 
     public void jumpTo(Locus locus) {
-        String chr = locus.getChr();
+        String chr = locus.getContig();
         int start = locus.getStart();
         int end = locus.getEnd();
 
@@ -625,7 +625,7 @@ public class ReferenceFrame {
         } else {
 
             Range range = getCurrentRange();
-            return Locus.getFormattedLocusString(range.getChr(), range.getStart(), range.getEnd());
+            return Locus.getFormattedLocusString(range.getContig(), range.getStart(), range.getEnd());
         }
     }
 

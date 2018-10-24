@@ -189,7 +189,7 @@ public class FreqData {
         for (Map.Entry<String, List<LocusScore>> entry : amp.entrySet()) {
             if (!entry.getKey().equals(Globals.CHR_ALL)) {
                 for (LocusScore bin : entry.getValue()) {
-                    System.out.println(bin.getChr() + "\t" + bin.getStart() + "\t" + bin.getEnd() + "\t" + bin.getScore());
+                    System.out.println(bin.getContig() + "\t" + bin.getStart() + "\t" + bin.getEnd() + "\t" + bin.getScore());
                 }
             }
         }
@@ -239,11 +239,6 @@ public class FreqData {
 
         float getAvgCN() {
             return count == 0 ? 0 : getTotalCN() / count;
-        }
-
-
-        public String getChr() {
-            return chr;
         }
 
         @Override

@@ -123,10 +123,10 @@ public class FeatureCollectionSource implements FeatureSource {
 
             featureMap = new HashMap();
             for (Feature f : allFeatures) {
-                List<Feature> fList = featureMap.get(f.getChr());
+                List<Feature> fList = featureMap.get(f.getContig());
                 if (fList == null) {
                     fList = new ArrayList();
-                    featureMap.put(f.getChr(), fList);
+                    featureMap.put(f.getContig(), fList);
                 }
                 fList.add(f);
             }

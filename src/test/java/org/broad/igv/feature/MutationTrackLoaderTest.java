@@ -73,7 +73,7 @@ public class MutationTrackLoaderTest extends AbstractHeadlessTest {
                 Mutation mut = (Mutation) features.get(0);
 
                 assertEquals(testSampleId, mut.getSampleId());
-                assertEquals(testChr, mut.getChr());
+                assertEquals(testChr, mut.getContig());
                 assertEquals(testStart, mut.getStart());
                 assertEquals(testEnd, mut.getEnd());
                 assertEquals("Missense_Mutation", mut.getMutationType());

@@ -92,7 +92,7 @@ public class GFFtoBedTest {
 
     private void compare(BasicFeature gffFeature, BasicFeature bedFeature) {
 
-        assertEquals(gffFeature.getChr(), bedFeature.getChr());
+        assertEquals(gffFeature.getContig(), bedFeature.getContig());
         assertEquals(gffFeature.getStart(), bedFeature.getStart());
         assertEquals(gffFeature.getEnd(), bedFeature.getEnd());
         assertEquals(gffFeature.getStrand(), bedFeature.getStrand());

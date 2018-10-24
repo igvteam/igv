@@ -91,7 +91,7 @@ public class CachingFeatureReaderTest {
 
         while (iter.hasNext()) {
             VCFVariant var = iter.next();
-            assertEquals(chr, var.getChr());
+            assertEquals(chr, var.getContig());
             assertTrue(var.getEnd() >= start && var.getStart() <= end);
             baseReaderLoci.add(getLocusString(var));
         }
@@ -102,7 +102,7 @@ public class CachingFeatureReaderTest {
         iter = cacheReader.query(chr, start, end);
         while (iter.hasNext()) {
             VCFVariant var = iter.next();
-            assertEquals(chr, var.getChr());
+            assertEquals(chr, var.getContig());
             assertTrue(var.getEnd() >= start && var.getStart() <= end);
             cacheReaderLoci.add(getLocusString(var));
         }
@@ -114,6 +114,6 @@ public class CachingFeatureReaderTest {
     }
 
     String getLocusString(VCFVariant variant) {
-        return variant.getChr() + ":" + variant.getStart() + "-" + variant.getEnd();
+        return variant.getContig() + ":" + variant.getStart() + "-" + variant.getEnd();
     }
 }

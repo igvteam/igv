@@ -47,7 +47,7 @@ public class FeatureUtils {
         Predicate<Feature> overlapPredicate = new Predicate<Feature>() {
             @Override
             public boolean apply(Feature object) {
-                return chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() > start;
+                return chr.equals(object.getContig()) && object.getStart() <= end && object.getEnd() > start;
             }
         };
         return overlapPredicate;
@@ -56,10 +56,10 @@ public class FeatureUtils {
     public static Map<String, List<IGVFeature>> divideByChromosome(List<IGVFeature> features) {
         Map<String, List<IGVFeature>> featureMap = new LinkedHashMap();
         for (IGVFeature f : features) {
-            List<IGVFeature> flist = featureMap.get(f.getChr());
+            List<IGVFeature> flist = featureMap.get(f.getContig());
             if (flist == null) {
                 flist = new ArrayList();
-                featureMap.put(f.getChr(), flist);
+                featureMap.put(f.getContig(), flist);
             }
             flist.add(f);
         }
@@ -425,7 +425,7 @@ public class FeatureUtils {
         System.out.println(feature.getName());
         System.out.print(genome.getId() + "\t");
         String str = feature.getStrand() == Strand.POSITIVE ? "+" : "-";
-        System.out.print(feature.getChr() + "\t" + str + "\t" + feature.getStart() + "\t" + feature.getEnd() + "\t");
+        System.out.print(feature.getContig() + "\t" + str + "\t" + feature.getStart() + "\t" + feature.getEnd() + "\t");
 
         List<Exon> exons = feature.getExons();
 
@@ -467,7 +467,7 @@ public class FeatureUtils {
             buffer = Math.min(50, (nextExonStart - ex.getEnd()) / 2);
             int seqEnd = ex.getEnd() + buffer;
 
-            byte [] sequence = genome.getSequence(feature.getChr(), seqStart, seqEnd);
+            byte [] sequence = genome.getSequence(feature.getContig(), seqStart, seqEnd);
             String seqString = new String(sequence);
             System.out.println(seqStart + "\t" + seqEnd + "\t" + seqString);
         }

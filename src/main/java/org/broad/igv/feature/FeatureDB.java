@@ -137,7 +137,7 @@ public class FeatureDB {
         String key = name.toUpperCase();
         if (!Globals.isHeadless()) {
             Genome currentGenome = genome != null ? genome : GenomeManager.getInstance().getCurrentGenome();
-            if (currentGenome != null && currentGenome.getChromosome(feature.getChr()) == null) {
+            if (currentGenome != null && currentGenome.getChromosome(feature.getContig()) == null) {
                 return false;
             }
         }
@@ -393,7 +393,7 @@ public class FeatureDB {
                     if (genomePosition < 0) {
                         continue;
                     }
-                    final byte[] nuclSequence = currentGenome.getSequence(bf.getChr(), genomePosition, genomePosition + 1);
+                    final byte[] nuclSequence = currentGenome.getSequence(bf.getContig(), genomePosition, genomePosition + 1);
                     if (nuclSequence == null) {
                         continue;
                     }
@@ -446,8 +446,8 @@ public class FeatureDB {
 
             // Prefer the shortest chromosome name.  Longer names are most likely "weird"
             // e.g.  chr1_gl000191_random
-            int nameLen1 = feat1.getChr().length();
-            int nameLen2 = feat2.getChr().length();
+            int nameLen1 = feat1.getContig().length();
+            int nameLen2 = feat2.getContig().length();
             if (nameLen1 != nameLen2) {
                 return nameLen1 - nameLen2;
             }

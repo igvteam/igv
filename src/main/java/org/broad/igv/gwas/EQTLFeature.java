@@ -80,7 +80,7 @@ public class EQTLFeature extends AbstractFeature {
     }
 
     @Override
-    public String getChr() {
+    public String getContig(){
         return chr;
     }
 

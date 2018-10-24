@@ -101,10 +101,6 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         return Float.NaN;
     }
 
-    public String getChr() {
-        return chromosome;
-    }
-
     public String getContig() {
         return chromosome;
     }
@@ -138,7 +134,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         if (feature == null) {
             return false;
         }
-        if (!this.getChr().equals(feature.getChr()) ||
+        if (!this.getContig().equals(feature.getContig()) ||
                 this.getStrand() != feature.getStrand()) {
             return false;
         }
@@ -225,7 +221,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
     public boolean overlaps(Feature anotherFeature) {
 
         return end >= anotherFeature.getStart() && start <= anotherFeature.getEnd() &&
-                chromosome.equals(anotherFeature.getChr());
+                chromosome.equals(anotherFeature.getContig());
 
     }
 
@@ -253,7 +249,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
      * @return
      */
     public String getLocusString() {
-        return getChr() + ":" + (getStart() + 1) + "-" + getEnd();
+        return getContig() + ":" + (getStart() + 1) + "-" + getEnd();
     }
 
 

@@ -85,10 +85,6 @@ public class PackedFeaturesTest extends AbstractHeadlessTest {
             this.end = end;
         }
 
-        public String getChr() {
-            return chr;
-        }
-
         @Override
         public String getContig() {
             return chr;

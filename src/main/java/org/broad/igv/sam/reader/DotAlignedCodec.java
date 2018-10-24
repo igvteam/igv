@@ -60,7 +60,7 @@ public class DotAlignedCodec implements SortingCollection.Codec<DotAlignedAlignm
 
     public void encode(DotAlignedAlignment alignment) {
         try {
-            outputStream.writeUTF(alignment.getChr());
+            outputStream.writeUTF(alignment.getContig());
             outputStream.writeInt(alignment.getStart());
             outputStream.writeInt(alignment.getEnd());
             outputStream.writeBoolean(alignment.isNegativeStrand());

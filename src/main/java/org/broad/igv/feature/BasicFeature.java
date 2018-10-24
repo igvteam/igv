@@ -76,7 +76,7 @@ public class BasicFeature extends AbstractFeature {
     }
 
     public BasicFeature(BasicFeature feature) {
-        super(feature.getChr(), feature.getStart(), feature.getEnd(), feature.getStrand());
+        super(feature.getContig(), feature.getStart(), feature.getEnd(), feature.getStrand());
         super.setName(feature.getName());
         this.confidence = feature.confidence;
         this.color = feature.color;
@@ -312,7 +312,7 @@ public class BasicFeature extends AbstractFeature {
         int[] featurePositions = new int[]{startTranscriptPosition, startTranscriptPosition + 1,
                 startTranscriptPosition + 2};
         int[] genomePositions = featureToGenomePosition(featurePositions);
-        Codon codonInfo = new Codon(getChr(), proteinPosition, getStrand());
+        Codon codonInfo = new Codon(getContig(), proteinPosition, getStrand());
         for (int gp : genomePositions) {
             codonInfo.setNextGenomePosition(gp);
         }

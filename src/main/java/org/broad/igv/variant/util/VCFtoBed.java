@@ -67,7 +67,7 @@ public class VCFtoBed {
             while (iter.hasNext()) {
 
                 VariantContext vc = iter.next();
-                String chr = vc.getChr();
+                String chr = vc.getContig();
                 if (!chr.startsWith("chr")) {
                     chr = "chr" + chr;
                 }

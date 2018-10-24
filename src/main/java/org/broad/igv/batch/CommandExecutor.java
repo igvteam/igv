@@ -759,7 +759,7 @@ public class CommandExecutor {
             if (locus != null) {
                 int start = Math.max(0, locus.getStart() - 1);
                 String desc = param2 != null ? param2 : "";
-                roi = new RegionOfInterest(locus.getChr(), start, locus.getEnd(), desc);
+                roi = new RegionOfInterest(locus.getContig(), start, locus.getEnd(), desc);
 
             }
         }
@@ -779,7 +779,7 @@ public class CommandExecutor {
                 Locus locus = Locus.fromString(locusString);
                 if (locus != null) {
                     int start = Math.max(0, locus.getStart() - 1);
-                    roi = new RegionOfInterest(locus.getChr(), start, locus.getEnd(), "");
+                    roi = new RegionOfInterest(locus.getContig(), start, locus.getEnd(), "");
                 }
             }
             igv.sortByRegionScore(roi, regionSortOption, FrameManager.getDefaultFrame());

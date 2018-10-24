@@ -101,7 +101,7 @@ public class IlluminaToCN {
                     int cnv = (int) Float.parseFloat(tokens[col + cnvOffset]);
 
                     Segment segment = currentSegments.get(sample);
-                    if (segment == null || !chr.equals(segment.getChr()) || cnv == (int) segment.getScore()) {
+                    if (segment == null || !chr.equals(segment.getContig()) || cnv == (int) segment.getScore()) {
                         if (segment != null) {
                             List<Segment> segs = cnvSegments.get(sample);
                             if (segs == null) {
@@ -135,7 +135,7 @@ public class IlluminaToCN {
             for (Map.Entry<String, List<Segment>> entry : cnvSegments.entrySet()) {
                 String sample = entry.getKey();
                 for (Segment segment : entry.getValue()) {
-                    cnvWriter.println(sample + "\t" + segment.getChr() + "\t" + segment.getStart() + "\t"
+                    cnvWriter.println(sample + "\t" + segment.getContig() + "\t" + segment.getStart() + "\t"
                             + segment.getEnd() + "\t" + "" + "\t" + (int) segment.getScore());
                 }
             }

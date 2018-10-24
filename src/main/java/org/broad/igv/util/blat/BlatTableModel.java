@@ -76,7 +76,7 @@ public class BlatTableModel extends AbstractTableModel {
 
         switch (columnIndex) {
             case 0:
-                return record.getChr();
+                return record.getContig();
             case 1:
                 return record.getStart();
             case 2:
@@ -109,7 +109,7 @@ public class BlatTableModel extends AbstractTableModel {
 
     public String getChr(int rowIndex) {
         PSLRecord record = records.get(rowIndex);
-        return record.getChr();
+        return record.getContig();
     }
 
     public int getStart(int rowIndex) {

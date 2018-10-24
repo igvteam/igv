@@ -104,10 +104,6 @@ public class DotAlignedAlignment implements Alignment {
         return chromosome;
     }
 
-    public String getChr() {
-        return chromosome;
-    }
-
     @Override
     public String getContig() {
         return chromosome;

@@ -63,7 +63,7 @@ public class Locus extends Range implements NamedFeature {
     }
 
     public boolean isValid() {
-        return getChr() != null && getStart() >= 0 && getEnd() >= getStart();
+        return getContig() != null && getStart() >= 0 && getEnd() >= getStart();
     }
 
     // Only accept full locus strings,  i.e. must contain : and -

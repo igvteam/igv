@@ -137,7 +137,7 @@ public class TribbleIndexTest extends AbstractHeadlessTest {
         int count = 0;
         while (iter.hasNext()) {
             htsjdk.variant.variantcontext.VariantContext feat = iter.next();
-            assertEquals("chr9", feat.getChr());
+            assertEquals("chr9", feat.getContig());
             assertEquals(feat.getStart(), 5073767);
             assertTrue(feat.hasAttribute("MapQs"));
             count++;
@@ -149,7 +149,7 @@ public class TribbleIndexTest extends AbstractHeadlessTest {
         count = 0;
         while (iter.hasNext()) {
             htsjdk.variant.variantcontext.VariantContext feat = iter.next();
-            assertEquals("chr9", feat.getChr());
+            assertEquals("chr9", feat.getContig());
             assertEquals(feat.getStart(), 5073767);
             assertTrue(feat.hasAttribute("MapQs"));
             count++;
@@ -167,7 +167,7 @@ public class TribbleIndexTest extends AbstractHeadlessTest {
         count = 0;
         while (iter.hasNext()) {
             htsjdk.variant.variantcontext.VariantContext feat = iter.next();
-            assertEquals(chr, feat.getChr());
+            assertEquals(chr, feat.getContig());
             if (count == 0) {
                 assertEquals(984163, feat.getStart());
             }

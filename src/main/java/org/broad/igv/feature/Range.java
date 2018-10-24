@@ -50,11 +50,6 @@ public class Range implements Feature {
         this.end = end;
     }
 
-
-    public String getChr() {
-        return chr;
-    }
-
     @Override
     public String getContig() {
         return chr;
@@ -104,7 +99,7 @@ public class Range implements Feature {
     }
 
     public boolean overlaps(Range range) {
-        return this.overlaps(range.getChr(), range.getStart(), range.getEnd());
+        return this.overlaps(range.getContig(), range.getStart(), range.getEnd());
     }
 
     public boolean contains(Range range) {

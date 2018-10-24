@@ -110,7 +110,7 @@ public class PluginDataSource extends AbstractDataSource {
                 startLocations[idx] = locusScore.getStart();
                 endLocations[idx] = locusScore.getEnd();
                 scores[idx] = locusScore.getScore();
-                names[idx] = Locus.getFormattedLocusString(locusScore.getChr(), locusScore.getStart(), locusScore.getEnd());
+                names[idx] = Locus.getFormattedLocusString(locusScore.getContig(), locusScore.getStart(), locusScore.getEnd());
                 idx++;
             }
             return new DataTile(startLocations, endLocations, scores, names);

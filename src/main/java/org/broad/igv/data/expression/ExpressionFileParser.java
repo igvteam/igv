@@ -324,7 +324,7 @@ public class ExpressionFileParser {
             for (Locus locus : loci) {
                 if ((locus != null) && locus.isValid()) {
 
-                    String chr = genome == null ? locus.getChr() : genome.getCanonicalChrName(locus.getChr());
+                    String chr = genome == null ? locus.getContig() : genome.getCanonicalChrName(locus.getContig());
 
                     List<Row> rows = rowMap.get(chr);
                     if (rows == null) {

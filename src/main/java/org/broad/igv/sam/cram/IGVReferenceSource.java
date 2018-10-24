@@ -55,7 +55,7 @@ public class IGVReferenceSource implements CRAMReferenceSource {
 
     private static Logger log = Logger.getLogger(IGVReferenceSource.class);
 
-    static ObjectCache<String, byte[]> cachedSequences = new ObjectCache<String, byte[]>(2);
+    static ObjectCache<String, byte[]> cachedSequences = new ObjectCache<>(2);
 
     static GenomeChangeListener genomeChangeListener;
 

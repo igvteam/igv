@@ -46,13 +46,13 @@ public class SMAPPairedFeature extends AbstractFeature {
     public SMAPPairedFeature(SMAPFeature feature1, SMAPFeature feature2) {
 
 
-        if (!feature1.getChr().equals(feature2.getChr())) {
+        if (!feature1.getContig().equals(feature2.getContig())) {
             // TODO - throw error?
             log.error("Inter-chromosomal linked features not supported");
             return;
         }
 
-        setChr(feature1.getChr());
+        setChr(feature1.getContig());
         if (feature1.getStart() < feature2.getStart()) {
             this.feature1 = feature1;
             this.feature2  = feature2;

@@ -319,7 +319,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         int buffer = 4;
         int coverage = 0;
         for(AlignmentInterval interval: intervals){
-            if(interval.contains(interval.getChr(), genomePos - buffer, genomePos + buffer)){
+            if(interval.contains(interval.getContig(), genomePos - buffer, genomePos + buffer)){
                 for(int loc= genomePos - buffer; loc < genomePos + buffer; loc++){
                     coverage = Math.max(coverage, interval.getTotalCount(loc));
                 }

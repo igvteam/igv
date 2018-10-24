@@ -165,7 +165,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
                 overlap |= (rec.getEnd() >= start) && (rec.getStart() < start);
                 Assert.assertTrue(overlap);
             }
-            Assert.assertEquals(sequence, rec.getChr());
+            Assert.assertEquals(sequence, rec.getContig());
         }
         reader.close();
         AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
@@ -206,7 +206,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
                 overlap |= start >= rec.getStart() && start < rec.getEnd();
                 Assert.assertTrue(overlap);
             }
-            Assert.assertEquals(sequence, rec.getChr());
+            Assert.assertEquals(sequence, rec.getContig());
 
             Alignment exp = expectedResult.get(i);
             Assert.assertEquals("Start mismatch at position " + i + " read name " + exp.getReadName(), exp.getStart(), rec.getStart());

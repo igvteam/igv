@@ -70,7 +70,7 @@ public class BlastMapping extends BasicFeature {
     }
 
     @Override
-    public String getChr() {
+    public String getContig(){
         return queryBlock.getContig();
     }
 

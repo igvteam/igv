@@ -164,10 +164,6 @@ public class VCFFeature implements IGVFeature, htsjdk.tribble.Feature {
         return "VCF";  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public String getChr() {
-        return chr;
-    }
-
     @Override
     public String getContig() {
         return chr;
@@ -193,7 +189,7 @@ public class VCFFeature implements IGVFeature, htsjdk.tribble.Feature {
 
     // TODO -- move this up
     public String getLocusString() {
-        return getChr() + ":" + getStart() + ":" + getEnd();
+        return getContig() + ":" + getStart() + ":" + getEnd();
     }
 
 }

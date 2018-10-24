@@ -71,11 +71,6 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
     }
 
     @Override
-    public String getChr() {
-        return chr;
-    }
-
-    @Override
     public int getStart() {
         return start;
     }
@@ -172,7 +167,7 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
         if (feature == null) {
             return false;
         }
-        if (!this.getChr().equals(feature.getChr()) ||
+        if (!this.getContig().equals(feature.getContig()) ||
                 this.getStrand() != feature.getStrand()) {
             return false;
         }

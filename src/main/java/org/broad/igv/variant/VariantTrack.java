@@ -1004,7 +1004,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         String id = variant.getID();
 
         StringBuffer toolTip = new StringBuffer();
-        toolTip.append("Chr: " + variant.getChr());
+        toolTip.append("Chr: " + variant.getContig());
         toolTip.append("<br>Position: " + variant.getPositionString());
         toolTip.append("<br>ID: " + id);
         toolTip.append("<br>Reference: " + variant.getReference());
@@ -1192,7 +1192,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
         String id = variant.getID();
         StringBuffer toolTip = new StringBuffer();
-        toolTip = toolTip.append("Chr: " + variant.getChr());
+        toolTip = toolTip.append("Chr: " + variant.getContig());
         toolTip = toolTip.append("<br>Position: " + variant.getPositionString());
         toolTip = toolTip.append("<br>ID: " + id + "<br>");
         toolTip = toolTip.append("<br><b>Genotype Information</b>");

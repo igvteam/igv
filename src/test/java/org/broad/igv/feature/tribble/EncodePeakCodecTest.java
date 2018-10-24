@@ -55,7 +55,7 @@ public class EncodePeakCodecTest {
         Feature feature =  codec.decode(line);
         Feature feature2 = codec2.decode(line);
 
-        assertEquals("chr22", feature.getChr());
+        assertEquals("chr22", feature.getContig());
 
 
     }

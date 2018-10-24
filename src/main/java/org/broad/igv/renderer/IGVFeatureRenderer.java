@@ -426,8 +426,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             int curYOffset = yOffset;
             boolean drawConnectingLine = true;
 
-            int pStart = getPixelFromChromosomeLocation(exon.getChr(), exon.getStart(), theOrigin, locationScale);
-            int pEnd = getPixelFromChromosomeLocation(exon.getChr(), exon.getEnd(), theOrigin, locationScale);
+            int pStart = getPixelFromChromosomeLocation(exon.getContig(), exon.getStart(), theOrigin, locationScale);
+            int pEnd = getPixelFromChromosomeLocation(exon.getContig(), exon.getEnd(), theOrigin, locationScale);
 
 
             Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.blue);
@@ -446,10 +446,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             if ((pEnd >= trackRectangle.getX()) && (pStart <= trackRectangle.getMaxX())) {
                 int pCdStart =
                         Math.min(pEnd, Math.max(pStart,
-                                getPixelFromChromosomeLocation(exon.getChr(),
+                                getPixelFromChromosomeLocation(exon.getContig(),
                                         exon.getCdStart(), theOrigin, locationScale)));
                 int pCdEnd = Math.max(pStart, Math.min(pEnd,
-                        getPixelFromChromosomeLocation(exon.getChr(),
+                        getPixelFromChromosomeLocation(exon.getContig(),
                                 exon.getCdEnd(), theOrigin, locationScale)));
 
                 // Entire exon is UTR
@@ -638,8 +638,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
                     int start = Math.max(exon.getStart(), aaSeqStartPosition);
                     int end = Math.min(exon.getEnd(), aaSeqStartPosition + 3);
-                    int px = getPixelFromChromosomeLocation(exon.getChr(), start, theOrigin, locationScale);
-                    int px2 = getPixelFromChromosomeLocation(exon.getChr(), end, theOrigin, locationScale);
+                    int px = getPixelFromChromosomeLocation(exon.getContig(), start, theOrigin, locationScale);
+                    int px2 = getPixelFromChromosomeLocation(exon.getContig(), end, theOrigin, locationScale);
 
                     if ((px <= trackRectangle.getMaxX()) && (px2 >= trackRectangle.getX())) {
 
@@ -672,8 +672,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 // The last codon is not complete (continues on next exon).
                 // TODO -- get base from previous exon and compute aaSequence
                 int cdEnd = Math.min(exon.getCdEnd(), exon.getEnd());
-                aaRect.x = getPixelFromChromosomeLocation(exon.getChr(), aaSeqStartPosition, theOrigin, locationScale);
-                aaRect.width = getPixelFromChromosomeLocation(exon.getChr(), cdEnd, theOrigin, locationScale) - aaRect.x;
+                aaRect.x = getPixelFromChromosomeLocation(exon.getContig(), aaSeqStartPosition, theOrigin, locationScale);
+                aaRect.width = getPixelFromChromosomeLocation(exon.getContig(), cdEnd, theOrigin, locationScale) - aaRect.x;
                 Graphics2D bgGraphics = context.getGraphic2DForColor(odd ? AA_COLOR_1 : AA_COLOR_2);
                 odd = !odd;
                 bgGraphics.fill(aaRect);

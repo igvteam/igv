@@ -284,11 +284,6 @@ public class VCFVariant implements Variant {
     }
 
     @Override
-    public String getChr() {
-        return chr;
-    }
-
-    @Override
     public String getContig() {
         return chr;
     }
@@ -308,7 +303,7 @@ public class VCFVariant implements Variant {
 
     @Override
     public String toString() {
-        return String.format("VCFVariant[%s:%d-%d]", getChr(), getStart(), getEnd());
+        return String.format("VCFVariant[%s:%d-%d]", getContig(), getStart(), getEnd());
     }
 
     @Override
@@ -339,7 +334,7 @@ public class VCFVariant implements Variant {
             for (Allele all : variant.getAlternateAlleles()) {
                 alleleList.add(htsjdk.variant.variantcontext.Allele.create(all.getBases(), false));
             }
-            VariantContextBuilder vcb = new VariantContextBuilder(variant.getID(), variant.getChr(), variant.getStart(), variant.getEnd(), alleleList);
+            VariantContextBuilder vcb = new VariantContextBuilder(variant.getID(), variant.getContig(), variant.getStart(), variant.getEnd(), alleleList);
             return vcb.make();
         }
     }

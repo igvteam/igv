@@ -74,7 +74,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
 
         while (feats.hasNext()) {
             Feature feat = feats.next();
-            assertEquals(chr, feat.getChr());
+            assertEquals(chr, feat.getContig());
             sourceFeats.add(feat);
         }
         return sourceFeats;
@@ -130,7 +130,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
 
 
             //Feature feat = features.next();
-            assertEquals(chr, feat.getChr());
+            assertEquals(chr, feat.getContig());
 
             BasicFeature bf = (BasicFeature) feat;
 

@@ -202,7 +202,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
             for (IGVFeature gene : features) {
                 pw.print(gene.getName() + "\t");
                 pw.print(gene.getIdentifier() + "\t");
-                pw.print(gene.getChr() + "\t");
+                pw.print(gene.getContig() + "\t");
                 if (gene.getStrand() == Strand.POSITIVE) {
                     pw.print("+\t");
                 } else if (gene.getStrand() == Strand.NEGATIVE) {

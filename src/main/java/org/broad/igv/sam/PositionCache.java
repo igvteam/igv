@@ -71,7 +71,7 @@ class PositionCache<V> {
     }
 
     private Range getKeyForRange(Range range) {
-        String chr = range.getChr();
+        String chr = range.getContig();
         for (Range cachedRange : intervals.keySet()) {
             if (cachedRange.contains(chr, range.getStart(), range.getEnd())) {
                 return cachedRange;

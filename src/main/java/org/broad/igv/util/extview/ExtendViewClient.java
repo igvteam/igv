@@ -77,7 +77,7 @@ public class ExtendViewClient {
 
     public static void postExtendView(Alignment aln) {
         
-        String chr = aln.getChr();
+        String chr = aln.getContig();
         int start = aln.getAlignmentStart();
         int end = aln.getAlignmentEnd();
 

@@ -78,7 +78,7 @@ public class FPKMTrackingCodec extends CufflinksCodec<FPKMValue>{
             if (locusString == null) return null;
 
             Locus locus = Locus.fromString(locusString);
-            if(locus == null || locus.getChr() == null) return null;
+            if(locus == null || locus.getContig() == null) return null;
 
             String gene = tokens[geneColumn];
             float[] fpkm = new float[numSamples];
@@ -92,7 +92,7 @@ public class FPKMTrackingCodec extends CufflinksCodec<FPKMValue>{
                 confHi[sampNum] = Float.parseFloat(tokens[startCol+2]);
             }
 
-            return new FPKMValue(locus.getChr(), locus.getStart() - 1, locus.getEnd(), gene,
+            return new FPKMValue(locus.getContig(), locus.getStart() - 1, locus.getEnd(), gene,
                     fpkm, confLo, confHi);
         } else {
             log.info("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);

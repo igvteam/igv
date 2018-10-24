@@ -131,7 +131,7 @@ public class CufflinksDataSource implements DataSource {
     private DownsampledDoubleArrayList sampleValues(List<? extends LocusScore> valueList, Genome genome){
         DownsampledDoubleArrayList sampledData = new DownsampledDoubleArrayList(5000, 10000);
         for (LocusScore val : valueList) {
-            String chr = val.getChr();
+            String chr = val.getContig();
 
             List<LocusScore> chrValues = values.get(chr);
             if (chrValues == null) {

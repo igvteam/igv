@@ -62,7 +62,7 @@ public class ReducedMemoryAlignment implements Alignment {
 
         this.negativeStrand = al.isNegativeStrand();
         this.readName = al.getReadName();
-        this.chromosome = al.getChr();
+        this.chromosome = al.getContig();
         this.start = al.getStart();
         this.end = al.getEnd();
         this.cigarString = al.getCigarString();
@@ -156,10 +156,6 @@ public class ReducedMemoryAlignment implements Alignment {
 
 
     public String getChromosome() {
-        return chromosome;
-    }
-
-    public String getChr() {
         return chromosome;
     }
 
@@ -547,11 +543,6 @@ public class ReducedMemoryAlignment implements Alignment {
         }
 
         // Rest is needed for the interface, but NA for reduced memory alignments
-        @Override
-        public String getChr() {
-            return null;
-        }
-
         @Override
         public String getContig() {
             return null;

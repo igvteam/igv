@@ -135,7 +135,7 @@ public class SpliceJunctionHelper {
                         SpliceJunctionFeature junction = startEndJunctionsTableThisStrand.get(junctionStart, junctionEnd);
 
                         if (junction == null) {
-                            junction = new SpliceJunctionFeature(alignment.getChr(), junctionStart, junctionEnd,
+                            junction = new SpliceJunctionFeature(alignment.getContig(), junctionStart, junctionEnd,
                                     isNegativeStrand ? Strand.NEGATIVE : Strand.POSITIVE);
                             startEndJunctionsTableThisStrand.put(junctionStart, junctionEnd, junction);
                             allSpliceJunctionFeatures.add(junction);
@@ -177,7 +177,7 @@ public class SpliceJunctionHelper {
             final int junctionStart = posFeature.getJunctionStart();
             final int junctionEnd = posFeature.getJunctionEnd();
 
-            SpliceJunctionFeature combinedFeature = new SpliceJunctionFeature(posFeature.getChr(), junctionStart, junctionEnd);
+            SpliceJunctionFeature combinedFeature = new SpliceJunctionFeature(posFeature.getContig(), junctionStart, junctionEnd);
             combinedFeature.setJunctionDepth(posFeature.getJunctionDepth());
             combinedMap.put(junctionStart, junctionEnd, combinedFeature);
         }
@@ -193,7 +193,7 @@ public class SpliceJunctionHelper {
 
             if (junction == null) {
                 // No existing (+) junction here, just add the (-) one\
-                SpliceJunctionFeature combinedFeature = new SpliceJunctionFeature(negFeature.getChr(), junctionStart, junctionEnd);
+                SpliceJunctionFeature combinedFeature = new SpliceJunctionFeature(negFeature.getContig(), junctionStart, junctionEnd);
                 combinedFeature.setJunctionDepth(negFeature.getJunctionDepth());
                 combinedMap.put(junctionStart, junctionEnd, negFeature);
             } else {

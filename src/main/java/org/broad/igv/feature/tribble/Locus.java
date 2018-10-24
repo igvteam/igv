@@ -48,10 +48,6 @@ public class Locus implements Feature {
         this.end = end;
     }
 
-    public String getChr() {
-        return chr;
-    }
-
     @Override
     public String getContig() {
         return chr;

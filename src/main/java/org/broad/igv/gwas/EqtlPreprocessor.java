@@ -103,7 +103,7 @@ public class EqtlPreprocessor {
             while ((nextLine = br.readLine()) != null) {
 
                 EQTLFeature feature = codec.decode(nextLine);
-                String chr = feature.getChr();
+                String chr = feature.getContig();
                 if (!chr.equals(currentChr)) {
                     if (currentChrBuffer != null) {
                         System.out.println(currentChr);

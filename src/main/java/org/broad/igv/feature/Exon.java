@@ -117,7 +117,7 @@ public class Exon extends AbstractFeature implements IExon {
         this.strand = bf.getStrand();
         this.codingStart = bf.getCdStart();
         this.codingEnd = bf.getCdEnd();
-        this.chromosome = bf.getChr();
+        this.chromosome = bf.getContig();
         this.type = bf.getType();
         this.color = bf.getColor();
         this.description = bf.getDescription();
@@ -135,7 +135,7 @@ public class Exon extends AbstractFeature implements IExon {
         this.strand = bf.getStrand();
         this.codingStart = bf.getThickStart();
         this.codingEnd = bf.getThickEnd();
-        this.chromosome = bf.getChr();
+        this.chromosome = bf.getContig();
         this.type = bf.getType();
         this.color = bf.getColor();
         this.description = bf.getDescription();
@@ -204,7 +204,7 @@ public class Exon extends AbstractFeature implements IExon {
         }
         int start = getStart();
         int end = getEnd();
-        String chr = getChr();
+        String chr = getContig();
 
         if (readingFrame >= 0) {
             int readStart = (codingStart > start) ? codingStart : start;
@@ -271,7 +271,7 @@ public class Exon extends AbstractFeature implements IExon {
     }
 
     public Exon copy() {
-        Exon copy = new Exon(getChr(), getStart(), getEnd(), getStrand());
+        Exon copy = new Exon(getContig(), getStart(), getEnd(), getStrand());
         copy.seqBytes = this.seqBytes;
         copy.aminoAcidSequence = this.aminoAcidSequence;
         copy.codingEnd = this.codingEnd;
@@ -330,7 +330,7 @@ public class Exon extends AbstractFeature implements IExon {
                 return false;
             }
             IExon other = (IExon) inother;
-            boolean eq = parent.getChr().equals(other.getChr());
+            boolean eq = parent.getContig().equals(other.getContig());
             eq &= parent.getStart() == other.getStart();
             eq &= parent.getEnd() == other.getEnd();
             eq &= parent.getCdStart() == other.getCdStart();
@@ -344,7 +344,7 @@ public class Exon extends AbstractFeature implements IExon {
                 return hashCode;
             }
 
-            String conc = parent.getChr() + parent.getStrand().toString() + parent.getStart();
+            String conc = parent.getContig() + parent.getStrand().toString() + parent.getStart();
             conc += parent.getEnd();
             conc += parent.getCdStart();
             conc += parent.getCdEnd();

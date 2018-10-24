@@ -101,7 +101,7 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
 
         Feature feat = searcher.getResult().next();
 
-        assertEquals("chr1", feat.getChr());
+        assertEquals("chr1", feat.getContig());
         assertEquals(100, feat.getStart());
         assertEquals(101, feat.getEnd());
     }
@@ -115,7 +115,7 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
 
         Feature feat = searcher.getResult().next();
 
-        assertEquals("chr1", feat.getChr());
+        assertEquals("chr1", feat.getContig());
         assertEquals(100000, feat.getStart());
         assertEquals(100010, feat.getEnd());
     }
@@ -129,7 +129,7 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
 
         Feature feat = searcher.getResult().next();
 
-        assertEquals("chr1", feat.getChr());
+        assertEquals("chr1", feat.getContig());
         assertEquals(100000, feat.getStart());
         assertEquals(100010, feat.getEnd());
     }
@@ -143,7 +143,7 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
 
         Feature feat = searcher.getResult().next();
 
-        assertEquals("chr2", feat.getChr());
+        assertEquals("chr2", feat.getContig());
         assertEquals(1, feat.getStart());
         assertEquals(10, feat.getEnd());
     }

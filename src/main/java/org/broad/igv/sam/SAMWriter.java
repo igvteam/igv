@@ -116,7 +116,7 @@ public class SAMWriter {
      */
     public static String getSAMString(Alignment alignment) {
 
-        String refName = alignment.getChr();
+        String refName = alignment.getContig();
         List<String> tokens = new ArrayList<String>(11);
 
         tokens.add(alignment.getReadName());
@@ -220,7 +220,7 @@ public class SAMWriter {
         }
 
         private boolean passLocFilter(Alignment al) {
-            return this.chr != null && this.overlaps(al.getChr(), al.getStart(), al.getEnd());
+            return this.chr != null && this.overlaps(al.getContig(), al.getStart(), al.getEnd());
         }
 
         /**

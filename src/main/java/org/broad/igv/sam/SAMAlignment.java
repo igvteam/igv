@@ -112,11 +112,6 @@ public abstract class SAMAlignment implements Alignment {
     public SAMAlignment() {
     }
 
-
-    public String getChr() {
-        return chr;
-    }
-
     @Override
     public String getContig() {
         return chr;
@@ -532,7 +527,7 @@ public abstract class SAMAlignment implements Alignment {
         buf.append("Mapping = " + (isPrimary() ? (isSupplementary() ? "Supplementary" : "Primary") : "Secondary") +
                 (isDuplicate() ? " Duplicate" : "") + (isVendorFailedRead() ? " Failed QC" : "") +
                 " @ MAPQ " + Globals.DECIMAL_FORMAT.format(getMappingQuality()) + "<br>");
-        buf.append("Reference span = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" +
+        buf.append("Reference span = " + getContig() + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" +
                 Globals.DECIMAL_FORMAT.format(getAlignmentEnd()) + " (" + (isNegativeStrand() ? "-" : "+") + ")" +
                 " = " + Globals.DECIMAL_FORMAT.format(getAlignmentEnd() - getAlignmentStart()) + "bp<br>");
         buf.append("Cigar = " + cigarString + "<br>");
@@ -584,7 +579,7 @@ public abstract class SAMAlignment implements Alignment {
             if (getMate().isMapped()) {
                 buf.append("Mate start = " + getMate().positionString() + "<br>");
                 //buf.append("Pair is proper = " + (getProperPairFlag() ? "yes" : "no") + "<br>");
-                if (getChr().equals(getMate().getChr())) {
+                if (getContig().equals(getMate().getChr())) {
                     buf.append("Insert size = " + getInferredInsertSize() + "<br>");
                 }
             }
@@ -635,7 +630,7 @@ public abstract class SAMAlignment implements Alignment {
                 }
 
                 byte quality = block.getQuality(offset);
-                buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
+                buf.append("Location = " + getContig() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
                 buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality) + "<br>");
 
                 break;
@@ -802,7 +797,7 @@ public abstract class SAMAlignment implements Alignment {
 
          */
 
-        if (isPaired() && isMapped() && mate != null && mate.isMapped() && getChr().equals(mate.getChr())) {   // && name === mate.name
+        if (isPaired() && isMapped() && mate != null && mate.isMapped() && getContig().equals(mate.getChr())) {   // && name === mate.name
 
             char s1 = isNegativeStrand() ? 'R' : 'F';
             char s2 = mate.isNegativeStrand() ? 'R' : 'F';

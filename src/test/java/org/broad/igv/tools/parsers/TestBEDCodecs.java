@@ -211,7 +211,7 @@ public class TestBEDCodecs {
      * @param end
      */
     private void check_feat_unigene(Feature feat, String chr, int start, int end) {
-        assertEquals(chr, feat.getChr());
+        assertEquals(chr, feat.getContig());
         assertTrue(feat.getEnd() > feat.getStart());
         assertTrue("Start out of range", feat.getStart() >= start);
         assertTrue("end out of range", feat.getStart() <= end);

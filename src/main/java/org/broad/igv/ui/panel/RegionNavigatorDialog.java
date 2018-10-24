@@ -699,7 +699,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer, IGVEvent
                         "Error", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 Range r = FrameManager.getDefaultFrame().getCurrentRange();
-                RegionOfInterest newRegion = new RegionOfInterest(r.getChr(), r.getStart(), r.getEnd(), "");
+                RegionOfInterest newRegion = new RegionOfInterest(r.getContig(), r.getStart(), r.getEnd(), "");
                 IGV.getInstance().getSession().addRegionOfInterestWithNoListeners(newRegion);
             }
             updateButtonsEnabled();

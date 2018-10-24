@@ -210,7 +210,7 @@ public class TestUtils {
 
 
     public static void assertFeaturesEqual(Feature exp, Feature act) {
-        assertEquals(exp.getChr(), act.getChr());
+        assertEquals(exp.getContig(), act.getContig());
         assertEquals(exp.getStart(), act.getStart());
         assertEquals(exp.getEnd(), act.getEnd());
     }

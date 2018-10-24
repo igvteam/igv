@@ -324,11 +324,11 @@ public class IGVToolsTest extends AbstractHeadlessTest {
             Alignment a1 = iter.next();
             Alignment a2 = iter.next();
             assertEquals(a1.getReadName(), a2.getReadName());
-            assertEquals(a1.getChr(), a2.getChr());
+            assertEquals(a1.getContig(), a2.getContig());
             assertEquals(a1.getStart(), a2.getStart());
             assertEquals(a2.getEnd(), a2.getEnd());
 
-            String chr = a1.getChr();
+            String chr = a1.getContig();
             int start = a1.getAlignmentStart();
             if (lastChr != null && chr.equals(lastChr)) {
                 assertTrue(a1.getReadName(), start >= lastStart);

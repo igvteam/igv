@@ -128,7 +128,7 @@ public class FrameManager implements IGVEventObserver {
                     lociNotFound.add(loci.get(0));
                 } else {
                     IGV.getInstance().getSession().setCurrentGeneList(null);
-                    getDefaultFrame().jumpTo(locus.getChr(), locus.getStart(), locus.getEnd());
+                    getDefaultFrame().jumpTo(locus.getContig(), locus.getStart(), locus.getEnd());
                     frames.add(getDefaultFrame());
                 }
             } else {

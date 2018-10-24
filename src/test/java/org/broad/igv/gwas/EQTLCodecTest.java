@@ -50,7 +50,7 @@ public class EQTLCodecTest {
         assertEquals("rs4700772", f.getSnp());
         assertEquals("ENSG00000168903.7", f.getGeneId());
         assertEquals("BTNL3", f.getGeneName());
-        assertEquals("5", f.getChr());
+        assertEquals("5", f.getContig());
         assertEquals(180341844, f.getStart());
         assertEquals(180341845, f.getEnd());
 

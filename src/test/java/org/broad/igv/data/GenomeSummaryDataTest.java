@@ -81,7 +81,7 @@ public class GenomeSummaryDataTest extends AbstractHeadlessTest {
         String lastChr = null;
 
         for(BasicFeature feature: features){
-            String chr = feature.getChr();
+            String chr = feature.getContig();
             //Finish off last chromosome
             if(lastChr != null && !chr.equals(lastChr)){
                 Map<String, float[]> dMap = new HashMap<String, float[]>();

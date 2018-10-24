@@ -145,7 +145,7 @@ public class Row implements Comparable<Row> {
                     if (mate == null) {
                         return Integer.MAX_VALUE;
                     } else {
-                        if (mate.getChr().equals(centerAlignment.getChr())) {
+                        if (mate.getChr().equals(centerAlignment.getContig())) {
                             return Integer.MAX_VALUE - 1;
                         } else {
                             return mate.getChr().hashCode();

@@ -52,11 +52,6 @@ public class BasePairFeature implements Feature{
     }
 
     @Override
-    public String getChr() {
-        return chr;
-    }
-
-    @Override
     public String getContig() {
         return chr;
     }
@@ -82,6 +77,6 @@ public class BasePairFeature implements Feature{
     public int getColorIndex() { return colorIndex; }
 
     public String toString() {
-        return getChr() + "\t" + startLeft + "\t" + startRight + "\t" + endLeft + "\t" + endRight;
+        return getContig() + "\t" + startLeft + "\t" + startRight + "\t" + endLeft + "\t" + endRight;
     }
 }

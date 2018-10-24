@@ -102,7 +102,7 @@ public class AlignmentInterval extends Locus {
         if (genome == null) {
             return 0;
         }
-        return genome.getReference(getChr(), pos);
+        return genome.getReference(getContig(), pos);
     }
 
     public AlignmentCounts getCounts() {
@@ -161,7 +161,7 @@ public class AlignmentInterval extends Locus {
     }
 
     public Range getRange() {
-        return new Range(getChr(), getStart(), getEnd());
+        return new Range(getContig(), getStart(), getEnd());
     }
 
     public void packAlignments(AlignmentTrack.RenderOptions renderOptions) {

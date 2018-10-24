@@ -60,12 +60,8 @@ public class BasicScore implements LocusScore {
 
     /**
      * This method is required by the Tribble interface but not used.  To save space the chromosome is not stored, return null
-     * @return
+     * @return null
      */
-    public String getChr() {
-        return null;
-    }
-
     @Override
     public String getContig() {
         return null;

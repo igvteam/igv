@@ -407,7 +407,7 @@ public class SearchCommand {
                 //The +2 accounts for centering on the center of the amino acid, not beginning
                 //and converting from 0-based to 1-based (which getStartEnd expects)
                 int[] locs = getStartEnd("" + (genomePos + 2));
-                result = new SearchResult(ResultType.LOCUS, feat.getChr(), locs[0], locs[1]);
+                result = new SearchResult(ResultType.LOCUS, feat.getContig(), locs[0], locs[1]);
                 results.add(result);
 
             }
@@ -597,7 +597,7 @@ public class SearchCommand {
         }
 
         public SearchResult(NamedFeature feature) {
-            this(ResultType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd());
+            this(ResultType.FEATURE, feature.getContig(), feature.getStart(), feature.getEnd());
             this.feature = feature;
             this.locus = this.feature.getName();
         }

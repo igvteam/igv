@@ -504,7 +504,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
         Iterator<Feature> features = reader.query(chr, 5085, 5091);
         int count = 0;
         while (features.hasNext() && count < 100) {
-            assertEquals(chr, features.next().getChr());
+            assertEquals(chr, features.next().getContig());
             count++;
         }
         assertEquals(3, count);

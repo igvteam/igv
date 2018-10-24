@@ -54,7 +54,7 @@ public class FPKMSampleValue extends CufflinksValue{
     public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append(getChr() + ":" + (getStart() + 1) + "-" + getEnd());
+        sb.append(getContig() + ":" + (getStart() + 1) + "-" + getEnd());
         sb.append("<br>Gene = " + gene);
         sb.append("<br>FPKM = " + fpkm);
         sb.append("<br>FPKM_LO = " + fpkmLo);

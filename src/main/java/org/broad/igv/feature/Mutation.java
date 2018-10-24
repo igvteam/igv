@@ -204,10 +204,6 @@ public class Mutation implements IGVFeature {
         return false;
     }
 
-    public String getChr() {
-        return chr;
-    }
-
     @Override
     public String getContig() {
         return chr;
@@ -253,7 +249,7 @@ public class Mutation implements IGVFeature {
      */
     public boolean contains(IGVFeature feature) {
 
-        if (feature == null || !this.getChr().equals(feature.getChr())) {
+        if (feature == null || !this.getContig().equals(feature.getContig())) {
             return false;
         }
         if ((feature.getStart() >= this.getStart()) && (feature.getEnd() <= this.getEnd())) {

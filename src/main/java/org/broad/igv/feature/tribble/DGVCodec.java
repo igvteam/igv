@@ -189,7 +189,7 @@ samples	IS30771,IS39243,IS41043	longblob	 	Sample IDs if available
 
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append(feature.getChr());
+        buffer.append(feature.getContig());
         buffer.append("\t");
         final int featureStart = feature.getStart();
         buffer.append(String.valueOf(featureStart));

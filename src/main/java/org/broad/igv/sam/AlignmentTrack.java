@@ -839,7 +839,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             StringBuffer buf = new StringBuffer();
             buf.append(alignment.getValueString(location, mouseX, null).replace("<br>", "\n"));
             buf.append("\n");
-            buf.append("Alignment start position = " + alignment.getChr() + ":" + (alignment.getAlignmentStart() + 1));
+            buf.append("Alignment start position = " + alignment.getContig() + ":" + (alignment.getAlignmentStart() + 1));
             buf.append("\n");
             buf.append(alignment.getReadSequence());
             StringSelection stringSelection = new StringSelection(buf.toString());
@@ -1708,7 +1708,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 frame = FrameManager.getDefaultFrame();  // Clicked over name panel, not a specific frame
             }
             final Range range = frame.getCurrentRange();
-            final String chrom = range.getChr();
+            final String chrom = range.getContig();
             final int chromStart = (int) frame.getChromosomePosition(me.getX());
             // Change track height by attribute
             JMenu groupMenu = new JMenu("Group alignments by");
@@ -1749,14 +1749,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             Range oldGroupByPos = renderOptions.getGroupByPos();
             if (renderOptions.getGroupByOption() == GroupOption.BASE_AT_POS) { // already sorted by the base at a position
-                JCheckBoxMenuItem oldGroupByPosOption = new JCheckBoxMenuItem("base at " + oldGroupByPos.getChr() +
+                JCheckBoxMenuItem oldGroupByPosOption = new JCheckBoxMenuItem("base at " + oldGroupByPos.getContig() +
                         ":" + Globals.DECIMAL_FORMAT.format(1 + oldGroupByPos.getStart()));
                 groupMenu.add(oldGroupByPosOption);
                 oldGroupByPosOption.setSelected(true);
             }
 
             if (renderOptions.getGroupByOption() != GroupOption.BASE_AT_POS || oldGroupByPos == null ||
-                    !oldGroupByPos.getChr().equals(chrom) || oldGroupByPos.getStart() != chromStart) { // not already sorted by this position
+                    !oldGroupByPos.getContig().equals(chrom) || oldGroupByPos.getStart() != chromStart) { // not already sorted by this position
                 JCheckBoxMenuItem newGroupByPosOption = new JCheckBoxMenuItem("base at " + chrom +
                         ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
                 newGroupByPosOption.addActionListener(new ActionListener() {

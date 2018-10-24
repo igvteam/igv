@@ -61,7 +61,7 @@ public class LocusTest {
         Locus locus = Locus.fromString(locusString);
         assertNotNull(locus);
         assertTrue(locus.isValid());
-        assertEquals("chr1", locus.getChr());
+        assertEquals("chr1", locus.getContig());
         assertEquals(15000000, locus.getStart());
         assertEquals(20000000, locus.getEnd());
     }

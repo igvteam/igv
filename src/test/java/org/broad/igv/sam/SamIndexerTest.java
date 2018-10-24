@@ -81,7 +81,7 @@ public class SamIndexerTest extends AbstractHeadlessTest{
 
         while (iter.hasNext()) {
             Alignment rec = iter.next();
-            assertEquals(chr, rec.getChr());
+            assertEquals(chr, rec.getContig());
             assertTrue(rec.getStart() >= start);
             assertTrue(rec.getStart() < end);
             count++;

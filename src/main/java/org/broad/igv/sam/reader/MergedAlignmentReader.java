@@ -232,8 +232,8 @@ public class MergedAlignmentReader implements AlignmentReader {
                 Alignment a1 = wrapper1.nextRecord;
                 Alignment a2 = wrapper2.nextRecord;
 
-                Integer idx1 = chrNameIndex.get(a1.getChr());
-                Integer idx2 = chrNameIndex.get(a2.getChr());
+                Integer idx1 = chrNameIndex.get(a1.getContig());
+                Integer idx2 = chrNameIndex.get(a2.getContig());
                 if(idx1==null) idx1 = Integer.MAX_VALUE;
                 if(idx2== null) idx2 = Integer.MAX_VALUE;  // Put these records at the end.
                 if (idx1 > idx2) {

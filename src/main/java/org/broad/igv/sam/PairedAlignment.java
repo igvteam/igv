@@ -51,7 +51,7 @@ public class PairedAlignment implements Alignment {
         this.firstAlignment = firstAlignment;
         this.start = firstAlignment.getStart();
         this.end = firstAlignment.getEnd();
-        this.chr = firstAlignment.getChr();
+        this.chr = firstAlignment.getContig();
     }
 
     public void setSecondAlignment(Alignment alignment) {
@@ -67,10 +67,6 @@ public class PairedAlignment implements Alignment {
     }
 
     public String getChromosome() {
-        return chr;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public String getChr() {
         return chr;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

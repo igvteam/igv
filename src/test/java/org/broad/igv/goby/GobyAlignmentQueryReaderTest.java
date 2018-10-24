@@ -181,7 +181,7 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
         int countVisit = 0;
         while (iter.hasNext()) {
             Alignment a = iter.next();
-            final String entryChr = a.getChr();
+            final String entryChr = a.getContig();
             //   System.out.println("chr:" + entryChr);
 
             if (entryChr.equals(previousChr)) {
@@ -189,9 +189,9 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
             } else {
                 assertFalse("Chromosomes should occur in blocks." +
                         " A chromosome that was used in a previous block of entry cannot occur again.",
-                        chromosomeSeen.contains(a.getChr()));
-                previousChr = a.getChr();
-                chromosomeSeen.add(a.getChr());
+                        chromosomeSeen.contains(a.getContig()));
+                previousChr = a.getContig();
+                chromosomeSeen.add(a.getContig());
             }
             countVisit++;
             if (countVisit > maxEntries) break;
@@ -440,7 +440,7 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
     private static class MockGobyAlignment extends GobyAlignment{
 
         @Override
-        public String getChr() {
+        public String getContig() {
             return "chrMock";
         }
 

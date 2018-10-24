@@ -137,8 +137,8 @@ public class SpliceJunctionFeature extends BasicFeature {
     public List<Exon> getExons() {
         if(exons == null) {
             exons = new ArrayList<Exon>(2);
-            exons.add(new Exon(getChr(), start, junctionStart, getStrand()));
-            exons.add(new Exon(getChr(), junctionEnd, end, getStrand()));
+            exons.add(new Exon(getContig(), start, junctionStart, getStrand()));
+            exons.add(new Exon(getContig(), junctionEnd, end, getStrand()));
         }
         return exons;
     }

@@ -86,7 +86,7 @@ public class BasePairFileUtils {
                                                      String strand) {
         LinkedList<BasePairFeature> transArcs = new LinkedList<BasePairFeature>();
         for (BasePairFeature arc : arcs) {
-            String chr = arc.getChr();
+            String chr = arc.getContig();
             int colorIndex = arc.getColorIndex();
             int startLeft, startRight, endLeft, endRight;
             if (strand == "+") {

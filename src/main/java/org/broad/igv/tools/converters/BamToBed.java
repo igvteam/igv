@@ -65,7 +65,7 @@ public class BamToBed {
                     int end = properPairs ? (start + insertSize) : a.getAlignmentEnd();
                     String name = a.getReadName();
                     String strand = properPairs ? "." : (a.isNegativeStrand() ? "-" : "+");
-                    bedWriter.print(a.getChr() + "\t" + start + "\t" + end + "\t" + name + "\t" + strand);
+                    bedWriter.print(a.getContig() + "\t" + start + "\t" + end + "\t" + name + "\t" + strand);
                     if(properPairs) {
                         bedWriter.println("\t" + insertSize);
                     }

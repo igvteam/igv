@@ -74,7 +74,7 @@ public class ExpDiffCodec extends CufflinksCodec<ExpDiffValue>{
             if (locusString == null) return null;
 
             Locus locus = Locus.fromString(locusString);
-            if (locus == null || locus.getChr() == null) return null;
+            if (locus == null || locus.getContig() == null) return null;
 
             String logRatioStr = tokens[logRatioColumn];
             float logRatio = Float.parseFloat(logRatioStr);
@@ -88,7 +88,7 @@ public class ExpDiffCodec extends CufflinksCodec<ExpDiffValue>{
             float fpkmY = Float.parseFloat(tokens[yColumn]);
             String gene = tokens[geneColumn];
             String significant = tokens[sigColumn];
-            return new ExpDiffValue(locus.getChr(), locus.getStart() - 1, locus.getEnd(), gene,
+            return new ExpDiffValue(locus.getContig(), locus.getStart() - 1, locus.getEnd(), gene,
                     logRatio, fpkmX, fpkmY, significant);
         } else {
             log.info("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);

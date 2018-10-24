@@ -57,7 +57,7 @@ public class MutationDataManagerTest extends AbstractHeadlessTest {
         int mutationCount = 0;
         while(mutations.hasNext()) {
             Mutation m = mutations.next();
-            assertEquals(chr, m.getChr());
+            assertEquals(chr, m.getContig());
 
             if(m.getStart() >= start && m.getEnd() <= end) {
                 mutationCount++;

@@ -21,7 +21,7 @@ public class BasePairData{
 
     public void addFeature(BasePairFeature feature) {
 
-        String chr = feature.getChr();
+        String chr = feature.getContig();
         List<BasePairFeature> featureList = featureMap.get(chr);
         if(featureList == null) {
             featureList = new ArrayList<BasePairFeature>();

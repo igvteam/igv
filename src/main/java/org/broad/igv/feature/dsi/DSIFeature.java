@@ -32,11 +32,6 @@ public class DSIFeature implements Feature {
     int u;
 
     @Override
-    public String getChr() {
-        return chr;
-    }
-
-    @Override
     public String getContig() {
         return chr;
     }

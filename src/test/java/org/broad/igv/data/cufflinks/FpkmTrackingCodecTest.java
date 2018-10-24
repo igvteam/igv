@@ -68,7 +68,7 @@ public class FpkmTrackingCodecTest {
         assertEquals(0.0001f, sampleVal1.fpkmLo);
         assertEquals(1.0f, sampleVal1.fpkmHi);
 
-        assertEquals(sampleVal0.getChr(), sampleVal1.getChr());
+        assertEquals(sampleVal0.getContig(), sampleVal1.getContig());
         assertEquals(sampleVal0.getStart(), sampleVal1.getStart());
         assertEquals(sampleVal0.getEnd(), sampleVal1.getEnd());
     }

@@ -43,8 +43,6 @@ public interface Alignment extends LocusScore {
 
     String getReadSequence();
 
-    String getChr();
-
     int getAlignmentStart();
 
     int getAlignmentEnd();

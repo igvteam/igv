@@ -395,7 +395,7 @@ public class DASFeatureSource implements FeatureSource {
 
                 feature = groupFeatureCache.get(group);
                 if (feature == null) {
-                    feature = new BasicFeature(exon.getChr(), exon.getStart(), exon.getEnd(), exon.getStrand());
+                    feature = new BasicFeature(exon.getContig(), exon.getStart(), exon.getEnd(), exon.getStrand());
                     feature.addExon(exon);
                     if (groupLink != null) {
                         feature.setURL(groupLink);

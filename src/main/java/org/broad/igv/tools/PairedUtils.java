@@ -73,7 +73,7 @@ public class PairedUtils {
                         alignment.getMappingQuality() > 0 &&
                         interactionFilter(alignment)) {
 
-                    String chr1 = alignment.getChr();
+                    String chr1 = alignment.getContig();
                     int bin1 = alignment.getAlignmentStart() / binSize;
                     String chr2 = alignment.getMate().getChr();
                     int bin2 = alignment.getMate().getStart() / binSize;
@@ -225,7 +225,7 @@ public class PairedUtils {
     }
 
     private static Orientation getOrientation(Alignment alignment) {
-        if (!alignment.getChr().equals(alignment.getMate().getChr())) {
+        if (!alignment.getContig().equals(alignment.getMate().getChr())) {
             return Orientation.INTER;
         } else {
             String pairOrientation = alignment.getPairOrientation();
@@ -261,7 +261,7 @@ public class PairedUtils {
 
     private static boolean interactionFilter(Alignment alignment) {
         return alignment.isPaired() && alignment.getMate().isMapped() &&
-                (Math.abs(alignment.getInferredInsertSize()) > 100000 || !alignment.getChr().equals(alignment.getMate().getChr()));
+                (Math.abs(alignment.getInferredInsertSize()) > 100000 || !alignment.getContig().equals(alignment.getMate().getChr()));
     }
 
     private static boolean funnyPairFilter(Alignment alignment) {
@@ -276,7 +276,7 @@ public class PairedUtils {
         if (Math.abs(alignment.getInferredInsertSize()) > 1000) return true;
 
         // Mate chromosome
-        if (alignment.getMate().isMapped() && !alignment.getChr().equals(alignment.getMate().getChr())) return true;
+        if (alignment.getMate().isMapped() && !alignment.getContig().equals(alignment.getMate().getChr())) return true;
 
         // Mate unmapped
         // if (!alignment.getMate().isMapped()) return true;

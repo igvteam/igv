@@ -186,7 +186,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 Range currentRange = FrameManager.getDefaultFrame().getCurrentRange();
                 RegionOfInterest regionOfInterest =
                         new RegionOfInterest(
-                                currentRange.getChr(),
+                                currentRange.getContig(),
                                 currentRange.getStart(),
                                 currentRange.getEnd(),
                                 null);
@@ -404,7 +404,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 }
 
                 if (f != null) {
-                    String chr = GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(f.getChr());
+                    String chr = GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(f.getContig());
                     double newCenter = f.getStart();
                     if (!chr.equals(frame.getChrName())) {
                         // Switch chromosomes.  We have to do some tricks to maintain the same resolution scale.

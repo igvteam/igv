@@ -53,7 +53,7 @@ public class FeatureWrappedAlignment implements Alignment {
     public FeatureWrappedAlignment(BasicFeature f) {
 
         this.readName = f.getName();
-        this.chr = f.getChr();
+        this.chr = f.getContig();
         this.start = f.getStart();
         this.end = f.getEnd();
         strand = f.getStrand();
@@ -79,10 +79,6 @@ public class FeatureWrappedAlignment implements Alignment {
     }
 
     public String getChromosome() {
-        return chr;
-    }
-
-    public String getChr() {
         return chr;
     }
 

@@ -87,7 +87,7 @@ public class SamQueryTextReaderTest {
         while (iter.hasNext()) {
             Alignment record = iter.next();
             if (record.isMapped()) {
-                assertEquals(chr, record.getChr());
+                assertEquals(chr, record.getContig());
                 assertTrue(record.getEnd() >= start);
                 assertTrue(record.getStart() <= end);
             }
@@ -121,7 +121,7 @@ public class SamQueryTextReaderTest {
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();
-            assertEquals(chr, record.getChr());
+            assertEquals(chr, record.getContig());
             assertTrue(record.getEnd() >= start);
             assertTrue(record.getStart() <= end);
             count++;
@@ -155,7 +155,7 @@ public class SamQueryTextReaderTest {
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();
-            assertEquals(chr, record.getChr());
+            assertEquals(chr, record.getContig());
             assertTrue(record.getEnd() >= start);
             assertTrue(record.getStart() <= end);
             count++;
@@ -181,7 +181,7 @@ public class SamQueryTextReaderTest {
         int count = 0;
         while (iter.hasNext()) {
             Alignment record = iter.next();
-            assertEquals(chr, record.getChr());
+            assertEquals(chr, record.getContig());
             assertTrue(record.getEnd() >= start);
             assertTrue(record.getStart() <= end);
             count++;

@@ -51,10 +51,6 @@ public class MethylScore implements LocusScore {
         this.totalCount = totalCount;
     }
 
-    public String getChr() {
-        return chr;
-    }
-
     @Override
     public String getContig() {
         return chr;

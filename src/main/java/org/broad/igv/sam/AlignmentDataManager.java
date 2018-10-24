@@ -625,7 +625,7 @@ public class AlignmentDataManager implements IGVEventObserver {
                         if (tmp.size() == maxSize) break;
                         for (ReferenceFrame frame : frames) {
                             Range range = frame.getCurrentRange();
-                            if (interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
+                            if (interval.contains(range.getContig(), range.getStart(), range.getEnd())) {
                                 tmp.add(interval);
                                 break;
                             }
@@ -649,7 +649,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         public AlignmentInterval getIntervalForRange(Range range) {
 
             for (AlignmentInterval interval : intervals) {
-                if (interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
+                if (interval.contains(range.getContig(), range.getStart(), range.getEnd())) {
                     return interval;
                 }
             }

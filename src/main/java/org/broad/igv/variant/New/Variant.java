@@ -50,11 +50,6 @@ public class Variant implements Feature {
 
 
     @Override
-    public String getChr() {
-        return chr;
-    }
-
-    @Override
     public String getContig() {
         return chr;
     }

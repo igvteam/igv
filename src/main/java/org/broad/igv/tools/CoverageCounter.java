@@ -301,7 +301,7 @@ public class CoverageCounter {
                 iter = reader.iterator();
             } else {
                 reader = AlignmentReaderFactory.getReader(alignmentFile, true);
-                iter = reader.query(queryInterval.getChr(), queryInterval.getStart() - 1, queryInterval.getEnd(), false);
+                iter = reader.query(queryInterval.getContig(), queryInterval.getStart() - 1, queryInterval.getEnd(), false);
             }
 
             while (iter != null && iter.hasNext()) {
@@ -326,7 +326,7 @@ public class CoverageCounter {
 
                     totalCount++;
 
-                    String alignmentChr = alignment.getChr();
+                    String alignmentChr = alignment.getContig();
 
                     // Close all counters with position < alignment.getStart()
                     if (alignmentChr.equals(lastChr)) {

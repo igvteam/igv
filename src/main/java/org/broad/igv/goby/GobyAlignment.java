@@ -424,13 +424,9 @@ public class GobyAlignment implements Alignment {
     /**
      * Get the reference id from the iterator, prepend "chr".
      */
-    public String getChr() {
-        return getChromosome(entry.getTargetIndex());
-    }
-
     @Override
     public String getContig() {
-        return getChr();
+        return getChromosome(entry.getTargetIndex());
     }
 
     /**
@@ -768,7 +764,7 @@ public class GobyAlignment implements Alignment {
             buffer.append("Mate start = " + getMate().positionString() + "<br>");
             buffer.append("Mate is mapped = " + (getMate().isMapped() ? "yes" : "no") + "<br>");
             //buf.append("Pair is proper = " + (getProperPairFlag() ? "yes" : "no") + "<br>");
-            if (getChr().equals(getMate().getChr())) {
+            if (getContig().equals(getMate().getChr())) {
                 buffer.append("Insert size = " + getInferredInsertSize() + "<br>");
             }
             if (getPairOrientation().length() > 0) {

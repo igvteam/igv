@@ -106,10 +106,6 @@ public class CompositeScore implements LocusScore {
         return buf.toString();
     }
 
-    public String getChr() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     @Override
     public String getContig() {
         return null;

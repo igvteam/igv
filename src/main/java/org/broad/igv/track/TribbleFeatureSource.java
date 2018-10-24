@@ -238,20 +238,20 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     int nSamples = 1000;
                     htsjdk.tribble.Feature firstFeature = iter.next();
                     htsjdk.tribble.Feature lastFeature = firstFeature;
-                    String chr = firstFeature.getChr();
+                    String chr = firstFeature.getContig();
                     int n = 1;
                     long len = 0;
                     while (iter.hasNext() && n < nSamples) {
                         htsjdk.tribble.Feature f = iter.next();
                         if (f != null) {
                             n++;
-                            if (f.getChr().equals(chr)) {
+                            if (f.getContig().equals(chr)) {
                                 lastFeature = f;
                             } else {
                                 len += lastFeature.getEnd() - firstFeature.getStart() + 1;
                                 firstFeature = f;
                                 lastFeature = f;
-                                chr = f.getChr();
+                                chr = f.getContig();
                             }
                         }
                     }
@@ -300,7 +300,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     Feature f = iter.next();
                     if (f == null) continue;
 
-                    String seqName = f.getChr();
+                    String seqName = f.getContig();
                     String igvChr = genome == null ? seqName : genome.getCanonicalChrName(seqName);
 
                     List<Feature> featureList = featureMap.get(igvChr);

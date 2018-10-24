@@ -77,10 +77,6 @@ public class Peak implements LocusScore, htsjdk.tribble.Feature {
         }
     }
 
-    public String getChr() {
-        return chr;
-    }
-
     @Override
     public String getContig() {
         return chr;

@@ -124,7 +124,7 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
                     int mateStart = al.getMate().getStart();
                     //All we require is some overlap
                     boolean overlap = (mateStart + al.getReadSequence().length()) >= start && mateStart < end;
-                    overlap &= al.getMate().getChr().equals(al.getChr());
+                    overlap &= al.getMate().getChr().equals(al.getContig());
                     if (overlap) {
                         Integer rdCnt = pairedReads.get(al.getReadName());
                         rdCnt = rdCnt != null ? rdCnt + 1 : 1;

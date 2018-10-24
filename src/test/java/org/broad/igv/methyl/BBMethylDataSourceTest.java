@@ -77,7 +77,7 @@ public class BBMethylDataSourceTest {
         int i = 0;
         while (iter.hasNext()) {
             MethylScore ms = iter.next();
-            assertEquals(chr, ms.getChr());
+            assertEquals(chr, ms.getContig());
             assertEquals(expectedStarts[i], ms.getStart());
             assertEquals(expectedEnds[i], ms.getEnd());
             assertEquals(expectedPercents[i], ms.getScore(), .000001);
@@ -146,7 +146,7 @@ public class BBMethylDataSourceTest {
             MethylScore cScore = cachedScores.get(i);
             MethylScore score = nonCachedScores.get(i);
             Assert.assertEquals(cScore.getStart(), score.getStart());
-            Assert.assertEquals(cScore.getChr(), score.getChr());
+            Assert.assertEquals(cScore.getContig(), score.getContig());
         }
     }
 }

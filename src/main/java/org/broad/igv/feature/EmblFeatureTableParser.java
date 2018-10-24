@@ -203,7 +203,7 @@ public class EmblFeatureTableParser implements FeatureParser {
                     newFeatureList.add(gene);
                     genes.put(geneId, gene);
                 }
-                Exon exon = new Exon(feature.getChr(), feature.getStart(), feature.getEnd(),
+                Exon exon = new Exon(feature.getContig(), feature.getStart(), feature.getEnd(),
                         feature.getStrand());
                 gene.addExon(exon);
             }
@@ -218,7 +218,7 @@ public class EmblFeatureTableParser implements FeatureParser {
             } else if (type.equals("3'UTR") || type.equals("5'UTR")) {
                 BasicFeature gene = genes.get(feature.getIdentifier());
                 if (gene != null) {
-                    Exon exon = new Exon(feature.getChr(), feature.getStart(),
+                    Exon exon = new Exon(feature.getContig(), feature.getStart(),
                             feature.getEnd(), feature.getStrand());
                     exon.setNonCoding(true);
                     boolean plus = (type.equals("5'UTR") && feature.getStrand() == Strand.POSITIVE) ||

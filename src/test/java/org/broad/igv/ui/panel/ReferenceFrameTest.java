@@ -86,7 +86,7 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
         Locus locus = new Locus("chr1", 1000, 2000);
         frame.jumpTo(locus);
 
-        assertEquals(locus.getChr(), frame.getChrName());
+        assertEquals(locus.getContig(), frame.getChrName());
         assertEquals(locus.getStart(), frame.getOrigin(), 1.0);
         assertEquals(locus.getEnd(), frame.getEnd(), 1.0);
         assertConsistent();
@@ -102,7 +102,7 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
         double oldCenter = frame.getCenter();
 
         int delta = 12344;
-        frame.jumpTo(locus.getChr(), locus.getStart() + delta, locus.getEnd() + delta);
+        frame.jumpTo(locus.getContig(), locus.getStart() + delta, locus.getEnd() + delta);
 
         assertEquals(oldLocScale, frame.getScale());
         assertEquals(oldZoom, frame.getZoom());
@@ -171,7 +171,7 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
 
             Locus locus = Locus.fromString(loci.get(ii));
 
-            assertEquals(locus.getChr(), frame.getChrName());
+            assertEquals(locus.getContig(), frame.getChrName());
             assertEquals(locus.getStart() - 1, frame.getOrigin(), 0.5);
             assertEquals(locus.getEnd(), frame.getEnd(), 0.5);
         }

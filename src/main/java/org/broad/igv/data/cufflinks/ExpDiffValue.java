@@ -58,7 +58,7 @@ public class ExpDiffValue extends CufflinksValue implements LocusScore {
     public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append(getChr() + ":" + (getStart() + 1) + "-" + getEnd());
+        sb.append(getContig() + ":" + (getStart() + 1) + "-" + getEnd());
         sb.append("<br>gene = " + gene);
         sb.append("<br>log2(y/x) = " + log2Ratio);
         sb.append("<br>FPKM X = " + fpkmX);

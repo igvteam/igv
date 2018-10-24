@@ -48,7 +48,7 @@ public class LinkedAlignment implements Alignment {
         String library = alignment.getLibrary();
 
         if (alignments.isEmpty()) {
-            this.chr = alignment.getChr();
+            this.chr = alignment.getContig();
             alignmentStart = alignment.getAlignmentStart();
             alignmentEnd = alignment.getAlignmentEnd();
 
@@ -62,7 +62,7 @@ public class LinkedAlignment implements Alignment {
 
         } else {
 
-            if (!this.chr.equals(alignment.getChr())) {
+            if (!this.chr.equals(alignment.getContig())) {
                 throw new RuntimeException("Mixed chromosome linked alignments not supported");
             }
 
@@ -111,11 +111,6 @@ public class LinkedAlignment implements Alignment {
             }
         }
         return strand;
-    }
-
-    @Override
-    public String getChr() {
-        return chr;
     }
 
     @Override
@@ -414,7 +409,7 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public String getContig() {
-        return null;
+        return chr;
     }
 
     static final Comparator<Alignment> ALIGNMENT_START_COMPARATOR = new Comparator<Alignment>() {

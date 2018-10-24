@@ -60,10 +60,6 @@ public class DownsampledInterval implements Feature {
         return start;
     }
 
-    public String getChr() {
-        return null;
-    }
-
     @Override
     public String getContig() {
         return null;

@@ -79,7 +79,7 @@ public class PAFFeature implements IGVFeature {
         if (feature == null) {
             return false;
         }
-        if (!this.getChr().equals(feature.getChr()) ||
+        if (!this.getContig().equals(feature.getContig()) ||
                 this.getStrand() != feature.getStrand()) {
             return false;
         }

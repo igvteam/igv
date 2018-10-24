@@ -282,14 +282,14 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
 
         private GFFFeature createParent(BasicFeature gffExon) {
 
-            return new GFFFeature(gffExon.getChr(), gffExon.getStart(), gffExon.getEnd(), gffExon.getStrand());
+            return new GFFFeature(gffExon.getContig(), gffExon.getStart(), gffExon.getEnd(), gffExon.getStrand());
 
         }
 
 
         private static BasicFeature copyForCDS(BasicFeature bf) {
 
-            BasicFeature copy = new BasicFeature(bf.getChr(), bf.getStart(), bf.getEnd(), bf.getStrand());
+            BasicFeature copy = new BasicFeature(bf.getContig(), bf.getStart(), bf.getEnd(), bf.getStrand());
             copy.setName(bf.getName());
             copy.setColor(bf.getColor());
             copy.setIdentifier(bf.getIdentifier());
@@ -323,7 +323,7 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
 
             public void addPart(BasicFeature bf) {
                 cdsParts.add(bf);
-                this.chr = bf.getChr();
+                this.chr = bf.getContig();
                 this.start = Math.min(this.start, bf.getStart());
                 this.end = Math.max(this.end, bf.getEnd());
                 this.strand = bf.getStrand();

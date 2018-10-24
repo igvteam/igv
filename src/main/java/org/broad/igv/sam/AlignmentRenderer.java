@@ -560,7 +560,7 @@ public class AlignmentRenderer {
         Color alignmentColor1 = getAlignmentColor(pair.firstAlignment, renderOptions);
         Color alignmentColor2 = null;
 
-        boolean overlapped = pair.secondAlignment != null && (pair.firstAlignment.getChr().equals(pair.secondAlignment.getChr())) &&
+        boolean overlapped = pair.secondAlignment != null && (pair.firstAlignment.getContig().equals(pair.secondAlignment.getContig())) &&
                 pair.firstAlignment.getAlignmentEnd() > pair.secondAlignment.getAlignmentStart();
 
         Graphics2D g = context.getGraphics2D("ALIGNMENT");
@@ -1259,7 +1259,7 @@ public class AlignmentRenderer {
             case INSERT_SIZE:
                 boolean isPairedAlignment = alignment instanceof PairedAlignment;
                 if ((alignment.isPaired() && alignment.getMate().isMapped()) || isPairedAlignment) {
-                    boolean sameChr = isPairedAlignment || alignment.getMate().getChr().equals(alignment.getChr());
+                    boolean sameChr = isPairedAlignment || alignment.getMate().getChr().equals(alignment.getContig());
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
                         if (readDistance != 0) {

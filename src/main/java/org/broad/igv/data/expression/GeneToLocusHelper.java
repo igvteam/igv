@@ -188,7 +188,7 @@ public class GeneToLocusHelper {
             // Maybe its a gene or feature
             Feature gene = FeatureDB.getFeature(geneOrLocusString);
             if (gene != null) {
-                return new Locus(gene.getChr(), gene.getStart(), gene.getEnd());
+                return new Locus(gene.getContig(), gene.getStart(), gene.getEnd());
             }
         }
         return null;

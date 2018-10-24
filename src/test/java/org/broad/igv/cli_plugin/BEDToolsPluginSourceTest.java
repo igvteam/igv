@@ -200,7 +200,7 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
             }
 
             Feature actFeature = actFeatures.get(ind);
-            assertEquals(expChr, actFeature.getChr());
+            assertEquals(expChr, actFeature.getContig());
             assertEquals(expStart, actFeature.getStart());
             assertEquals(expEnd, actFeature.getEnd());
 

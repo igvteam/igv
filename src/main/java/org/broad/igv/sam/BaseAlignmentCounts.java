@@ -85,10 +85,6 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         return end;
     }
 
-    public String getChr() {
-        return null;
-    }
-
     @Override
     public String getContig() {
         return null;

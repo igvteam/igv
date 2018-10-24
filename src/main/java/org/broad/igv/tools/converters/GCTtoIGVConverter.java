@@ -101,9 +101,9 @@ public class GCTtoIGVConverter {
                     log.warn("No locus found for: " + probe + "  " + row.getDescription());
                 } else {
                     for (Locus locus : loci) {
-                        String igvLine = locus.getChr() + "\t" + locus.getStart() + "\t" + locus.getEnd() + "\t" + probe +
+                        String igvLine = locus.getContig() + "\t" + locus.getStart() + "\t" + locus.getEnd() + "\t" + probe +
                                 "\t" + row.getData();
-                        cltn.add(new SortableRecord(locus.getChr(), locus.getStart(), igvLine));
+                        cltn.add(new SortableRecord(locus.getContig(), locus.getStart(), igvLine));
                     }
                 }
             }

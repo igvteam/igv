@@ -274,7 +274,7 @@ public class Session implements IGVEventObserver {
         Range range = getReferenceFrame().getCurrentRange();
         String startStr = String.valueOf(range.getStart());
         String endStr = String.valueOf(range.getEnd());
-        String position = range.getChr() + ":" + startStr + "-" + endStr;
+        String position = range.getContig() + ":" + startStr + "-" + endStr;
         return position;
     }
 

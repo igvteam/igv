@@ -57,7 +57,7 @@ public class BEDGraphEncoder implements LineFeatureEncoder {
 
     public String encode(LocusScore score) {
         String[] tokens = new String[4];
-        tokens[0] = score.getChr();
+        tokens[0] = score.getContig();
         tokens[1] = "" + score.getStart();
         tokens[2] = "" + score.getEnd();
         tokens[3] = "" + score.getScore();

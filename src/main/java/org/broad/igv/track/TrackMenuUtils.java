@@ -713,7 +713,7 @@ public class TrackMenuUtils {
             //return SAMWriter.writeAlignmentFilePicard(inlocator, outPath, range.getChr(), range.getStart(), range.getEnd());
 
             //Export those in memory, overlapping current view
-            return SAMWriter.writeAlignmentFilePicard(dataManager, outFile, frame, range.getChr(), range.getStart(), range.getEnd());
+            return SAMWriter.writeAlignmentFilePicard(dataManager, outFile, frame, range.getContig(), range.getStart(), range.getEnd());
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -750,7 +750,7 @@ public class TrackMenuUtils {
                 //Can't trust FeatureTrack.getFeatures to limit itself, so we filter
                 List<Feature> features = fTrack.getVisibleFeatures(frame);
                 Range range = frame.getCurrentRange();
-                Predicate<Feature> pred = FeatureUtils.getOverlapPredicate(range.getChr(), range.getStart(), range.getEnd());
+                Predicate<Feature> pred = FeatureUtils.getOverlapPredicate(range.getContig(), range.getStart(), range.getEnd());
                 features = CollUtils.filter(features, pred);
                 IGVBEDCodec codec = new IGVBEDCodec();
                 for (Feature feat : features) {
@@ -1418,7 +1418,7 @@ public class TrackMenuUtils {
 
                 double location = frame.getChromosomePosition(mouseX);
                 if (f instanceof IGVFeature) {
-                    String details = f.getChr() + ":" + (f.getStart() + 1) + "-" + f.getEnd() +
+                    String details = f.getContig() + ":" + (f.getStart() + 1) + "-" + f.getEnd() +
                             System.getProperty("line.separator") + System.getProperty("line.separator");
                     String valueString = ((IGVFeature) f).getValueString(location, mouseX, null);
                     if (details != null) {
@@ -1451,7 +1451,7 @@ public class TrackMenuUtils {
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                IGV.copySequenceToClipboard(genome, f.getChr(), f.getStart(), f.getEnd(), strand);
+                IGV.copySequenceToClipboard(genome, f.getContig(), f.getStart(), f.getEnd(), strand);
             }
         });
         return item;
@@ -1462,7 +1462,7 @@ public class TrackMenuUtils {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                ExtendViewClient.postExtendView(featureName, f.getStart(), f.getEnd(), r.getChr(), r.getStart(), r.getEnd());
+                ExtendViewClient.postExtendView(featureName, f.getStart(), f.getEnd(), r.getContig(), r.getStart(), r.getEnd());
             }
         });
         return item;
@@ -1481,7 +1481,7 @@ public class TrackMenuUtils {
                     strand = Strand.NONE;
                 }
 
-                BlatClient.doBlatQuery(f.getChr(), f.getStart(), f.getEnd(), strand);
+                BlatClient.doBlatQuery(f.getContig(), f.getStart(), f.getEnd(), strand);
             }
         });
         return item;

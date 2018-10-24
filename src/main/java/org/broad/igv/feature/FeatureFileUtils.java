@@ -405,7 +405,7 @@ public class FeatureFileUtils {
                 int tss = transcript.getStrand() == Strand.POSITIVE ? f.getStart() : f.getEnd();
                 if (tss != lastTSS) {
                     int tssEnd = transcript.getStrand() == Strand.POSITIVE ? tss + 20 : tss - 20;
-                    pw.println(transcript.getChr() + "\t" + Math.min(tss, tssEnd) + "\t" + Math.max(tss, tssEnd));
+                    pw.println(transcript.getContig() + "\t" + Math.min(tss, tssEnd) + "\t" + Math.max(tss, tssEnd));
                     lastTSS = tss;
                 }
 
@@ -521,7 +521,7 @@ public class FeatureFileUtils {
             String[] tokens = nextLine.split("\t");
             Locus locus = Locus.fromString(tokens[1].trim());
             pw.println(
-                    locus.getChr() + "\t" + locus.getStart() + "\t" + locus.getEnd() + "\t" + tokens[0].trim());
+                    locus.getContig() + "\t" + locus.getStart() + "\t" + locus.getEnd() + "\t" + tokens[0].trim());
         }
 
         br.close();

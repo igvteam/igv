@@ -98,7 +98,7 @@ public class DRangerFeature extends AbstractFeature {
 
     public LocusScore copy() {
         DRangerFeature newFeat = new DRangerFeature();
-        newFeat.setChr(getChr());
+        newFeat.setChr(getContig());
         newFeat.setStart(getStart());
         newFeat.setEnd(getEnd());
         newFeat.chr2 = chr2;

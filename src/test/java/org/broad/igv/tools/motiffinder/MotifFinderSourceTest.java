@@ -275,7 +275,7 @@ public class MotifFinderSourceTest extends AbstractHeadlessTest{
     }
 
     private void checkPatternMatches(String pattern, Feature feature){
-        byte[] sequence = genome.getSequence(feature.getChr(), feature.getStart(), feature.getEnd());
+        byte[] sequence = genome.getSequence(feature.getContig(), feature.getStart(), feature.getEnd());
         checkPatternMatches(pattern, feature, sequence);
     }
 

@@ -1630,7 +1630,7 @@ public class IGV implements IGVEventObserver {
             prefMgr.put(SAM_GROUP_BY_TAG, tag);
         }
         if (option == AlignmentTrack.GroupOption.BASE_AT_POS && pos != null) {
-            prefMgr.put(SAM_GROUP_BY_POS, pos.getChr() + " " + String.valueOf(pos.getStart()));
+            prefMgr.put(SAM_GROUP_BY_POS, pos.getContig() + " " + String.valueOf(pos.getStart()));
         }
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {

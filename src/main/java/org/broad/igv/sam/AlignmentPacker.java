@@ -256,7 +256,7 @@ public class AlignmentPacker {
         return al.isPrimary() &&
                 al.isPaired() &&
                 al.getMate().isMapped() &&
-                al.getMate().getChr().equals(al.getChr());
+                al.getMate().getChr().equals(al.getContig());
     }
 
     private List<Alignment> linkByTag(List<Alignment> alList, String tag) {
@@ -333,7 +333,7 @@ public class AlignmentPacker {
         for (Alignment alignment : alignmentsList) {
             maxEnd = Math.max(maxEnd, alignment.getEnd());
         }
-        return new Range(firstAlignment.getChr(), minStart,
+        return new Range(firstAlignment.getContig(), minStart,
                 maxEnd);
     }
 
@@ -442,7 +442,7 @@ public class AlignmentPacker {
                 //    2: alignments with a gap at the position
                 //    3: alignment that do not overlap the position (or are on a different chromosome)
 
-                if (al.getChr().equals(pos.getChr()) &&
+                if (al.getContig().equals(pos.getContig()) &&
                     al.getAlignmentStart() <= pos.getStart() &&
                     al.getAlignmentEnd() > pos.getStart()) {
 

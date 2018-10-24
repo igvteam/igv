@@ -52,10 +52,6 @@ public class Cytoband implements NamedFeature {
         return chromosome;
     }
 
-    public String getChr() {
-        return chromosome;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
