@@ -30,7 +30,6 @@ import htsjdk.samtools.util.ftp.FTPReply;
 import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
@@ -447,16 +446,25 @@ public class ParsingUtils {
                             }
                         } else if (key.toLowerCase().equals("viewlimits")) {
                             String[] limits = value.split(":");
-                            if (limits.length == 2) {
-                                try {
+
+                            try {
+                                if (limits.length == 2) {
                                     float min = Float.parseFloat(limits[0].trim());
                                     float max = Float.parseFloat(limits[1].trim());
                                     trackProperties.setMinValue(min);
                                     trackProperties.setMaxValue(max);
-                                } catch (NumberFormatException e) {
-                                    log.error("viewLimits values must be numeric: " + value);
+                                } else if(limits.length == 3) {
+                                    float min = Float.parseFloat(limits[0].trim());
+                                    float base = Float.parseFloat(limits[1].trim());
+                                    float max = Float.parseFloat(limits[2].trim());
+                                    trackProperties.setMinValue(min);
+                                    trackProperties.setMidValue(base);
+                                    trackProperties.setMaxValue(max);
                                 }
+                            } catch (NumberFormatException e) {
+                                log.error("viewLimits values must be numeric: " + value);
                             }
+
                         } else if (key.equals("midrange")) {
                             String[] limits = value.split(":");
                             if (limits.length == 2) {
