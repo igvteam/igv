@@ -35,8 +35,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SessionXmlAdapters;
-import org.broad.igv.session.SubtlyImportant;
+
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -48,11 +47,10 @@ import org.broad.igv.util.ChromosomeColors;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.DoubleArrayList;
 import org.broad.igv.util.collections.IntArrayList;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,56 +63,29 @@ import java.util.Collection;
  * @author jussi
  * @since Nov 23, 2009
  */
-@XmlType(factoryMethod = "getNextTrack")
 public class GWASTrack extends AbstractTrack {
 
-    // Color properties
-    @XmlAttribute
-    private int minPointSize;
-    @XmlAttribute
-    private int maxPointSize;
-
-    @XmlAttribute
-    private boolean useChrColors;
-    @XmlAttribute
-    private boolean singleColor;
-    @XmlAttribute
-    private boolean alternatingColors;
-
-    @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
-    @XmlAttribute
-    private Color primaryColor;
-    @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
-    @XmlAttribute
-    private Color secondaryColor;
-
-    private GWASData gData;
     private static final Logger log = Logger.getLogger(GWASTrack.class);
-
     private static final int AXIS_AREA_WIDTH = 60;
-    @XmlAttribute
-    private double trackMinY;
-    @XmlAttribute
-    private double maxY;
-    @XmlAttribute
-    private double scale;
-    private GWASParser parser;
     private static final DecimalFormat formatter = new DecimalFormat();
-    //private String displayName = "GWAS Track";
-    @XmlAttribute
+
+
+    private int minPointSize;
+    private int maxPointSize;
+    private boolean useChrColors;
+    private boolean singleColor;
+    private boolean alternatingColors;
+    private Color primaryColor;
+    private Color secondaryColor;
+    private double trackMinY;
+    private double maxY;
+    private double scale;
     private String displayName = null;
-    @XmlAttribute
     private boolean drawYAxis = true;
     private boolean showAxis = true;
 
-    String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
+    private GWASParser parser;
+    private GWASData gData;
 
     /**
      * Constructor for a new GWAS track
@@ -154,6 +125,18 @@ public class GWASTrack extends AbstractTrack {
         this.parser = parser;
 
 
+    }
+
+    public GWASTrack() {
+    }
+
+    String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    public boolean isNumeric() {
+        return true;
     }
 
     @Override
@@ -794,8 +777,50 @@ public class GWASTrack extends AbstractTrack {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @SubtlyImportant
-    private static GWASTrack getNextTrack() {
-        return (GWASTrack) IGVSessionReader.getNextTrack();
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        element.setAttribute("maxPointSize", String.valueOf(maxPointSize));
+        element.setAttribute("minPointSize", String.valueOf(minPointSize));
+        element.setAttribute("scale", String.valueOf(scale));
+        element.setAttribute("trackMinY", String.valueOf(trackMinY));
+        element.setAttribute("maxY", String.valueOf(maxY));
+        element.setAttribute("useChrColors", String.valueOf(useChrColors));
+        element.setAttribute("singleColor", String.valueOf(singleColor));
+        element.setAttribute("drawYAxis", String.valueOf(drawYAxis));
+        element.setAttribute("displayName", String.valueOf(displayName));
+        element.setAttribute("alternatingColors", String.valueOf(alternatingColors));
+        if (primaryColor != null) {
+            element.setAttribute("primaryColor", ColorUtilities.colorToString(primaryColor));
+        }
+        if (secondaryColor != null) {
+            element.setAttribute("secondaryColor", ColorUtilities.colorToString(secondaryColor));
+        }
+
+
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        maxPointSize = Integer.parseInt(element.getAttribute("maxPointSize"));
+        minPointSize = Integer.parseInt(element.getAttribute("minPointSize"));
+        scale = Double.parseDouble(element.getAttribute("scale"));
+        trackMinY = Double.parseDouble(element.getAttribute("trackMinY"));
+        maxY = Double.parseDouble(element.getAttribute("maxY"));
+        useChrColors = Boolean.parseBoolean(element.getAttribute("useChrColors"));
+        singleColor = Boolean.parseBoolean(element.getAttribute("singleColor"));
+        drawYAxis = Boolean.parseBoolean(element.getAttribute("drawYAxis"));
+        displayName = element.getAttribute("displayName");
+        alternatingColors = Boolean.parseBoolean(element.getAttribute("alternatingColors"));
+        if (element.hasAttribute("primaryColor")) {
+            primaryColor = ColorUtilities.stringToColor(element.getAttribute("primaryColor"));
+        }
+        if (element.hasAttribute("secondaryColor ")) {
+            secondaryColor = ColorUtilities.stringToColor(element.getAttribute("secondaryColor"));
+        }
     }
 }

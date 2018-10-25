@@ -40,6 +40,9 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.variant.VariantTrack;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
@@ -81,7 +84,10 @@ public class SpliceJunctionTrack extends FeatureTrack {
     }
 
 
-    public SpliceJunctionTrack(ResourceLocator locator, String name, AlignmentDataManager dataManager, AlignmentTrack alignmentTrack, StrandOption ignoreStrand) {
+    public SpliceJunctionTrack(ResourceLocator locator, String name,
+                               AlignmentDataManager dataManager,
+                               AlignmentTrack alignmentTrack,
+                               StrandOption ignoreStrand) {
         super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));
@@ -95,6 +101,8 @@ public class SpliceJunctionTrack extends FeatureTrack {
         this.strandOption = ignoreStrand;
     }
 
+    public SpliceJunctionTrack() {
+    }
 
     protected boolean isShowFeatures(ReferenceFrame frame) {
         float maxRange = PreferencesManager.getPreferences().getAsFloat(Constants.SAM_MAX_VISIBLE_RANGE);
@@ -337,5 +345,29 @@ public class SpliceJunctionTrack extends FeatureTrack {
     }
     // End of Roche-Tessella modification
 
+
+
+    @Override
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        if(removed) {
+            element.setAttribute("removed", String.valueOf(removed));
+        }
+
+
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        if(element.hasAttribute("removed")) {
+            this.removed = Boolean.parseBoolean("removed");
+        }
+
+    }
 
 }

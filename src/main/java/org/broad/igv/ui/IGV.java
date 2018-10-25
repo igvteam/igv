@@ -136,23 +136,6 @@ public class IGV implements IGVEventObserver {
     // Vertical line that follows the mouse
     private boolean rulerEnabled;
 
-    /**
-     * Add an entry to the "Tools" menu
-     *
-     * @param menu
-     * @api
-     */
-    public void addOtherToolMenu(JComponent menu) {
-        otherToolMenus.add(menu);
-        if (menuBar != null) menuBar.refreshToolsMenu();
-    }
-
-
-    List<JComponent> getOtherToolMenus() {
-        return otherToolMenus;
-    }
-
-
     public static IGV createInstance(Frame frame) {
         if (theInstance != null) {
             throw new RuntimeException("Only a single instance is allowed.");

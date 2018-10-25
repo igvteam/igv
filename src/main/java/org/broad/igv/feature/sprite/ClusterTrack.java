@@ -2,17 +2,20 @@ package org.broad.igv.feature.sprite;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.*;
+import org.broad.igv.track.AbstractTrack;
+import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.TrackClickEvent;
+import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
@@ -29,6 +32,8 @@ public class ClusterTrack extends AbstractTrack {
     int rowHeight = 2;
     Genome genome;
 
+    public ClusterTrack() {
+    }
 
     public ClusterTrack(ResourceLocator locator, ClusterParser.ClusterSet clusterSet, Genome genome) {
         super(locator);
@@ -228,4 +233,24 @@ public class ClusterTrack extends AbstractTrack {
 
     }
 
+
+    @Override
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        element.setAttribute("binSize", String.valueOf(binSize));
+        element.setAttribute("sequence", String.valueOf(rowHeight));
+
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        this.binSize = Integer.parseInt(element.getAttribute("binSize"));
+        this.rowHeight = Integer.parseInt(element.getAttribute("rowHeight"));
+
+    }
 }

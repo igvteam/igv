@@ -32,7 +32,6 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CoverageDataSource;
-import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -43,15 +42,12 @@ import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.DataRangeDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -60,10 +56,10 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -78,7 +74,6 @@ import static org.broad.igv.prefs.Constants.*;
 /**
  * @author jrobinso
  */
-@XmlType(factoryMethod = "getNextTrack")
 
 public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
@@ -95,12 +90,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     public static final boolean DEFAULT_AUTOSCALE = true;
     public static final boolean DEFAULT_SHOW_REFERENCE = false;
 
-    // User settable state -- these attributes should be stored in the session file
-    @XmlAttribute
     private float snpThreshold;
-    //TODO This appears to not be used anywhere, remove?
-    @XmlAttribute
-    private boolean showReference;
 
     private AlignmentTrack alignmentTrack;
     private AlignmentDataManager dataManager;
@@ -117,12 +107,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
      * Default is true because we usually do, SashimiPlot does not
      */
     private boolean globalAutoScale = true;
-
-
-    @SubtlyImportant
-    public CoverageTrack() {
-
-    }
 
 
     /**
@@ -151,10 +135,17 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         prefs = PreferencesManager.getPreferences();
         snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
         autoScale = DEFAULT_AUTOSCALE;
-        showReference = DEFAULT_SHOW_REFERENCE;
-        //TODO  logScale = prefs.
+
+    }
+
+    public CoverageTrack() {
+
+    }
 
 
+    @Override
+    public boolean isNumeric() {
+        return true;
     }
 
     public void setDataManager(AlignmentDataManager dataManager) {
@@ -191,10 +182,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public float getSnpThreshold() {
         return snpThreshold;
-    }
-
-    public boolean isShowReference() {
-        return showReference;
     }
 
     public boolean isRemoved() {
@@ -494,23 +481,23 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
                 int dX = (int) (rectX + (pos + step - origin) / scale) - pX;
                 dX = dX < 1 ? 1 : dX;
-              //  if (pX + dX > lastpX) {
-                    int pY = (int) rectMaxY - 1;
-                    int totalCount = alignmentCounts.getTotalCount(pos);
-                    double tmp = range.isLog() ? Math.log10(totalCount + 1) / maxRange : totalCount / maxRange;
-                    int height = (int) (tmp * rectHeight);
+                //  if (pX + dX > lastpX) {
+                int pY = (int) rectMaxY - 1;
+                int totalCount = alignmentCounts.getTotalCount(pos);
+                double tmp = range.isLog() ? Math.log10(totalCount + 1) / maxRange : totalCount / maxRange;
+                int height = (int) (tmp * rectHeight);
 
-                    height = Math.min(height, rect.height - 1);
-                    int topY = (pY - height);
-                    if (dX > 3) {
-                        dX--; // Create a little space between bars when there is room.
-                    }
-                    if (height > 0) {
-                        graphics.fillRect(pX, topY, dX, height);
+                height = Math.min(height, rect.height - 1);
+                int topY = (pY - height);
+                if (dX > 3) {
+                    dX--; // Create a little space between bars when there is room.
+                }
+                if (height > 0) {
+                    graphics.fillRect(pX, topY, dX, height);
 
-                    }
-                    lastpX = pX + dX;
-             //   }
+                }
+                lastpX = pX + dX;
+                //   }
             }
 
             // Second pass - mark mismatches
@@ -978,13 +965,27 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     }
 
 
-    @SubtlyImportant
-    private static CoverageTrack getNextTrack() {
-        return (CoverageTrack) IGVSessionReader.getNextTrack();
-    }
-
     public void setGlobalAutoScale(boolean globalAutoScale) {
         this.globalAutoScale = globalAutoScale;
+    }
+
+
+    @Override
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        element.setAttribute("snpThreshold", String.valueOf(snpThreshold));
+
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        if (element.hasAttribute("snpThreshold")) {
+            snpThreshold = Float.parseFloat(element.getAttribute("snpThreshold"));
+        }
+
     }
 
 }

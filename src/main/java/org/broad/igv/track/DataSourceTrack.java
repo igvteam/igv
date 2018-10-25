@@ -34,21 +34,10 @@ import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.util.ResourceLocator;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -57,18 +46,12 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-@XmlType(factoryMethod = "getNextTrack")
-@XmlSeeAlso({CombinedDataSource.class})
+
 public class DataSourceTrack extends DataTrack {
 
     private static Logger log = Logger.getLogger(DataSourceTrack.class);
 
-    //All tracks have label "Track", we need to specify the type sometimes
-    //but still preserve backwards compatibility
-    @XmlAttribute
-    protected Class clazz = DataSourceTrack.class;
-
-    private DataSource dataSource;
+    public DataSource dataSource;
 
     /**
      * We often don't have data when the track is constructed,
@@ -80,27 +63,28 @@ public class DataSourceTrack extends DataTrack {
 
     private static final String COMBINED_DATA_SOURCE = "COMBINED_DATA_SOURCE";
 
-    @SubtlyImportant
-    private DataSourceTrack(){
-        super(null, null, null);
-    }
 
     public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource) {
         super(locator, id, name);
 
         this.dataSource = dataSource;
 
-        if(this.dataSource != null){
+        if (this.dataSource != null) {
             setTrackType(dataSource.getTrackType());
             List<LocusScore> scores = this.dataSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, 0);
 
-            if(scores.size() == 0) rescaleOnFirst = true;
+            if (scores.size() == 0) rescaleOnFirst = true;
 
             initScale(dataSource, scores);
         }
     }
 
-    void initScale(DataSource dataSource, List<LocusScore> scores){
+    public DataSourceTrack() {
+
+    }
+
+
+    void initScale(DataSource dataSource, List<LocusScore> scores) {
 
         float min = (float) dataSource.getDataMin();
         float max = (float) dataSource.getDataMax();
@@ -122,7 +106,7 @@ public class DataSourceTrack extends DataTrack {
         List<LocusScore> tmp = dataSource.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
 
         if (tmp == null) tmp = Collections.EMPTY_LIST;
-        if(!firstDataLoaded && rescaleOnFirst){
+        if (!firstDataLoaded && rescaleOnFirst) {
             initScale(dataSource, tmp);
             firstDataLoaded = true;
         }
@@ -146,7 +130,7 @@ public class DataSourceTrack extends DataTrack {
 
 
     public WindowFunction getWindowFunction() {
-        //For JAXB session loading/unloading, dataSource might be null, and we need to guard against that
+
         return dataSource != null ? dataSource.getWindowFunction() : null;
     }
 
@@ -154,34 +138,6 @@ public class DataSourceTrack extends DataTrack {
     @Override
     public Collection<WindowFunction> getAvailableWindowFunctions() {
         return dataSource != null ? dataSource.getAvailableWindowFunctions() : null;
-    }
-
-    @Override
-    public void restorePersistentState(Node node, int version) throws JAXBException {
-        super.restorePersistentState(node, version);
-        if (node.hasChildNodes()) {
-            NodeList childNodes = node.getChildNodes();
-            for (int ii = 0; ii < childNodes.getLength(); ii++) {
-                Node child = childNodes.item(ii);
-                String nodeName = child.getNodeName();
-                if (nodeName.contains("#text")) continue;
-
-                if (nodeName.equalsIgnoreCase(COMBINED_DATA_SOURCE)) {
-                    dataSource = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, CombinedDataSource.class).getValue();
-                }
-            }
-        }
-    }
-
-    public void marshalSource(Marshaller m, Element trackElement) throws JAXBException {
-        if (dataSource == null) return;
-        DataSource rawSource = dataSource;
-
-        if(rawSource instanceof CombinedDataSource){
-            JAXBElement element = new JAXBElement<CombinedDataSource>(new QName("", COMBINED_DATA_SOURCE), CombinedDataSource.class,
-                    (CombinedDataSource) rawSource);
-            m.marshal(element, trackElement);
-        }
     }
 
     public void updateTrackReferences(List<Track> allTracks) {
@@ -193,34 +149,38 @@ public class DataSourceTrack extends DataTrack {
     @Override
     public void dispose() {
         super.dispose();
-        if(dataSource != null) {
+        if (dataSource != null) {
             dataSource.dispose();
             dataSource = null;
         }
     }
 
-    @SubtlyImportant
-    @XmlAttribute
-    private void setNormalize(boolean normalize){
-        if (dataSource != null && dataSource instanceof CoverageDataSource) {
-            ((CoverageDataSource) dataSource).setNormalize(normalize);
+
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        if (dataSource != null) {
+            if (dataSource instanceof CoverageDataSource) {
+                boolean normalize = ((CoverageDataSource) dataSource).getNormalize();
+                if (normalize) {
+                    element.setAttribute("normalize", "true");
+                }
+            }
         }
     }
 
-    @SubtlyImportant
-    private boolean getNormalize(){
-        if (dataSource != null && dataSource instanceof CoverageDataSource) {
-            return ((CoverageDataSource) dataSource).getNormalize();
-        }
-        return false;
-    }
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
 
-    @SubtlyImportant
-    private static DataSourceTrack getNextTrack(){
-        DataSourceTrack out = (DataSourceTrack) IGVSessionReader.getNextTrack();
-        if (out == null){
-            out = new DataSourceTrack();
+        super.unmarshalXML(element, version);
+
+        if (dataSource != null) {
+            if(dataSource instanceof CoverageDataSource && element.hasAttribute("normalize")){
+                ((CoverageDataSource) dataSource).setNormalize(Boolean.parseBoolean(element.getAttribute("normalize")));
+            }
         }
-        return out;
+
+
     }
 }

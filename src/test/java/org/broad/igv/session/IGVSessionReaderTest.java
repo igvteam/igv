@@ -101,34 +101,5 @@ public class IGVSessionReaderTest extends AbstractHeadlessTest {
         }
     }
 
-    @Test
-    public void testReadWriteColorString() throws Exception{
-        SessionDataHolder inVal = new SessionDataHolder();
-        Color inCol = new Color(0, 100, 200);
-        inVal.color = inCol;
-        SessionDataHolder outVal = TestUtils.marshallUnmarshall(inVal);
-        assertEquals(inCol, outVal.color);
-        assertNull(outVal.renderer);
-    }
-
-    @Test
-    public void testReadWriteRenderer() throws Exception{
-        SessionDataHolder inVal = new SessionDataHolder();
-        inVal.renderer = (Renderer) RendererFactory.defaultRendererClass.newInstance();
-
-        assert inVal.renderer != null;
-
-        SessionDataHolder outVal = TestUtils.marshallUnmarshall(inVal);
-        assertEquals(inVal.renderer.getClass().getName(), outVal.renderer.getClass().getName());
-    }
-
-    private static class SessionDataHolder{
-        @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
-        @XmlAttribute public Color color;
-
-        @XmlJavaTypeAdapter(SessionXmlAdapters.Renderer.class)
-        @XmlAttribute public Renderer renderer;
-    }
-
 
 }

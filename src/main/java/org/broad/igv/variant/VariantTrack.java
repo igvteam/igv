@@ -37,7 +37,7 @@ import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SubtlyImportant;
+
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -47,9 +47,9 @@ import org.broad.igv.event.TrackGroupEvent;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -64,7 +64,7 @@ import static org.broad.igv.prefs.Constants.*;
 /**
  * @author Jesse Whitworth, Jim Robinson, Fabien Campagne
  */
-@XmlType(factoryMethod = "getNextTrack")
+
 public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(VariantTrack.class);
@@ -112,7 +112,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     /**
      * The height of a single row in in squished mode
      */
-    @XmlAttribute(name = "SQUISHED_ROW_HEIGHT")
     private int squishedHeight = DEFAULT_SQUISHED_GENOTYPE_HEIGHT;
 
     /**
@@ -185,6 +184,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     public void setRenderer(VariantRenderer renderer) {
         this.renderer = renderer;
+    }
+
+
+    public VariantTrack() {
     }
 
     public VariantTrack(String name, FeatureSource source) {
@@ -856,7 +859,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         this.hideFiltered = value;
     }
 
-    @XmlAttribute
     public ColorMode getColorMode() {
         return coloring;
     }
@@ -865,8 +867,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         this.coloring = mode;
     }
 
-
-    @XmlAttribute
     public ColorMode getSiteColorMode() {
         return siteColorMode;
     }
@@ -1476,10 +1476,43 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
     }
 
-    @SubtlyImportant
-    private static VariantTrack getNextTrack() {
-        return (VariantTrack) IGVSessionReader.getNextTrack();
+
+    @Override
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        if(this.squishedHeight != DEFAULT_SQUISHED_GENOTYPE_HEIGHT) {
+            element.setAttribute("squishedHeight", String.valueOf(squishedHeight));
+        }
+
+        if(coloring != ColorMode.GENOTYPE) {
+            element.setAttribute("coloring", coloring.toString());
+        }
+
+        if(siteColorMode != null) {
+            element.setAttribute("siteColorMode", siteColorMode.toString());
+        }
+
     }
 
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        if(element.hasAttribute("squishedHeight")) {
+            this.squishedHeight = Integer.parseInt(element.getAttribute("squishedHeight"));
+        }
+
+        if(element.hasAttribute("coloring")) {
+            this.coloring = ColorMode.valueOf(element.getAttribute("coloring"));
+        }
+
+        if(element.hasAttribute("siteColorMode")) {
+            this.siteColorMode = ColorMode.valueOf(element.getAttribute("siteColorMode"));
+
+        }
+    }
 
 }

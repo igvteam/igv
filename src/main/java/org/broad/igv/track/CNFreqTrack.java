@@ -33,31 +33,26 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
-import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author jrobinso
  * @date Oct 13, 2010
  */
 
-@XmlType(factoryMethod = "getNextTrack")
 
 public class CNFreqTrack extends AbstractTrack {
 
@@ -65,10 +60,9 @@ public class CNFreqTrack extends AbstractTrack {
     FreqData data;
     BarChartRenderer renderer;
 
-    @XmlAttribute
+
     float ampThreshold;
 
-    @XmlAttribute
     float delThreshold;
 
     public CNFreqTrack() {
@@ -104,32 +98,22 @@ public class CNFreqTrack extends AbstractTrack {
         // Track is initialized with all data
     }
 
-    @SubtlyImportant
     public void setAmpThreshold(float ampThreshold) {
         this.ampThreshold = ampThreshold;
     }
 
-    @SubtlyImportant
     public void setDelThreshold(float delThreshold) {
         this.delThreshold = delThreshold;
     }
 
-    @SubtlyImportant
     public float getAmpThreshold() {
         return ampThreshold;
     }
 
-    @SubtlyImportant
     public float getDelThreshold() {
         return delThreshold;
     }
 
-    public Map<String, String> getPersistentState() {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("ampThreshold", String.valueOf(ampThreshold));
-        map.put("delThreshold", String.valueOf(delThreshold));
-        return map;
-    }
 
     public void render(RenderContext context, Rectangle rect) {
         data.compute(ampThreshold, delThreshold);
@@ -184,7 +168,7 @@ public class CNFreqTrack extends AbstractTrack {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String t = MessageUtils.showInputDialog("Amplification threshold  (log2(cn)/2)", String.valueOf(ampThreshold));
-                if(t != null) {
+                if (t != null) {
                     try {
                         float threshold = Float.parseFloat(t);
                         setAmpThreshold(threshold);
@@ -222,8 +206,24 @@ public class CNFreqTrack extends AbstractTrack {
         return menu;
     }
 
-    @SubtlyImportant
-    private static CNFreqTrack getNextTrack() {
-        return (CNFreqTrack) IGVSessionReader.getNextTrack();
+
+    @Override
+    public void marshalXML(Document document, Element parentElement) {
+
+        super.marshalXML(document, parentElement);
+
+        parentElement.setAttribute("ampThreshold", String.valueOf(ampThreshold));
+        parentElement.setAttribute("delThreshold", String.valueOf(delThreshold));
+
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        this.ampThreshold = Float.parseFloat(element.getAttribute("ampThreshold"));
+        this.delThreshold = Float.parseFloat(element.getAttribute("delThreshold"));
+
     }
 }

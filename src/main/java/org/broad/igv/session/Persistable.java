@@ -25,7 +25,8 @@
 
 package org.broad.igv.session;
 
-import java.util.Map;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Interface for a session persistable object.
@@ -36,16 +37,16 @@ import java.util.Map;
 public interface Persistable {
 
     /**
-     * Return object state as a map of key-value string pairs
+     * Marshal object state in XML element
      * @return
      */
 
-    public Map<String, String> getPersistentState();
+    public default void marshalXML(Document document, Element element) {};
 
     /**
-     * Restore object state from a map of key-value string pairs
-     * @param values
-     * @param version
+     * Restore object state from an XML element
      */
-    public void restorePersistentState(Map<String, String> values, int version);
+
+    public default void unmarshalXML(Element element, Integer version) {};
+
 }

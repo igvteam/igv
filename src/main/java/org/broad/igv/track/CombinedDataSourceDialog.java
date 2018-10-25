@@ -31,7 +31,6 @@ package org.broad.igv.track;
 
 import com.google.common.base.Predicate;
 import org.apache.log4j.Logger;
-import org.broad.igv.cli_plugin.ui.TrackArgument;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.PanelName;
@@ -80,13 +79,16 @@ public class CombinedDataSourceDialog extends JDialog {
 
         trackABox.setModel(new DefaultComboBoxModel(visibleTracks.toArray()));
         trackBBox.setModel(new DefaultComboBoxModel(visibleTracks.toArray()));
+
+
+        trackABox.setRenderer(new TrackComboBoxRenderer());
+        trackBBox.setRenderer(new TrackComboBoxRenderer());
+
         //Show 1st and 2nd track by default
         if(visibleTracks.size() >= 2) trackBBox.setSelectedIndex(1);
 
         operation.setRenderer(new OperationComboBoxRenderer());
 
-        trackABox.setRenderer(new TrackArgument.TrackComboBoxRenderer());
-        trackBBox.setRenderer(new TrackArgument.TrackComboBoxRenderer());
 
         setOutputTrackName();
         operation.addItemListener(new SetOutputTrackNameListener());
@@ -346,6 +348,19 @@ public class CombinedDataSourceDialog extends JDialog {
 //        name += " " + operation.getSelectedItem() + " ";
 //        name += ((Track) trackBBox.getSelectedItem()).getName();
 
+    }
+
+    public static class TrackComboBoxRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Track track = (Track) value;
+            String toShow = "No Tracks Found";
+            if(track != null){
+                toShow = track.getName();
+            }
+            return super.getListCellRendererComponent(list, toShow, index, isSelected, cellHasFocus);
+        }
     }
 
 }

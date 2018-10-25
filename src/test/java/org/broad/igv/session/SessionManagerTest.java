@@ -56,16 +56,6 @@ public class SessionManagerTest {
     public static void tearDownClass() throws Exception {
     }
 
-    /**
-     * Test of getInstance method, of class SessionManager.
-     */
-    @Test
-    public void getInstance() {
-
-        IGVSessionReader.SessionElement elem = IGVSessionReader.SessionElement.findEnum("COLOR_SCALE");
-        IGVSessionReader.SessionElement expResult = IGVSessionReader.SessionElement.COLOR_SCALE;
-        assertEquals(expResult, elem);
-    }
 
     /**
      * Test of loadSession method, of class SessionManager.

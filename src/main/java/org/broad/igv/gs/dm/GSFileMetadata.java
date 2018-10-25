@@ -26,7 +26,7 @@
 package org.broad.igv.gs.dm;
 
 import com.google.gson.*;
-import org.broad.igv.session.SubtlyImportant;
+
 
 import java.lang.reflect.Type;
 
@@ -53,8 +53,6 @@ public class GSFileMetadata {
         this.size = size;
     }
 
-    @SubtlyImportant
-    private GSFileMetadata(){}
 
 //    public GSFileMetadata(Map<String, Object> o){
 //        name = (String) o.get("name");

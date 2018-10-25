@@ -59,6 +59,8 @@ public class MutationTrack extends FeatureTrack {
         setSortable(true);
     }
 
+    public MutationTrack() {
+    }
 
     @Override
     public boolean isFilterable() {

@@ -30,9 +30,6 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.charts.ScatterPlotUtils;
-import org.broad.igv.cli_plugin.PluginSpecReader;
-import org.broad.igv.cli_plugin.ui.RunPlugin;
-import org.broad.igv.cli_plugin.ui.SetPluginPathDialog;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.ga4gh.GoogleUtils;
@@ -236,102 +233,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
         });
         menuItems.add(combineDataItem);
-
-
-        List<JComponent> otherToolMenus = igv.getOtherToolMenus();
-        menuItems.add(new JSeparator());
-        if (otherToolMenus.size() > 0) {
-            for (JComponent entry : otherToolMenus) {
-                menuItems.add(entry);
-            }
-        }
-
-
-        //-------------------------------------//
-        //"Add tool" option, for loading cli_plugin from someplace else
-        JMenuItem addTool = new JMenuItem("Add Tool...");
-        addTool.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                File pluginFi = FileDialogUtils.chooseFile("Select cli_plugin .xml spec");
-                if (pluginFi == null) return;
-
-                try {
-                    PluginSpecReader.addCustomPlugin(pluginFi.getAbsolutePath());
-                    refreshToolsMenu();
-                } catch (Exception e1) {
-                    MessageUtils.showErrorMessage("Error loading custom cli_plugin", e1);
-                }
-            }
-        });
-        //menuItems.add(addTool);
-        //menuItems.add(new JSeparator());
-
-        //-------------------------------------//
-
-        for (final PluginSpecReader pluginSpecReader : PluginSpecReader.getPlugins()) {
-            for (final PluginSpecReader.Tool tool : pluginSpecReader.getTools()) {
-                final String toolName = tool.name;
-                boolean toolVisible = tool.visible;
-                JMenuItem toolMenu;
-
-                if (toolVisible) {
-
-                    final String toolPath = pluginSpecReader.getToolPath(tool);
-                    final String tool_url = tool.toolUrl;
-                    boolean isValid = PluginSpecReader.isToolPathValid(toolPath);
-
-                    ActionListener invalidActionListener = new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            String msg = String.format("%s executable not found at %s", toolName, toolPath);
-                            if (tool_url != null) {
-                                msg += "<br/>See " + tool_url + " to install";
-                            }
-                            MessageUtils.showMessage(msg);
-                        }
-                    };
-
-                    toolMenu = new JMenu(toolName);
-                    //Kind of overlaps with the side-pull menu, doesn't look great
-                    //toolMenu.setToolTipText(tool.getAttribute("description"));
-                    for (final PluginSpecReader.Command command : tool.commandList) {
-                        final String cmdName = command.name;
-                        JMenuItem cmdItem = new JMenuItem(cmdName);
-                        toolMenu.add(cmdItem);
-                        if (isValid || toolPath == null) {
-                            cmdItem.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    RunPlugin runPlugin = null;
-                                    try {
-                                        runPlugin = new RunPlugin(IGV.getMainFrame(), pluginSpecReader, tool, command);
-                                    } catch (IllegalStateException e1) {
-                                        MessageUtils.showErrorMessage(e1.getMessage(), e1);
-                                        return;
-                                    }
-                                    runPlugin.setVisible(true);
-                                }
-                            });
-                            cmdItem.setEnabled(true);
-                        } else {
-                            cmdItem.setEnabled(false);
-                        }
-                    }
-                    //Hack so we can have a tool which is just general command line stuff
-                    //Don't let the user change the path in that case
-                    if (tool.defaultPath != null) {
-                        JMenuItem setPathItem = new JMenuItem(String.format("Set path to %s...", toolName));
-                        setPathItem.addActionListener(e -> {
-                            (new SetPluginPathDialog(IGV.getMainFrame(), pluginSpecReader, tool)).setVisible(true);
-                            refreshToolsMenu();
-                        });
-                        toolMenu.add(setPathItem);
-                    }
-                    menuItems.add(toolMenu);
-                }
-            }
-        }
 
 
         MenuAction toolsMenuAction = new MenuAction("Tools", null);

@@ -8,12 +8,11 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
-import javax.xml.bind.annotation.XmlAttribute;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Arc2D;
 import java.util.*;
 import java.util.List;
@@ -29,19 +28,19 @@ public class InteractionTrack extends AbstractTrack {
 
     enum Direction {UP, DOWN}
 
-    @XmlAttribute
     InteractionTrack.Direction direction = DOWN;
 
-    @XmlAttribute
     int thickness = 1;
 
-    @XmlAttribute
-    boolean  hideLargeFeatures = false;
+    boolean hideLargeFeatures = false;
 
     private Map<String, List<BedPEFeature>> featureMap;
 
 
     private PEArcRenderer renderer;
+
+    public InteractionTrack() {
+    }
 
     public InteractionTrack(ResourceLocator locator, List<BedPEFeature> featureList, Genome genome) {
         super(locator);
@@ -182,7 +181,7 @@ public class InteractionTrack extends AbstractTrack {
 //        });
 //
 
-       return menu;
+        return menu;
     }
 
 
@@ -248,7 +247,7 @@ public class InteractionTrack extends AbstractTrack {
                         double pe = (e - origin) / locScale;
 
                         Color fcolor = feature.color == null ? trackColor : feature.color;
-                        if(fcolor != null && width > trackRectangle.width) {
+                        if (fcolor != null && width > trackRectangle.width) {
                             fcolor = getAlphaColor(fcolor);
                         }
                         if (fcolor != null) {
@@ -269,8 +268,8 @@ public class InteractionTrack extends AbstractTrack {
 
         private Color getAlphaColor(Color fcolor) {
             Color ac = alphaColors.get(fcolor);
-            if(ac == null) {
-                float [] rgb = new float[3];
+            if (ac == null) {
+                float[] rgb = new float[3];
                 rgb = fcolor.getRGBColorComponents(rgb);
                 ac = new Color(rgb[0], rgb[1], rgb[2], 0.1f);
                 alphaColors.put(fcolor, ac);
@@ -352,4 +351,25 @@ public class InteractionTrack extends AbstractTrack {
     }
 
 
+    @Override
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        element.setAttribute("direction", String.valueOf(direction));
+        element.setAttribute("thickness", String.valueOf(thickness));
+        element.setAttribute("hideLargeFeatures", String.valueOf(hideLargeFeatures));
+
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        this.direction = Direction.valueOf(element.getAttribute("direction"));
+        this.thickness = Integer.parseInt(element.getAttribute("thickness"));
+        this.hideLargeFeatures = Boolean.parseBoolean(element.getAttribute("hideLargeFeatures"));
+
+    }
 }

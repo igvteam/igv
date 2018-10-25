@@ -31,15 +31,18 @@ import htsjdk.variant.vcf.VCFHeader;
 import org.apache.log4j.Logger;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
-import org.broad.igv.das.DASFeatureSource;
+import org.broad.igv.blast.BlastMapping;
+import org.broad.igv.blast.BlastParser;
 import org.broad.igv.data.*;
 import org.broad.igv.data.cufflinks.*;
 import org.broad.igv.data.expression.ExpressionDataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
-
 import org.broad.igv.data.seg.*;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.BasePairFileUtils;
+import org.broad.igv.feature.GisticFileParser;
+import org.broad.igv.feature.MutationTrackLoader;
+import org.broad.igv.feature.ShapeFileUtils;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.bedpe.BedPEFeature;
 import org.broad.igv.feature.bedpe.BedPEParser;
@@ -73,8 +76,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.*;
 import org.broad.igv.sam.reader.IndexNotFoundException;
-import org.broad.igv.blast.BlastMapping;
-import org.broad.igv.blast.BlastParser;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
@@ -91,7 +92,9 @@ import org.broad.igv.variant.util.PedigreeUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -131,8 +134,6 @@ public class TrackLoader {
 
             if (typeString.endsWith(".gmt")) {
                 loadGMT(locator);
-            } else if (typeString.equals("das")) {
-                loadDASResource(locator, newTracks);
             } else if (typeString.endsWith(".vcf.list")) {
                 loadVCFListFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".trio")) {
@@ -150,7 +151,7 @@ public class TrackLoader {
                 loadSegFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gistic")) {
                 loadGisticFile(locator, newTracks);
-            }  else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
+            } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
                 loadBlastMapping(locator, newTracks);
             } else if (isAlignmentTrack(typeString) ||
                     (path.startsWith("http") && path.contains("/query.cgi?"))) {
@@ -496,12 +497,12 @@ public class TrackLoader {
             ds.setLogValues(true);
 
             /*
-            * File outputFile = new File(IGV.DEFAULT_USER_DIRECTORY, file.getName() + ".h5");
-            * OverlappingProcessor proc = new OverlappingProcessor(ds);
-            * proc.setZoomMax(0);
-            * proc.process(outputFile.getAbsolutePath());
-            * loadH5File(outputFile, messages, attributeList, group);
-            */
+             * File outputFile = new File(IGV.DEFAULT_USER_DIRECTORY, file.getName() + ".h5");
+             * OverlappingProcessor proc = new OverlappingProcessor(ds);
+             * proc.setZoomMax(0);
+             * proc.process(outputFile.getAbsolutePath());
+             * loadH5File(outputFile, messages, attributeList, group);
+             */
 
             // Counter for generating ID
             TrackProperties trackProperties = ds.getTrackProperties();
@@ -1047,49 +1048,6 @@ public class TrackLoader {
             newTracks.add(track);
         }
     }
-
-    private void loadDASResource(ResourceLocator locator, List<Track> currentTracks) throws DataLoadException {
-
-        //TODO Connect and get all the attributes of the DAS server, and run the appropriate load statements
-        //TODO Currently we are only going to be doing features
-        // TODO -- move the source creation to a factory
-
-
-        DASFeatureSource featureSource = null;
-        try {
-            featureSource = new DASFeatureSource(locator);
-        } catch (MalformedURLException e) {
-            log.error("Malformed URL", e);
-            throw new DataLoadException("Error: Malformed URL ");
-        }
-
-        FeatureTrack track = new FeatureTrack(locator, featureSource);
-
-        // Try to create a sensible name from the path
-        String name = locator.getName();
-        if (name == null || name.length() == 0) {
-            if (locator.getPath().contains("genome.ucsc.edu")) {
-                name = featureSource.getType();
-            } else {
-                name = featureSource.getPath().replace("/das/", "").replace("/features", "");
-            }
-        }
-        track.setName(name);
-
-        // A hack until we can notate this some other way
-        if (locator.getPath().contains("cosmic")) {
-            track.setRendererClass(CosmicFeatureRenderer.class);
-            track.setMinimumHeight(2);
-            track.setHeight(20);
-            track.setDisplayMode(Track.DisplayMode.EXPANDED);
-        } else {
-            track.setRendererClass(IGVFeatureRenderer.class);
-            track.setMinimumHeight(35);
-            track.setHeight(45);
-        }
-        currentTracks.add(track);
-    }
-
 
     private void loadTrioData(ResourceLocator locator) throws IOException {
         PedigreeUtils.parseTrioFile(locator.getPath());

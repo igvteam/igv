@@ -35,6 +35,8 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
@@ -46,19 +48,14 @@ import org.broad.igv.renderer.DataRenderer;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.renderer.XYPlotRenderer;
-import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SessionXmlAdapters;
-import org.broad.igv.session.SubtlyImportant;
+import org.broad.igv.session.RendererFactory;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -68,7 +65,7 @@ import java.util.List;
  *
  * @author jrobinso
  */
-@XmlType(factoryMethod = "getNextTrack")
+
 public abstract class DataTrack extends AbstractTrack implements ScalableTrack, IGVEventObserver {
 
     private static Logger log = Logger.getLogger(DataTrack.class);
@@ -84,6 +81,8 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
 
+    public DataTrack() {
+    }
 
     public void receiveEvent(Object event) {
 
@@ -102,6 +101,10 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         }
     }
 
+    @Override
+    public boolean isNumeric() {
+        return true;
+    }
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
@@ -138,7 +141,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         int delta = multiLocus ? 1 : (end - start) / 2;
         int expandedStart = Math.max(0, start - delta);
         int expandedEnd = Math.min(maxEnd, end + delta);
-        LoadedDataInterval<List<LocusScore>> interval  = getSummaryScores(queryChr, expandedStart, expandedEnd, zoom);
+        LoadedDataInterval<List<LocusScore>> interval = getSummaryScores(queryChr, expandedStart, expandedEnd, zoom);
         loadedIntervalCache.put(referenceFrame.getName(), interval);
 
     }
@@ -181,7 +184,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         int start = (int) referenceFrame.getOrigin();
         int end = (int) referenceFrame.getEnd() + 1;
         int zoom = referenceFrame.getZoom();
-        if (interval == null ||  !(chr.equals(interval.range.chr))) { // Try the data we have, even if not perfect !interval.contains(chr, start, end, zoom)) {
+        if (interval == null || !(chr.equals(interval.range.chr))) { // Try the data we have, even if not perfect !interval.contains(chr, start, end, zoom)) {
             return Collections.EMPTY_LIST;
         }
 
@@ -231,7 +234,6 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     }
 
 
-
     public void clearCaches() {
         loadedIntervalCache.clear();
     }
@@ -250,8 +252,6 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     }
 
 
-    @XmlJavaTypeAdapter(SessionXmlAdapters.Renderer.class)
-    @XmlAttribute(name = "renderer")
     @Override
     public DataRenderer getRenderer() {
         if (renderer == null) {
@@ -440,9 +440,37 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         return regionScore;
     }
 
-    @SubtlyImportant
-    private static DataTrack getNextTrack() {
-        return (DataTrack) IGVSessionReader.getNextTrack();
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        if (renderer != null) {
+            RendererFactory.RendererType type = RendererFactory.getRenderType(renderer);
+            if (type != null) {
+                element.setAttribute("renderer", type.name());
+            }
+        }
+
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        if (element.hasAttribute("renderer")) {
+
+            Class rendererClass = RendererFactory.getRendererClass(element.getAttribute("renderer"));
+            if (rendererClass != null) {
+                try {
+                    renderer = (DataRenderer) rendererClass.newInstance();
+
+                } catch (Exception e) {
+                    log.error("Error instantiating renderer: " + rendererClass.getName(), e);
+                }
+            }
+        }
+
     }
 
 }

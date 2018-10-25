@@ -25,16 +25,16 @@
 
 
 /*
-* To change this template, choose Tools | Templates
-* and open the template in the editor.
-*/
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.broad.igv.renderer;
 
+import org.broad.igv.session.Persistable;
 import org.broad.igv.track.Track;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import java.util.Collection;
 
 /**
@@ -42,52 +42,44 @@ import java.util.Collection;
  *
  * @author jrobinso
  */
-@XmlAccessorType(XmlAccessType.NONE)
-public class DataRange{
 
+public class DataRange implements Persistable {
 
-    public enum Type {
-        LOG, LINEAR
-    }
 
     /**
      * The scale type,  linear by default
      */
-    @XmlAttribute private Type type = Type.LINEAR;
-
+    private Type type = Type.LINEAR;
     /**
      * Minimum data value displayed.  Zero by default.
      */
-    @XmlAttribute private float minimum = 0;
-
+    private float minimum = 0;
     /**
      * Where to draw the plot baseline.  Zero by default
      */
-    @XmlAttribute private float baseline = 0;
-
+    private float baseline = 0;
     /**
      * Maximum data value displayed. This value is required, no default
      */
-    @XmlAttribute private float maximum;
-
+    private float maximum;
     /**
      * If true the Y axis is "flipped" (most negative value at top)
      */
-    @XmlAttribute private boolean flipAxis = false;
+    private boolean flipAxis = false;
+    private boolean drawBaseline = true;
 
-    @XmlAttribute private boolean drawBaseline = true;
+    public DataRange() {
+    }
 
-    //Here for JAXB Compatibility
-    private DataRange(){}
 
     public DataRange(float minimum, float maximum) {
         this(minimum, minimum, maximum, true);
     }
 
-
     public DataRange(float minimum, float baseline, float maximum) {
         this(minimum, baseline, maximum, true);
     }
+
 
     public DataRange(float minimum, float baseline, float maximum, boolean drawBaseline) {
         this(minimum, baseline, maximum, drawBaseline, false);
@@ -101,12 +93,70 @@ public class DataRange{
         this.type = isLog ? Type.LOG : Type.LINEAR;
     }
 
-    public void setType(Type type) {
-        this.type = type;
+    public DataRange(Element element, Integer version) {
+
+        String tmp = element.getAttribute("type");
+        if (tmp != null) {
+            this.type = Type.valueOf(tmp);
+        }
+
+        tmp = element.getAttribute("minimum");
+        if (tmp != null) {
+            this.minimum = Float.parseFloat(tmp);
+        }
+
+        tmp = element.getAttribute("baseline");
+        if (tmp != null) {
+            this.baseline = Float.parseFloat(tmp);
+        }
+
+        tmp = element.getAttribute("maximum");
+        if (tmp != null) {
+            this.maximum = Float.parseFloat(tmp);
+        }
+
+        tmp = element.getAttribute("flipAxis");
+        if (tmp != null) {
+            this.flipAxis = Boolean.parseBoolean(tmp);
+        }
+
+        tmp = element.getAttribute("drawBaseline");
+        if (tmp != null) {
+            drawBaseline = Boolean.parseBoolean(tmp);
+        }
+
+    }
+
+    public static DataRange getFromTracks(Collection<? extends Track> tracks) {
+        float min = Float.MAX_VALUE;
+        float max = -Float.MAX_VALUE;
+        float mid = 0;
+        boolean drawBaseline = true;
+        boolean isLog = true;
+        for (Track t : tracks) {
+            DataRange dr = t.getDataRange();
+            min = Math.min(min, dr.getMinimum());
+            max = Math.max(max, dr.getMaximum());
+            mid += dr.getBaseline();
+            drawBaseline &= dr.isDrawBaseline();
+            isLog &= dr.isLog();
+        }
+        mid /= tracks.size();
+        if (mid < min) {
+            mid = min;
+        } else if (mid > max) {
+            min = max;
+        }
+
+        return new DataRange(min, mid, max, drawBaseline, isLog);
     }
 
     public Type getType() {
         return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public boolean isLog() {
@@ -141,28 +191,41 @@ public class DataRange{
         this.drawBaseline = drawBaseline;
     }
 
-    public static DataRange getFromTracks(Collection<? extends Track> tracks){
-        float min = Float.MAX_VALUE;
-        float max = -Float.MAX_VALUE;
-        float mid = 0;
-        boolean drawBaseline = true;
-        boolean isLog = true;
-        for (Track t : tracks) {
-            DataRange dr = t.getDataRange();
-            min = Math.min(min, dr.getMinimum());
-            max = Math.max(max, dr.getMaximum());
-            mid += dr.getBaseline();
-            drawBaseline &= dr.isDrawBaseline();
-            isLog &= dr.isLog();
-        }
-        mid /= tracks.size();
-        if (mid < min) {
-            mid = min;
-        } else if (mid > max) {
-            min = max;
-        }
+    /**
+     * Marshal object state in XML element
+     *
+     * @return
+     */
 
-        return new DataRange(min, mid, max, drawBaseline, isLog);
+    public void marshalXML(Document document, Element element) {
+        element.setAttribute("baseline", String.valueOf(this.baseline));
+        element.setAttribute("drawBaseline", String.valueOf(this.drawBaseline));
+        element.setAttribute("flipAxis", String.valueOf(this.flipAxis));
+        element.setAttribute("maximum", String.valueOf(this.maximum));
+        element.setAttribute("minimum", String.valueOf(this.minimum));
+        element.setAttribute("type", this.type.toString());
     }
+
+    /**
+     * Restore object state from an XML element
+     */
+
+    public void unmarshalXML(Element element, Integer version) {
+
+        this.baseline = Float.parseFloat(element.getAttribute("baseline"));
+        this.drawBaseline = Boolean.parseBoolean(element.getAttribute("drawBaseLine"));
+        this.flipAxis = Boolean.parseBoolean(element.getAttribute("flipAxis"));
+        this.maximum = Float.parseFloat(element.getAttribute("maximum"));
+        this.minimum = Float.parseFloat(element.getAttribute("minimum"));
+    }
+
+    ;
+
+    public enum Type {
+        LOG, LINEAR
+    }
+
+    ;
+
 
 }

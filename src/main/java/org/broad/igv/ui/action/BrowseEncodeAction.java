@@ -27,12 +27,10 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.session.SessionXmlAdapters;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.collections.CI;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 import org.broad.igv.util.encode.EncodeFileRecord;
 
@@ -46,8 +44,8 @@ import java.util.Map;
 
 /**
  * @author jrobinso
- *         Date: 11/2/13
- *         Time: 6:39 PM
+ * Date: 11/2/13
+ * Time: 6:39 PM
  */
 public class BrowseEncodeAction extends MenuAction {
 
@@ -79,7 +77,7 @@ public class BrowseEncodeAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent event) {
 
-        String [] visibleAttributes = { "dataType", "cell","antibody", "lab"};
+        String[] visibleAttributes = {"dataType", "cell", "antibody", "lab"};
         try {
             Genome genome = igv.getGenomeManager().getCurrentGenome();
             EncodeFileBrowser browser = EncodeFileBrowser.getInstance(genome.getId());
@@ -104,9 +102,9 @@ public class BrowseEncodeAction extends MenuAction {
                         rl.setColor(colors.get(antibody.toUpperCase()));
                     }
 
-                    for(String name : visibleAttributes) {
+                    for (String name : visibleAttributes) {
                         String value = record.getAttributeValue(name);
-                        if(value != null) {
+                        if (value != null) {
                             AttributeManager.getInstance().addAttribute(rl.getName(), name, value);
                         }
                     }

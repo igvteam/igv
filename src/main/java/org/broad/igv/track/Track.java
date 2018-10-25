@@ -147,6 +147,8 @@ public interface Track extends Persistable{
 
     boolean isVisible();
 
+    default boolean isNumeric() {return false;}
+
     void setOverlayed(boolean overlayVisible);
 
     TrackType getTrackType();

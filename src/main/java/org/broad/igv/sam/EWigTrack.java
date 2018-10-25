@@ -66,6 +66,7 @@ public class EWigTrack extends AbstractTrack {
     private HashMap<String, LoadedInterval> loadedIntervalCache = new HashMap(200);
 
     public EWigTrack(ResourceLocator locator, Genome genome) {
+
         super(locator);
 
         TDFReader reader = TDFReader.getReader(locator.getPath());
@@ -77,6 +78,15 @@ public class EWigTrack extends AbstractTrack {
             TDFDataSource src = new TDFDataSource(reader, i, Character.toString(nucleotides[i]), genome);
             baseSources.put(nucleotides[i], src);
         }
+    }
+
+    public EWigTrack() {
+
+    }
+
+    @Override
+    public boolean isNumeric() {
+        return true;
     }
 
     @Override

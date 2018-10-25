@@ -1,5 +1,6 @@
 package org.broad.igv.track;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.PSLRecord;
@@ -8,27 +9,25 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.PSLCodec;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.blat.BlatQueryWindow;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.swing.*;
-import javax.xml.bind.annotation.XmlType;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
 public class BlatTrack extends FeatureTrack {
 
-
-    protected Class clazz = BlatTrack.class;
+    private static Logger log = Logger.getLogger(BlatTrack.class);
 
     String species;
 
@@ -40,7 +39,7 @@ public class BlatTrack extends FeatureTrack {
 
     List<PSLRecord> features;
 
-    public BlatTrack(String species, String sequence, String db, Genome genome) throws IOException {
+    public BlatTrack(String species, String sequence, String db, Genome genome) {
 
         super(sequence, "Blat");
 
@@ -49,35 +48,46 @@ public class BlatTrack extends FeatureTrack {
         this.species = species;
         this.genome = genome;
 
-        setUseScore(true);
+
         setDisplayMode(Track.DisplayMode.SQUISHED);
 
         init();
     }
 
-    private void init() throws IOException {
 
-        List<String> tokensList = BlatClient.blat(species, db, sequence);
+    public BlatTrack() {
+        this.genome = GenomeManager.getInstance().getCurrentGenome();
+    }
 
-        // Convert tokens to features
-        PSLCodec codec = new PSLCodec(genome, true);
+    private void init() {
 
-        features = new ArrayList<PSLRecord>(tokensList.size());
-        for (String tokens : tokensList) {
-            PSLRecord f = codec.decode(tokens);
-            if (f != null) {
-                features.add(f);
+        setUseScore(true);
+
+        try {
+            List<String> tokensList = BlatClient.blat(species, db, sequence);
+
+            // Convert tokens to features
+            PSLCodec codec = new PSLCodec(genome, true);
+
+            features = new ArrayList<PSLRecord>(tokensList.size());
+            for (String tokens : tokensList) {
+                PSLRecord f = codec.decode(tokens);
+                if (f != null) {
+                    features.add(f);
+                }
             }
+
+            if (features.isEmpty()) {
+                MessageUtils.showMessage("No features found");
+            }
+
+            this.source = new FeatureCollectionSource(features, genome);
+
+            this.renderer = new IGVFeatureRenderer();
+        } catch (IOException e) {
+            log.error("Error blatting sequence", e);
+            MessageUtils.showErrorMessage("Error blatting sequence", e);
         }
-
-        if (features.isEmpty()) {
-            MessageUtils.showMessage("No features found");
-        }
-
-        this.source = new FeatureCollectionSource(features, genome);
-        ;
-
-        this.renderer = new IGVFeatureRenderer();
 
         IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
     }
@@ -110,46 +120,30 @@ public class BlatTrack extends FeatureTrack {
     }
 
 
-    public Map<String, String> getPersistentState() {
+    @Override
+    public void marshalXML(Document document, Element element) {
 
-        Map<String, String> state = new LinkedHashMap<String, String>();
+        super.marshalXML(document, element);
 
-        state.put("name", getName());
-        state.put("db", db);
-        state.put("sequence", sequence);
-        state.put("species", species);
-        state.put("displayMode", getDisplayMode().toString());
+        element.setAttribute("db", db);
+        element.setAttribute("sequence", sequence);
+        element.setAttribute("species", species);
 
-        Color c = getColor();
-        if (c != null) {
-            String cs = ColorUtilities.colorToString(c);
-            state.put("color", cs);
-        }
-
-        return state;
     }
 
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
 
-    public BlatTrack(Element element) throws IOException {
+        super.unmarshalXML(element, version);
 
-        super(element);
-
-        String sequence = element.getAttribute("sequence");
-        String species = element.getAttribute("species");
-        String db = element.getAttribute("db");
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-
-        this.id = sequence;
-        this.sequence = sequence;
-        this.db = db;
-        this.species = species;
-        this.genome = genome;
-
-        setUseScore(true);
+        this.sequence = element.getAttribute("sequence");
+        this.species = element.getAttribute("species");
+        this.db = element.getAttribute("db");
+        this.genome = GenomeManager.getInstance().getCurrentGenome();
 
         init();
 
-
     }
+
 
 }

@@ -31,8 +31,6 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.session.IGVSessionReader.SessionAttribute;
-import org.broad.igv.session.IGVSessionReader.SessionElement;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
@@ -46,13 +44,9 @@ import org.broad.igv.util.Utilities;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 import javax.swing.*;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.namespace.QName;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
@@ -68,7 +62,7 @@ public class SessionWriter {
     Session session;
     private static int CURRENT_VERSION = 8;
 
-    private static final String TRACK_TAG = SessionElement.TRACK.getText();
+    private static final String TRACK_TAG = SessionElement.TRACK;
 
     Document document;
 
@@ -120,36 +114,36 @@ public class SessionWriter {
             document.setStrictErrorChecking(true);
 
             // Global root element
-            Element globalElement = document.createElement(SessionElement.SESSION.getText());
+            Element globalElement = document.createElement(SessionElement.SESSION);
 
-            globalElement.setAttribute(SessionAttribute.VERSION.getText(), String.valueOf(CURRENT_VERSION));
+            globalElement.setAttribute(SessionAttribute.VERSION, String.valueOf(CURRENT_VERSION));
 
             String genomeId = GenomeManager.getInstance().getGenomeId();
             if (genomeId != null) {
-                globalElement.setAttribute(SessionAttribute.GENOME.getText(), genomeId);
+                globalElement.setAttribute(SessionAttribute.GENOME, genomeId);
             }
 
             String locus = session.getLocusString();
             if (locus != null && !FrameManager.isGeneListMode()) {
-                globalElement.setAttribute(SessionAttribute.LOCUS.getText(), locus);
+                globalElement.setAttribute(SessionAttribute.LOCUS, locus);
             }
 
             String groupBy = IGV.getInstance().getGroupByAttribute();
             if (groupBy != null) {
-                globalElement.setAttribute(SessionAttribute.GROUP_TRACKS_BY.getText(), groupBy);
+                globalElement.setAttribute(SessionAttribute.GROUP_TRACKS_BY, groupBy);
             }
 
             int nextAutoscaleGroup = session.getNextAutoscaleGroup();
             if (nextAutoscaleGroup > 1) {
-                globalElement.setAttribute(SessionAttribute.NEXT_AUTOSCALE_GROUP.getText(), String.valueOf(nextAutoscaleGroup));
+                globalElement.setAttribute(SessionAttribute.NEXT_AUTOSCALE_GROUP, String.valueOf(nextAutoscaleGroup));
             }
 
             if (session.isRemoveEmptyPanels()) {
                 globalElement.setAttribute("removeEmptyTracks", "true");
             }
 
-            globalElement.setAttribute(SessionAttribute.HAS_GENE_TRACK.getText(), "" + IGV.getInstance().hasGeneTrack());
-            globalElement.setAttribute(SessionAttribute.HAS_SEQ_TRACK.getText(), "" + IGV.getInstance().hasSequenceTrack());
+            globalElement.setAttribute(SessionAttribute.HAS_GENE_TRACK, "" + IGV.getInstance().hasGeneTrack());
+            globalElement.setAttribute(SessionAttribute.HAS_SEQ_TRACK, "" + IGV.getInstance().hasSequenceTrack());
 
             globalElement.setAttribute("path", outputFile.getAbsolutePath());
 
@@ -199,22 +193,22 @@ public class SessionWriter {
         TrackFilter trackFilter = session.getFilter();
         if (trackFilter != null) {
 
-            Element filter = document.createElement(SessionElement.FILTER.getText());
+            Element filter = document.createElement(SessionElement.FILTER);
 
-            filter.setAttribute(SessionAttribute.NAME.getText(), trackFilter.getName());
+            filter.setAttribute(SessionAttribute.NAME, trackFilter.getName());
 
             if (IGV.getInstance().isFilterMatchAll()) {
-                filter.setAttribute(SessionAttribute.FILTER_MATCH.getText(), "all");
+                filter.setAttribute(SessionAttribute.FILTER_MATCH, "all");
             } else if (!IGV.getInstance().isFilterMatchAll()) {
-                filter.setAttribute(SessionAttribute.FILTER_MATCH.getText(), "any");
+                filter.setAttribute(SessionAttribute.FILTER_MATCH, "any");
             } else {    // Defaults to match all
-                filter.setAttribute(SessionAttribute.FILTER_MATCH.getText(), "all");
+                filter.setAttribute(SessionAttribute.FILTER_MATCH, "all");
             }
 
             if (IGV.getInstance().isFilterShowAllTracks()) {
-                filter.setAttribute(SessionAttribute.FILTER_SHOW_ALL_TRACKS.getText(), "true");
+                filter.setAttribute(SessionAttribute.FILTER_SHOW_ALL_TRACKS, "true");
             } else {    // Defaults
-                filter.setAttribute(SessionAttribute.FILTER_SHOW_ALL_TRACKS.getText(), "false");
+                filter.setAttribute(SessionAttribute.FILTER_SHOW_ALL_TRACKS, "false");
             }
             globalElement.appendChild(filter);
 
@@ -225,16 +219,16 @@ public class SessionWriter {
                 TrackFilterElement trackFilterElement = (TrackFilterElement) iterator.next();
 
                 Element filterElementElement =
-                        document.createElement(SessionElement.FILTER_ELEMENT.getText());
-                filterElementElement.setAttribute(SessionAttribute.ITEM.getText(),
+                        document.createElement(SessionElement.FILTER_ELEMENT);
+                filterElementElement.setAttribute(SessionAttribute.ITEM,
                         trackFilterElement.getSelectedItem());
                 filterElementElement.setAttribute(
-                        SessionAttribute.OPERATOR.getText(),
+                        SessionAttribute.OPERATOR,
                         trackFilterElement.getComparisonOperator().getValue());
-                filterElementElement.setAttribute(SessionAttribute.VALUE.getText(),
+                filterElementElement.setAttribute(SessionAttribute.VALUE,
                         trackFilterElement.getValue());
                 filterElementElement.setAttribute(
-                        SessionAttribute.BOOLEAN_OPERATOR.getText(),
+                        SessionAttribute.BOOLEAN_OPERATOR,
                         trackFilterElement.getBooleanOperator().getValue());
                 filter.appendChild(filterElementElement);
             }
@@ -245,14 +239,14 @@ public class SessionWriter {
         Collection<RegionOfInterest> regions = session.getAllRegionsOfInterest();
         if ((regions != null) && !regions.isEmpty()) {
 
-            Element regionsElement = document.createElement(SessionElement.REGIONS.getText());
+            Element regionsElement = document.createElement(SessionElement.REGIONS);
             for (RegionOfInterest region : regions) {
-                Element regionElement = document.createElement(SessionElement.REGION.getText());
-                regionElement.setAttribute(SessionAttribute.CHROMOSOME.getText(), region.getChr());
-                regionElement.setAttribute(SessionAttribute.START_INDEX.getText(), String.valueOf(region.getStart()));
-                regionElement.setAttribute(SessionAttribute.END_INDEX.getText(), String.valueOf(region.getEnd()));
+                Element regionElement = document.createElement(SessionElement.REGION);
+                regionElement.setAttribute(SessionAttribute.CHROMOSOME, region.getChr());
+                regionElement.setAttribute(SessionAttribute.START_INDEX, String.valueOf(region.getStart()));
+                regionElement.setAttribute(SessionAttribute.END_INDEX, String.valueOf(region.getEnd()));
                 if (region.getDescription() != null) {
-                    regionElement.setAttribute(SessionAttribute.DESCRIPTION.getText(), region.getDescription());
+                    regionElement.setAttribute(SessionAttribute.DESCRIPTION, region.getDescription());
                 }
                 regionsElement.appendChild(regionElement);
             }
@@ -261,10 +255,10 @@ public class SessionWriter {
     }
 
     private void writeHiddenAttributes(Session session, Element globalElement, Document document) {
-        Element hiddenAttributes = document.createElement(SessionElement.HIDDEN_ATTRIBUTES.getText());
+        Element hiddenAttributes = document.createElement(SessionElement.HIDDEN_ATTRIBUTES);
         for (String attribute : session.getHiddenAttributes()) {
-            Element regionElement = document.createElement(SessionElement.ATTRIBUTE.getText());
-            regionElement.setAttribute(IGVSessionReader.SessionAttribute.NAME.getText(), attribute);
+            Element regionElement = document.createElement(SessionElement.ATTRIBUTE);
+            regionElement.setAttribute(SessionAttribute.NAME, attribute);
             hiddenAttributes.appendChild(regionElement);
         }
         globalElement.appendChild(hiddenAttributes);
@@ -277,8 +271,8 @@ public class SessionWriter {
 
         if (geneList != null) {
 
-            Element geneListElement = document.createElement(SessionElement.GENE_LIST.getText());
-            geneListElement.setAttribute(IGVSessionReader.SessionAttribute.NAME.getText(), geneList.getName());
+            Element geneListElement = document.createElement(SessionElement.GENE_LIST);
+            geneListElement.setAttribute(SessionAttribute.NAME, geneList.getName());
 
             StringBuffer genes = new StringBuffer();
             for (String gene : geneList.getLoci()) {
@@ -294,11 +288,11 @@ public class SessionWriter {
             // Now store the list of frames visible
             for (ReferenceFrame frame : FrameManager.getFrames()) {
 
-                Element frameElement = document.createElement(SessionElement.FRAME.getText());
-                frameElement.setAttribute(IGVSessionReader.SessionAttribute.NAME.getText(), frame.getName());
-                frameElement.setAttribute(IGVSessionReader.SessionAttribute.CHR.getText(), frame.getChrName());
-                frameElement.setAttribute(IGVSessionReader.SessionAttribute.START.getText(), String.valueOf(frame.getOrigin()));
-                frameElement.setAttribute(IGVSessionReader.SessionAttribute.END.getText(), String.valueOf(frame.getEnd()));
+                Element frameElement = document.createElement(SessionElement.FRAME);
+                frameElement.setAttribute(SessionAttribute.NAME, frame.getName());
+                frameElement.setAttribute(SessionAttribute.CHR, frame.getChrName());
+                frameElement.setAttribute(SessionAttribute.START, String.valueOf(frame.getOrigin()));
+                frameElement.setAttribute(SessionAttribute.END, String.valueOf(frame.getEnd()));
 
                 geneListElement.appendChild(frameElement);
 
@@ -312,13 +306,13 @@ public class SessionWriter {
 
         if ((resourceLocators != null) && !resourceLocators.isEmpty()) {
 
-            Element filesElement = document.createElement(SessionElement.RESOURCES.getText());
+            Element filesElement = document.createElement(SessionElement.RESOURCES);
 
             for (ResourceLocator resourceLocator : resourceLocators) {
                 if (resourceLocator.exists() || !(resourceLocator.getPath() == null)) {
 
                     //RESOURCE ELEMENT
-                    Element dataFileElement = document.createElement(SessionElement.RESOURCE.getText());
+                    Element dataFileElement = document.createElement(SessionElement.RESOURCE);
 
                     //REQUIRED ATTRIBUTES - Cannot be null
 
@@ -328,39 +322,39 @@ public class SessionWriter {
                             FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourceLocator.getPath()) :
                             resourceLocator.getPath();
 
-                    dataFileElement.setAttribute(SessionAttribute.PATH.getText(), relativePath);
+                    dataFileElement.setAttribute(SessionAttribute.PATH, relativePath);
 
                     //OPTIONAL ATTRIBUTES
 
                     if (resourceLocator.getName() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.NAME.getText(), resourceLocator.getName());
+                        dataFileElement.setAttribute(SessionAttribute.NAME, resourceLocator.getName());
                     }
                     if (resourceLocator.getDBUrl() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.SERVER_URL.getText(), resourceLocator.getDBUrl());
+                        dataFileElement.setAttribute(SessionAttribute.SERVER_URL, resourceLocator.getDBUrl());
                     }
                     if (resourceLocator.getTrackInfoURL() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.HYPERLINK.getText(), resourceLocator.getTrackInfoURL());
+                        dataFileElement.setAttribute(SessionAttribute.HYPERLINK, resourceLocator.getTrackInfoURL());
                     }
                     if (resourceLocator.getFeatureInfoURL() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.FEATURE_URL.getText(), resourceLocator.getFeatureInfoURL());
+                        dataFileElement.setAttribute(SessionAttribute.FEATURE_URL, resourceLocator.getFeatureInfoURL());
                     }
                     if (resourceLocator.getDescription() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.DESCRIPTION.getText(), resourceLocator.getDescription());
+                        dataFileElement.setAttribute(SessionAttribute.DESCRIPTION, resourceLocator.getDescription());
                     }
                     if (resourceLocator.getType() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.TYPE.getText(), resourceLocator.getType());
+                        dataFileElement.setAttribute(SessionAttribute.TYPE, resourceLocator.getType());
                     }
                     if (resourceLocator.getIndexPath() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.INDEX.getText(), resourceLocator.getIndexPath());
+                        dataFileElement.setAttribute(SessionAttribute.INDEX, resourceLocator.getIndexPath());
                     }
                     if (resourceLocator.getCoverage() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.COVERAGE.getText(), resourceLocator.getCoverage());
+                        dataFileElement.setAttribute(SessionAttribute.COVERAGE, resourceLocator.getCoverage());
                     }
                     if (resourceLocator.getMappingPath() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.MAPPING.getText(), resourceLocator.getMappingPath());
+                        dataFileElement.setAttribute(SessionAttribute.MAPPING, resourceLocator.getMappingPath());
                     }
                     if (resourceLocator.getTrackLine() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.TRACK_LINE.getText(), resourceLocator.getTrackLine());
+                        dataFileElement.setAttribute(SessionAttribute.TRACK_LINE, resourceLocator.getTrackLine());
                     }
                     filesElement.appendChild(dataFileElement);
                 }
@@ -378,108 +372,39 @@ public class SessionWriter {
             List<Track> tracks = trackPanel.getTracks();
             if ((tracks != null) && !tracks.isEmpty()) {
 
-                Element panelElement = document.createElement(SessionElement.PANEL.getText());
+                Element panelElement = document.createElement(SessionElement.PANEL);
                 panelElement.setAttribute("name", trackPanel.getName());
                 panelElement.setAttribute("height", String.valueOf(trackPanel.getHeight()));
                 panelElement.setAttribute("width", String.valueOf(trackPanel.getWidth()));
 
-                //We create a temporary element into which to marshall, so we
-                //can add custom attributes
-                Element tmpTrackParent = document.createElement("dummy");
+                for (Track track : tracks) {
 
-                try {
-                    Marshaller m = IGVSessionReader.getJAXBContext().createMarshaller();
-                    m.setProperty(Marshaller.JAXB_FRAGMENT, true);
-                    for (Track track : tracks) {
+                    Element element = document.createElement("Track");
+                    element.setAttribute("clazz", SessionElement.getXMLClassName(track.getClass()));
 
-                        marshalTrack(m, track, tmpTrackParent, track.getClass());
+                    track.marshalXML(document, element);
 
-                        Element trackElement = (Element) tmpTrackParent.getChildNodes().item(0);
-
-                        for (Map.Entry<String, String> attrValue : track.getPersistentState().entrySet()) {
-                            trackElement.setAttribute(attrValue.getKey(), attrValue.getValue());
-                        }
-
-                        marshalTrackChildren(m, track, trackElement);
-
-                        panelElement.appendChild(trackElement);
+                    if(track.isNumeric() && track.getDataRange() != null) {
+                        Element dataRangeElement = document.createElement(SessionElement.DATA_RANGE);
+                        track.getDataRange().marshalXML(document, dataRangeElement);
+                        element.appendChild(dataRangeElement);
                     }
-                } catch (JAXBException e) {
-                    throw new RuntimeException(e);
+
+                    panelElement.appendChild(element);
+
                 }
+
                 globalElement.appendChild(panelElement);
             }
         }
     }
-
-    /**
-     * Attempt to marshall the {@code track} into {@code trackParent} as it's
-     * own class, if that fails, try the superclass, and so on up
-     *
-     * @param m
-     * @param track
-     * @param trackParent
-     * @throws javax.xml.bind.JAXBException
-     */
-    private void marshalTrack(Marshaller m, Track track, Node trackParent, Class marshalClass) throws JAXBException {
-
-        if (marshalClass == BlatTrack.class) {
-
-            Element element = document.createElement("Track");
-            element.setAttribute("clazz", "org.broad.igv.track.BlatTrack");
-
-            for(Map.Entry<String, String> entry : track.getPersistentState().entrySet()) {
-                element.setAttribute(entry.getKey(), entry.getValue());
-            }
-
-            trackParent.appendChild(element);
-        } else {
-            if (marshalClass == null || marshalClass.equals(Object.class)) {
-                throw new JAXBException(track.getClass() + " and none of its superclasses are known");
-            }
-
-            if (AbstractTrack.knownUnknownTrackClasses.contains(marshalClass)) {
-                marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
-                return;
-            }
-
-            JAXBElement el;
-            try {
-                el = new JAXBElement(new QName("", TRACK_TAG), marshalClass, track);
-                m.marshal(el, trackParent);
-            } catch (JAXBException e) {
-                AbstractTrack.knownUnknownTrackClasses.add(marshalClass);
-                marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
-            }
-        }
-    }
-
-
-    /**
-     * Because we are using JAXB piecewise, and also because JAXB can't handle
-     * interfaces, we marshal certain track children here
-     *
-     * @param m
-     * @param track
-     * @param trackElement
-     */
-    private void marshalTrackChildren(Marshaller m, Track track, Element trackElement) throws JAXBException {
-        if (track instanceof FeatureTrack) {
-            FeatureTrack featureTrack = (FeatureTrack) track;
-            featureTrack.marshalSource(m, trackElement);
-        } else if (track instanceof DataSourceTrack) {
-            DataSourceTrack dataSourceTrack = (DataSourceTrack) track;
-            dataSourceTrack.marshalSource(m, trackElement);
-        }
-    }
-
 
     private void writePanelLayout(Element globalElement, Document document) {
 
         double[] dividerFractions = IGV.getInstance().getMainPanel().getDividerFractions();
         if (dividerFractions.length > 0) {
 
-            Element panelLayout = document.createElement(SessionElement.PANEL_LAYOUT.getText());
+            Element panelLayout = document.createElement(SessionElement.PANEL_LAYOUT);
             globalElement.appendChild(panelLayout);
 
             StringBuffer locString = new StringBuffer();

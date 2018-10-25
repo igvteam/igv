@@ -32,15 +32,9 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.feature.basepair.BasePairTrack;
-import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
-import org.broad.igv.sam.AlignmentTrack;
-import org.broad.igv.sam.CoverageTrack;
-import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SessionXmlAdapters;
-import org.broad.igv.session.SubtlyImportant;
+import org.broad.igv.session.SessionAttribute;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TooltipTextFrame;
@@ -52,14 +46,10 @@ import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.Utilities;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
@@ -70,11 +60,13 @@ import static org.broad.igv.prefs.Constants.*;
 /**
  * @author jrobinso
  */
-@XmlType(factoryClass = IGVSessionReader.class, factoryMethod = "getNextTrack")
-@XmlAccessorType(XmlAccessType.NONE)
-@XmlSeeAlso({CNFreqTrack.class, CoverageTrack.class, AlignmentTrack.class, DataSourceTrack.class, GWASTrack.class, FeatureTrack.class, MergedTracks.class, BasePairTrack.class})
+
 public abstract class AbstractTrack implements Track {
 
+    public static final Color DEFAULT_COLOR = Color.blue.darker();
+    public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.COLLAPSED;
+    public static final int DEFAULT_HEIGHT = -1;
+    public static final int VISIBILITY_WINDOW = -1;
     private static Logger log = Logger.getLogger(AbstractTrack.class);
 
     /**
@@ -104,10 +96,8 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    @XmlAttribute
     protected String id;
 
-    @XmlAttribute
     private String name;
 
     private String url;
@@ -117,8 +107,6 @@ public abstract class AbstractTrack implements Track {
     private float viewLimitMin = Float.NaN;     // From UCSC track line
     private float viewLimitMax = Float.NaN;  // From UCSC track line
 
-
-    @XmlAttribute
     protected int fontSize = PreferencesManager.getPreferences().getAsInt(DEFAULT_FONT_SIZE);
     private boolean showDataRange = true;
     private String sampleId;
@@ -132,11 +120,8 @@ public abstract class AbstractTrack implements Track {
     private TrackType trackType = TrackType.OTHER;
 
     private boolean selected = false;
-
-    @XmlAttribute
     private boolean visible = true;
 
-    @XmlAttribute
     private boolean sortable = true;
 
     boolean overlaid;
@@ -144,46 +129,25 @@ public abstract class AbstractTrack implements Track {
     boolean drawYLine = false;
     float yLine = 0;
 
-    // Map to store attributes specific to this track.
-    //@XmlElement(name = "Attributes")
-    //@XmlJavaTypeAdapter(MapAdapter.class)
     private Map<String, String> attributes = new HashMap();
 
-    // Scale for heatmaps
-    @XmlJavaTypeAdapter(SessionXmlAdapters.ContinuousColorScale.class)
-    @XmlAttribute
     private ContinuousColorScale colorScale;
 
-    //TODO Only write it out for applicable tracks
-    //Not applicable to all tracks.
-    @XmlAttribute
     protected boolean autoScale;
 
-    @XmlAttribute
     String autoscaleGroup;
 
-    @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
-    @XmlAttribute(name = "color")
-    protected Color posColor = Color.blue.darker();
-
-    @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
-    @XmlAttribute
+    protected Color posColor = DEFAULT_COLOR;
     protected Color altColor = posColor;
 
-    @XmlAttribute(name = "featureVisibilityWindow")
-    protected int visibilityWindow = -1;
-    @XmlAttribute
-    private DisplayMode displayMode = DisplayMode.COLLAPSED;
+    protected int visibilityWindow = VISIBILITY_WINDOW;
+    private DisplayMode displayMode = DEFAULT_DISPLAY_MODE;
 
-    @XmlJavaTypeAdapter(SessionXmlAdapters.Height.class)
-    @XmlAttribute
-    protected Integer height = -1;
+    protected Integer height = DEFAULT_HEIGHT;
 
-    @XmlElement(name = "DataRange")
     protected DataRange dataRange;
 
-    @SubtlyImportant
-    protected AbstractTrack() {
+    public AbstractTrack() {
     }
 
     public AbstractTrack(
@@ -390,8 +354,7 @@ public abstract class AbstractTrack implements Track {
         String key = name.toUpperCase();
         if (key.equals(AttributeManager.GROUP_AUTOSCALE)) {
             autoscaleGroup = null;
-        }
-        else {
+        } else {
             attributes.remove(key);
         }
         AttributeManager.getInstance().removeAttribute(getSample(), name);
@@ -415,14 +378,13 @@ public abstract class AbstractTrack implements Track {
         String value;
         if (key.equals(AttributeManager.GROUP_AUTOSCALE)) {
             value = autoscaleGroup;
-            if(value == null) {
+            if (value == null) {
                 value = getFromAttributeManager(key);
                 autoscaleGroup = value;
             }
-        }
-        else {
+        } else {
             value = attributes.get(key);
-            if(value == null) {
+            if (value == null) {
                 value = getFromAttributeManager(key);
             }
         }
@@ -834,65 +796,6 @@ public abstract class AbstractTrack implements Track {
         return Color.getHSBColor(rgb[0], rgb[1], rgb[2]);
     }
 
-    /**
-     * Return the current state of this object as map of key-value pairs.  Used to store session state.
-     * Only those attributes not already annotated in AbstractTrack need to be included here
-     *
-     * @return
-     * @see #restorePersistentState
-     */
-    public Map<String, String> getPersistentState() {
-        return new HashMap<String, String>();
-    }
-
-
-    /**
-     * Restore from XML node. Default implementation just turns attributes
-     * into a map
-     *
-     * @param node
-     */
-    public void restorePersistentState(Node node, int version) throws JAXBException {
-        Map<String, String> attributes = Utilities.getAttributes(node);
-        restorePersistentState(attributes, version);
-    }
-
-    /**
-     * Restore attributes from track tag, no children
-     * Only those attributes not unmarshalled (meaning not part of AbstractTrack)
-     * need to be restored
-     *
-     * @param attributes
-     * @see #getPersistentState
-     */
-    public void restorePersistentState(Map<String, String> attributes, int version) {
-
-        String displayName = attributes.get(IGVSessionReader.SessionAttribute.DISPLAY_NAME.getText());
-        String name = attributes.get(IGVSessionReader.SessionAttribute.NAME.getText());
-
-        if (name != null && name.length() > 0) {
-            setName(name);
-        } else if (displayName != null && displayName.length() > 0) {
-            setName(displayName);
-        }
-
-        if (attributes.containsKey("visible")) {
-            this.setVisible(Boolean.parseBoolean(attributes.get("visible")));
-        }
-
-        // Set DataRange -- legacy (pre V3 sessions)
-        if (version <= 3) {
-            String scale = attributes.get(IGVSessionReader.SessionAttribute.SCALE.getText());
-            if (scale != null) {
-                String[] axis = scale.split(",");
-                float minimum = Float.parseFloat(axis[0]);
-                float baseline = Float.parseFloat(axis[1]);
-                float maximum = Float.parseFloat(axis[2]);
-                setDataRange(new DataRange(minimum, baseline, maximum));
-            }
-        }
-
-    }
 
     public boolean isItemRGB() {
         return itemRGB;
@@ -1037,7 +940,6 @@ public abstract class AbstractTrack implements Track {
         // Required method for track interface, ignore
     }
 
-    @XmlAttribute(name = "windowFunction")
     public WindowFunction getWindowFunction() {
         return null;
     }
@@ -1097,8 +999,6 @@ public abstract class AbstractTrack implements Track {
         //Here as setter for corresponding getter, subclasses should override
     }
 
-    @XmlJavaTypeAdapter(SessionXmlAdapters.Renderer.class)
-    @XmlAttribute(name = "renderer")
     @Override
     public Renderer getRenderer() {
         return null;
@@ -1111,89 +1011,131 @@ public abstract class AbstractTrack implements Track {
     // End of Roche-Tessella modification
 
 
-    // JAXB adapters
+    @Override
+    public void marshalXML(Document document, Element element) {
 
-    static class Properties {
+        element.setAttribute("id", id);
+        element.setAttribute("name", name);
+        element.setAttribute("fontSize", String.valueOf(fontSize));
+        element.setAttribute("visible", String.valueOf(visible));
 
-        @XmlElement(name = "property")
-        private List<KeyValue> entries = new ArrayList<>();
 
-        List<KeyValue> entries() {
-            return Collections.unmodifiableList(entries);
+        if (posColor != DEFAULT_COLOR) {
+            element.setAttribute(SessionAttribute.COLOR, ColorUtilities.colorToString(posColor));
+        }
+        if (altColor != DEFAULT_COLOR) {
+            element.setAttribute(SessionAttribute.ALT_COLOR, ColorUtilities.colorToString(altColor));
         }
 
-        void addEntry(KeyValue entry) {
-            entries.add(entry);
-        }
-    }
-
-
-    static class KeyValue {
-
-        @XmlElement(name = "key")
-        private String key;
-
-        @XmlElement(name = "value")
-        private String value;
-
-        public KeyValue() {
+        if (visibilityWindow != VISIBILITY_WINDOW) {
+            element.setAttribute("featureVisibilityWindow", String.valueOf(visibilityWindow));
         }
 
-        public KeyValue(String key, String value) {
-            this.key = key;
-            this.value = value;
+        if (displayMode != DEFAULT_DISPLAY_MODE) {
+            element.setAttribute(SessionAttribute.DISPLAY_MODE, displayMode.toString());
         }
 
-        public String getKey() {
-            return key;
+        if (height != DEFAULT_HEIGHT) {
+            element.setAttribute(SessionAttribute.HEIGHT, height.toString());
         }
 
-        public String getValue() {
-            return value;
+        if (colorScale != null) {
+            //colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,153,204;255,255,255;255,0,0"
+            element.setAttribute("colorScale", colorScale.asString());
         }
-    }
 
-    static class MapAdapter extends XmlAdapter<Properties, Map<String, String>> {
+        if (height != DEFAULT_HEIGHT) {
+            element.setAttribute("height", String.valueOf(this.height));
+        }
 
-        @Override
-        public HashMap<String, String> unmarshal(Properties v) throws Exception {
-            HashMap<String, String> map = new HashMap<>();
-            for (KeyValue kv : v.entries()) {
-                map.put(kv.getKey(), kv.getValue());
+        if (isNumeric()) {
+            if (autoscaleGroup != null) {
+                element.setAttribute("autoscaleGroup", this.autoscaleGroup);
             }
-            return map;
+
+            element.setAttribute("autoScale", String.valueOf(this.autoScale));
+
+            element.setAttribute("windowFunction", String.valueOf(this.getWindowFunction()));
         }
 
-        @Override
-        public Properties marshal(Map<String, String> v) throws Exception {
-            Properties keyValues = new Properties();
-            for (Map.Entry<String, String> entry : v.entrySet()) {
-                keyValues.addEntry(new KeyValue(entry.getKey(), entry.getValue()));
-            }
-            return keyValues;
-        }
     }
 
 
     /**
      * Restore track from XML serialization -- work in progress
+     * //        <renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
      *
      * @param element
      */
-    public  AbstractTrack (Element element) {
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
 
         this.name = element.getAttribute("name");
+        this.id = element.getAttribute("id");
 
-        String dsMode = element.getAttribute("displayMode");
-
-        if(dsMode != null) {
-            this.displayMode = DisplayMode.valueOf(dsMode);
+        if (element.hasAttribute("displayMode")) {
+            this.displayMode = DisplayMode.valueOf(element.getAttribute("displayMode"));
         }
 
-        String cs = element.getAttribute("color");
-        if(cs != null) {
-            Color c = ColorUtilities.stringToColor(cs);
+        if (element.hasAttribute("color")) {
+            Color c = ColorUtilities.stringToColor(element.getAttribute("color"));
             this.posColor = c;
+            this.altColor = c;  // default
+        }
+
+        if (element.hasAttribute("altColor")) {
+            Color c = ColorUtilities.stringToColor(element.getAttribute("altColor"));
+            this.altColor = c;
+        }
+
+        if (element.hasAttribute("colorScale")) {
+            this.colorScale = (ContinuousColorScale) ColorScaleFactory.getScaleFromString(element.getAttribute("colorScale"));
+        }
+
+        if (element.hasAttribute("visible")) {
+            this.setVisible(Boolean.parseBoolean(element.getAttribute("visible")));
+        }
+
+        if (element.hasAttribute("autoScale")) {
+            this.autoScale = Boolean.valueOf(element.getAttribute("autoScale"));
+        }
+
+        if (element.hasAttribute("autoscaleGroup")) {
+            this.autoscaleGroup = element.getAttribute("autoscaleGroup");
+        }
+
+        if (element.hasAttribute("featureVisibilityWindow")) {
+            this.visibilityWindow = Integer.parseInt(element.getAttribute("featureVisibilityWindow"));
+        }
+
+        if (element.hasAttribute("fontSize")) {
+            this.fontSize = Integer.parseInt(element.getAttribute("fontSize"));
+        }
+
+        if (element.hasAttribute("height")) {
+            this.height = Integer.parseInt(element.getAttribute("height"));
+        }
+
+        if (element.hasAttribute("windowFunction")) {
+            this.setWindowFunction(WindowFunction.valueOf(element.getAttribute("windowFunction")));
+        }
+
+        // Set DataRange -- legacy (pre V3 sessions)
+        if (version <= 3 && element.hasAttribute(SessionAttribute.SCALE)) {
+            String scale = element.getAttribute(SessionAttribute.SCALE);
+            String[] axis = scale.split(",");
+            float minimum = Float.parseFloat(axis[0]);
+            float baseline = Float.parseFloat(axis[1]);
+            float maximum = Float.parseFloat(axis[2]);
+            setDataRange(new DataRange(minimum, baseline, maximum));
+        }
+
+        NodeList nodeList = element.getElementsByTagName("DataRange");
+        if (nodeList != null && nodeList.getLength() > 0) {
+            Element dataRangeElement = (Element) nodeList.item(0);
+            this.dataRange = new DataRange(dataRangeElement, version);
         }
     }
+
 }

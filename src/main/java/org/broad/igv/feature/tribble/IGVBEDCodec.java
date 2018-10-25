@@ -27,9 +27,6 @@ package org.broad.igv.feature.tribble;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.cli_plugin.Argument;
-import org.broad.igv.cli_plugin.LineFeatureDecoder;
-import org.broad.igv.cli_plugin.LineFeatureEncoder;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -48,7 +45,7 @@ import java.util.regex.Pattern;
  * Date: Dec 20, 2009
  * Time: 10:15:49 PM
  */
-public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureEncoder<Feature>, LineFeatureDecoder<BasicFeature> {
+public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
 
     private static final Logger log = Logger.getLogger(IGVBEDCodec.class);
 
@@ -501,20 +498,6 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         return buffer.toString();
     }
 
-    @Override
-    public int getNumCols(String line) {
-        return line.split("\t").length;
-    }
-
-    @Override
-    public String getHeader() {
-        return null;
-    }
-
-    @Override
-    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap, Argument argument) {
-        //pass
-    }
 }
 
 

@@ -25,7 +25,6 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.broad.igv.cli_plugin.LineFeatureDecoder;
 
 /**
  * Wrapper class to make it easy to just extract the first sample from
@@ -33,7 +32,7 @@ import org.broad.igv.cli_plugin.LineFeatureDecoder;
  * @author jacob
  * @date 2013-May-28
  */
-public class FPKMTrackingSampleCodec extends CufflinksCodec<FPKMSampleValue>  implements LineFeatureDecoder<FPKMSampleValue> {
+public class FPKMTrackingSampleCodec extends CufflinksCodec<FPKMSampleValue>   {
 
     private FPKMTrackingCodec trackingCodec;
 

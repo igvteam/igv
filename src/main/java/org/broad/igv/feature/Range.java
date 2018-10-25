@@ -28,6 +28,8 @@ package org.broad.igv.feature;
 import htsjdk.tribble.Feature;
 import org.broad.igv.util.Utilities;
 
+import java.util.Objects;
+
 
 /**
  * Basic class to specify a genomic interval.
@@ -111,7 +113,33 @@ public class Range implements Feature {
         return this.contains(range.chr, range.start, range.end);
     }
 
-    public String printString() {
+    public String toString() {
         return this.chr + ":" + this.start + "-" + this.end;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Range range = (Range) o;
+        return start == range.start &&
+                end == range.end &&
+                Objects.equals(chr, range.chr);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(chr, start, end);
+    }
+
+    public static Range fromString(String str) {
+
+        String [] t1 = str.split(":");
+        String [] t2 = t1[1].split("-");
+        String chr = t1[0];
+        int start = Integer.parseInt(t2[0].replace(",", ""));
+        int end = Integer.parseInt(t2[1].replace(",", ""));
+        return new Range(chr, start, end);
+
     }
 }

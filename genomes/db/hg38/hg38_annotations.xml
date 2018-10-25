@@ -7,7 +7,7 @@
     <Resource name="Gencode V24 Basic"
               path="https://s3.amazonaws.com/igv.broadinstitute.org/data/hg38/gencode.v24.basic.annotation.sorted.gtf.gz"
               hyperlink="http://www.gencodegenes.org/"/>
-    <Resource name="Ensemble Genes (80)"
+    <Resource name="Ensembl Genes (80)"
               path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/genes/Homo_sapiens.GRCh38.80.sorted.gtf.gz"
               trackLine="visibility=pack"
               hyperlink="ftp://ftp.ensembl.org/pub/release-80/README"/>

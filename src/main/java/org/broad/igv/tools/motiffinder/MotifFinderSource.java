@@ -27,21 +27,19 @@ package org.broad.igv.tools.motiffinder;
 
 import com.google.common.collect.Iterators;
 import htsjdk.samtools.util.SequenceUtil;
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.session.SessionXmlAdapters;
-import org.broad.igv.session.SubtlyImportant;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.session.Persistable;
 import org.broad.igv.track.FeatureSource;
-import htsjdk.tribble.Feature;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,7 +50,7 @@ import java.util.regex.Pattern;
 
 /**
  * Class for searching for pattern in a sequence.
- *
+ * <p>
  * We recognize single letter codes, including ambiguity codes,
  * only.
  * See http://en.wikipedia.org/wiki/Nucleic_acid_notation
@@ -60,59 +58,61 @@ import java.util.regex.Pattern;
  * User: jacob
  * Date: 2013-Jan-22
  */
-@XmlAccessorType(XmlAccessType.NONE)
-public class MotifFinderSource implements FeatureSource<Feature> {
+
+public class MotifFinderSource implements FeatureSource<Feature>, Persistable {
 
     private static Logger log = Logger.getLogger(MotifFinderSource.class);
 
-    @XmlAttribute private String pattern;
+    private String pattern;
 
-    @XmlJavaTypeAdapter(SessionXmlAdapters.Genome.class)
-    @XmlAttribute private Genome genome;
+    private Genome genome;
 
-    @XmlAttribute private int featureWindowSize = (int) 10e6;
+    private int featureWindowSize = (int) 10e6;
 
-    @XmlAttribute private Strand strand;
+    private Strand strand;
 
-    @SubtlyImportant
-    private MotifFinderSource(){}
+    public MotifFinderSource() {
+        this.genome = GenomeManager.getInstance().getCurrentGenome();
+    }
 
     /**
-     *
      * @param pattern The regex pattern to search
-     * @param genome Genome from which to get sequence data
+     * @param genome  Genome from which to get sequence data
      */
-    public MotifFinderSource(String pattern, Strand strand, Genome genome){
+    public MotifFinderSource(String pattern, Strand strand, Genome genome) {
         this.pattern = pattern;
         assert strand == Strand.POSITIVE || strand == Strand.NEGATIVE;
         this.strand = strand;
         this.genome = genome;
     }
 
+
     /**
      * See {@link #search(String, Strand, String, int, byte[])} for explanation of parameters
+     *
      * @param pattern
-     * @param strand POSITIVE or NEGATIVE
+     * @param strand   POSITIVE or NEGATIVE
      * @param chr
      * @param posStart
      * @param sequence
      * @return
      */
-    static Iterator<Feature> searchSingleStrand(String pattern, Strand strand, String chr, int posStart, byte[] sequence){
+    static Iterator<Feature> searchSingleStrand(String pattern, Strand strand, String chr, int posStart, byte[] sequence) {
         Matcher matcher = getMatcher(pattern, strand, sequence);
         return new MatchFeatureIterator(chr, strand, posStart, sequence.length, matcher);
     }
 
     /**
      * See {@link #search(String, Strand, String, int, byte[])} for explanation of parameters
+     *
      * @param pattern
      * @param strand
      * @param sequence
      * @return
      */
-    static Matcher getMatcher(String pattern, Strand strand, byte[] sequence){
+    static Matcher getMatcher(String pattern, Strand strand, byte[] sequence) {
         byte[] seq = sequence;
-        if(strand == Strand.NEGATIVE){
+        if (strand == Strand.NEGATIVE) {
             //sequence could be quite long, cloning it might take up a lot of memory
             //and is un-necessary if we are careful.
             //seq = seq.clone();
@@ -127,6 +127,7 @@ public class MotifFinderSource implements FeatureSource<Feature> {
      * Search the provided sequence for the provided pattern
      * {@code chr} and {@code seqStart} are used in constructing the resulting
      * {@code Feature}s. Search is performed over the specified {@code strand}
+     *
      * @param pattern
      * @param strand
      * @param chr
@@ -135,8 +136,8 @@ public class MotifFinderSource implements FeatureSource<Feature> {
      * @param sequence The positive-strand nucleotide sequence. This may be altered during execution!
      * @return
      */
-    public static Iterator<Feature> search(String pattern, Strand strand, String chr, int posStart, byte[] sequence){
-        switch(strand){
+    public static Iterator<Feature> search(String pattern, Strand strand, String chr, int posStart, byte[] sequence) {
+        switch (strand) {
             case POSITIVE:
                 return searchSingleStrand(pattern, strand, chr, posStart, sequence);
             case NEGATIVE:
@@ -155,7 +156,7 @@ public class MotifFinderSource implements FeatureSource<Feature> {
     @Override
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
         byte[] seq = genome.getSequence(chr, start, end);
-        if(seq == null) Collections.emptyList().iterator();
+        if (seq == null) Collections.emptyList().iterator();
         return search(this.pattern, this.strand, chr, start, seq);
     }
 
@@ -175,12 +176,27 @@ public class MotifFinderSource implements FeatureSource<Feature> {
         this.featureWindowSize = size;
     }
 
+
+    @Override
+    public void marshalXML(Document document, Element element) {
+        element.setAttribute("pattern", this.pattern);
+        element.setAttribute("strand", this.strand.toString());
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+        this.pattern = element.getAttribute("pattern");
+        this.strand = Strand.valueOf(element.getAttribute("strand"));
+
+    }
+
+
     /**
      * Iterator which turns regex Matcher results into Features.
      * The ordering of features will be either forwards or backwards, depending
      * on the strand.
      */
-    private static class MatchFeatureIterator implements Iterator<Feature>{
+    private static class MatchFeatureIterator implements Iterator<Feature> {
 
         private final int sequenceLength;
         private String chr;
@@ -190,53 +206,52 @@ public class MotifFinderSource implements FeatureSource<Feature> {
         /**
          * Number of characters from the start of the string at which the
          * last match was found.
-         *
+         * <p>
          * We want to find overlapping matches. By default, matcher.find()
          * starts from the end of the previous match, which would preclude overlapping matches.
          * By storing the last start position we reset each time
          */
         private int lastMatchStart = -1;
-        
+
         private Matcher matcher;
 
         private IGVFeature nextFeat;
 
         /**
-         * 
-         * @param chr The chromosome we are searching
-         * @param strand The strand we are searching
-         * @param posOffset The position within the chromosome that we started searching.
-         *                  Always in positive strand coordinates
+         * @param chr            The chromosome we are searching
+         * @param strand         The strand we are searching
+         * @param posOffset      The position within the chromosome that we started searching.
+         *                       Always in positive strand coordinates
          * @param sequenceLength Length of the string which we are matching
-         * @param matcher Matcher over sequence.
+         * @param matcher        Matcher over sequence.
          */
-        private MatchFeatureIterator(String chr, Strand strand, int posOffset, int sequenceLength, Matcher matcher){
+        private MatchFeatureIterator(String chr, Strand strand, int posOffset, int sequenceLength, Matcher matcher) {
             this.chr = chr;
             this.strand = strand;
             this.posOffset = posOffset;
             this.matcher = matcher;
-            if(this.strand == Strand.NEGATIVE){
+            if (this.strand == Strand.NEGATIVE) {
                 this.posOffset += sequenceLength;
             }
             this.sequenceLength = sequenceLength;
             findNext();
         }
 
-        private void findNext(){
+        private void findNext() {
             try {
-                if(matcher.find(lastMatchStart + 1)){
+                if (matcher.find(lastMatchStart + 1)) {
                     lastMatchStart = matcher.start();
                     //The start/end coordinates are always in positive-strand coordinates
                     int start, end;
-                    if(strand == Strand.POSITIVE){
+                    if (strand == Strand.POSITIVE) {
                         start = posOffset + lastMatchStart;
                         end = posOffset + matcher.end();
-                    }else{
+                    } else {
                         start = posOffset - matcher.end();
                         end = posOffset - lastMatchStart;
                     }
                     nextFeat = new BasicFeature(chr, start, end, this.strand);
-                }else{
+                } else {
                     nextFeat = null;
                 }
             } catch (IndexOutOfBoundsException e) {
@@ -261,5 +276,7 @@ public class MotifFinderSource implements FeatureSource<Feature> {
         public void remove() {
             throw new RuntimeException("Cannot remove from this iterator");
         }
+
+
     }
 }

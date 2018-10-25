@@ -13,6 +13,10 @@ import java.util.List;
  */
 public class DSITrack extends FeatureTrack {
 
+
+    public DSITrack() {
+    }
+
     public DSITrack(ResourceLocator locator, FeatureSource src) {
         super(locator, src);
         setRenderer(new DSIRenderer());

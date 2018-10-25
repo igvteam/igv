@@ -29,31 +29,25 @@ import com.google.common.collect.Iterators;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SessionXmlAdapters;
-import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
 
 /**
  * Data source which combines two other DataSources
- *
+ * <p>
  * TODO Multiple DataSources. There is no 2
+ *
  * @author jrobinso, jacob
  */
-@XmlAccessorType(XmlAccessType.NONE)
 public class CombinedDataSource implements DataSource {
 
     private static Logger log = Logger.getLogger(CombinedDataSource.class);
 
-    public enum Operation{
+    public enum Operation {
         ADD("+"),
         SUBTRACT("-"),
         MULTIPLY("*"),
@@ -61,27 +55,19 @@ public class CombinedDataSource implements DataSource {
 
         private String stringRep;
 
-        private Operation(String stringrep){
+        private Operation(String stringrep) {
             this.stringRep = stringrep;
         }
 
     }
 
-    @XmlJavaTypeAdapter(SessionXmlAdapters.DataTrackIDAdapter.class)
-    @XmlAttribute(name = "source0")
     DataTrack source0;
 
-    @XmlJavaTypeAdapter(SessionXmlAdapters.DataTrackIDAdapter.class)
-    @XmlAttribute(name = "source1")
     DataTrack source1;
 
-    @XmlAttribute
     Operation operation = Operation.ADD;
 
-    @SubtlyImportant
-    private CombinedDataSource(){}
-
-    public CombinedDataSource(DataTrack source0, DataTrack source1, Operation operation){
+    public CombinedDataSource(DataTrack source0, DataTrack source1, Operation operation) {
         this.source0 = source0;
         this.source1 = source1;
         this.operation = operation;
@@ -93,19 +79,20 @@ public class CombinedDataSource implements DataSource {
         source1 = updateTrackReference(source1, allTracks);
     }
 
-    private DataTrack updateTrackReference(DataTrack memberTrack, List<Track> allTracks){
+    private DataTrack updateTrackReference(DataTrack memberTrack, List<Track> allTracks) {
 
-        if(memberTrack.getName() == null && memberTrack.getResourceLocator() == null){
+        if (memberTrack.getName() == null && memberTrack.getResourceLocator() == null) {
             DataTrack matchingTrack = (DataTrack) IGVSessionReader.getMatchingTrack(memberTrack.getId(), allTracks);
-            if(matchingTrack == null) throw new IllegalStateException("Could not find track with ID " + memberTrack.getId());
+            if (matchingTrack == null)
+                throw new IllegalStateException("Could not find track with ID " + memberTrack.getId());
             return matchingTrack;
-        }else{
+        } else {
             return memberTrack;
         }
 
     }
 
-    public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom){
+    public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
         List<LocusScore> outerScores = this.source0.getSummaryScores(chr, startLocation, endLocation, zoom).getFeatures();
         List<LocusScore> innerScores = this.source1.getSummaryScores(chr, startLocation, endLocation, zoom).getFeatures();
@@ -113,11 +100,11 @@ public class CombinedDataSource implements DataSource {
         int initialSize = outerScores.size() + innerScores.size();
         List<LocusScore> combinedScoresList = new ArrayList<LocusScore>(initialSize);
 
-        if(initialSize == 0) return combinedScoresList;
+        if (initialSize == 0) return combinedScoresList;
 
         //TODO We assume that having no data from one source is the identity operation, that may not be true
-        if(innerScores.size() == 0) return outerScores;
-        if(outerScores.size() == 0) return innerScores;
+        if (innerScores.size() == 0) return outerScores;
+        if (outerScores.size() == 0) return innerScores;
 
 
         /**
@@ -131,7 +118,7 @@ public class CombinedDataSource implements DataSource {
          */
 
         //Generate the boundaries for the new combined regions
-        Set<Integer> boundariesSet = new LinkedHashSet<Integer>(2*initialSize);
+        Set<Integer> boundariesSet = new LinkedHashSet<Integer>(2 * initialSize);
         Iterator<LocusScore> dualIter = Iterators.mergeSorted(Arrays.asList(innerScores.iterator(), outerScores.iterator()),
                 new Comparator<LocusScore>() {
 
@@ -140,7 +127,7 @@ public class CombinedDataSource implements DataSource {
                         return o1.getStart() - o2.getStart();
                     }
                 });
-        while(dualIter.hasNext()){
+        while (dualIter.hasNext()) {
             LocusScore score = dualIter.next();
             boundariesSet.add(score.getStart());
             boundariesSet.add(score.getEnd());
@@ -151,9 +138,9 @@ public class CombinedDataSource implements DataSource {
         int outerScoreInd = 0;
         int innerScoreInd = 0;
         //Calculate value for each interval
-        for(int bb=0; bb < boundariesArray.length-1; bb++){
+        for (int bb = 0; bb < boundariesArray.length - 1; bb++) {
             int start = boundariesArray[bb];
-            int end = boundariesArray[bb+1];
+            int end = boundariesArray[bb + 1];
             //It shouldn't be possible for more than one LocusScore of either
             //tracks to overlap each interval, since the start/ends
             //were based on all start/ends of the inputs
@@ -162,8 +149,8 @@ public class CombinedDataSource implements DataSource {
             LocusScore outerScore = getContains(outerScores, outerScoreInd);
             LocusScore innerScore = getContains(innerScores, innerScoreInd);
 
-            if(outerScore == null && innerScore == null) continue;
-            float score = combineScores(outerScore,  innerScore);
+            if (outerScore == null && innerScore == null) continue;
+            float score = combineScores(outerScore, innerScore);
             BasicScore newScore = new BasicScore(start, end, score);
             combinedScoresList.add(newScore);
         }
@@ -180,21 +167,21 @@ public class CombinedDataSource implements DataSource {
      * @param startIndex Optimization, where to start searching in {@code scoresList}
      **/
     private int findContains(int start, int end, List<LocusScore> scoresList, int startIndex) {
-        for(int ii=startIndex; ii < scoresList.size(); ii++){
+        for (int ii = startIndex; ii < scoresList.size(); ii++) {
             LocusScore score = scoresList.get(ii);
-            if(score.getStart() <= start && score.getEnd() >= end){
+            if (score.getStart() <= start && score.getEnd() >= end) {
                 return ii;
-            }else if(score.getStart() >= end){
+            } else if (score.getStart() >= end) {
                 return -1;
             }
         }
         return -1;
     }
 
-    private LocusScore getContains(List<LocusScore> scores, int index){
-        if(index >= 0 && index < scores.size()){
+    private LocusScore getContains(List<LocusScore> scores, int index) {
+        if (index >= 0 && index < scores.size()) {
             return scores.get(index);
-        }else{
+        } else {
             return null;
         }
     }
@@ -203,19 +190,20 @@ public class CombinedDataSource implements DataSource {
      * Combine the scores using this sources operation. Either can be null,
      * in which case it is given the coordinates of the other and a score of 0.
      * Both inputs cannot be null
+     *
      * @param score0
      * @param score1
      * @return
      */
     private float combineScores(LocusScore score0, LocusScore score1) {
-        if(score0 == null && score1 == null) throw new IllegalArgumentException("Both inputs cannot be null");
-        if(score0 == null){
+        if (score0 == null && score1 == null) throw new IllegalArgumentException("Both inputs cannot be null");
+        if (score0 == null) {
             score0 = new BasicScore(score1.getStart(), score1.getEnd(), 0.0f);
-        }else if(score1 == null){
+        } else if (score1 == null) {
             score1 = new BasicScore(score0.getStart(), score0.getEnd(), 0.0f);
         }
 
-        switch(operation){
+        switch (operation) {
             case ADD:
                 return score0.getScore() + score1.getScore();
             case SUBTRACT:
@@ -223,7 +211,7 @@ public class CombinedDataSource implements DataSource {
             case MULTIPLY:
                 return score0.getScore() * score1.getScore();
             case DIVIDE:
-                if(score1.getScore() == 0.0f){
+                if (score1.getScore() == 0.0f) {
                     return 0.0f;
                 }
                 return score0.getScore() / score1.getScore();
@@ -262,8 +250,8 @@ public class CombinedDataSource implements DataSource {
 
     @Override
     public void dispose() {
-        if(source0 != null) source0.dispose();
-        if(source1 != null) source1.dispose();
+        if (source0 != null) source0.dispose();
+        if (source1 != null) source1.dispose();
     }
 
 }

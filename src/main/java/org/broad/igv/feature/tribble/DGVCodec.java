@@ -26,9 +26,6 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.Globals;
-import org.broad.igv.cli_plugin.Argument;
-import org.broad.igv.cli_plugin.LineFeatureDecoder;
-import org.broad.igv.cli_plugin.LineFeatureEncoder;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -75,7 +72,7 @@ field	example	SQL type	info	description
 /**
  *
  */
-public class DGVCodec extends UCSCCodec<BasicFeature> implements LineFeatureEncoder<Feature>, LineFeatureDecoder<BasicFeature> {
+public class DGVCodec extends UCSCCodec<BasicFeature>  {
 
     static final Pattern BR_PATTERN = Pattern.compile("<br>");
     static final Pattern EQ_PATTERN = Pattern.compile("=");
@@ -293,21 +290,6 @@ samples	IS30771,IS39243,IS41043	longblob	 	Sample IDs if available
         return buffer.toString();
     }
 
-    @Override
-    public int getNumCols(String line) {
-        return line.split("\t").length;
-    }
-
-    @Override
-    public String getHeader() {
-        return null;
-    }
-
-
-    @Override
-    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap, Argument argument) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
 }
 
 

@@ -270,7 +270,7 @@ public class BlatClient {
                         win.setVisible(true);
 
                     }
-                } catch (IOException e1) {
+                } catch (Exception e1) {
                     MessageUtils.showErrorMessage("Error running blat", e1);
                 }
             }

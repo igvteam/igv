@@ -25,24 +25,18 @@
 
 package org.broad.igv.track;
 
-import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SubtlyImportant;
+
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,25 +51,25 @@ import java.util.List;
  * @author jacob
  * @date 2013-Nov-05
  */
-@XmlType(factoryMethod = "getNextTrack")
-public class MergedTracks extends DataTrack implements ScalableTrack {
 
-    @XmlAttribute
-    protected Class clazz = MergedTracks.class;
+public class MergedTracks extends DataTrack implements ScalableTrack {
 
     private Collection<DataTrack> memberTracks;
 
-    /**
-     * This is a session tag, changing it will break backwards compatibility
-     * with sessions!
-     */
-    public static final String MEMBER_TRACK_TAG_NAME = "Track";
 
     public MergedTracks(String id, String name, Collection<DataTrack> inputTracks) {
         super(null, id, name);
         initTrackList(inputTracks);
         this.autoScale = this.getAutoScale();
         setTrackAlphas(120);
+    }
+
+    public MergedTracks() {
+
+    }
+
+    public void setMemberTracks(Collection<DataTrack> inputTracks) {
+        initTrackList(inputTracks);
     }
 
     private void initTrackList(Collection<DataTrack> inputTracks) {
@@ -126,7 +120,6 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         return locators;
     }
 
-    @XmlElement(name = MEMBER_TRACK_TAG_NAME)
     public Collection<DataTrack> getMemberTracks() {
         return this.memberTracks;
     }
@@ -413,17 +406,5 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         }
     }
 
-    @SubtlyImportant
-    private MergedTracks() {
-        super(null, null, null);
-    }
 
-    @SubtlyImportant
-    private static MergedTracks getNextTrack() {
-        MergedTracks out = (MergedTracks) IGVSessionReader.getNextTrack();
-        if (out == null) {
-            out = new MergedTracks();
-        }
-        return out;
-    }
 }

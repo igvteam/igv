@@ -43,9 +43,8 @@ import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.sashimi.SashimiPlot;
-import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.Persistable;
 import org.broad.igv.session.Session;
-import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tools.PFMExporter;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
@@ -63,16 +62,14 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
-import org.broad.igv.util.Utilities;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.extview.ExtendViewClient;
-import org.w3c.dom.Node;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import javax.swing.*;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -89,9 +86,6 @@ import static org.broad.igv.prefs.Constants.*;
 /**
  * @author jrobinso
  */
-@XmlType(factoryMethod = "getNextTrack")
-@XmlAccessorType(XmlAccessType.NONE)
-@XmlSeeAlso(AlignmentTrack.RenderOptions.class)
 
 public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
@@ -107,8 +101,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     static final int DS_MARGIN_2 = 5;
     private final Genome genome;
 
-
-    @XmlAttribute
     private ExperimentType experimentType;
 
     private final AlignmentRenderer renderer;
@@ -324,14 +316,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    @XmlElement(name = RenderOptions.NAME)
     private void setRenderOptions(RenderOptions renderOptions) {
 
         this.renderOptions = renderOptions;
 
     }
 
-    @SubtlyImportant
     RenderOptions getRenderOptions() {
         return this.renderOptions;
     }
@@ -1181,47 +1171,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return pair.getSecond();
     }
 
-    @Override
-    public void restorePersistentState(Node node, int version) throws JAXBException {
-        super.restorePersistentState(node, version);
-
-        //For legacy sessions (<= v4. RenderOptions used to be stuffed in
-        //with Track tag, now it's a sub element
-        boolean hasRenderSubTag = false;
-        try {
-            if (node.hasChildNodes()) {
-                NodeList list = node.getChildNodes();
-                for (int ii = 0; ii < list.getLength(); ii++) {
-                    Node item = list.item(ii);
-                    if (item.getNodeName().equals(RenderOptions.NAME)) {
-                        hasRenderSubTag = true;
-                        break;
-                    }
-                }
-            }
-            if (hasRenderSubTag) {
-                renderOptions.setColorOption(renderOptions.colorOption);
-                return;
-            } else {
-                RenderOptions ro = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(node, RenderOptions.class).getValue();
-                ro.setColorOption(ro.colorOption);    // Set the explicit-set flag
-
-                String shadeBasesKey = "shadeBases";
-                String value = Utilities.getNullSafe(node.getAttributes(), shadeBasesKey);  // For older sessions
-                if (value != null) {
-                    if (value.equals("false")) {
-                        ro.setShadeBasesOption(ShadeBasesOption.NONE);
-                    } else if (value.equals("true")) {
-                        ro.setShadeBasesOption(ShadeBasesOption.QUALITY);
-                    }
-                }
-
-                this.setRenderOptions(ro);
-            }
-        } catch (JAXBException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public void setViewAsPairs(boolean vAP) {
         // TODO -- generalize this test to all incompatible pairings
@@ -1372,12 +1321,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-
-    @SubtlyImportant
-    private static AlignmentTrack getNextTrack() {
-        return (AlignmentTrack) IGVSessionReader.getNextTrack();
-    }
-
     private static class InsertionInterval {
 
         Rectangle rect;
@@ -1392,7 +1335,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     static int nClusters = 2;
 
     class PopupMenu extends IGVPopupMenu {
-
 
 
         PopupMenu(final TrackClickEvent e) {
@@ -1424,7 +1366,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             //         addSeparator();
             //          addExpandInsertions();
 
-            if(dataManager.inferredExperimentType == ExperimentType.THIRD_GEN ) {
+            if (dataManager.inferredExperimentType == ExperimentType.THIRD_GEN) {
                 addHaplotype(e);
             }
 
@@ -1539,8 +1481,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     return;
                 }
                 try {
-                    AlignmentTrack.nClusters  = Integer.parseInt(nString);
-                } catch(NumberFormatException e1) {
+                    AlignmentTrack.nClusters = Integer.parseInt(nString);
+                } catch (NumberFormatException e1) {
                     MessageUtils.showMessage("Clusters size must be an integer");
                     return;
                 }
@@ -2359,56 +2301,32 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    @XmlType(name = RenderOptions.NAME)
-    @XmlAccessorType(XmlAccessType.NONE)
-    public static class RenderOptions implements Cloneable {
+
+    public static class RenderOptions implements Cloneable, Persistable {
 
         public static final String NAME = "RenderOptions";
 
-        @XmlAttribute
         private AlignmentTrack.ShadeBasesOption shadeBasesOption;
-        @XmlAttribute
         private Boolean shadeCenters;
-        @XmlAttribute
         private Boolean flagUnmappedPairs;
-        @XmlAttribute
         private Boolean showAllBases;
-        @XmlAttribute
         private Integer minInsertSize;
-        @XmlAttribute
         private Integer maxInsertSize;
-        @XmlAttribute
         private AlignmentTrack.ColorOption colorOption;
-        @XmlAttribute
         private AlignmentTrack.GroupOption groupByOption;
-        //ContinuousColorScale insertSizeColorScale;
-        @XmlAttribute
         private Boolean viewPairs;
-        @XmlAttribute
         private String colorByTag;
-        @XmlAttribute
         private String groupByTag;
-        @XmlAttribute
         private String sortByTag;
-        @XmlAttribute
         private String linkByTag;
-        @XmlAttribute
         private Boolean linkedReads;
-        @XmlAttribute
         private Boolean quickConsensusMode;
-        @XmlAttribute
         private Boolean showMismatches;
-        @XmlAttribute
         private Boolean computeIsizes;
-        @XmlAttribute
         private Double minInsertSizePercentile;
-        @XmlAttribute
         private Double maxInsertSizePercentile;
-        @XmlAttribute
         private Boolean pairedArcView;
-        @XmlAttribute
         private Boolean flagZeroQualityAlignments;
-        @XmlElement
         private Range groupByPos;
 
 
@@ -2417,7 +2335,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         boolean drawInsertionIntervals = false;
 
         DefaultValues defaultValues;
-
 
         public RenderOptions() {
             this(ExperimentType.OTHER);
@@ -2430,7 +2347,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             peStats = new HashMap<String, PEStats>();
             defaultValues = new DefaultValues(prefs);
         }
-
 
         private <T extends Enum<T>> T getFromMap(Map<String, String> attributes, String key, Class<T> clazz, T defaultValue) {
             String value = attributes.get(key);
@@ -2623,6 +2539,149 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
 
+        @Override
+        public void marshalXML(Document document, Element element) {
+
+            if (shadeBasesOption != null) {
+                element.setAttribute("shadeBasesOption", shadeBasesOption.toString());
+            }
+            if (shadeCenters != null) {
+                element.setAttribute("shadeCenters", shadeCenters.toString());
+            }
+            if (flagUnmappedPairs != null) {
+                element.setAttribute("flagUnmappedPairs", flagUnmappedPairs.toString());
+            }
+            if (showAllBases != null) {
+                element.setAttribute("showAllBases", showAllBases.toString());
+            }
+            if (minInsertSize != null) {
+                element.setAttribute("minInsertSize", minInsertSize.toString());
+            }
+            if (maxInsertSize != null) {
+                element.setAttribute("maxInsertSize", maxInsertSize.toString());
+            }
+            if (colorOption != null) {
+                element.setAttribute("colorOption", colorOption.toString());
+            }
+            if (groupByOption != null) {
+                element.setAttribute("groupByOption", groupByOption.toString());
+            }
+            if (viewPairs != null) {
+                element.setAttribute("viewPairs", viewPairs.toString());
+            }
+            if (colorByTag != null) {
+                element.setAttribute("colorByTag", colorByTag);
+            }
+            if (groupByTag != null) {
+                element.setAttribute("groupByTag", groupByTag);
+            }
+            if (sortByTag != null) {
+                element.setAttribute("sortByTag", sortByTag);
+            }
+            if (linkByTag != null) {
+                element.setAttribute("linkByTag", linkByTag);
+            }
+            if (linkedReads != null) {
+                element.setAttribute("linkedReads", linkedReads.toString());
+            }
+            if (quickConsensusMode != null) {
+                element.setAttribute("quickConsensusMode", quickConsensusMode.toString());
+            }
+            if (showMismatches != null) {
+                element.setAttribute("showMismatches", showMismatches.toString());
+            }
+            if (computeIsizes != null) {
+                element.setAttribute("computeIsizes", computeIsizes.toString());
+            }
+            if (minInsertSizePercentile != null) {
+                element.setAttribute("minInsertSizePercentile", minInsertSizePercentile.toString());
+            }
+            if (maxInsertSizePercentile != null) {
+                element.setAttribute("maxInsertSizePercentile", maxInsertSizePercentile.toString());
+            }
+            if (pairedArcView != null) {
+                element.setAttribute("pairedArcView", pairedArcView.toString());
+            }
+            if (flagZeroQualityAlignments != null) {
+                element.setAttribute("flagZeroQualityAlignments", flagZeroQualityAlignments.toString());
+            }
+            if (groupByPos != null) {
+                element.setAttribute("groupByPos", groupByPos.toString());
+            }
+        }
+
+
+        @Override
+        public void unmarshalXML(Element element, Integer version) {
+            if (element.hasAttribute("shadeBasesOption")) {
+                shadeBasesOption = ShadeBasesOption.valueOf(element.getAttribute("shadeBasesOption"));
+            }
+            if (element.hasAttribute("shadeCenters")) {
+                shadeCenters = Boolean.parseBoolean(element.getAttribute("shadeCenters"));
+            }
+            if (element.hasAttribute("showAllBases")) {
+                showAllBases = Boolean.parseBoolean(element.getAttribute("showAllBases"));
+            }
+            if (element.hasAttribute("flagUnmappedPairs")) {
+                flagUnmappedPairs = Boolean.parseBoolean(element.getAttribute("flagUnmappedPairs"));
+            }
+
+            if (element.hasAttribute("minInsertSize")) {
+                minInsertSize = Integer.parseInt(element.getAttribute("minInsertSize"));
+            }
+            if (element.hasAttribute("maxInsertSize")) {
+                maxInsertSize = Integer.parseInt(element.getAttribute("maxInsertSize"));
+            }
+            if (element.hasAttribute("colorOption")) {
+                colorOption = ColorOption.valueOf(element.getAttribute("colorOption"));
+            }
+            if (element.hasAttribute("groupByOption")) {
+                groupByOption = GroupOption.valueOf(element.getAttribute("groupByOption"));
+            }
+            if (element.hasAttribute("viewPairs")) {
+                viewPairs = Boolean.parseBoolean(element.getAttribute("viewPairs"));
+            }
+            if (element.hasAttribute("colorByTag")) {
+                colorByTag = element.getAttribute("colorByTag");
+            }
+            if (element.hasAttribute("groupByTag")) {
+                groupByTag = element.getAttribute("groupByTag");
+            }
+            if (element.hasAttribute("sortByTag")) {
+                sortByTag = element.getAttribute("sortByTag");
+            }
+            if (element.hasAttribute("linkByTag")) {
+                linkByTag = element.getAttribute("linkByTag");
+            }
+            if (element.hasAttribute("linkedReads")) {
+                linkedReads = Boolean.parseBoolean(element.getAttribute("linkedReads"));
+            }
+            if (element.hasAttribute("quickConsensusMode")) {
+                quickConsensusMode = Boolean.parseBoolean(element.getAttribute("quickConsensusMode"));
+            }
+            if (element.hasAttribute("showMismatches")) {
+                showMismatches = Boolean.parseBoolean(element.getAttribute("showMismatches"));
+            }
+            if (element.hasAttribute("computeIsizes")) {
+                computeIsizes = Boolean.parseBoolean(element.getAttribute("computeIsizes"));
+            }
+            if (element.hasAttribute("minInsertSizePercentile")) {
+                minInsertSizePercentile = Double.parseDouble(element.getAttribute("minInsertSizePercentile"));
+            }
+            if (element.hasAttribute("maxInsertSizePercentile")) {
+                maxInsertSizePercentile = Double.parseDouble(element.getAttribute("maxInsertSizePercentile"));
+            }
+            if (element.hasAttribute("pairedArcView")) {
+                pairedArcView = Boolean.parseBoolean(element.getAttribute("pairedArcView"));
+            }
+            if (element.hasAttribute("flagZeroQualityAlignments")) {
+                flagZeroQualityAlignments = Boolean.parseBoolean(element.getAttribute("flagZeroQualityAlignments"));
+            }
+            if (element.hasAttribute("groupByPos")) {
+                groupByPos = Range.fromString(element.getAttribute("groupByPos"));
+            }
+        }
+
         static class DefaultValues {
             public AlignmentTrack.ShadeBasesOption shadeBasesOption;
             public boolean shadeCenters;
@@ -2695,6 +2754,40 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 }
             }
         }
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        if (element.hasAttribute("experimentType")) {
+            experimentType = ExperimentType.valueOf(element.getAttribute("experimentType"));
+        }
+
+        NodeList tmp = element.getElementsByTagName("RenderOptions");
+        if (tmp.getLength() > 0) {
+            Element renderElement = (Element) tmp.item(0);
+            renderOptions = new RenderOptions();
+            renderOptions.unmarshalXML(renderElement, version);
+        }
+    }
+
+
+    @Override
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        if (experimentType != null) {
+            element.setAttribute("experimentType", experimentType.toString());
+        }
+
+        Element sourceElement = document.createElement("RenderOptions");
+        renderOptions.marshalXML(document, sourceElement);
+        element.appendChild(sourceElement);
+
+
     }
 
 }

@@ -29,8 +29,9 @@ import htsjdk.tribble.Feature;
 import htsjdk.tribble.TribbleException;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.cli_plugin.PluginFeatureSource;
-import org.broad.igv.cli_plugin.PluginSource;
+import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -38,33 +39,20 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SubtlyImportant;
-import org.broad.igv.tools.FeatureSearcher;
+
 import org.broad.igv.tools.motiffinder.MotifFinderSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.event.DataLoadedEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.variant.VariantTrack;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.MarshalException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -78,17 +66,12 @@ import java.util.List;
  *
  * @author jrobinso
  */
-@XmlType(factoryMethod = "getNextTrack")
-@XmlSeeAlso({VariantTrack.class, PluginFeatureSource.class, MotifFinderSource.class})
+
 
 public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(FeatureTrack.class);
 
-    //All tracks have label "Track", we need to specify the type sometimes
-    //but still preserve backwards compatibility
-    @XmlAttribute
-    protected Class clazz = FeatureTrack.class;
 
     public static final int MINIMUM_FEATURE_SPACING = 5;
     public static final int DEFAULT_MARGIN = 5;
@@ -120,7 +103,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     // true == features,  false =  coverage
     private boolean showFeatures = true;
 
-    protected FeatureSource source;
+    public FeatureSource source;
 
     //track which row of the expanded track is selected by the user. Selection goes away if tracks are collpased
     protected int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
@@ -139,6 +122,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
 
     String trackLine = null;
+
+    public FeatureTrack() {
+
+    }
 
     // TODO -- there are WAY too many constructors for this class
 
@@ -238,7 +225,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public void dispose() {
         super.dispose();
-        if(source != null) {
+        if (source != null) {
             source.dispose();
             source = null;
         }
@@ -735,6 +722,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 if (c != null && end < c.getLength()) expandedEnd = Math.min(c.getLength(), expandedEnd);
             }
 
+            if (source == null) {
+                System.out.println();
+            }
             Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
 
             if (iter == null) {
@@ -926,7 +916,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
-
     /**
      * Return the nextLine or previous feature relative to the center location.
      * TODO -- investigate delegating this method to FeatureSource, where it might be possible to simplify the implementation
@@ -953,10 +942,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 FeatureSource rawSource = source;
                 if (source instanceof CachingFeatureSource) {
                     rawSource = ((CachingFeatureSource) source).getSource();
-                }
-                if (rawSource instanceof MotifFinderSource || rawSource instanceof PluginFeatureSource) {
-                    FeatureTrackUtils.nextFeatureSearch(source, chr, packedFeatures.getStart(), packedFeatures.getEnd(),
-                            forward, new FeatureSearcher.GotoFeatureHandler());
                 } else {
                     f = FeatureTrackUtils.nextFeature(source, chr, packedFeatures.getStart(), packedFeatures.getEnd(), forward);
                 }
@@ -997,76 +982,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         return alternateExonColor;
     }
 
-    @SubtlyImportant
-    private static FeatureTrack getNextTrack() {
-        FeatureTrack out = (FeatureTrack) IGVSessionReader.getNextTrack();
-        if (out == null) out = new FeatureTrack((String) null, null);
-        return out;
-    }
-
-    @Override
-    public void restorePersistentState(Node node, int version) throws JAXBException {
-        super.restorePersistentState(node, version);
-        if (node.hasChildNodes()) {
-            NodeList childNodes = node.getChildNodes();
-            for (int ii = 0; ii < childNodes.getLength(); ii++) {
-                Node child = childNodes.item(ii);
-                String nodeName = child.getNodeName();
-                if (nodeName.contains("#text")) continue;
-
-                if (nodeName.equalsIgnoreCase(PLUGIN_SOURCE)) {
-                    source = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, PluginFeatureSource.class).getValue();
-                } else if (nodeName.equalsIgnoreCase(SEQUENCE_MATCH_SOURCE)) {
-                    FeatureSource rawSource = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, MotifFinderSource.class).getValue();
-                    source = new CachingFeatureSource(rawSource);
-                } else {
-                    try {
-                        FeatureSource newSource = (FeatureSource) IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, Class.forName(nodeName)).getValue();
-                        source = newSource;
-                    } catch (Exception e) {
-                        //Lots can go wrong, it just means this isn't a FeatureSource
-                        //Probably not an error
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * @param m
-     * @param trackElement
-     * @throws JAXBException
-     */
-    public void marshalSource(Marshaller m, Element trackElement) throws JAXBException {
-        if (source == null) return;
-        FeatureSource rawSource = source;
-        if (rawSource instanceof CachingFeatureSource) {
-            rawSource = ((CachingFeatureSource) rawSource).getSource();
-        }
-
-
-        //We apply special treatment for a few classes
-        if (rawSource instanceof PluginSource) {
-            JAXBElement element = new JAXBElement<PluginSource>(new QName("", PLUGIN_SOURCE), PluginSource.class,
-                    (PluginSource) rawSource);
-            m.marshal(element, trackElement);
-        } else if (rawSource instanceof MotifFinderSource) {
-            JAXBElement element = new JAXBElement<MotifFinderSource>(new QName("", SEQUENCE_MATCH_SOURCE), MotifFinderSource.class,
-                    (MotifFinderSource) rawSource);
-            m.marshal(element, trackElement);
-        } else {
-            //Users can write their own FeatureSources, we tag with the fully qualified class name
-            Class<? extends FeatureSource> srcClazz = rawSource.getClass();
-            JAXBElement element = new JAXBElement(new QName("", srcClazz.getName()), srcClazz, rawSource);
-            try {
-                m.marshal(element, trackElement);
-            } catch (MarshalException e) {
-                //This happens if the source is not marshallable
-                //Many of our classes can't, and that's not an error
-            }
-        }
-    }
-
     /**
      * This method exists for Plugin tracks. When restoring a session there is no guarantee of track
      * order, so arguments referring to other tracks may fail to resolve. We update those references
@@ -1075,9 +990,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @param allTracks
      */
     public void updateTrackReferences(List<Track> allTracks) {
-        if (source instanceof PluginSource) {
-            ((PluginSource) source).updateTrackReferences(allTracks);
-        }
+
     }
 
     /**
@@ -1118,15 +1031,42 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
-    public  FeatureTrack (Element element) {
+    //        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="255,0,0" displayMode="SQUISHED" featureVisibilityWindow="10000000" fontSize="10" id="tataaa Negative" name="tataaa Negative" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
 
-        super(element);
 
-        String cs = element.getAttribute("color");
-        if(cs != null) {
-            Color c = ColorUtilities.stringToColor(cs);
-            this.posColor = c;
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        NodeList tmp = element.getElementsByTagName("SequenceMatchSource");
+        if (tmp.getLength() > 0) {
+            Element sourceElement = (Element) tmp.item(0);
+            MotifFinderSource source = new MotifFinderSource();
+            source.unmarshalXML(sourceElement, version);
+            this.source = source;
         }
+
+    }
+
+
+    @Override
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        if (source == null) return;
+        FeatureSource rawSource = source;
+        if (rawSource instanceof CachingFeatureSource) {
+            rawSource = ((CachingFeatureSource) rawSource).getSource();
+        }
+
+        if (rawSource instanceof MotifFinderSource) {
+            Element sourceElement = document.createElement("SequenceMatchSource");
+            ((MotifFinderSource) rawSource).marshalXML(document, sourceElement);
+            element.appendChild(sourceElement);
+        }
+
     }
 
 }
