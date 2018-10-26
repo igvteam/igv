@@ -54,7 +54,6 @@ public class IGVSeekableBufferedStream extends SeekableStream {
      */
 
     int markpos;
-    int marklimit;
 
     byte[] buffer;
     long bufferStartPosition; // Position in file corresponding to start of buffer
@@ -96,17 +95,6 @@ public class IGVSeekableBufferedStream extends SeekableStream {
         }
         position = markpos;
 
-    }
-
-    @Override
-    public synchronized void mark(int readlimit) {
-        this.markpos = (int) position;
-        this.marklimit = readlimit;
-    }
-
-    @Override
-    public boolean markSupported() {
-        return true;
     }
 
     public void seek(final long position) throws IOException {

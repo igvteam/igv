@@ -181,18 +181,22 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     }
 
     public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
-        CloseableIterator<SAMRecord> iter = null;
-        try {
-            synchronized (reader) {
-                iter = reader.query(sequence, start + 1, end, contained);
-            }
-        } catch (IllegalArgumentException e) {
-            log.error("Error querying for sequence: " + sequence, e);
-            return new EmptyAlignmentIterator();
-        }
-        return new WrappedIterator(iter);
-    }
 
+        if (!sequenceDictionary.containsKey(sequence)) {
+            return EMPTY_ITERATOR;
+        } else {
+            CloseableIterator<SAMRecord> iter = null;
+            try {
+                synchronized (reader) {
+                    iter = reader.query(sequence, start + 1, end, contained);
+                }
+            } catch (IllegalArgumentException e) {
+                log.error("Error querying for sequence: " + sequence, e);
+                return new EmptyAlignmentIterator();
+            }
+            return new WrappedIterator(iter);
+        }
+    }
 
     /**
      * Fetch an explicitly set index path, either via the ResourceLocator or as a parameter in a URL
@@ -351,6 +355,23 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
             return indexPath;
         }
     }
+
+    static CloseableIterator<PicardAlignment> EMPTY_ITERATOR = new CloseableIterator<PicardAlignment>() {
+        @Override
+        public void close() {
+
+        }
+
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public PicardAlignment next() {
+            return null;
+        }
+    };
 
 
 }
