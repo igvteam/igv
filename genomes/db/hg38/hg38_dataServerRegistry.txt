@@ -1,1 +1,1 @@
-https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg38/hg38_annotations.xml
+https://s3.amazonaws.com/igv.org.genomes/hg38/hg38_annotations.xml
