@@ -182,7 +182,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
 
     public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
 
-        if (!sequenceDictionary.containsKey(sequence)) {
+        if (sequenceDictionary != null && !sequenceDictionary.containsKey(sequence)) {
             return EMPTY_ITERATOR;
         } else {
             CloseableIterator<SAMRecord> iter = null;
