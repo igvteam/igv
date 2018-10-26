@@ -37,6 +37,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -245,7 +246,7 @@ public class IGV implements IGVEventObserver {
         rootPane.setJMenuBar(menuBar);
         glassPane = rootPane.getGlassPane();
         glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-       // consumeEvents(glassPane);
+        // consumeEvents(glassPane);
 
         dNdGlassPane = new GhostGlassPane();
 
@@ -2163,9 +2164,14 @@ public class IGV implements IGVEventObserver {
 
                     }
                 } else if (igvArgs.getDataFileString() != null) {
+
                     // Not an xml file, assume its a list of data files
                     String decodedString = igvArgs.getDataFileString();
-                    String[] dataFiles = decodedString.split(",");
+
+
+                    File dir = new File(".");
+                    List<String> dataFiles = FileUtils.parseDataFileString(dir, decodedString);
+
                     String[] names = null;
                     if (igvArgs.getName() != null) {
                         names = igvArgs.getName().split(",");
@@ -2183,9 +2189,9 @@ public class IGV implements IGVEventObserver {
                     List<ResourceLocator> locators = new ArrayList();
 
 
-                    for (int i = 0; i < dataFiles.length; i++) {
+                    for (int i = 0; i < dataFiles.size(); i++) {
 
-                        String p = dataFiles[i].trim();
+                        String p = dataFiles.get(i).trim();
 
                         // Decode local file paths
                         if (HttpUtils.isURL(p) && !FileUtils.isRemote(p)) {
@@ -2264,6 +2270,7 @@ public class IGV implements IGVEventObserver {
             }
         }
 
+
         private void setAppleDockIcon() {
             try {
                 Image image = getIconImage();
@@ -2279,7 +2286,6 @@ public class IGV implements IGVEventObserver {
             Image image = new ImageIcon(url).getImage();
             return image;
         }
-
 
 
     }
@@ -2394,26 +2400,4 @@ public class IGV implements IGVEventObserver {
             tp.getScrollPane().getNamePanel().repaint();
         }
     }
-
-//
-//    NOTE:  MAC ONLY,  WILL NOT COMPILE ON OTHER PLATFORMS
-//    private void getRealDPI() {
-//        // find the display device of interest
-//        final GraphicsDevice defaultScreenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-//
-//        // on OS X, it would be CGraphicsDevice
-//        if (defaultScreenDevice instanceof CGraphicsDevice) {
-//            final CGraphicsDevice device = (CGraphicsDevice) defaultScreenDevice;
-//
-//            // this is the missing correction factor, it's equal to 2 on HiDPI a.k.a. Retina displays
-//            final int scaleFactor = device.getScaleFactor();
-//
-//            // now we can compute the real DPI of the screen
-//            final double realDPI = scaleFactor * (device.getXResolution() + device.getYResolution()) / 2;
-//
-//            System.out.println("scale factor = " + scaleFactor + "    realDPI = " + realDPI);
-//        }
-//    }
-
-
 }

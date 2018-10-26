@@ -276,12 +276,12 @@ public class Main {
             PreferencesManager.getPreferences().overrideGenomeServerURL(igvArgs.getGenomeServerURL());
         }
 
-
         HttpUtils.getInstance().updateProxySettings();
 
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
         RuntimeUtils.loadPluginJars();
+
         IGV.createInstance(frame).startUp(igvArgs);
 
         // TODO Should this be done here?  Will this step on other key dispatchers?
@@ -429,13 +429,12 @@ public class Main {
 
             try {
                 parser.parse(args);
-            } catch (CmdLineParser.IllegalOptionValueException e) {
+            } catch (Exception e) {
                 e.printStackTrace();  // This is not logged because the logger is not initialized yet.
-            } catch (CmdLineParser.UnknownOptionException e) {
-                e.printStackTrace();
-            } catch (CmdLineParser.OptionException e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Error parsing command line argments: " + e.getMessage());
+                return;
             }
+
             propertyOverrides = getDecodedValue(parser, propertyFileOption);
             batchFile = getDecodedValue(parser, batchFileOption);
             port = (String) parser.getOptionValue(portOption);

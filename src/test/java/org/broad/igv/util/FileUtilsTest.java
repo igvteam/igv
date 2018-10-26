@@ -29,8 +29,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -40,6 +41,21 @@ import static org.junit.Assert.assertEquals;
  * To change this template use File | Settings | File Templates.
  */
 public class FileUtilsTest {
+
+
+    @Test
+    public void testParseDataFileString() throws Exception {
+
+        File dir = new File(TestUtils.DATA_DIR + "/bam");
+
+        String p1 = "*.bam";
+        List<String> filenames =  FileUtils.parseDataFileString(dir, p1);
+        assertTrue(filenames.size() > 0);
+
+        dir = new File(TestUtils.DATA_DIR);
+        filenames = FileUtils.parseDataFileString(dir, "bam/*.bam");
+        assertTrue(filenames.size() > 0);
+    }
 
 
     @Test
