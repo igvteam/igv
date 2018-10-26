@@ -103,12 +103,6 @@ public class CodecFactory {
             return new IGVBEDCodec(genome, FeatureType.GAPPED_PEAK);
         } else if (fn.endsWith(".dgv")) {
             return new DGVCodec(genome);
-        } else if (fn.contains("refflat")) {
-            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.REFFLAT, genome);
-        } else if (fn.contains("genepred") || fn.contains("ensgene") || fn.contains("refgene")) {
-            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED, genome);
-        } else if (fn.contains("ucscgene")) {
-            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
         } else if (fn.endsWith(".rmask") || (fn.endsWith(".repmask"))) {
             return new REPMaskCodec(genome);
         } else if (fn.endsWith(".gff3") || fn.endsWith(".gvf")) {
@@ -139,6 +133,12 @@ public class CodecFactory {
             return new PAFCodec(path, genome);
         } else if (fn.endsWith(".interval_list")) {
             return new IntervalListCodec(genome);
+        } else if (fn.contains("refflat")) {
+            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.REFFLAT, genome);
+        } else if (fn.contains("genepred") || fn.contains("ensgene") || fn.contains("refgene")) {
+            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED, genome);
+        } else if (fn.contains("ucscgene")) {
+            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
         }
 
         else {
