@@ -26,7 +26,6 @@
 package org.broad.igv.session;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ParsingUtils;
@@ -39,9 +38,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.awt.*;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;

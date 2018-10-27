@@ -2,17 +2,6 @@ module org.igv {
     exports org.broad.igv;
     exports org.broad.igv.tools;
     exports org.broad.igv.ui;
-
-    opens org.broad.igv.cli_plugin to java.xml.bind;
-    opens org.broad.igv.data to java.xml.bind;
-    opens org.broad.igv.feature.basepair to java.xml.bind;
-    opens org.broad.igv.gwas to java.xml.bind;
-    opens org.broad.igv.renderer to java.xml.bind;
-    opens org.broad.igv.sam to java.xml.bind;
-    opens org.broad.igv.session to java.xml.bind;
-    opens org.broad.igv.tools.motiffinder to java.xml.bind;
-    opens org.broad.igv.track to java.xml.bind;
-    opens org.broad.igv.variant to java.xml.bind;
     
     requires AbsoluteLayout;
     requires ant;
@@ -29,7 +18,6 @@ module org.igv {
     requires java.prefs;
     requires java.sql;
     requires java.xml;
-    requires java.xml.bind;
     requires jdk.xml.dom;
     requires jfreechart;
     requires log4j;

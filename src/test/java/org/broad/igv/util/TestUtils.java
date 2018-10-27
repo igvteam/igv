@@ -41,15 +41,7 @@ import htsjdk.tribble.Feature;
 import htsjdk.tribble.readers.AsciiLineReader;
 import org.junit.Assert;
 import org.junit.Ignore;
-import org.w3c.dom.Document;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
 import java.io.*;
 import java.lang.management.ManagementFactory;
@@ -420,34 +412,6 @@ public class TestUtils {
     }
 
 
-
-    /**
-     * Marshalls {@code inObj} and unmarshalls the result, returning the
-     * unmarshalled version
-     *
-     * @param inObj
-     * @return
-     * @throws Exception
-     */
-    public static <T> T marshallUnmarshall(T inObj) throws Exception{
-
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.newDocument();
-
-        JAXBContext jc = JAXBContext.newInstance(inObj.getClass());
-        Marshaller m = jc.createMarshaller();
-        m.setProperty(Marshaller.JAXB_FRAGMENT, true);
-
-        //This JAXBElement business is necessary because we don't know if we have @XmlRootElement on inObj
-        JAXBElement inel = new JAXBElement(new QName("", "obj"), inObj.getClass(), inObj);
-        //m.marshal(inel, System.out);
-        m.marshal(inel, doc);
-
-        Unmarshaller u = jc.createUnmarshaller();
-        JAXBElement el = (JAXBElement) u.unmarshal(doc, inObj.getClass());
-        return (T) el.getValue();
-    }
 
     private static Object getField(Object object, Class clazz, String fieldName) throws Exception{
         if(clazz == null) throw new NoSuchFieldException(fieldName + " not found all the way up");
