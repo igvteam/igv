@@ -6,9 +6,7 @@
 --add-exports org.igv/org.broad.igv.bbfile=junit
 --add-exports org.igv/org.broad.igv.bigwig=junit
 --add-exports org.igv/org.broad.igv.charts=junit
---add-exports org.igv/org.broad.igv.cli_plugin=junit
 --add-exports org.igv/org.broad.igv.cli_plugin.ui=junit
---add-exports org.igv/org.broad.igv.das=junit
 --add-exports org.igv/org.broad.igv.data=junit
 --add-exports org.igv/org.broad.igv.data.cufflinks=junit
 --add-exports org.igv/org.broad.igv.data.expression=junit
@@ -39,7 +37,6 @@
 --add-exports org.igv/org.broad.igv.renderer=junit
 --add-exports org.igv/org.broad.igv.sam=junit
 --add-exports org.igv/org.broad.igv.sam.cram=junit
---add-exports org.igv/org.broad.igv.sam.cram.old=junit
 --add-exports org.igv/org.broad.igv.sam.lite=junit
 --add-exports org.igv/org.broad.igv.sam.reader=junit
 --add-exports org.igv/org.broad.igv.session=junit

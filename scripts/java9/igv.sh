@@ -9,6 +9,7 @@
 prefix=`dirname $(readlink $0 || echo $0)`
 exec java --module-path="$prefix"/lib -Xmx4g \
     @igv.args \
+    -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true \
 	-Dapple.laf.useScreenMenuBar=true \
 	-Djava.net.preferIPv4Stack=true \
 	--module org.igv/org.broad.igv.ui.Main "$@"
