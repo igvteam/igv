@@ -1,6 +1,6 @@
 # igv
 
-Integrative Genomics Viewer. Desktop genome visualization tool.
+Integrative Genomics Viewer - dekstop genome visualization tool for Mac, Windows, and Linux.
 
 ### Building
 
