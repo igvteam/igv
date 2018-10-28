@@ -44,21 +44,6 @@ public class FileUtilsTest {
 
 
     @Test
-    public void testParseDataFileString() throws Exception {
-
-        File dir = new File(TestUtils.DATA_DIR + "/bam");
-
-        String p1 = "*.bam";
-        List<String> filenames =  FileUtils.parseDataFileString(dir, p1);
-        assertTrue(filenames.size() > 0);
-
-        dir = new File(TestUtils.DATA_DIR);
-        filenames = FileUtils.parseDataFileString(dir, "bam/*.bam");
-        assertTrue(filenames.size() > 0);
-    }
-
-
-    @Test
     public void testFindRelativeHttpPath() throws IOException {
         String basePath = "http://foo.bar.com/baseDir/";
         String targetPath = "http://foo.bar.com/baseDir/dir/test.txt";

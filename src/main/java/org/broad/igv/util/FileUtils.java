@@ -512,29 +512,5 @@ public class FileUtils {
         return result;
     }
 
-    public static List<String> parseDataFileString(File dir, String decodedString) {
 
-        String[] tokens = decodedString.split(",");
-
-        List<String> pathNames = new ArrayList<>();
-
-        for (String t : tokens) {
-            if (FileUtils.isRemote(t) || !t.contains("*")) {
-                pathNames.add(t);
-            } else if(t.contains("*")) {
-
-                // Find the parent directory
-                File tmp = t.startsWith(File.separator) ? new File(t) : new File(dir, t);
-                File parentDir = tmp.getParentFile();
-                String fn = tmp.getName();
-
-                FileFilter fileFilter = new WildcardFileFilter(fn);
-                File[] files = parentDir.listFiles(fileFilter);
-                for (int i = 0; i < files.length; i++) {
-                    pathNames.add(files[i].getAbsolutePath());
-                }
-            }
-        }
-        return pathNames;
-    }
 }

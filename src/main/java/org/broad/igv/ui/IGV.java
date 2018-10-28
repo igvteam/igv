@@ -37,7 +37,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -2131,7 +2130,7 @@ public class IGV implements IGVEventObserver {
             }
 
             //If there is an argument assume it is a session file or url
-            if (igvArgs.getSessionFile() != null || igvArgs.getDataFileString() != null) {
+            if (igvArgs.getSessionFile() != null || igvArgs.getDataFileStrings() != null) {
 
                 if (log.isDebugEnabled()) {
                     log.debug("Loading session data");
@@ -2163,14 +2162,10 @@ public class IGV implements IGVEventObserver {
                         contentPane.getCommandBar().selectGenome(genomeId);
 
                     }
-                } else if (igvArgs.getDataFileString() != null) {
+                } else if (igvArgs.getDataFileStrings() != null) {
 
                     // Not an xml file, assume its a list of data files
-                    String decodedString = igvArgs.getDataFileString();
-
-
-                    File dir = new File(".");
-                    List<String> dataFiles = FileUtils.parseDataFileString(dir, decodedString);
+                    List<String> dataFiles = igvArgs.getDataFileStrings();
 
                     String[] names = null;
                     if (igvArgs.getName() != null) {

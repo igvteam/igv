@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -390,7 +391,7 @@ public class Main {
     static public class IGVArgs {
         private String batchFile = null;
         private String sessionFile = null;
-        private String dataFileString = null;
+        private java.util.List<String> dataFileStrings = null;
         private String locusString = null;
         private String propertyOverrides = null;
         private String genomeId = null;
@@ -424,6 +425,7 @@ public class Main {
             CmdLineParser.Option indexFileOption = parser.addStringOption('i', "indexFile");
             CmdLineParser.Option coverageFileOption = parser.addStringOption('c', "coverageFile");
             CmdLineParser.Option nameOption = parser.addStringOption('n', "name");
+            CmdLineParser.Option locusOption = parser.addStringOption('l', "locus");
             CmdLineParser.Option igvDirectoryOption = parser.addStringOption("igvDirectory");
             CmdLineParser.Option forceVersionOption = parser.addStringOption("forceVersion");
 
@@ -442,6 +444,7 @@ public class Main {
             dataServerURL = getDecodedValue(parser, dataServerOption);
             genomeServerURL = getDecodedValue(parser, genomeServerOption);
             name = (String) parser.getOptionValue(nameOption);
+            locusString = (String) parser.getOptionValue(locusOption);
 
             String indexFilePath = (String) parser.getOptionValue(indexFileOption);
             if (indexFilePath != null) {
@@ -467,42 +470,83 @@ public class Main {
             String[] nonOptionArgs = parser.getRemainingArgs();
 
             // The Mac app launcher sometimes inserts "" into the command line.  Filter empty strings
-            if(nonOptionArgs.length > 0) {
+            if (nonOptionArgs.length > 0) {
                 nonOptionArgs = Arrays.stream(nonOptionArgs).filter(s -> !s.isEmpty()).toArray(String[]::new);
             }
 
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
 
-                String firstArg = maybeDecodePath(nonOptionArgs[0]);
+                if (locusString != null || nonOptionArgs.length > 2) {
 
+                    decodeNonOptionArgs(nonOptionArgs);
 
-                if (firstArg != null) {
-                    log.info("Loading: " + firstArg);
-                    if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
-                            || firstArg.endsWith(".session")) {
-                        sessionFile = firstArg;
+                } else if (nonOptionArgs.length == 1) {
+
+                        decodeNonOptionArgsLegacy(nonOptionArgs);
+
+                } else {  //nonOptionArgs.length == 2
+
+                    // If the second argument is not a file or URL we assume its a locus => legacy
+                    String secondArg = maybeDecodePath(nonOptionArgs[1]);
+                    if (FileUtils.isRemote(secondArg) || (new File(secondArg)).exists()) {
+                        decodeNonOptionArgs(nonOptionArgs);
                     } else {
-                        dataFileString = firstArg;
+                        decodeNonOptionArgsLegacy(nonOptionArgs);
                     }
                 }
-                if (nonOptionArgs.length > 1) {
-                    locusString = nonOptionArgs[1];
+            }
+        }
+
+        private void decodeNonOptionArgsLegacy(String[] nonOptionArgs) {
+
+            dataFileStrings = new ArrayList<>();
+
+            String firstArg = maybeDecodePath(nonOptionArgs[0]);
+
+            if (firstArg != null) {
+                log.info("Loading: " + firstArg);
+                if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
+                        || firstArg.endsWith(".session")) {
+                    sessionFile = firstArg;
+                } else {
+                    String[] paths = firstArg.split(",");
+                    for (String p : paths) {
+                        dataFileStrings.add(p);
+                    }
                 }
             }
+            if (nonOptionArgs.length == 2) {
+
+                locusString = nonOptionArgs[1];
+            }
+        }
+
+        /**
+         * IGV version > 2.5 => non-optional arguments are files
+         *
+         * @param nonOptionArgs
+         */
+        private void decodeNonOptionArgs(String[] nonOptionArgs) {
+            dataFileStrings = new ArrayList<>();
+            for (String arg : nonOptionArgs) {
+                dataFileStrings.add(maybeDecodePath(arg));
+            }
+
         }
 
         private String maybeDecodePath(String path) {
 
-            if (FileUtils.isRemote(path)) {
+            if (FileUtils.resourceExists(path)) {
+                return path;
+            } else if (FileUtils.isRemote(path)) {
+                return URLDecoder.decode(path);
+            } else if (path.contains("%2C") || path.contains("%3F") || path.contains("%2B") || path.contains("%2F")) {
                 return URLDecoder.decode(path);
             } else {
-                if (FileUtils.resourceExists(path)) {
-                    return path;
-                } else {
-                    return URLDecoder.decode(path);
-                }
+                return path;
             }
         }
+
 
         private String getDecodedValue(CmdLineParser parser, CmdLineParser.Option option) {
 
@@ -517,39 +561,6 @@ public class Main {
             }
         }
 
-        private String checkEqualsAndExtractParamter(String arg) {
-            if (arg == null) return null;
-            int eq = arg.indexOf("=");
-            if (eq > 0) {
-                // we got a key=value
-                String key = arg.substring(0, eq);
-                String val = arg.substring(eq + 1);
-
-                if (key.equalsIgnoreCase("sessionURL") || key.equalsIgnoreCase("file")) {
-
-                    if (val.endsWith(".xml") || val.endsWith(".php") || val.endsWith(".php3")
-                            || val.endsWith(".session")) {
-                        log.info("Got session: " + key + "=" + val);
-                        sessionFile = val;
-
-                    } else {
-                        log.info("Got dataFileString: " + key + "=" + val);
-                        dataFileString = val;
-                    }
-                    return null;
-                } else if (key.equalsIgnoreCase("locus") || key.equalsIgnoreCase("position")) {
-                    log.info("Got locus: " + key + "=" + val);
-                    locusString = val;
-                    return null;
-                } else {
-                    log.info("Currently not handled: " + key + "=" + val);
-                    return null;
-                }
-
-            }
-            return arg;
-        }
-
         public String getBatchFile() {
             return batchFile;
         }
@@ -558,8 +569,8 @@ public class Main {
             return sessionFile;
         }
 
-        public String getDataFileString() {
-            return dataFileString;
+        public java.util.List<String> getDataFileStrings() {
+            return dataFileStrings;
         }
 
         public String getLocusString() {
