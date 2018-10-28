@@ -4,7 +4,7 @@ Integrative Genomics Viewer - dekstop genome visualization tool for Mac, Windows
 
 ### Building
 
-These instructions are meant for developers interested in work on the IGV code.  For normal use,
+These instructions are meant for developers interested in working on the IGV code.  For normal use,
 we recommend the pre-built releases available at [http://software.broadinstitute.org/software/igv/download](http://software.broadinstitute.org/software/igv/download).
 
 
