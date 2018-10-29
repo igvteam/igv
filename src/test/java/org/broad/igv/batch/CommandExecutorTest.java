@@ -432,6 +432,34 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     }
 
     @Test
+    public void testSetLogScale() throws Exception {
+        String dataFile = TestUtils.DATA_DIR + "igv/recombRate.ens.igv.txt";
+        Map<String, String> params = null;
+        String name = null;
+        String format = null;
+        String index = null;
+        String coverage = null;
+        String locus = null;
+        boolean merge = true;
+        exec.loadFiles(dataFile, index, coverage, name, format, locus, merge, params);
+
+        String[] goodArgSet = new String[]{"true"};
+        for (String arg : goodArgSet) {
+            String resp = exec.execute("setLogScale " + arg);
+            assertEquals("OK", resp);
+        }
+
+        String[] badArgSet = new String[]{"bad"};
+        for (String arg : badArgSet) {
+            String resp = exec.execute("setLogScale " + arg);
+            assertTrue(resp.toLowerCase().startsWith("error"));
+        }
+
+
+    }
+
+
+    @Test
     public void testLoadGenomesById() throws Exception {
         String[] genomeIds = new String[]{"hg19", "mm10", "rn5", "canFam2", "bosTau7", "sacCer3", "WS220"};
         for (String genomeId : genomeIds) {

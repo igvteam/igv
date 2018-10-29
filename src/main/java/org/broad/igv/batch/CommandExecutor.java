@@ -43,6 +43,7 @@ import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -151,6 +152,8 @@ public class CommandExecutor {
                 igv.tweakPanelDivider();
             } else if (cmd.equalsIgnoreCase("setDataRange")) {
                 result = this.setDataRange(param1, param2);
+            } else if (cmd.equalsIgnoreCase("setLogScale")) {
+                result = this.setLogScale(param1, param2);
             } else if (cmd.equalsIgnoreCase("maxpanelheight") && param1 != null) {
                 return setMaxPanelHeight(param1);
             } else if (cmd.equalsIgnoreCase("tofront")) {
@@ -263,6 +266,30 @@ public class CommandExecutor {
                 track.setAutoScale(false);
             }
         }
+        return "OK";
+    }
+
+    private String setLogScale(String logScaleString, String trackName) {
+        List<Track> tracks = igv.getAllTracks();
+        boolean logScale;
+        try {
+            if(logScaleString.equalsIgnoreCase("true") || logScaleString.equalsIgnoreCase("false")){
+                logScale = Boolean.valueOf(logScaleString);
+            }else{
+                return "ERROR: logscale value (" + logScaleString + ")is not 'true' or 'false'.";
+            }
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
+        DataRange.Type scaleType = logScale==true ?
+                DataRange.Type.LOG :
+                DataRange.Type.LINEAR;
+        for (Track track : tracks) {
+            if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
+                    track.getDataRange().setType(scaleType);
+            }
+        }
+        IGV.getInstance().revalidateTrackPanels();
         return "OK";
     }
 
