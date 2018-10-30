@@ -26,6 +26,7 @@
 package org.broad.igv.track;
 
 import htsjdk.tribble.AbstractFeatureReader;
+import org.apache.tools.ant.taskdefs.condition.Http;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataTile;
@@ -37,6 +38,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.IndexCreatorDialog;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.CollUtils;
@@ -74,6 +76,14 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
         String idxPath = ResourceLocator.indexFile(locator);
+        if(FileUtils.isRemote(idxPath)) {
+            idxPath = HttpUtils.createURL(idxPath).toString();
+        }
+        String path = locator.getPath();
+        if(FileUtils.isRemote(path)) {
+            path = HttpUtils.createURL(path).toString();
+        }
+
         boolean indexExists = FileUtils.resourceExists(idxPath);
 
         // Optionally let the user create an index.
@@ -87,9 +97,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             }
         }
 
-        //We make sure to require and index if one exists, so it gets loaded
-        //TODO Temporary, shouldn't be necessary pending a tribble update
-        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(locator.getPath(), idxPath, codec, indexRequired || indexExists);
+        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
 
         if (basicReader.hasIndex()) {
             return new IndexedFeatureSource(basicReader, codec, locator, genome, useCache);

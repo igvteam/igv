@@ -38,12 +38,15 @@ import org.broad.igv.feature.dsi.DSICodec;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.gwas.EQTLCodec;
 import org.broad.igv.peaks.PeakCodec;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -159,6 +162,14 @@ public class CodecFactory {
     private static AsciiFeatureCodec getVCFCodec(ResourceLocator locator) {
 
         String path = locator.getPath();
+
+        if(FileUtils.isRemote(path)) {
+            try {
+                path = HttpUtils.createURL(path).toString();
+            } catch (MalformedURLException e) {
+                log.error("Eror translating url", e);
+            }
+        }
 
         BufferedReader reader = null;
 
