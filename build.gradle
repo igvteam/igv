@@ -295,7 +295,7 @@ task createToolsDist(type: Copy, dependsOn: toolJar)  {
         into "lib"
     }
     
-    with copySpec { from ("genomes") { } into "genomes" }
+    with copySpec { from ("genomes/sizes") { } into "lib/genomes" }
 
     into "${buildDir}/IGVTools-dist"
 }
