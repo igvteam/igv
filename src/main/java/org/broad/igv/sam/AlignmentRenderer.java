@@ -90,7 +90,6 @@ public class AlignmentRenderer {
     private static Map<String, AlignmentTrack.OrientationType> f2f1OrientationTypes;
     private static Map<String, AlignmentTrack.OrientationType> rfOrientationTypes;
     private static Map<AlignmentTrack.OrientationType, Color> typeToColorMap;
-    public static HashMap<Character, Color> nucleotideColors;
 
     public static final HSLColorTable tenXColorTable1 = new HSLColorTable(30);
     public static final HSLColorTable tenXColorTable2 = new HSLColorTable(270);
@@ -106,32 +105,6 @@ public class AlignmentRenderer {
     private static ColorTable zmwColors;
     private static Map<String, ColorTable> tagValueColors;
     private static ColorTable defaultTagColors;
-
-    private static void setNucleotideColors() {
-
-        IGVPreferences prefs = PreferencesManager.getPreferences();
-
-        nucleotideColors = new HashMap();
-
-        Color a = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_A), Color.green);
-        Color c = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_C), Color.blue);
-        Color t = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_T), Color.red);
-        Color g = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_G), Color.gray);
-        Color n = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_N), new Color(64, 64, 64));
-
-        nucleotideColors.put('A', a);
-        nucleotideColors.put('a', a);
-        nucleotideColors.put('C', c);
-        nucleotideColors.put('c', c);
-        nucleotideColors.put('T', t);
-        nucleotideColors.put('t', t);
-        nucleotideColors.put('G', g);
-        nucleotideColors.put('g', g);
-        nucleotideColors.put('N', n);
-        nucleotideColors.put('n', n);
-        nucleotideColors.put('-', Color.lightGray);
-
-    }
 
     private static void initializeTagTypes() {
         // pre-seed from orientation colors
@@ -236,7 +209,6 @@ public class AlignmentRenderer {
 
     static {
         initializeTagTypes();
-        setNucleotideColors();
         initializeTagColors();
     }
 
@@ -430,15 +402,15 @@ public class AlignmentRenderer {
         double locScale = context.getScale();
 
         Color alignmentColor = getAlignmentColor(alignment, renderOptions);
-     //   Graphics2D g = context.getGraphics2D("ALIGNMENT");
-     //   g.setColor(alignmentColor);
+        //   Graphics2D g = context.getGraphics2D("ALIGNMENT");
+        //   g.setColor(alignmentColor);
 
 
         List<Alignment> barcodedAlignments = alignment.alignments;
 
         if (barcodedAlignments.size() > 0) {
 
-            boolean mixedStrand =  (alignment instanceof LinkedAlignment && alignment.getStrand() == Strand.NONE);
+            boolean mixedStrand = (alignment instanceof LinkedAlignment && alignment.getStrand() == Strand.NONE);
             Alignment firstAlignment = barcodedAlignments.get(0);
 
             if (barcodedAlignments.size() > 1) {
@@ -456,10 +428,10 @@ public class AlignmentRenderer {
                 boolean overlapped = false;
                 Alignment al = barcodedAlignments.get(i);
                 if (al.isNegativeStrand()) {
-                    if(mixedStrand) alignmentColor = negStrandColor;
+                    if (mixedStrand) alignmentColor = negStrandColor;
                     overlapped = (i > 0 && barcodedAlignments.get(i - 1).getAlignmentEnd() > al.getAlignmentStart());
                 } else {
-                    if(mixedStrand) alignmentColor = posStrandColor;
+                    if (mixedStrand) alignmentColor = posStrandColor;
                     overlapped = i < barcodedAlignments.size() - 1 && al.getAlignmentEnd() > barcodedAlignments.get(i + 1).getAlignmentStart();
                 }
                 drawAlignment(al, rowRect, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, overlapped, prefs);
@@ -766,7 +738,7 @@ public class AlignmentRenderer {
                 contextChromEnd = Math.ceil(context.getEndLocation());
 
         // BED-style start coordinate for the next alignment block to draw.
-        double blockChromStart =   Math.max(alignmentChromStart, contextChromStart);
+        double blockChromStart = Math.max(alignmentChromStart, contextChromStart);
 
         // Draw aligment blocks separated by gaps.  Define the blocks by walking through the gap list,
         // skipping over gaps that are too small to show at the curren resolution.
@@ -892,7 +864,7 @@ public class AlignmentRenderer {
                            Color alignmentColor,
                            boolean leaveMargin,
                            AlignmentTrack.RenderOptions renderOptions,
-    IGVPreferences prefs) {
+                           IGVPreferences prefs) {
 
         boolean isSoftClipped = block.isSoftClipped();
 
@@ -958,9 +930,8 @@ public class AlignmentRenderer {
                 Color color = null;
                 if (bisulfiteMode) {
                     color = bisinfo.getDisplayColor(idx);
-                }
-                else {
-                    color = nucleotideColors.get(c);
+                } else {
+                    color = SequenceRenderer.nucleotideColors.get(c);
                 }
                 if (color == null) {
                     color = Color.black;
@@ -988,9 +959,9 @@ public class AlignmentRenderer {
 
                 final boolean showBase =
                         isSoftClipped ||
-                        bisulfiteMode ||
-                        // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
-                        (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
+                                bisulfiteMode ||
+                                // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
+                                (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
                 if (showBase) {
                     drawBase(g, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), bisulfiteMode, bisstatus);
                 }
@@ -1015,7 +986,11 @@ public class AlignmentRenderer {
      */
     private void drawBase(Graphics2D g, Color color, char c, int pX, int pY, int dX, int dY, boolean bisulfiteMode,
                           DisplayStatus bisstatus) {
-        if (((dY >= 12) && (dX >= dY)) && (!bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER)))) {
+
+        int fontSize = Math.min(dX, 12);
+        if (fontSize >= 8 && (!bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER)))) {
+            Font f = FontManager.getFont(Font.BOLD, fontSize);
+            g.setFont(f);
             g.setColor(color);
             GraphicUtils.drawCenteredText(new char[]{c}, pX, pY, dX, dY, g);
         } else {
@@ -1123,7 +1098,7 @@ public class AlignmentRenderer {
 
             for (AlignmentBlock aBlock : insertions) {
 
-                if(aBlock.getStart() == expandedPosition) continue;   // Skip, will be drawn expanded
+                if (aBlock.getStart() == expandedPosition) continue;   // Skip, will be drawn expanded
 
                 int x = (int) ((aBlock.getStart() - origin) / locScale);
                 int bpWidth = aBlock.getBases().length;
@@ -1139,7 +1114,7 @@ public class AlignmentRenderer {
                 }
 
                 if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP)) {
-                       // && (!quickConsensus || alignmentCounts.isConsensusInsertion(aBlock.getStart(), snpThreshold))) {
+                    // && (!quickConsensus || alignmentCounts.isConsensusInsertion(aBlock.getStart(), snpThreshold))) {
                     if (flagLargeIndels && bpWidth > largeInsertionsThreshold) {
                         drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"),
                                 true,
@@ -1230,7 +1205,7 @@ public class AlignmentRenderer {
             case YC_TAG:
 
                 Color ycColor = alignment.getYcColor();
-                if(ycColor != null) {
+                if (ycColor != null) {
                     c = ycColor;
                 }
                 break;
@@ -1369,11 +1344,11 @@ public class AlignmentRenderer {
                     }
                 }
                 break;
-       //     case LINK_STRAND:
-       //         if (alignment instanceof LinkedAlignment && ((LinkedAlignment) alignment).getStrand() == Strand.NONE) {
-       //             c = LL_COLOR;
-       //         }
-       //         break;
+            //     case LINK_STRAND:
+            //         if (alignment instanceof LinkedAlignment && ((LinkedAlignment) alignment).getStrand() == Strand.NONE) {
+            //             c = LL_COLOR;
+            //         }
+            //         break;
 
 
             default:

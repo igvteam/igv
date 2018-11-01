@@ -38,10 +38,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.renderer.BarChartRenderer;
-import org.broad.igv.renderer.DataRange;
-import org.broad.igv.renderer.DataRenderer;
-import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.renderer.*;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -620,7 +617,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
             int count = interval.getCount(pos, (byte) nucleotide);
 
-            Color c = AlignmentRenderer.nucleotideColors.get(nucleotide);
+            Color c = SequenceRenderer.nucleotideColors.get(nucleotide);
 
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
@@ -730,7 +727,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
         for (char nucleotide : nucleotides) {
 
-            Color c = AlignmentRenderer.nucleotideColors.get(nucleotide);
+            Color c = SequenceRenderer.nucleotideColors.get(nucleotide);
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
             int count = isPositive ? interval.getPosCount(pos, (byte) nucleotide) :
