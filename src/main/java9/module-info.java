@@ -19,7 +19,6 @@ module org.igv {
     requires java.sql;
     requires java.xml;
     requires jdk.xml.dom;
-    requires jfreechart;
     requires log4j;
     requires org.apache.logging.log4j;
     requires org.apache.logging.log4j.core;
