@@ -27,8 +27,6 @@ package org.broad.igv.sam.reader;
 
 
 import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.peaks.Peak;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.FeatureWrappedAlignment;
 import org.broad.igv.feature.tribble.PSLCodec;

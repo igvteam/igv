@@ -50,7 +50,6 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferenceEditorNew;
 import org.broad.igv.prefs.PreferencesEditor;
@@ -1311,28 +1310,6 @@ public class IGV implements IGVEventObserver {
     }
 
     JCheckBoxMenuItem showPeakMenuItem;
-    PeakCommandBar peakCommandBar;
-
-    public void addCommandBar(PeakCommandBar cb) {
-        this.peakCommandBar = cb;
-        contentPane.add(peakCommandBar);
-        contentPane.invalidate();
-
-        showPeakMenuItem = new JCheckBoxMenuItem("Show peaks toolbar");
-        showPeakMenuItem.setSelected(true);
-        showPeakMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (showPeakMenuItem.isSelected()) {
-                    contentPane.add(peakCommandBar);
-                } else {
-                    contentPane.remove(peakCommandBar);
-                }
-            }
-        });
-
-        menuBar.getViewMenu().addSeparator();
-        menuBar.getViewMenu().add(showPeakMenuItem);
-    }
 
     public boolean isShowDetailsOnClick() {
         return contentPane != null && contentPane.getCommandBar().getDetailsBehavior() == ShowDetailsBehavior.CLICK;

@@ -63,7 +63,6 @@ import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.extview.ExtendViewClient;
-import org.broad.igv.util.stats.KMPlotFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -82,18 +81,6 @@ public class TrackMenuUtils {
     final static String LEADING_HEADING_SPACER = "  ";
 
     private static List<TrackMenuItemBuilder> trackMenuItems = new ArrayList<TrackMenuItemBuilder>();
-
-    /**
-     * Called by plugins to add a listener, which is then called when TrackMenus are created
-     * to generate menu entries.
-     *
-     * @param builder
-     * @api
-     */
-    public static void addTrackMenuItemBuilder(TrackMenuItemBuilder builder) {
-        trackMenuItems.add(builder);
-    }
-
 
     /**
      * Return a popup menu with items applicable to the collection of tracks.
@@ -1530,28 +1517,6 @@ public class TrackMenuUtils {
         return item;
     }
 
-    public static JMenuItem getChangeKMPlotItem(final Collection<Track> selectedTracks) {
-        // Change track height by attribute
-        JMenuItem item = new JMenuItem("Kaplan-Meier Plot...");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-
-                // If one or fewer tracks are selected assume the intent is to use all tracks.  A right-click
-                // will always result in one selected track.
-                Collection<Track> tracks = selectedTracks.size() > 1 ? selectedTracks :
-                        IGV.getInstance().getAllTracks();
-                KMPlotFrame frame = new KMPlotFrame(tracks);
-                frame.setVisible(true);
-            }
-        });
-
-        // The Kaplan-Meier plot requires sample information, specifically survival, sample, and censure.  We
-        // can't know if these columns exist, but we can at least know if sample-info has been loaded.
-        // 3-4 columns always exist by default, more indicate at least some sample attributes are defined.
-        boolean sampleInfoLoaded = AttributeManager.getInstance().getAttributeNames().size() > 4;
-        item.setEnabled(sampleInfoLoaded);
-        return item;
-    }
 
     public static JMenuItem getChangeFeatureWindow(final Collection<Track> selectedTracks) {
         // Change track height by attribute

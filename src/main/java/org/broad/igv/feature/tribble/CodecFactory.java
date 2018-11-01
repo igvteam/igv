@@ -37,7 +37,6 @@ import org.broad.igv.feature.FeatureType;
 import org.broad.igv.feature.dsi.DSICodec;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.gwas.EQTLCodec;
-import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -120,8 +119,6 @@ public class CodecFactory {
             return new MUTCodec(path, genome);
         } else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
             return new EncodePeakCodec(genome);
-        } else if (fn.endsWith(".peak")) {
-            return new PeakCodec(genome);
         } else if (fn.endsWith(".snp") || fn.endsWith(".ucscsnp")) {
             return new UCSCSnpCodec(genome);
         } else if (fn.endsWith(".eqtl")) {

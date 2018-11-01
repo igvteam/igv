@@ -71,7 +71,6 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.methyl.MethylTrack;
-import org.broad.igv.peaks.PeakTrack;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.*;
@@ -185,9 +184,7 @@ public class TrackLoader {
                 }
             } else if (typeString.endsWith(".maf.dict")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-            } else if (typeString.contains(".peak.bin")) {
-                loadPeakTrack(locator, newTracks, genome);
-            } else if (typeString.endsWith("mage-tab") || ExpressionFileParser.parsableMAGE_TAB(locator)) {
+            }  else if (typeString.endsWith("mage-tab") || ExpressionFileParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".db") || typeString.endsWith(".dbn")) {
@@ -837,12 +834,6 @@ public class TrackLoader {
         t.setName("Multiple Alignments");
         newTracks.add(t);
     }
-
-    private void loadPeakTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        PeakTrack t = new PeakTrack(locator, genome);
-        newTracks.add(t);
-    }
-
 
     private void loadAlignmentsTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
