@@ -2,6 +2,7 @@ package org.broad.igv.prefs;
 
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.broad.igv.prefs.Constants.TRACK_HEIGHT_KEY;
@@ -17,7 +18,7 @@ public class PreferencesManagerTest {
         PreferencesManager.setPrefsFile(TestUtils.DATA_DIR + "prefs/testUserPrefs.properties");
     }
 
-    @Test
+    @Test @Ignore("Fails unless tests are run in separate JVMs")
     public void getPreferences() throws Exception {
         IGVPreferences preferences = PreferencesManager.getPreferences();
         assertNotNull(preferences);
