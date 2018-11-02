@@ -255,7 +255,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         tstQuery(path, sequence, start, end, false, 10000);
     }
 
-    @Test
+    @Test @Ignore("Fails unless tests are run in separate JVMs")
     public void testQueryPiledUp() throws Exception {
         PreferencesManager.getPreferences().put(Constants.SAM_MAX_VISIBLE_RANGE, "5");
         PreferencesManager.getPreferences().put(Constants.SAM_DOWNSAMPLE_READS, "false");
