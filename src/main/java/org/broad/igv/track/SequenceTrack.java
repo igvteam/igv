@@ -30,6 +30,8 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.AminoAcidManager;
 import org.broad.igv.feature.AminoAcidSequence;
 import org.broad.igv.feature.Chromosome;
@@ -42,8 +44,6 @@ import org.broad.igv.renderer.Renderer;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -159,7 +159,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
         Font font = FontManager.getFont(fontSize);
 
-        boolean visible = this.sequenceVisible.values().stream().anyMatch(v -> v==true);
+        boolean visible = this.sequenceVisible.values().stream().anyMatch(v -> v == true);
 
         if (visible) {
             graphics.setFont(font);
@@ -220,20 +220,24 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
         Genome genome = currentGenome;
         String sequence = new String(genome.getSequence(chr, start, end));
-        String s1 = sequence;
-        String s2 = sequence.substring(1);
-        String s3 = sequence.substring(2);
-        String s4 = sequence;
-        String s5 = sequence.substring(0, sequence.length() - 1);
-        String s6 = sequence.substring(0, sequence.length() - 2);
 
-        AminoAcidSequence aa1 = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start, s1);
-        AminoAcidSequence aa2 = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + 1, s2);
-        AminoAcidSequence aa3 = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + 2, s3);
+        int mod = start % 3;
+        int n1 = normalize3(3 - mod);
+        int n2 = normalize3(n1 + 1);
+        int n3 = normalize3(n2 + 1);
 
-        AminoAcidSequence aa4 = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, s4);
-        AminoAcidSequence aa5 = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, s5);
-        AminoAcidSequence aa6 = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, s6);
+        AminoAcidSequence[] posAA = {
+                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n1, sequence.substring(n1)),
+                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n2, sequence.substring(n2)),
+                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n3, sequence.substring(n3))
+        };
+
+        final int len = sequence.length();
+        AminoAcidSequence[] negAA = {
+                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n1)),
+                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n2)),
+                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n3))
+        };
 
         // Now trim sequence to prevent dangling AAs
         int deltaStart = start == 0 ? 0 : 2;
@@ -241,10 +245,14 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         start += deltaStart;
         end -= deltaEnd;
 
-        byte[] seq = sequence.substring(deltaStart, sequence.length() - deltaEnd).getBytes();
+        byte[] seq = sequence.substring(deltaStart, len - deltaEnd).getBytes();
 
-        SeqCache cache = new SeqCache(start, seq, aa1, aa2, aa3, aa4, aa5, aa6);
+        SeqCache cache = new SeqCache(start, seq, posAA, negAA);
         loadedIntervalCache.put(referenceFrame.getName(), new LoadedDataInterval<>(chr, start, end, cache));
+    }
+
+    private int normalize3(int n) {
+        return n == 3 ? 0 : n;
     }
 
     /**
@@ -261,7 +269,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
                 !context.getChr().equals(Globals.CHR_ALL);
         final String frameName = context.getReferenceFrame().getName();
 
-        if(!sequenceVisible.containsKey(frameName)) sequenceVisible.put(frameName, false);  // Default value
+        if (!sequenceVisible.containsKey(frameName)) sequenceVisible.put(frameName, false);  // Default value
 
         if (visible != sequenceVisible.get(frameName)) {
             sequenceVisible.put(frameName, visible);
@@ -279,7 +287,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public int getHeight() {
-        boolean visible = this.sequenceVisible.values().stream().anyMatch(v -> v==true);
+        boolean visible = this.sequenceVisible.values().stream().anyMatch(v -> v == true);
         return visible ? SEQUENCE_HEIGHT +
                 (shouldShowTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0) :
                 0;
@@ -417,12 +425,11 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         public AminoAcidSequence[] negAA;
 
 
-        public SeqCache(int start, byte[] seq, AminoAcidSequence aa1, AminoAcidSequence aa2, AminoAcidSequence aa3,
-                        AminoAcidSequence aa4, AminoAcidSequence aa5, AminoAcidSequence aa6) {
+        public SeqCache(int start, byte[] seq, AminoAcidSequence [] posAA, AminoAcidSequence [] negAA) {
             this.start = start;
             this.seq = seq;
-            posAA = new AminoAcidSequence[]{aa1, aa2, aa3};
-            negAA = new AminoAcidSequence[]{aa4, aa5, aa6};
+            this.posAA = posAA;
+            this.negAA = negAA;
         }
     }
 
