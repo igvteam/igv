@@ -2,8 +2,8 @@
 <Global name="Annotations" version="1">
 
     <Category name="Genes">
-        <Resource name="Ensemble Genes"
-                  path="http://www.broadinstitute.org/igvdata/annotations/hg19/EnsemblGenes.ensGene">
+        <Resource name="Ensembl Genes"
+                  path="https://s3.amazonaws.com/igv.org.genomes/hg19/ensGene.txt.gz">
         </Resource>
         <Resource name="UCSC Genes" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?g=knownGene"
                   path="http://www.broadinstitute.org/igvdata/annotations/hg19/UCSCGenes.ucscGene">
