@@ -816,7 +816,12 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             if (cs != null) {
                 cs.setPosEnd(max);
             }
-            setDataRange(new DataRange(0, 0, max));
+            if(this.dataRange == null) {
+                setDataRange(new DataRange(0, 0, max));
+            }
+            else {
+                this.dataRange.maximum = max;
+            }
             coverageRenderer.render(scores, context, inputRect, this);
         }
     }

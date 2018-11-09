@@ -61,7 +61,7 @@ public class DataRange implements Persistable {
     /**
      * Maximum data value displayed. This value is required, no default
      */
-    private float maximum;
+    public float maximum;
     /**
      * If true the Y axis is "flipped" (most negative value at top)
      */
