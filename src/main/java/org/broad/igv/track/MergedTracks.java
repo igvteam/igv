@@ -28,12 +28,16 @@ package org.broad.igv.track;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.renderer.DataRenderer;
 import org.broad.igv.session.IGVSessionReader;
 
+import org.broad.igv.session.RendererFactory;
+import org.broad.igv.session.SessionElement;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.swing.*;
@@ -335,6 +339,26 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         } else {
             return null;
         }
+    }
+
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        for (DataTrack track : memberTracks) {
+            Element trackElement = document.createElement(SessionElement.TRACK);
+            track.marshalXML(document, trackElement);
+            element.appendChild(trackElement);
+        }
+
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        // Un-marshalling handled in IGVSessionReader
 
     }
 

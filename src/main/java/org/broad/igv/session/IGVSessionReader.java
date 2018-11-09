@@ -275,8 +275,6 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        //TODO Remove these nearly identical if/then statements
-
         if (!hasGeneTrack && igv.hasGeneTrack()) {
             //Need to remove gene track if it was loaded because it's not supposed to be in the session
             igv.removeTracks(Arrays.<Track>asList(GenomeManager.getInstance().getCurrentGenome().getGeneTrack()));

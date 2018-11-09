@@ -1055,7 +1055,9 @@ public abstract class AbstractTrack implements Track {
 
             element.setAttribute("autoScale", String.valueOf(this.autoScale));
 
-            element.setAttribute("windowFunction", String.valueOf(this.getWindowFunction()));
+            if(this.getWindowFunction() != null) {
+                element.setAttribute("windowFunction", String.valueOf(this.getWindowFunction()));
+            }
         }
 
     }
@@ -1118,7 +1120,11 @@ public abstract class AbstractTrack implements Track {
         }
 
         if (element.hasAttribute("windowFunction")) {
-            this.setWindowFunction(WindowFunction.valueOf(element.getAttribute("windowFunction")));
+            try {
+                this.setWindowFunction(WindowFunction.valueOf(element.getAttribute("windowFunction")));
+            } catch (IllegalArgumentException e) {
+                log.error("Unknown window function: " + element.getAttribute("windowFunction"), e);
+            }
         }
 
         // Set DataRange -- legacy (pre V3 sessions)
