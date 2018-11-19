@@ -1299,13 +1299,13 @@ public class AlignmentRenderer {
                 break;
             case MOVIE:
                 readNameParts = alignment.getReadName().split("/");
-                if (readNameParts.length == 3) {
+                if (readNameParts.length >= 3) {
                     c = movieColors.get(readNameParts[0]);
                 }
                 break;
             case ZMW:
                 readNameParts = alignment.getReadName().split("/");
-                if (readNameParts.length == 3) {
+                if (readNameParts.length >= 3) {
                     c = zmwColors.get(readNameParts[0] + "/" + readNameParts[1]);
                 }
                 break;

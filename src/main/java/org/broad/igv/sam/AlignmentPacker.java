@@ -459,14 +459,14 @@ public class AlignmentPacker {
                 }
             case MOVIE: // group PacBio reads by movie
                 readNameParts = al.getReadName().split("/");
-                if (readNameParts.length != 3) {
+                if (readNameParts.length < 3) {
                     return "";
                 }
                 movieName = readNameParts[0];
                 return movieName;
             case ZMW: // group PacBio reads by ZMW
                 readNameParts = al.getReadName().split("/");
-                if (readNameParts.length != 3) {
+                if (readNameParts.length < 3) {
                     return "";
                 }
                 movieName = readNameParts[0];
