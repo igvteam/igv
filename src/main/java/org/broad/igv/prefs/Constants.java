@@ -284,7 +284,8 @@ final public class Constants {
             SAM_QUICK_CONSENSUS_MODE,
             SAM_ALLELE_THRESHOLD,
             SAM_FLAG_LARGE_INDELS,
-            SAM_LARGE_INDELS_THRESHOLD
+            SAM_LARGE_INDELS_THRESHOLD,
+            SAM_SHOW_INSERTION_MARKERS
     );
 
 }
