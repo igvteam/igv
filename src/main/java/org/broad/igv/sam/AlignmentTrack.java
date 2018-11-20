@@ -683,12 +683,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         maximumHeight = Integer.MAX_VALUE;
 
         // Divide rectangle into equal height levels
-        double y = inputRect.getY();
+        double y = inputRect.getY() - 3;
         double h;
         if (getDisplayMode() == DisplayMode.EXPANDED) {
             h = expandedHeight;
-        } else {
-
+        } else if (getDisplayMode() == DisplayMode.COLLAPSED) {
+            h = collapsedHeight;
+        }
+        else {
             int visHeight = visibleRect.height;
             int depth = dataManager.getNLevels();
             if (depth == 0) {
