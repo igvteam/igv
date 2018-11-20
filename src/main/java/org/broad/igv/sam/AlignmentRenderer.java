@@ -987,7 +987,7 @@ public class AlignmentRenderer {
     private void drawBase(Graphics2D g, Color color, char c, int pX, int pY, int dX, int dY, boolean bisulfiteMode,
                           DisplayStatus bisstatus) {
 
-        int fontSize = Math.min(dX, 12);
+        int fontSize = Math.min(Math.min(dX,dY), 12);
         if (fontSize >= 8 && (!bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER)))) {
             Font f = FontManager.getFont(Font.BOLD, fontSize);
             g.setFont(f);
