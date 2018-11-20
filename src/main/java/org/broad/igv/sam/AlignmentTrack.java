@@ -445,7 +445,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         downsampleRect.height = DOWNAMPLED_ROW_HEIGHT;
         renderDownsampledIntervals(context, downsampleRect);
 
-        if (renderOptions.drawInsertionIntervals) {
+        if (renderOptions.isDrawInsertionIntervals()) {
             insertionRect = new Rectangle(rect);
             insertionRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0;
             insertionRect.height = INSERTION_ROW_HEIGHT;
@@ -514,7 +514,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
         insertionIntervals.clear();
         for (InsertionMarker insertionMarker : intervals) {
-
             if (hideSmallIndex && insertionMarker.size < smallIndelThreshold) continue;
 
             final double scale = context.getScale();
@@ -683,12 +682,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         maximumHeight = Integer.MAX_VALUE;
 
         // Divide rectangle into equal height levels
-        double y = inputRect.getY();
+        double y = inputRect.getY() - 3;
         double h;
         if (getDisplayMode() == DisplayMode.EXPANDED) {
             h = expandedHeight;
-        } else {
-
+        } else if (getDisplayMode() == DisplayMode.COLLAPSED) {
+            h = collapsedHeight;
+        }
+        else {
             int visHeight = visibleRect.height;
             int depth = dataManager.getNLevels();
             if (depth == 0) {
@@ -2328,11 +2329,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean pairedArcView;
         private Boolean flagZeroQualityAlignments;
         private Range groupByPos;
+        private Boolean drawInsertionIntervals;
 
 
         AlignmentTrack.BisulfiteContext bisulfiteContext = BisulfiteContext.CG;
         Map<String, PEStats> peStats;
-        boolean drawInsertionIntervals = false;
 
         DefaultValues defaultValues;
 
@@ -2438,6 +2439,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.linkedReads = linkedReads;
         }
 
+        public void setDrawInsertionIntervals(boolean drawInsertionIntervals) {
+            this.drawInsertionIntervals = drawInsertionIntervals;
+        }
+
 
         // getters
         public int getMinInsertSize() {
@@ -2469,7 +2474,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         public boolean isDrawInsertionIntervals() {
-            return drawInsertionIntervals;
+            return drawInsertionIntervals == null ? defaultValues.drawInsertionIntervals : drawInsertionIntervals;
         }
 
         public boolean isFlagZeroQualityAlignments() {
@@ -2706,6 +2711,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             public boolean pairedArcView;
             public boolean flagZeroQualityAlignments;
             public Range groupByPos;
+            public boolean drawInsertionIntervals;
 
             DefaultValues(IGVPreferences prefs) {
 
@@ -2752,6 +2758,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                         this.groupByPos = new Range(posParts[0], posChromStart, posChromStart + 1);
                     }
                 }
+
+                drawInsertionIntervals = prefs.getAsBoolean(SAM_SHOW_INSERTION_MARKERS);
             }
         }
     }
