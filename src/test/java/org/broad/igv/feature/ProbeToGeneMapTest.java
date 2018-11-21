@@ -65,7 +65,7 @@ public class ProbeToGeneMapTest {
     /**
      * Test of affymetrix critera.
      */
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testAffy() throws FileNotFoundException, IOException {
         File f = new File(TestUtils.LARGE_DATA_DIR + "affy_probe_gene_mapping.txt");
         BufferedReader br = new BufferedReader(new FileReader(f));
@@ -88,7 +88,7 @@ public class ProbeToGeneMapTest {
         br.close();
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testAgilent() throws FileNotFoundException, IOException {
         File f = new File(TestUtils.LARGE_DATA_DIR + "agilent_probe_gene_mapping.txt");
         BufferedReader br = new BufferedReader(new FileReader(f));
@@ -113,7 +113,7 @@ public class ProbeToGeneMapTest {
         br.close();
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testIllumina() throws FileNotFoundException, IOException {
         File f = new File(TestUtils.LARGE_DATA_DIR + "illumina_probe_gene_mapping.txt");
         BufferedReader br = new BufferedReader(new FileReader(f));

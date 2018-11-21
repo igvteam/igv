@@ -29,6 +29,7 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.tools.IGVToolsTest;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -48,7 +49,7 @@ public class AlignmentReaderFactoryTest extends AbstractHeadlessTest {
     @Rule
     public TestRule testTimeout = new Timeout((int) 1e3 * 60);
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testGetMergedReader() throws Exception {
         String relfiname = "HG00171.hg18.bam";
         String path = TestUtils.LARGE_DATA_DIR + "temprel.bam.list";

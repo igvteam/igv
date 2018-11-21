@@ -37,6 +37,7 @@ import htsjdk.variant.vcf.VCFCodec;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedOutputStream;
@@ -56,6 +57,7 @@ import static org.junit.Assert.assertEquals;
  * Date: Jul 17, 2010
  * Time: 9:28:49 PM
  */
+@Ignore("Requires largedata bundle")
 public class TribbleFeatureReaderTest {
 
     static String testFile = TestUtils.LARGE_DATA_DIR + "CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
@@ -75,7 +77,7 @@ public class TribbleFeatureReaderTest {
         bfr.close();
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testQuery() throws IOException {
 
         String chr = "1";
@@ -98,7 +100,7 @@ public class TribbleFeatureReaderTest {
 
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testGetSequenceNames() throws Exception {
         Set<String> expectedSequences = new HashSet(Arrays.asList("1", "2"));
 

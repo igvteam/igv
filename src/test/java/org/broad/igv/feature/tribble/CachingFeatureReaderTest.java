@@ -31,6 +31,7 @@ import org.broad.igv.variant.vcf.VCFVariant;
 import htsjdk.tribble.AbstractFeatureReader;
 import htsjdk.tribble.FeatureCodec;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -60,7 +61,7 @@ public class CachingFeatureReaderTest {
 
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     /*
     1 182773022 182773023
 1 182773812 182773813
@@ -80,7 +81,7 @@ public class CachingFeatureReaderTest {
         assertEquals(23, seqNames.size());
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testQuery() throws Exception {
 
         Set<String> baseReaderLoci = new HashSet();

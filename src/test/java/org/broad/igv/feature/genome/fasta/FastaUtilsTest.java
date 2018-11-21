@@ -32,6 +32,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -134,7 +135,7 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
         tstCreateIndex(inPath);
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testCreateIndexEcoli() throws Exception {
         String inPath = TestUtils.LARGE_DATA_DIR + "ecoli.fasta";
         String outPath = tstCreateIndex(inPath);

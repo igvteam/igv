@@ -58,7 +58,7 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
     /**
      * Test the "mapping quality" flag.  Also indirectly tests the query parameters.
      */
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testMappingQualityFlag() throws IOException {
         String bamURL = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
         String queryString = "chr1:152522155-152522155";

@@ -167,7 +167,7 @@ public class SamQueryTextReaderTest {
 
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testMoran() throws Exception {
         String testFile = TestUtils.LARGE_DATA_DIR + "r2.allProb.sorted.sam";
         String chr = "mm9chrY";

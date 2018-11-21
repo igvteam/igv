@@ -145,14 +145,14 @@ public class IGVToolsTest extends AbstractHeadlessTest {
 
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testIntervalIndex33() throws Exception {
         String testFile = TestUtils.LARGE_DATA_DIR + "CEU.SRP000032.2010_03_v3.3.genotypes.head.vcf";
         FeatureCodec codec = new VCF3Codec();
         tstIntervalIndex(testFile, codec);
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testIntervalIndex40() throws Exception {
         String testFile = TestUtils.LARGE_DATA_DIR + "CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
         FeatureCodec codec = new VCFCodec();
