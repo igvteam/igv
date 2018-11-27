@@ -212,7 +212,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     @Test
     public void testTileGCT_01() throws IOException {
         String inputFile = TestUtils.DATA_DIR + "gct/OV.transcriptome__agilentg4502.data.txt";
-        String outFilePath = TestUtils.DATA_DIR + "out/testTileGCT.wig";
+        String outFilePath = TestUtils.TMP_OUTPUT_DIR + "testTileGCT.wig";
         String[] args = {"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, hg18id};
         igvTools.run(args);
     }
@@ -220,7 +220,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     @Test
     public void testTileGCT_02() throws IOException {
         String inputFile = TestUtils.DATA_DIR + "gct/GBM.methylation__sampled.data.txt";
-        String outFilePath = TestUtils.DATA_DIR + "out/testTileGCT.wig";
+        String outFilePath = TestUtils.TMP_OUTPUT_DIR + "testTileGCT.wig";
         String[] args = new String[]{"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, hg18id};
         igvTools.run(args);
 
@@ -228,8 +228,8 @@ public class IGVToolsTest extends AbstractHeadlessTest {
 
 
     private void testTile(String inputFile, int start, int end) throws IOException {
-        String file1 = TestUtils.DATA_DIR + "out/file1.tdf";
-        String file2 = TestUtils.DATA_DIR + "out/file2.tdf";
+        String file1 = TestUtils.TMP_OUTPUT_DIR + "file1.tdf";
+        String file2 = TestUtils.TMP_OUTPUT_DIR + "file2.tdf";
 
         //todo Compare 2 outputs more meaningfully
         String[] args = {"toTDF", "-z", "1", "--windowFunctions", "min", inputFile, file1, hg18id};

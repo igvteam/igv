@@ -52,7 +52,8 @@ public class GFFtoBedTest {
     public void testConvert() throws Exception {
 
         File inputFile = new File(TestUtils.DATA_DIR, "gff/gene.unsorted.gff3");
-        File outputFile = new File(TestUtils.DATA_DIR, "out/gene.bed");
+        File outputFile = new File(TestUtils.TMP_OUTPUT_DIR, "gene.bed");
+        outputFile.deleteOnExit();
 
         // Convert
         GFFtoBed.convert(inputFile, outputFile);

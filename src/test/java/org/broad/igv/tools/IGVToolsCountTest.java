@@ -125,7 +125,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
         String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
 
         //Write to a file
-        String fileOutArg = TestUtils.DATA_DIR + "out/testfilewig.wig";
+        String fileOutArg = TestUtils.TMP_OUTPUT_DIR + "testfilewig.wig";
         String input = "count " + inputFile + " " + fileOutArg + " " + hg18id;
         String[] args = input.split("\\s+");
         igvTools.run(args);
@@ -351,7 +351,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
     }
 
     private void tstCountBamList(String listArg) throws Exception {
-        String outputFile = TestUtils.DATA_DIR + "out/file_";
+        String outputFile = TestUtils.TMP_OUTPUT_DIR + "file_";
 
         String[] opts = new String[]{"--strands=read", "--strands=first", ""};
 
@@ -437,7 +437,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
      */
     public void tstCountAliased(String normfile, String aliasedfile, String genfile) throws Exception {
 
-        String outfile = TestUtils.DATA_DIR + "out/tmpcount1.wig";
+        String outfile = TestUtils.TMP_OUTPUT_DIR + "tmpcount1.wig";
         File outFi = new File(outfile);
         outFi.delete();
         outFi.deleteOnExit();
@@ -447,7 +447,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
         igvTools.run(command.split("\\s+"));
 
         //Count non-aliased file
-        String outfile2 = TestUtils.DATA_DIR + "out/tmpcount2.wig";
+        String outfile2 = TestUtils.TMP_OUTPUT_DIR + "tmpcount2.wig";
         File outFi2 = new File(outfile2);
         outFi2.delete();
         //Count aliased file
@@ -481,7 +481,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
     public void testCountIndexedFasta() throws Exception {
         String fasta_file = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";
         String infile = TestUtils.DATA_DIR + "bed/ecoli_out.test.bed";
-        String outfile = TestUtils.DATA_DIR + "out/findextest.wig";
+        String outfile = TestUtils.TMP_OUTPUT_DIR + "findextest.wig";
         String end_command = infile + " " + outfile + " " + fasta_file;
         String count_command = "count " + end_command;
         igvTools.run(count_command.split("\\s"));
@@ -524,7 +524,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
     }
 
     private void tstCountWindowFunctions(String inputFile, String chr, Iterable<WindowFunction> windowFunctions) throws Exception {
-        String outputFile = TestUtils.DATA_DIR + "out/testCountWindowFunctions.tdf";
+        String outputFile = TestUtils.TMP_OUTPUT_DIR + "testCountWindowFunctions.tdf";
 
 
         String wfs = "";

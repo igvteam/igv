@@ -50,6 +50,8 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 import static junit.framework.Assert.assertTrue;
@@ -62,8 +64,19 @@ import static org.junit.Assert.assertFalse;
  */
 @Ignore
 public class TestUtils {
-    public static final String DATA_DIR = "test/data/";
-    public static final String TMP_OUTPUT_DIR = DATA_DIR + "out/";
+    // Tacking on a timestamp & random number to avoid file collisions with parallel testing JVMs.  Not guaranteed unique
+    // but highly unlikely to be repeated.
+    public static final String TEST_UNIQUE_RUN_BASE = System.currentTimeMillis() + "_" + Math.random();
+    private static final String TESTPREFS_PROPERTIES = "testprefs_" + TEST_UNIQUE_RUN_BASE + ".properties";
+    public static final String DATA_DIR = "test/data/";    
+    public static final String TMP_OUTPUT_DIR = DATA_DIR + "out/" + TEST_UNIQUE_RUN_BASE + "/";
+    
+    static {
+        File tmpOutputDir = new File(TMP_OUTPUT_DIR);
+        tmpOutputDir.mkdirs();
+        tmpOutputDir.deleteOnExit();
+    }
+    
     public static final String defaultGenome = DATA_DIR + "genomes/hg18.unittest.genome";
 
     //This is so ant can set the large data directory
@@ -91,7 +104,7 @@ public class TestUtils {
     }
 
     public static void resetPrefsFile(){
-        File prefsFile = new File("testprefs.properties");
+        File prefsFile = new File(TESTPREFS_PROPERTIES);
         prefsFile.delete();
         prefsFile.deleteOnExit();
         PreferencesManager.setPrefsFile(prefsFile.getAbsolutePath());
@@ -162,6 +175,14 @@ public class TestUtils {
         }
     }
 
+//    public static File foo_createTempOutputDir() throws IOException {
+//        File directory = new File(DATA_DIR + "out/"); //new File(TMP_OUTPUT_DIR);
+//        Path tempDirPath = Files.createTempDirectory(directory.toPath(), "tmp");
+//        File tempDir = tempDirPath.toFile();
+//        tempDir.deleteOnExit();
+//        return tempDir;
+//    }
+    
     /**
      * Returns either 1 or 2, representing the number of
      * bytes used to end a line. Reads only from first line of a file

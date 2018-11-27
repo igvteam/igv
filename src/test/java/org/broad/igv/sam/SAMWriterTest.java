@@ -100,7 +100,7 @@ public class SAMWriterTest extends AbstractHeadlessTest {
      * @throws Exception
      */
     public void testWriteRecords(String inpath, boolean outStream) throws Exception {
-        String[] outpaths = new String[]{TestUtils.DATA_DIR + "out/tmp_sam.sam", TestUtils.DATA_DIR + "out/tmp_bam.bam"};
+        String[] outpaths = new String[]{TestUtils.TMP_OUTPUT_DIR + "tmp_sam.sam", TestUtils.TMP_OUTPUT_DIR + "tmp_bam.bam"};
         for (String outpath : outpaths) {
             SamHeaderIterator shi = new SamHeaderIterator(inpath);
 

@@ -179,6 +179,7 @@ tasks.withType(Test) {
     systemProperties['include.longrunning'] = 'false'
     systemProperties['ignore.ioexceptions'] = 'false'
     maxHeapSize = '2000m'
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
 }
 
 task createDist(type: Copy, dependsOn: fullJar)  {

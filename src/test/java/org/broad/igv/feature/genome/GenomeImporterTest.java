@@ -44,7 +44,8 @@ public class GenomeImporterTest extends AbstractHeadlessTest {
     @Test
     public void testCreateGenomeArchiveFromDir() throws Exception {
 
-        File genomeFile = new File(TestUtils.DATA_DIR, "out/testSetGenome.genome");
+        File genomeFile = new File(TestUtils.TMP_OUTPUT_DIR, "testSetGenome.genome");
+        genomeFile.deleteOnExit();
         String genomeId = "testSet";
         String genomeDisplayName = genomeId;
         String fastaPath = TestUtils.DATA_DIR + "fasta/set";
@@ -64,7 +65,8 @@ public class GenomeImporterTest extends AbstractHeadlessTest {
     @Test
     public void testCreateGenomeArchiveFromFiles() throws Exception {
 
-        File genomeFile = new File(TestUtils.DATA_DIR, "out/testSetGenome.genome");
+        File genomeFile = new File(TestUtils.TMP_OUTPUT_DIR, "testSetGenome.genome");
+        genomeFile.deleteOnExit();
         String genomeId = "testSet";
         String genomeDisplayName = genomeId;
         String fastaPath = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";

@@ -200,7 +200,7 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
     @Test(expected = DataLoadException.class)
     public void testCreateIndexDuplicateContigs() throws Exception{
         String inPath = TestUtils.DATA_DIR + "fasta/dup_contigs.fas";
-        String outPath = TestUtils.DATA_DIR + "out/tmp.fai";
+        String outPath = TestUtils.TMP_OUTPUT_DIR + "tmp.fai";
         File outFile = new File(outPath);
         outFile.delete();
         outFile.deleteOnExit();

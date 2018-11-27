@@ -41,7 +41,7 @@ public class SequenceGCTest {
     @Test
     public void testSequenceGC() throws Exception {
 
-        String outfile = TestUtils.DATA_DIR + "out/ecoli.wig";
+        String outfile = TestUtils.TMP_OUTPUT_DIR + "ecoli.wig";
         //TODO Remove the Asserts, do a check at a position instead.
         //todo This test is not very meaningful
         SequenceGC sequence = new SequenceGC(5, 1);

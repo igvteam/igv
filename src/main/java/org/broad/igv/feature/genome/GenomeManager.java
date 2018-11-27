@@ -101,7 +101,11 @@ public class GenomeManager {
     private static Logger log = Logger.getLogger(GenomeManager.class);
 
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
-    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes.txt";
+    
+    // Tacking on a timestamp & random number to avoid file collisions with parallel testing JVMs.  Not guaranteed unique
+    // but highly unlikely to be repeated.
+    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes_" + 
+            System.currentTimeMillis() + "_" + Math.random() + ".txt";
 
     public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem("Human hg19", "http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg19.genome", "hg19");
 
