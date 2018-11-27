@@ -77,7 +77,7 @@ public class SequenceRenderer {
         Color a = ColorUtilities.stringToColor(prefs.get(COLOR_A), new Color(0, 150, 0));
         Color c = ColorUtilities.stringToColor(prefs.get(COLOR_C), Color.blue);
         Color t = ColorUtilities.stringToColor(prefs.get(COLOR_T), Color.red);
-        Color g = ColorUtilities.stringToColor(prefs.get(COLOR_G), Color.gray);
+        Color g = ColorUtilities.stringToColor(prefs.get(COLOR_G), new Color(209,113,5));
         Color n = ColorUtilities.stringToColor(prefs.get(COLOR_N), Color.gray);
 
         nucleotideColors.put('A', a);
