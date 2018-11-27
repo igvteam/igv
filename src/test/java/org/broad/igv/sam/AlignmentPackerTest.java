@@ -36,6 +36,7 @@ import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.*;
@@ -70,7 +71,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
     /**
      * Test of packAlignments method, of class AlignmentPacker.
      */
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testPackAlignments() throws Exception {
 
         ///////////////////////////
@@ -96,7 +97,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
 
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testGroupAlignmentsPairOrientation() throws Exception {
         int expSize = 2; //AlignmentTrack.OrientationType.values().length;
         Map<String, List<Row>> result = tstGroupAlignments(AlignmentTrack.GroupOption.PAIR_ORIENTATION, expSize);

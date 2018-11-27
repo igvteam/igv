@@ -33,6 +33,7 @@ import org.broad.igv.sam.reader.MergedAlignmentReaderTest;
 import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.*;
@@ -99,7 +100,7 @@ public class SAMWriterTest extends AbstractHeadlessTest {
      * @throws Exception
      */
     public void testWriteRecords(String inpath, boolean outStream) throws Exception {
-        String[] outpaths = new String[]{TestUtils.DATA_DIR + "out/tmp_sam.sam", TestUtils.DATA_DIR + "out/tmp_bam.bam"};
+        String[] outpaths = new String[]{TestUtils.TMP_OUTPUT_DIR + "tmp_sam.sam", TestUtils.TMP_OUTPUT_DIR + "tmp_bam.bam"};
         for (String outpath : outpaths) {
             SamHeaderIterator shi = new SamHeaderIterator(inpath);
 
@@ -141,7 +142,7 @@ public class SAMWriterTest extends AbstractHeadlessTest {
 
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testCopyBAMFile_01() throws Exception {
         String sequence = "chr1";
         int end = 300000000;
@@ -151,7 +152,7 @@ public class SAMWriterTest extends AbstractHeadlessTest {
         tstCopyBAMFile(inlocator, sequence, start, end);
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testCopyMergedBAM_01() throws Exception {
         String sequence = "chr1";
         int start = 151667156;

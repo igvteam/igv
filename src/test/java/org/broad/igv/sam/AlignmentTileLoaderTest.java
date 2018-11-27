@@ -36,6 +36,7 @@ import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -56,7 +57,7 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
      *
      * @throws Exception
      */
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testKeepPairsDownsample_02() throws Exception {
         String path = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
 
@@ -74,7 +75,7 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
      *
      * @throws Exception
      */
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testNoDownsample() throws Exception {
         String path = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
 

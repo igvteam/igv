@@ -47,7 +47,7 @@ public class ExpressionFormatterTest extends AbstractHeadlessTest {
     public void testConvertGCT() throws Exception {
         //String inputPath = TestUtils.DATA_DIR + "gct/igv_test2.gct";
         String inputPath = TestUtils.DATA_DIR + "gct/GBM.methylation__sampled.data.txt";
-        String outputPath = TestUtils.DATA_DIR + "out/testformat.gct";
+        String outputPath = TestUtils.TMP_OUTPUT_DIR + "testformat.gct";
         File inputFile = new File(inputPath);
         File outputFile = new File(outputPath);
 

@@ -39,6 +39,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -66,7 +67,7 @@ public class BAMFileReaderTest {
     /**
      * Test of close method, of class BAMQueryReader.
      */
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testClose() throws Exception {
         String bamfile = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
         String chr = "chr1";
@@ -97,7 +98,7 @@ public class BAMFileReaderTest {
     /**
      * Test of query method, of class BAMQueryReader.
      */
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testQueryAgainstSam() throws Exception {
 
         String bamfile = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";

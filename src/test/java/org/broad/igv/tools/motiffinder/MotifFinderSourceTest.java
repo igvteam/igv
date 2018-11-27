@@ -29,6 +29,8 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
 import htsjdk.tribble.Feature;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -208,25 +210,6 @@ public class MotifFinderSourceTest extends AbstractHeadlessTest{
         assertEquals(expFeatureStart + 4, feat.getStart());
         assertEquals(exFeatureEnd + 4, feat.getEnd());
         checkPatternMatches(motif, feat);
-    }
-
-    /**
-     * Test searching chromosome 1 for nonexistent motif. Test is timed at 30 seconds,
-     * this is a loose performance test. Takes ~13 seconds on my machine
-     * @throws Exception
-     */
-    @Test
-    public void testSearchWholeChromo() throws Exception{
-        String chromo = "chr1";
-        String umotif = "GATCRYMKSWHBVDNGATCGATCGATCGATCGATCGATCGATCGATCGATC";
-        int reps = 20;
-
-        //Really long string, probably no matches
-        String motif = umotif;
-        for(int ii=0; ii < reps; ii++) motif += umotif;
-
-        tstSearchGenomeSingResult(motif, Strand.POSITIVE, chromo,
-                0, genome.getChromosome(chromo).getLength(), -1, -1);
     }
 
     private void tstSearchGenome_EGFR(String motif, int expStart, int expEnd) throws Exception {

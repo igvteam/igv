@@ -35,7 +35,7 @@ public class GenomeListManager {
     private static Logger log = Logger.getLogger(GenomeManager.class);
 
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
-    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes.txt";
+    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = GenomeManager.TEST_USER_DEFINED_GENOME_LIST_FILE;
     public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem("Human (hg19)", "http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg19.genome", "hg19");
 
     private static GenomeListManager theInstance;

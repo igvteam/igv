@@ -32,6 +32,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -134,7 +135,7 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
         tstCreateIndex(inPath);
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testCreateIndexEcoli() throws Exception {
         String inPath = TestUtils.LARGE_DATA_DIR + "ecoli.fasta";
         String outPath = tstCreateIndex(inPath);
@@ -199,7 +200,7 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
     @Test(expected = DataLoadException.class)
     public void testCreateIndexDuplicateContigs() throws Exception{
         String inPath = TestUtils.DATA_DIR + "fasta/dup_contigs.fas";
-        String outPath = TestUtils.DATA_DIR + "out/tmp.fai";
+        String outPath = TestUtils.TMP_OUTPUT_DIR + "tmp.fai";
         File outFile = new File(outPath);
         outFile.delete();
         outFile.deleteOnExit();

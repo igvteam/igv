@@ -66,7 +66,7 @@ public class AbstractHeadedTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        TestUtils.clearOutputDir();
+        //TestUtils.clearOutputDir();
         stopGUI();
         igv = null;
     }

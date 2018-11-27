@@ -58,12 +58,12 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
     /**
      * Test the "mapping quality" flag.  Also indirectly tests the query parameters.
      */
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testMappingQualityFlag() throws IOException {
         String bamURL = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
         String queryString = "chr1:152522155-152522155";
         int minMapQuality = 40;
-        File wigFile = new File(TestUtils.DATA_DIR + "out/testMapQual.wig");
+        File wigFile = new File(TestUtils.TMP_OUTPUT_DIR + "testMapQual.wig");
         int windowSize = 1;
 
         TestDataConsumer dc = new TestDataConsumer();
@@ -82,7 +82,7 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
     public void testPairFlag() throws Exception{
         String bamURL = "http://data.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
         String queryString = "2:1000-1100";
-        File wigFile = new File(TestUtils.DATA_DIR + "out/testPair.wig");
+        File wigFile = new File(TestUtils.TMP_OUTPUT_DIR + "testPair.wig");
         int windowSize = 1;
 
         TestDataConsumer dc = new TestDataConsumer();
@@ -151,7 +151,8 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
         String ifile = TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam";
         int expected_cols = 14;
 
-        File wigFile = new File(TestUtils.DATA_DIR + "out", "testCountBases.wig");
+        File wigFile = new File(TestUtils.TMP_OUTPUT_DIR, "testCountBases.wig");
+        wigFile.deleteOnExit();
         int windowSize = 1;
 
         TestDataConsumer dc = new TestDataConsumer();

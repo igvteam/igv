@@ -31,6 +31,7 @@ import org.broad.igv.sam.Alignment;
 import org.broad.igv.tools.IGVToolsTest;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -56,7 +57,7 @@ public class MergedAlignmentReaderTest extends AbstractHeadlessTest {
         return IGVToolsTest.generateRepLargebamsList(listPath, "HG00171.hg18.bam", 2);
     }
 
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testSimpleRead() throws Exception {
 
         File listFile = new File(TestUtils.LARGE_DATA_DIR, "2largebams.bam.list");

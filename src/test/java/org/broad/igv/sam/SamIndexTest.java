@@ -34,6 +34,7 @@ import org.broad.igv.sam.reader.FeatureIndex;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -61,7 +62,7 @@ public class SamIndexTest {
     /**
      * Test of getIndexedChromosomes method, of class SamIndex.
      */
-    @Test
+    @Test @Ignore("Requires largedata bundle")
     public void testGetIndexedChromosomes() {
         FeatureIndex idx = new FeatureIndex(f);
         assertTrue(idx.getIndexedChromosomes().size() > 0);
