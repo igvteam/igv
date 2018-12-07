@@ -219,7 +219,7 @@ public class MAFIndex {
                     continue;
                 }
 
-                if (line.startsWith("a ")) {
+                if (line.startsWith("a")) {
                     newBlock = true;
                     blockCount++;
 
@@ -227,7 +227,7 @@ public class MAFIndex {
                     mergeSpecies(blockSpecies, allSpecies, speciesRanks);
                     blockSpecies.clear();
 
-                } else if (line.startsWith("s ")) {
+                } else if (line.startsWith("s")) {
 
                     String[] tokens = Globals.whitespacePattern.split(line);
 
@@ -235,7 +235,7 @@ public class MAFIndex {
                     String species = src;
                     String chr = src;
                     if (src.contains(".")) {
-                        String[] srcTokens = ParsingUtils.PERIOD_PATTERN.split(src);
+                        String[] srcTokens = ParsingUtils.PERIOD_PATTERN.split(src, 2);
                         species = srcTokens[0];
                         chr = srcTokens[1];
                     }
@@ -264,10 +264,10 @@ public class MAFIndex {
                         newBlock = false;
                     }
 
-                } else if (line.startsWith("i ")) {
+                } else if (line.startsWith("i")) {
                     //We do not handle information lines yet.
                     continue;
-                } else if (line.startsWith("q ")) {
+                } else if (line.startsWith("q")) {
                     //We do not handle quality lines yet.
                     continue;
                 }

@@ -108,11 +108,11 @@ public class MAFParser implements MAFReader {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is), 256000);
 
-        List<MultipleAlignmentBlock> alignments = new ArrayList<MultipleAlignmentBlock>();
+        List<MultipleAlignmentBlock> alignments = new ArrayList<>();
 
         String line;
         while ((line = reader.readLine()) != null) {
-            if (line.startsWith("a ")) {
+            if (line.startsWith("a")) {
                 // TODO -- parse score (optional)
                 MultipleAlignmentBlock block = parseBlock(reader);
                 if(block.getEnd() < start) {
@@ -231,7 +231,7 @@ public class MAFParser implements MAFReader {
             if (line.trim().length() == 0) {
                 return ma;
             }
-            if (line.startsWith("s ")) {
+            if (line.startsWith("s")) {
 
                 String[] tokens = Globals.whitespacePattern.split(line);
 
@@ -239,7 +239,7 @@ public class MAFParser implements MAFReader {
                 String species = src;
                 String chr = src;
                 if (src.contains(".")) {
-                    String[] srcTokens = ParsingUtils.PERIOD_PATTERN.split(src);
+                    String[] srcTokens = ParsingUtils.PERIOD_PATTERN.split(src, 2);
                     species = srcTokens[0];
                     chr = srcTokens[1];
                 }

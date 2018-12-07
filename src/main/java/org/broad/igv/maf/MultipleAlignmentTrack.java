@@ -193,7 +193,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         if (frame.getScale() > 1) return true;   // Zoomed out, nothing to pain
 
         String chr = frame.getChrName();
-        int start = (int) frame.getOrigin();
+        int start = Math.max(0, (int) frame.getOrigin());
         int end = (int) frame.getEnd();
         return loadedAlignments != null && loadedAlignments.contains(chr, start, end);
     }
@@ -205,7 +205,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         double w = frame.getEnd() - origin;
 
         // Get some buffer (+/- 1/2 screen)
-        String mafChr = chrMappings == null ? chr : chrMappings.get(chr);
+        String mafChr = chrMappings != null && chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
         int start = (int) Math.max(0, origin - w);
         int end = (int) (origin + 2 * w);
 
@@ -224,7 +224,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
         double locScale = context.getScale();
 
-        if (locScale > 1) {
+        if (locScale > 10) {
             Rectangle r = new Rectangle(rect);
             if (visibleNameRect != null) {
                 r.y = visibleNameRect.y;
@@ -243,7 +243,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         int end = (int) frame.getEnd();
 
         List<MultipleAlignmentBlock> alignments = null;
-        if (loadedAlignments != null && loadedAlignments.contains(chr, start, end)) {
+        if (loadedAlignments != null && loadedAlignments.overlaps(chr, start, end)) {
             alignments = loadedAlignments.getAlignments();
             if (alignments != null) {
                 for (MultipleAlignmentBlock ma : alignments) {
@@ -390,6 +390,9 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
         boolean contains(String chr, int start, int end) {
             return this.start <= start && this.end >= end && this.chr.equals(chr);
+        }
+        boolean overlaps(String chr, int start, int end) {
+            return this.start <= end && this.end >= start && this.chr.equals(chr);
         }
 
         public List<MultipleAlignmentBlock> getAlignments() {

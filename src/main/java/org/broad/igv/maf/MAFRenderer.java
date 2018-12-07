@@ -67,9 +67,9 @@ public class MAFRenderer {
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
-        if (locScale > 1) {
-            return;
-        }
+//        if (locScale > 1) {
+//            return;
+//        }
 
         for (MultipleAlignmentBlock.Gap gap : gaps) {
 
@@ -110,10 +110,6 @@ public class MAFRenderer {
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
-        if (locScale > 1) {
-            return;
-        }
-
         double pixelStart = ((multipleAlignment.getStart() - origin) / locScale);
 
 
@@ -122,80 +118,82 @@ public class MAFRenderer {
         int y = (int) (trackRectangle.getY() + (trackRectangle.getHeight() - h) / 2);
         Rectangle rect = new Rectangle((int) pixelStart, y, w, h);
 
-        if (locScale < 1) {
 
-            int pY = (int) rect.getY();
-            int dY = (int) rect.getHeight();
-            int dX = (int) (1.0 / locScale);
+        int pY = (int) rect.getY();
+        int dY = (int) rect.getHeight();
+        int dX = (int) (1.0 / locScale);
 
-            // Get a graphics to use
-            Graphics2D g = context.getGraphics2D("SEQUENCE");
+        // Get a graphics to use
+        Graphics2D g = context.getGraphics2D("SEQUENCE");
 
-            if (dX >= 8) {
-                Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
-                g.setFont(f);
-            }
+        if (dX >= 8) {
+            Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
+            g.setFont(f);
+        }
 
-            // Loop through base pair coordinates
-            int windowStart = (int) origin - 1;
-            int windowEnd = (int) context.getEndLocation() + 1;
-            int start = Math.max(windowStart, multipleAlignment.getStart());
-            int end = Math.min(windowEnd, multipleAlignment.getEnd());
+        // Loop through base pair coordinates
+        int windowStart = (int) origin - 1;
+        int windowEnd = (int) context.getEndLocation() + 1;
+        int start = Math.max(windowStart, multipleAlignment.getStart());
+        int end = Math.min(windowEnd, multipleAlignment.getEnd());
 
-            byte[] alignmentBytes = alignedSequence.getText().getBytes();
-            byte[] refBytes = reference.getText().getBytes();
+        byte[] alignmentBytes = alignedSequence.getText().getBytes();
+        byte[] refBytes = reference.getText().getBytes();
 
-            for (int loc = start; loc < end; loc++) {
+        for (int loc = start; loc < end; loc++) {
 
-                int pX0 = (int) ((loc - origin) / locScale);
+            int pX0 = (int) ((loc - origin) / locScale);
 
-                int idx = multipleAlignment.getGapAdjustedIndex(loc);
+            int idx = multipleAlignment.getGapAdjustedIndex(loc);
 
-                char c = (char) alignmentBytes[idx];
-                char refBase = (char) refBytes[idx];
+            char c = (char) alignmentBytes[idx];
+            char refBase = (char) refBytes[idx];
 
-                boolean misMatch = Character.toUpperCase(c) != Character.toUpperCase(refBase);
+            boolean misMatch = Character.toUpperCase(c) != Character.toUpperCase(refBase);
 
-                char charToDraw = misMatch || reference == alignedSequence ? c : '.';
+            char charToDraw = misMatch || reference == alignedSequence ? c : '.';
 
-                Color color = nucleotideColors.get(charToDraw);
+            Color color = nucleotideColors.get(charToDraw);
 
-                if ((dX >= 8) && (dY >= 12) || charToDraw == '.') {
-
-                    // Graphics2D gBackground = context.getGraphic2DForColor(background);
-                    // gBackground.fillRect(pX0, pY, dX, dY);
-                    if (charToDraw == '.') {
-                        color = Color.LIGHT_GRAY;
-                    } else if (color == null) {
-                        color = Color.black;
-                    }
-
-                    g.setColor(color);
-                    drawCenteredText(g, new char[]{charToDraw}, pX0, pY + 2, dX, dY - 2);
-                } else {
-                    if (color != null) {
-                        g.setColor(color);
-                        g.fillRect(pX0, pY, dX - 1, dY);
-                    }
-
+            if ((dX >= 8) && (dY >= 12) || charToDraw == '.') {
+                if (charToDraw == '.') {
+                    color = Color.LIGHT_GRAY;
+                } else if (color == null) {
+                    color = Color.black;
                 }
-            }
+                g.setColor(color);
 
-            // Check for insertion
-            if (gaps != null) {
-                Graphics2D gapG = context.getGraphic2DForColor(Color.black);
-                for (MultipleAlignmentBlock.Gap gap : gaps) {
-                    for (int idx = gap.startIdx; idx < gap.startIdx + gap.size; idx++) {
-                        if (alignmentBytes[idx] != '-') {
-                            int pX0 = (int) ((gap.position - origin) / locScale);
-                            gapG.drawLine(pX0, pY, pX0, pY + dY);
-                            break;
-                        }
-                    }
+                if(charToDraw == '-') {
+                    g.fillRect(pX0 + 2, pY + 4, dX - 4, dY - 4);
+                }
+                else {
+                    drawCenteredText(g, new char[]{charToDraw}, pX0, pY + 2, dX, dY - 2);
+                }
+            } else {
+                if (color != null) {
+                    int wb = Math.max(1, dX - 1);
+                    g.setColor(color);
+                    g.fillRect(pX0, pY, wb, dY);
                 }
 
             }
         }
+
+        // Check for insertion
+        if (gaps != null) {
+            Graphics2D gapG = context.getGraphic2DForColor(Color.black);
+            for (MultipleAlignmentBlock.Gap gap : gaps) {
+                for (int idx = gap.startIdx; idx < gap.startIdx + gap.size; idx++) {
+                    if (alignmentBytes[idx] != '-') {
+                        int pX0 = (int) ((gap.position - origin) / locScale);
+                        gapG.drawLine(pX0, pY, pX0, pY + dY);
+                        break;
+                    }
+                }
+            }
+
+        }
+
     }
 
     private void drawCenteredText(Graphics2D g, char[] chars, int x, int y,
