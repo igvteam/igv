@@ -26,12 +26,10 @@
 
 package org.broad.igv.maf;
 
-import htsjdk.samtools.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.tools.sort.SAMSorter;
 import org.broad.igv.tools.sort.Sorter;
-import org.broad.igv.tools.sort.SorterFactory;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.*;
@@ -69,7 +67,7 @@ public class MAFtoSAM {
 
     public static void convert(String path, String outputPath, boolean noSATag) throws IOException {
 
-        File unsortedOutput = new File(outputPath + ".unsorted.sam");
+        File unsortedOutput = new File(outputPath + ".unsorted");
         File outputFile = new File(outputPath);
 
         BufferedReader reader = ParsingUtils.openBufferedReader(path);
@@ -77,7 +75,7 @@ public class MAFtoSAM {
         Map<String, Integer> sequenceDictionary = new LinkedHashMap<String, Integer>();
         String line;
         while ((line = reader.readLine()) != null) {
-            if (line.startsWith("a ")) {
+            if (line.startsWith("a")) {
                 // Parse alignments until blank line
                 parseBlock(reader, out, sequenceDictionary);
             }
@@ -87,143 +85,11 @@ public class MAFtoSAM {
         reader.close();
 
         // Insert header and  SA tags
-        addSATags(unsortedOutput, outputFile, sequenceDictionary);
-
+        addHeaderAndSort(unsortedOutput, outputFile, sequenceDictionary);
 
         unsortedOutput.deleteOnExit();
 
     }
-
-    private static void addSATags(File inputFile, File outputFile, Map<String, Integer> sequenceDictionary) throws IOException {
-
-        String groupedOutput = inputFile.getAbsolutePath() + ".grouped.sam";
-        Sorter sorter = SorterFactory.getSorter(inputFile, new File(groupedOutput));
-        sorter.setComparator(SAMSorter.ReadNameComparator);
-        sorter.run();
-
-        // Get Sam file reader, output header, then iterate through sam records combining those with like read names
-
-        BufferedReader reader = new BufferedReader(new FileReader(groupedOutput));
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
-        outputHeader(sequenceDictionary, out);
-
-
-        String line;
-        String[] lastRecord = null;
-
-        List<String[]> chimericAlignments = new ArrayList<>();
-
-        // Records should now be sorted by read name
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith("@")) {
-                out.println(line);
-            } else {
-                String[] record = Globals.tabPattern.split(line);
-
-                if (lastRecord == null || lastRecord[0].equals(record[0])) {
-                    chimericAlignments.add(record);
-                } else {
-                    if (chimericAlignments.size() > 0) {
-                        printChimericAlignments(out, chimericAlignments);
-                    }
-                    chimericAlignments.clear();
-                    chimericAlignments.add(record);
-                }
-                lastRecord = record;
-            }
-        }
-
-        // Last one
-        if (chimericAlignments.size() > 0) {
-            printChimericAlignments(out, chimericAlignments);
-        }
-
-        out.flush();
-        out.close();
-
-        (new File(groupedOutput)).deleteOnExit();
-
-    }
-
-    private static void printChimericAlignments(PrintWriter out, List<String[]> chimericAlignments) {
-
-        if (chimericAlignments.size() == 1) {
-            // Not chimeric, just print
-            printRecord(out, chimericAlignments.get(0));
-            out.println();
-        } else {
-
-            // Mark all but one alignment in the list as primary
-            int primaryRecordIndex = 0;
-            int longestSequence = chimericAlignments.get(0)[9].length();
-            for(int i=1; i<chimericAlignments.size(); i++) {
-                String[] thisRecord = chimericAlignments.get(i);
-                int seqLength = thisRecord[9].length();
-                if(seqLength > longestSequence) {
-                    longestSequence = seqLength;
-                    primaryRecordIndex = i;
-                }
-            }
-
-            for(int i=0; i<chimericAlignments.size(); i++) {
-                if(i == primaryRecordIndex) continue;
-                String[] thisRecord = chimericAlignments.get(i);
-                thisRecord[1] = String.valueOf(Integer.parseInt(thisRecord[1]) | NOT_PRIMARY_ALIGNMENT_FLAG);
-            }
-
-            for (int i = 0; i < chimericAlignments.size(); i++) {
-
-                String[] thisRecord = chimericAlignments.get(i);
-
-                StringBuffer saTag = new StringBuffer("SA:Z:");
-
-
-                // Build up the SA string -- essentially a list of the other parts of this chmeric alignment.
-                for (int j = 0; j < chimericAlignments.size(); j++) {
-
-                    if (j == i) continue;
-
-                    String[] supRecord = chimericAlignments.get(j);
-
-                    // This is fragile, but we control the order
-                    String nm;
-                    String nmString = supRecord[11];
-                    if (nmString.startsWith("NM:i:")) {
-                        nm = nmString.substring(5);
-                    } else {
-                        nm = "0";
-                    }
-
-                    boolean isNegativeStrand = (Integer.parseInt(supRecord[1]) & READ_STRAND_FLAG) != 0;
-
-                    saTag.append(supRecord[2] + "," + supRecord[3] + "," + (isNegativeStrand ? "-," : "+,") +
-                            supRecord[5] + "," + supRecord[4] + "," + nm + ";");
-                }
-
-                if (i > 0) {
-                    int flags = Integer.parseInt(thisRecord[1]) | SUPPLEMENTARY_FLAG;
-                    thisRecord[1] = Integer.toString(flags);
-                }
-
-                printRecord(out, thisRecord);
-
-                out.print("\t" + saTag.toString());
-
-                out.println();
-
-
-            }
-        }
-
-    }
-
-    private static void printRecord(PrintWriter out, String[] record) {
-        out.print(record[0]);
-        for (int i = 1; i < record.length; i++) {
-            out.print("\t" + record[i]);
-        }
-    }
-
 
     private static void parseBlock(BufferedReader reader, PrintWriter out, Map<String, Integer> sequenceDictionary) throws IOException {
 
@@ -251,15 +117,17 @@ public class MAFtoSAM {
                     }
                 }
             }
-            if (line.startsWith("s ")) {
+            if (line.startsWith("s")) {
+
+
 
                 if (null == referenceLine) {
                     referenceLine = parseSequenceLine(line);
                     refBytes = referenceLine.text.getBytes();
 
                     if (referenceLine.src.contains(".")) {
-                        int idx = referenceLine.src.lastIndexOf('.') + 1;
-                        chr = referenceLine.src.substring(idx);
+                        String[] srcTokens = ParsingUtils.PERIOD_PATTERN.split(referenceLine.src, 2);
+                        chr = srcTokens[1];
                     } else {
                         chr = referenceLine.src;
                     }
@@ -267,6 +135,8 @@ public class MAFtoSAM {
                 } else {
 
                     queryLine = parseSequenceLine(line);
+                    String[] srcTokens = ParsingUtils.PERIOD_PATTERN.split(queryLine.src, 2);
+                    String species = srcTokens[0];
 
                     int flags = queryLine.strand == '+' ? 0 : 16;
 
@@ -334,11 +204,11 @@ public class MAFtoSAM {
                     String qual = "*";
 
                     out.print(readName + "\t" + flags + "\t" + chr + "\t" + start + "\t" + mapq + "\t" + cigarString + "\t" +
-                            rnext + "\t" + pnext + "\t" + tlen + "\t" + seq + "\t" + qual + "\tNM:i:" + nm);
+                            rnext + "\t" + pnext + "\t" + tlen + "\t" + seq + "\t" + qual + "\tNM:i:" + nm + "\tRG:Z:" + species);
                     if (barcode != null) {
                         out.print("\tBC:Z:" + barcode);
                     }
-                    if(score > 0) {
+                    if (score > 0) {
                         out.print("\tsc:f:" + String.valueOf(score));
                     }
                     out.println();
@@ -348,6 +218,32 @@ public class MAFtoSAM {
 
         // Output SAN header
     }
+
+
+    private static void addHeaderAndSort(File inputFile, File outputFile, Map<String, Integer> sequenceDictionary) throws IOException {
+
+        String sortedOutput = inputFile.getAbsolutePath() + ".sam";
+        Sorter sorter = new SAMSorter(inputFile, new File(sortedOutput));
+        sorter.run();
+
+        // Get Sam file reader, output header, then iterate through sam records combining those with like read names
+
+        BufferedReader reader = new BufferedReader(new FileReader(sortedOutput));
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+        outputHeader(sequenceDictionary, out);
+
+
+        String line;
+        // Records should now be sorted by read name
+        while ((line = reader.readLine()) != null) {
+            out.println(line);
+        }
+
+        out.flush();
+        out.close();
+
+    }
+
 
     private static void outputHeader(Map<String, Integer> sequenceDictionary, PrintWriter out) {
 
@@ -416,5 +312,7 @@ public class MAFtoSAM {
         int srcSize;
         String text;
     }
+
+
 }
 
