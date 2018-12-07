@@ -428,6 +428,7 @@ public class Main {
             CmdLineParser.Option locusOption = parser.addStringOption('l', "locus");
             CmdLineParser.Option igvDirectoryOption = parser.addStringOption("igvDirectory");
             CmdLineParser.Option forceVersionOption = parser.addStringOption("forceVersion");
+            CmdLineParser.Option versionOption = parser.addBooleanOption("version");
 
             try {
                 parser.parse(args);
@@ -468,6 +469,11 @@ public class Main {
             }
 
             String[] nonOptionArgs = parser.getRemainingArgs();
+
+            if(parser.getOptionValue(versionOption) != null) {
+                System.out.println(Globals.VERSION);
+                System.exit(0);
+            }
 
             // The Mac app launcher sometimes inserts "" into the command line.  Filter empty strings
             if (nonOptionArgs.length > 0) {
