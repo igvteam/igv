@@ -122,25 +122,24 @@ public class Main {
 
             // doesn't exist -- try to create it
             try {
-                dir.mkdir();
+                if (dir.mkdir()) {
+                    DirectoryManager.setIgvDirectory(dir);
+                } else {
+                    log.error("Unable to create igv directory " + dir.getAbsolutePath());
+                }
             } catch (Exception e) {
                 log.error("Error creating igv directory " + dir.getAbsolutePath(), e);
                 return;
             }
-
-            if (dir.isDirectory()) {
-                if (dir.canWrite()) {
-                    DirectoryManager.setIgvDirectory(dir);
-                } else {
-                    log.error("IGV directory '" + dir.getAbsolutePath() + "'is not writable");
-                }
+        } else if (dir.isDirectory()) {
+            if (dir.canWrite()) {
+                DirectoryManager.setIgvDirectory(dir);
             } else {
-                log.error("'" + dir.getAbsolutePath() + "' is not a directory");
+                log.error("IGV directory '" + dir.getAbsolutePath() + "'is not writable");
             }
         } else {
-            log.error("'" + dir.getAbsolutePath() + "' not found");
+            log.error("'" + dir.getAbsolutePath() + "' is not a directory");
         }
-
     }
 
     private static void initApplication() {
