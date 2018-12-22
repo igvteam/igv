@@ -11,6 +11,5 @@ install:
 - ./gradlew -b build_java9.gradle assemble
 script:
 - ./gradlew -b build_java9.gradle check
-- export JAVA_HOME=$HOME/openjdk8
-- $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk8 --target $JAVA_HOME
+- jdk_switcher use openjdk8
 - ./gradlew compileJava
