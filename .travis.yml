@@ -11,3 +11,5 @@ install:
 - ./gradlew -b build_java9.gradle assemble
 script:
 - ./gradlew -b build_java9.gradle check
+- jdk_switcher use openjdk8
+- ./gradlew compileJava
