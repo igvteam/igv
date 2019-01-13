@@ -33,6 +33,7 @@ import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.ga4gh.GoogleUtils;
+import org.broad.igv.ga4gh.AmazonUtils;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
@@ -111,6 +112,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private static IGVMenuBar instance;
     private JMenu googleMenu;
+    private JMenu AWSMenu;
     private JMenuItem encodeMenuItem;
 
     public void notifyGenomeServerReachable(boolean reachable) {
@@ -186,6 +188,14 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             menus.add(googleMenu);
         } catch (IOException e) {
             log.error("Error creating google menu: " + e.getMessage());
+        }
+
+        try {
+            AWSMenu = createAWSMenu();
+            AWSMenu.setVisible(true);
+            menus.add(AWSMenu);
+        } catch (IOException e) {
+            log.error("Error creating the Amazon AWS menu: " + e.getMessage());
         }
 
         menus.add(createHelpMenu());
@@ -289,6 +299,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(genomeId));
 
 
+        menuAction = new BrowseGa4ghAction("Load from Ga4gh...", KeyEvent.VK_G, igv);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        menuItems.add(new JSeparator());
+
+    
         menuAction = new BrowseGa4ghAction("Load from Ga4gh...", KeyEvent.VK_G, igv);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         menuItems.add(new JSeparator());
@@ -954,6 +969,30 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         menu.setVisible(false);
 
+
+        return menu;
+    }
+
+    private JMenu createAWSMenu() throws IOException {
+        final OAuthUtils oauth = OAuthUtils.getInstance();
+        JMenu menu = new JMenu("Amazon");
+        final JMenuItem login = new JMenuItem("Login ... ");
+
+        login.addActionListener(e -> {
+            try {
+                oauth.openAuthorizationPage();
+            } catch (Exception ex) {
+                MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
+                log.error("Error fetching oAuth tokens", ex);
+            }
+        });
+
+        //login.setEnabled(false);
+        menu.add(login);
+
+        final JMenuItem projectID = new JMenuItem("Enter S3 bucket ...");
+        projectID.addActionListener(e -> AmazonUtils.enterAWSS3Bucket());
+        menu.add(projectID);
 
         return menu;
     }

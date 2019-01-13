@@ -26,6 +26,28 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // Define the main class for the application
 ext.mainClassName = 'org.broad.igv.ui.Main'
 
+repositories {
+    mavenCentral()
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
+    }
+}
+
+//apply plugin: "io.spring.dependency-management"
+
+//dependencyManagement {
+//    imports {
+//        mavenBom 'software.amazon.awssdk:bom:2.0.0'
+//    }
+//}
+
+
 // Set up the ProGuard optimizing task
 buildscript {
     repositories {
@@ -57,6 +79,11 @@ dependencies {
     jarsToShipUntouched fileTree(dir: 'lib', 
                                  include: ['batik-codec-1.10.jar', 'goby-io-igv-1.1.jar', 'log4j-core-2.11.0.jar'])
     compile fileTree(dir: 'lib', include: '*.jar')
+
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-cognitoidp', version: '1.11.479'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.482'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.11.481'
+
     testCompile fileTree(dir: 'test/lib', include: '*.jar')
 }
 
@@ -97,6 +124,9 @@ jar {
 }
 
 task fullJar(type: Jar, dependsOn: jar) {
+    // XXX: Not really needed, just using for testing since I'm pulling the whole Java aws-sdk, need to prune that.
+    zip64 true
+
     // Based on https://discuss.gradle.org/t/removing-dependencies-from-a-jar-file-during-jar-task/5521/3
     archiveName = 'igv.jar'
     from {

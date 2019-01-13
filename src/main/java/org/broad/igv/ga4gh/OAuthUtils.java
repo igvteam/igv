@@ -140,7 +140,6 @@ public class OAuthUtils {
             if (je != null) {
                 replaceString = je.getAsString();
             }
-
         }
     }
 
@@ -178,7 +177,7 @@ public class OAuthUtils {
                     "client_id=" + clientId; // Native app
         }
         // for auth providers that need the resource setting
-        // the the resource paremeter
+        // the the resource parameter
         //else if (appIdURI != null) {
         else {
 
@@ -194,8 +193,11 @@ public class OAuthUtils {
 //        	throw new IOException("Either scope or resource must be provided to authenticate.");
 //        }
 
+        log.info(url);
+
         // check if the "browse" Desktop action is suppported (many Linux DEs cannot directly
         // launch browsers!)
+
         if (desktop.isSupported(Desktop.Action.BROWSE)) {
             desktop.browse(new URI(url));
         } else { // otherwise, display a dialog box for the user to copy the URL manually.
@@ -210,7 +212,6 @@ public class OAuthUtils {
                 setAuthorizationCode(ac, oobURI);
             }
         }
-
     }
 
     // Called from port listener upon receiving the oauth request with a "code" parameter
@@ -323,13 +324,14 @@ public class OAuthUtils {
             URL url = new URL("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken);
             String response = HttpUtils.getInstance().getContentsAsJSON(url);
             JsonParser parser = new JsonParser();
-            JsonObject obj = parser.parse(response).getAsJsonObject();
+            JsonObject json = parser.parse(response).getAsJsonObject();
+            log.info(json);
 
-            currentUserName = obj.get("name").getAsString();
+            currentUserName = json.get("name").getAsString();
             //currentUserEmail = obj.get("email").getAsString();
             //currentUserID = obj.get("id").getAsString();
 
-            return obj;
+            return json;
         } catch (Throwable exception) {
             log.error(exception);
             return null;
@@ -337,6 +339,7 @@ public class OAuthUtils {
     }
 
     public String getAccessToken() {
+        // XXX: How does this method actually "get the access token" exactly?
 
         // Check expiration time, with 1 minute cushion
         if (accessToken == null || (System.currentTimeMillis() > (expirationTime - 60 * 1000))) {
@@ -441,7 +444,7 @@ public class OAuthUtils {
     }
 
     /**
-     * Generate a set of all urls in the sessino file
+     * Generate a set of all urls in the session file
      *
      * @param sessionPath
      * @return list of urls

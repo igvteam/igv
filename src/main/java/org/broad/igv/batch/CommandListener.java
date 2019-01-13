@@ -182,9 +182,11 @@ public class CommandListener implements Runnable {
                         if (tokens.length == 2) {
                             headers.put(tokens[0].trim(), tokens[1].trim());
                         }
+                        log.info("Tokens:  "+Arrays.toString(tokens));
                     }
 
-                    log.info(cmd);
+                    log.info("Headers: "+headers);
+                    log.info("Command: "+cmd);
 
                     String command = null;
                     Map<String, String> params = null;
