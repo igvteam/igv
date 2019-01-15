@@ -975,24 +975,20 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private JMenu createAWSMenu() throws IOException {
         final OAuthUtils oauth = OAuthUtils.getInstance();
+
         JMenu menu = new JMenu("Amazon");
-        final JMenuItem login = new JMenuItem("Login ... ");
+        final JMenuItem login = new JMenuItem("Login");
 
         login.addActionListener(e -> {
             try {
-                oauth.openAuthorizationPage();
+                oauth.openAuthPage();
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
                 log.error("Error fetching oAuth tokens", ex);
             }
         });
 
-        //login.setEnabled(false);
         menu.add(login);
-
-        final JMenuItem projectID = new JMenuItem("Enter S3 bucket ...");
-        projectID.addActionListener(e -> AmazonUtils.enterAWSS3Bucket());
-        menu.add(projectID);
 
         return menu;
     }
