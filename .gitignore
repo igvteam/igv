@@ -11,3 +11,5 @@ igv.log
 /.idea/
 /.settings
 /proguard_log
+.vscode
+out/

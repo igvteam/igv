@@ -25,7 +25,6 @@
 
 package org.broad.igv.ga4gh;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -33,8 +32,10 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.AuthHttpClient;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.AmazonUtils;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -49,6 +50,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
+
+import static org.broad.igv.util.AmazonUtils.ListBucketsForUser;
 
 /**
  * Created by jrobinso on 11/19/14.
@@ -70,6 +73,7 @@ public class OAuthUtils {
     private String emailScope = "https://www.googleapis.com/auth/userinfo.email";
     private String state = "%2Fprofile";
     private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
+    //private String redirectURI = "http://localhost:60151/oauthCallback";
     private String oobURI = "urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob";
     private String clientId;
     private String clientSecret;
@@ -117,18 +121,22 @@ public class OAuthUtils {
             tokenURI = obj.get("token_uri").getAsString();
             clientId = obj.get("client_id").getAsString();
         } else {
+            log.info("Reading experimental fetchOauthProperties");
             // Experimental -- this will change -- dwm08
             JsonParser parser = new JsonParser();
             String json = FileUtils.getContents(oauthConfig);
             JsonObject obj = parser.parse(json).getAsJsonObject();
-            authURI = obj.get("authorization_endpoint").getAsString();
-            clientSecret = obj.get("client_secret").getAsString();
-            tokenURI = obj.get("token_endpoint").getAsString();
+//            authURI = obj.get("authorization_endpoint").getAsString();
+            authURI = obj.get("auth_uri").getAsString();
+//            clientSecret = obj.get("client_secret").getAsString();
+//            tokenURI = obj.get("token_endpoint").getAsString();
+            tokenURI = obj.get("token_uri").getAsString();
             clientId = obj.get("client_id").getAsString();
-            GS_HOST = obj.get("hosts").getAsString();
-            appIdURI = obj.get("app_id_uri").getAsString();
-            authProvider = obj.get("auth_provider").getAsString();
-            String scope = obj.get("scope").getAsString();
+//            GS_HOST = obj.get("hosts").getAsString();
+//            appIdURI = obj.get("app_id_uri").getAsString();
+            appIdURI = obj.get("auth_uri").getAsString();
+//            authProvider = obj.get("auth_provider").getAsString();
+/*            String scope = obj.get("scope").getAsString();
             if (scope.equals("none")) {
                 this.scope = null;
             }
@@ -140,6 +148,7 @@ public class OAuthUtils {
             if (je != null) {
                 replaceString = je.getAsString();
             }
+*/
         }
     }
 
@@ -193,9 +202,9 @@ public class OAuthUtils {
 //        	throw new IOException("Either scope or resource must be provided to authenticate.");
 //        }
 
-        log.info(url);
+        log.info("URL for the auth page: "+url);
 
-        // check if the "browse" Desktop action is suppported (many Linux DEs cannot directly
+        // check if the "browse" Desktop action is supported (many Linux DEs cannot directly
         // launch browsers!)
 
         if (desktop.isSupported(Desktop.Action.BROWSE)) {
@@ -214,6 +223,55 @@ public class OAuthUtils {
         }
     }
 
+    /**
+     * Send request to authorization provider to start the oauth 2.0
+     * authorization process. If the listener is up, wait for a callback
+     * Otherwise, provide a dialog where user can provide authentication token.
+     * This method has been generalized to use any auth provider (originally google only)
+     * dwm08
+     *
+             * @throws IOException
+     * @throws URISyntaxException
+     */
+    public void openAuthPage() throws IOException, URISyntaxException {
+        Desktop desktop = Desktop.getDesktop();
+
+        String redirect = oobURI;
+
+        if (CommandListener.isListening()) {
+            redirect = redirectURI;
+        }
+        String url;
+
+        url = authURI + "?" +
+               // "scope=" + scope + "&" +
+               // "state=" + state + "&" +
+                "redirect_uri=" + redirect + "&" +
+                "response_type=code&" +
+                "client_id=" + clientId;
+
+        log.info("URL for the auth page: "+url);
+
+        // check if the "browse" Desktop action is supported (many Linux DEs cannot directly
+        // launch browsers!)
+
+        if (desktop.isSupported(Desktop.Action.BROWSE)) {
+            desktop.browse(new URI(url));
+        } else { // otherwise, display a dialog box for the user to copy the URL manually.
+            MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
+        }
+
+        // if the listener is not active, prompt the user
+        // for the access token
+        if (!CommandListener.isListening()) {
+            String ac = MessageUtils.showInputDialog("Please paste authorization code here:");
+            if (ac != null) {
+                setAuthorizationCode(ac, oobURI);
+            }
+        }
+    }
+
+
     // Called from port listener upon receiving the oauth request with a "code" parameter
     public void setAuthorizationCode(String ac) throws IOException {
         setAuthorizationCode(ac, redirectURI);
@@ -221,14 +279,16 @@ public class OAuthUtils {
 
     public void setAuthorizationCode(String ac, String redirect) throws IOException {
         authorizationCode = ac;
+        log.debug("oauth code parameter: "+ac);
+        log.debug("url-encoded redirect_uri: "+redirect);
         fetchTokens(redirect);
-        fetchUserProfile();
+        //fetchUserProfile();
     }
 
     // Called from port listener upon receiving the oauth request with a "token" parameter TODO -- does this ever happen?
     public void setAccessToken(String accessToken) throws IOException {
         this.accessToken = accessToken;
-        fetchUserProfile();
+        //fetchUserProfile();
     }
 
     private void fetchTokens(String redirect) throws IOException {
@@ -237,26 +297,53 @@ public class OAuthUtils {
         //if (clientId == null) fetchOauthProperties();
 
         URL url = HttpUtils.createURL(tokenURI);
-
+        JsonParser parser = new JsonParser();
         Map<String, String> params = new HashMap<String, String>();
+
         params.put("code", authorizationCode);
+        //params.put("client_id", clientId);
+        //params.put("client_secret", clientSecret);
+        //params.put("redirect_uri", redirect);
+
+        // XXX: Remove hardcoded stuff from here
+        params.put("redirect_uri", "http://localhost:60151/oauthCallback"); // XXX: convert from urlencoded format to plain instead of hardcoding
         params.put("client_id", clientId);
-        params.put("client_secret", clientSecret);
-        params.put("redirect_uri", redirect);
+//        params.put("client_secret", "LxXmfcHi4FeNF_k7ZB4D0woe");
+
         params.put("grant_type", "authorization_code");
 
-        // set the resource if it necessary for the auth provider dwm08
-        if (appIdURI != null) {
-            params.put("resource", appIdURI);
+
+        //  set the resource if it necessary for the auth provider dwm08
+        //  if (appIdURI != null) {
+        //      params.put("resource", appIdURI);
+        //  }
+
+        //String response = HttpUtils.getInstance().doPost(url, params);
+        try {
+            AuthHttpClient httpClient = new AuthHttpClient();
+            JsonObject response = httpClient.httpPost(url, params);
+
+            accessToken = response.get("access_token").getAsString();
+            refreshToken = response.get("refresh_token").getAsString();
+            String idToken = response.get("id_token").getAsString();
+
+            log.debug("Oauth refresh token: "+refreshToken);
+            log.debug("Oauth token_id: "+idToken);
+            log.debug("Oauth access token: "+accessToken);
+
+            refreshToken = response.get("refresh_token").getAsString();
+            expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
+
+            com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
+            aws_credentials = AmazonUtils.GetCognitoAWSCredentials(response);
+            String bucket_list = ListBucketsForUser(aws_credentials);
+            log.info("Bucket list is: "+bucket_list);
+
+
+        } catch(Exception e) {
+            log.error(e);
+            e.printStackTrace();
         }
-
-        String response = HttpUtils.getInstance().doPost(url, params);
-        JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(response).getAsJsonObject();
-
-        accessToken = obj.getAsJsonPrimitive("access_token").getAsString();
-        refreshToken = obj.getAsJsonPrimitive("refresh_token").getAsString();
-        expirationTime = System.currentTimeMillis() + (obj.getAsJsonPrimitive("expires_in").getAsInt() * 1000);
 
         // Try to store in java.util.prefs
         saveRefreshToken();

@@ -133,11 +133,11 @@ public class HttpUtils {
         if (urlString.startsWith("gs://")) {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
         }
-        if (OAuthUtils.isGoogleCloud(urlString)) {
-            if (urlString.indexOf("alt=media") < 0) {
-                urlString = urlString + (urlString.indexOf('?') > 0 ? "&" : "?") + "alt=media";
-            }
-        }
+//        if (OAuthUtils.isGoogleCloud(urlString)) {
+//            if (urlString.indexOf("alt=media") < 0) {
+//                urlString = urlString + (urlString.indexOf('?') > 0 ? "&" : "?") + "alt=media";
+//            }
+//        }
 
         String host = new URL(urlString).getHost();
         if (host.equals("igv.broadinstitute.org")) {
@@ -243,6 +243,8 @@ public class HttpUtils {
         }
         byte[] postDataBytes = postData.toString().getBytes();
 
+        log.info("Actual POST request looking like: "+postData.toString());
+
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -254,6 +256,10 @@ public class HttpUtils {
         for (int c; (c = in.read()) >= 0; ) {
             response.append((char) c);
         }
+
+        // XXX: Does this flush as well? I hope so...
+        in.close();
+
         return response.toString();
 
     }

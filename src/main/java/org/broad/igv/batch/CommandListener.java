@@ -169,7 +169,6 @@ public class CommandListener implements Runnable {
 
 
             while (!halt && (inputLine = in.readLine()) != null) {
-
                 String cmd = inputLine;
                 if (cmd.startsWith("GET")) {
 
@@ -185,8 +184,8 @@ public class CommandListener implements Runnable {
                         log.info("Tokens:  "+Arrays.toString(tokens));
                     }
 
-                    log.info("Headers: "+headers);
-                    log.info("Command: "+cmd);
+                    log.debug("Headers: "+headers);
+                    log.debug("Command: "+cmd);
 
                     String command = null;
                     Map<String, String> params = null;
@@ -197,17 +196,19 @@ public class CommandListener implements Runnable {
                     } else {
                         String[] parts = tokens[1].split("\\?");
                         command = parts[0];
+                        log.info("Parts of the request: "+Arrays.toString(parts));
                         params = parts.length < 2 ? new HashMap() : parseParameters(parts[1]);
                     }
 
                     // Detect google oauth callback
                     if (command.equals("/oauthCallback")) {
+                        log.info("Response parameters: " + params.toString());
                         if (params.containsKey("code")) {
                             OAuthUtils.getInstance().setAuthorizationCode(params.get("code"));
                         } else if (params.containsKey("token")) {
                             OAuthUtils.getInstance().setAccessToken(params.get("token"));
                         }
-                        sendTextResponse(out, "OK");
+                        sendTextResponse(out, "OK"); //XXX: Return OK even if code/tokens are not set??! This cannot be right.
                     } else {
 
                         // If a callback (javascript) function is specified write it back immediately.  This function
