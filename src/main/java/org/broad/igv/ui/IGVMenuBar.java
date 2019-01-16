@@ -33,7 +33,6 @@ import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.ga4gh.GoogleUtils;
-import org.broad.igv.ga4gh.AmazonUtils;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;

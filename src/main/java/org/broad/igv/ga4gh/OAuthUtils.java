@@ -25,7 +25,6 @@
 
 package org.broad.igv.ga4gh;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -36,6 +35,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AuthHttpClient;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.AmazonUtils;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -50,6 +50,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
+
+import static org.broad.igv.util.AmazonUtils.ListBucketsForUser;
 
 /**
  * Created by jrobinso on 11/19/14.
@@ -277,8 +279,8 @@ public class OAuthUtils {
 
     public void setAuthorizationCode(String ac, String redirect) throws IOException {
         authorizationCode = ac;
-        log.info("AUTHORIZATION CODE IS: "+ac);
-        log.info("REDIRECT IS: "+redirect);
+        log.debug("oauth code parameter: "+ac);
+        log.debug("url-encoded redirect_uri: "+redirect);
         fetchTokens(redirect);
         //fetchUserProfile();
     }
@@ -316,8 +318,6 @@ public class OAuthUtils {
         //      params.put("resource", appIdURI);
         //  }
 
-        log.info("URL and Params for fetchTokens(): "+url+"         "+params);
-
         //String response = HttpUtils.getInstance().doPost(url, params);
         try {
             AuthHttpClient httpClient = new AuthHttpClient();
@@ -327,14 +327,22 @@ public class OAuthUtils {
             refreshToken = response.get("refresh_token").getAsString();
             String idToken = response.get("id_token").getAsString();
 
-            log.debug("REFRESH TOKEN IS: "+refreshToken);
-            log.debug("ID TOKEN IS: "+idToken);
-            log.debug("ACCESS TOKEN IS: "+accessToken);
+            log.debug("Oauth refresh token: "+refreshToken);
+            log.debug("Oauth token_id: "+idToken);
+            log.debug("Oauth access token: "+accessToken);
 
             refreshToken = response.get("refresh_token").getAsString();
             expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
+
+            com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
+            aws_credentials = AmazonUtils.GetCognitoAWSCredentials(response);
+            String bucket_list = ListBucketsForUser(aws_credentials);
+            log.info("Bucket list is: "+bucket_list);
+
+
         } catch(Exception e) {
             log.error(e);
+            e.printStackTrace();
         }
 
         // Try to store in java.util.prefs
