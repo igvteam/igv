@@ -181,7 +181,7 @@ public class CommandListener implements Runnable {
                         if (tokens.length == 2) {
                             headers.put(tokens[0].trim(), tokens[1].trim());
                         }
-                        log.info("Tokens:  "+Arrays.toString(tokens));
+                        log.debug("Tokens (as in *tokenized* headers, not oauth tokens):  "+Arrays.toString(tokens));
                     }
 
                     log.debug("Headers: "+headers);
@@ -196,13 +196,13 @@ public class CommandListener implements Runnable {
                     } else {
                         String[] parts = tokens[1].split("\\?");
                         command = parts[0];
-                        log.info("Parts of the request: "+Arrays.toString(parts));
+                        log.debug("Parts of the request: "+Arrays.toString(parts));
                         params = parts.length < 2 ? new HashMap() : parseParameters(parts[1]);
                     }
 
                     // Detect google oauth callback
                     if (command.equals("/oauthCallback")) {
-                        log.info("Response parameters: " + params.toString());
+                        log.debug("Response parameters: " + params.toString());
                         if (params.containsKey("code")) {
                             OAuthUtils.getInstance().setAuthorizationCode(params.get("code"));
                         } else if (params.containsKey("token")) {

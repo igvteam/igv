@@ -45,17 +45,15 @@ public class AmazonUtils {
      */
     public static Credentials GetCognitoAWSCredentials(JsonObject response) {
 
-        String response_str = response.toString();
-
         JsonObject igv_oauth_conf = GetCognitoConfig();
         JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
         JsonObject payload_access = JWTParser.getPayload(response.get("access_token").getAsString());
 
-        log.info("JWT payload id token: "+payload);
-        log.info("JWT payload access token: "+payload_access);
+        log.debug("JWT payload id token: "+payload);
+        log.debug("JWT payload access token: "+payload_access);
 
-        String id = response_str;
-        String idprovider = payload.get("iss").toString().replace("https://", "");
+        String id_token_str = response.get("id_token").getAsString();
+        String idprovider = payload.get("iss").toString().replace("https://", "").replace("\"", "");
 
         AnonymousAWSCredentials awsCreds = new AnonymousAWSCredentials();
         AmazonCognitoIdentity provider = AmazonCognitoIdentityClientBuilder
@@ -66,12 +64,12 @@ public class AmazonUtils {
 
         GetIdRequest idrequest = new GetIdRequest();
         idrequest.setIdentityPoolId(igv_oauth_conf.get("aws_cognito_fed_pool_id").getAsString());
-        idrequest.addLoginsEntry(idprovider, id);
+        idrequest.addLoginsEntry(idprovider, id_token_str);
         GetIdResult idResult = provider.getId(idrequest);
 
         GetCredentialsForIdentityRequest request = new GetCredentialsForIdentityRequest();
         request.setIdentityId(idResult.getIdentityId());
-        request.addLoginsEntry(idprovider, id);
+        request.addLoginsEntry(idprovider, id_token_str);
 
         GetCredentialsForIdentityResult result = provider.getCredentialsForIdentity(request);
         return result.getCredentials();
