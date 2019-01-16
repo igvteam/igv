@@ -80,10 +80,9 @@ dependencies {
                                  include: ['batik-codec-1.10.jar', 'goby-io-igv-1.1.jar', 'log4j-core-2.11.0.jar'])
     compile fileTree(dir: 'lib', include: '*.jar')
 
-    compile group: 'com.amazonaws', name: 'aws-java-sdk-cognitoidp', version: '1.11.479'
-    compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.482'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-cognitoidentity', version: '1.11.486'
     compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.11.481'
-    compile group: 'org.json', name: 'json', version: '20180813'
+    compile group: 'com.github.samtools', name: 'htsjdk', version: '2.18.1'
 
     testCompile fileTree(dir: 'test/lib', include: '*.jar')
 }
@@ -125,9 +124,6 @@ jar {
 }
 
 task fullJar(type: Jar, dependsOn: jar) {
-    // XXX: Not really needed, just using for testing since I'm pulling the whole Java aws-sdk, need to prune that.
-    zip64 true
-
     // Based on https://discuss.gradle.org/t/removing-dependencies-from-a-jar-file-during-jar-task/5521/3
     archiveName = 'igv.jar'
     from {

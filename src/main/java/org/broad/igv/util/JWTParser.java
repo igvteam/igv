@@ -19,7 +19,6 @@ package org.broad.igv.util;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidParameterException;

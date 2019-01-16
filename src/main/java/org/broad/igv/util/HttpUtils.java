@@ -257,7 +257,6 @@ public class HttpUtils {
             response.append((char) c);
         }
 
-        // XXX: Does this flush as well? I hope so...
         in.close();
 
         return response.toString();
@@ -360,7 +359,8 @@ public class HttpUtils {
                 if (e instanceof FileNotFoundException) {
                     throw e;
                 }
-                log.info("HEAD request failed for url: " + url.toExternalForm() + ".  Trying GET");
+                log.info("HEAD request failed for url: " + url.toExternalForm());
+                log.info("Trying GET instead for url: "+ url.toExternalForm());
                 headURLCache.put(url, false);
             }
         }
