@@ -81,9 +81,11 @@ dependencies {
     compile fileTree(dir: 'lib', include: '*.jar')
 
     compile group: 'com.amazonaws', name: 'aws-java-sdk-cognitoidp', version: '1.11.479'
+    // XXX: Search for https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/cognitoidentity/AbstractAmazonCognitoIdentity.html instead of pulling the whole AWS
+//    compile group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.3.0'
     compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.482'
     compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.11.481'
-    compile group: 'org.json', name: 'json', version: '20180813'
+    compile group: 'com.github.samtools', name: 'htsjdk', version: '2.18.1'
 
     testCompile fileTree(dir: 'test/lib', include: '*.jar')
 }

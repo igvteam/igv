@@ -25,17 +25,21 @@
 
 package org.broad.igv.ga4gh;
 
+import com.amazonaws.HttpMethod;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.batch.CommandListener;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.AuthHttpClient;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.AmazonUtils;
+import org.broad.igv.util.*;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -45,13 +49,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.prefs.Preferences;
-
-import static org.broad.igv.util.AmazonUtils.ListBucketsForUser;
 
 /**
  * Created by jrobinso on 11/19/14.
@@ -320,12 +319,16 @@ public class OAuthUtils {
 
         //String response = HttpUtils.getInstance().doPost(url, params);
         try {
+            String idToken;
             AuthHttpClient httpClient = new AuthHttpClient();
             JsonObject response = httpClient.httpPost(url, params);
 
+            // XXX: Fix the region and oauth-config.json stuff better
+            JsonObject igv_oauth_conf = AmazonUtils.GetCognitoConfig();
+
             accessToken = response.get("access_token").getAsString();
             refreshToken = response.get("refresh_token").getAsString();
-            String idToken = response.get("id_token").getAsString();
+            idToken = response.get("id_token").getAsString();
 
             log.debug("Oauth refresh token: "+refreshToken);
             log.debug("Oauth token_id: "+idToken);
@@ -334,11 +337,27 @@ public class OAuthUtils {
             refreshToken = response.get("refresh_token").getAsString();
             expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
 
+            // Get cognito AWS credentials after getting relevant tokens
             com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
             aws_credentials = AmazonUtils.GetCognitoAWSCredentials(response);
-            String bucket_list = ListBucketsForUser(aws_credentials);
-            log.info("Bucket list is: "+bucket_list);
+//            String bucket_list = ListBucketsForUser(aws_credentials);
+//            log.info("Bucket list is: "+bucket_list);
 
+            // XXX: Remove hardcoding, refactor method
+            String s3_test_bucket = "umccr-primary-data-dev";
+            String s3_test_objkey = "test_projects/bcbio_test_project/final/cup_normal/cup_normal-ready.bam";
+
+            // XXX: Make sure a thread is updating the refreshing of the s3client tokens and so on
+            AmazonUtils.updateS3Client(aws_credentials);
+            URL s3_presigned_url = AmazonUtils.translateAmazonCloudURL(s3_test_bucket, s3_test_objkey, new java.util.Date(expirationTime));
+
+            ResourceLocator s3_test_locator = new ResourceLocator(s3_presigned_url.toString());
+            s3_test_locator.setName("s3 test object");
+            s3_test_locator.setType("AWS_S3");
+            s3_test_locator.setIndexPath();
+            //s3_test_locator.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
+
+            IGV.getInstance().loadTracks(Arrays.asList(s3_test_locator));
 
         } catch(Exception e) {
             log.error(e);
@@ -348,6 +367,8 @@ public class OAuthUtils {
         // Try to store in java.util.prefs
         saveRefreshToken();
     }
+
+
 
     /**
      * Fetch a new access token from a refresh token.
