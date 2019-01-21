@@ -4,7 +4,7 @@ test/data/out/
 /build
 /build_java9
 /bin
-igv.log
+*.log
 /.gradle
 .project
 .classpath
@@ -13,3 +13,4 @@ igv.log
 /proguard_log
 .vscode
 out/
+.DS_Store

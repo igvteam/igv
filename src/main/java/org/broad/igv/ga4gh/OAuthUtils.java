@@ -25,12 +25,6 @@
 
 package org.broad.igv.ga4gh;
 
-import com.amazonaws.HttpMethod;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -49,6 +43,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -72,7 +67,6 @@ public class OAuthUtils {
     private String emailScope = "https://www.googleapis.com/auth/userinfo.email";
     private String state = "%2Fprofile";
     private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
-    //private String redirectURI = "http://localhost:60151/oauthCallback";
     private String oobURI = "urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob";
     private String clientId;
     private String clientSecret;
@@ -222,6 +216,8 @@ public class OAuthUtils {
         }
     }
 
+
+    // XXX: Merge this method with openAuthorizationPage() one
     /**
      * Send request to authorization provider to start the oauth 2.0
      * authorization process. If the listener is up, wait for a callback
@@ -229,7 +225,7 @@ public class OAuthUtils {
      * This method has been generalized to use any auth provider (originally google only)
      * dwm08
      *
-             * @throws IOException
+     * @throws IOException
      * @throws URISyntaxException
      */
     public void openAuthPage() throws IOException, URISyntaxException {
@@ -281,13 +277,13 @@ public class OAuthUtils {
         log.debug("oauth code parameter: "+ac);
         log.debug("url-encoded redirect_uri: "+redirect);
         fetchTokens(redirect);
-        //fetchUserProfile();
+        fetchUserProfile();
     }
 
     // Called from port listener upon receiving the oauth request with a "token" parameter TODO -- does this ever happen?
     public void setAccessToken(String accessToken) throws IOException {
         this.accessToken = accessToken;
-        //fetchUserProfile();
+        fetchUserProfile();
     }
 
     private void fetchTokens(String redirect) throws IOException {
@@ -296,35 +292,26 @@ public class OAuthUtils {
         //if (clientId == null) fetchOauthProperties();
 
         URL url = HttpUtils.createURL(tokenURI);
-        JsonParser parser = new JsonParser();
+
         Map<String, String> params = new HashMap<String, String>();
-
         params.put("code", authorizationCode);
-        //params.put("client_id", clientId);
-        //params.put("client_secret", clientSecret);
-        //params.put("redirect_uri", redirect);
-
-        // XXX: Remove hardcoded stuff from here
-        params.put("redirect_uri", "http://localhost:60151/oauthCallback"); // XXX: convert from urlencoded format to plain instead of hardcoding
         params.put("client_id", clientId);
-//        params.put("client_secret", "LxXmfcHi4FeNF_k7ZB4D0woe");
-
+        if (clientSecret != null) { params.put("client_secret", clientSecret); }
+        params.put("redirect_uri", new URLDecoder().decode(redirectURI, "utf-8"));
         params.put("grant_type", "authorization_code");
 
-
         //  set the resource if it necessary for the auth provider dwm08
-        //  if (appIdURI != null) {
-        //      params.put("resource", appIdURI);
-        //  }
+        if (appIdURI != null) {
+            params.put("resource", appIdURI);
+        }
 
-        //String response = HttpUtils.getInstance().doPost(url, params);
+
         try {
             String idToken;
-            AuthHttpClient httpClient = new AuthHttpClient();
-            JsonObject response = httpClient.httpPost(url, params);
 
-            // XXX: Fix the region and oauth-config.json stuff better
-            JsonObject igv_oauth_conf = AmazonUtils.GetCognitoConfig();
+            String res = HttpUtils.getInstance().doPost(url, params);
+            JsonParser parser = new JsonParser();
+            JsonObject response = parser.parse(res).getAsJsonObject();
 
             accessToken = response.get("access_token").getAsString();
             refreshToken = response.get("refresh_token").getAsString();
@@ -340,22 +327,22 @@ public class OAuthUtils {
             // Get cognito AWS credentials after getting relevant tokens
             com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
             aws_credentials = AmazonUtils.GetCognitoAWSCredentials(response);
-//            String bucket_list = ListBucketsForUser(aws_credentials);
-//            log.info("Bucket list is: "+bucket_list);
 
             // XXX: Remove hardcoding, refactor method
             String s3_test_bucket = "umccr-primary-data-dev";
-            String s3_test_objkey = "test_projects/bcbio_test_project/final/cup_normal/cup_normal-ready.bam";
+            String s3_test_objkey = "10X_telomeres_pos_sorted.bam";
 
             // XXX: Make sure a thread is updating the refreshing of the s3client tokens and so on
             AmazonUtils.updateS3Client(aws_credentials);
+
+            // XXX: Trace back path where this happens on other flows: both main file and index as presigned urls
             URL s3_presigned_url = AmazonUtils.translateAmazonCloudURL(s3_test_bucket, s3_test_objkey, new java.util.Date(expirationTime));
+            URL s3_presigned_url_idx = AmazonUtils.translateAmazonCloudURL(s3_test_bucket, s3_test_objkey.replace(".bam", ".bam.bai"), new java.util.Date(expirationTime));
 
             ResourceLocator s3_test_locator = new ResourceLocator(s3_presigned_url.toString());
             s3_test_locator.setName("s3 test object");
-            s3_test_locator.setType("AWS_S3");
-            s3_test_locator.setIndexPath();
-            //s3_test_locator.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
+            s3_test_locator.setType(".bam"); // XXX: Trace back where this is auto-detected
+            s3_test_locator.setIndexPath(s3_presigned_url_idx.toString());
 
             IGV.getInstance().loadTracks(Arrays.asList(s3_test_locator));
 
@@ -436,8 +423,8 @@ public class OAuthUtils {
             log.info(json);
 
             currentUserName = json.get("name").getAsString();
-            //currentUserEmail = obj.get("email").getAsString();
-            //currentUserID = obj.get("id").getAsString();
+            //currentUserEmail = json.get("email").getAsString();
+            //currentUserID = json.get("id").getAsString();
 
             return json;
         } catch (Throwable exception) {
@@ -447,7 +434,6 @@ public class OAuthUtils {
     }
 
     public String getAccessToken() {
-        // XXX: How does this method actually "get the access token" exactly?
 
         // Check expiration time, with 1 minute cushion
         if (accessToken == null || (System.currentTimeMillis() > (expirationTime - 60 * 1000))) {
