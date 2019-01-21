@@ -31,7 +31,7 @@ import com.google.gson.JsonPrimitive;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.batch.CommandListener;
-import org.broad.igv.ui.IGV;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 
@@ -54,7 +54,7 @@ public class OAuthUtils {
 
     private static Logger log = Logger.getLogger(OAuthUtils.class);
 
-    public String authProvider = "Google";
+    private String authProvider = "";
     private String appIdURI = null;
     public static String findString = null;
     public static String replaceString = null;
@@ -65,7 +65,7 @@ public class OAuthUtils {
     private String genomicsScope = "https://www.googleapis.com/auth/genomics";
     private String gsScope = "https://www.googleapis.com/auth/devstorage.read_write";
     private String emailScope = "https://www.googleapis.com/auth/userinfo.email";
-    private String state = "%2Fprofile";
+    private String state = UUID.randomUUID().toString(); // "An opaque value the client adds to the initial request."
     private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
     private String oobURI = "urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob";
     private String clientId;
@@ -76,12 +76,14 @@ public class OAuthUtils {
     private String authorizationCode;
     private String accessToken;
     private String refreshToken;
-    private long expirationTime;
+    private static long expirationTime;
 
     public static String GS_HOST = "www.googleapis.com";
 
     private static OAuthUtils theInstance;
     private String currentUserName;
+
+    private static JsonObject response;
 
     // by default this is the google scope
     private String scope = genomicsScope + "%20" + gsScope + "%20" + emailScope;
@@ -102,10 +104,12 @@ public class OAuthUtils {
 
     public void fetchOauthProperties() throws IOException {
 
+        // XXX: This needs proper cleanup/testing for existence of attributes... bit of a polyfill situation here
         String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
         //IGVPreferences.getInstance().get(IGVPreferences.OAUTH_CONFIG);
 
         if (oauthConfig == null || !FileUtils.resourceExists(oauthConfig)) {
+            log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from: "+PROPERTIES_URL);
             String propString = HttpUtils.getInstance().getContentsAsGzippedString(HttpUtils.createURL(PROPERTIES_URL));
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
@@ -114,8 +118,8 @@ public class OAuthUtils {
             tokenURI = obj.get("token_uri").getAsString();
             clientId = obj.get("client_id").getAsString();
         } else {
-            log.info("Reading experimental fetchOauthProperties");
             // Experimental -- this will change -- dwm08
+            log.debug("Loading Oauth properties from: " + oauthConfig);
             JsonParser parser = new JsonParser();
             String json = FileUtils.getContents(oauthConfig);
             JsonObject obj = parser.parse(json).getAsJsonObject();
@@ -171,6 +175,7 @@ public class OAuthUtils {
         // set the scope parameter
         //if (scope != null) {
         if (appIdURI == null) {
+            log.debug("appIdURI is null, skipping resource setting");
             url = authURI + "?" +
                     "scope=" + scope + "&" +
                     "state=" + state + "&" +
@@ -182,7 +187,7 @@ public class OAuthUtils {
         // the the resource parameter
         //else if (appIdURI != null) {
         else {
-
+            log.debug("appIdURI is not null, setting resource= as part of the authURI");
             url = authURI + "?" +
                     "scope=" + scope + "&" +
                     "state=" + state + "&" +
@@ -195,7 +200,7 @@ public class OAuthUtils {
 //        	throw new IOException("Either scope or resource must be provided to authenticate.");
 //        }
 
-        log.info("URL for the auth page: "+url);
+        log.debug("URL for the auth page is: "+url);
 
         // check if the "browse" Desktop action is supported (many Linux DEs cannot directly
         // launch browsers!)
@@ -217,57 +222,7 @@ public class OAuthUtils {
     }
 
 
-    // XXX: Merge this method with openAuthorizationPage() one
-    /**
-     * Send request to authorization provider to start the oauth 2.0
-     * authorization process. If the listener is up, wait for a callback
-     * Otherwise, provide a dialog where user can provide authentication token.
-     * This method has been generalized to use any auth provider (originally google only)
-     * dwm08
-     *
-     * @throws IOException
-     * @throws URISyntaxException
-     */
-    public void openAuthPage() throws IOException, URISyntaxException {
-        Desktop desktop = Desktop.getDesktop();
-
-        String redirect = oobURI;
-
-        if (CommandListener.isListening()) {
-            redirect = redirectURI;
-        }
-        String url;
-
-        url = authURI + "?" +
-               // "scope=" + scope + "&" +
-               // "state=" + state + "&" +
-                "redirect_uri=" + redirect + "&" +
-                "response_type=code&" +
-                "client_id=" + clientId;
-
-        log.info("URL for the auth page: "+url);
-
-        // check if the "browse" Desktop action is supported (many Linux DEs cannot directly
-        // launch browsers!)
-
-        if (desktop.isSupported(Desktop.Action.BROWSE)) {
-            desktop.browse(new URI(url));
-        } else { // otherwise, display a dialog box for the user to copy the URL manually.
-            MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
-        }
-
-        // if the listener is not active, prompt the user
-        // for the access token
-        if (!CommandListener.isListening()) {
-            String ac = MessageUtils.showInputDialog("Please paste authorization code here:");
-            if (ac != null) {
-                setAuthorizationCode(ac, oobURI);
-            }
-        }
-    }
-
-
-    // Called from port listener upon receiving the oauth request with a "code" parameter
+    // Called from port listener (org.broad.igv.batch.CommandListener) upon receiving the oauth request with a "code" parameter
     public void setAuthorizationCode(String ac) throws IOException {
         setAuthorizationCode(ac, redirectURI);
     }
@@ -286,6 +241,10 @@ public class OAuthUtils {
         fetchUserProfile();
     }
 
+    public void setScope(String scope) throws IOException {
+        this.scope = scope;
+    }
+
     private void fetchTokens(String redirect) throws IOException {
 
         // properties moved to early init dwm08
@@ -296,6 +255,7 @@ public class OAuthUtils {
         Map<String, String> params = new HashMap<String, String>();
         params.put("code", authorizationCode);
         params.put("client_id", clientId);
+        // pointless to have clientsecret on a publicly distributed client software?
         if (clientSecret != null) { params.put("client_secret", clientSecret); }
         params.put("redirect_uri", new URLDecoder().decode(redirectURI, "utf-8"));
         params.put("grant_type", "authorization_code");
@@ -311,40 +271,35 @@ public class OAuthUtils {
 
             String res = HttpUtils.getInstance().doPost(url, params);
             JsonParser parser = new JsonParser();
-            JsonObject response = parser.parse(res).getAsJsonObject();
+
+            setResponse(parser.parse(res).getAsJsonObject());
+            JsonObject response = getResponse();
 
             accessToken = response.get("access_token").getAsString();
             refreshToken = response.get("refresh_token").getAsString();
             idToken = response.get("id_token").getAsString();
 
-            log.debug("Oauth refresh token: "+refreshToken);
-            log.debug("Oauth token_id: "+idToken);
-            log.debug("Oauth access token: "+accessToken);
+            log.debug("Oauth2 refresh token: "+refreshToken);
+            log.debug("Oauth2 token_id: "+idToken);
+            log.debug("Oauth2 access token: "+accessToken);
+            log.debug("Oauth2 state: "+state);
 
             refreshToken = response.get("refresh_token").getAsString();
             expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
 
-            // Get cognito AWS credentials after getting relevant tokens
-            com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
-            aws_credentials = AmazonUtils.GetCognitoAWSCredentials(response);
+            if (authProvider == "Amazon") {
+                // Get AWS credentials after getting relevant tokens
+                com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
+                aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
 
-            // XXX: Remove hardcoding, refactor method
-            String s3_test_bucket = "umccr-primary-data-dev";
-            String s3_test_objkey = "10X_telomeres_pos_sorted.bam";
+                // Update S3 client with newly acquired token
+                AmazonUtils.updateS3Client(aws_credentials);
+            }
 
-            // XXX: Make sure a thread is updating the refreshing of the s3client tokens and so on
-            AmazonUtils.updateS3Client(aws_credentials);
-
-            // XXX: Trace back path where this happens on other flows: both main file and index as presigned urls
-            URL s3_presigned_url = AmazonUtils.translateAmazonCloudURL(s3_test_bucket, s3_test_objkey, new java.util.Date(expirationTime));
-            URL s3_presigned_url_idx = AmazonUtils.translateAmazonCloudURL(s3_test_bucket, s3_test_objkey.replace(".bam", ".bam.bai"), new java.util.Date(expirationTime));
-
-            ResourceLocator s3_test_locator = new ResourceLocator(s3_presigned_url.toString());
-            s3_test_locator.setName("s3 test object");
-            s3_test_locator.setType(".bam"); // XXX: Trace back where this is auto-detected
-            s3_test_locator.setIndexPath(s3_presigned_url_idx.toString());
-
-            IGV.getInstance().loadTracks(Arrays.asList(s3_test_locator));
+            // Notify UI that we are authz'd/authn'd
+            if (isLoggedIn()) {
+                IGVEventBus.getInstance().post(new AuthStateEvent());
+            }
 
         } catch(Exception e) {
             log.error(e);
@@ -382,7 +337,9 @@ public class OAuthUtils {
 
         String response = HttpUtils.getInstance().doPost(url, params);
         JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(response).getAsJsonObject();
+
+        setResponse(parser.parse(response).getAsJsonObject());
+        JsonObject obj = getResponse();
 
         JsonPrimitive atprim = obj.getAsJsonPrimitive("access_token");
         if (atprim != null) {
@@ -415,12 +372,12 @@ public class OAuthUtils {
     public JsonObject fetchUserProfile() throws IOException {
 
         try {
-
+            // XXX: This shouldn't belong here, way too Google-specific/hardcoded
             URL url = new URL("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken);
             String response = HttpUtils.getInstance().getContentsAsJSON(url);
             JsonParser parser = new JsonParser();
+
             JsonObject json = parser.parse(response).getAsJsonObject();
-            log.info(json);
 
             currentUserName = json.get("name").getAsString();
             //currentUserEmail = json.get("email").getAsString();
@@ -447,6 +404,23 @@ public class OAuthUtils {
         }
 
         return accessToken;
+    }
+
+    public static long getExpirationTime() {
+        return expirationTime;
+    }
+
+    public static class AuthStateEvent {
+        boolean authenticated;
+
+        // Assuming that if this event is called, we are indeed autz/authn'd
+        public AuthStateEvent() {
+            this.authenticated = true;
+        }
+
+        public boolean isAuthenticated() {
+            return this.authenticated;
+        }
     }
 
     public boolean isLoggedIn() {
@@ -592,5 +566,21 @@ public class OAuthUtils {
                 }
             }
         }
+    }
+
+    public static JsonObject getResponse() {
+        return response;
+    }
+
+    public static void setResponse(JsonObject res) {
+        response = res;
+    }
+
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(String authProvider) {
+        this.authProvider = authProvider;
     }
 }

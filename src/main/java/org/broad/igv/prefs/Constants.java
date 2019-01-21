@@ -218,9 +218,6 @@ final public class Constants {
     public static final String ENABLE_GOOGLE_MENU = "ENABLE_GOOGLE_MENU";
     public static final String SAVE_GOOGLE_CREDENTIALS = "SAVE_GOOGLE_CREDENTIALS";
 
-    // Amazon
-    public static final String AWS_S3_BUCKET = "s3://amazon-s3-bucket-with-bam-files";
-
     // CBIO connections
     public static final String CBIO_MUTATION_THRESHOLD = "CBIO_MUTATION_THRESHOLD";
     public static final String CBIO_AMPLIFICATION_THRESHOLD = "CBIO_AMPLIFICATION_THRESHOLD";
