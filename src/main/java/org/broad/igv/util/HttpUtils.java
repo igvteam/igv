@@ -243,7 +243,7 @@ public class HttpUtils {
         }
         byte[] postDataBytes = postData.toString().getBytes();
 
-        log.info("Actual POST request looking like: "+postData.toString());
+        log.debug("Raw POST request: "+postData.toString());
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");

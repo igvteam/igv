@@ -973,14 +973,31 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
     private JMenu createAWSMenu() throws IOException {
+
         final OAuthUtils oauth = OAuthUtils.getInstance();
 
         JMenu menu = new JMenu("Amazon");
-        final JMenuItem login = new JMenuItem("Login");
 
+        final JMenuItem login = new JMenuItem("Login");
         login.addActionListener(e -> {
             try {
-                oauth.openAuthPage();
+                // Set appropriate scope for AWS Cognito and gather oauth/openid tokens
+                oauth.setScope("email%20openid%20profile");
+                oauth.openAuthorizationPage();
+
+                // XXX: Is this the best way to wire up events so that right after successful authentication a popup dialog is shown?
+                IGVEventBus.getInstance().subscribe(OAuthUtils.AuthStateEvent.class, this);
+
+                // XXX: Open S3 bucket listing right after successful authentication
+                MenuAction menuAction = new MenuAction("Load data from Amazon S3 bucket...", null) {
+                    @Override
+                    public void actionPerformed(ActionEvent event) {
+                        GenomeComboBox.loadGenomeFromServer();
+                    }
+                };
+                menuAction.setToolTipText("Load data from AWS bucket");
+                loadFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
                 log.error("Error fetching oAuth tokens", ex);
