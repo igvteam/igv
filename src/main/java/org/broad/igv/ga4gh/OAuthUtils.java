@@ -254,6 +254,7 @@ public class OAuthUtils {
         Map<String, String> params = new HashMap<String, String>();
         params.put("code", authorizationCode);
         params.put("client_id", clientId);
+        // pointless to have clientsecret on a publicly distributed client software?
         if (clientSecret != null) { params.put("client_secret", clientSecret); }
         params.put("redirect_uri", new URLDecoder().decode(redirectURI, "utf-8"));
         params.put("grant_type", "authorization_code");
@@ -286,17 +287,17 @@ public class OAuthUtils {
             com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
             aws_credentials = AmazonUtils.GetCognitoAWSCredentials(response);
 
+            // XXX: Make sure a thread is updating the refreshing of the s3client tokens and so on
+            AmazonUtils.updateS3Client(aws_credentials);
+
             // Notify UI that we are ready to select dataset(s) in a ComboBox/List
             if (isLoggedIn()) {
-                IGVEventBus.getInstance().post(new AuthStateEvent(true));
+                IGVEventBus.getInstance().post(new AuthStateEvent());
             }
 
             // XXX: Remove hardcoding, refactor method
-            String s3_test_bucket = "umccr-primary-data-dev";
-            String s3_test_objkey = "10X_telomeres_pos_sorted.bam";
-
-            // XXX: Make sure a thread is updating the refreshing of the s3client tokens and so on
-            AmazonUtils.updateS3Client(aws_credentials);
+            //String s3_test_bucket = "umccr-primary-data-dev";
+            //String s3_test_objkey = "10X_telomeres_pos_sorted.bam";
 
             // XXX: Trace back path where this happens on other flows: both main file and index as presigned urls
             URL s3_presigned_url = AmazonUtils.translateAmazonCloudURL(s3_test_bucket, s3_test_objkey, new java.util.Date(expirationTime));
@@ -383,7 +384,6 @@ public class OAuthUtils {
             String response = HttpUtils.getInstance().getContentsAsJSON(url);
             JsonParser parser = new JsonParser();
             JsonObject json = parser.parse(response).getAsJsonObject();
-            log.info(json);
 
             currentUserName = json.get("name").getAsString();
             //currentUserEmail = json.get("email").getAsString();
@@ -416,11 +416,10 @@ public class OAuthUtils {
     public static class AuthStateEvent {
         boolean authenticated;
 
-        public AuthStateEvent(boolean authed) {
-            this.authenticated = authed;
+        public AuthStateEvent() {
         }
 
-        public boolean getAuthed() {
+        public boolean isAuthenticated() {
             return this.authenticated;
         }
     }

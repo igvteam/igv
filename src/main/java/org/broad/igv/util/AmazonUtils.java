@@ -11,6 +11,7 @@ import com.amazonaws.services.cognitoidentity.model.*;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -19,6 +20,7 @@ import org.broad.igv.DirectoryManager;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class AmazonUtils {
@@ -94,6 +96,21 @@ public class AmazonUtils {
                 .build();
     }
 
+
+    /**
+     * This method returns the details of the user and bucket lists.
+     *
+     * @param credentials Credentials to be used for displaying buckets
+     * @return
+     */
+    ArrayList<String> ListBucketsForUser(Credentials credentials) {
+        ArrayList<String> bucketsList = new ArrayList<>();
+
+        for (Bucket bucket : s3Client.listBuckets()) {
+            bucketsList.add(bucket.getName());
+        }
+        return bucketsList;
+    }
 
     /**
      * Generates a so-called "pre-signed" URLs (https://docs.aws.amazon.com/AmazonS3/latest/dev/ShareObjectPreSignedURLJavaSDK.html)
