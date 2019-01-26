@@ -266,7 +266,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
             }
 
             // Try .csi
-            if (pathOrURL.endsWith(".csi")) {
+            if (pathOrURL.endsWith(".bam")) {
                 indexPath = getIndexURL(pathOrURL.substring(0, pathOrURL.length() - 4), ".bai");
                 pathsTried.add(indexPath);
                 if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
@@ -299,18 +299,6 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
                 return indexPath;
             }
 
-            if (pathOrURL.endsWith(".cram")) {
-                indexPath = pathOrURL + ".crai";
-                if (FileUtils.resourceExists(indexPath)) {
-                    return indexPath;
-                } else {
-                    indexPath = pathOrURL.substring(0, pathOrURL.length() - 5) + ".crai";
-                    if (FileUtils.resourceExists(indexPath)) {
-                        return indexPath;
-                    }
-                }
-            }
-
             if (indexPath.contains(".bam.bai")) {
                 indexPath = indexPath.replaceFirst(".bam.bai", ".bai");
                 pathsTried.add(indexPath);
@@ -324,6 +312,37 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
                     return indexPath;
                 }
             }
+
+
+            // Try .bam.csi
+            indexPath = pathOrURL + ".csi";
+            pathsTried.add(indexPath);
+            if (FileUtils.resourceExists(indexPath)) {
+                return indexPath;
+            }
+
+            // Try .csi
+            if (pathOrURL.endsWith(".bam")) {
+                indexPath = pathOrURL.substring(0, pathOrURL.length() - 4) + ".csi";
+                pathsTried.add(indexPath);
+                if (FileUtils.resourceExists(indexPath)) {
+                    return indexPath;
+                }
+            }
+
+            if (pathOrURL.endsWith(".cram")) {
+                indexPath = pathOrURL + ".crai";
+                if (FileUtils.resourceExists(indexPath)) {
+                    return indexPath;
+                } else {
+                    indexPath = pathOrURL.substring(0, pathOrURL.length() - 5) + ".crai";
+                    if (FileUtils.resourceExists(indexPath)) {
+                        return indexPath;
+                    }
+                }
+            }
+
+
         }
 
         String defaultValue = pathOrURL + (pathOrURL.endsWith(".cram") ? ".crai" : ".bai");
