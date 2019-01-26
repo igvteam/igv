@@ -389,40 +389,6 @@ public class ResourceLocator {
         return result;
     }
 
-    public String getBamIndexPath() {
-
-        if (indexPath != null) return indexPath;
-
-        if (path.toLowerCase().startsWith("http://") ||
-                path.toLowerCase().startsWith("https://") ||
-                path.toLowerCase().startsWith("gs://")) {
-            // See if bam file is specified by parameter
-            try {
-                URL url = HttpUtils.createURL(path);
-                String queryString = url.getQuery();
-                if (queryString != null) {
-                    Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
-                    if (parameters.containsKey("index")) {
-                        return parameters.get("index");
-                    } else if (parameters.containsKey("file")) {
-                        String bamFile = parameters.get("file");
-                        String bamIndexFile = bamFile + ".bai";
-                        String newQueryString = queryString.replace(bamFile, bamIndexFile);
-                        return path.replace(queryString, newQueryString);
-                    } else {
-                        String ip = path.replace(url.getPath(), url.getPath() + ".bai");
-                        return ip;
-                    }
-                }
-            } catch (MalformedURLException e) {
-                log.error(e.getMessage(), e);
-            }
-
-        }
-
-        return path + ".bai";
-    }
-
     public String getMappingPath() {
         return mappingPath;
     }

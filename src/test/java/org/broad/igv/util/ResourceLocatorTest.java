@@ -70,33 +70,4 @@ public class ResourceLocatorTest {
         assertTrue(type.endsWith(".peak.bin"));
     }
 
-    @Test
-    public void testBamIndexPaths() throws Exception {
-
-        String url = "http://some.server.org/foo/bar.bam";
-        ResourceLocator rl = new ResourceLocator(url);
-        String indexPath = rl.getBamIndexPath();
-        assertEquals(url + ".bai", indexPath);
-
-        url = "http://some.server.org/foo?file=/server/local/path/bar.bam&param2=value2";
-        String expectedPath = "http://some.server.org/foo?file=/server/local/path/bar.bam.bai&param2=value2";
-        rl = new ResourceLocator(url);
-        indexPath = rl.getBamIndexPath();
-        assertEquals(expectedPath, indexPath);
-
-        // Bam with bam extension
-        url = "http://some.server.org/foo?file=/server/local/path/bar&param2=value2&dataformat=.bam";
-        expectedPath = "http://some.server.org/foo?file=/server/local/path/bar.bai&param2=value2&dataformat=.bam";
-        rl = new ResourceLocator(url);
-        indexPath = rl.getBamIndexPath();
-        assertEquals(expectedPath, indexPath);
-
-
-        String localPath = "/foo/bar.bam";
-        rl = new ResourceLocator(localPath);
-        indexPath = rl.getBamIndexPath();
-        assertEquals(localPath + ".bai", indexPath);
-
-
-    }
 }

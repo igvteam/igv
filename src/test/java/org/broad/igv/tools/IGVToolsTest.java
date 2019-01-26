@@ -95,7 +95,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         assertTrue(indPath.endsWith(expectedExtension));
 
         final Set<String> exts = new HashSet<String>();
-        for (String ext : new String[]{".idx", ".sai", ".bai", ".fai"}) {
+        for (String ext : new String[]{".idx", ".sai", ".bai", ".fai", ".csi"}) {
             exts.add(ext);
         }
         File[] files = (new File(indDir)).listFiles(new FilenameFilter() {

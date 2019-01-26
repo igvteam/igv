@@ -258,6 +258,22 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
                 }
             }
 
+            // Try .bam.csi
+            indexPath = getIndexURL(pathOrURL, ".csi");
+            pathsTried.add(indexPath);
+            if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
+                return indexPath;
+            }
+
+            // Try .csi
+            if (pathOrURL.endsWith(".csi")) {
+                indexPath = getIndexURL(pathOrURL.substring(0, pathOrURL.length() - 4), ".bai");
+                pathsTried.add(indexPath);
+                if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
+                    return indexPath;
+                }
+            }
+
             // Try cram
             if (pathOrURL.endsWith(".cram")) {
                 indexPath = getIndexURL(pathOrURL, ".crai");
@@ -271,6 +287,8 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
                     }
                 }
             }
+
+
 
         } else {
             // Local file
