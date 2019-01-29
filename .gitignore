@@ -2,7 +2,7 @@
 .idea/workspace.xml
 test/data/out/
 /build
-/build_java9
+/build_java11
 /bin
 igv.log
 /.gradle

@@ -14,8 +14,8 @@ You may need to execute 'gradle wrapper' to set up the gradle wrapper.  This sho
 first time only, or if you clean up the local .gradle directory.  Only do this if the './gradlew' calls
 fail.
 
-There are two different build options, one for Java 8 and another for Java 9 and up.  The default is 
-to build for Java 8.  Java 8 builds are *NOT* compatible with Java 9 and vice versa.  
+There are two different build options, one for Java 8 and another for Java 11.  The default is 
+to build for Java 8.  Java 8 builds are *NOT* compatible with Java 11 and vice versa.  
 
 There are other options but these cover the most common uses:
 
@@ -54,17 +54,16 @@ NOTE: If on a Windows platform use ```./gradlew.bat'``` in the instructions belo
 
 Note that Gradle creates a number of other subdirectories in 'build'.  These can be safely ignored.
 
-#### Java 9
+#### Java 11
 
-The instructions for Java 9 are nearly identical other than the need to specify the Java 9 build file
-and that the results will be found in 'build_java9' rather than 'build'.  More specifically:
+The instructions for Java 11 are nearly identical other than the need to specify the Java 11 build file
+and that the results will be found in 'build_java11' rather than 'build'.  More specifically:
 
-* Use './gradlew -b build_java9.gradle createDist' to build a distribution directory with helper scripts
+* Use ```./gradlew -b build_java11.gradle createDist``` to build a distribution directory with helper scripts
   for launching.  The structure is slightly different but the concept is the same.
   
-* Use './gradlew -b build_java9.gradle createToolsDist' for the igvtools distribution.
+* Use ```./gradlew -b build_java11.gradle test``` to run the test suite.
 
-* Use './gradlew -b build_java9.gradle test' to run the test suite.
-
-The full JAR build option is *NOT* available for Java 9+ because of modularity requirements.
+The full JAR build option is *NOT* available for Java 11 because of modularity requirements.  Also, there is no 
+separate igvtools distribution on Java 11; at present, this is folded into the normal IGV client distribution.
 

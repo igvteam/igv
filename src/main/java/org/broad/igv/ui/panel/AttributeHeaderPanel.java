@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2007-2015 Broad Institute
+ * Copyright (c) 2007-2018 Broad Institute
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ import java.util.Map;
  * @author jrobinso
  */
 public class AttributeHeaderPanel extends JPanel implements Paintable {
-
+    
     final static int MAXIMUM_FONT_SIZE = 10;
     public final static int ATTRIBUTE_COLUMN_WIDTH = 10;
     public final static int COLUMN_BORDER_WIDTH = 1;
@@ -110,6 +110,9 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
                 fontSize = MAXIMUM_FONT_SIZE;
             }
             Font font = FontManager.getFont(fontSize);
+            
+            FontMetrics fm = graphics2.getFontMetrics();
+            int fontAscent = fm.getHeight();
 
             // Change the origin for the text
             AffineTransform transform = AffineTransform.getTranslateInstance(0, getHeight() - COLUMN_BORDER_WIDTH);
@@ -119,8 +122,6 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
             transform = AffineTransform.getQuadrantRotateInstance(-1);
             graphics2.transform(transform);
             graphics2.setFont(font);
-            FontMetrics fm = graphics2.getFontMetrics();
-            int fontAscent = fm.getHeight();
 
             int i = 1;
             int x;
