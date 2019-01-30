@@ -288,7 +288,7 @@ public class FeatureCollectionSource implements FeatureSource {
             if (features != null) {
                 for (Feature f : features) {
                     int startBin = f.getStart() / windowSize;
-                    int endBin = f.getEnd() / windowSize;
+                    int endBin = Math.min(f.getEnd(), end) / windowSize;
                     for (int i = startBin; i < endBin; i++) {
                         values[i] = values[i] + 1;
                         dataMax = Math.max(dataMax, values[i]);

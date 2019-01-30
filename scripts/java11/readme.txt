@@ -4,7 +4,8 @@ IGV BINARY DISTRIBUTION
 
 Prerequisites:
 
-Java 9 or 10 (http://www.java.com).  Not compatible with Java 8 or Java 11 EA.
+Java 11 (http://openjdk.java.net).  This is bundled with our distributions.
+Not compatible with Java 8, 9, 10.
 
 
 Instructions:
@@ -13,11 +14,12 @@ Instructions:
 
 2. To start IGV execute the following from the command line,
 
-     java --module-path=lib -Xmx4g @igv.args --module org.igv/org.broad.igv.ui.Main
+     java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
 
-Alternatively, you can start IGV with one of the following scripts.  Some of these may not
-be present depending on the distribution you downloaded.  You might have to make the script 
-executable (chmod a+x igv.sh).  
+Note that the command line has become more complex with Java 11 compared to Java 8.  
+Alternatively, you can start IGV with one of the following scripts; this is 
+recommended.  Some of these may not be present depending on the distribution you 
+downloaded.  You might have to make the script executable (chmod a+x igv.sh).  
 
 
 igv.bat       (for Windows)

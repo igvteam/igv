@@ -88,7 +88,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.4.1'
+    gradleVersion = '4.10.1'
 }
 
 sourceCompatibility = 1.8
@@ -337,7 +337,7 @@ task createToolsDistZip(type: Zip, dependsOn: createToolsDist) {
     baseName = "IGVTools"
 
     from "${buildDir}/IGVTools-dist"
-    into createToolsDistZip.baseName
+    into createToolsDistZip.baseName + "_${version}"
 
     doLast {
         project.exec { commandLine('chmod', '775', createToolsDistZip.archivePath ) }
