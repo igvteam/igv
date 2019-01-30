@@ -329,7 +329,12 @@ public class HttpUtils {
                     }
                 return false;
             } finally {
-                conn.disconnect();
+                if(conn != null) {
+                    try {
+                        conn.disconnect();
+                    } catch (Exception e) {
+                    }
+                }
             }
         }
     }
