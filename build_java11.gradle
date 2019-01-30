@@ -155,7 +155,7 @@ task createDist(type: Copy, dependsOn: jar)  {
 
 task createLinuxDistZip(type: Zip, dependsOn: createDist) {
     baseName = "IGV_Linux"
-    archiveName = createLinuxDistZip.baseName + "_${version}_java11.zip"
+    archiveName = createLinuxDistZip.baseName + "_${version}.zip"
     destinationDir = file("${buildDir}/distZip")
     if (!jdkBundleLinux.equals("")) {
         with copySpec { from jdkBundleLinux into "jdk-11" }
@@ -164,7 +164,7 @@ task createLinuxDistZip(type: Zip, dependsOn: createDist) {
         exclude "*.bat"
         exclude "*.command"
     }
-    into createLinuxDistZip.baseName + "_${version}_java11"
+    into createLinuxDistZip.baseName + "_${version}"
 
     doLast {
         project.exec { commandLine('chmod', '775', createLinuxDistZip.archivePath) }
@@ -173,7 +173,7 @@ task createLinuxDistZip(type: Zip, dependsOn: createDist) {
 
 task createMacDistZip(type: Zip, dependsOn: createDist) {
     baseName = "IGV_Mac"
-    archiveName = createMacDistZip.baseName + "_${version}_java11.zip"
+    archiveName = createMacDistZip.baseName + "_${version}.zip"
     destinationDir = file("${buildDir}/distZip")
     if (!jdkBundleMac.equals("")) {
         with copySpec { from jdkBundleMac into "jdk-11" }
@@ -183,7 +183,7 @@ task createMacDistZip(type: Zip, dependsOn: createDist) {
         exclude "*_hidpi*"
         exclude "igvtools_gui"
     }
-    into createMacDistZip.baseName + "_${version}_java11"
+    into createMacDistZip.baseName + "_${version}"
 
     doLast {
         project.exec { commandLine('chmod', '775', createMacDistZip.archivePath ) }
@@ -192,47 +192,47 @@ task createMacDistZip(type: Zip, dependsOn: createDist) {
 
 task createMacAppDist(type: Copy, dependsOn: createDist) {
     if (!jdkBundleMac.equals("")) {
-        with copySpec { from jdkBundleMac into "IGV_${version}_java11.app/Contents/jdk-11" }
+        with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-11" }
     }
     with copySpec {
         from ("scripts/mac.app") {
             exclude "Contents/Info.plist.template"
             exclude "Contents/MacOS/JavaAppLauncher"
         }
-        into "IGV_${version}_java11.app"
+        into "IGV_${version}.app"
     }
     with copySpec {
         from ("scripts/java11/Info.plist.template")
         filter (ReplaceTokens, tokens: [ VERSION: version ])
         rename "Info.plist.template", "Info.plist"
-        into "IGV_${version}_java11.app/Contents"
+        into "IGV_${version}.app/Contents"
     }
     with copySpec {
         from ("scripts/java11/IGV_mac.app.command")
         rename "IGV_mac.app.command", "IGV"
-        into "IGV_${version}_java11.app/Contents/MacOS"
+        into "IGV_${version}.app/Contents/MacOS"
     }
     with copySpec {
         from ("web/IGV_64.png")
-        into "IGV_${version}_java11.app/Contents/Resources"
+        into "IGV_${version}.app/Contents/Resources"
     }
     with copySpec {
         from ("${buildDir}/IGV-dist/") include 'igv.args'
-        into "IGV_${version}_java11.app/Contents/Java/"
+        into "IGV_${version}.app/Contents/Java/"
     }
     with copySpec {
         from ("${buildDir}/IGV-dist/lib") include '*.jar'
-        into "IGV_${version}_java11.app/Contents/Java/lib"
+        into "IGV_${version}.app/Contents/Java/lib"
     }
     into "${buildDir}/IGV-MacApp-dist"
 
     doLast {
-        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-MacApp-dist/IGV_${version}_java11.app" ) }
+        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-MacApp-dist/IGV_${version}.app" ) }
     }
 }
 
 task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveName = "IGV_${version}_java11.app.zip"
+    archiveName = "IGV_${version}.app.zip"
     destinationDir = file("${buildDir}/distZip")
     from "${buildDir}/IGV-MacApp-dist"
     
