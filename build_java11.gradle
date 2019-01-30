@@ -30,6 +30,27 @@ ext.mainClassName = 'org.broad.igv.ui.Main'
 // Despite this, it is recommended that Java 8 vs. 11 builds be run in different locations.
 buildDir = 'build_java11'
 
+repositories {
+    mavenCentral()
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
+    }
+}
+//apply plugin: "io.spring.dependency-management"
+
+//dependencyManagement {
+//    imports {
+//        mavenBom 'software.amazon.awssdk:bom:2.0.0'
+//    }
+//}
+
+
 sourceSets {
     main {
         java {
@@ -48,6 +69,11 @@ configurations {
 dependencies {
     compile fileTree(dir: 'lib', include: '*.jar')
     testCompile fileTree(dir: 'test/lib', include: '*.jar')
+
+    // AWS dependencies
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-cognitoidentity', version: '1.11.486'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.11.481'
+    compile group: 'com.github.samtools', name: 'htsjdk', version: '2.18.1'
 }
 
 task wrapper(type: Wrapper) {
