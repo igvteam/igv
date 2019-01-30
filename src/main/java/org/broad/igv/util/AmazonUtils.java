@@ -1,6 +1,8 @@
 package org.broad.igv.util;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.AnonymousAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
@@ -11,12 +13,12 @@ import com.amazonaws.services.cognitoidentity.model.*;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.s3.model.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
+import org.broad.igv.aws.S3Object;
 
 import java.io.IOException;
 import java.net.URL;
@@ -25,8 +27,11 @@ import java.util.Date;
 
 public class AmazonUtils {
     private static Logger log = Logger.getLogger(AmazonUtils.class);
+
+    // AWS specific objects
     private static AmazonS3 s3Client;
     private static JsonObject igv_oauth_conf = GetCognitoConfig();
+    private static Credentials credentials;
 
     public static JsonObject GetCognitoConfig() {
         try {
@@ -39,6 +44,7 @@ public class AmazonUtils {
         } catch (IOException io) {
             log.error("Cannot read oauth-config.json config file");
         }
+
         return null;
     }
 
@@ -75,7 +81,10 @@ public class AmazonUtils {
         request.addLoginsEntry(idProvider, idTokenStr);
 
         GetCredentialsForIdentityResult result = provider.getCredentialsForIdentity(request);
-        return result.getCredentials();
+
+        credentials = result.getCredentials();
+
+        return credentials;
     }
 
 
@@ -99,17 +108,64 @@ public class AmazonUtils {
 
     /**
      * This method returns the details of the user and bucket lists.
-     *
-     * @param credentials Credentials to be used for displaying buckets
-     * @return
+     * @return bucket list
      */
-    ArrayList<String> ListBucketsForUser(Credentials credentials) {
+    public static ArrayList<String> ListBucketsForUser() {
         ArrayList<String> bucketsList = new ArrayList<>();
 
         for (Bucket bucket : s3Client.listBuckets()) {
             bucketsList.add(bucket.getName());
         }
         return bucketsList;
+    }
+
+    /**
+     * Returns a list of bucket objects given a specific path.
+     *
+     * Adopted from:
+     * https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingObjectKeysUsingJava.html
+     *
+     * @return List of bucket objects
+     */
+
+    public static ArrayList<S3Object> ListBucketObjects(String bucketName, String prefix) {
+        ArrayList<S3Object> objects = new ArrayList<>();
+        log.debug("Listing objects for bucketName: "+ bucketName);
+        try {
+            ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withPrefix(prefix).withDelimiter("/");
+            ListObjectsV2Result result;
+
+            do {
+                result = s3Client.listObjectsV2(req);
+                log.debug("S3 bucket prefix: "+result.getPrefix());
+
+                for (String folder : result.getCommonPrefixes()) {
+                    log.debug("S3 Bucket folder: "+folder);
+                    objects.add(new S3Object(folder.replace(prefix, ""), true));
+                }
+
+                for (S3ObjectSummary objectSummary : result.getObjectSummaries()) {
+                    log.debug("S3 Bucket key: "+objectSummary.getKey());
+                    objects.add(new S3Object(objectSummary.getKey().replace(prefix, ""), false));
+                }
+                // If there are more than maxKeys keys in the bucket, get a continuation token
+                // and list the next objects.
+                String token = result.getNextContinuationToken();
+                log.debug("Next S3 bucket pagination continuation Token: " + token);
+                req.setContinuationToken(token);
+            } while (result.isTruncated());
+
+        } catch(AmazonServiceException e) {
+            // The call was transmitted successfully, but Amazon S3 couldn't process
+            // it, so it returned an error response.
+            e.printStackTrace();
+        } catch(SdkClientException e) {
+            // Amazon S3 couldn't be contacted for a response, or the client
+            // couldn't parse the response from Amazon S3.
+            e.printStackTrace();
+        }
+
+        return objects;
     }
 
     /**
@@ -124,7 +180,7 @@ public class AmazonUtils {
      * @return
      */
     public static URL translateAmazonCloudURL(String bucketName, String objectKey, Date expirationTime) {
-        // We generate presigned URLs out of the S3 bucket because loadTracks->HttpUtils do not understand s3://
+        // We generate presigned URLs out of the S3 bucket because loadTracks->HttpUtils does not understand s3://
         // ... good old IETF rfc2396 enforcing standard protocol schemes.
         // This wrapper name is consistent with GoogleUtils similarly-named class method.
 
@@ -137,4 +193,5 @@ public class AmazonUtils {
 
         return s3Client.generatePresignedUrl(generatePresignedUrlRequest);
     }
+
 }

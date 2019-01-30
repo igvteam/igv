@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
+import org.broad.igv.aws.S3LoadDialog;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
@@ -54,16 +55,11 @@ import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
-import org.broad.igv.util.BrowserLauncher;
-import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.*;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 
 import javax.swing.*;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
 import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -993,9 +989,27 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 log.error("Error fetching oAuth tokens", ex);
             }
         });
-
+        //login.setEnabled(false);
         menu.add(login);
 
+        final JMenuItem logout = new JMenuItem("Logout");
+        logout.addActionListener(e -> oauth.logout());
+        logout.setEnabled(false);
+        menu.add(logout);
+
+        final JMenuItem s3_object = new JMenuItem("Load from S3 bucket");
+        s3_object.addActionListener(e -> {
+            ArrayList<String> buckets = AmazonUtils.ListBucketsForUser();
+            log.debug(buckets);
+
+            UIUtilities.invokeOnEventThread(() -> {
+                S3LoadDialog dlg = new S3LoadDialog(IGV.getMainFrame());
+                dlg.setModal(true);
+                dlg.setVisible(true);
+                dlg.dispose();
+            });
+        });
+        menu.add(s3_object);
         return menu;
     }
 
@@ -1046,6 +1060,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         loadReadset.setEnabled(false);
         menu.add(loadReadset);
 
+        // XXX: Generates HTTP requests by just hovering on the Google menu, shouldn't be like this.
+        /*
         menu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
@@ -1073,8 +1089,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             public void menuCanceled(MenuEvent e) {
 
             }
-        });
 
+        });
+*/
 
         return menu;
     }
@@ -1162,16 +1179,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
 
         if(event instanceof OAuthUtils.AuthStateEvent) {
-                // XXX: Open S3 bucket listing right after successful authentication
-                MenuAction menuAction = new MenuAction("Load data from Amazon S3 bucket...", null) {
-                    @Override
-                    public void actionPerformed(ActionEvent event) {
-                        GenomeComboBox.loadGenomeFromServer();
-                    }
-                };
-
-                menuAction.setToolTipText("Load data from AWS bucket");
-                loadFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+            // XXX: Might be interesting to use this to set user cues on whether auth was successful (i.e user avatar).
+            // XXX: or simply get the FullName from id_token
         }
     }
 }

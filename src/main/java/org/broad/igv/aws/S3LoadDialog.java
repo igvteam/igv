@@ -23,11 +23,12 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui;
+package org.broad.igv.aws;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
@@ -36,41 +37,48 @@ import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
-/**
- * @author brainstorm
- */
-public class GenericLoadDialog extends JDialog {
 
-    private static Logger log = Logger.getLogger(GenericLoadDialog.class);
+public class S3LoadDialog extends JDialog {
+
+    private static Logger log = Logger.getLogger(S3LoadDialog.class);
 
     private final DefaultTreeModel treeModel;
     String selectedId;
 
-    public GenericLoadDialog(Frame owner) {
+    public S3LoadDialog(Frame owner) {
         super(owner);
+        ArrayList<String> datasets = AmazonUtils.ListBucketsForUser();
         initComponents();
-        treeModel = new DefaultTreeModel(createNodes(providers));
-        this.selectionTree.setModel(treeModel);
-    }
 
-    private DefaultMutableTreeNode createNodes(String[] datasets) {
-        // XXX: Just pass a list of buckets (Resource locators) to this method?
-        DefaultMutableTreeNode top = new DefaultMutableTreeNode("AWS");
-        for (s3bucket : AmazonUtils.s3Client) {
-             // XXX: Implement eventlistener willExpand and fetch corresponding S3 objects
-             DefaultMutableTreeNode readsetNode = new DefaultMutableTreeNode(new LeafNode(provider, readset));
-             datasetNode.add(readsetNode);
+        S3TreeNode root = new S3TreeNode(new S3Object("S3", true), true);
+
+        treeModel = new DefaultTreeModel(root);
+        this.selectionTree.setModel(treeModel);
+
+        // List toplevel buckets
+        ArrayList<String> buckets = AmazonUtils.ListBucketsForUser();
+        for (String bucket: buckets) {
+            S3Object bucket_obj = new S3Object(bucket, true);
+            root.add(new S3TreeNode(bucket_obj, true));
         }
-        return top;
+
+        log.debug("Populated S3 load dialog with S3 buckets: "+ buckets.toString());
+
+        // Propagate changes to UI
+        treeModel.reload();
     }
 
     private void loadButtonActionPerformed(ActionEvent e) {
@@ -84,11 +92,30 @@ public class GenericLoadDialog extends JDialog {
                 DefaultMutableTreeNode obj = (DefaultMutableTreeNode) path.getLastPathComponent();
                 Object userObject = obj.getUserObject();
                 if (userObject instanceof LeafNode) {
-//                    setGenome(.getGenomeId());
-                    //XXX: Can genome be autodetected from the dataset itself via headers consistently?
-                    // Most probably not, so I might just leave it like this for now?
-                    setGenome("hg38");
-                    loadTrack(url, name);
+                     /*
+            // XXX: Remove hardcoding, refactor method
+            String s3_test_bucket = "umccr-primary-data-dev";
+            String s3_test_objkey = "10X_telomeres_pos_sorted.bam";
+
+            // XXX: Trace back path where this happens on other flows: both main file and index as presigned urls
+            URL s3_presigned_url = AmazonUtils.translateAmazonCloudURL( s3_test_bucket,
+                                                                        s3_test_objkey,
+                                                                        new java.util.Date(OAuthUtils.getExpirationTime()));
+            URL s3_presigned_url_idx = AmazonUtils.translateAmazonCloudURL( s3_test_bucket,
+                                                                            s3_test_objkey.replace(".bam", ".bam.bai"),
+                                                                            new java.util.Date(expirationTime));
+
+            ResourceLocator locator = new ResourceLocator(s3_presigned_url.toString());
+            locator.setName("s3 test object");
+            locator.setType(".bam"); // XXX: Trace back where this is auto-detected
+            locator.setIndexPath(s3_presigned_url_idx.toString());
+
+            //locator.setType(Ga4ghAPIHelper.RESOURCE_TYPE);
+            //locator.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
+            IGV.getInstance().loadTracks(Arrays.asList(locator));
+            */
+                    // XXX: Use generic loader?
+                    loadTrack("FOOOOOO", "BAAAAR");
                 }
             }
         });
@@ -101,9 +128,24 @@ public class GenericLoadDialog extends JDialog {
 
     class LeafNode {
         ResourceLocator locator;
+        ArrayList<String> datasets;
+        String dataset;
 
-        LeafNode(ResourceLocator locator) {
+        public LeafNode(ResourceLocator locator) {
             this.locator = locator;
+        }
+
+        public LeafNode(ArrayList<String> datasets) {
+            this.datasets = datasets;
+        }
+
+        public LeafNode(String dataset){
+            this.dataset = dataset;
+        }
+
+        @Override
+        public String toString() {
+            return dataset;
         }
     }
 
@@ -129,6 +171,15 @@ public class GenericLoadDialog extends JDialog {
         }
     }
 
+    private void updateModel(DefaultMutableTreeNode parent) {
+        DefaultTreeModel model = treeModel;
+        if (parent != null) {
+            model.reload(parent);
+        } else {
+            model.reload();
+        }
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -146,6 +197,58 @@ public class GenericLoadDialog extends JDialog {
         setTitle("Amazon S3 datasets");
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
+
+        //======== selectionTree ========
+        selectionTree.addTreeWillExpandListener(new TreeWillExpandListener() {
+              public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
+                  log.debug("TreeWillExpand on S3LoadDialog panel");
+
+                  Object parent = event.getPath().getLastPathComponent();
+                  S3TreeNode parentNode = (S3TreeNode) parent;
+                  S3Object s3Object = parentNode.getUserObject();
+                  //String s3Bucket = s3Object.toString();
+
+                  if (s3Object.isDir()) {
+                      Object[] path = parentNode.getUserObjectPath(); // fullpath to S3 object
+                      String currentBucket = path[1].toString();
+                      String prefix = "";
+
+                      for (int i = 2; i < path.length; i++) {
+                          prefix += path[i];
+                      }
+
+                      log.debug("S3 bucket prefix is: "+prefix);
+
+                      // List contents of bucket with path-prefix passed
+                      // XXX: Determine reliable source for bucket root instead of hardcoding it here
+                      ArrayList<S3Object> s3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
+
+                      // For each item in the bucket:
+                      //  1) create an S3Object
+                      //    1.1) Name of object.
+                      //    1.2) Dir or file: .getPrefix or null, according to S3 API
+                      for (S3Object s3Obj: s3Objects) {
+                          // Add it to the corresponding POJO...
+                          // XXX: Cannot if (s3Obj.getPrefix) here... find string alternatives for PRE detection?:
+                          // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+                          // """
+                          // The Amazon S3 data model is a flat structure: you create a bucket, and the bucket stores
+                          // objects. There is no hierarchy of subbuckets or subfolders; however, you can infer logical
+                          // hierarchy using key name prefixes and delimiters as the Amazon S3 console does. The Amazon
+                          // S3 console supports a concept of folders.
+                          // """
+                          parentNode.add(new S3TreeNode(s3Obj));
+                      }
+
+                      // ... and update the model
+                      updateModel(parentNode);
+                  }
+              }
+
+              public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+                  log.debug("TreeWillCollapse on S3LoadDialog panel");
+              }
+        });
 
         //======== dialogPane ========
         {
@@ -198,7 +301,7 @@ public class GenericLoadDialog extends JDialog {
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
 
             //---- label1 ----
-            label1.setText("Select a readset to load");
+            label1.setText("Select a objects to load");
             dialogPane.add(label1, BorderLayout.NORTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);

@@ -66,7 +66,7 @@ public class OAuthUtils {
     private String genomicsScope = "https://www.googleapis.com/auth/genomics";
     private String gsScope = "https://www.googleapis.com/auth/devstorage.read_write";
     private String emailScope = "https://www.googleapis.com/auth/userinfo.email";
-    private String state = "%2Fprofile";
+    private String state = UUID.randomUUID().toString(); // "An opaque value the client adds to the initial request."
     private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
     private String oobURI = "urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob";
     private String clientId;
@@ -276,13 +276,15 @@ public class OAuthUtils {
             refreshToken = response.get("refresh_token").getAsString();
             idToken = response.get("id_token").getAsString();
 
-            log.debug("Oauth refresh token: "+refreshToken);
-            log.debug("Oauth token_id: "+idToken);
-            log.debug("Oauth access token: "+accessToken);
+            log.debug("Oauth2 refresh token: "+refreshToken);
+            log.debug("Oauth2 token_id: "+idToken);
+            log.debug("Oauth2 access token: "+accessToken);
+            log.debug("Oauth2 state: "+state);
 
             refreshToken = response.get("refresh_token").getAsString();
             expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
 
+            // XXX: Move this away into AmazonUtils
             // Get AWS credentials after getting relevant tokens
             com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
             aws_credentials = AmazonUtils.GetCognitoAWSCredentials(response);
@@ -290,25 +292,13 @@ public class OAuthUtils {
             // XXX: Make sure a thread is updating the refreshing of the s3client tokens and so on
             AmazonUtils.updateS3Client(aws_credentials);
 
-            // Notify UI that we are ready to select dataset(s) in a ComboBox/List
+            // Notify UI that we are authz'd/authn'd
             if (isLoggedIn()) {
                 IGVEventBus.getInstance().post(new AuthStateEvent());
             }
 
-            // XXX: Remove hardcoding, refactor method
-            //String s3_test_bucket = "umccr-primary-data-dev";
-            //String s3_test_objkey = "10X_telomeres_pos_sorted.bam";
 
-            // XXX: Trace back path where this happens on other flows: both main file and index as presigned urls
-            URL s3_presigned_url = AmazonUtils.translateAmazonCloudURL(s3_test_bucket, s3_test_objkey, new java.util.Date(expirationTime));
-            URL s3_presigned_url_idx = AmazonUtils.translateAmazonCloudURL(s3_test_bucket, s3_test_objkey.replace(".bam", ".bam.bai"), new java.util.Date(expirationTime));
 
-            ResourceLocator s3_test_locator = new ResourceLocator(s3_presigned_url.toString());
-            s3_test_locator.setName("s3 test object");
-            s3_test_locator.setType(".bam"); // XXX: Trace back where this is auto-detected
-            s3_test_locator.setIndexPath(s3_presigned_url_idx.toString());
-
-            IGV.getInstance().loadTracks(Arrays.asList(s3_test_locator));
 
         } catch(Exception e) {
             log.error(e);
@@ -412,11 +402,16 @@ public class OAuthUtils {
         return accessToken;
     }
 
+    public long getExpirationTime() {
+        return expirationTime;
+    }
 
     public static class AuthStateEvent {
         boolean authenticated;
 
+        // Assuming that if this event is called, we are indeed autz/authn'd
         public AuthStateEvent() {
+            this.authenticated = true;
         }
 
         public boolean isAuthenticated() {
