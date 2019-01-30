@@ -141,6 +141,7 @@ public class AmazonUtils {
 
                 for (String folder : result.getCommonPrefixes()) {
                     log.debug("S3 Bucket folder: "+folder);
+                    folder = folder.substring(0, folder.length()-1); // Chop off last / of the folder for UI purposes
                     objects.add(new S3Object(folder.replace(prefix, ""), true));
                 }
 

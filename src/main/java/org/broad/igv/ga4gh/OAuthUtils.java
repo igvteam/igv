@@ -77,7 +77,7 @@ public class OAuthUtils {
     private String authorizationCode;
     private String accessToken;
     private String refreshToken;
-    private long expirationTime;
+    private static long expirationTime;
 
     public static String GS_HOST = "www.googleapis.com";
 
@@ -402,7 +402,7 @@ public class OAuthUtils {
         return accessToken;
     }
 
-    public long getExpirationTime() {
+    public static long getExpirationTime() {
         return expirationTime;
     }
 

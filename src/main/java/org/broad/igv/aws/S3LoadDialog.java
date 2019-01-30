@@ -25,9 +25,11 @@
 
 package org.broad.igv.aws;
 
+import htsjdk.samtools.util.Tuple;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -47,6 +49,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -87,37 +90,55 @@ public class S3LoadDialog extends JDialog {
 
         LongRunningTask.submit(() -> {
             TreePath[] paths = selectionTree.getSelectionPaths();
+            ArrayList<Tuple<String, String>> preLocatorPaths = new ArrayList<>();
+            ArrayList<ResourceLocator> finalLocators = new ArrayList<>();
 
             for (TreePath path : paths) {
                 DefaultMutableTreeNode obj = (DefaultMutableTreeNode) path.getLastPathComponent();
-                Object userObject = obj.getUserObject();
-                if (userObject instanceof LeafNode) {
-                     /*
-            // XXX: Remove hardcoding, refactor method
-            String s3_test_bucket = "umccr-primary-data-dev";
-            String s3_test_objkey = "10X_telomeres_pos_sorted.bam";
+                Object[] selectedObjects = path.getPath();
 
-            // XXX: Trace back path where this happens on other flows: both main file and index as presigned urls
-            URL s3_presigned_url = AmazonUtils.translateAmazonCloudURL( s3_test_bucket,
-                                                                        s3_test_objkey,
-                                                                        new java.util.Date(OAuthUtils.getExpirationTime()));
-            URL s3_presigned_url_idx = AmazonUtils.translateAmazonCloudURL( s3_test_bucket,
-                                                                            s3_test_objkey.replace(".bam", ".bam.bai"),
-                                                                            new java.util.Date(expirationTime));
+                String bucketName = ((S3TreeNode) selectedObjects[1]).getUserObject().getName();
+                String s3Key = "";
 
-            ResourceLocator locator = new ResourceLocator(s3_presigned_url.toString());
-            locator.setName("s3 test object");
-            locator.setType(".bam"); // XXX: Trace back where this is auto-detected
-            locator.setIndexPath(s3_presigned_url_idx.toString());
-
-            //locator.setType(Ga4ghAPIHelper.RESOURCE_TYPE);
-            //locator.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
-            IGV.getInstance().loadTracks(Arrays.asList(locator));
-            */
-                    // XXX: Use generic loader?
-                    loadTrack("FOOOOOO", "BAAAAR");
+                for (int i = 2; i < selectedObjects.length; i++) {
+                    S3TreeNode selectedObject = (S3TreeNode) selectedObjects[i];
+                    S3Object selectedS3Object = selectedObject.getUserObject();
+                    s3Key += selectedS3Object.getName() + "/";
                 }
+
+                s3Key = s3Key.substring(0, s3Key.length() - 1);
+                log.debug("Loading S3 object key: " + s3Key + " from bucket " + bucketName);
+
+                preLocatorPaths.add(new Tuple<>(bucketName, s3Key));
             }
+
+            for (Tuple<String, String> preLocator: preLocatorPaths) {
+                String bucketName = preLocator.a;
+                String s3objPath = preLocator.b;
+
+                // XXX: Trace back path where this happens on other flows: both main file and index as presigned urls
+                URL s3_presigned_url = AmazonUtils.translateAmazonCloudURL( bucketName,
+                                                                            s3objPath,
+                                                                            new java.util.Date(OAuthUtils.getExpirationTime()));
+
+                // XXX: Make it general for all non-bam.bai.
+                URL s3_presigned_url_idx = AmazonUtils.translateAmazonCloudURL( bucketName,
+                                                                                s3objPath.replace(".bam", ".bam.bai"),
+                                                                                new java.util.Date(OAuthUtils.getExpirationTime()));
+
+                ResourceLocator locator = new ResourceLocator(s3_presigned_url.toString());
+                locator.setName("");
+                locator.setType(".bam"); // XXX: Trace back where this is auto-detected
+                locator.setIndexPath(s3_presigned_url_idx.toString());
+
+                //locator.setType(Ga4ghAPIHelper.RESOURCE_TYPE);
+                //locator.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
+
+                finalLocators.add(locator);
+
+            }
+
+            IGV.getInstance().loadTracks(finalLocators);
         });
     }
 
@@ -214,7 +235,7 @@ public class S3LoadDialog extends JDialog {
                       String prefix = "";
 
                       for (int i = 2; i < path.length; i++) {
-                          prefix += path[i];
+                          prefix += path[i] + "/";
                       }
 
                       log.debug("S3 bucket prefix is: "+prefix);
