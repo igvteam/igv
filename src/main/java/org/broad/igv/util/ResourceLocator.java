@@ -27,7 +27,6 @@ package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
-import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.gs.GSUtils;
 import htsjdk.tribble.Tribble;
 
@@ -35,7 +34,6 @@ import java.awt.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -146,7 +144,7 @@ public class ResourceLocator {
      * @return true if resource was found.
      */
     public boolean exists() {
-        return ParsingUtils.pathExists(path);
+        return ParsingUtils.fileExists(path);
     }
 
 

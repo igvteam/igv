@@ -43,7 +43,6 @@ import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -378,11 +377,11 @@ public class CommandExecutor {
 
 
         String genomePath = genomeID;
-        if (!ParsingUtils.pathExists(genomePath)) {
+        if (!ParsingUtils.fileExists(genomePath)) {
             String workingDirectory = System.getProperty("user.dir", "");
             genomePath = FileUtils.getAbsolutePath(genomeID, workingDirectory);
         }
-        if (ParsingUtils.pathExists(genomePath)) {
+        if (ParsingUtils.fileExists(genomePath)) {
             try {
                 GenomeManager.getInstance().loadGenome(genomePath, null);
             } catch (IOException e) {

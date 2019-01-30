@@ -328,6 +328,8 @@ public class HttpUtils {
                         e1.printStackTrace();
                     }
                 return false;
+            } finally {
+                conn.disconnect();
             }
         }
     }
