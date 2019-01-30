@@ -8,6 +8,7 @@ cache:
     - $HOME/.gradle/wrapper/
 jdk: openjdk11
 install:
+- ./gradlew -b build.gradle build
 - ./gradlew -b build_java11.gradle assemble
 script:
 - ./gradlew -b build_java11.gradle check
