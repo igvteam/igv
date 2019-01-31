@@ -279,7 +279,7 @@ task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
     standardInput = new ByteArrayInputStream( keyPassword.getBytes() );
     commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha1", 
                 "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
-                "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-dist/IGV_${version}-installer.exe")
+                "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-dist/IGV_Win_${version}-installer.exe")
     doLast {
         if (signcodeCommand.equals("")) {
             throw new GradleException("Required property not set: signcodeCommand");
