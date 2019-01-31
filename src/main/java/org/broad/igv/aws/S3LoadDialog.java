@@ -127,7 +127,7 @@ public class S3LoadDialog extends JDialog {
                                                                                 new java.util.Date(OAuthUtils.getExpirationTime()));
 
                 ResourceLocator locator = new ResourceLocator(s3_presigned_url.toString());
-                locator.setName("");
+                locator.setName(s3objPath);
                 locator.setType(".bam"); // XXX: Trace back where this is auto-detected
                 locator.setIndexPath(s3_presigned_url_idx.toString());
 
@@ -141,6 +141,50 @@ public class S3LoadDialog extends JDialog {
             IGV.getInstance().loadTracks(finalLocators);
         });
     }
+
+    private void treeWillExpandActionPerformed(TreeExpansionEvent event) {
+        log.debug("TreeWillExpand on S3LoadDialog panel");
+
+        Object parent = event.getPath().getLastPathComponent();
+        S3TreeNode parentNode = (S3TreeNode) parent;
+        S3Object s3Object = parentNode.getUserObject();
+        //String s3Bucket = s3Object.toString();
+
+        if (s3Object.isDir()) {
+            Object[] path = parentNode.getUserObjectPath(); // fullpath to S3 object
+            String currentBucket = path[1].toString();
+            String prefix = "";
+
+            for (int i = 2; i < path.length; i++) {
+                prefix += path[i] + "/";
+            }
+
+            log.debug("S3 bucket prefix is: "+prefix);
+
+            // List contents of bucket with path-prefix passed
+            ArrayList<S3Object> s3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
+
+            // For each item in the bucket:
+            //  1) create an S3Object
+            //    1.1) Name of object.
+            //    1.2) Dir or file: .getPrefix or null, according to S3 API
+            for (S3Object s3Obj: s3Objects) {
+                // Add it to the corresponding POJO...
+                // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+                // """
+                // The Amazon S3 data model is a flat structure: you create a bucket, and the bucket stores
+                // objects. There is no hierarchy of subbuckets or subfolders; however, you can infer logical
+                // hierarchy using key name prefixes and delimiters as the Amazon S3 console does. The Amazon
+                // S3 console supports a concept of folders.
+                // """
+                parentNode.add(new S3TreeNode(s3Obj));
+            }
+
+            // ... and update the model
+            updateModel(parentNode);
+        }
+    }
+
 
     private void cancelButtonActionPerformed(ActionEvent e) {
         selectedId = null;
@@ -221,52 +265,13 @@ public class S3LoadDialog extends JDialog {
 
         //======== selectionTree ========
         selectionTree.addTreeWillExpandListener(new TreeWillExpandListener() {
-              public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
-                  log.debug("TreeWillExpand on S3LoadDialog panel");
+            public void treeWillExpand(TreeExpansionEvent event) {
+                treeWillExpandActionPerformed(event);
+            }
 
-                  Object parent = event.getPath().getLastPathComponent();
-                  S3TreeNode parentNode = (S3TreeNode) parent;
-                  S3Object s3Object = parentNode.getUserObject();
-                  //String s3Bucket = s3Object.toString();
-
-                  if (s3Object.isDir()) {
-                      Object[] path = parentNode.getUserObjectPath(); // fullpath to S3 object
-                      String currentBucket = path[1].toString();
-                      String prefix = "";
-
-                      for (int i = 2; i < path.length; i++) {
-                          prefix += path[i] + "/";
-                      }
-
-                      log.debug("S3 bucket prefix is: "+prefix);
-
-                      // List contents of bucket with path-prefix passed
-                      ArrayList<S3Object> s3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
-
-                      // For each item in the bucket:
-                      //  1) create an S3Object
-                      //    1.1) Name of object.
-                      //    1.2) Dir or file: .getPrefix or null, according to S3 API
-                      for (S3Object s3Obj: s3Objects) {
-                          // Add it to the corresponding POJO...
-                          // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
-                          // """
-                          // The Amazon S3 data model is a flat structure: you create a bucket, and the bucket stores
-                          // objects. There is no hierarchy of subbuckets or subfolders; however, you can infer logical
-                          // hierarchy using key name prefixes and delimiters as the Amazon S3 console does. The Amazon
-                          // S3 console supports a concept of folders.
-                          // """
-                          parentNode.add(new S3TreeNode(s3Obj));
-                      }
-
-                      // ... and update the model
-                      updateModel(parentNode);
-                  }
-              }
-
-              public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
-                  log.debug("TreeWillCollapse on S3LoadDialog panel");
-              }
+            public void treeWillCollapse(TreeExpansionEvent event) {
+                log.debug("Tree collapsing");
+            }
         });
 
         //======== dialogPane ========
@@ -295,24 +300,14 @@ public class S3LoadDialog extends JDialog {
 
                 //---- loadButton ----
                 loadButton.setText("Load");
-                loadButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        loadButtonActionPerformed(e);
-                    }
-                });
+                loadButton.addActionListener(e -> loadButtonActionPerformed(e));
                 buttonBar.add(loadButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
-                cancelButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        cancelButtonActionPerformed(e);
-                    }
-                });
+                cancelButton.addActionListener(e -> cancelButtonActionPerformed(e));
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 0), 0, 0));
