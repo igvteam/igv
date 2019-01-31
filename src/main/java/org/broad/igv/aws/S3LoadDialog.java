@@ -241,7 +241,6 @@ public class S3LoadDialog extends JDialog {
                       log.debug("S3 bucket prefix is: "+prefix);
 
                       // List contents of bucket with path-prefix passed
-                      // XXX: Determine reliable source for bucket root instead of hardcoding it here
                       ArrayList<S3Object> s3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
 
                       // For each item in the bucket:
@@ -250,7 +249,6 @@ public class S3LoadDialog extends JDialog {
                       //    1.2) Dir or file: .getPrefix or null, according to S3 API
                       for (S3Object s3Obj: s3Objects) {
                           // Add it to the corresponding POJO...
-                          // XXX: Cannot if (s3Obj.getPrefix) here... find string alternatives for PRE detection?:
                           // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
                           // """
                           // The Amazon S3 data model is a flat structure: you create a bucket, and the bucket stores

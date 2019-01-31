@@ -972,18 +972,18 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         final OAuthUtils oauth = OAuthUtils.getInstance();
 
-        JMenu menu = new JMenu("Amazon");
+        oauth.setAuthProvider("Amazon");
+        JMenu menu = new JMenu(oauth.getAuthProvider());
 
         final JMenuItem login = new JMenuItem("Login");
         login.addActionListener(e -> {
             try {
-                // Once we get positive result from the auth flow, show buckets to the user
+                // Once we get positive result from the auth flow, perhaps fetch user full name and/or profile avatar?
                 IGVEventBus.getInstance().subscribe(OAuthUtils.AuthStateEvent.class, this);
 
                 // Set appropriate scope for AWS Cognito and go through the oauth flow
                 oauth.setScope("email%20openid%20profile");
                 oauth.openAuthorizationPage(); // should trigger and event and UI takes over
-
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
                 log.error("Error fetching oAuth tokens", ex);
@@ -1018,7 +1018,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     	// Dynamically name menu - dwm08
         final OAuthUtils oauth = OAuthUtils.getInstance();
 
-        JMenu menu =  new JMenu(oauth.authProvider);
+        oauth.setAuthProvider("Google");
+        JMenu menu =  new JMenu(oauth.getAuthProvider());
 
         final JMenuItem login = new JMenuItem("Login ... ");
         login.addActionListener(e -> {
@@ -1180,7 +1181,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         if(event instanceof OAuthUtils.AuthStateEvent) {
             // XXX: Might be interesting to use this to set user cues on whether auth was successful (i.e user avatar).
-            // XXX: or simply get the FullName from id_token
+            // XXX: or simply get the FullName from id_token and show it on the status bar or elsewhere in the UI?
         }
     }
 }

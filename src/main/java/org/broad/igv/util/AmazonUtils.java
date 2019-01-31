@@ -19,6 +19,7 @@ import com.google.gson.JsonParser;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.aws.S3Object;
+import org.broad.igv.ga4gh.OAuthUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -51,12 +52,13 @@ public class AmazonUtils {
     /**
      * Returns the AWS credentials
      *
-     * @param response contains all the OAuth/OIDC information required to generate AWS credentials
      * @return returns the credentials based on the access token returned from the user pool.
      */
-    public static Credentials GetCognitoAWSCredentials(JsonObject response) {
+    public static Credentials GetCognitoAWSCredentials() {
 
         JsonObject igv_oauth_conf = GetCognitoConfig();
+        JsonObject response = OAuthUtils.getResponse();
+
         JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
 
         log.debug("JWT payload id token: "+payload);

@@ -32,7 +32,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 
@@ -55,7 +54,7 @@ public class OAuthUtils {
 
     private static Logger log = Logger.getLogger(OAuthUtils.class);
 
-    public String authProvider = "Google";
+    private String authProvider = "";
     private String appIdURI = null;
     public static String findString = null;
     public static String replaceString = null;
@@ -83,6 +82,8 @@ public class OAuthUtils {
 
     private static OAuthUtils theInstance;
     private String currentUserName;
+
+    private static JsonObject response;
 
     // by default this is the google scope
     private String scope = genomicsScope + "%20" + gsScope + "%20" + emailScope;
@@ -270,7 +271,9 @@ public class OAuthUtils {
 
             String res = HttpUtils.getInstance().doPost(url, params);
             JsonParser parser = new JsonParser();
-            JsonObject response = parser.parse(res).getAsJsonObject();
+
+            setResponse(parser.parse(res).getAsJsonObject());
+            JsonObject response = getResponse();
 
             accessToken = response.get("access_token").getAsString();
             refreshToken = response.get("refresh_token").getAsString();
@@ -284,21 +287,19 @@ public class OAuthUtils {
             refreshToken = response.get("refresh_token").getAsString();
             expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
 
-            // XXX: Move this away into AmazonUtils
-            // Get AWS credentials after getting relevant tokens
-            com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
-            aws_credentials = AmazonUtils.GetCognitoAWSCredentials(response);
+            if (authProvider == "Amazon") {
+                // Get AWS credentials after getting relevant tokens
+                com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
+                aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
 
-            // XXX: Make sure a thread is updating the refreshing of the s3client tokens and so on
-            AmazonUtils.updateS3Client(aws_credentials);
+                // Update S3 client with newly acquired token
+                AmazonUtils.updateS3Client(aws_credentials);
+            }
 
             // Notify UI that we are authz'd/authn'd
             if (isLoggedIn()) {
                 IGVEventBus.getInstance().post(new AuthStateEvent());
             }
-
-
-
 
         } catch(Exception e) {
             log.error(e);
@@ -336,7 +337,9 @@ public class OAuthUtils {
 
         String response = HttpUtils.getInstance().doPost(url, params);
         JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(response).getAsJsonObject();
+
+        setResponse(parser.parse(response).getAsJsonObject());
+        JsonObject obj = getResponse();
 
         JsonPrimitive atprim = obj.getAsJsonPrimitive("access_token");
         if (atprim != null) {
@@ -369,10 +372,11 @@ public class OAuthUtils {
     public JsonObject fetchUserProfile() throws IOException {
 
         try {
-
+            // XXX: This shouldn't belong here, way too Google-specific/hardcoded
             URL url = new URL("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken);
             String response = HttpUtils.getInstance().getContentsAsJSON(url);
             JsonParser parser = new JsonParser();
+
             JsonObject json = parser.parse(response).getAsJsonObject();
 
             currentUserName = json.get("name").getAsString();
@@ -562,5 +566,21 @@ public class OAuthUtils {
                 }
             }
         }
+    }
+
+    public static JsonObject getResponse() {
+        return response;
+    }
+
+    public static void setResponse(JsonObject res) {
+        response = res;
+    }
+
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(String authProvider) {
+        this.authProvider = authProvider;
     }
 }
