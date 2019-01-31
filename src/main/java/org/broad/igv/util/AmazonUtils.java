@@ -134,6 +134,13 @@ public class AmazonUtils {
         ArrayList<S3Object> objects = new ArrayList<>();
         log.debug("Listing objects for bucketName: "+ bucketName);
         try {
+            // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+            // """
+            // The Amazon S3 data model is a flat structure: you create a bucket, and the bucket stores
+            // objects. There is no hierarchy of subbuckets or subfolders; however, you can infer logical
+            // hierarchy using key name prefixes and delimiters as the Amazon S3 console does. The Amazon
+            // S3 console supports a concept of folders.
+            // """
             ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withPrefix(prefix).withDelimiter("/");
             ListObjectsV2Result result;
 

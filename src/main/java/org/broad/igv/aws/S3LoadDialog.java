@@ -25,6 +25,7 @@
 
 package org.broad.igv.aws;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import htsjdk.samtools.util.Tuple;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeListItem;
@@ -127,6 +128,8 @@ public class S3LoadDialog extends JDialog {
                                                                                 new java.util.Date(OAuthUtils.getExpirationTime()));
 
                 ResourceLocator locator = new ResourceLocator(s3_presigned_url.toString());
+
+                // XXX: Tooltip for this: Trim to just the filename, not the whole pre-signed url
                 locator.setName(s3objPath);
                 locator.setType(".bam"); // XXX: Trace back where this is auto-detected
                 locator.setIndexPath(s3_presigned_url_idx.toString());
@@ -161,23 +164,20 @@ public class S3LoadDialog extends JDialog {
 
             log.debug("S3 bucket prefix is: "+prefix);
 
-            // List contents of bucket with path-prefix passed
-            ArrayList<S3Object> s3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
-
-            // For each item in the bucket:
-            //  1) create an S3Object
-            //    1.1) Name of object.
-            //    1.2) Dir or file: .getPrefix or null, according to S3 API
-            for (S3Object s3Obj: s3Objects) {
-                // Add it to the corresponding POJO...
-                // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
-                // """
-                // The Amazon S3 data model is a flat structure: you create a bucket, and the bucket stores
-                // objects. There is no hierarchy of subbuckets or subfolders; however, you can infer logical
-                // hierarchy using key name prefixes and delimiters as the Amazon S3 console does. The Amazon
-                // S3 console supports a concept of folders.
-                // """
-                parentNode.add(new S3TreeNode(s3Obj));
+            try {
+                // List contents of bucket with path-prefix passed
+                ArrayList<S3Object> s3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
+                // For each item in the bucket:
+                //  1) create an S3Object
+                //    1.1) Name of object.
+                //    1.2) Dir or file: .getPrefix or null, according to S3 API
+                for (S3Object s3Obj: s3Objects) {
+                    // Add it to the corresponding POJO...
+                    parentNode.add(new S3TreeNode(s3Obj));
+                }
+            } catch (AmazonS3Exception e){
+                MessageUtils.showErrorMessage("Amazon S3: Access denied to bucket: "+currentBucket, e);
+                log.error("Permission denied on S3 bucket ListObjects: ");
             }
 
             // ... and update the model
@@ -315,7 +315,7 @@ public class S3LoadDialog extends JDialog {
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
 
             //---- label1 ----
-            label1.setText("Select a objects to load");
+            label1.setText("Select objects to load");
             dialogPane.add(label1, BorderLayout.NORTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
