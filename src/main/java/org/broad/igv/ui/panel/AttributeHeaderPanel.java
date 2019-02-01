@@ -97,7 +97,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
         if (keys != null && keys.size() > 0) {
 
             final Graphics2D graphics2 = (Graphics2D) graphics;
-            if (PreferencesManager.getPreferences().getAsBoolean(Constants.ENABLE_ANTIALISING)) {
+            if (PreferencesManager.getPreferences().getAntiAliasing()) {
                 graphics2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             }
 

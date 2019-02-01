@@ -11,6 +11,7 @@ DEFAULT_FONT_FAMILY	Default font family	string	Arial
 DEFAULT_FONT_SIZE	Default font size	float	10
 SCALE_FONTS	Scale fonts	boolean	FALSE	Scale fonts for high resolution screens. Requires restart.
 BACKGROUND_COLOR	Background color	color	250,250,250
+ENABLE_ANTIALIASING	Enable anti-aliasing	boolean	TRUE
 
 #Tracks
 IGV.chart.track.height	Default numeric track height (pixels)	integer	40

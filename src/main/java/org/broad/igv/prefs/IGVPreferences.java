@@ -235,6 +235,17 @@ public class IGVPreferences {
         userPreferences.putAll(newPrefs);
     }
 
+    public boolean getAntiAliasing() {
+
+        if(userPreferences.containsKey(Constants.ENABLE_ANTIALISING) || Globals.IS_LINUX == false) {
+            return getAsBoolean(Constants.ENABLE_ANTIALISING);
+        }
+        else {
+            // Linux with no explicit setting
+            return false;
+        }
+    }
+
 
     /**
      * Update any cached values with the new key/value pair

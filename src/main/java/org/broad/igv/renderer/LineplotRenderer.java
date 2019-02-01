@@ -34,14 +34,12 @@
 package org.broad.igv.renderer;
 
 import org.broad.igv.feature.LocusScore;
-import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 
 import java.awt.*;
 import java.util.List;
 
-import static org.broad.igv.prefs.Constants.ENABLE_ANTIALISING;
 
 /**
  * @author jrobinso
@@ -71,12 +69,6 @@ public class LineplotRenderer extends XYPlotRenderer {
 
         Graphics2D gPos = context.getGraphic2DForColor(posColor);
         Graphics2D gNeg = context.getGraphic2DForColor(negColor);
-
-        if (PreferencesManager.getPreferences().getAsBoolean(ENABLE_ANTIALISING)) {
-            gPos.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            gNeg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-
 
         // Get the Y axis definition, consisting of minimum, maximum, and base value.  Often
         // the base value is == min value which is == 0.
@@ -150,8 +142,6 @@ public class LineplotRenderer extends XYPlotRenderer {
 
             }
         }
-        gPos.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
-        gNeg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
 
     }
 }

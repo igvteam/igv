@@ -344,9 +344,6 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         //Fill the arc
         g2D.fill(arcPath);
 
-        g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
-        g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
-
     }
 
 

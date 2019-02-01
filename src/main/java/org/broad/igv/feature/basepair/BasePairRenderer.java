@@ -176,8 +176,5 @@ public class BasePairRenderer {
         if (drawOutline) g2D.draw(arcPath);
         // Draw the arc face
         g2D.fill(arcPath);
-
-        g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
-        g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
     }
 }

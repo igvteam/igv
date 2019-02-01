@@ -64,8 +64,7 @@ public class RenderContext {
         this.graphicCache = new HashMap();
         this.referenceFrame = referenceFrame;
         this.visibleRect = visibleRect;
-        if (PreferencesManager.getPreferences().getAsBoolean(ENABLE_ANTIALISING) && graphics != null) {
-            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        if (PreferencesManager.getPreferences().getAntiAliasing() && graphics != null) {
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
     }
@@ -76,8 +75,7 @@ public class RenderContext {
         this.referenceFrame = new ReferenceFrame(context.referenceFrame);
         this.panel = context.panel;
         this.visibleRect = new Rectangle(context.visibleRect);
-        if (PreferencesManager.getPreferences().getAsBoolean(ENABLE_ANTIALISING) && graphics != null) {
-            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        if (PreferencesManager.getPreferences().getAntiAliasing() && graphics != null) {
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
     }
@@ -95,8 +93,7 @@ public class RenderContext {
         Graphics2D g = graphicCache.get(key);
         if (g == null) {
             g = (Graphics2D) graphics.create();
-            if (PreferencesManager.getPreferences().getAsBoolean(ENABLE_ANTIALISING)) {
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            if (PreferencesManager.getPreferences().getAntiAliasing()) {
                 g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             }
             graphicCache.put(key, g);

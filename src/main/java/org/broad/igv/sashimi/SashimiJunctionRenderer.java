@@ -207,7 +207,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             // affecting other tracks.
             Font font = FontManager.getFont(track.getFontSize());
             Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
-            fontGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             fontGraphics.setFont(font);
 
             // Track coordinates

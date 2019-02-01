@@ -505,7 +505,7 @@ public class HeatmapScaleDialog extends javax.swing.JDialog {
 
             try {
                 g2D = (Graphics2D) g.create();
-                if (PreferencesManager.getPreferences().getAsBoolean(Constants.ENABLE_ANTIALISING)) {
+                if (PreferencesManager.getPreferences().getAntiAliasing()) {
                     g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                 }
                 g2D.setFont(FontManager.getFont(10));
