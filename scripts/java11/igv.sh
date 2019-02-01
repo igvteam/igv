@@ -19,7 +19,6 @@ fi
 
 exec java --module-path="${prefix}/lib" -Xmx4g \
     @"${prefix}/igv.args" \
-    -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true \
     -Dapple.laf.useScreenMenuBar=true \
     -Djava.net.preferIPv4Stack=true \
     --module=org.igv/org.broad.igv.ui.Main "$@"

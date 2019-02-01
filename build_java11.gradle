@@ -153,6 +153,18 @@ task createDist(type: Copy, dependsOn: jar)  {
     into "${buildDir}/IGV-dist"
 }
 
+task createDistZip(type: Zip, dependsOn: createDist) {
+    archiveName = "IGV_${version}.zip"
+    destinationDir = file("${buildDir}/distZip")
+    baseName = "IGV"
+    from "${buildDir}/IGV-dist"
+    into createDistZip.baseName + "_${version}"
+
+    doLast {
+        project.exec { commandLine('chmod', '775', createDistZip.archivePath ) }
+    }
+}
+
 task createLinuxDistZip(type: Zip, dependsOn: createDist) {
     baseName = "IGV_Linux"
     archiveName = createLinuxDistZip.baseName + "_${version}.zip"
@@ -287,7 +299,7 @@ task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
     }
 }
 
-build.dependsOn createLinuxDistZip,createMacDistZip,createMacAppDistZip
+build.dependsOn createDistZip,createLinuxDistZip,createMacDistZip,createMacAppDistZip
 
 if (!makensisCommand.equals("") && !signcodeCommand.equals("")) {
     build.dependsOn signWinExeDist

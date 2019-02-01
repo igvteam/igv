@@ -12,5 +12,4 @@ fi
 
 java --module-path=$prefix/lib -Xmx1500m \
     @igv.args \
-    -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true \
     --module=org.igv/org.broad.igv.tools.IgvTools  gui
