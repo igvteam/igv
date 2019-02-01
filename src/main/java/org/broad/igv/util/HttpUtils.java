@@ -132,12 +132,15 @@ public class HttpUtils {
 
         if (urlString.startsWith("gs://")) {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
+        } else if (urlString.startsWith("s3://")) {
+            urlString = AmazonUtils.translateAmazonCloudURL(urlString);
         }
-//        if (OAuthUtils.isGoogleCloud(urlString)) {
-//            if (urlString.indexOf("alt=media") < 0) {
-//                urlString = urlString + (urlString.indexOf('?') > 0 ? "&" : "?") + "alt=media";
-//            }
-//        }
+
+        if (GoogleUtils.isGoogleCloud(urlString)) {
+            if (urlString.indexOf("alt=media") < 0) {
+                urlString = urlString + (urlString.indexOf('?') > 0 ? "&" : "?") + "alt=media";
+            }
+        }
 
         String host = new URL(urlString).getHost();
         if (host.equals("igv.broadinstitute.org")) {

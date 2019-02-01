@@ -60,6 +60,8 @@ import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -978,9 +980,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         final JMenuItem login = new JMenuItem("Login");
         login.addActionListener(e -> {
             try {
-                // Once we get positive result from the auth flow, perhaps fetch user full name and/or profile avatar?
-                IGVEventBus.getInstance().subscribe(OAuthUtils.AuthStateEvent.class, this);
-
                 // Set appropriate scope for AWS Cognito and go through the oauth flow
                 oauth.setScope("email%20openid%20profile");
                 oauth.openAuthorizationPage(); // should trigger and event and UI takes over
@@ -989,7 +988,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 log.error("Error fetching oAuth tokens", ex);
             }
         });
-        //login.setEnabled(false);
+        login.setEnabled(false);
         menu.add(login);
 
         final JMenuItem logout = new JMenuItem("Logout");
@@ -1010,6 +1009,42 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             });
         });
         menu.add(s3_object);
+
+        menu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                Runnable runnable = () -> {
+                    boolean loggedIn = false;
+                    try {
+                        loggedIn = OAuthUtils.getInstance().isLoggedIn();
+                        log.debug("MenuBar is user loggedIn?: "+loggedIn);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (loggedIn) {
+                        login.setText(oauth.getCurrentUserName());
+                    } else {
+                        login.setText("Login ...");
+                    }
+                    login.setEnabled(!loggedIn);
+                    logout.setEnabled(loggedIn);
+                };
+
+                LongRunningTask.submit(runnable);
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+
+            }
+
+        });
+
         return menu;
     }
 
@@ -1031,7 +1066,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
 
         });
-        login.setEnabled(false);
+        //login.setEnabled(false);
         menu.add(login);
 
 
@@ -1061,13 +1096,16 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         loadReadset.setEnabled(false);
         menu.add(loadReadset);
 
-        // XXX: Generates HTTP requests by just hovering on the Google menu, shouldn't be like this.
-        /*
         menu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
                 Runnable runnable = () -> {
-                    boolean loggedIn = oauth.isLoggedIn();
+                    boolean loggedIn = false;
+                    try {
+                        loggedIn = OAuthUtils.getInstance().isLoggedIn();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
                     if (loggedIn) {
                         login.setText(oauth.getCurrentUserName());
                     } else {
@@ -1092,7 +1130,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
 
         });
-*/
 
         return menu;
     }
@@ -1177,11 +1214,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         if(event instanceof GenomeChangeEvent) {
             UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome.getId())));
-        }
-
-        if(event instanceof OAuthUtils.AuthStateEvent) {
-            // XXX: Might be interesting to use this to set user cues on whether auth was successful (i.e user avatar).
-            // XXX: or simply get the FullName from id_token and show it on the status bar or elsewhere in the UI?
         }
     }
 }

@@ -25,14 +25,13 @@
 
 package org.broad.igv.aws;
 
+import com.amazonaws.services.s3.AmazonS3Builder;
+import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import htsjdk.samtools.util.Tuple;
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.LongRunningTask;
@@ -44,15 +43,11 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 
 public class S3LoadDialog extends JDialog {
@@ -95,7 +90,6 @@ public class S3LoadDialog extends JDialog {
             ArrayList<ResourceLocator> finalLocators = new ArrayList<>();
 
             for (TreePath path : paths) {
-                DefaultMutableTreeNode obj = (DefaultMutableTreeNode) path.getLastPathComponent();
                 Object[] selectedObjects = path.getPath();
 
                 String bucketName = ((S3TreeNode) selectedObjects[1]).getUserObject().getName();
@@ -117,28 +111,10 @@ public class S3LoadDialog extends JDialog {
                 String bucketName = preLocator.a;
                 String s3objPath = preLocator.b;
 
-                // XXX: Trace back path where this happens on other flows: both main file and index as presigned urls
-                URL s3_presigned_url = AmazonUtils.translateAmazonCloudURL( bucketName,
-                                                                            s3objPath,
-                                                                            new java.util.Date(OAuthUtils.getExpirationTime()));
+                String s3Path = "s3://"+bucketName+"/"+s3objPath;
 
-                // XXX: Make it general for all non-bam.bai.
-                URL s3_presigned_url_idx = AmazonUtils.translateAmazonCloudURL( bucketName,
-                                                                                s3objPath.replace(".bam", ".bam.bai"),
-                                                                                new java.util.Date(OAuthUtils.getExpirationTime()));
-
-                ResourceLocator locator = new ResourceLocator(s3_presigned_url.toString());
-
-                // XXX: Tooltip for this: Trim to just the filename, not the whole pre-signed url
-                locator.setName(s3objPath);
-                locator.setType(".bam"); // XXX: Trace back where this is auto-detected
-                locator.setIndexPath(s3_presigned_url_idx.toString());
-
-                //locator.setType(Ga4ghAPIHelper.RESOURCE_TYPE);
-                //locator.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
-
+                ResourceLocator locator = new ResourceLocator(s3Path);
                 finalLocators.add(locator);
-
             }
 
             IGV.getInstance().loadTracks(finalLocators);
@@ -151,7 +127,6 @@ public class S3LoadDialog extends JDialog {
         Object parent = event.getPath().getLastPathComponent();
         S3TreeNode parentNode = (S3TreeNode) parent;
         S3Object s3Object = parentNode.getUserObject();
-        //String s3Bucket = s3Object.toString();
 
         if (s3Object.isDir()) {
             Object[] path = parentNode.getUserObjectPath(); // fullpath to S3 object
@@ -191,50 +166,6 @@ public class S3LoadDialog extends JDialog {
         setVisible(false);
     }
 
-    class LeafNode {
-        ResourceLocator locator;
-        ArrayList<String> datasets;
-        String dataset;
-
-        public LeafNode(ResourceLocator locator) {
-            this.locator = locator;
-        }
-
-        public LeafNode(ArrayList<String> datasets) {
-            this.datasets = datasets;
-        }
-
-        public LeafNode(String dataset){
-            this.dataset = dataset;
-        }
-
-        @Override
-        public String toString() {
-            return dataset;
-        }
-    }
-
-    private void loadTrack(String url, String name) {
-        ResourceLocator locator = new ResourceLocator(url);
-        locator.setName(name);
-        IGV.getInstance().loadTracks(Arrays.asList(locator));
-
-    }
-
-    private void setGenome(String genomeId) {
-
-        if (genomeId != null && !genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
-            GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
-            if (item != null) {
-                try {
-                    GenomeManager.getInstance().loadGenomeById(genomeId);
-                } catch (IOException e) {
-                    MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                    log.error("Error loading genome: " + genomeId, e);
-                }
-            }
-        }
-    }
 
     private void updateModel(DefaultMutableTreeNode parent) {
         DefaultTreeModel model = treeModel;

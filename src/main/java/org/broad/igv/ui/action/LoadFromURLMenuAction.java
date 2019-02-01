@@ -102,7 +102,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                         if (dlg.getIndexURL() != null) {
                             String indexUrl = dlg.getIndexURL().trim();
 
-                            if (OAuthUtils.isGoogleCloud(indexUrl)) {
+                            if (GoogleUtils.isGoogleCloud(indexUrl)) {
                                 enableGoogleMenu();
                             }
 
@@ -140,7 +140,7 @@ public class LoadFromURLMenuAction extends MenuAction {
 
         url = url.trim();
 
-        if (OAuthUtils.isGoogleCloud(url)) {
+        if (GoogleUtils.isGoogleCloud(url)) {
 
             enableGoogleMenu();
             // if user is not currently logged in, attempt to

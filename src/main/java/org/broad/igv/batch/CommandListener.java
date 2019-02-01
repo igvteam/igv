@@ -208,7 +208,7 @@ public class CommandListener implements Runnable {
                         } else if (params.containsKey("token")) {
                             OAuthUtils.getInstance().setAccessToken(params.get("token"));
                         }
-                        sendTextResponse(out, "OK"); //XXX: Return OK even if code/tokens are not set??! This cannot be right.
+                        sendTextResponse(out, "OK");
                     } else {
 
                         // If a callback (javascript) function is specified write it back immediately.  This function
