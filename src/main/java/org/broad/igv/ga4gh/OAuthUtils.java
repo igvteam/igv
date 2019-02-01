@@ -100,7 +100,8 @@ public class OAuthUtils {
     }
 
     private OAuthUtils() throws IOException {
-        restoreRefreshToken();
+        // XXX: Refactor/rethink this for multiple providers
+        //restoreRefreshToken();
         fetchOauthProperties();
     }
 
