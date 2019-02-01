@@ -29,6 +29,8 @@ package org.broad.igv.ui.util;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
 import org.apache.log4j.Logger;
+import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.event.IGVEventBus;
 //import org.broad.igv.event.StopEvent;
@@ -44,7 +46,7 @@ import java.util.TimerTask;
 /**
  * @author eflakes
  */
-public class ApplicationStatusBar extends JPanel { //StatusBar {
+public class ApplicationStatusBar extends JPanel implements IGVEventObserver { //StatusBar {
 
     static Logger log = Logger.getLogger(ApplicationStatusBar.class);
     public JButton stopButton;
@@ -110,7 +112,8 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
         timer = new java.util.Timer();
         timer.schedule(updateTask, 0, 1000);
 
-
+        // Once we get positive result from the auth flow, perhaps fetch user full name and/or profile avatar?
+        IGVEventBus.getInstance().subscribe(OAuthUtils.AuthStateEvent.class, this);
     }
 
     public void setMessage(final String message) {
@@ -153,6 +156,22 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
 
     public void enableStopButton(boolean enable) {
         stopButton.setEnabled(enable);
+    }
+
+    @Override
+    public void receiveEvent(Object event) {
+        if(event instanceof OAuthUtils.AuthStateEvent) {
+            boolean isAuthed = ((OAuthUtils.AuthStateEvent) event).isAuthenticated();
+            String authProvider = ((OAuthUtils.AuthStateEvent) event).getAuthProvider();
+            String userName = ((OAuthUtils.AuthStateEvent) event).getUserName();
+            String email = ((OAuthUtils.AuthStateEvent) event).getEmail();
+
+            if (isAuthed) {
+                setMessage3("Logged in as: " + email + " via " + authProvider);
+            } else {
+                setMessage3("");
+            }
+        }
     }
 
     class MemoryUpdateTask extends TimerTask {

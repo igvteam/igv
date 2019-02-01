@@ -65,7 +65,7 @@ public class JWTParser {
      * @param jwt REQUIRED: valid JSON Web Token as String.
      * @return payload as a JSONObject.
      */
-    static JsonObject getPayload(String jwt) {
+    public static JsonObject getPayload(String jwt) {
         try {
             validateJWT(jwt);
             JsonParser parser = new JsonParser();

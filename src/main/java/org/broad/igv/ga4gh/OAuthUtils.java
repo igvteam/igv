@@ -82,6 +82,8 @@ public class OAuthUtils {
 
     private static OAuthUtils theInstance;
     private String currentUserName;
+    private String currentUserEmail;
+    private String currentUserID;
 
     private static JsonObject response;
 
@@ -232,13 +234,11 @@ public class OAuthUtils {
         log.debug("oauth code parameter: "+ac);
         log.debug("url-encoded redirect_uri: "+redirect);
         fetchTokens(redirect);
-        fetchUserProfile();
     }
 
     // Called from port listener upon receiving the oauth request with a "token" parameter TODO -- does this ever happen?
-    public void setAccessToken(String accessToken) throws IOException {
+    public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
-        fetchUserProfile();
     }
 
     public void setScope(String scope) throws IOException {
@@ -273,7 +273,6 @@ public class OAuthUtils {
             JsonParser parser = new JsonParser();
 
             setResponse(parser.parse(res).getAsJsonObject());
-            JsonObject response = getResponse();
 
             accessToken = response.get("access_token").getAsString();
             refreshToken = response.get("refresh_token").getAsString();
@@ -287,6 +286,13 @@ public class OAuthUtils {
             refreshToken = response.get("refresh_token").getAsString();
             expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
 
+            // XXX: Thoroughly verify security of JWT auth tokens while using this class
+            JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
+
+            // Populate this class with user profile attributes
+            fetchUserProfile(payload);
+
+
             if (authProvider == "Amazon") {
                 // Get AWS credentials after getting relevant tokens
                 com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
@@ -296,9 +302,10 @@ public class OAuthUtils {
                 AmazonUtils.updateS3Client(aws_credentials);
             }
 
+
             // Notify UI that we are authz'd/authn'd
             if (isLoggedIn()) {
-                IGVEventBus.getInstance().post(new AuthStateEvent());
+                IGVEventBus.getInstance().post(new AuthStateEvent(true, this.authProvider, this.getCurrentUserName()));
             }
 
         } catch(Exception e) {
@@ -345,7 +352,6 @@ public class OAuthUtils {
         if (atprim != null) {
             accessToken = obj.getAsJsonPrimitive("access_token").getAsString();
             expirationTime = System.currentTimeMillis() + (obj.getAsJsonPrimitive("expires_in").getAsInt() * 1000);
-            fetchUserProfile();
         } else {
             // Refresh token has failed, reauthorize from scratch
             reauthorize();
@@ -369,21 +375,14 @@ public class OAuthUtils {
      *
      * @throws IOException
      */
-    public JsonObject fetchUserProfile() throws IOException {
+    public JsonObject fetchUserProfile(JsonObject jwt_payload) throws IOException {
 
         try {
-            // XXX: This shouldn't belong here, way too Google-specific/hardcoded
-            URL url = new URL("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken);
-            String response = HttpUtils.getInstance().getContentsAsJSON(url);
-            JsonParser parser = new JsonParser();
+            currentUserName = jwt_payload.get("name").getAsString();
+            currentUserEmail = jwt_payload.get("email").getAsString();
+            currentUserID = jwt_payload.get("id").getAsString();
 
-            JsonObject json = parser.parse(response).getAsJsonObject();
-
-            currentUserName = json.get("name").getAsString();
-            //currentUserEmail = json.get("email").getAsString();
-            //currentUserID = json.get("id").getAsString();
-
-            return json;
+            return jwt_payload;
         } catch (Throwable exception) {
             log.error(exception);
             return null;
@@ -410,16 +409,33 @@ public class OAuthUtils {
         return expirationTime;
     }
 
-    public static class AuthStateEvent {
+    public class AuthStateEvent {
         boolean authenticated;
+        String authProvider;
+        String userName;
+        String email;
 
         // Assuming that if this event is called, we are indeed autz/authn'd
-        public AuthStateEvent() {
-            this.authenticated = true;
+        public AuthStateEvent(boolean authenticated, String authProvider, String userName) {
+            this.authenticated = authenticated;
+            this.authProvider = authProvider;
+            this.userName = userName;
         }
 
         public boolean isAuthenticated() {
-            return this.authenticated;
+            return authenticated;
+        }
+
+        public String getAuthProvider() {
+            return authProvider;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public String getEmail() {
+            return currentUserEmail;
         }
     }
 
