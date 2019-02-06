@@ -47,6 +47,15 @@ import java.net.URLDecoder;
 import java.util.*;
 import java.util.prefs.Preferences;
 
+// XXX: Both Oauth and JWT classes need a serious refactor/audit. Multi-provider support, concurrency, security, etc...:
+// WARNING: This class requires a thorough security audit of Oauth/JWT implementations. I would recommend going through:
+// https://www.owasp.org/index.php/JSON_Web_Token_(JWT)_Cheat_Sheet_for_Java
+//
+// And potentially refactor/substitute this logic with:
+//
+// https://github.com/auth0/java-jwt.
+// https://developers.google.com/api-client-library/java/google-oauth-java-client/
+
 /**
  * Created by jrobinso on 11/19/14.
  */
@@ -78,8 +87,6 @@ public class OAuthUtils {
     private String refreshToken;
     private static long expirationTime;
 
-    public static String GS_HOST = "www.googleapis.com";
-
     private static OAuthUtils theInstance;
     private String currentUserName;
     private String currentUserEmail;
@@ -107,9 +114,7 @@ public class OAuthUtils {
 
     public void fetchOauthProperties() throws IOException {
 
-        // XXX: This needs proper cleanup/testing for existence of attributes... bit of a polyfill situation here
         String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
-        //IGVPreferences.getInstance().get(IGVPreferences.OAUTH_CONFIG);
 
         if (oauthConfig == null || !FileUtils.resourceExists(oauthConfig)) {
             log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from: "+PROPERTIES_URL);
@@ -121,34 +126,25 @@ public class OAuthUtils {
             tokenURI = obj.get("token_uri").getAsString();
             clientId = obj.get("client_id").getAsString();
         } else {
-            // Experimental -- this will change -- dwm08
             log.debug("Loading Oauth properties from: " + oauthConfig);
             JsonParser parser = new JsonParser();
             String json = FileUtils.getContents(oauthConfig);
             JsonObject obj = parser.parse(json).getAsJsonObject();
-//            authURI = obj.get("authorization_endpoint").getAsString();
-            authURI = obj.get("auth_uri").getAsString();
-//            clientSecret = obj.get("client_secret").getAsString();
-//            tokenURI = obj.get("token_endpoint").getAsString();
-            tokenURI = obj.get("token_uri").getAsString();
-            clientId = obj.get("client_id").getAsString();
-//            GS_HOST = obj.get("hosts").getAsString();
-//            appIdURI = obj.get("app_id_uri").getAsString();
-            appIdURI = obj.get("auth_uri").getAsString();
-//            authProvider = obj.get("auth_provider").getAsString();
-/*            String scope = obj.get("scope").getAsString();
-            if (scope.equals("none")) {
-                this.scope = null;
+
+            // Mandatory attributes, fail hard if not present
+            try {
+                clientId = obj.get("client_id").getAsString();
+                authURI = obj.get("authorization_endpoint").getAsString();
+                tokenURI = obj.get("token_endpoint").getAsString();
+            } catch (Exception e) {
+                throw new IOException(oauthConfig+" is missing crucial attributes such as: client_id, " +
+                                                  "authorization_endpoint or token_endpoint");
             }
-            JsonElement je = obj.get("find_string");
-            if (je != null) {
-                findString = je.getAsString();
-            }
-            je = obj.get("replace_string");
-            if (je != null) {
-                replaceString = je.getAsString();
-            }
-*/
+
+            // Optional attributes, fail on runtime, depending on identity provider configuration
+            clientSecret = obj.has("client_secret") ? obj.get("client_secret").getAsString() : null;
+            setAuthProvider(obj.has("auth_provider") ? obj.get("auth_provider").getAsString() : authProvider);
+            setScope(obj.has("scope") ? obj.get("scope").getAsString() : scope);
         }
     }
 
@@ -165,18 +161,12 @@ public class OAuthUtils {
     public void openAuthorizationPage() throws IOException, URISyntaxException {
         Desktop desktop = Desktop.getDesktop();
 
-        // properties moved to early init dwm08
-        //if (clientId == null) fetchOauthProperties();
-
         String redirect = oobURI;
         // if the listener is active, then set the redirect URI.  dwm08
         if (CommandListener.isListening()) {
             redirect = redirectURI;
         }
         String url;
-        // for auth providers that need scope,
-        // set the scope parameter
-        //if (scope != null) {
         if (appIdURI == null) {
             log.debug("appIdURI is null, skipping resource setting");
             url = authURI + "?" +
@@ -186,9 +176,7 @@ public class OAuthUtils {
                     "response_type=code&" +
                     "client_id=" + clientId; // Native app
         }
-        // for auth providers that need the resource setting
-        // the the resource parameter
-        //else if (appIdURI != null) {
+
         else {
             log.debug("appIdURI is not null, setting resource= as part of the authURI");
             url = authURI + "?" +
@@ -199,9 +187,6 @@ public class OAuthUtils {
                     "resource=" + appIdURI + "&" +
                     "client_id=" + clientId; // Native app
         }
-//        else {
-//        	throw new IOException("Either scope or resource must be provided to authenticate.");
-//        }
 
         log.debug("URL for the auth page is: "+url);
 
@@ -242,14 +227,11 @@ public class OAuthUtils {
         this.accessToken = accessToken;
     }
 
-    public void setScope(String scope) throws IOException {
+    public void setScope(String scope) {
         this.scope = scope;
     }
 
     private void fetchTokens(String redirect) throws IOException {
-
-        // properties moved to early init dwm08
-        //if (clientId == null) fetchOauthProperties();
 
         URL url = HttpUtils.createURL(tokenURI);
 
@@ -287,14 +269,13 @@ public class OAuthUtils {
             refreshToken = response.get("refresh_token").getAsString();
             expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
 
-            // XXX: Thoroughly verify security of JWT auth tokens while using this class
             JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
 
             // Populate this class with user profile attributes
             fetchUserProfile(payload);
 
 
-            if (authProvider == "Amazon") {
+            if (authProvider.equals("Amazon")) {
                 // Get AWS credentials after getting relevant tokens
                 com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
                 aws_credentials = AmazonUtils.GetCognitoAWSCredentials();

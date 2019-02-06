@@ -7,7 +7,6 @@ import org.broad.igv.ui.util.MessageUtils;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import static org.broad.igv.ga4gh.OAuthUtils.GS_HOST;
 import static org.broad.igv.prefs.Constants.GOOGLE_PROJECT;
 import static org.broad.igv.prefs.Constants.SAVE_GOOGLE_CREDENTIALS;
 
@@ -22,7 +21,7 @@ public class GoogleUtils {
     public static String GOOGLE_API_HOST = "www.googleapis.com";
 
     public static boolean isGoogleCloud(String url) {
-        return url.startsWith("gs://") || url.contains(GS_HOST);
+        return url.startsWith("gs://") || url.contains(GOOGLE_API_HOST);
     }
 
     /**
