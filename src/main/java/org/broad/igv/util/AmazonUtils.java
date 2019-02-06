@@ -182,8 +182,11 @@ public class AmazonUtils {
 
     public static Tuple<String, String> bucketAndKey(String S3urlString) {
         AmazonS3URI s3URI = new AmazonS3URI(S3urlString);
+        String bucket = s3URI.getBucket();
+        String key = s3URI.getKey();
 
-        return new Tuple(s3URI.getBucket(), s3URI.getKey());
+        log.debug("bucketAndKey(): "+ bucket + " , " + key);
+        return new Tuple(bucket, key);
     }
 
     /**
@@ -212,8 +215,8 @@ public class AmazonUtils {
         return s3Client.generatePresignedUrl(generatePresignedUrlRequest);
     }
 
-    public static String translateAmazonCloudURL(String urlString) {
-        Tuple<String, String> bandk = bucketAndKey(urlString);
+    public static String translateAmazonCloudURL(String S3urlString) {
+        Tuple<String, String> bandk = bucketAndKey(S3urlString);
         String bucketName = bandk.a;
         String objectKey = bandk.b;
 

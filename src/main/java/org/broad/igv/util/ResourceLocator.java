@@ -35,7 +35,6 @@ import java.awt.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -332,7 +331,7 @@ public class ResourceLocator {
             // Set UI human-readable short name for the file
             String objFname = "";
             if (path.contains("/")) {
-                objFname = path.substring(path.lastIndexOf('/'));
+                objFname = path.substring(path.lastIndexOf('/')).replace("/", "");
             } else {
                 objFname = path;
             }
@@ -340,19 +339,9 @@ public class ResourceLocator {
             log.debug("S3 object filename visible in IGV UI is: "+ objFname);
             this.setName(objFname);
 
-            // Get index
-            String s3IndexUrl = null;
+            String s3UrlIndexPath = detectIndexPath(path);
 
-            // XXX: Why does IGV not do that across all providers?
-            if (path.endsWith(".bam")) {
-                s3IndexUrl = path + ".bai";
-            } else if (path.endsWith(".vcf.gz")) {
-                s3IndexUrl = path + ".tbi";
-            } else {
-                log.debug("S3 object filetype could not be determined from S3 url");
-            }
-
-            this.setIndexPath(AmazonUtils.translateAmazonCloudURL(s3IndexUrl));
+            this.setIndexPath(AmazonUtils.translateAmazonCloudURL(s3UrlIndexPath));
 
         } else {
             this.path = path;
@@ -381,6 +370,26 @@ public class ResourceLocator {
 
     public void setIndexPath(String indexPath) {
         this.indexPath = indexPath;
+    }
+
+    // XXX: Why does IGV not do that across all providers already?
+
+    /**
+     * Takes in a non-pre-signed URL and returns its (guessed) indexfile.
+     * @param inputPath: Path containing vcf/bam file
+     * @return indexPath: Guessed path containing the corresponding index (in the CWD-equivalent dir level)
+     */
+    public String detectIndexPath(String inputPath) {
+        log.debug("detectIndexPath() input S3 path is: "+inputPath);
+        String indexPath = "";
+        if (inputPath.contains(".bam")) {
+            indexPath = inputPath + ".bai";
+        } else if (inputPath.contains(".vcf.gz")) {
+            indexPath = inputPath + ".tbi";
+        } else {
+            log.debug("S3 object filetype could not be determined from S3 url");
+        }
+        return indexPath;
     }
 
     public String getUsername() {

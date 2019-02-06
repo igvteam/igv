@@ -699,7 +699,7 @@ public class HttpUtils {
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
         // string to dynamically map url - dwm08
-        if (url.getHost().equals(OAuthUtils.GS_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
+        if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
             url = HttpUtils.createURL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
         }
 
@@ -795,7 +795,8 @@ public class HttpUtils {
         }
         conn.setRequestProperty("User-Agent", Globals.applicationString());
 
-        if (url.getHost().equals(OAuthUtils.GS_HOST) || url.getHost().startsWith("igvweb02")) {
+        // XXX: What is this?
+        if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) || url.getHost().startsWith("igvweb02")) {
             String token = OAuthUtils.getInstance().getAccessToken();
             if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
         }
