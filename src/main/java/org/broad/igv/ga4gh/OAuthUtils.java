@@ -410,6 +410,10 @@ public class OAuthUtils {
         return expirationTime;
     }
 
+    public static Date getExpirationDate() {
+        return new Date(expirationTime);
+    }
+
     public class AuthStateEvent {
         boolean authenticated;
         String authProvider;
@@ -481,12 +485,6 @@ public class OAuthUtils {
         } catch (Exception e) {
             log.error("Error removing oauth refresh token", e);
         }
-    }
-
-
-    // Doesn't really belong here....
-    public static boolean isGoogleCloud(String url) {
-        return url.startsWith("gs://") || url.contains(GS_HOST);
     }
 
     public void updateSaveOption(boolean aBoolean) {
@@ -574,7 +572,7 @@ public class OAuthUtils {
         Set<String> urlSet = findUrlsInSessionFile(sessionPath);
         if (urlSet.size() > 0) {
             for (String url : urlSet) {
-                if (isGoogleCloud(url)) {
+                if (GoogleUtils.isGoogleCloud(url)) {
 
                     doSecureLogin();
 

@@ -13,9 +13,11 @@ import com.amazonaws.services.cognitoidentity.model.*;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import htsjdk.samtools.util.Tuple;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.aws.S3Object;
@@ -178,6 +180,12 @@ public class AmazonUtils {
         return objects;
     }
 
+    public static Tuple<String, String> bucketAndKey(String S3urlString) {
+        AmazonS3URI s3URI = new AmazonS3URI(S3urlString);
+
+        return new Tuple(s3URI.getBucket(), s3URI.getKey());
+    }
+
     /**
      * Generates a so-called "pre-signed" URLs (https://docs.aws.amazon.com/AmazonS3/latest/dev/ShareObjectPreSignedURLJavaSDK.html)
      * such as:
@@ -202,6 +210,21 @@ public class AmazonUtils {
                         .withExpiration(expirationTime);
 
         return s3Client.generatePresignedUrl(generatePresignedUrlRequest);
+    }
+
+    public static String translateAmazonCloudURL(String urlString) {
+        Tuple<String, String> bandk = bucketAndKey(urlString);
+        String bucketName = bandk.a;
+        String objectKey = bandk.b;
+
+        log.debug("Generating pre-signed URL for: "+ bandk.a + "/" + bandk.b);
+
+        GeneratePresignedUrlRequest generatePresignedUrlRequest =
+                new GeneratePresignedUrlRequest(bucketName, objectKey)
+                        .withMethod(HttpMethod.GET)
+                        .withExpiration(OAuthUtils.getExpirationDate());
+
+        return s3Client.generatePresignedUrl(generatePresignedUrlRequest).toString();
     }
 
 }

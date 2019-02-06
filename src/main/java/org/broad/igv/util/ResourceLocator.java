@@ -170,7 +170,9 @@ public class ResourceLocator {
         } else {
 
             String typeString = path.toLowerCase();
-            if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("gs://")) {
+            if (path.startsWith("http://") || path.startsWith("https://") ||
+                path.startsWith("gs://") || path.startsWith("s3://")) {
+
                 try {
                     URL url = HttpUtils.createURL(path);
 
@@ -322,8 +324,36 @@ public class ResourceLocator {
     public void setPath(String path) {
         if (path != null && path.startsWith("file://")) {
             this.path = path.substring(7);
-//        } else if (path != null && path.startsWith("gs://")) {
-//            this.path = GoogleUtils.translateGoogleCloudURL(path);
+        } else if (path != null && path.startsWith("gs://")) {
+            this.path = GoogleUtils.translateGoogleCloudURL(path);
+        } else if (path != null && path.startsWith("s3://")) {
+            this.path = AmazonUtils.translateAmazonCloudURL(path);
+
+            // Set UI human-readable short name for the file
+            String objFname = "";
+            if (path.contains("/")) {
+                objFname = path.substring(path.lastIndexOf('/'));
+            } else {
+                objFname = path;
+            }
+
+            log.debug("S3 object filename visible in IGV UI is: "+ objFname);
+            this.setName(objFname);
+
+            // Get index
+            String s3IndexUrl = null;
+
+            // XXX: Why does IGV not do that across all providers?
+            if (path.endsWith(".bam")) {
+                s3IndexUrl = path + ".bai";
+            } else if (path.endsWith(".vcf.gz")) {
+                s3IndexUrl = path + ".tbi";
+            } else {
+                log.debug("S3 object filetype could not be determined from S3 url");
+            }
+
+            this.setIndexPath(AmazonUtils.translateAmazonCloudURL(s3IndexUrl));
+
         } else {
             this.path = path;
         }
