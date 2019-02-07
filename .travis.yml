@@ -26,7 +26,7 @@ notifications:
 before_deploy:
  - git config --local user.name "igv.umccr.org"
  - git config --local user.email "info@umccr.org"
- - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y-%m-%d-%H%M%S')-$(git log --format=%h -1)}
+ - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y-%m-%d')-$(git log --format=%h -1)}
  - git tag $TRAVIS_TAG
 
 deploy:
