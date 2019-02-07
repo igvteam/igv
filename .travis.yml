@@ -34,5 +34,3 @@ deploy:
   file_glob: true
   file: "build/distZip/*.zip"
   skip_cleanup: true
-  on:
-    tags: true
