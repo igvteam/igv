@@ -1,5 +1,6 @@
 # Created by .gitignore support plugin (hsz.mobi)
 .idea/workspace.xml
+*.iml
 test/data/out/
 /build
 /build_java11
