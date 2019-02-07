@@ -1,0 +1,40 @@
+sudo: false
+language: java
+before_cache:
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -rf $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
+branches:
+- umccr
+jdk:
+- openjdk8
+- openjdk11
+install:
+- "./gradlew assemble"
+script:
+- "./gradlew build"
+- "./gradlew createDistZip"
+- "./gradlew createMacDistZip"
+- "./gradlew createWinDistZip"
+
+notifications:
+  email: false
+
+before_deploy:
+ - git config --local user.name "igv.umccr.org"
+ - git config --local user.email "info@umccr.org"
+ - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y-%m-%d')-$(git log --format=%h -1)}
+ - git tag $TRAVIS_TAG
+
+deploy:
+  provider: releases
+  api_key:
+    secure: G27mYWVwzS0eQXP8lyz7moM6xLYU7/rB5qTDx/L3niUggzT8ZmCFRA7YfRSoSXtkzozExLUmYG1DDDr/ed028lQ9eW+NJBHHtGsWMMFEAPwXOIptMKAl6bkuvnzQmrnE6p3upxR/CmkNvYRJLAFwRVJquxcsiDK9pSLHzj9/34iFCBXdqle3EJF77cZuWG7nl+dG7XLCVhUiad7d5niwyxTFLWEQWPC1ezle+jJU+QYuOwZ3gLFKaUsy01q2x1jD58HpnF6aAXVADGr2L2xrkjJGP14exVvVbUyB4Z0YW1Ency5JztFVe12zTpuz6Z5LPTWvybEfZdSoMEqiSkgtVBRN861tlt/0nwOsQ1PQOWkBTe96aN4BvlezySbDVc8kY9WdlwgNFk5WEMl64r5rOfGo79W1o7Yd/OE7aUsJSZyYh2a/3W6CB9RibAMoPNsdMg5YYYqVIbv+M3/zT7utmwxo+/IV9pENaHeBa9TkZqrhYd/ZNnjBRd5Sx5ZtWo3lNloaa5ODpVxbIxdQ36gmo3RKyvBwjQohqZ+MZHmnS2cffb0AkDqG5DdSNtoqvmckqJO/Oibhl7rP7otQ75WJ/1YAV+Kh2zBKbq/PoOX8DqnonruQcngwn+lPCIinHKyJuGeHjWql8UdhRFejnZwFUozcyMRqmEEoaowfZtz5hxc=
+  file_glob: true
+  file: "build/distZip/*.zip"
+  skip_cleanup: true
+  on:
+    tags: true
