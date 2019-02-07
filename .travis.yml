@@ -37,5 +37,4 @@ deploy:
   file: "build/distZip/*.zip"
   skip_cleanup: true
   on:
-    repo: umccr/igv
-    branch: umccr
+    tags: true
