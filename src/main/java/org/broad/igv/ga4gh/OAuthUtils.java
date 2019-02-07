@@ -74,7 +74,7 @@ public class OAuthUtils {
     private String genomicsScope = "https://www.googleapis.com/auth/genomics";
     private String gsScope = "https://www.googleapis.com/auth/devstorage.read_write";
     private String emailScope = "https://www.googleapis.com/auth/userinfo.email";
-    private String state = UUID.randomUUID().toString(); // "An opaque value the client adds to the initial request."
+    private String state = UUID.randomUUID().toString(); // "RFC6749: An opaque value used by the client to maintain state"
     private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
     private String oobURI = "urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob";
     private String clientId;
@@ -117,6 +117,7 @@ public class OAuthUtils {
         String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
 
         if (oauthConfig == null || !FileUtils.resourceExists(oauthConfig)) {
+            // Remote provisioning of OAUTH attributes
             log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from: "+PROPERTIES_URL);
             String propString = HttpUtils.getInstance().getContentsAsGzippedString(HttpUtils.createURL(PROPERTIES_URL));
             JsonParser parser = new JsonParser();
@@ -126,6 +127,7 @@ public class OAuthUtils {
             tokenURI = obj.get("token_uri").getAsString();
             clientId = obj.get("client_id").getAsString();
         } else {
+            // Local IGV user directory override of OAUTH config
             log.debug("Loading Oauth properties from: " + oauthConfig);
             JsonParser parser = new JsonParser();
             String json = FileUtils.getContents(oauthConfig);
