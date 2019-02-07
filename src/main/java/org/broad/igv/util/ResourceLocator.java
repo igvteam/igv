@@ -324,7 +324,6 @@ public class ResourceLocator {
         if (path != null && path.startsWith("file://")) {
             this.path = path.substring(7);
         } else if (path != null && path.startsWith("gs://")) {
-            !*($@*#$(@#)) TRAVISCI CACHE!!!
             this.path = GoogleUtils.translateGoogleCloudURL(path);
         } else if (path != null && path.startsWith("s3://")) {
             this.path = AmazonUtils.translateAmazonCloudURL(path);
