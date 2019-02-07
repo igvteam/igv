@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 language: java
 cache: false
 #before_cache:
@@ -13,10 +13,10 @@ jdk:
   - openjdk11
 install:
 - rm -rf $HOME/.gradle
-- ./gradlew clean
-- ./gradlew assemble
+- sudo ./gradlew clean
+- sudo ./gradlew assemble
 # - ./gradlew -b build_java11.gradle assemble
 script:
-- ./gradlew -b build.gradle build
+- sudo ./gradlew -b build.gradle build
 # - jdk_switcher use openjdk11
 # - ./gradlew -b build_java11.gradle check
