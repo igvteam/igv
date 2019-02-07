@@ -1,19 +1,21 @@
 sudo: false
 language: java
-cache: false
-#before_cache:
-#  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-#  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-#cache:
-#  directories:
-#    - $HOME/.gradle/caches/
-#    - $HOME/.gradle/wrapper/
-jdk: openjdk11
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+jdk:
+  - openjdk8
+  - openjdk11
 install:
 - ./gradlew clean
-- ./gradlew -b build.gradle build
-  #- ./gradlew -b build_java11.gradle assemble
+- ./gradlew assemble
+# - ./gradlew -b build_java11.gradle assemble
 script:
-    #- ./gradlew -b build_java11.gradle check
 - jdk_switcher use openjdk8
-- ./gradlew compileJava
+- ./gradlew -b build.gradle build
+# - jdk_switcher use openjdk11
+# - ./gradlew -b build_java11.gradle check
