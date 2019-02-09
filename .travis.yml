@@ -14,6 +14,3 @@ install:
   - ./gradlew assemble
 script:
   - ./gradlew build
-  #- "./gradlew createDistZip"
-  #- "./gradlew createMacDistZip"
-  #- "./gradlew createWinDistZip"
