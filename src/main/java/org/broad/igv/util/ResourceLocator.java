@@ -28,6 +28,7 @@ package org.broad.igv.util;
 import org.apache.log4j.Logger;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.gs.GSUtils;
+import org.broad.igv.ga4gh.GoogleUtils;
 import htsjdk.tribble.Tribble;
 
 import java.awt.*;
