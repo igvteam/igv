@@ -7,10 +7,13 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
-jdk: openjdk11
+jdk:
+    - openjdk8
+    - openjdk11
 install:
-- ./gradlew -b build_java11.gradle assemble
+  - ./gradlew assemble
 script:
-- ./gradlew -b build_java11.gradle check
-- jdk_switcher use openjdk8
-- ./gradlew compileJava
+  - ./gradlew build
+  #- "./gradlew createDistZip"
+  #- "./gradlew createMacDistZip"
+  #- "./gradlew createWinDistZip"
