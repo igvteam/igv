@@ -64,7 +64,7 @@ public class MAFParser implements MAFReader {
         }
         String indexPath = path + ".index";
         try {
-            if (ParsingUtils.pathExists(indexPath)) {
+            if (ParsingUtils.fileExists(indexPath)) {
                 index = MAFIndex.loadIndex(indexPath);
             } else {
                 index = MAFIndex.createIndex(path);

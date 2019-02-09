@@ -1,0 +1,5 @@
+# Arguments to support JIDE on Java 11
+--add-exports java.desktop/com.sun.java.swing.plaf.windows=jide.common --add-exports java.desktop/javax.swing.plaf.synth=jide.common --add-exports java.desktop/sun.swing=jide.common --add-exports java.desktop/sun.awt=jide.common --add-exports java.desktop/sun.awt.image=jide.common --add-exports java.desktop/sun.awt.shell=jide.common --add-exports java.desktop/sun.awt.dnd=jide.common --add-exports java.desktop/sun.awt.windows=jide.common --add-exports java.base/sun.security.action=jide.common
+
+# Disable a JAXB optimization that causes illegal access exceptions on Java 11 
+-Dcom.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize

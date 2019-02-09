@@ -27,7 +27,6 @@ package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
-import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.gs.GSUtils;
 import htsjdk.tribble.Tribble;
 
@@ -145,7 +144,7 @@ public class ResourceLocator {
      * @return true if resource was found.
      */
     public boolean exists() {
-        return ParsingUtils.pathExists(path);
+        return ParsingUtils.fileExists(path);
     }
 
 
@@ -426,40 +425,6 @@ public class ResourceLocator {
         int result = path != null ? path.hashCode() : 0;
         result = 31 * result + (dbURL != null ? dbURL.hashCode() : 0);
         return result;
-    }
-
-    public String getBamIndexPath() {
-
-        if (indexPath != null) return indexPath;
-
-        if (path.toLowerCase().startsWith("http://") ||
-                path.toLowerCase().startsWith("https://") ||
-                path.toLowerCase().startsWith("gs://")) {
-            // See if bam file is specified by parameter
-            try {
-                URL url = HttpUtils.createURL(path);
-                String queryString = url.getQuery();
-                if (queryString != null) {
-                    Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
-                    if (parameters.containsKey("index")) {
-                        return parameters.get("index");
-                    } else if (parameters.containsKey("file")) {
-                        String bamFile = parameters.get("file");
-                        String bamIndexFile = bamFile + ".bai";
-                        String newQueryString = queryString.replace(bamFile, bamIndexFile);
-                        return path.replace(queryString, newQueryString);
-                    } else {
-                        String ip = path.replace(url.getPath(), url.getPath() + ".bai");
-                        return ip;
-                    }
-                }
-            } catch (MalformedURLException e) {
-                log.error(e.getMessage(), e);
-            }
-
-        }
-
-        return path + ".bai";
     }
 
     public String getMappingPath() {

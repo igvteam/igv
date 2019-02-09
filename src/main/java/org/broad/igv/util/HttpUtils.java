@@ -336,6 +336,13 @@ public class HttpUtils {
                         e1.printStackTrace();
                     }
                 return false;
+            } finally {
+                if(conn != null) {
+                    try {
+                        conn.disconnect();
+                    } catch (Exception e) {
+                    }
+                }
             }
         }
     }

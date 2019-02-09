@@ -100,7 +100,7 @@ public class Globals {
             System.getProperty("os.name").toLowerCase().startsWith("mac");
 
     final public static boolean IS_LINUX =
-            System.getProperty("os.name").toLowerCase().startsWith("linux");
+            System.getProperty("os.name").toLowerCase().contains("linux");
 
     final public static boolean IS_JWS =
             System.getProperty("webstart.version", null) != null || System.getProperty("javawebstart.version", null) != null;

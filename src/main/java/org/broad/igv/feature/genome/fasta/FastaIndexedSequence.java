@@ -49,7 +49,6 @@ public class FastaIndexedSequence implements Sequence {
 
     final FastaIndex index;
     final String path;
-    final long contentLength;
 
     private final ArrayList<String> chromoNamesList;
 
@@ -60,7 +59,6 @@ public class FastaIndexedSequence implements Sequence {
     public FastaIndexedSequence(String path, String indexPath) throws IOException {
 
         this.path = path;
-        contentLength = ParsingUtils.getContentLength(path);
 
         if (indexPath == null) indexPath = path + ".fai";
 

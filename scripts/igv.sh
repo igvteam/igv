@@ -8,6 +8,5 @@
 prefix=`dirname $(readlink $0 || echo $0)`
 exec java -Xmx4g \
     -Dapple.laf.useScreenMenuBar=true \
-    -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true \
     -Djava.net.preferIPv4Stack=true \
     -jar "$prefix"/lib/igv.jar "$@"

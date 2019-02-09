@@ -1,5 +1,0 @@
-#!/bin/sh
-java --module-path=`dirname $0`/lib -Xmx1500m \
-    @igv.args \
-    -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true \
-    --module org.igv/org.broad.igv.tools.IgvTools  gui

@@ -545,11 +545,14 @@ public class ParsingUtils {
     }
 
 
-    public static boolean pathExists(String covPath) {
-        if (covPath == null) return false;
+    public static boolean fileExists(String path) {
 
-        return (new File(covPath)).exists() ||
-                (HttpUtils.isRemoteURL(covPath) && HttpUtils.getInstance().resourceAvailable(covPath));
+        if (path == null) return false;
+
+        File maybeLocalFile = new File(path);
+
+        return ((maybeLocalFile).exists() && maybeLocalFile.isFile()) ||
+                (HttpUtils.isRemoteURL(path) && HttpUtils.getInstance().resourceAvailable(path));
 
     }
 

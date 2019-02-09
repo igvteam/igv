@@ -156,7 +156,7 @@ public class GenomeManager {
             return; // Already loaded
         }
 
-        if (org.broad.igv.util.ParsingUtils.pathExists(genomeId)) {
+        if (org.broad.igv.util.ParsingUtils.fileExists(genomeId)) {
             loadGenome(genomeId, null);
 
         } else {

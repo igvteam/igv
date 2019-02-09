@@ -126,6 +126,44 @@ public class BAMFileReaderTest {
 
     }
 
+    @Test
+    public void testCSI() throws Exception {
+
+        String bamfile = TestUtils.DATA_DIR + "bam/BAMFileIndexTest/index_test.bam";
+        String baifile = TestUtils.DATA_DIR + "bam/BAMFileIndexTest/index_test.bam.bai";
+        String csifile = TestUtils.DATA_DIR + "bam/BAMFileIndexTest/index_test.bam.csi";
+
+        String chr = "chr1";
+        int end = 6000000;
+        int start = 1000000;
+
+        ResourceLocator baiLocator = new ResourceLocator(bamfile);
+        baiLocator.setIndexPath(baifile);
+        BAMReader baireader = new BAMReader(baiLocator, true);
+
+        ResourceLocator csiLocator = new ResourceLocator(bamfile);
+        csiLocator.setIndexPath(csifile);
+        BAMReader csiReader = new BAMReader(csiLocator, true);
+
+
+
+        CloseableIterator<PicardAlignment> baiiter = baireader.query(chr, start, end, true);
+        CloseableIterator<PicardAlignment> csiiter = csiReader.query(chr, start, end, true);
+
+        int count = 0;
+        while (baiiter.hasNext()) {
+            Alignment bamrecord = baiiter.next();
+            Alignment samrecord = csiiter.next();
+            assertTrue(bamrecord.getStart() >= start);
+            assertTrue(bamrecord.getEnd() <= end);
+            assertEquals(bamrecord.getReadName(), samrecord.getReadName());
+            assertEquals(bamrecord.getSample(), samrecord.getSample());
+            count++;
+        }
+        assertTrue("Unexpected data count: " + count, count == 20);
+
+    }
+
 
 
     public int count(CloseableIterator<PicardAlignment> iter) {

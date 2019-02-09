@@ -258,7 +258,7 @@ public class TrackLoader {
         return typeString.endsWith(".sam") || typeString.endsWith(".bam") || typeString.endsWith(".cram") ||
                 typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
                 typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
-                typeString.endsWith(".bai") || typeString.equals("alist") ||
+                typeString.endsWith(".bai") || typeString.endsWith(".csi") ||typeString.equals("alist") ||
                 typeString.equals(Ga4ghAPIHelper.RESOURCE_TYPE);
     }
 
@@ -842,7 +842,9 @@ public class TrackLoader {
             String dsName = locator.getTrackName();
 
             // If the user tried to load the index,  look for the file (this is a common mistake)
-            if (locator.getTypeString().endsWith(".sai") || locator.getTypeString().endsWith(".bai")) {
+            if (locator.getTypeString().endsWith(".sai") ||
+                    locator.getTypeString().endsWith(".bai")||
+                    locator.getTypeString().endsWith(".csi")) {
                 MessageUtils.showMessage("<html><b>ERROR:</b> Loading SAM/BAM index files are not supported:  " + locator.getPath() +
                         "<br>Load the SAM or BAM file directly. ");
                 return;

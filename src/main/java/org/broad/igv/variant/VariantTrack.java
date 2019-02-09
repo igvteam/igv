@@ -36,7 +36,6 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.session.IGVSessionReader;
 
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
@@ -234,7 +233,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         boolean bypassFileAutoDiscovery = prefMgr.getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY);
         if (vcfToBamMapping == null && path != null && !bypassFileAutoDiscovery) {
-            if (ParsingUtils.pathExists(path + ".mapping")) {
+            if (ParsingUtils.fileExists(path + ".mapping")) {
                 vcfToBamMapping = path + ".mapping";
             }
         }

@@ -3,7 +3,7 @@ feature count density (coverage),  sorting, and indexing data files.
 See also http://www.broadinstitute.org/software/igv/igvtools_commandline.
 
 ***************************************************************************
-Java 9 or 10 is required for this release.  See our website for more
+Java 11 is required for this release.  See our website for more
 information about support for Java 8.
 ***************************************************************************
 
@@ -35,15 +35,17 @@ Starting with java
 Igvtools can also be started directly using java as shown below.  This option
 allows more control over java parameters, such as the maximum memory to
 allocate.  In the example below igvtools is started with 1500 MB of memory
-allocated and /path/to/IGVTools is the location where you have unpacked 
-IGVTools
+allocated and launched in the location where you have unpacked IGVTools.
 
-   java -Xmx1500m --module-path=/path/to/IGVTools/lib @igv.args --module org.igv/org.broad.igv.tools.IgvTools [command] [options][arguments]
+   java -Xmx1500m --module-path=lib @igv.args --module=org.igv/org.broad.igv.tools.IgvTools [command] [options][arguments]
 
 To start with a gui the command is
 
-   java -Xmx1500m --module-path=/path/to/IGVTools/lib  @igv.args --module org.igv/org.broad.igv.tools.IgvTools gui
-   
+   java -Xmx1500m --module-path=lib @igv.args --module=org.igv/org.broad.igv.tools.IgvTools gui
+
+Note that the command line has become more complex with Java 11 compared to
+Java 8.  We recommend the shell scripts above for most users.
+
 ---------------------------------------------------------------------------
 Memory settings
 ---------------------------------------------------------------------------
@@ -51,10 +53,10 @@ Memory settings
 The scripts above allocate a fixed amount of memory.  If this amount is not
 available on your platform you will get an obscure error along the lines of
 "Could not start the Virtual Machine".   If this happens you will need to
-edit the scripts to reduce the amount of memory requested,  or use the java
+edit the scripts to reduce the amount of memory requested,  or use the Java
 startup option.  The memory is set via a "-Xmx" parameter. For example
 -Xmx1500m  requests 1500 MB,  -Xmx1g requests 1 gigabyte.
-   
+
 ---------------------------------------------------------------------------
 HiDPI settings
 ---------------------------------------------------------------------------
