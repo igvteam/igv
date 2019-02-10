@@ -929,7 +929,9 @@ public class CommandExecutor {
             return AlignmentTrack.SortOption.FIRST_OF_PAIR_STRAND;
         } else if (str.equalsIgnoreCase("mateChr")) {
             return AlignmentTrack.SortOption.MATE_CHR;
-        } else {
+        } else if (str.equalsIgnoreCase("readOrder")) {
+            return AlignmentTrack.SortOption.READ_ORDER;
+        }else {
             try {
                 return AlignmentTrack.SortOption.valueOf(str.toUpperCase());
             } catch (IllegalArgumentException e) {

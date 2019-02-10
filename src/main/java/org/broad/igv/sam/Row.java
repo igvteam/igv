@@ -88,6 +88,17 @@ public class Row implements Comparable<Row> {
                         score = strand == Strand.NEGATIVE ? 1 : -1;
                     }
                     return score;
+                case READ_ORDER:
+                    if(centerAlignment.isPaired() && centerAlignment.isFirstOfPair()) {
+                        score = -1;
+                    } else if(centerAlignment.isPaired() && centerAlignment.isSecondOfPair()) {
+                        score = 1;
+                    }
+                    else {
+                        score = 0;
+                    }
+
+                    return score;
                 case NUCLEOTIDE:
                     byte base = centerAlignment.getBase(adjustedCenter);
                     byte ref = interval.getReference(adjustedCenter);
