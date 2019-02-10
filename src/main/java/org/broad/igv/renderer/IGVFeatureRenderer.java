@@ -213,9 +213,12 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 } else {
 
                     drawFeatureBlock(pixelStart, pixelEnd, pixelThickStart, pixelThickEnd, pixelYCenter, g2D);
-                    Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.WHITE);
-                    drawStrandArrows(feature.getStrand(), pixelStart, pixelEnd, pixelYCenter, 0,
-                            displayMode, trackRectangle, arrowGraphics);
+
+                    if (displayMode != Track.DisplayMode.SQUISHED) {
+                        Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.WHITE);
+                        drawStrandArrows(feature.getStrand(), pixelStart, pixelEnd, pixelYCenter, 0,
+                                displayMode, trackRectangle, arrowGraphics);
+                    }
 
                     // This is ugly, but alternatives are probably worse
                     if (feature instanceof EncodePeakFeature && pixelWidth > 5) {
@@ -224,10 +227,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                             Color c = g2D.getColor();
                             int peakPixelPosition = (int) ((peakPosition - origin) / locScale);
                             Color peakColor = c == Color.black ? Color.red : Color.black;
-                            //if (track.isUseScore()) {
-                            //    float alpha = getAlpha(0, 500, feature.getScore());
-                            //    peakColor = ColorUtilities.getCompositeColor(DULL_RED, alpha);
-                            //}
                             g2D.setColor(peakColor);
                             int pw = Math.min(3, pixelWidth / 5);
                             g2D.fillRect(peakPixelPosition - pw/2, pixelYCenter - thinBlockHeight/2 - 1, pw, thinBlockHeight + 2);
