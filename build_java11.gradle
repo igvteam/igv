@@ -141,14 +141,13 @@ task createDist(type: Copy, dependsOn: jar)  {
         include 'igv.command'
         include 'igv.args'
         include 'readme.txt'
-        include 'igvtools*'
+        exclude 'igvtools*'
     }
     with copySpec {
         from ("${buildDir}/libs")
         from ("lib") { include '*.jar' }
         into "lib"
     }
-    with copySpec { from ("genomes/sizes") { } into "lib/genomes" }
 
     into "${buildDir}/IGV-dist"
 }
@@ -193,7 +192,6 @@ task createMacDistZip(type: Zip, dependsOn: createDist) {
     from ("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*_hidpi*"
-        exclude "igvtools_gui"
     }
     into createMacDistZip.baseName + "_${version}"
 
@@ -261,9 +259,6 @@ task createWinDist(type: Copy, dependsOn: createDist) {
         from("${buildDir}/IGV-dist") {
             exclude "*.sh"
             exclude "*.command"
-            exclude "igvtools"
-            exclude "igvtools_gui"
-            exclude "igvtools_gui_hidpi"
         }
         from ("resources") { include "IGV_64.ico" }
         into "IGV_${version}"
