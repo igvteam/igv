@@ -165,15 +165,7 @@ public class RemoveGenomesDialog extends JDialog {
             File localFasta = GenomeManager.getInstance().getLocalFasta(item.getId());
             if (localFasta != null) {
                 GenomeManager.getInstance().removeLocalFasta(item.getId());
-                boolean d = MessageUtils.confirm("Delete local fasta file (" + localFasta.getName() + ")?");
-                if (d) {
-                    localFasta.delete();
-                    (new File(localFasta.getAbsolutePath() + ".fai")).delete();
-                    (new File(localFasta.getAbsolutePath() + ".gzi")).delete();
-                }
-
             }
-
         }
 
         GenomeListManager.getInstance().removeAllItems(removedValuesList);
