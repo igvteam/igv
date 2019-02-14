@@ -43,12 +43,14 @@ public class GenomeListItem {
     private String path;
     private String id;
     private boolean hasDownloadedSequence = false;
+    private long lastModified = 0;
 
     public static final GenomeListItem ITEM_MORE;
 
     static {
         ITEM_MORE = new GenomeListItem("More...", "", "More...");
     }
+
 
     /**
      * @param displayableName The name that can be shown to a user.
@@ -115,4 +117,11 @@ public class GenomeListItem {
     }
 
 
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public long getLastModified() {
+        return lastModified;
+    }
 }
