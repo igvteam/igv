@@ -1013,7 +1013,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private Alignment getAlignmentAt(double position, int y, ReferenceFrame frame) {
 
-        if (alignmentsRect == null) {
+        if (alignmentsRect == null || dataManager == null) {
             return null;   // <= not loaded yet
         }
         PackedAlignments groups = dataManager.getGroupedAlignmentsContaining(position, frame);
