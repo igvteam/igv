@@ -289,10 +289,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(genomeId));
 
 
-        menuAction = new BrowseGa4ghAction("Load from Ga4gh...", KeyEvent.VK_G, igv);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        menuItems.add(new JSeparator());
-
         // Session menu items
         menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
         menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
@@ -991,19 +987,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         projectID.addActionListener(e -> GoogleUtils.enterGoogleProjectID());
         menu.add(projectID);
 
-        final JMenuItem loadReadset = new JMenuItem("Load Genomics ReadGroupSet... ");
-        loadReadset.addActionListener(e -> {
-            String readsetId = MessageUtils.showInputDialog("Enter ReadGroupSet ID (e.g. CMvnhpKTFhCjz9_25e_lCw): ");
-            if (readsetId != null) {
-                ResourceLocator locator = new ResourceLocator(readsetId);
-                locator.setName(readsetId);
-                locator.setType(Ga4ghAPIHelper.RESOURCE_TYPE);
-                locator.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
-                IGV.getInstance().loadTracks(Arrays.asList(locator));
-            }
-        });
-        loadReadset.setEnabled(false);
-        menu.add(loadReadset);
 
         menu.addMenuListener(new MenuListener() {
             @Override
@@ -1017,7 +1000,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     }
                     login.setEnabled(!loggedIn);
                     logout.setEnabled(loggedIn);
-                    loadReadset.setEnabled(loggedIn);
                 };
 
                 LongRunningTask.submit(runnable);

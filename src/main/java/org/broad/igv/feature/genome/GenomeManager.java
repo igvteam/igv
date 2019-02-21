@@ -415,6 +415,11 @@ public class GenomeManager {
         JsonElement indexPathObject = json.get("indexURL");
         String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
 
+        fastaPath = FileUtils.getAbsolutePath(fastaPath, genomePath);
+        if(indexPath != null) {
+            indexPath = FileUtils.getAbsolutePath(indexPath, genomePath);
+        }
+
         FastaIndexedSequence sequence = fastaPath.endsWith(".gz") ?
                 new FastaBlockCompressedSequence(fastaPath, indexPath) :
                 new FastaIndexedSequence(fastaPath, indexPath);
@@ -427,13 +432,21 @@ public class GenomeManager {
                 JsonObject obj = jsonElement.getAsJsonObject();
                 String trackPath = obj.get("url").getAsString();
                 JsonElement trackName = obj.get("name");
-                JsonElement trackIndexPath = obj.get("indexURL");
+                JsonElement trackIndex = obj.get("indexURL");
                 JsonElement indexed = obj.get("indexed");
                 JsonElement aliasURL = obj.get("aliasURL");
+                String trackIndexPath = null;
+
+                if(trackPath != null) {
+                    trackPath = FileUtils.getAbsolutePath(trackPath, genomePath);
+                }
+                if(trackIndex != null) {
+                    trackIndexPath = FileUtils.getAbsolutePath(trackIndex.getAsString(), genomePath);
+                }
 
                 ResourceLocator res = new ResourceLocator(trackPath);
                 if (trackName != null) res.setName(trackName.getAsString());
-                if (trackIndexPath != null) res.setIndexPath(trackIndexPath.getAsString());
+                if (trackIndexPath != null) res.setIndexPath(trackIndexPath);
                 if (indexed != null) res.setIndexed(indexed.getAsBoolean());
                 tracks.add(res);
             });
@@ -447,8 +460,9 @@ public class GenomeManager {
         // TODO -- set aliases
 
         return newGenome;
-
     }
+
+
 
     private Collection<Collection<String>> loadChrAliases(String path) {
 
