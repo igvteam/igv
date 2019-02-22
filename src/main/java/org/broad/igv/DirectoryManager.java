@@ -398,10 +398,20 @@ public class DirectoryManager {
                     log.error("Error moving file", e);
                 }
             }
-
         }
+    }
 
+    public static  boolean isChildOf(File base, File child)
+            throws IOException {
 
+        File parent = child.getParentFile();
+        while (parent != null) {
+            if (base.equals(parent)) {
+                return true;
+            }
+            parent = parent.getParentFile();
+        }
+        return false;
     }
 
     /**
@@ -473,7 +483,6 @@ public class DirectoryManager {
         } else {
             return directory.canWrite();
         }
-
     }
 
     public static void initializeLog() {

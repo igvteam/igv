@@ -72,7 +72,7 @@ Human hg16	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg16.genome	h
 Human hg17	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg17.genome	hg17
 Human hg18	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg18.genome	hg18
 Human hg19	https://s3.amazonaws.com/igv.org.genomes/hg19/hg19.genome	hg19
-Human hg38	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg38.genome	hg38
+Human hg38	https://s3.amazonaws.com/igv.org.genomes/hg38/hg38.genome	hg38
 Human Mito (NC_012920)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_012920.1.gbk	NC_012920
 Human respiratory synctial virus	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/M74568.genome	M74568
 L. major Friedlin	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/lmjr.genome	lmjr
@@ -82,10 +82,10 @@ Macaca fascicularis (CE_1.0)	https://s3.amazonaws.com/igv.broadinstitute.org/gen
 Maize (B73 4a.53)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/B73.genome	B73
 Maize (ZmB73 5a)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ZmB73_5a.genome	ZmB73_5a
 Mouse (129S1/SvImJ)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/SvImJ.genome	129S1/SvImJ
-Mouse mm10	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm10.genome	mm10
+Mouse mm10	https://s3.amazonaws.com/igv.org.genomes/mm10/mm10.genome	mm10
 Mouse mm7	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm7.genome	mm7
 Mouse mm8	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm8.genome	mm8
-Mouse mm9	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm9.genome	mm9
+Mouse mm9	https://s3.amazonaws.com/igv.org.genomes/mm9/mm9.genome	mm9
 Mycobacterium TB (CD1551)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_002755.genome	NC_002755
 N. Meningitidis (FAM18)	https://s3.amazonaws.com/igv.broadinstitute.org/test/genomes/NC_008767.genome	NC_008767
 N. Meningitidis (MC58)	https://s3.amazonaws.com/igv.broadinstitute.org/test/genomes/NC_003112.genome	NC_003112

@@ -98,6 +98,8 @@ public class GenomeManager {
     public static final String GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY = "customSequenceLocation";
     public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
     public static final String SEQUENCE_MAP_FILE = "sequenceMap.txt";
+    public static final long ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+
     private static Logger log = Logger.getLogger(GenomeManager.class);
 
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
@@ -116,6 +118,8 @@ public class GenomeManager {
     private Genome currentGenome;
 
     private Map<String, File> localSequenceMap;
+
+
 
     /**
      * Map from genomeID -> GenomeListItem
@@ -156,6 +160,7 @@ public class GenomeManager {
             return; // Already loaded
         }
 
+        // If genomeId is a file path load it
         if (org.broad.igv.util.ParsingUtils.fileExists(genomeId)) {
             loadGenome(genomeId, null);
 
@@ -200,6 +205,7 @@ public class GenomeManager {
 
             String altGenomePath;
             if (genomePath.endsWith(".genome")) {
+
                 File archiveFile = getArchiveFile(genomePath);
 
                 if (!archiveFile.exists()) {
@@ -409,6 +415,11 @@ public class GenomeManager {
         JsonElement indexPathObject = json.get("indexURL");
         String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
 
+        fastaPath = FileUtils.getAbsolutePath(fastaPath, genomePath);
+        if(indexPath != null) {
+            indexPath = FileUtils.getAbsolutePath(indexPath, genomePath);
+        }
+
         FastaIndexedSequence sequence = fastaPath.endsWith(".gz") ?
                 new FastaBlockCompressedSequence(fastaPath, indexPath) :
                 new FastaIndexedSequence(fastaPath, indexPath);
@@ -421,13 +432,21 @@ public class GenomeManager {
                 JsonObject obj = jsonElement.getAsJsonObject();
                 String trackPath = obj.get("url").getAsString();
                 JsonElement trackName = obj.get("name");
-                JsonElement trackIndexPath = obj.get("indexURL");
+                JsonElement trackIndex = obj.get("indexURL");
                 JsonElement indexed = obj.get("indexed");
                 JsonElement aliasURL = obj.get("aliasURL");
+                String trackIndexPath = null;
+
+                if(trackPath != null) {
+                    trackPath = FileUtils.getAbsolutePath(trackPath, genomePath);
+                }
+                if(trackIndex != null) {
+                    trackIndexPath = FileUtils.getAbsolutePath(trackIndex.getAsString(), genomePath);
+                }
 
                 ResourceLocator res = new ResourceLocator(trackPath);
                 if (trackName != null) res.setName(trackName.getAsString());
-                if (trackIndexPath != null) res.setIndexPath(trackIndexPath.getAsString());
+                if (trackIndexPath != null) res.setIndexPath(trackIndexPath);
                 if (indexed != null) res.setIndexed(indexed.getAsBoolean());
                 tracks.add(res);
             });
@@ -441,8 +460,9 @@ public class GenomeManager {
         // TODO -- set aliases
 
         return newGenome;
-
     }
+
+
 
     private Collection<Collection<String>> loadChrAliases(String path) {
 
@@ -692,6 +712,7 @@ public class GenomeManager {
      * @throws IOException
      */
     public void refreshCache(File cachedFile, URL genomeArchiveURL) {
+
         // Look in cache first
         try {
             if (cachedFile.exists()) {
@@ -699,11 +720,13 @@ public class GenomeManager {
                 //File sizes won't be the same if the local version has a different sequence location
                 boolean remoteModfied = HttpUtils.getInstance().remoteIsNewer(cachedFile, genomeArchiveURL);
 
+                boolean isStale = System.currentTimeMillis() - cachedFile.lastModified() > ONE_WEEK;
+
                 // Force an update of cached genome if file length does not equal remote content length
                 boolean forceUpdate = remoteModfied &&
                         PreferencesManager.getPreferences().getAsBoolean(Constants.AUTO_UPDATE_GENOMES);
 
-                if (forceUpdate) {
+                if (forceUpdate || isStale) {
 
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
 

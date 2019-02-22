@@ -22,7 +22,7 @@ section
      createShortCut "$DESKTOP\IGV_@VERSION@.lnk" "$INSTDIR\igv.bat" "" "$INSTDIR\IGV_64.ico"
      createDirectory "$SMPROGRAMS\IGV_@VERSION@"
      createShortCut "$SMPROGRAMS\IGV_@VERSION@\IGV.lnk" "$INSTDIR\igv.bat" "" "$INSTDIR\IGV_64.ico"
-     createShortCut "$SMPROGRAMS\IGV_@VERSION@\IGVTools.lnk" "$INSTDIR\igvtools_gui.bat"
+     #createShortCut "$SMPROGRAMS\IGV_@VERSION@\IGVTools.lnk" "$INSTDIR\igvtools_gui.bat"
      
      WriteUninstaller $INSTDIR\uninstaller.exe
      createShortCut "$SMPROGRAMS\IGV_@VERSION@\uninstaller.lnk" "$INSTDIR\uninstaller.exe"

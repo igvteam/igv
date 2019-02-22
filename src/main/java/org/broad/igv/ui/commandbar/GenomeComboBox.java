@@ -107,7 +107,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                         });
 
                         try {
-                            GenomeManager.getInstance().loadGenome(genomeListItem.getPath(), monitor);
+                            GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
                         } catch (GenomeServerException e) {
                             log.error("Error loading genome: " + genomeListItem.getId() + "  " + genomeListItem.getPath(), e);
                             JOptionPane.showMessageDialog(

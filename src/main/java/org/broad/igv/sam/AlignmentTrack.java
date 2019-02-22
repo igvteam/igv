@@ -140,16 +140,18 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     enum ColorOption {
-        INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, LIBRARY, MOVIE, ZMW, BISULFITE, NOMESEQ,
-        TAG, NONE, UNEXPECTED_PAIR, MAPPED_SIZE, LINK_STRAND, YC_TAG
+        INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, LIBRARY, MOVIE, ZMW,
+        BISULFITE, NOMESEQ, TAG, NONE, UNEXPECTED_PAIR, MAPPED_SIZE, LINK_STRAND, YC_TAG
     }
 
     public enum SortOption {
-        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG, SUPPLEMENTARY, NONE, HAPLOTYPE;
+        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG,
+        SUPPLEMENTARY, NONE, HAPLOTYPE, READ_ORDER;
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, LIBRARY, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW, HAPLOTYPE
+        STRAND, SAMPLE, READ_GROUP, LIBRARY, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE,
+        SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW, HAPLOTYPE, READ_ORDER
     }
 
     public enum BisulfiteContext {
@@ -1011,7 +1013,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private Alignment getAlignmentAt(double position, int y, ReferenceFrame frame) {
 
-        if (alignmentsRect == null) {
+        if (alignmentsRect == null || dataManager == null) {
             return null;   // <= not loaded yet
         }
         PackedAlignments groups = dataManager.getGroupedAlignmentsContaining(position, frame);
@@ -1669,6 +1671,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("supplementary flag", GroupOption.SUPPLEMENTARY);
             mappings.put("movie", GroupOption.MOVIE);
             mappings.put("ZMW", GroupOption.ZMW);
+            mappings.put("read order", GroupOption.READ_ORDER);
 
 
             for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {
@@ -1739,6 +1742,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("mapping quality", SortOption.QUALITY);
             mappings.put("sample", SortOption.SAMPLE);
             mappings.put("read group", SortOption.READ_GROUP);
+            mappings.put("read order", SortOption.READ_ORDER);
 
             if (dataManager.isPairedEnd()) {
                 mappings.put("insert size", SortOption.INSERT_SIZE);

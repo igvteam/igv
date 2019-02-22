@@ -115,7 +115,7 @@ public class GenomeListManager {
     public void addGenomeItem(GenomeListItem genomeListItem, boolean userDefined) {
         genomeItemMap.put(genomeListItem.getId(), genomeListItem);
         if (userDefined) {
-            if(userDefinedGenomeMap == null) userDefinedGenomeMap = new HashMap<>();
+            if (userDefinedGenomeMap == null) userDefinedGenomeMap = new HashMap<>();
             userDefinedGenomeMap.put(genomeListItem.getId(), genomeListItem);
             exportUserDefinedGenomeList();
         }
@@ -124,10 +124,9 @@ public class GenomeListManager {
 
     /**
      * Add a server-hosted genome list to the selectables map
-     *
      */
     public void addServerGenomeItem(GenomeListItem genomeListItem) {
-            addGenomeItem(genomeListItem, false);
+        addGenomeItem(genomeListItem, false);
     }
 
 
@@ -175,11 +174,12 @@ public class GenomeListManager {
      */
     public GenomeListItem getGenomeListItem(String genomeId) {
 
+
         GenomeListItem matchingItem = genomeItemMap.get(genomeId);
 
-        if (matchingItem == null) {
+        if (matchingItem == null || (System.currentTimeMillis() - matchingItem.getLastModified() >  GenomeManager.ONE_WEEK)) {
 
-            // If genome archive was not found, check things not currently loaded
+            // If genome archive was not found, or is more than 1 week old, check things not currently loaded
             matchingItem = getServerGenomeMap().get(genomeId);
             if (matchingItem != null) {
                 return matchingItem;
@@ -256,6 +256,10 @@ public class GenomeListManager {
                         new GenomeListItem(properties.getProperty(GENOME_ARCHIVE_NAME_KEY),
                                 file.getAbsolutePath(),
                                 properties.getProperty(GENOME_ARCHIVE_ID_KEY));
+
+                long lastModified = file.lastModified();
+                item.setLastModified(lastModified);
+
                 cachedGenomeArchiveList.put(item.getId(), item);
             } catch (ZipException ex) {
                 log.error("\nZip error unzipping cached genome.", ex);
@@ -585,7 +589,7 @@ public class GenomeListManager {
 
         @Override
         public int compare(GenomeListItem o1, GenomeListItem o2) {
-            return  o1.getDisplayableName().toLowerCase().compareTo(o2.getDisplayableName().toLowerCase());
+            return o1.getDisplayableName().toLowerCase().compareTo(o2.getDisplayableName().toLowerCase());
         }
     }
 }

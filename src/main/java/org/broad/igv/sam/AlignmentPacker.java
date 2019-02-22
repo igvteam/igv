@@ -417,6 +417,15 @@ public class AlignmentPacker {
                 Strand strand = al.getFirstOfPairStrand();
                 String strandString = strand == Strand.NONE ? null : strand.toString();
                 return strandString;
+            case READ_ORDER:
+                if(al.isPaired() && al.isFirstOfPair()) {
+                    return "FIRST";
+                } else if(al.isPaired() && al.isSecondOfPair()) {
+                    return "SECOND";
+                }
+                else {
+                    return "";
+                }
             case PAIR_ORIENTATION:
                 PEStats peStats = AlignmentRenderer.getPEStats(al, renderOptions);
                 AlignmentTrack.OrientationType type = AlignmentRenderer.getOrientationType(al, peStats);

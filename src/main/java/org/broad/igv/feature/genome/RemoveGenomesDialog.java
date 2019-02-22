@@ -30,15 +30,12 @@
 package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
-import org.broad.igv.ui.commandbar.GenomeSelectionDialog;
-import org.broad.igv.ui.commandbar.JList7;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
@@ -46,17 +43,12 @@ import org.broad.igv.util.LongRunningTask;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -134,7 +126,7 @@ public class RemoveGenomesDialog extends JDialog {
             }
 
 
-            if (removedValuesList.size() > 0 ) {
+            if (removedValuesList.size() > 0) {
                 IGVEventBus.getInstance().post(new GenomeResetEvent());
             }
 
@@ -147,8 +139,7 @@ public class RemoveGenomesDialog extends JDialog {
 
 
     /**
-     * Delete the specified .genome files and their sequences, only if they were downloaded from the
-     * server. Doesn't touch user defined genomes
+     * Delete the specified .genome files.
      *
      * @param removedValuesList
      */
@@ -164,16 +155,18 @@ public class RemoveGenomesDialog extends JDialog {
 
             File localFasta = GenomeManager.getInstance().getLocalFasta(item.getId());
             if (localFasta != null) {
+                // If fasta file is in the "igv/genomes" directory delete it after user confirmation
                 GenomeManager.getInstance().removeLocalFasta(item.getId());
-                boolean d = MessageUtils.confirm("Delete local fasta file (" + localFasta.getName() + ")?");
-                if (d) {
-                    localFasta.delete();
-                    (new File(localFasta.getAbsolutePath() + ".fai")).delete();
-                    (new File(localFasta.getAbsolutePath() + ".gzi")).delete();
+                if (DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), localFasta)) {
+                    if (MessageUtils.confirm("Delete fasta file: " + localFasta.getAbsolutePath() + "?")) {
+                        localFasta.delete();
+                        File indexFile = new File(localFasta.getAbsolutePath() + ".fai");
+                        if(indexFile.exists()) {
+                            indexFile.delete();
+                        }
+                    }
                 }
-
             }
-
         }
 
         GenomeListManager.getInstance().removeAllItems(removedValuesList);
