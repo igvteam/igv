@@ -6,6 +6,7 @@ module org.igv {
     requires AbsoluteLayout;
     requires ant;
     requires com.google.common;
+    requires protobuf.java;
     requires commons.math3;
     requires gson;
     requires htsjdk;
