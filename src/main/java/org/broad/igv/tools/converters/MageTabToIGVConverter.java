@@ -26,14 +26,15 @@
 package org.broad.igv.tools.converters;
 
 import htsjdk.samtools.util.CloseableIterator;
-import org.broad.igv.util.collections.SortingCollection;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.data.expression.GeneToLocusHelper;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.sort.SortableRecord;
 import org.broad.igv.tools.sort.SortableRecordCodec;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.util.collections.SortingCollection;
 
 import java.io.*;
 import java.util.Comparator;
@@ -48,7 +49,7 @@ import java.util.List;
 @Deprecated
 public class MageTabToIGVConverter {
 
-    private static Logger log = Logger.getLogger(MageTabToIGVConverter.class);
+    private static Logger log = LogManager.getLogger(MageTabToIGVConverter.class);
 
 
     /**

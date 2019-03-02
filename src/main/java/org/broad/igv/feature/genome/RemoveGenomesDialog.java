@@ -29,16 +29,13 @@
 
 package org.broad.igv.feature.genome;
 
-import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
-import org.broad.igv.ui.commandbar.GenomeSelectionDialog;
-import org.broad.igv.ui.commandbar.JList7;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
@@ -46,24 +43,19 @@ import org.broad.igv.util.LongRunningTask;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 
 public class RemoveGenomesDialog extends JDialog {
 
-    private static Logger log = Logger.getLogger(RemoveGenomesDialog.class);
+    private static Logger log = LogManager.getLogger(RemoveGenomesDialog.class);
 
     private List<GenomeListItem> allListItems;
     private List<GenomeListItem> removedValuesList;

@@ -25,23 +25,12 @@
 
 package org.broad.igv.sam.cram;
 
-import htsjdk.samtools.*;
-import htsjdk.samtools.seekablestream.SeekableStream;
-import htsjdk.samtools.util.CloseableIterator;
-import org.broad.igv.feature.genome.Genome;
+import htsjdk.samtools.SAMSequenceRecord;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.util.stream.IGVSeekableBufferedStream;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * Created by jrobinso on 5/25/16.

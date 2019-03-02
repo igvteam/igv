@@ -26,10 +26,7 @@
 package org.broad.igv.feature.tribble;
 
 
-
-
 import htsjdk.tribble.Feature;
-import htsjdk.tribble.index.Index;
 
 import java.io.IOException;
 import java.util.Iterator;

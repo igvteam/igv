@@ -26,7 +26,6 @@
 package org.broad.igv.feature.genome.fasta;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;

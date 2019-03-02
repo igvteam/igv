@@ -37,6 +37,8 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.prefs.Constants;
@@ -44,8 +46,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.CytobandRenderer;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.ViewChange;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;

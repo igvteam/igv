@@ -25,6 +25,9 @@
 
 package org.broad.igv.gwas;
 
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.LineIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.genome.Genome;
@@ -32,9 +35,6 @@ import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.StringUtils;
-import htsjdk.tribble.AsciiFeatureCodec;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.readers.LineIterator;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -34,7 +34,8 @@ import htsjdk.samtools.CigarElement;
 import htsjdk.samtools.CigarOperator;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.util.StringUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
@@ -49,7 +50,7 @@ import java.io.IOException;
  */
 public class SamUtils {
 
-    private static Logger log = Logger.getLogger(SamUtils.class);
+    private static Logger log = LogManager.getLogger(SamUtils.class);
 
     private static final byte ZERO_BYTE = "0".getBytes()[0];
     private static final byte NINE_BYTE = "9".getBytes()[0];

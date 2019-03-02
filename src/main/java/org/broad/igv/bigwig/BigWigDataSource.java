@@ -25,13 +25,16 @@
 
 package org.broad.igv.bigwig;
 
-import org.apache.commons.math.stat.StatUtils;
+import htsjdk.tribble.Feature;
+import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.bbfile.*;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataTile;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.track.FeatureSource;
@@ -39,7 +42,6 @@ import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
-import htsjdk.tribble.Feature;
 
 import java.io.IOException;
 import java.util.*;

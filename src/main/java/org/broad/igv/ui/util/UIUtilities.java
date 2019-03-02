@@ -31,12 +31,12 @@ package org.broad.igv.ui.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.InputEvent;
 import java.lang.reflect.InvocationTargetException;
 
 
@@ -45,7 +45,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class UIUtilities {
 
-    final private static Logger log = Logger.getLogger(UIUtilities.class);
+    final private static Logger log = LogManager.getLogger(UIUtilities.class);
 
     final private static StringBuffer scratchBuffer = new StringBuffer();
 

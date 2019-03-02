@@ -25,12 +25,9 @@
 
 package org.broad.igv.aws;
 
-import com.amazonaws.services.s3.AmazonS3Builder;
-import com.amazonaws.services.s3.AmazonS3URI;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
 import htsjdk.samtools.util.Tuple;
-import org.apache.log4j.Logger;
-import org.broad.igv.ga4gh.OAuthUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
@@ -46,13 +43,14 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.net.URL;
 import java.util.ArrayList;
+
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 
 public class S3LoadDialog extends JDialog {
 
-    private static Logger log = Logger.getLogger(S3LoadDialog.class);
+    private static Logger log = LogManager.getLogger(S3LoadDialog.class);
 
     private final DefaultTreeModel treeModel;
     String selectedId;
@@ -62,7 +60,7 @@ public class S3LoadDialog extends JDialog {
         ArrayList<String> datasets = AmazonUtils.ListBucketsForUser();
         initComponents();
 
-        S3TreeNode root = new S3TreeNode(new S3Object("S3", true), true);
+        S3TreeNode root = new S3TreeNode(new IGVS3Object("S3", true), true);
 
         treeModel = new DefaultTreeModel(root);
         this.selectionTree.setModel(treeModel);
@@ -70,7 +68,7 @@ public class S3LoadDialog extends JDialog {
         // List toplevel buckets
         ArrayList<String> buckets = AmazonUtils.ListBucketsForUser();
         for (String bucket: buckets) {
-            S3Object bucket_obj = new S3Object(bucket, true);
+            IGVS3Object bucket_obj = new IGVS3Object(bucket, true);
             root.add(new S3TreeNode(bucket_obj, true));
         }
 
@@ -97,8 +95,8 @@ public class S3LoadDialog extends JDialog {
 
                 for (int i = 2; i < selectedObjects.length; i++) {
                     S3TreeNode selectedObject = (S3TreeNode) selectedObjects[i];
-                    S3Object selectedS3Object = selectedObject.getUserObject();
-                    s3Key += selectedS3Object.getName() + "/";
+                    IGVS3Object selectedIGVS3Object = selectedObject.getUserObject();
+                    s3Key += selectedIGVS3Object.getName() + "/";
                 }
 
                 s3Key = s3Key.substring(0, s3Key.length() - 1);
@@ -126,9 +124,9 @@ public class S3LoadDialog extends JDialog {
 
         Object parent = event.getPath().getLastPathComponent();
         S3TreeNode parentNode = (S3TreeNode) parent;
-        S3Object s3Object = parentNode.getUserObject();
+        IGVS3Object IGVS3Object = parentNode.getUserObject();
 
-        if (s3Object.isDir()) {
+        if (IGVS3Object.isDir()) {
             Object[] path = parentNode.getUserObjectPath(); // fullpath to S3 object
             String currentBucket = path[1].toString();
             String prefix = "";
@@ -141,16 +139,16 @@ public class S3LoadDialog extends JDialog {
 
             try {
                 // List contents of bucket with path-prefix passed
-                ArrayList<S3Object> s3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
+                ArrayList<IGVS3Object> IGVS3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
                 // For each item in the bucket:
-                //  1) create an S3Object
+                //  1) create an IGVS3Object
                 //    1.1) Name of object.
                 //    1.2) Dir or file: .getPrefix or null, according to S3 API
-                for (S3Object s3Obj: s3Objects) {
+                for (IGVS3Object s3Obj: IGVS3Objects) {
                     // Add it to the corresponding POJO...
                     parentNode.add(new S3TreeNode(s3Obj));
                 }
-            } catch (AmazonS3Exception e){
+            } catch (S3Exception e){
                 MessageUtils.showErrorMessage("Amazon S3: Access denied to bucket: "+currentBucket, e);
                 log.error("Permission denied on S3 bucket ListObjects: ");
             }

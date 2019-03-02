@@ -38,7 +38,8 @@ package org.broad.igv.bbfile;
 
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.ByteArrayInputStream;
@@ -50,7 +51,7 @@ import java.io.IOException;
 **/
 public class BBFileHeader {
 
-    private static Logger log = Logger.getLogger(BBFileHeader.class);
+    private static Logger log = LogManager.getLogger(BBFileHeader.class);
 
     // defines bigBed/bigwig Header Format types
     static public final int BBFILE_HEADER_SIZE = 64;

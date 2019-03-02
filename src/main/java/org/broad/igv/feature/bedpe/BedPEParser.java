@@ -1,6 +1,7 @@
 package org.broad.igv.feature.bedpe;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 
@@ -17,7 +18,7 @@ import java.util.Map;
  */
 public class BedPEParser {
 
-    private static Logger log = Logger.getLogger(BedPEParser.class);
+    private static Logger log = LogManager.getLogger(BedPEParser.class);
 
     public static List<BedPEFeature> parse(String file) throws IOException {
 

@@ -29,7 +29,8 @@
  */
 package org.broad.igv.sam;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
@@ -45,7 +46,7 @@ import java.util.List;
  */
 public class ReducedMemoryAlignment implements Alignment {
 
-    private static Logger log = Logger.getLogger(ReducedMemoryAlignment.class);
+    private static Logger log = LogManager.getLogger(ReducedMemoryAlignment.class);
     private final String cigarString;
 
     private String readName;

@@ -28,10 +28,6 @@ package org.broad.igv.track;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.renderer.DataRenderer;
-import org.broad.igv.session.IGVSessionReader;
-
-import org.broad.igv.session.RendererFactory;
 import org.broad.igv.session.SessionElement;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;

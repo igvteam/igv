@@ -33,7 +33,6 @@ package org.broad.igv.maf;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.*;
-import java.util.Properties;
 
 /**
  * @author jrobinso

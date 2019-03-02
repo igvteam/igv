@@ -24,21 +24,18 @@
  */
 package org.broad.igv.ui;
 
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-
-import javax.swing.JOptionPane;
-
+import apple.dts.samplecode.osxadapter.OSXAdapter;
 import org.apache.log4j.Logger;
 
-import apple.dts.samplecode.osxadapter.OSXAdapter;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Java version-specific integration with OS X (macOS)
  * @author eby
  */
 public class DesktopIntegration {
-    private static Logger log = Logger.getLogger(DesktopIntegration.class);
+    private static Logger log = LogManager.getLogger(DesktopIntegration.class);
 
     public static final void verifyJavaPlatform() {
         String javaVersion = System.getProperty("java.version");

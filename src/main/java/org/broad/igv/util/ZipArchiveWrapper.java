@@ -25,7 +25,8 @@
 
 package org.broad.igv.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,7 +43,7 @@ import java.util.zip.ZipInputStream;
 
 final public class ZipArchiveWrapper {
 
-    private static Logger logger = Logger.getLogger(Utilities.class);
+    private static Logger logger = LogManager.getLogger(Utilities.class);
     private File zipFile;
     private URL zipUrl;
 

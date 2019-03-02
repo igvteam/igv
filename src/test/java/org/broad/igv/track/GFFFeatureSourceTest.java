@@ -25,18 +25,15 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.Feature;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
-import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.tools.IgvTools;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.io.BufferedReader;

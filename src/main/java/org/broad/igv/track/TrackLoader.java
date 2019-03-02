@@ -28,7 +28,8 @@ package org.broad.igv.track;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.blast.BlastMapping;
@@ -62,7 +63,6 @@ import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.ga4gh.GoogleUtils;
-import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.gwas.GWASData;
@@ -73,7 +73,9 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.renderer.*;
+import org.broad.igv.renderer.HeatmapRenderer;
+import org.broad.igv.renderer.MutationRenderer;
+import org.broad.igv.renderer.PointsRenderer;
 import org.broad.igv.sam.*;
 import org.broad.igv.sam.reader.IndexNotFoundException;
 import org.broad.igv.tdf.TDFDataSource;
@@ -91,7 +93,6 @@ import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -105,7 +106,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class TrackLoader {
 
-    private static Logger log = Logger.getLogger(TrackLoader.class);
+    private static Logger log = LogManager.getLogger(TrackLoader.class);
 
     private static Collection<? extends Class> NOLogExceptions = Arrays.asList(TribbleIndexNotFoundException.class);
 

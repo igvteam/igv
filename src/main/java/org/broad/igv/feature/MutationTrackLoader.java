@@ -25,16 +25,17 @@
 
 package org.broad.igv.feature;
 
-import org.apache.log4j.Logger;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.AsciiLineReader;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.feature.tribble.MUTCodec;
+import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.track.*;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ import java.util.Map;
  */
 public class MutationTrackLoader {
 
-    private static Logger log = Logger.getLogger(MutationTrackLoader.class);
+    private static Logger log = LogManager.getLogger(MutationTrackLoader.class);
     private ResourceLocator locator = null;
     private Genome genome = null;
 

@@ -29,10 +29,11 @@
  */
 package org.broad.igv.tools;
 
-import org.broad.igv.util.collections.DoubleArrayList;
-import org.apache.commons.math.stat.StatUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.math3.stat.StatUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.util.collections.DoubleArrayList;
 
 import java.util.*;
 
@@ -45,7 +46,7 @@ public class ListAccumulator {
 
     static Set<WindowFunction> PERCENTILE_WINDOW_FUNCTIONS = new HashSet();
     public static int MAX_VALUE_COUNT = 100000;
-    private static Logger log = Logger.getLogger(ListAccumulator.class);
+    private static Logger log = LogManager.getLogger(ListAccumulator.class);
 
     static {
         PERCENTILE_WINDOW_FUNCTIONS.add(WindowFunction.median);

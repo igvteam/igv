@@ -27,7 +27,8 @@
 package org.broad.igv.track;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.data.CoverageDataSource;
@@ -49,7 +50,7 @@ import java.util.List;
 
 public class DataSourceTrack extends DataTrack {
 
-    private static Logger log = Logger.getLogger(DataSourceTrack.class);
+    private static Logger log = LogManager.getLogger(DataSourceTrack.class);
 
     public DataSource dataSource;
 

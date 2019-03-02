@@ -27,10 +27,9 @@ package org.broad.igv.util.stats;
 
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author jrobinso

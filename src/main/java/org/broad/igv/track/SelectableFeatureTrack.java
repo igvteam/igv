@@ -25,11 +25,11 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.Feature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.SelectableFeatureRenderer;
-import htsjdk.tribble.Feature;
 
 import java.awt.event.MouseEvent;
 import java.util.HashSet;

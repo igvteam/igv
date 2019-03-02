@@ -25,7 +25,12 @@
 
 package org.broad.igv.feature.tribble;
 
-import org.apache.log4j.Logger;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.LineIterator;
+import htsjdk.tribble.readers.LineIteratorImpl;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Mutation;
@@ -33,10 +38,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.MultiMap;
-import htsjdk.tribble.AsciiFeatureCodec;
-import htsjdk.tribble.readers.AsciiLineReader;
-import htsjdk.tribble.readers.LineIterator;
-import htsjdk.tribble.readers.LineIteratorImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -50,7 +51,7 @@ import java.io.IOException;
  */
 public class MUTCodec extends AsciiFeatureCodec<Mutation> {
 
-    private static Logger log = Logger.getLogger(MUTCodec.class);
+    private static Logger log = LogManager.getLogger(MUTCodec.class);
 
     private String path;  // for error messages
     private boolean isMAF;

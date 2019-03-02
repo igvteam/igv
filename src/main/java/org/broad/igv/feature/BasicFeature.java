@@ -26,7 +26,8 @@
 package org.broad.igv.feature;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
@@ -40,7 +41,7 @@ import java.util.*;
  */
 public class BasicFeature extends AbstractFeature {
 
-    private static Logger log = Logger.getLogger(BasicFeature.class);
+    private static Logger log = LogManager.getLogger(BasicFeature.class);
 
     String representation;
     protected List<Exon> exons;

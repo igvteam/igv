@@ -29,7 +29,8 @@
  */
 package org.broad.igv.ui.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.IGV;
@@ -46,7 +47,7 @@ import java.util.List;
  */
 public class FitDataToWindowMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(FitDataToWindowMenuAction.class);
+    static Logger log = LogManager.getLogger(FitDataToWindowMenuAction.class);
     IGV mainFrame;
 
     public FitDataToWindowMenuAction(String label, int mnemonic, IGV mainFrame) {

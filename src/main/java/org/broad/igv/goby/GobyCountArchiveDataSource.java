@@ -25,14 +25,15 @@
 
 package org.broad.igv.goby;
 
-import edu.cornell.med.icb.goby.counts.CachingCountsArchiveReader;
-import edu.cornell.med.icb.goby.counts.CountBinningAdapterI;
-import edu.cornell.med.icb.goby.counts.CountBinningAdaptor;
-import edu.cornell.med.icb.goby.counts.CountsReader;
+import org.campagnelab.goby.counts.CachingCountsArchiveReader;
+import org.campagnelab.goby.counts.CountBinningAdapterI;
+import org.campagnelab.goby.counts.CountBinningAdaptor;
+import org.campagnelab.goby.counts.CountsReader;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.exceptions.DataLoadException;
@@ -60,7 +61,7 @@ import java.util.Vector;
  *         Time: 3:18 PM
  */
 public class GobyCountArchiveDataSource implements CoverageDataSource {
-    static final Logger LOG = Logger.getLogger(TDFReader.class);
+    static final Logger LOG = LogManager.getLogger(TDFReader.class);
 
     CachingCountsArchiveReader counts;
     private double currentMax = 4;

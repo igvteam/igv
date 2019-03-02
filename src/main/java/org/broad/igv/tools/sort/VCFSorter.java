@@ -25,8 +25,9 @@
 
 package org.broad.igv.tools.sort;
 
-import org.apache.log4j.Logger;
 import htsjdk.tribble.readers.AsciiLineReader;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +42,7 @@ import java.io.PrintWriter;
  */
 public class VCFSorter extends AsciiSorter {
 
-    private static Logger log = Logger.getLogger(VCFSorter.class);
+    private static Logger log = LogManager.getLogger(VCFSorter.class);
 
 
     public VCFSorter(File inputFile, File outputFile) {

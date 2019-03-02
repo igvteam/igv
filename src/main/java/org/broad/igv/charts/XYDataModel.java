@@ -27,7 +27,6 @@ package org.broad.igv.charts;
 
 import java.awt.geom.Path2D;
 import java.util.*;
-import java.util.List;
 
 /**
  * @author Jim Robinson

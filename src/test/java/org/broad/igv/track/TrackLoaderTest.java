@@ -25,6 +25,7 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.Feature;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.IGVFeature;
@@ -34,7 +35,6 @@ import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.VariantTrack;
-import htsjdk.tribble.Feature;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

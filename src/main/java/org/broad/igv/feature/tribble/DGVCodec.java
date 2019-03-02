@@ -25,15 +25,15 @@
 
 package org.broad.igv.feature.tribble;
 
+import htsjdk.tribble.Feature;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.Exon;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.StringUtils;
-import htsjdk.tribble.Feature;
 
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 /**
  * Codec for UCSC DGV Table

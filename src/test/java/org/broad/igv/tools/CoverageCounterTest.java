@@ -26,8 +26,8 @@
 package org.broad.igv.tools;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;

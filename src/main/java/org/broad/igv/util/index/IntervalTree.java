@@ -31,7 +31,8 @@ package org.broad.igv.util.index;
  */
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -41,7 +42,7 @@ import java.util.List;
 
 public class IntervalTree {
 
-    private static Logger logger = Logger.getLogger(IntervalTree.class);
+    private static Logger logger = LogManager.getLogger(IntervalTree.class);
     boolean immutable = false;
     Node root;
     Node NIL = Node.NIL;

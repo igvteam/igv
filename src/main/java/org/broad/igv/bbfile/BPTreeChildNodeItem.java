@@ -25,7 +25,8 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Created by IntelliJ IDEA.
@@ -39,7 +40,7 @@ import org.apache.log4j.Logger;
  */
 public class BPTreeChildNodeItem implements BPTreeNodeItem {
 
-    private static Logger log = Logger.getLogger(BPTreeChildNodeItem.class);
+    private static Logger log = LogManager.getLogger(BPTreeChildNodeItem.class);
     private final boolean isLeafItem = false;
     private long itemIndex;     // item index in child node list
 

@@ -6,29 +6,29 @@ import java.util.Collection;
 public class S3TreeNode extends DefaultMutableTreeNode {
 
 
-    public S3TreeNode(S3Object userObject) {
+    public S3TreeNode(IGVS3Object userObject) {
         super(userObject);
      }
 
-    public S3TreeNode(S3Object userObject, boolean allowsChildren) {
+    public S3TreeNode(IGVS3Object userObject, boolean allowsChildren) {
         super(userObject, allowsChildren);
      }
 
-    public void addS3Children(Collection<S3Object> s3Objects) {
-        for (S3Object s3Object : s3Objects) {
-            this.add(new S3TreeNode(s3Object));
+    public void addS3Children(Collection<IGVS3Object> IGVS3Objects) {
+        for (IGVS3Object IGVS3Object : IGVS3Objects) {
+            this.add(new S3TreeNode(IGVS3Object));
         }
      }
 
     public boolean isLeaf() {
-        return !((S3Object) this.userObject).isDir();
+        return !((IGVS3Object) this.userObject).isDir();
     }
 
     public String toString() {
-        return ((S3Object) this.userObject).getName();
+        return ((IGVS3Object) this.userObject).getName();
     }
 
-    public S3Object getUserObject() {
-        return (S3Object) super.getUserObject();
+    public IGVS3Object getUserObject() {
+        return (IGVS3Object) super.getUserObject();
     }
 }

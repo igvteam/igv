@@ -28,7 +28,8 @@ package org.broad.igv.ui;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.ui.util.UIUtilities;
 
 import java.util.Collections;
@@ -44,7 +45,7 @@ import java.util.Set;
  * @author jrobinso
  */
 public class WaitCursorManager {
-    private static Logger log = Logger.getLogger(WaitCursorManager.class);
+    private static Logger log = LogManager.getLogger(WaitCursorManager.class);
 
     /**
      * A set of tokens, one for each call to "showWaitCursor".  These are removed in the

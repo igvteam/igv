@@ -30,7 +30,6 @@
 
 package org.broad.igv.ui;
 
-import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.FilterElement;
 

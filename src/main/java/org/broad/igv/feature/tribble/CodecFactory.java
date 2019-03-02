@@ -31,7 +31,8 @@ import htsjdk.tribble.FeatureCodec;
 import htsjdk.variant.bcf2.BCF2Codec;
 import htsjdk.variant.vcf.VCF3Codec;
 import htsjdk.variant.vcf.VCFCodec;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
 import org.broad.igv.feature.FeatureType;
 import org.broad.igv.feature.dsi.DSICodec;
@@ -56,7 +57,7 @@ import java.util.List;
  */
 public class CodecFactory {
 
-    private static Logger log = Logger.getLogger(CodecFactory.class);
+    private static Logger log = LogManager.getLogger(CodecFactory.class);
 
     public static final List<String> validExtensions = new ArrayList<String>(15);
 

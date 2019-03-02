@@ -25,7 +25,6 @@
 
 package org.broad.igv.ui.panel;
 
-import javax.swing.*;
 import java.awt.*;
 
 /**

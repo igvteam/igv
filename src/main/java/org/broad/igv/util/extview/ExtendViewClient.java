@@ -34,7 +34,6 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 

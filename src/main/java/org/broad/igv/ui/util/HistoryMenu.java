@@ -25,8 +25,8 @@
 
 package org.broad.igv.ui.util;
 
-import org.broad.igv.ui.IGV;
 import org.broad.igv.session.History;
+import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;

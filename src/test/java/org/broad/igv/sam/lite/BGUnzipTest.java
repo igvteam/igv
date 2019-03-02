@@ -1,10 +1,6 @@
 package org.broad.igv.sam.lite;
 
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.TestUtils;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by jrobinso on 3/10/17.

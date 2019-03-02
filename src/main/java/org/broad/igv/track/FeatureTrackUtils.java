@@ -25,6 +25,7 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.Feature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.tools.FeatureSearcher;
@@ -33,7 +34,6 @@ import org.broad.igv.ui.util.CancellableProgressDialog;
 import org.broad.igv.ui.util.IndefiniteProgressMonitor;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.LongRunningTask;
-import htsjdk.tribble.Feature;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

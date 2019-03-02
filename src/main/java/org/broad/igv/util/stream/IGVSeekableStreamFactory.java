@@ -28,7 +28,6 @@ package org.broad.igv.util.stream;
 import htsjdk.samtools.seekablestream.ISeekableStreamFactory;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.File;

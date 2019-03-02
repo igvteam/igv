@@ -29,7 +29,6 @@ package org.broad.igv.feature;
 import org.broad.igv.track.WindowFunction;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 

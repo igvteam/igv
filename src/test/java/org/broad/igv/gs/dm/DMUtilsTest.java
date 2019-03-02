@@ -26,9 +26,9 @@
 package org.broad.igv.gs.dm;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.gs.GSTestAuthenticator;
 import org.broad.igv.gs.GSUtils;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;

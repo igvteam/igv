@@ -34,7 +34,8 @@
 package org.broad.igv.ui.panel;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
@@ -66,7 +67,7 @@ import java.util.List;
  */
 public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
-    private static Logger log = Logger.getLogger(TrackNamePanel.class);
+    private static Logger log = LogManager.getLogger(TrackNamePanel.class);
 
 
     List<GroupExtent> groupExtents = new ArrayList();

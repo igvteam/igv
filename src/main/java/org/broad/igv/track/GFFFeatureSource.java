@@ -25,9 +25,10 @@
 
 package org.broad.igv.track;
 
-import org.apache.log4j.Logger;
-import org.broad.igv.feature.*;
 import htsjdk.tribble.Feature;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.broad.igv.feature.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -38,7 +39,7 @@ import java.util.*;
  */
 public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
 
-    private static Logger log = Logger.getLogger(GFFFeatureSource.class);
+    private static Logger log = LogManager.getLogger(GFFFeatureSource.class);
 
     private FeatureSource wrappedSource;
 

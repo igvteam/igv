@@ -25,7 +25,8 @@
 
 package org.broad.igv.sam;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @author jrobinso
@@ -33,7 +34,7 @@ import org.apache.log4j.Logger;
  */
 public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
-    private static Logger log = Logger.getLogger(DenseAlignmentCounts.class);
+    private static Logger log = LogManager.getLogger(DenseAlignmentCounts.class);
 
     // counts
     int[] posA;

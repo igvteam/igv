@@ -33,7 +33,6 @@ import org.broad.igv.ui.IGV;
 
 import java.awt.*;
 import java.awt.geom.Arc2D;
-import java.awt.geom.GeneralPath;
 import java.util.List;
 
 /**

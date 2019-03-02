@@ -25,10 +25,10 @@
 
 package org.broad.igv.sam.reader;
 
+import htsjdk.tribble.readers.AsciiLineReader;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.util.IndexCreatorDialog;
 import org.broad.igv.ui.util.UIUtilities;
-import htsjdk.tribble.readers.AsciiLineReader;
 
 import javax.swing.*;
 import java.io.*;

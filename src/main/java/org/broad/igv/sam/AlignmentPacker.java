@@ -29,10 +29,10 @@
  */
 package org.broad.igv.sam;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.sam.AlignmentTrack.GroupOption;
 
 import java.util.*;
 
@@ -43,7 +43,7 @@ import java.util.*;
  */
 public class AlignmentPacker {
 
-    private static final Logger log = Logger.getLogger(AlignmentPacker.class);
+    private static final Logger log = LogManager.getLogger(AlignmentPacker.class);
 
     /**
      * Minimum gap between the end of one alignment and start of another.

@@ -25,9 +25,9 @@
 
 package org.broad.igv.gwas;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.collections.DoubleArrayList;
-import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 
 import java.util.LinkedHashMap;
@@ -42,7 +42,7 @@ import java.util.LinkedHashMap;
  */
 public class GWASData {
 
-    private static final Logger log = Logger.getLogger(GWASData.class);
+    private static final Logger log = LogManager.getLogger(GWASData.class);
 
 
     // Location of the data points, chr and nucleotide location

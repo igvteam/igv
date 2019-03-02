@@ -32,7 +32,6 @@ package org.broad.igv.sam;
 
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.reader.BAMReader;
 import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.ResourceLocator;
@@ -41,8 +40,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;

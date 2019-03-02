@@ -32,8 +32,9 @@ package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.commons.math.stat.StatUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.math3.stat.StatUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
@@ -50,7 +51,7 @@ import java.util.List;
 public class SetTrackHeightMenuAction extends MenuAction {
 
     IGV mainFrame;
-    static Logger log = Logger.getLogger(SetTrackHeightMenuAction.class);
+    private static Logger log = LogManager.getLogger(SetTrackHeightMenuAction.class);
 
     static int lastTrackHeight = -1;
 

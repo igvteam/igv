@@ -26,16 +26,16 @@
 
 package org.broad.igv.goby;
 
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import edu.cornell.med.icb.goby.alignments.Alignments;
+import org.campagnelab.goby.alignments.Alignments;
+import org.campagnelab.goby.alignments.AlignmentReaderImpl;
+import org.campagnelab.goby.alignments.AlignmentReader;
+import htsjdk.samtools.util.CloseableIterator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 import junit.framework.Assert;
-import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;

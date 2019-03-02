@@ -29,7 +29,8 @@ import biz.source_code.base64Coder.Base64Coder;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;
@@ -56,8 +57,8 @@ import java.io.*;
 import java.net.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
@@ -72,7 +73,7 @@ import static org.broad.igv.util.stream.SeekableServiceStream.WEBSERVICE_URL;
  */
 public class HttpUtils {
 
-    private static Logger log = Logger.getLogger(HttpUtils.class);
+    private static Logger log = LogManager.getLogger(HttpUtils.class);
 
     private static HttpUtils instance;
 

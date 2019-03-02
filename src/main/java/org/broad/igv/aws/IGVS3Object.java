@@ -1,17 +1,17 @@
 package org.broad.igv.aws;
 
-public class S3Object {
+public class IGVS3Object {
 
     private String name;
 
     private boolean isDir;
 
-    public S3Object(String name) {
+    public IGVS3Object(String name) {
         this.name = name;
         this.isDir = false;
     }
 
-    public S3Object(String name, boolean isDir) {
+    public IGVS3Object(String name, boolean isDir) {
         this.name = name;
         this.isDir = isDir;
     }

@@ -25,12 +25,20 @@
 
 package org.broad.igv.tools;
 
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.tribble.FeatureCodec;
+import htsjdk.tribble.index.Block;
+import htsjdk.tribble.index.Index;
+import htsjdk.tribble.index.IndexFactory;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCF3Codec;
+import htsjdk.variant.vcf.VCFCodec;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.Dataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -43,14 +51,6 @@ import org.broad.igv.tools.sort.SorterTest;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import htsjdk.tribble.AbstractFeatureReader;
-import htsjdk.tribble.FeatureCodec;
-import htsjdk.tribble.index.Block;
-import htsjdk.tribble.index.Index;
-import htsjdk.tribble.index.IndexFactory;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCF3Codec;
-import htsjdk.variant.vcf.VCFCodec;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;

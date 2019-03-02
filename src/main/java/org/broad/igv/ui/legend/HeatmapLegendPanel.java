@@ -32,7 +32,8 @@ package org.broad.igv.ui.legend;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
@@ -49,7 +50,7 @@ import java.text.DecimalFormat;
  */
 public class HeatmapLegendPanel extends LegendPanel {
 
-    static Logger log = Logger.getLogger(HeatmapLegendPanel.class);
+    static Logger log = LogManager.getLogger(HeatmapLegendPanel.class);
 
 
     enum Orientation {HORIZONTAL, VERTICAL}

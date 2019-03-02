@@ -7,8 +7,6 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 
-import java.io.IOException;
-
 /**
  * Created by jrobinso on 8/13/18.
  */

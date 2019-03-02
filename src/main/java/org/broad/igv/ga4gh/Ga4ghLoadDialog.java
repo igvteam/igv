@@ -25,31 +25,33 @@
 
 package org.broad.igv.ga4gh;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.IOException;
-import java.util.Arrays;
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * @author James Robinson
  */
 public class Ga4ghLoadDialog extends JDialog {
 
-    private static Logger log = Logger.getLogger(Ga4ghLoadDialog.class);
+    private static Logger log = LogManager.getLogger(Ga4ghLoadDialog.class);
 
     private final DefaultTreeModel treeModel;
     Ga4ghProvider[] providers;

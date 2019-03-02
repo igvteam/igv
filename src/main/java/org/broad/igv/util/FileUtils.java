@@ -26,17 +26,15 @@
 package org.broad.igv.util;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.ftp.FTPUtils;
 
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -44,7 +42,7 @@ import java.util.regex.Pattern;
  */
 public class FileUtils {
 
-    private static final Logger log = Logger.getLogger(FileUtils.class);
+    private static final Logger log = LogManager.getLogger(FileUtils.class);
 
     final public static String LINE_SEPARATOR = System.getProperty("line.separator");
     final public static String FILE_SEP = System.getProperty("file.separator");

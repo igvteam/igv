@@ -30,7 +30,8 @@
 package org.broad.igv.track;
 
 import com.google.common.base.Predicate;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.PanelName;
@@ -58,7 +59,7 @@ import java.util.List;
  */
 public class CombinedDataSourceDialog extends JDialog {
 
-    private static Logger log = Logger.getLogger(CombinedDataSourceDialog.class);
+    private static Logger log = LogManager.getLogger(CombinedDataSourceDialog.class);
 
 
     public CombinedDataSourceDialog(Frame owner) {

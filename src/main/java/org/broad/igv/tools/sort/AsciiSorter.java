@@ -26,14 +26,11 @@
 package org.broad.igv.tools.sort;
 
 import htsjdk.samtools.util.CloseableIterator;
-import org.broad.igv.util.collections.SortingCollection;
-import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.ChromosomeNameComparator;
-import org.broad.igv.feature.tribble.MUTCodec;
-import org.broad.igv.gwas.GWASParser;
-import org.broad.igv.track.GFFFeatureSource;
-import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.readers.AsciiLineReader;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.broad.igv.feature.genome.ChromosomeNameComparator;
+import org.broad.igv.util.collections.SortingCollection;
 
 import java.io.*;
 import java.util.Comparator;
@@ -45,7 +42,7 @@ import java.util.Comparator;
  */
 public abstract class AsciiSorter implements Sorter {
 
-    static private Logger log = Logger.getLogger(AsciiSorter.class);
+    static private Logger log = LogManager.getLogger(AsciiSorter.class);
 
     static int MAX_RECORDS_IN_RAM = 500000;
     protected File inputFile;

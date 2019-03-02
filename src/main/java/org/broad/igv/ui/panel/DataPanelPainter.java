@@ -33,22 +33,26 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
-import org.broad.igv.track.*;
+import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 
 import java.awt.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 
 public class DataPanelPainter {
 
-    private static Logger log = Logger.getLogger(DataPanelPainter.class);
+    private static Logger log = LogManager.getLogger(DataPanelPainter.class);
 
     public synchronized void paint(Collection<TrackGroup> groups,
                                    RenderContext context,

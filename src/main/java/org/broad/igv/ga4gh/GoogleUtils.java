@@ -1,6 +1,7 @@
 package org.broad.igv.ga4gh;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -15,7 +16,7 @@ import static org.broad.igv.prefs.Constants.SAVE_GOOGLE_CREDENTIALS;
  */
 public class GoogleUtils {
 
-    private static Logger log = Logger.getLogger(GoogleUtils.class);
+    private static Logger log = LogManager.getLogger(GoogleUtils.class);
 
     private static String ProjectID;
     public static String GOOGLE_API_HOST = "www.googleapis.com";

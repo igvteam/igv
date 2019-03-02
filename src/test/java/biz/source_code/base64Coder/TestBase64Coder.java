@@ -27,11 +27,9 @@ package biz.source_code.base64Coder;
 
 // Tests for the Base64Coder class.
 
-import java.util.Random;
+import org.junit.Test;
 
 import static org.junit.Assert.fail;
-
-import org.junit.Test;
 
 public class TestBase64Coder {
 

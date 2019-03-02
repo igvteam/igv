@@ -33,8 +33,8 @@ import org.broad.igv.ui.color.PaletteColorTable;
 
 import java.awt.*;
 import java.awt.geom.Path2D;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Renders a scatterplot

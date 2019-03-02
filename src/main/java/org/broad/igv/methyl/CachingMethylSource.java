@@ -25,7 +25,8 @@
 
 package org.broad.igv.methyl;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.collections.LRUCache;
 
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ import java.util.List;
  */
 public class CachingMethylSource implements MethylDataSource {
 
-    private static Logger log = Logger.getLogger(CachingMethylSource.class);
+    private static Logger log = LogManager.getLogger(CachingMethylSource.class);
     private static int DEFAULT_TILE_COUNT = 4;
     private int binSize;
 

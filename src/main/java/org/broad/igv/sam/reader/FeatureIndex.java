@@ -26,7 +26,8 @@
 package org.broad.igv.sam.reader;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -41,7 +42,7 @@ public class FeatureIndex {
 
     private int tileWidth;
     private LinkedHashMap<String, ChromosomeIndex> chrIndeces;
-    private Logger log = Logger.getLogger(FeatureIndex.class);
+    private Logger log = LogManager.getLogger(FeatureIndex.class);
 
 
     /**

@@ -25,7 +25,8 @@
 
 package org.broad.igv.ui.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.ga4gh.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.UIUtilities;
@@ -41,7 +42,7 @@ import java.util.List;
  */
 public class BrowseGa4ghAction extends MenuAction {
 
-    private static Logger log = Logger.getLogger(BrowseGa4ghAction.class);
+    private static Logger log = LogManager.getLogger(BrowseGa4ghAction.class);
 
 
     IGV igv;

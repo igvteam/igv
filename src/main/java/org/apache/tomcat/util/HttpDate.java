@@ -61,8 +61,9 @@ package org.apache.tomcat.util;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
-import java.text.*;
 
 /**
  * This class can be used to efficiently parse and write an RFC 1123

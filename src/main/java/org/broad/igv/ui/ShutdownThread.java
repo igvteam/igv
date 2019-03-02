@@ -25,7 +25,8 @@
 
 package org.broad.igv.ui;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.Track;
@@ -39,7 +40,7 @@ import java.util.Collection;
  */
 public class ShutdownThread extends Thread {
 
-    private static Logger log = Logger.getLogger(ShutdownThread.class);
+    private static Logger log = LogManager.getLogger(ShutdownThread.class);
     private static long oneDayMS = 24 * 60 * 60 * 1000;
 
     public static void runS() {

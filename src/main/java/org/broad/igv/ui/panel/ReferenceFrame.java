@@ -29,9 +29,11 @@
  */
 package org.broad.igv.ui.panel;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
-import org.broad.igv.event.ShiftEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
@@ -42,8 +44,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.ViewChange;
 import org.broad.igv.ui.util.MessageUtils;
 
 
@@ -52,7 +52,7 @@ import org.broad.igv.ui.util.MessageUtils;
  */
 public class ReferenceFrame {
 
-    private static Logger log = Logger.getLogger(ReferenceFrame.class);
+    private static Logger log = LogManager.getLogger(ReferenceFrame.class);
 
     IGVEventBus eventBus;
 

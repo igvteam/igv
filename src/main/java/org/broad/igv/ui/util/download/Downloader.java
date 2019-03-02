@@ -1,18 +1,24 @@
 package org.broad.igv.ui.util.download;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
-import java.net.*;
-import java.nio.file.CopyOption;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -20,7 +26,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 // This class downloads a file from a URL.
 public class Downloader implements Runnable {
 
-    private static final Logger log = Logger.getLogger(Downloader.class);
+    private static final Logger log = LogManager.getLogger(Downloader.class);
 
     // Max size of download buffer.
     private static final int MAX_BUFFER_SIZE = 1000000;    // Max buffer size

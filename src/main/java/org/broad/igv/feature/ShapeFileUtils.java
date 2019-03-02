@@ -28,10 +28,8 @@ package org.broad.igv.feature;
 
 import org.broad.igv.Globals;
 
-
 import java.io.*;
-import java.lang.reflect.Array;
-import java.util.*;
+import java.util.LinkedList;
 
 
 class LocAndVal {

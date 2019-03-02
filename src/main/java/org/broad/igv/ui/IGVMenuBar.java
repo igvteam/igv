@@ -25,13 +25,18 @@
 
 package org.broad.igv.ui;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.aws.S3LoadDialog;
 import org.broad.igv.charts.ScatterPlotUtils;
+import org.broad.igv.event.GenomeChangeEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.RemoveGenomesDialog;
 import org.broad.igv.ga4gh.Ga4ghAPIHelper;
 import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.ga4gh.OAuthUtils;
@@ -44,10 +49,6 @@ import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
-import org.broad.igv.event.GenomeChangeEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.feature.genome.RemoveGenomesDialog;
 import org.broad.igv.ui.commandbar.GenomeComboBox;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.FrameManager;
@@ -87,7 +88,7 @@ import static org.broad.igv.ui.UIConstants.*;
  */
 public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(IGVMenuBar.class);
+    private static Logger log = LogManager.getLogger(IGVMenuBar.class);
     public static final String GENOMESPACE_REG_TOOLTIP = "Register for GenomeSpace";
     public static final String GENOMESPACE_REG_PAGE = "http://www.genomespace.org/register";
 

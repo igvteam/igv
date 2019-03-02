@@ -31,7 +31,6 @@ package org.broad.igv.ui.action;
 
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.SortDialog;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -43,7 +42,7 @@ import java.util.List;
  */
 public class SortTracksMenuAction extends MenuAction {
 
-    //static Logger log = Logger.getLogger(SortTracksMenuAction.class);
+    //static Logger log = LogManager.getLogger(SortTracksMenuAction.class);
     IGV mainFrame;
 
     public SortTracksMenuAction(String label, int mnemonic, IGV mainFrame) {

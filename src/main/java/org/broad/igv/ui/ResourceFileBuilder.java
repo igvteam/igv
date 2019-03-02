@@ -42,8 +42,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
 import java.io.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Generate an XML resource file, suitable for loading from IGV

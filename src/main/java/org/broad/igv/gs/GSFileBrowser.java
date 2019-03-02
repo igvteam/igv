@@ -29,7 +29,8 @@
 
 package org.broad.igv.gs;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.gs.dm.DMUtils;
 import org.broad.igv.gs.dm.GSDirectoryListing;
 import org.broad.igv.gs.dm.GSFileMetadata;
@@ -55,7 +56,7 @@ public class GSFileBrowser extends JDialog {
 
     public enum Mode {OPEN, SAVE}
 
-    private static Logger log = Logger.getLogger(GSFileBrowser.class);
+    private static Logger log = LogManager.getLogger(GSFileBrowser.class);
 
     static ImageIcon folderIcon;
     static ImageIcon fileIcon;

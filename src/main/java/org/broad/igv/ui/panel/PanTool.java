@@ -31,16 +31,13 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.commons.math.stat.StatUtils;
+import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
 
 /**
  *

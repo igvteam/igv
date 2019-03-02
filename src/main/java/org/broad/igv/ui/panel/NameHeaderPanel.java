@@ -29,9 +29,6 @@
  */
 package org.broad.igv.ui.panel;
 
-import com.jidesoft.swing.JideBoxLayout;
-import com.jidesoft.swing.JideButton;
-import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;

@@ -26,7 +26,8 @@
 package org.broad.igv.track;
 
 import htsjdk.tribble.Feature;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Mutation;
 import org.broad.igv.prefs.Constants;
@@ -44,7 +45,6 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.URL;
 
 /**
  * @author Jim Robinson
@@ -52,7 +52,7 @@ import java.net.URL;
  */
 public class MutationTrack extends FeatureTrack {
 
-    private static Logger log = Logger.getLogger(MutationTrack.class);
+    private static Logger log = LogManager.getLogger(MutationTrack.class);
 
     public MutationTrack(ResourceLocator locator, String id, FeatureSource source) {
         super(locator, id, source);

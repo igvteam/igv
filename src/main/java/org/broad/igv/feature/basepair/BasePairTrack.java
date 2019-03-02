@@ -1,12 +1,11 @@
 package org.broad.igv.feature.basepair;
 
-import org.apache.log4j.Logger;
-import org.broad.igv.feature.bedpe.InteractionTrack;
-import org.broad.igv.feature.genome.*;
-import org.broad.igv.renderer.*;
-import org.broad.igv.session.IGVSessionReader;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.Persistable;
-
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -29,7 +28,7 @@ import java.util.List;
 
 public class BasePairTrack extends AbstractTrack {
 
-    private static Logger log = Logger.getLogger(BasePairTrack.class);
+    private static Logger log = LogManager.getLogger(BasePairTrack.class);
 
     private BasePairRenderer basePairRenderer = new BasePairRenderer();
     private BasePairData basePairData = new BasePairData();

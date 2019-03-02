@@ -25,7 +25,6 @@
 
 package org.broad.igv.exceptions;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**

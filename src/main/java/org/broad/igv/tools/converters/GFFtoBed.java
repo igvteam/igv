@@ -25,13 +25,13 @@
 
 package org.broad.igv.tools.converters;
 
+import htsjdk.tribble.Feature;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import htsjdk.tribble.Feature;
 
 import java.io.*;
 import java.util.List;

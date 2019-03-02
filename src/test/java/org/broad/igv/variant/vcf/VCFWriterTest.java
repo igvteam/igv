@@ -26,17 +26,17 @@
 package org.broad.igv.variant.vcf;
 
 import htsjdk.samtools.SAMSequenceDictionary;
-import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
-import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.tribble.CodecFactory;
-import org.broad.igv.util.TestUtils;
 import htsjdk.tribble.AbstractFeatureReader;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureCodec;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
+import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFInfoHeaderLine;
+import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.io.File;

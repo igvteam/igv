@@ -33,8 +33,6 @@
  */
 package org.broad.igv.util;
 
-import org.broad.igv.sam.Alignment;
-
 import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Iterator;

@@ -28,7 +28,8 @@ package org.broad.igv.gs.dm;
 
 import biz.source_code.base64Coder.Base64Coder;
 import com.google.gson.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.HttpUtils;
@@ -52,7 +53,7 @@ import java.util.*;
  */
 public class DMUtils {
 
-    private static Logger log = Logger.getLogger(DMUtils.class);
+    private static Logger log = LogManager.getLogger(DMUtils.class);
     private static final String UPLOAD_SERVICE = "uploadurl";
     public static final String DEFAULT_DIRECTORY = "defaultdirectory";
     public static final String PERSONAL_DIRECTORY = "personaldirectory";

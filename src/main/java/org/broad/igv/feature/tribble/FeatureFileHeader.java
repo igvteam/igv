@@ -28,7 +28,9 @@ package org.broad.igv.feature.tribble;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.

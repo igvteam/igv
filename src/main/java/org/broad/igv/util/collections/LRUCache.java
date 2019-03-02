@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class LRUCache<K, V> {
 
-    //Logger log = Logger.getLogger(LRUCache.class);
+    //Logger log = LogManager.getLogger(LRUCache.class);
 
     private AtomicInteger maxEntries;
 

@@ -1,6 +1,7 @@
 package org.broad.igv.prefs;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
@@ -11,13 +12,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PreferenceEditorNew {
 	
-    private static Logger log = Logger.getLogger(PreferenceEditorNew.class);
+    private static Logger log = LogManager.getLogger(PreferenceEditorNew.class);
     
 	private static final Font labelFont = new Font("Lucida Grande", Font.BOLD, 14);
 

@@ -25,12 +25,10 @@
 
 package org.broad.igv.tools.motiffinder;
 
+import htsjdk.tribble.Feature;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
-import htsjdk.tribble.Feature;
-
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Iterator;

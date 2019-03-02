@@ -27,13 +27,14 @@
 package org.broad.igv.goby;
 
 import com.google.protobuf.ByteString;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.EntryFlagHelper;
+import org.campagnelab.goby.alignments.Alignments;
+import org.campagnelab.goby.alignments.EntryFlagHelper;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.data.CharArrayList;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
@@ -64,7 +65,7 @@ public class GobyAlignment implements Alignment {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Logger LOG = Logger.getLogger(GobyAlignment.class);
+    private static final Logger LOG = LogManager.getLogger(GobyAlignment.class);
 
     protected final Alignments.AlignmentEntry entry;
     private final GobyAlignmentIterator iterator;

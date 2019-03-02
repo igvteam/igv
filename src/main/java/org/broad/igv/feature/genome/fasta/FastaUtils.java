@@ -25,12 +25,13 @@
 
 package org.broad.igv.feature.genome.fasta;
 
-import org.apache.log4j.Logger;
+import htsjdk.tribble.readers.AsciiLineReader;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
-import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.HashSet;
@@ -43,7 +44,7 @@ import java.util.regex.Pattern;
  */
 public class FastaUtils {
 
-    private static Logger log = Logger.getLogger(FastaUtils.class);
+    private static Logger log = LogManager.getLogger(FastaUtils.class);
 
     static Pattern WHITE_SPACE = Pattern.compile("\\s+");
 

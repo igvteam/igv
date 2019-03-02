@@ -29,7 +29,8 @@
  */
 package org.broad.igv.feature.genome;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.util.FileUtils;
@@ -50,7 +51,7 @@ import java.util.zip.ZipOutputStream;
 public class GenomeImporter {
     public static final int MAX_CONTIGS = 1500000;
 
-    static Logger log = Logger.getLogger(GenomeImporter.class);
+    static Logger log = LogManager.getLogger(GenomeImporter.class);
     public static final Pattern SEQUENCE_NAME_SPLITTER = Pattern.compile("\\s+");
 
 

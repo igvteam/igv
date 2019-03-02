@@ -26,7 +26,8 @@
 package org.broad.igv.util.stream;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.EOFException;
@@ -42,7 +43,7 @@ import java.net.URL;
  */
 public class SeekableServiceStream extends SeekableStream {
 
-    static Logger log = Logger.getLogger(SeekableServiceStream.class);
+    static Logger log = LogManager.getLogger(SeekableServiceStream.class);
 
     public static final String WEBSERVICE_URL = "https://portals.broadinstitute.org/webservices/igv/range";
 

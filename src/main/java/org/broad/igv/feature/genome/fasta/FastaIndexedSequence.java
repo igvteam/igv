@@ -26,10 +26,10 @@
 package org.broad.igv.feature.genome.fasta;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.genome.Sequence;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.ByteArrayOutputStream;
@@ -45,7 +45,7 @@ import java.util.List;
  */
 public class FastaIndexedSequence implements Sequence {
 
-    static Logger log = Logger.getLogger(FastaIndexedSequence.class);
+    static Logger log = LogManager.getLogger(FastaIndexedSequence.class);
 
     final FastaIndex index;
     final String path;

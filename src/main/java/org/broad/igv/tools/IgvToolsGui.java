@@ -25,7 +25,8 @@
 
 package org.broad.igv.tools;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.track.WindowFunction;
 
 import javax.swing.*;
@@ -42,7 +43,7 @@ import java.util.Collection;
 
 public class IgvToolsGui extends JDialog {
 
-    private static Logger log = Logger.getLogger(IgvToolsGui.class);
+    private static Logger log = LogManager.getLogger(IgvToolsGui.class);
 
     static JFileChooser fileDialog;
 

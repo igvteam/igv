@@ -28,12 +28,17 @@ package org.broad.igv.ga4gh;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
+import org.broad.igv.util.AmazonUtils;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.JWTParser;
+import software.amazon.awssdk.services.cognitoidentity.model.Credentials;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -61,7 +66,7 @@ import java.util.prefs.Preferences;
  */
 public class OAuthUtils {
 
-    private static Logger log = Logger.getLogger(OAuthUtils.class);
+    private static Logger log = LogManager.getLogger(OAuthUtils.class);
 
     private String authProvider = "";
     private String appIdURI = null;
@@ -279,7 +284,7 @@ public class OAuthUtils {
 
             if (authProvider.equals("Amazon")) {
                 // Get AWS credentials after getting relevant tokens
-                com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
+                Credentials aws_credentials;
                 aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
 
                 // Update S3 client with newly acquired token

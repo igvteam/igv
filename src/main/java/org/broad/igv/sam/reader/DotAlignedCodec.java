@@ -29,10 +29,11 @@
  */
 package org.broad.igv.sam.reader;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.broad.igv.sam.DotAlignedAlignment;
 import org.broad.igv.util.collections.SortingCollection;
 import org.broad.igv.util.collections.SortingCollection.Codec;
-import org.apache.log4j.Logger;
-import org.broad.igv.sam.DotAlignedAlignment;
 
 import java.io.*;
 
@@ -46,7 +47,7 @@ import java.io.*;
  */
 public class DotAlignedCodec implements SortingCollection.Codec<DotAlignedAlignment> {
 
-    private static Logger log = Logger.getLogger(DotAlignedCodec.class);
+    private static Logger log = LogManager.getLogger(DotAlignedCodec.class);
     DataOutputStream outputStream;
     DataInputStream inputStream;
 

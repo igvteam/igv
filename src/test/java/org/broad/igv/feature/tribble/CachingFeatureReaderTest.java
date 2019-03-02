@@ -25,11 +25,11 @@
 
 package org.broad.igv.feature.tribble;
 
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.tribble.FeatureCodec;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.vcf.VCFVariant;
-import htsjdk.tribble.AbstractFeatureReader;
-import htsjdk.tribble.FeatureCodec;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

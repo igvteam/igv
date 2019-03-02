@@ -5,10 +5,10 @@ import org.broad.igv.sam.Alignment;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * Created by jrobinso on 3/14/17.

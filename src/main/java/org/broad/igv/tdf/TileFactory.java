@@ -32,7 +32,6 @@ package org.broad.igv.tdf;
 
 import org.broad.igv.util.StringUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

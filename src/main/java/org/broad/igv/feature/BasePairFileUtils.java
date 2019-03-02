@@ -26,14 +26,13 @@
 package org.broad.igv.feature;
 
 
-import org.broad.igv.feature.basepair.BasePairFeature;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.basepair.BasePairFeature;
 
-
-import java.awt.Color;
-import java.awt.Point;
+import java.awt.*;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 
 // multiple return from loadDotBracket() and loadConnectTable()
