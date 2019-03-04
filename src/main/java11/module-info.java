@@ -29,7 +29,6 @@ module org.igv {
     requires org.apache.batik.svggen;
     requires org.apache.batik.dom;
     requires dsiutils;
-    requires slf4j.api;
 
     // AWS
     requires software.amazon.awssdk.core;

@@ -102,30 +102,15 @@ dependencies {
         [group: 'software.amazon.awssdk', name: 's3', version: '2.5.0'],
         [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.5.0'],
         [group: 'software.amazon.awssdk', name: 'utils', version: '2.5.0'],
-        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26']
+        [group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta4']
     )
 
     testImplementation(
             fileTree(dir: 'test/lib', include: '*.jar')
     )
-
-    // IGV deps
-    /*
-	compile group: 'org.apache.commons', name: 'commons-compress', version: '1.18'
-	compile group: 'org.apache.commons', name: 'commons-jexl', version: '2.1.1'
-	compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
-	compile group: 'org.utgenome.thirdparty', name: 'picard', version: '1.102.0'
-	compile group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.7.2'
-	compile group: 'org.jfree', name: 'jcommon', version: '1.0.24'
-    */
 }
 
 wrapper { }
-
-// Gradle bug prevents us from generating Java 11 bytecode: https://github.com/gradle/gradle/issues/5120
-// Workaround is to target Java 10 for now.
-sourceCompatibility = 10
-targetCompatibility = 10
 
 processResources {
     // Set the current timestamp for release builds; pass in a blank property to enable (i.e. -Ptimestamp="" at CLI)
