@@ -72,7 +72,7 @@ configurations {
         exclude group: 'xmlpull', module: 'xmlpull'
         exclude group: 'xpp3', module: 'xpp3_min'
         exclude group: 'ch.qos.logback', module: 'logback-classic'
-        exclude group: 'org.slf4j', module: 'slf4j-api'
+        //exclude group: 'org.slf4j', module: 'slf4j-api'
         exclude group: 'io.netty', module: 'netty-codec-http2'
         exclude group: 'com.amazonaws', module: 'aws-java-sdk-kms'
     }
@@ -102,12 +102,12 @@ dependencies {
         [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.5.0'],
         [group: 'software.amazon.awssdk', name: 's3', version: '2.5.0'],
         [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.5.0'],
-        [group: 'software.amazon.awssdk', name: 'utils', version: '2.5.0']
+        [group: 'software.amazon.awssdk', name: 'utils', version: '2.5.0'],
+        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26']
     )
 
     testImplementation(
             fileTree(dir: 'test/lib', include: '*.jar')
-            //[group: 'org.ogce', name: 'xpp3', version: '1.1.6']
     )
 
     // IGV deps
