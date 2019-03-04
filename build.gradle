@@ -72,7 +72,6 @@ configurations {
         exclude group: 'xmlpull', module: 'xmlpull'
         exclude group: 'xpp3', module: 'xpp3_min'
         exclude group: 'ch.qos.logback', module: 'logback-classic'
-        //exclude group: 'org.slf4j', module: 'slf4j-api'
         exclude group: 'io.netty', module: 'netty-codec-http2'
         exclude group: 'com.amazonaws', module: 'aws-java-sdk-kms'
     }
