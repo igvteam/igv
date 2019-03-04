@@ -295,6 +295,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
         encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(genomeId));
 
+        menuItems.add(new JSeparator());
+
         // Session menu items
         menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
         menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
