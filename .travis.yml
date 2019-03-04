@@ -12,7 +12,7 @@ jdk:
 install:
 - "./gradlew assemble"
 script:
-- "./gradlew build"
+- "./gradlew build --stacktrace"
 - "./gradlew createMacDistZip"
 - "./gradlew createWinDist"
 
