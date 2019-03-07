@@ -62,6 +62,8 @@ import static org.junit.Assert.assertNotNull;
  * Date: Jul 12, 2010
  * Time: 11:25:52 AM
  */
+
+@Ignore
 public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
 
 

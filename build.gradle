@@ -20,36 +20,41 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 apply plugin: 'java'
+apply plugin: 'application'
+//apply plugin: 'edu.sc.seis.macAppBundle'
+//apply plugin: 'io.spring.dependency-management'
+
 import org.apache.tools.ant.filters.ReplaceTokens
 
+mainClassName = 'org.broad.igv.ui.Main'
 ext.moduleName = 'org.igv'
-ext.mainClassName = 'org.broad.igv.ui.Main'
 
 // Put the Java 11 build into a special dir to avoid accidental collisions.
 // Despite this, it is recommended that Java 8 vs. 11 builds be run in different locations.
 buildDir = 'build_java11'
 
+wrapper { }
+
 repositories {
     mavenCentral()
 }
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
-    }
-}
+//buildscript {
+//    repositories {
+//        mavenCentral()
+//    }
+//    dependencies {
+//        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
+//    }
+//}
+//dependencyManagement {
+//    imports {
+//        mavenBom 'software.amazon.awssdk:bom:2.0.0'
+//    }
+//}
 
-apply plugin: "io.spring.dependency-management"
-
-dependencyManagement {
-    imports {
-        mavenBom 'software.amazon.awssdk:bom:2.0.0'
-    }
-}
 
 
 sourceSets {
@@ -63,6 +68,8 @@ sourceSets {
         }
     }
 }
+
+
 configurations {
     jarsForClasspath
     implementation {
@@ -106,11 +113,11 @@ dependencies {
     )
 
     testImplementation(
-            fileTree(dir: 'test/lib', include: '*.jar')
+        fileTree(dir: 'test/lib', include: '*.jar')
     )
 }
 
-wrapper { }
+
 
 processResources {
     // Set the current timestamp for release builds; pass in a blank property to enable (i.e. -Ptimestamp="" at CLI)
@@ -153,6 +160,9 @@ tasks.withType(Test) {
     systemProperties['ignore.ioexceptions'] = 'false'
     maxHeapSize = '2000m'
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    
+    
+    
 }
 
 compileTestJava {
@@ -275,6 +285,10 @@ task createMacAppDist(type: Copy, dependsOn: createDist) {
     }
     with copySpec {
         from ("${buildDir}/IGV-dist/lib") include '*.jar'
+        into "IGV_${version}_java11.app/Contents/Java/lib"
+    }
+    with copySpec {
+        from(dependencies)
         into "IGV_${version}_java11.app/Contents/Java/lib"
     }
     into "${buildDir}/IGV-MacApp-dist"

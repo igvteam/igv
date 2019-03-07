@@ -153,14 +153,13 @@ public class AmazonUtils {
 
             ListObjectsV2Response response = s3Client.listObjectsV2(listReq);
             ListObjectsV2Iterable resultIt = s3Client.listObjectsV2Paginator(listReq);
-            String folder_str;
+            String folder_prefix;
 
             do {
                 for (CommonPrefix folder : resultIt.commonPrefixes()) {
                     log.debug("S3 Bucket folder: "+folder);
-                    folder_str = folder.toString();
-                    folder_str = folder_str.substring(0, folder_str.length()-1); // Chop off last / of the folder for UI purposes
-                    objects.add(new IGVS3Object(folder_str.replace(prefix, ""), true));
+                    folder_prefix = folder.prefix().substring(0, folder.prefix().length()-1); // Chop off last / of the folder for UI purposes
+                    objects.add(new IGVS3Object(folder_prefix.replace(prefix, ""), true));
                 }
 
                 for (S3Object content: response.contents()) {
