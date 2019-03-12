@@ -77,7 +77,8 @@ configurations {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
         exclude group: 'io.netty', module: 'netty-codec-http2'
         exclude group: 'com.amazonaws', module: 'aws-java-sdk-kms'
-        exclude group: 'com.github.samtools', module: 'htsjdk:2.8.1'
+        exclude group: 'com.github.samtools', module: 'htsjdk'
+        exclude group: 'com.martiansoftware', module: 'jsap'
     }
 }
 
