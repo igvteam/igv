@@ -225,7 +225,7 @@ public class IgvTools {
         Configuration configuration = context.getConfiguration();
         LoggerConfig rootLogger = configuration.getRootLogger();
 
-    //     XXX: Should not matter, create it anyway.
+    //     XXX: Should not matter, (re)create the console appender anyway.
     //    if (Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME) == null) {
             PatternLayout layout = PatternLayout.newBuilder().withConfiguration(configuration)
                     .withPattern("%m%n").build();

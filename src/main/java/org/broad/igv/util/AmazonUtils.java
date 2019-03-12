@@ -244,12 +244,24 @@ public class AmazonUtils {
     }
 
     public static String translateAmazonCloudURL(String s3UrlString) {
-        S3Presigner s3Presigner = S3Presigner.builder().build();
+        Credentials credentials = GetCognitoAWSCredentials();
+        AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
+                credentials.secretKey(),
+                credentials.sessionToken());
+        StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
+
+        S3Presigner s3Presigner = S3Presigner.builder()
+                                             .expiration(OAuthUtils.getExpirationTime())
+                                             .awsCredentials(awsCredsProvider)
+                                             .region(AWSREGION)
+                                             .build();
+
         Tuple<String, String> bandk = bucketAndKey(s3UrlString);
         String bucket = bandk.a;
         String filename = bandk.b;
 
         URI presigned = s3Presigner.presignS3DownloadLink(bucket, filename);
+        log.debug("AWS presigned URL from translateAmazonCloudURL is: "+presigned);
         return presigned.toString();
     }
 

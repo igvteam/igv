@@ -49,6 +49,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.time.Duration;
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -229,7 +230,7 @@ public class OAuthUtils {
         fetchTokens(redirect);
     }
 
-    // Called from port listener upon receiving the oauth request with a "token" parameter TODO -- does this ever happen?
+    // Called from port listener upon receiving the oauth request with a "token" parameter
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
@@ -365,11 +366,10 @@ public class OAuthUtils {
      * @throws IOException
      */
     public JsonObject fetchUserProfile(JsonObject jwt_payload) throws IOException {
-
         try {
-            currentUserName = jwt_payload.get("name").getAsString();
-            currentUserEmail = jwt_payload.get("email").getAsString();
-            currentUserID = jwt_payload.get("id").getAsString();
+            currentUserName = jwt_payload.has("name") ? jwt_payload.get("name").getAsString() : null;
+            currentUserEmail = jwt_payload.has("email") ? jwt_payload.get("email").getAsString() : null;
+            currentUserID = jwt_payload.has("id") ? jwt_payload.get("id").getAsString() : null;
 
             return jwt_payload;
         } catch (Throwable exception) {
@@ -394,8 +394,13 @@ public class OAuthUtils {
         return accessToken;
     }
 
-    public static long getExpirationTime() {
-        return expirationTime;
+    /**
+    *
+    * Get OAuth credential tokens expiration time (in seconds).
+    *
+    */
+    public static Duration getExpirationTime() {
+        return Duration.ofMillis(expirationTime - System.currentTimeMillis());
     }
 
     public static Date getExpirationDate() {

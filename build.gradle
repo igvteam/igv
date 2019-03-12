@@ -23,8 +23,6 @@
 
 apply plugin: 'java'
 apply plugin: 'application'
-//apply plugin: 'edu.sc.seis.macAppBundle'
-//apply plugin: 'io.spring.dependency-management'
 
 import org.apache.tools.ant.filters.ReplaceTokens
 
@@ -56,7 +54,6 @@ repositories {
 //}
 
 
-
 sourceSets {
     main {
         java {
@@ -69,7 +66,6 @@ sourceSets {
     }
 }
 
-
 configurations {
     jarsForClasspath
     implementation {
@@ -81,6 +77,7 @@ configurations {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
         exclude group: 'io.netty', module: 'netty-codec-http2'
         exclude group: 'com.amazonaws', module: 'aws-java-sdk-kms'
+        exclude group: 'com.github.samtools', module: 'htsjdk:2.8.1'
     }
 }
 
@@ -196,7 +193,13 @@ test {
     }
 }
 
-task createDist(type: Copy, dependsOn: jar)  {
+// XXX: Perhaps not the standard Gradle way to ship this?
+task copyToLib(type: Copy, dependsOn: jar) {
+    from configurations.default
+    into "${buildDir}/deplibs"
+}
+
+task createDist(type: Copy, dependsOn: copyToLib)  {
     from ("web/IGV_64.png")
     from ('scripts/java11') {
         include '*.bat'
@@ -211,6 +214,13 @@ task createDist(type: Copy, dependsOn: jar)  {
         from ("lib") { include '*.jar' }
         into "lib"
     }
+    // XXX: Perhaps not the best way to ship deplibs either
+    with copySpec {
+        from ("${buildDir}/deplibs")
+        from ("lib") { include '*.jar' }
+        into "lib"
+    }
+
     with copySpec { from ("genomes/sizes") { } into "lib/genomes" }
 
     into "${buildDir}/IGV-dist"
@@ -287,10 +297,6 @@ task createMacAppDist(type: Copy, dependsOn: createDist) {
         from ("${buildDir}/IGV-dist/lib") include '*.jar'
         into "IGV_${version}_java11.app/Contents/Java/lib"
     }
-    with copySpec {
-        from(dependencies)
-        into "IGV_${version}_java11.app/Contents/Java/lib"
-    }
     into "${buildDir}/IGV-MacApp-dist"
 
     doLast {
@@ -302,7 +308,7 @@ task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
     archiveName = "IGV_${version}_java11.app.zip"
     destinationDir = file("${buildDir}/distZip")
     from "${buildDir}/IGV-MacApp-dist"
-    
+
     doLast {
         project.exec { commandLine('chmod', '775', createMacAppDistZip.archivePath ) }
     }
@@ -341,10 +347,10 @@ task createWinExeDist(type: Exec, dependsOn: createWinDist) {
         }
     }
 }
-        
+
 task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
     standardInput = new ByteArrayInputStream( keyPassword.getBytes() );
-    commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha1", 
+    commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha1",
                 "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
                 "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-dist/IGV_${version}-installer.exe")
     doLast {
