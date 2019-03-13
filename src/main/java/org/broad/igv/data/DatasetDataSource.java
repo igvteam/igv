@@ -25,9 +25,9 @@
 
 
 /*
-* To change this template, choose Tools | Templates
-* and open the template in the editor.
-*/
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.broad.igv.data;
 
 //~--- non-JDK imports --------------------------------------------------------
@@ -66,17 +66,19 @@ public class DatasetDataSource extends AbstractDataSource {
         this.dataset = dataset;
 
         // TODO -- remove this "instanceof" hack
-        if (genome.getHomeChromosome().equals(Globals.CHR_ALL)) {
-            if (dataset instanceof IGVDataset) {
-                genomeSummaryData = ((IGVDataset) dataset).getGenomeSummary();
-            } else {
-                genomeSummaryData = new GenomeSummaryData(genome, new String[]{trackId});
-                for (Chromosome chr : genome.getChromosomes()) {
-                    int[] startLocations = dataset.getStartLocations(chr.getName());
-                    if (!chr.getName().equals(Globals.CHR_ALL) && (startLocations != null) && (startLocations.length > 0)) {
-                        Map<String, float[]> dMap = new HashMap<String, float[]>();
-                        dMap.put(trackId, dataset.getData(trackId, chr.getName()));
-                        genomeSummaryData.addData(chr.getName(), startLocations, dMap);
+        if (genome != null && genome.getHomeChromosome() != null) {
+            if (genome.getHomeChromosome().equals(Globals.CHR_ALL)) {
+                if (dataset instanceof IGVDataset) {
+                    genomeSummaryData = ((IGVDataset) dataset).getGenomeSummary();
+                } else {
+                    genomeSummaryData = new GenomeSummaryData(genome, new String[]{trackId});
+                    for (Chromosome chr : genome.getChromosomes()) {
+                        int[] startLocations = dataset.getStartLocations(chr.getName());
+                        if (!chr.getName().equals(Globals.CHR_ALL) && (startLocations != null) && (startLocations.length > 0)) {
+                            Map<String, float[]> dMap = new HashMap<String, float[]>();
+                            dMap.put(trackId, dataset.getData(trackId, chr.getName()));
+                            genomeSummaryData.addData(chr.getName(), startLocations, dMap);
+                        }
                     }
                 }
             }
