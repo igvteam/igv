@@ -16,7 +16,8 @@ install:
   - "./gradlew assemble"
 script:
   - "./gradlew build --stacktrace"
-  - "./gradlew createMacDistZip"
+  - "./gradlew createMacAppDistZip"
+  - "./gradlew createLinuxDistZip"
   - "./gradlew createWinDist"
 
 notifications:

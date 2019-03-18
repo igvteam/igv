@@ -1,29 +1,24 @@
 package org.broad.igv.util;
 
-import htsjdk.samtools.util.Tuple;
-import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.auth.signer.AwsS3V4Signer;
-import software.amazon.awssdk.auth.signer.params.Aws4PresignerParams;
-import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClient;
-import software.amazon.awssdk.services.cognitoidentity.model.*;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
-import software.amazon.awssdk.services.s3.model.*;
-import software.amazon.awssdk.core.exception.SdkServiceException;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClientBuilder;
-import software.amazon.awssdk.http.SdkHttpFullRequest;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.logging.log4j.Logger;
+import htsjdk.samtools.util.Tuple;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.aws.IGVS3Object;
+import org.broad.igv.ga4gh.OAuthUtils;
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.exception.SdkServiceException;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClient;
+import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClientBuilder;
+import software.amazon.awssdk.services.cognitoidentity.model.*;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 
 import java.io.IOException;
 import java.net.URI;

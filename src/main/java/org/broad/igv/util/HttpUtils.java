@@ -363,8 +363,8 @@ public class HttpUtils {
                 if (e instanceof FileNotFoundException) {
                     throw e;
                 }
-                log.info("HEAD request failed for url: " + url.toExternalForm());
-                log.info("Trying GET instead for url: "+ url.toExternalForm());
+                log.debug("HEAD request failed for url: " + url.toExternalForm());
+                log.debug("Trying GET instead for url: "+ url.toExternalForm());
                 headURLCache.put(url, false);
             }
         }

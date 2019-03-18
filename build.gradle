@@ -29,30 +29,13 @@ import org.apache.tools.ant.filters.ReplaceTokens
 mainClassName = 'org.broad.igv.ui.Main'
 ext.moduleName = 'org.igv'
 
-// Put the Java 11 build into a special dir to avoid accidental collisions.
-// Despite this, it is recommended that Java 8 vs. 11 builds be run in different locations.
-buildDir = 'build_java11'
+buildDir = 'build'
 
 wrapper { }
 
 repositories {
     mavenCentral()
 }
-
-//buildscript {
-//    repositories {
-//        mavenCentral()
-//    }
-//    dependencies {
-//        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
-//    }
-//}
-//dependencyManagement {
-//    imports {
-//        mavenBom 'software.amazon.awssdk:bom:2.0.0'
-//    }
-//}
-
 
 sourceSets {
     main {
@@ -77,7 +60,6 @@ configurations {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
         exclude group: 'io.netty', module: 'netty-codec-http2'
         exclude group: 'com.amazonaws', module: 'aws-java-sdk-kms'
-        exclude group: 'com.github.samtools', module: 'htsjdk'
         exclude group: 'com.martiansoftware', module: 'jsap'
     }
 }
@@ -90,7 +72,7 @@ dependencies {
         [group: 'com.google.protobuf', name: 'protobuf-java', version: '3.7.0-rc1'],
         [group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'],
         [group: 'commons-io', name: 'commons-io', version: '2.6'],
-        //[group: 'com.github.samtools', name: 'htsjdk', version: '2.18.2'],
+        [group: 'com.github.samtools', name: 'htsjdk', version: '2.19.0'],
         [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.2'],
         [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.2'],
         [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
@@ -98,6 +80,7 @@ dependencies {
         [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],
         [group: 'org.campagnelab.goby', name: 'goby-io', version: '3.3.1'],
         [group: 'org.campagnelab.icb', name: 'icb-utils', version: '2.0.2'],
+        [group: 'org.campagnelab.ext', name: 'jsap', version: '3.0.0'],
         // Apache batik deps are so old that the only working authoritative source for those jars is Eclipse
         [group: 'org.eclipse.birt.runtime', name: 'org.apache.batik.dom', version: '1.6.1.v201505192100'],
         [group: 'org.eclipse.birt.runtime.3_7_1', name: 'org.apache.batik.svggen', version: '1.6.0'],
@@ -107,7 +90,7 @@ dependencies {
         [group: 'software.amazon.awssdk', name: 's3', version: '2.5.0'],
         [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.5.0'],
         [group: 'software.amazon.awssdk', name: 'utils', version: '2.5.0'],
-        [group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta4']
+        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26']
     )
 
     testImplementation(
@@ -121,7 +104,7 @@ processResources {
     // Set the current timestamp for release builds; pass in a blank property to enable (i.e. -Ptimestamp="" at CLI)
     if (timestamp.equals("")) { timestamp = new Date().format("MM/dd/yyyy hh:mm aa") }
 
-    filesMatching('resources/about.properties') {
+    filesMatching('.properties') {
         filter (ReplaceTokens,
                 tokens: [ VERSION: version, BUILD: buildNumber, DEFAULT_MASTER_RESOURCE_URL: dataServerUrl,
                           TIMESTAMP: timestamp, DEVELOPMENT: development ])
@@ -229,7 +212,7 @@ task createDist(type: Copy, dependsOn: copyToLib)  {
 
 task createLinuxDistZip(type: Zip, dependsOn: createDist) {
     baseName = "IGV_Linux"
-    archiveName = createLinuxDistZip.baseName + "_${version}_java11.zip"
+    archiveName = createLinuxDistZip.baseName + "_${version}.zip"
     destinationDir = file("${buildDir}/distZip")
     if (!jdkBundleLinux.equals("")) {
         with copySpec { from jdkBundleLinux into "jdk-11" }
@@ -238,75 +221,56 @@ task createLinuxDistZip(type: Zip, dependsOn: createDist) {
         exclude "*.bat"
         exclude "*.command"
     }
-    into createLinuxDistZip.baseName + "_${version}_java11"
+    into createLinuxDistZip.baseName + "_${version}"
 
     doLast {
         project.exec { commandLine('chmod', '775', createLinuxDistZip.archivePath) }
     }
 }
 
-task createMacDistZip(type: Zip, dependsOn: createDist) {
-    baseName = "IGV_Mac"
-    archiveName = createMacDistZip.baseName + "_${version}_java11.zip"
-    destinationDir = file("${buildDir}/distZip")
-    if (!jdkBundleMac.equals("")) {
-        with copySpec { from jdkBundleMac into "jdk-11" }
-    }
-    from ("${buildDir}/IGV-dist") {
-        exclude "*.bat"
-        exclude "*_hidpi*"
-        exclude "igvtools_gui"
-    }
-    into createMacDistZip.baseName + "_${version}_java11"
-
-    doLast {
-        project.exec { commandLine('chmod', '775', createMacDistZip.archivePath ) }
-    }
-}
-
 task createMacAppDist(type: Copy, dependsOn: createDist) {
     if (!jdkBundleMac.equals("")) {
-        with copySpec { from jdkBundleMac into "IGV_${version}_java11.app/Contents/jdk-11" }
+        with copySpec { from jdkBundleMac into "IGV_OSX_${version}.app/Contents/jdk-11" }
     }
     with copySpec {
         from ("scripts/mac.app") {
             exclude "Contents/Info.plist.template"
             exclude "Contents/MacOS/JavaAppLauncher"
         }
-        into "IGV_${version}_java11.app"
+        into "IGV_OSX_${version}.app"
     }
     with copySpec {
         from ("scripts/java11/Info.plist.template")
         filter (ReplaceTokens, tokens: [ VERSION: version ])
         rename "Info.plist.template", "Info.plist"
-        into "IGV_${version}_java11.app/Contents"
+        into "IGV_OSX_${version}.app/Contents"
     }
     with copySpec {
         from ("scripts/java11/IGV_mac.app.command")
         rename "IGV_mac.app.command", "IGV"
-        into "IGV_${version}_java11.app/Contents/MacOS"
+        into "IGV_OSX_${version}.app/Contents/MacOS"
     }
     with copySpec {
         from ("web/IGV_64.png")
-        into "IGV_${version}_java11.app/Contents/Resources"
+        into "IGV_OSX_${version}.app/Contents/Resources"
     }
     with copySpec {
         from ("${buildDir}/IGV-dist/") include 'igv.args'
-        into "IGV_${version}_java11.app/Contents/Java/"
+        into "IGV_OSX_${version}.app/Contents/Java/"
     }
     with copySpec {
         from ("${buildDir}/IGV-dist/lib") include '*.jar'
-        into "IGV_${version}_java11.app/Contents/Java/lib"
+        into "IGV_OSX_${version}.app/Contents/Java/lib"
     }
     into "${buildDir}/IGV-MacApp-dist"
 
     doLast {
-        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-MacApp-dist/IGV_${version}_java11.app" ) }
+        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-MacApp-dist/IGV_OSX_${version}.app" ) }
     }
 }
 
 task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveName = "IGV_${version}_java11.app.zip"
+    archiveName = "IGV_OSX_${version}.app.zip"
     destinationDir = file("${buildDir}/distZip")
     from "${buildDir}/IGV-MacApp-dist"
 
@@ -361,7 +325,7 @@ task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
     }
 }
 
-build.dependsOn createLinuxDistZip,createMacDistZip,createMacAppDistZip
+build.dependsOn createLinuxDistZip,createMacAppDistZip
 
 if (!makensisCommand.equals("") && !signcodeCommand.equals("")) {
     build.dependsOn signWinExeDist
