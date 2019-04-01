@@ -15,3 +15,7 @@ test/data/out/
 .vscode
 out/
 .DS_Store
+*.bedgraph
+*.bam
+*.csi.gz
+*.sai
