@@ -25,17 +25,13 @@
 
 package org.broad.igv.sam.reader;
 
-import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
-import org.broad.igv.sam.Alignment;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
-import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Jim Robinson

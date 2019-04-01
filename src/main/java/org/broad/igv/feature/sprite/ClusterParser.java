@@ -1,6 +1,7 @@
 package org.broad.igv.feature.sprite;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -12,7 +13,7 @@ import java.util.*;
  */
 public class ClusterParser {
 
-    private static Logger log = Logger.getLogger(ClusterParser.class);
+    private static Logger log = LogManager.getLogger(ClusterParser.class);
 
     public static ClusterSet parse(String file) throws IOException {
 

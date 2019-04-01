@@ -29,16 +29,17 @@
  */
 package org.broad.igv.feature.dranger;
 
-import org.apache.log4j.Logger;
+import htsjdk.tribble.readers.AsciiLineReader;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +66,7 @@ public class DRangerParser {
     int qualityColumn;
     int scoreColumn;
 
-    static Logger log = Logger.getLogger(DRangerParser.class);
+    static Logger log = LogManager.getLogger(DRangerParser.class);
 
     //num	chr1	str1	pos1	chr2	str2	pos2
     //1	    chr1	(+)	21083863	chr1	(+)	25279578

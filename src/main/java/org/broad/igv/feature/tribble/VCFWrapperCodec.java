@@ -25,14 +25,15 @@
 
 package org.broad.igv.feature.tribble;
 
-import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.variant.Variant;
-import org.broad.igv.variant.vcf.VCFVariant;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.readers.LineIterator;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.variant.Variant;
+import org.broad.igv.variant.vcf.VCFVariant;
 
 import java.io.IOException;
 
@@ -42,7 +43,7 @@ import java.io.IOException;
  */
 public class VCFWrapperCodec extends AsciiFeatureCodec<VCFVariant> {
 
-    private static Logger log = Logger.getLogger(Variant.class);
+    private static Logger log = LogManager.getLogger(Variant.class);
 
     AsciiFeatureCodec wrappedCodec;
     Genome genome;

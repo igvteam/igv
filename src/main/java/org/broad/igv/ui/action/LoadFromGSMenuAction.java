@@ -25,7 +25,8 @@
 
 package org.broad.igv.ui.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.gs.GSFileBrowser;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
@@ -40,7 +41,7 @@ import java.util.Arrays;
  */
 public class LoadFromGSMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(LoadFromGSMenuAction.class);
+    static Logger log = LogManager.getLogger(LoadFromGSMenuAction.class);
     private IGV igv;
 
     public LoadFromGSMenuAction(String label, int mnemonic, IGV igv) {

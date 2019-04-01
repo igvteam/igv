@@ -27,8 +27,6 @@ package org.broad.igv.gs;
 
 import org.junit.Test;
 
-import java.net.URL;
-
 import static junit.framework.Assert.assertEquals;
 
 /**

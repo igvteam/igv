@@ -1,6 +1,7 @@
 package org.broad.igv.ui.commandbar;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
@@ -32,7 +33,7 @@ public class GenomeListManager {
     final static String GENOME_ARCHIVE_ID_KEY = "id";
     final static String GENOME_ARCHIVE_NAME_KEY = "name";
 
-    private static Logger log = Logger.getLogger(GenomeManager.class);
+    private static Logger log = LogManager.getLogger(GenomeManager.class);
 
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
     public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = GenomeManager.TEST_USER_DEFINED_GENOME_LIST_FILE;

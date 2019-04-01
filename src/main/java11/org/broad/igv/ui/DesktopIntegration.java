@@ -24,12 +24,8 @@
  */
 package org.broad.igv.ui;
 
-import java.awt.Desktop;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Taskbar;
-
-import javax.swing.JOptionPane;
+import javax.swing.*;
+import java.awt.*;
 
 /**
   * Java version-specific integration with the platform Desktop and particularly 

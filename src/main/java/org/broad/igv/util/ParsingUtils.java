@@ -28,7 +28,8 @@ package org.broad.igv.util;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPReply;
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.Track;
@@ -58,7 +59,7 @@ import java.util.zip.GZIPInputStream;
  */
 public class ParsingUtils {
 
-    private static Logger log = Logger.getLogger(ParsingUtils.class);
+    private static Logger log = LogManager.getLogger(ParsingUtils.class);
     public static final Pattern TAB_PATTERN = Pattern.compile("\t");
     public static final Pattern COMMA_PATTERN = Pattern.compile(",");
     public static final Pattern SEMI_COLON_PATTERN = Pattern.compile(";");

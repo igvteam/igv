@@ -27,9 +27,8 @@ package org.broad.igv.util;
 
 
 import java.io.*;
-import java.util.*;
-import java.util.zip.*;
-import java.text.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 
 /**

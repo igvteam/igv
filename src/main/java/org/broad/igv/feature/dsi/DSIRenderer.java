@@ -1,12 +1,9 @@
 package org.broad.igv.feature.dsi;
 
 import htsjdk.tribble.Feature;
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
 
 import java.awt.*;
 import java.util.List;

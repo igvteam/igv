@@ -29,17 +29,14 @@
 
 package org.broad.igv.ui.legend;
 
-import java.awt.*;
-import java.awt.Component;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.util.UIUtilities;
 import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * @author Stan Diamond

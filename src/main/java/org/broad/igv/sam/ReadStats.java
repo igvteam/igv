@@ -26,7 +26,7 @@
 
 package org.broad.igv.sam;
 
-import org.apache.commons.math.stat.StatUtils;
+import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.util.collections.DoubleArrayList;
 
 import java.util.Random;

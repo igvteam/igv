@@ -25,7 +25,7 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.apache.commons.math.stat.StatUtils;
+import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataSource;

@@ -28,7 +28,8 @@ package org.broad.igv.track;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -68,7 +69,7 @@ import static org.broad.igv.prefs.Constants.SHOW_SEQUENCE_TRANSLATION;
  */
 public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(SequenceTrack.class);
+    private static Logger log = LogManager.getLogger(SequenceTrack.class);
 
     private static final int SEQUENCE_HEIGHT = 14;
 

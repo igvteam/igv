@@ -29,7 +29,8 @@
  */
 package org.broad.igv.tdf;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
@@ -51,7 +52,7 @@ import java.util.Map;
  */
 public class TDFWriter {
 
-    static private Logger log = Logger.getLogger(TDFWriter.class);
+    static private Logger log = LogManager.getLogger(TDFWriter.class);
     static private int version = 4;
     static final String ROOT_GROUP = "/";
     public static final String CHROMOSOMES = "chromosomes";

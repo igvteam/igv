@@ -25,10 +25,11 @@
 
 package org.broad.igv.sam.reader;
 
-import htsjdk.samtools.SamFileHeaderMerger;
 import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SamFileHeaderMerger;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.Alignment;
@@ -45,7 +46,7 @@ import java.util.*;
  */
 public class MergedAlignmentReader implements AlignmentReader {
 
-    private static Logger log = Logger.getLogger(MergedAlignmentReader.class);
+    private static Logger log = LogManager.getLogger(MergedAlignmentReader.class);
 
     List<AlignmentReader> readers;
     List<String> sequenceNames;

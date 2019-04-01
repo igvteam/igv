@@ -28,7 +28,6 @@ package org.broad.igv.util.converters;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.*;
-import java.util.List;
 
 /**
  * Converts a directory of "density" files (Tarjei et al) to bedgraph

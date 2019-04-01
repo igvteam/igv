@@ -26,13 +26,12 @@
 
 package org.broad.igv.feature.tribble;
 
-import htsjdk.tribble.TribbleIndexedFeatureReader;
-import htsjdk.tribble.index.Index;
-import org.apache.log4j.Logger;
-import org.broad.igv.feature.AbstractCacher;
 import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureReader;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.broad.igv.feature.AbstractCacher;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,7 +45,7 @@ import java.util.List;
  */
 public class CachingFeatureReader extends AbstractCacher implements IGVFeatureReader {
 
-    private static Logger log = Logger.getLogger(CachingFeatureReader.class);
+    private static Logger log = LogManager.getLogger(CachingFeatureReader.class);
     private static int maxBinCount = 1000;
     private static int defaultBinSize = 16000; // <= 16 kb
 

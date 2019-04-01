@@ -14,8 +14,8 @@ import org.w3c.dom.Element;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Arc2D;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static org.broad.igv.feature.bedpe.InteractionTrack.Direction.DOWN;
 import static org.broad.igv.feature.bedpe.InteractionTrack.Direction.UP;

@@ -4,7 +4,8 @@ import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.readers.AsciiLineReader;
 import htsjdk.tribble.readers.LineIterator;
 import htsjdk.tribble.readers.LineIteratorImpl;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Strand;
@@ -20,7 +21,7 @@ import java.io.IOException;
  */
 public class PAFCodec extends AsciiFeatureCodec<PAFFeature> {
 
-    private static Logger log = Logger.getLogger(MUTCodec.class);
+    private static Logger log = LogManager.getLogger(MUTCodec.class);
 
     private static int chrColumn = 5;
     private static int startColumn = 7;

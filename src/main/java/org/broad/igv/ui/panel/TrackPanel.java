@@ -26,7 +26,8 @@
 package org.broad.igv.ui.panel;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -37,15 +38,15 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author eflakes
  */
 public class TrackPanel extends IGVPanel {
 
-    private static Logger log = Logger.getLogger(TrackPanel.class);
+    private static Logger log = LogManager.getLogger(TrackPanel.class);
 
     private String name = null;
     //private JPanel grabPanel;

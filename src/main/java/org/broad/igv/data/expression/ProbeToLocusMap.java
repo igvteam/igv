@@ -26,7 +26,8 @@
 package org.broad.igv.data.expression;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.prefs.Constants;
@@ -56,7 +57,7 @@ public class ProbeToLocusMap {
 
     public static final String SERVER_URL = "https://data.broadinstitute.org";
 
-    private static Logger log = Logger.getLogger(ProbeToLocusMap.class);
+    private static Logger log = LogManager.getLogger(ProbeToLocusMap.class);
     private static String affyGenesMappingURL =
             SERVER_URL + "/igvdata/probes/affy/affy_probe_gene_mapping.txt.gz";
     private static String affyHumanMappingURL =

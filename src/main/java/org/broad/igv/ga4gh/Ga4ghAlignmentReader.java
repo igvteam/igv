@@ -29,7 +29,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.util.HttpUtils;
@@ -46,7 +47,7 @@ import java.util.*;
 
 public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
 
-    private static Logger log = Logger.getLogger(Ga4ghAlignmentReader.class);
+    private static Logger log = LogManager.getLogger(Ga4ghAlignmentReader.class);
 
     String readsetId;
     List<String> sequenceNames;

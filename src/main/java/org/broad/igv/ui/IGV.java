@@ -37,7 +37,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -45,8 +46,8 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.*;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.ga4gh.OAuthUtils;
 import org.broad.igv.lists.GeneList;
@@ -71,10 +72,13 @@ import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 
@@ -87,7 +91,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class IGV implements IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(IGV.class);
+    private static Logger log = LogManager.getLogger(IGV.class);
     private static IGV theInstance;
 
     // Window components

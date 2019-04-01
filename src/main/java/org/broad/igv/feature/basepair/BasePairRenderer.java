@@ -2,8 +2,10 @@ package org.broad.igv.feature.basepair;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
-import org.broad.igv.feature.basepair.BasePairTrack.*;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.broad.igv.feature.basepair.BasePairTrack.ArcDirection;
+import org.broad.igv.feature.basepair.BasePairTrack.RenderOptions;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.color.ColorUtilities;
 
@@ -14,7 +16,7 @@ import java.awt.geom.GeneralPath;
 
 public class BasePairRenderer {
 
-    private static Logger log = Logger.getLogger(BasePairRenderer.class);
+    private static Logger log = LogManager.getLogger(BasePairRenderer.class);
 
     public void draw(BasePairData data,
                      RenderContext context,

@@ -25,8 +25,8 @@
 
 package org.broad.igv.feature;
 
-import org.broad.igv.track.FeatureSource;
 import htsjdk.tribble.Feature;
+import org.broad.igv.track.FeatureSource;
 
 import java.io.IOException;
 import java.util.Iterator;

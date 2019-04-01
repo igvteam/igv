@@ -25,7 +25,7 @@
 
 package slider;
 
-import javax.swing.JSlider;
+import javax.swing.*;
 import java.io.Serializable;
 
 /**

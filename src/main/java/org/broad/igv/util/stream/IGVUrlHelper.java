@@ -25,9 +25,10 @@
 
 package org.broad.igv.util.stream;
 
-import org.apache.log4j.Logger;
-import org.broad.igv.util.HttpUtils;
 import htsjdk.tribble.util.URLHelper;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.broad.igv.util.HttpUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +43,7 @@ import java.util.Map;
  */
 public class IGVUrlHelper implements URLHelper {
 
-    static Logger log = Logger.getLogger(IGVUrlHelper.class);
+    static Logger log = LogManager.getLogger(IGVUrlHelper.class);
 
     URL url;
 

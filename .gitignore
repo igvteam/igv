@@ -1,5 +1,6 @@
 # Created by .gitignore support plugin (hsz.mobi)
 .idea/workspace.xml
+*.iml
 test/data/out/
 /build
 /build_java11
@@ -14,3 +15,7 @@ test/data/out/
 .vscode
 out/
 .DS_Store
+*.bedgraph
+*.bam
+*.csi.gz
+*.sai

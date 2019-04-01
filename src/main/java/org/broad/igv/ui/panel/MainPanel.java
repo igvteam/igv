@@ -26,7 +26,8 @@
 package org.broad.igv.ui.panel;
 
 import com.jidesoft.swing.JideSplitPane;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.Session;
 import org.broad.igv.track.AttributeManager;
@@ -38,8 +39,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -49,7 +50,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class MainPanel extends JPanel implements Paintable {
 
-    private static Logger log = Logger.getLogger(MainPanel.class);
+    private static Logger log = LogManager.getLogger(MainPanel.class);
 
     IGV igv;
 

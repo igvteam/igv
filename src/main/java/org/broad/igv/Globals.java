@@ -25,13 +25,15 @@
 
 package org.broad.igv;
 
-import org.apache.log4j.Logger;
-import org.broad.igv.renderer.SequenceRenderer;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 /**
@@ -39,7 +41,7 @@ import java.util.regex.Pattern;
  * Date: Feb 3, 2010
  */
 public class Globals {
-    private static Logger log = Logger.getLogger(Globals.class);
+    private static Logger log = LogManager.getLogger(Globals.class);
 
     public static final int DESIGN_DPI = 96;
     public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
@@ -119,25 +121,26 @@ public class Globals {
     public static String versionURL = "https://data.broadinstitute.org/igv/projects/current/version.txt";
     public static String downloadURL = "http://www.broadinstitute.org/igv/download";
     static {
-        Properties properties = new Properties();
         try {
-            properties.load(Globals.class.getResourceAsStream("/resources/about.properties"));
+            Properties properties = new Properties();
+            properties.load(new FileReader(".properties"));
+
+            VERSION = properties.getProperty("version", "???");
+            BUILD = properties.getProperty("build", "???");
+            TIMESTAMP = properties.getProperty("timestamp", "???");
+            BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
+
+            //Runtime property overrides compile-time property, if both exist.
+            //If neither exist we default to false
+            final String developmentProperty = System.getProperty("development", properties.getProperty("development", "false"));
+            development = Boolean.parseBoolean(developmentProperty);
+            if(development){
+                log.warn("Development mode is enabled");
+            }
+
         } catch (IOException e) {
             log.error("*** Error retrieving version and build information! ***", e);
         }
-        VERSION = properties.getProperty("version", "???");
-        BUILD = properties.getProperty("build", "???");
-        TIMESTAMP = properties.getProperty("timestamp", "???");
-        BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
-
-         //Runtime property overrides compile-time property, if both exist.
-        //If neither exist we default to false
-        final String developmentProperty = System.getProperty("development", properties.getProperty("development", "false"));
-        development = Boolean.parseBoolean(developmentProperty);
-        if(development){
-            log.warn("Development mode is enabled");
-        }
-
     }
 
     public static void setHeadless(boolean bool) {

@@ -25,6 +25,10 @@
 
 package org.broad.igv.feature.tribble;
 
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.exception.CodecLineParsingException;
+import htsjdk.tribble.readers.LineIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
@@ -33,10 +37,6 @@ import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.collections.MultiMap;
-import htsjdk.tribble.AsciiFeatureCodec;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.exception.CodecLineParsingException;
-import htsjdk.tribble.readers.LineIterator;
 
 /**
  * Basically BED format with some columns rearranged

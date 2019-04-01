@@ -29,14 +29,17 @@
 
 package org.broad.igv.ui;
 
-import java.awt.event.*;
-
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.ui.util.MessageUtils;
 
-import java.awt.*;
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 /**
  * @author Jim Robinson

@@ -26,7 +26,8 @@
 
 package org.broad.igv.tools.sort;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.track.GFFFeatureSource;
@@ -39,7 +40,7 @@ import java.io.File;
  */
 public class SorterFactory {
 
-    private static Logger log = Logger.getLogger(SorterFactory.class);
+    private static Logger log = LogManager.getLogger(SorterFactory.class);
 
     public static Sorter getSorter(File inputFile, File outputFile) {
 

@@ -33,7 +33,8 @@
  */
 package org.broad.igv.ui.panel;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
@@ -64,7 +65,7 @@ import static org.broad.igv.prefs.Constants.ENABLE_ANTIALISING;
  */
 public class RulerPanel extends JPanel {
 
-    private static Logger log = Logger.getLogger(RulerPanel.class);
+    private static Logger log = LogManager.getLogger(RulerPanel.class);
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 

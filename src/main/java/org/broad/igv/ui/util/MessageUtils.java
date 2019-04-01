@@ -29,8 +29,9 @@
  */
 package org.broad.igv.ui.util;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 
@@ -47,7 +48,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class MessageUtils {
 
-    private static Logger log = Logger.getLogger(MessageUtils.class);
+    private static Logger log = LogManager.getLogger(MessageUtils.class);
 
     public enum InputType {INT, FLOAT, STRING}
 

@@ -28,17 +28,13 @@ package org.broad.tribble;
 
 import htsjdk.tribble.AbstractFeatureReader;
 import htsjdk.tribble.FeatureCodec;
-import org.broad.igv.util.TestUtils;
 import htsjdk.tribble.index.Index;
 import htsjdk.tribble.index.IndexFactory;
 import htsjdk.tribble.util.LittleEndianOutputStream;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFCodec;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.broad.igv.util.TestUtils;
+import org.junit.*;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

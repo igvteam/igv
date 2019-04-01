@@ -29,7 +29,8 @@
  */
 package org.broad.igv.ui;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,7 +39,7 @@ import java.util.ConcurrentModificationException;
 
 public class DefaultExceptionHandler implements UncaughtExceptionHandler {
 
-    Logger log = Logger.getLogger(DefaultExceptionHandler.class);
+    Logger log = LogManager.getLogger(DefaultExceptionHandler.class);
 
     public void uncaughtException(Thread t, Throwable e) {
         if (e instanceof ConcurrentModificationException) {

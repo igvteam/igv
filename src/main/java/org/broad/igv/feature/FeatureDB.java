@@ -28,13 +28,14 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import com.jidesoft.utils.SortedList;
-import org.apache.log4j.Logger;
+import htsjdk.tribble.Feature;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.util.collections.MultiMap;
-import htsjdk.tribble.Feature;
 
 import java.util.*;
 
@@ -46,7 +47,7 @@ import java.util.*;
  */
 public class FeatureDB {
 
-    private static Logger log = Logger.getLogger(FeatureDB.class);
+    private static Logger log = LogManager.getLogger(FeatureDB.class);
     /**
      * Map for all features other than genes.
      */

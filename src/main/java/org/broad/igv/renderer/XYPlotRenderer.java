@@ -39,7 +39,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.UIConstants;
 
 import java.awt.*;
 import java.text.DecimalFormat;

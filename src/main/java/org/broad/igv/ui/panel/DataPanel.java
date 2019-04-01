@@ -34,8 +34,11 @@
 package org.broad.igv.ui.panel;
 
 import com.google.common.base.Objects;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
+import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -47,8 +50,6 @@ import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.event.DataLoadedEvent;
-import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.util.DataPanelTool;
 
 import javax.swing.*;
@@ -59,8 +60,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -75,7 +76,7 @@ import java.util.stream.Collectors;
  */
 public class DataPanel extends JComponent implements Paintable, IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(DataPanel.class);
+    private static Logger log = LogManager.getLogger(DataPanel.class);
 
     // Thread pool for loading data
     private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);

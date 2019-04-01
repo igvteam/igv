@@ -3,7 +3,6 @@ package org.broad.igv.sam;
 
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.Pair;
 
 import java.util.*;
 

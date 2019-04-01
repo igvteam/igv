@@ -29,7 +29,8 @@
  */
 package org.broad.igv.tdf;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.CompositeScore;
@@ -50,7 +51,7 @@ import java.util.*;
  */
 public class TDFDataSource implements CoverageDataSource {
 
-    private static Logger log = Logger.getLogger(TDFDataSource.class);
+    private static Logger log = LogManager.getLogger(TDFDataSource.class);
 
     TDFReader reader;
     int maxPrecomputedZoom = 6;

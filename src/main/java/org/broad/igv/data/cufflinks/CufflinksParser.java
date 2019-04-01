@@ -25,9 +25,9 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.broad.igv.feature.Range;
 import htsjdk.tribble.AbstractFeatureReader;
 import htsjdk.tribble.AsciiFeatureCodec;
+import org.broad.igv.feature.Range;
 
 import java.io.IOException;
 import java.util.ArrayList;

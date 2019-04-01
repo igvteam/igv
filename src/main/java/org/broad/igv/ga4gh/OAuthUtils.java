@@ -28,12 +28,17 @@ package org.broad.igv.ga4gh;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
+import org.broad.igv.util.AmazonUtils;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.JWTParser;
+import software.amazon.awssdk.services.cognitoidentity.model.Credentials;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -44,6 +49,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.time.Duration;
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -61,7 +67,7 @@ import java.util.prefs.Preferences;
  */
 public class OAuthUtils {
 
-    private static Logger log = Logger.getLogger(OAuthUtils.class);
+    private static Logger log = LogManager.getLogger(OAuthUtils.class);
 
     private String authProvider = "";
     private String appIdURI = null;
@@ -224,7 +230,7 @@ public class OAuthUtils {
         fetchTokens(redirect);
     }
 
-    // Called from port listener upon receiving the oauth request with a "token" parameter TODO -- does this ever happen?
+    // Called from port listener upon receiving the oauth request with a "token" parameter
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
@@ -279,7 +285,7 @@ public class OAuthUtils {
 
             if (authProvider.equals("Amazon")) {
                 // Get AWS credentials after getting relevant tokens
-                com.amazonaws.services.cognitoidentity.model.Credentials aws_credentials;
+                Credentials aws_credentials;
                 aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
 
                 // Update S3 client with newly acquired token
@@ -360,11 +366,10 @@ public class OAuthUtils {
      * @throws IOException
      */
     public JsonObject fetchUserProfile(JsonObject jwt_payload) throws IOException {
-
         try {
-            currentUserName = jwt_payload.get("name").getAsString();
-            currentUserEmail = jwt_payload.get("email").getAsString();
-            currentUserID = jwt_payload.get("id").getAsString();
+            currentUserName = jwt_payload.has("name") ? jwt_payload.get("name").getAsString() : null;
+            currentUserEmail = jwt_payload.has("email") ? jwt_payload.get("email").getAsString() : null;
+            currentUserID = jwt_payload.has("id") ? jwt_payload.get("id").getAsString() : null;
 
             return jwt_payload;
         } catch (Throwable exception) {
@@ -389,8 +394,13 @@ public class OAuthUtils {
         return accessToken;
     }
 
-    public static long getExpirationTime() {
-        return expirationTime;
+    /**
+    *
+    * Get OAuth credential tokens expiration time (in seconds).
+    *
+    */
+    public static Duration getExpirationTime() {
+        return Duration.ofMillis(expirationTime - System.currentTimeMillis());
     }
 
     public static Date getExpirationDate() {

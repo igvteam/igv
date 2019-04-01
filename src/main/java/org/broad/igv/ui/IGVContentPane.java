@@ -25,7 +25,8 @@
 
 package org.broad.igv.ui;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.ui.commandbar.IGVCommandBar;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.TrackPanel;
@@ -42,7 +43,7 @@ import java.awt.*;
 public class IGVContentPane extends JPanel {
 
 
-    private static Logger log = Logger.getLogger(IGVContentPane.class);
+    private static Logger log = LogManager.getLogger(IGVContentPane.class);
 
     private JPanel commandBarPanel;
     private IGVCommandBar igvCommandBar;

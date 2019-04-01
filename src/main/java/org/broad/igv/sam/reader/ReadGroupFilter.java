@@ -26,7 +26,8 @@
 package org.broad.igv.sam.reader;
 
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
@@ -50,7 +51,7 @@ import java.util.Set;
 
 public class ReadGroupFilter {
 
-    private static Logger log = Logger.getLogger(ReadGroupFilter.class);
+    private static Logger log = LogManager.getLogger(ReadGroupFilter.class);
 
     private Set<String> filteredReadGroups;
 

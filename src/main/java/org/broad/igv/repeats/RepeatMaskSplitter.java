@@ -25,15 +25,13 @@
 
 package org.broad.igv.repeats;
 
-import org.broad.igv.Globals;
-import org.broad.igv.util.ParsingUtils;
 import htsjdk.tribble.readers.AsciiLineReader;
+import org.broad.igv.Globals;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Splits a repeat mask file downloaded from UCSC into multiple files,  one per repeat class.

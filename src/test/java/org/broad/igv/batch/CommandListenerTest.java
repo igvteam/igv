@@ -25,8 +25,8 @@
 
 package org.broad.igv.batch;
 
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;

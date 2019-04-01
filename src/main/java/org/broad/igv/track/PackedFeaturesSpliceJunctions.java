@@ -26,14 +26,14 @@
 
 package org.broad.igv.track;
 
-import org.apache.log4j.Logger;
+import htsjdk.tribble.Feature;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.ui.util.MessageUtils;
-import htsjdk.tribble.Feature;
 
 import java.util.*;
 
@@ -55,7 +55,7 @@ import java.util.*;
  */
 public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeatures {
 
-    private static Logger log = Logger.getLogger(PackedFeaturesSpliceJunctions.class);
+    private static Logger log = LogManager.getLogger(PackedFeaturesSpliceJunctions.class);
 
     public PackedFeaturesSpliceJunctions(String chr, int start, int end, Iterator<T> iter, String trackName) {
         super(chr, start, end, iter, trackName);

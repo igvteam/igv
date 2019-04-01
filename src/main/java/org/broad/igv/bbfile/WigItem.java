@@ -25,7 +25,8 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Created by IntelliJ IDEA.
@@ -36,7 +37,7 @@ import org.apache.log4j.Logger;
  */
 public class WigItem {
 
-    private static Logger log = Logger.getLogger(WigItem.class);
+    private static Logger log = LogManager.getLogger(WigItem.class);
 
     private int itemIndex;         // wig section item index number
     private String chromosome;     // mChromosome name

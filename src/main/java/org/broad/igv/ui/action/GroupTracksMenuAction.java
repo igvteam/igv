@@ -32,7 +32,6 @@ package org.broad.igv.ui.action;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.AttributeSelectionDialog;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
@@ -45,7 +44,7 @@ import java.util.List;
  */
 public class GroupTracksMenuAction extends MenuAction {
 
-    //static Logger log = Logger.getLogger(GroupTracksMenuAction.class);
+    //static Logger log = LogManager.getLogger(GroupTracksMenuAction.class);
     IGV mainFrame;
 
     public GroupTracksMenuAction(String label, int mnemonic, IGV mainFrame) {

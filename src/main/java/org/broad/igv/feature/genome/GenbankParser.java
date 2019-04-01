@@ -25,11 +25,15 @@
 
 package org.broad.igv.feature.genome;
 
-import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
-import org.broad.igv.feature.*;
-import org.broad.igv.util.ParsingUtils;
 import htsjdk.tribble.Feature;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.broad.igv.Globals;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.Exon;
+import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.Strand;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.StringUtils;
 
 import java.io.*;
@@ -42,7 +46,7 @@ import java.util.List;
  */
 public class GenbankParser {
 
-    private static Logger log = Logger.getLogger(GenbankParser.class);
+    private static Logger log = LogManager.getLogger(GenbankParser.class);
 
     private String path;
     private String accession;

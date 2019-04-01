@@ -37,7 +37,9 @@ package org.broad.igv.data.expression;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import htsjdk.tribble.readers.AsciiLineReader;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.Locus;
@@ -48,7 +50,6 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MagetabSignalDialog;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -63,7 +64,7 @@ import java.util.*;
  */
 public class ExpressionFileParser {
 
-    private static Logger log = Logger.getLogger(ExpressionFileParser.class);
+    private static Logger log = LogManager.getLogger(ExpressionFileParser.class);
     private static final int MAX_ERROR_COUNT = 200;
 
     public enum FileType {

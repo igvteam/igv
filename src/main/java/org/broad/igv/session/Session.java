@@ -25,8 +25,12 @@
 
 package org.broad.igv.session;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
@@ -38,9 +42,6 @@ import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ObservableForObject;
@@ -54,7 +55,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class Session implements IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(Session.class);
+    private static Logger log = LogManager.getLogger(Session.class);
     private String ucscId;
 
     public void setUcscId(String ucscId) {

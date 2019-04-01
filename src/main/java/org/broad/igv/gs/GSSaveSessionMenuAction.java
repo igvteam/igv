@@ -34,8 +34,8 @@ package org.broad.igv.gs;
  * and open the template in the editor.
  */
 
-import org.apache.log4j.Logger;
-import org.broad.igv.gs.GSFileBrowser;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.gs.dm.DMUtils;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionWriter;
@@ -55,7 +55,7 @@ import java.io.FileOutputStream;
  */
 public class GSSaveSessionMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(SaveSessionMenuAction.class);
+    static Logger log = LogManager.getLogger(SaveSessionMenuAction.class);
 
     // TODO -- The batch referenceFrame is likely to be used by many actions. Move this
     // member to a base class ?

@@ -33,7 +33,6 @@ import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
-import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.stream.IGVSeekableBufferedStream;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 

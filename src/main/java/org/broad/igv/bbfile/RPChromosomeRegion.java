@@ -25,7 +25,8 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Created by IntelliJ IDEA.
@@ -40,7 +41,7 @@ import org.apache.log4j.Logger;
 * */
 public class RPChromosomeRegion {
 
-    private static Logger log = Logger.getLogger(RPChromosomeRegion.class);
+    private static Logger log = LogManager.getLogger(RPChromosomeRegion.class);
 
     private int startChromID;  // starting mChromosome in item
     private int startBase;     // starting base pair in item

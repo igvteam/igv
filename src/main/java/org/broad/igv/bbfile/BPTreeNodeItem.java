@@ -33,8 +33,6 @@
  */
 package org.broad.igv.bbfile;
 
-import java.lang.Comparable;
-
 /*
 *   BPTreeNodeItem interface for storage of B+ tree node item information.
 *

@@ -28,8 +28,6 @@ package org.broad.igv.feature.basepair;
 
 import htsjdk.tribble.Feature;
 
-import java.awt.*;
-
 /**
  * Created by jrobinson on 3/1/16.
  */

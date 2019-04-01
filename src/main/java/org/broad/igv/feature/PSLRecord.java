@@ -25,9 +25,6 @@
 
 package org.broad.igv.feature;
 
-import org.broad.igv.feature.*;
-
-
 /**
  * @author jrobinso
  *         Date: 11/29/12

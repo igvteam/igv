@@ -25,7 +25,8 @@
 
 package org.broad.igv.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.awt.*;
 import java.io.File;
@@ -39,7 +40,7 @@ import java.net.URL;
  */
 public class BrowserLauncher {
 
-    static Logger log = Logger.getLogger(BrowserLauncher.class);
+    static Logger log = LogManager.getLogger(BrowserLauncher.class);
 
     /**
      * The Java virtual machine that we are running on. Actually, in most cases we only care about the operating system,

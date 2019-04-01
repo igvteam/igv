@@ -33,10 +33,13 @@ package org.broad.igv.ui.commandbar;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideToggleButton;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.*;
-import org.broad.igv.feature.genome.*;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.History;
@@ -48,7 +51,9 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ZoomSliderPanel;
-import org.broad.igv.ui.util.*;
+import org.broad.igv.ui.util.IconFactory;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -65,7 +70,7 @@ import java.io.IOException;
  */
 public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(IGVCommandBar.class);
+    private static Logger log = LogManager.getLogger(IGVCommandBar.class);
 
     final static String MODIFY_DETAILS_TOOLTIP = "Modify popup text behavior in data panels";
     final static int DEFAULT_CHROMOSOME_DROPDOWN_WIDTH = 120;

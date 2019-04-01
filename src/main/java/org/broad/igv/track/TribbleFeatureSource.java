@@ -25,12 +25,11 @@
 
 package org.broad.igv.track;
 
-import htsjdk.tribble.AbstractFeatureReader;
-import org.apache.tools.ant.taskdefs.condition.Http;
+import htsjdk.tribble.*;
+import htsjdk.tribble.index.Index;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataTile;
-import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.*;
@@ -42,9 +41,6 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.CollUtils;
-import org.broad.igv.variant.VariantTrack;
-import htsjdk.tribble.*;
-import htsjdk.tribble.index.Index;
 
 import java.io.File;
 import java.io.IOException;

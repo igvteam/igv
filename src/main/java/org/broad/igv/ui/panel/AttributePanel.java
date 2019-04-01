@@ -35,7 +35,8 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AttributeManager;
@@ -49,15 +50,15 @@ import org.broad.igv.ui.util.Packable;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
  */
 public class AttributePanel extends TrackPanelComponent implements Packable, Paintable {
 
-    private static Logger log = Logger.getLogger(AttributePanel.class);
+    private static Logger log = LogManager.getLogger(AttributePanel.class);
 
 
     /**

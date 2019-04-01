@@ -41,7 +41,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.*;

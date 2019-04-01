@@ -34,12 +34,7 @@ package com.sanityinc.jargs;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Largely GNU-compatible command-line options parser. Has short (-v) and

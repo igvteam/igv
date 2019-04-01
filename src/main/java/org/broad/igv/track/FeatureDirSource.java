@@ -25,7 +25,9 @@
 
 package org.broad.igv.track;
 
-import org.apache.log4j.Logger;
+import htsjdk.tribble.Feature;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.AbstractFeatureParser;
 import org.broad.igv.feature.FeatureParser;
 import org.broad.igv.feature.IGVFeature;
@@ -36,7 +38,6 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.LRUCache;
-import htsjdk.tribble.Feature;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -53,7 +54,7 @@ import java.util.Properties;
  */
 public class FeatureDirSource implements FeatureSource {
 
-    static Logger log = Logger.getLogger(FeatureDirSource.class);
+    static Logger log = LogManager.getLogger(FeatureDirSource.class);
     LRUCache<String, List<Feature>> featureCache;
     Properties fileMap;
     String rootDir;

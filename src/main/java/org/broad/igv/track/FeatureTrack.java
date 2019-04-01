@@ -27,7 +27,8 @@ package org.broad.igv.track;
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.TribbleException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -38,8 +39,6 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
-import org.broad.igv.session.IGVSessionReader;
-
 import org.broad.igv.tools.motiffinder.MotifFinderSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -56,8 +55,8 @@ import org.w3c.dom.NodeList;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Track which displays features, typically showing regions of the genome
@@ -70,7 +69,7 @@ import java.util.List;
 
 public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(FeatureTrack.class);
+    private static Logger log = LogManager.getLogger(FeatureTrack.class);
 
 
     public static final int MINIMUM_FEATURE_SPACING = 5;

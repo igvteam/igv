@@ -25,14 +25,14 @@
 
 package org.broad.igv.variant.vcf;
 
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.PositionalBufferedStream;
+import htsjdk.variant.bcf2.BCF2Codec;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.readers.PositionalBufferedStream;
-import htsjdk.variant.bcf2.BCF2Codec;
 import org.junit.Ignore;
 import org.junit.Test;
 

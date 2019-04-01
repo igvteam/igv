@@ -29,8 +29,8 @@
 
 package org.broad.igv.feature.genome;
 
-import org.apache.log4j.Logger;
-import org.broad.igv.DirectoryManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.prefs.Constants;
@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 
 public class RemoveGenomesDialog extends JDialog {
 
-    private static Logger log = Logger.getLogger(RemoveGenomesDialog.class);
+    private static Logger log = LogManager.getLogger(RemoveGenomesDialog.class);
 
     private List<GenomeListItem> allListItems;
     private List<GenomeListItem> removedValuesList;

@@ -26,12 +26,12 @@
 package org.broad.igv.sam.reader;
 
 
-import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.FeatureWrappedAlignment;
-import org.broad.igv.feature.tribble.PSLCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.readers.AsciiLineReader;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.tribble.PSLCodec;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.FeatureWrappedAlignment;
 
 import java.io.IOException;
 

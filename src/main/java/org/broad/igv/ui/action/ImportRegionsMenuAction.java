@@ -29,7 +29,8 @@
  */
 package org.broad.igv.ui.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -47,7 +48,7 @@ import java.io.FileReader;
  */
 public class ImportRegionsMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(ImportRegionsMenuAction.class);
+    static Logger log = LogManager.getLogger(ImportRegionsMenuAction.class);
     IGV mainFrame;
 
     public ImportRegionsMenuAction(String label, int mnemonic, IGV mainFrame) {

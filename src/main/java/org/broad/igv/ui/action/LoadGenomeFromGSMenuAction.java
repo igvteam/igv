@@ -25,7 +25,8 @@
 
 package org.broad.igv.ui.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.gs.GSFileBrowser;
 import org.broad.igv.ui.IGV;
@@ -40,7 +41,7 @@ import java.awt.event.ActionEvent;
  */
 public class LoadGenomeFromGSMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(LoadGenomeFromGSMenuAction.class);
+    static Logger log = LogManager.getLogger(LoadGenomeFromGSMenuAction.class);
     IGV igv;
 
     public LoadGenomeFromGSMenuAction(String label, int mnemonic, IGV igv) {

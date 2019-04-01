@@ -25,13 +25,6 @@
 
 package org.broad.igv.ui.panel;
 
-import org.broad.igv.lists.GeneList;
-import org.broad.igv.ui.IGV;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import java.awt.*;
-
 /**
  * @author Jim Robinson
  * @date 5/25/12

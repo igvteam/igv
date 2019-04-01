@@ -25,24 +25,10 @@
 
 package org.broad.igv.ui.util;
 
-import java.awt.BorderLayout;
-import java.awt.Checkbox;
-import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.GraphicsEnvironment;
-import java.awt.GridLayout;
-import java.awt.List;
-import java.awt.Panel;
-import java.awt.Toolkit;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 
 /**
  * A font selection dialog.

@@ -25,7 +25,8 @@
 
 package org.broad.igv.ui;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.track.TrackType;
 
@@ -36,7 +37,7 @@ import java.awt.*;
  */
 public class UIConstants {
 
-    private static Logger log = Logger.getLogger(UIConstants.class);
+    private static Logger log = LogManager.getLogger(UIConstants.class);
 
     final public static String APPLICATION_NAME = "IGV";
     final public static int groupGap = 10;

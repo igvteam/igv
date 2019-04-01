@@ -25,12 +25,12 @@
 
 package org.broad.igv.variant.util;
 
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.CodecFactory;
 import htsjdk.tribble.AbstractFeatureReader;
 import htsjdk.tribble.FeatureCodec;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFCodec;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.CodecFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

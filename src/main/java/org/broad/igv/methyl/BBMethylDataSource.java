@@ -33,7 +33,10 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**

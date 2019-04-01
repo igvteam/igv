@@ -29,7 +29,8 @@
  */
 package org.broad.igv.gs;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.action.MenuAction;
@@ -48,7 +49,7 @@ import java.awt.event.ActionEvent;
  */
 public class GSOpenSessionMenuAction extends MenuAction {
 
-    private static Logger log = Logger.getLogger(GSOpenSessionMenuAction.class);
+    private static Logger log = LogManager.getLogger(GSOpenSessionMenuAction.class);
     private IGV mainFrame;
     private String sessionFile = null;
     private boolean autoload = false;

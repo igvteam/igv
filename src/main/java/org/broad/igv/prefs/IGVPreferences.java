@@ -30,9 +30,12 @@
 package org.broad.igv.prefs;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.event.AlignmentTrackEvent;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
@@ -41,12 +44,11 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.event.AlignmentTrackEvent;
-import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -56,7 +58,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class IGVPreferences {
 
-    private static Logger log = Logger.getLogger(IGVPreferences.class);
+    private static Logger log = LogManager.getLogger(IGVPreferences.class);
 
     IGVPreferences parent;
 

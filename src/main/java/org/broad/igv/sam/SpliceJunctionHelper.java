@@ -28,7 +28,8 @@ package org.broad.igv.sam;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
@@ -49,7 +50,7 @@ import java.util.List;
  */
 public class SpliceJunctionHelper {
 
-    static Logger log = Logger.getLogger(SpliceJunctionHelper.class);
+    static Logger log = LogManager.getLogger(SpliceJunctionHelper.class);
 
     List<SpliceJunctionFeature> allSpliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>();
     //  List<SpliceJunctionFeature> filteredSpliceJunctionFeatures = null;

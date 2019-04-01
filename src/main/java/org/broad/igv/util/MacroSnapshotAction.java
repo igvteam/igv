@@ -31,7 +31,8 @@ package org.broad.igv.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.ui.IGV;
 
 import java.io.File;
@@ -45,7 +46,7 @@ import java.util.List;
 public class MacroSnapshotAction {
 
     public static File OUTPUT_DIRECTORY = new File(".");
-    private static Logger log = Logger.getLogger(MacroSnapshotAction.class);
+    private static Logger log = LogManager.getLogger(MacroSnapshotAction.class);
 
     /**
      * Loop through a list of loci creating a screenshot for each.  Method

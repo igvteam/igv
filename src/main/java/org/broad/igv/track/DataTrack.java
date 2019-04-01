@@ -33,7 +33,8 @@
  */
 package org.broad.igv.track;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -57,8 +58,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Represents a track of numeric data
@@ -68,7 +69,7 @@ import java.util.List;
 
 public abstract class DataTrack extends AbstractTrack implements ScalableTrack, IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(DataTrack.class);
+    private static Logger log = LogManager.getLogger(DataTrack.class);
 
     private DataRenderer renderer;
 

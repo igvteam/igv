@@ -31,7 +31,8 @@ package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionWriter;
@@ -50,7 +51,7 @@ import java.io.IOException;
  */
 public class SaveSessionMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(SaveSessionMenuAction.class);
+    static Logger log = LogManager.getLogger(SaveSessionMenuAction.class);
     IGV igv;
 
     /**

@@ -28,7 +28,8 @@ package org.broad.igv.util.stream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPReply;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.UserPasswordInputImpl;
 import org.broad.igv.util.ftp.FTPUtils;
 
@@ -43,7 +44,7 @@ import java.net.URL;
  */
 public class IGVSeekableFTPStream extends SeekableStream {
 
-    private static Logger log = Logger.getLogger(IGVSeekableFTPStream.class);
+    private static Logger log = LogManager.getLogger(IGVSeekableFTPStream.class);
 
     private long position = 0;
     private String host;
