@@ -54,13 +54,44 @@ configurations {
     implementation {
         exclude group: 'com.google.code.findbugs', module: 'annotations'
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
+        exclude group: 'com.google.errorprone'
+        exclude group: 'com.google.guava', module: 'listenablefuture'
+        exclude group: 'com.google.guava', module: 'failureaccess'
+        exclude group: 'com.github.lucarosellini.rJava', module: 'JRI'
         exclude group: 'commons-beanutils', module: 'commons-beanutils'
-        exclude group: 'xmlpull', module: 'xmlpull'
-        exclude group: 'xpp3', module: 'xpp3_min'
         exclude group: 'ch.qos.logback', module: 'logback-classic'
         exclude group: 'io.netty', module: 'netty-codec-http2'
-        exclude group: 'com.amazonaws', module: 'aws-java-sdk-kms'
         exclude group: 'com.martiansoftware', module: 'jsap'
+        exclude group: 'colt', module: 'colt'
+        exclude group: 'com.thoughtworks.xstream', module: 'xstream'
+        exclude group: 'org.reflections', module: 'reflections'
+        exclude group: 'org.codehaus.mojo', module: 'animal-sniffer-annotations'
+        exclude group: 'org.checkerframework', module: 'checker-qual'
+        exclude group: 'com.ibm.icu', module: 'icu4j'
+        exclude group: 'log4j', module: 'log4j'
+
+        exclude group: 'xmlpull', module: 'xmlpull'
+        exclude group: 'xpp3', module: 'xpp3_min'
+        exclude group: 'org.tukaani', module: 'xz'
+
+        exclude group: 'org.apache.ant', module: 'ant'
+        exclude group: 'org.apache.ant', module: 'ant-launcher'
+        exclude group: 'org.apache.commons', module: 'commons-math'
+
+        // Amazon deps
+        exclude group: 'software.amazon', module: 'flow'
+        exclude group: 'software.amazon.awssdk', module: 'annotations'
+        //exclude group: 'software.amazon.awssdk', module: 'aws-xml-protocol'
+        //exclude group: 'software.amazon.awssdk', module: 'http-client-spi'
+        //exclude group: 'software.amazon.awssdk', module: 'apache-client'
+        //exclude group: 'software.amazon.awssdk', module: 'utils'
+        //exclude group: 'software.amazon.awssdk', module: 'annotations'
+        //exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+        //exclude group: 'com.fasterxml.jackson.core', module: 'jackson-annotations'
+        //exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+        //exclude group: 'org.reactivestreams', module: 'reactive-streams'
+        //exclude group: 'com.typesafe.netty', module: 'netty-reactive-streams'
+        //exclude group: 'com.typesafe.netty', module: 'netty-reactive-streams-http'
     }
 }
 
@@ -86,11 +117,12 @@ dependencies {
         [group: 'org.eclipse.birt.runtime.3_7_1', name: 'org.apache.batik.svggen', version: '1.6.0'],
         [group: 'org.eclipse.birt.runtime.3_7_1', name: 'org.apache.batik.ext.awt', version: '1.6.0'],
         [group: 'org.eclipse.birt.runtime.3_7_1', name: 'org.apache.batik.util', version: '1.6.0'],
-        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.5.0'],
-        [group: 'software.amazon.awssdk', name: 's3', version: '2.5.0'],
+        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'],
+
+        // Amazon deps
         [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.5.0'],
-        [group: 'software.amazon.awssdk', name: 'utils', version: '2.5.0'],
-        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26']
+        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.5.0'],
+        [group: 'software.amazon.awssdk', name: 's3', version: '2.5.0']
     )
 
     testImplementation(

@@ -25,7 +25,7 @@
 
 package org.broad.igv.charts;
 
-import org.apache.commons.math.stat.StatUtils;
+import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;

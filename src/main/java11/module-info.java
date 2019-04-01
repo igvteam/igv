@@ -4,7 +4,7 @@ module org.igv {
     exports org.broad.igv.ui;
 
     requires AbsoluteLayout;
-    requires ant;
+//    requires ant; // XXX: I cannot see why this is required
     requires com.google.common;
     requires protobuf.java;
     requires commons.math3;
