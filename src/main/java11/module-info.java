@@ -26,8 +26,9 @@ module org.igv {
     requires goby.io;
     requires icb.utils;
     requires fastutil;
-    requires org.apache.batik.svggen;
-    requires org.apache.batik.dom;
+    requires batik.xml;
+    requires batik.svggen;
+    requires batik.dom;
     requires dsiutils;
 
     // AWS

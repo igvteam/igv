@@ -78,6 +78,12 @@ configurations {
         exclude group: 'org.apache.ant', module: 'ant-launcher'
         exclude group: 'org.apache.commons', module: 'commons-math'
 
+        // Batik deps
+        exclude group: 'xml-apis', module: 'xml-apis'
+        exclude group: 'xml-apis', module: 'xml-apis-ext'
+        exclude group: 'xalan', module: 'serializer'
+        exclude group: 'xalan', module: 'xalan'
+
         // Amazon deps
         exclude group: 'software.amazon', module: 'flow'
         exclude group: 'software.amazon.awssdk', module: 'annotations'
@@ -112,11 +118,9 @@ dependencies {
         [group: 'org.campagnelab.goby', name: 'goby-io', version: '3.3.1'],
         [group: 'org.campagnelab.icb', name: 'icb-utils', version: '2.0.2'],
         [group: 'org.campagnelab.ext', name: 'jsap', version: '3.0.0'],
-        // Apache batik deps are so old that the only working authoritative source for those jars is Eclipse
-        [group: 'org.eclipse.birt.runtime', name: 'org.apache.batik.dom', version: '1.6.1.v201505192100'],
-        [group: 'org.eclipse.birt.runtime.3_7_1', name: 'org.apache.batik.svggen', version: '1.6.0'],
-        [group: 'org.eclipse.birt.runtime.3_7_1', name: 'org.apache.batik.ext.awt', version: '1.6.0'],
-        [group: 'org.eclipse.birt.runtime.3_7_1', name: 'org.apache.batik.util', version: '1.6.0'],
+        [group: 'org.apache.xmlgraphics', name: 'batik-dom', version: '1.11'],
+        [group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: '1.11'],
+        [group: 'org.apache.xmlgraphics', name: 'batik-codec', version: '1.11'],
         [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'],
 
         // Amazon deps
