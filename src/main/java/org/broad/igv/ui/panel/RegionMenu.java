@@ -25,13 +25,11 @@
 
 package org.broad.igv.ui.panel;
 
-import com.jidesoft.swing.JidePopupMenu;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.action.MenuAction;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
