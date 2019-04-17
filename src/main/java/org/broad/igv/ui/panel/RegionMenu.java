@@ -42,7 +42,7 @@ import java.util.Set;
  * @author jrobinso
  * @date Sep 18, 2010
  */
-public class RegionMenu extends JidePopupMenu {
+public class RegionMenu extends JPopupMenu {
 
     RegionOfInterest roi;
     ReferenceFrame frame;
