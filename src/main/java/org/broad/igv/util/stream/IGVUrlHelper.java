@@ -110,6 +110,7 @@ public class IGVUrlHelper implements URLHelper {
     }
 
     public boolean exists() {
+        log.info("Checking resoure " + url.toExternalForm());
         return HttpUtils.getInstance().resourceAvailable(url.toExternalForm());
     }
 }
