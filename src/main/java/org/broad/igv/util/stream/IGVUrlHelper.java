@@ -25,9 +25,9 @@
 
 package org.broad.igv.util.stream;
 
+import htsjdk.tribble.util.URLHelper;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.HttpUtils;
-import htsjdk.tribble.util.URLHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,6 +111,8 @@ public class IGVUrlHelper implements URLHelper {
 
     public boolean exists() {
         log.info("Checking resoure " + url.toExternalForm());
-        return HttpUtils.getInstance().resourceAvailable(url.toExternalForm());
+        boolean exists = HttpUtils.getInstance().resourceAvailable(url.toExternalForm());
+        log.info("Exists: " + exists);
+        return true;
     }
 }
