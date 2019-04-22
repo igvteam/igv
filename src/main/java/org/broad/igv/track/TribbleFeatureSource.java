@@ -76,15 +76,18 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         // Explicit index path
         String idxPath = locator.getIndexPath();
         if (idxPath != null) {
-            idxPath = HttpUtils.createURL(idxPath).toString();
+            if (FileUtils.isRemote(idxPath)) {
+                idxPath = HttpUtils.mapURL(idxPath);
+            }
             indexExists = true;
         } else {
             idxPath = ResourceLocator.indexFile(locator);
             if (FileUtils.isRemote(idxPath)) {
-                idxPath = HttpUtils.createURL(idxPath).toString();
+                idxPath = HttpUtils.mapURL(idxPath);
             }
             indexExists = FileUtils.resourceExists(idxPath);
         }
+
 
         // Optionally let the user create an index.
         final int hundredMB = 100000000;
@@ -99,7 +102,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         String path = locator.getPath();
         if (FileUtils.isRemote(path)) {
-            path = HttpUtils.createURL(path).toString();
+            path = HttpUtils.mapURL(path);
         }
         AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
 

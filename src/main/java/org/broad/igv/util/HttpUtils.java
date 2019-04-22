@@ -128,7 +128,12 @@ public class HttpUtils {
      */
     public static URL createURL(String urlString) throws MalformedURLException {
 
-        urlString = urlString.trim();
+        urlString = mapURL(urlString.trim());
+
+        return new URL(urlString);
+    }
+
+    public static String mapURL(String urlString) throws MalformedURLException {
 
         if (urlString.startsWith("gs://")) {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
@@ -152,8 +157,7 @@ public class HttpUtils {
         // data.broadinstitute.org requires https
         urlString = urlString.replace("http://data.broadinstitute.org", "https://data.broadinstitute.org");
 
-
-        return new URL(urlString);
+        return urlString;
     }
 
     public static boolean isRemoteURL(String string) {
