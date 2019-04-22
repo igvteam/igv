@@ -78,6 +78,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         String idxPath = ResourceLocator.indexFile(locator);
         if(FileUtils.isRemote(idxPath)) {
             idxPath = HttpUtils.createURL(idxPath).toString();
+            System.out.println(idxPath);
         }
         String path = locator.getPath();
         if(FileUtils.isRemote(path)) {
