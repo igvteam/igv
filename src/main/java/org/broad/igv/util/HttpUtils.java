@@ -350,7 +350,10 @@ public class HttpUtils {
     private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
 
         // Keep track of urls for which "HEAD" does not work (e.g. Amazon with signed urls).
-        boolean tryHead = headURLCache.containsKey(url) ? headURLCache.get(url) : true;
+        String urlString = url.toString();
+        boolean isAWS = urlString.contains("AWSAccessKeyId");
+        boolean tryHead =
+                isAWS == false && (headURLCache.containsKey(url) ? headURLCache.get(url) : true);
 
         if (tryHead) {
             try {
