@@ -26,6 +26,7 @@
 package org.broad.igv.util.stream;
 
 import htsjdk.tribble.util.URLHelper;
+import htsjdk.tribble.util.URLHelperFactory;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.HttpUtils;
 
@@ -40,9 +41,18 @@ import java.util.Map;
  * @author jrobinso
  * @date Jul 6, 2011
  */
-public class IGVUrlHelper implements URLHelper {
+public class IGVUrlHelperFactory implements URLHelperFactory {
 
-    static Logger log = Logger.getLogger(IGVUrlHelper.class);
+    @Override
+    public URLHelper getHelper(URL url) {
+        return new IGVUrlHelper(url);
+    }
+}
+
+
+class IGVUrlHelper implements URLHelper {
+
+    static Logger log = Logger.getLogger(IGVUrlHelperFactory.class);
 
     URL url;
 

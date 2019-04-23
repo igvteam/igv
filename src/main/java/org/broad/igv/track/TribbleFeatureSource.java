@@ -41,7 +41,7 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.CollUtils;
-import org.broad.igv.util.stream.IGVUrlHelper;
+import org.broad.igv.util.stream.IGVUrlHelperFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,8 +71,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
     public static TribbleFeatureSource getFeatureSource(ResourceLocator locator, Genome genome, boolean useCache) throws IOException, TribbleIndexNotFoundException {
 
-        htsjdk.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
-        
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
 
         boolean indexExists;
