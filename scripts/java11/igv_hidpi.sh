@@ -13,10 +13,10 @@ if [ -d "${prefix}/jdk-11" ]; then
     JAVA_HOME="${prefix}/jdk-11"
     PATH=$JAVA_HOME/bin:$PATH
 else
-    echo "Bundled JDK not found.  Using system JDK."
+    echo "Using system JDK."
 fi
 
-exec java --module-path="${prefix}"/lib -Xmx4g \
+exec java -showversion --module-path="${prefix}"/lib -Xmx4g \
     @"${prefix}/igv.args" \
     -Dsun.java2d.uiScale=2 \
     -Dapple.laf.useScreenMenuBar=true \
