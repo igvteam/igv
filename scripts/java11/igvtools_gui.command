@@ -8,10 +8,10 @@ if [ -d "${prefix}/jdk-11" ]; then
     JAVA_HOME="${prefix}/jdk-11"
     PATH=$JAVA_HOME/bin:$PATH
 else
-    echo "Bundled JDK not found.  Using system JDK."
+    echo "Using system JDK."
 fi
 
-java --module-path="${prefix}/lib" -Xmx1500m \
+java -showversion --module-path="${prefix}/lib" -Xmx1500m \
     @"${prefix}/igv.args" \
     -Dapple.laf.useScreenMenuBar=true \
     --module=org.igv/org.broad.igv.tools.IgvTools gui

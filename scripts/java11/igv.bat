@@ -8,8 +8,8 @@ if exist %BatchPath%\jdk-11 (
   set JAVA_HOME=%BatchPath%\jdk-11
   set JAVA_CMD=%BatchPath%\jdk-11\bin\javaw
 ) else (
-  echo "Bundled JDK not found.  Using system JDK."
+  echo "Using system JDK."
   set JAVA_CMD=java
 )
 
-start %JAVA_CMD% --module-path=%BatchPath%\lib -Xmx4g -Dproduction=true @%BatchPath%\igv.args -Djava.net.preferIPv4Stack=true -Dsun.java2d.noddraw=true --module=org.igv/org.broad.igv.ui.Main  %*
+start %JAVA_CMD% -showversion --module-path=%BatchPath%\lib -Xmx4g -Dproduction=true @%BatchPath%\igv.args -Djava.net.preferIPv4Stack=true -Dsun.java2d.noddraw=true --module=org.igv/org.broad.igv.ui.Main  %*
