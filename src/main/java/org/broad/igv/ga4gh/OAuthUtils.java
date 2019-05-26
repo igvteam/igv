@@ -65,8 +65,8 @@ public class OAuthUtils {
 
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
     private static final String PROPERTIES_URL = "https://s3.amazonaws.com/igv.org.app/desktop_google";
-    private String genomicsScope = "https://www.googleapis.com/auth/genomics";
-    private String gsScope = "https://www.googleapis.com/auth/devstorage.read_write";
+    private String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
+    private String driveScope = "https://www.googleapis.com/auth/drive.readonly";
     private String emailScope = "https://www.googleapis.com/auth/userinfo.email";
     private String state = "%2Fprofile";
     private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
@@ -87,7 +87,7 @@ public class OAuthUtils {
     private String currentUserName;
 
     // by default this is the google scope
-    private String scope = genomicsScope + "%20" + gsScope + "%20" + emailScope;
+    private String scope = driveScope + "%20" + gsScope + "%20" + emailScope;
 
     public static synchronized OAuthUtils getInstance() throws IOException {
 
