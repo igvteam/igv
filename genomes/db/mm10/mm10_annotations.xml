@@ -1,10 +1,76 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Global name="Annotations (mm10)" version="1">
 
-        <Resource name="db Snp 1.37"
-                  path="https://data.broadinstitute.org/igvdata/annotations/mm10/variation/snp137.bed.gz"
-                  hyperlink="http://www.ncbi.nlm.nih.gov/SNP/"
-                  url="http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?type=rs&amp;rs=$$"/>
+    <Resource name="db Snp 1.42"
+              path="https://s3.amazonaws.com/igv.org.genomes/mm10/snp142.txt.gz"
+              hyperlink="http://www.ncbi.nlm.nih.gov/SNP/"
+              url="http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?type=rs&amp;rs=$$"/>
 
-
+    <Category name="Repeat Masker"
+              hyperlink="https://genome.ucsc.edu/cgi-bin/hgTrackUi?g=rmsk">
+        <Resource name="LINE"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_LINE.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="Simple_repeat"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_Simple_repeat.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="LTR"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_LTR.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="SINE"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_SINE.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="Low_complexity"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_Low_complexity.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="DNA"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_DNA.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="snRNA"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_snRNA.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="Other"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_Other.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="Satellite"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_Satellite.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="Unknown"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_Unknown.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="srpRNA"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_srpRNA.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="tRNA"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_tRNA.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="RNA"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_RNA.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="scRNA"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_scRNA.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="RC"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_RC.bed.gz"
+                  trackLine='useScore=1'
+        />
+        <Resource name="rRNA"
+                  path="https://s3.amazonaws.com/igv.org.genomes/mm10/rmsk/mm10_rmsk_rRNA.bed.gz"
+                  trackLine='useScore=1'
+        />
+    </Category>
 </Global>

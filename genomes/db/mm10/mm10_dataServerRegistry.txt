@@ -1,1 +1,2 @@
-https://data.broadinstitute.org/igvdata/annotations/mm10/mm10_annotations.xml
+https://s3.amazonaws.com/igv.org.genomes/mm10/mm10_annotations.xml
+
