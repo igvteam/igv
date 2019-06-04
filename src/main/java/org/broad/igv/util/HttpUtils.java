@@ -152,6 +152,8 @@ public class HttpUtils {
             urlString = urlString.replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net");
         } else if (host.equals("www.broadinstitute.org")) {
             urlString = urlString.replace("www.broadinstitute.org/igvdata", "data.broadinstitute.org/igvdata");
+        } else if(host.equals("www.dropbox.com")) {
+            urlString = urlString.replace("//www.dropbox.com", "//dl.dropboxusercontent.com");
         }
 
         // data.broadinstitute.org requires https
@@ -815,7 +817,8 @@ public class HttpUtils {
 
             int code = conn.getResponseCode();
 
-            if (requestProperties != null && requestProperties.containsKey("Range") && code == 200 && method.equals("GET")) {
+            if (!isDropboxHost(url.getHost()) && requestProperties != null && requestProperties.containsKey("Range") && code == 200 && method.equals("GET")) {
+
                 log.error("Range header removed by client or ignored by server for url: " + url.toString());
 
                 if (!SwingUtilities.isEventDispatchThread()) {
@@ -879,6 +882,10 @@ public class HttpUtils {
             }
         }
         return conn;
+    }
+
+    private boolean isDropboxHost(String host) {
+        return(host.equals("dl.dropboxusercontent.com") || host.equals("www.dropbox.com"));
     }
 
     private URL addQueryParameter(URL url, String userProject, String projectID) {
