@@ -32,8 +32,8 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ga4gh.GoogleUtils;
-import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.google.GoogleUtils;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -48,7 +48,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -102,7 +101,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                         if (dlg.getIndexURL() != null) {
                             String indexUrl = dlg.getIndexURL().trim();
 
-                            if (OAuthUtils.isGoogleCloud(indexUrl)) {
+                            if (GoogleUtils.isGoogleCloud(indexUrl) || GoogleUtils.isGoogleDrive(indexUrl)) {
                                 enableGoogleMenu();
                             }
 
@@ -140,7 +139,7 @@ public class LoadFromURLMenuAction extends MenuAction {
 
         url = url.trim();
 
-        if (OAuthUtils.isGoogleCloud(url)) {
+        if (GoogleUtils.isGoogleCloud(url) || GoogleUtils.isGoogleDrive(url)) {
 
             enableGoogleMenu();
             // if user is not currently logged in, attempt to

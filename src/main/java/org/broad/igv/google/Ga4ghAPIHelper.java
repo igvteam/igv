@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ga4gh;
+package org.broad.igv.google;
 
 import com.google.gson.*;
 import org.apache.log4j.Logger;

@@ -30,7 +30,6 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.ga4gh.GoogleUtils;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.sam.cram.IGVReferenceSource;
@@ -38,7 +37,6 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.stream.IGVSeekableBufferedStream;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.*;

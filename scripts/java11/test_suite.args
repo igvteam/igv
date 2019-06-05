@@ -22,7 +22,7 @@
 --add-exports org.igv/org.broad.igv.feature.genome.fasta=junit
 --add-exports org.igv/org.broad.igv.feature.tribble=junit
 --add-exports org.igv/org.broad.igv.feature.tribble.reader=junit
---add-exports org.igv/org.broad.igv.ga4gh=junit
+--add-exports org.igv/org.broad.igv.google=junit
 --add-exports org.igv/org.broad.igv.gs=junit
 --add-exports org.igv/org.broad.igv.gs.dm=junit
 --add-exports org.igv/org.broad.igv.gs.atm=junit

@@ -23,49 +23,43 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ga4gh;
+package org.broad.igv.google;
 
 import java.util.List;
 
 /**
- * Created by jrobinso on 8/25/14.
+ * Created by jrobinso on 9/3/14.
  */
-public class Ga4ghProvider {
+public class Ga4ghDataset {
 
+    String id;
     String name;
-    String baseURL;
-    String apiKey;
-    List<Ga4ghDataset> datasets;
-    private Object id;
+    String genomeId;
+    List<Ga4ghReadset> readsets;
 
-    public Ga4ghProvider(String name, String baseURL, String apiKey, List<Ga4ghDataset> datasets) {
+    public Ga4ghDataset(String id, String name, String genomeId) {
+        this.id = id;
         this.name = name;
-        this.baseURL = baseURL;
-        this.apiKey = apiKey;
-        this.datasets = datasets;
+        this.genomeId = genomeId;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getBaseURL() {
-        return baseURL;
+    public String getGenomeId() {
+        return genomeId;
     }
 
-    public String getApiKey() {
-        return apiKey;
+    public List<Ga4ghReadset> getReadsets() {
+        return readsets;
     }
 
-    public List<Ga4ghDataset> getDatasets() {
-        return datasets;
-    }
-
-    public String toString() {
-        return name;
-    }
-
-    public Object getId() {
-        return id;
+    public void setReadsets(List<Ga4ghReadset> readsets) {
+        this.readsets = readsets;
     }
 }

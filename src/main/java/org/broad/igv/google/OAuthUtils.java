@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ga4gh;
+package org.broad.igv.google;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -81,8 +81,6 @@ public class OAuthUtils {
     private String refreshToken;
     private long expirationTime;
 
-    public static String GS_HOST = "www.googleapis.com";
-
     private static OAuthUtils theInstance;
     private String currentUserName;
 
@@ -117,7 +115,7 @@ public class OAuthUtils {
             tokenURI = obj.get("token_uri").getAsString();
             clientId = obj.get("client_id").getAsString();
         } else {
-            // Experimental -- this will change -- dwm08
+            // Custom oauth parameters.    -- dwm08
             JsonParser parser = new JsonParser();
             String json = FileUtils.getContents(oauthConfig);
             JsonObject obj = parser.parse(json).getAsJsonObject();
@@ -125,7 +123,7 @@ public class OAuthUtils {
             clientSecret = obj.get("client_secret").getAsString();
             tokenURI = obj.get("token_endpoint").getAsString();
             clientId = obj.get("client_id").getAsString();
-            GS_HOST = obj.get("hosts").getAsString();
+            GoogleUtils.GS_HOST = obj.get("hosts").getAsString();
             appIdURI = obj.get("app_id_uri").getAsString();
             authProvider = obj.get("auth_provider").getAsString();
             String scope = obj.get("scope").getAsString();
@@ -368,7 +366,6 @@ public class OAuthUtils {
         removeRefreshToken();
     }
 
-
     private void saveRefreshToken() {
         try {
             Preferences.userRoot().put(REFRESH_TOKEN_KEY, refreshToken);
@@ -376,7 +373,6 @@ public class OAuthUtils {
             log.error("Error storing refresh token", e);
         }
     }
-
 
     private void restoreRefreshToken() {
         try {
@@ -386,19 +382,12 @@ public class OAuthUtils {
         }
     }
 
-
     private void removeRefreshToken() {
         try {
             Preferences.userRoot().remove(REFRESH_TOKEN_KEY);
         } catch (Exception e) {
             log.error("Error removing oauth refresh token", e);
         }
-    }
-
-
-    // Doesn't really belong here....
-    public static boolean isGoogleCloud(String url) {
-        return url.startsWith("gs://") || url.contains(GS_HOST);
     }
 
     public void updateSaveOption(boolean aBoolean) {
@@ -486,7 +475,7 @@ public class OAuthUtils {
         Set<String> urlSet = findUrlsInSessionFile(sessionPath);
         if (urlSet.size() > 0) {
             for (String url : urlSet) {
-                if (isGoogleCloud(url)) {
+                if (GoogleUtils.isGoogleCloud(url)) {
 
                     doSecureLogin();
 

@@ -33,8 +33,8 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;
-import org.broad.igv.ga4gh.GoogleUtils;
-import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.google.GoogleUtils;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
@@ -138,7 +138,7 @@ public class HttpUtils {
         if (urlString.startsWith("gs://")) {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
         }
-        if (OAuthUtils.isGoogleCloud(urlString)) {
+        if (GoogleUtils.isGoogleCloud(urlString)) {
             if (urlString.indexOf("alt=media") < 0) {
                 urlString = urlString + (urlString.indexOf('?') > 0 ? "&" : "?") + "alt=media";
             }
@@ -154,6 +154,8 @@ public class HttpUtils {
             urlString = urlString.replace("www.broadinstitute.org/igvdata", "data.broadinstitute.org/igvdata");
         } else if(host.equals("www.dropbox.com")) {
             urlString = urlString.replace("//www.dropbox.com", "//dl.dropboxusercontent.com");
+        } else if(host.equals("drive.google.com")) {
+            urlString = GoogleUtils.driveDownloadURL(urlString);
         }
 
         // data.broadinstitute.org requires https
@@ -706,7 +708,7 @@ public class HttpUtils {
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
         // string to dynamically map url - dwm08
-        if (url.getHost().equals(OAuthUtils.GS_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
+        if (url.getHost().equals(GoogleUtils.GS_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
             url = HttpUtils.createURL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
         }
 
@@ -802,7 +804,7 @@ public class HttpUtils {
         }
         conn.setRequestProperty("User-Agent", Globals.applicationString());
 
-        if (url.getHost().equals(OAuthUtils.GS_HOST) || url.getHost().startsWith("igvweb02")) {
+        if (url.getHost().equals(GoogleUtils.GS_HOST) || url.getHost().startsWith("igvweb02")) {
             String token = OAuthUtils.getInstance().getAccessToken();
             if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
         }

@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ga4gh;
+package org.broad.igv.google;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -93,7 +93,7 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
 
     @Override
     public CloseableIterator<Alignment> iterator() {
-        throw new RuntimeException("Iterating over ga4gh datasets is not supported");
+        throw new RuntimeException("Iterating over google datasets is not supported");
     }
 
     /**

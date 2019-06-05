@@ -48,7 +48,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.*;
-import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferenceEditorNew;

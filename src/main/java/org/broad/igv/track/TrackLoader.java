@@ -60,10 +60,11 @@ import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
-import org.broad.igv.ga4gh.Ga4ghAPIHelper;
-import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.google.Ga4ghAPIHelper;
+import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
@@ -90,7 +91,6 @@ import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -119,6 +119,11 @@ public class TrackLoader {
     public List<Track> load(ResourceLocator locator, Genome genome) throws DataLoadException {
 
         final String path = locator.getPath().trim();
+
+        if(GoogleUtils.isGoogleDrive(path) || GoogleUtils.isGoogleCloud(path)) {
+            GoogleUtils.checkLogin();
+        }
+
         log.info("Loading resource, path " + path);
         try {
             String typeString = locator.getTypeString();
@@ -885,7 +890,7 @@ public class TrackLoader {
             // Skip for GA4GH & SU2C resources
             if (!(Ga4ghAPIHelper.RESOURCE_TYPE.equals(locator.getType()) ||
                     locator.getPath().contains("dataformat=.bam") ||
-                    OAuthUtils.isGoogleCloud(locator.getPath()))) {
+                    GoogleUtils.isGoogleCloud(locator.getPath()))) {
 
                 String covPath = locator.getCoverage();
                 if (covPath == null) {
