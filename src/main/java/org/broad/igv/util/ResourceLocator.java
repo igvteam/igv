@@ -128,7 +128,7 @@ public class ResourceLocator {
     public ResourceLocator(String path) {
         this.setPath(path);
 
-        if(path.startsWith("https://") && GoogleUtils.isGoogleDrive(path)) {
+        if(path != null && path.startsWith("https://") && GoogleUtils.isGoogleDrive(path)) {
             this.resolveGoogleDrive(path);
         }
 
