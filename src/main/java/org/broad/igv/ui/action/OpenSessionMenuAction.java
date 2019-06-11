@@ -86,25 +86,6 @@ public class OpenSessionMenuAction extends MenuAction {
     }
 
     final public void doRestoreSession() {
-
-        // If anything has been loaded warn the users.  Popping up the
-        // warning all the time will get annoying.
-        if (IGV.getInstance().getAllTracks().size() > 0) {
-            int status =
-                    JOptionPane.showConfirmDialog(
-                            mainFrame.getMainFrame(),
-                            UIConstants.OVERWRITE_SESSION_MESSAGE,
-                            null,
-                            JOptionPane.OK_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null);
-
-            if (status == JOptionPane.CANCEL_OPTION ||
-                    status == JOptionPane.CLOSED_OPTION) {
-                return;
-            }
-        }
-
         if (sessionFile != null) {
             if (FileUtils.isRemote(sessionFile)) {
                 boolean merge = false;
