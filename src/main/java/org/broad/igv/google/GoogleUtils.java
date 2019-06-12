@@ -29,17 +29,27 @@ public class GoogleUtils {
     public static final String GOOGLE_API_HOST = "www.googleapis.com";
     public static final String GOOGLE_DRIVE_HOST = "drive.google.com";
 
+    public static boolean isGoogleURL(String url) {
+        return url != null && (isGoogleCloud(url) || isGoogleDrive(url) || isGoogleStorageURL(url));
+    }
+
     public static boolean isGoogleCloud(String url) {
-        return url.startsWith("gs://") || url.contains(GS_HOST);
+        return url != null && (url.startsWith("gs://") || url.contains(GS_HOST));
     }
 
     public static boolean isGoogleDrive(String url) {
-        return url.contains("drive.google.com") || url.contains("www.googleapis.com/drive");
+        return url != null && (url.contains(GOOGLE_DRIVE_HOST) || url.contains("www.googleapis.com/drive"));
+    }
+
+    public static boolean isGoogleStorageURL(String url) {
+        return url != null &&
+                (url.startsWith("https://www.googleapis.com/storage") ||
+                        url.startsWith("https://storage.cloud.google.com"));
     }
 
     public static void checkLogin() {
         try {
-            if(!OAuthUtils.getInstance().isLoggedIn()) {
+            if (!OAuthUtils.getInstance().isLoggedIn()) {
                 OAuthUtils.getInstance().doSecureLogin();
             }
         } catch (IOException e) {
@@ -154,7 +164,7 @@ public class GoogleUtils {
     }
 
 
-    public static void main(String [] args) throws IOException, URISyntaxException {
+    public static void main(String[] args) throws IOException, URISyntaxException {
 
         String fileUrl = "https://drive.google.com/file/d/1Q4uEV2tv0aIyIvGqvwnOpBdmqVeFAPIw/view?usp=sharing";
 

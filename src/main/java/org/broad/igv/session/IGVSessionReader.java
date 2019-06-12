@@ -33,6 +33,7 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.renderer.ColorScale;
@@ -503,10 +504,10 @@ public class IGVSessionReader implements SessionReader {
 
                 String path = locator.getPath();
                 boolean isAlignment = path != null && (path.endsWith(".bam") || path.endsWith(".entries") || path.endsWith(".sam"));
-    //GooglUtils
+                boolean isGoogle = GoogleUtils.isGoogleURL(path);
 
                 // Run synchronously if in batch mode or if there are no "track" elments, or if this is an alignment file
-                if (isAlignment || Globals.isBatch() || !hasTrackElments) {
+                if (isAlignment || isGoogle || Globals.isBatch() || !hasTrackElments) {
                     synchronousLoads.add(runnable);
                 } else {
                     Thread t = new Thread(runnable);
