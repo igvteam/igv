@@ -49,7 +49,9 @@ public class MenuAction extends AbstractAction {
      */
     public MenuAction(String name, Icon icon, int mnemonic) {
         super(name, icon);
-        putValue(MNEMONIC_KEY, new Integer(mnemonic));
+        if(mnemonic >= 0) {
+            putValue(MNEMONIC_KEY, new Integer(mnemonic));
+        }
     }
 
     public MenuAction(String name, Icon icon) {

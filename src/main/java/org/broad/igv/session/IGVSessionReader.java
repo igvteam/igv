@@ -32,7 +32,6 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
@@ -44,6 +43,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
@@ -501,9 +501,9 @@ public class IGVSessionReader implements SessionReader {
                     }
                 };
 
-                boolean isAlignment = locator.getPath().endsWith(".bam") || locator.getPath().endsWith(".entries") ||
-                        locator.getPath().endsWith(".sam");
-
+                String path = locator.getPath();
+                boolean isAlignment = path != null && (path.endsWith(".bam") || path.endsWith(".entries") || path.endsWith(".sam"));
+    //GooglUtils
 
                 // Run synchronously if in batch mode or if there are no "track" elments, or if this is an alignment file
                 if (isAlignment || Globals.isBatch() || !hasTrackElments) {
@@ -583,13 +583,7 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        if (rootPath == null) {
-            log.error("Null root path -- this is not expected");
-            MessageUtils.showMessage("Unexpected error loading session: null root path");
-            return;
-        }
-
-        String absolutePath = "ga4gh".equals(type) ? path : FileUtils.getAbsolutePath(path, rootPath);
+        String absolutePath = (rootPath == null || "ga4gh".equals(type)) ? path : FileUtils.getAbsolutePath(path, rootPath);
 
         fullToRelPathMap.put(absolutePath, path);
 

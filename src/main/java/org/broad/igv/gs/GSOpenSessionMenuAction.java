@@ -56,7 +56,7 @@ public class GSOpenSessionMenuAction extends MenuAction {
     public GSOpenSessionMenuAction(String label, IGV mainFrame) {
         super(label);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.RESTORE_SESSION_TOOLTIP);
+        setToolTipText(UIConstants.OPEN_SESSION_TOOLTIP);
     }
 
     @Override

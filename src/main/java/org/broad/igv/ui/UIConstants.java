@@ -53,7 +53,8 @@ public class UIConstants {
     static final public String SAVE_IMAGE_TOOLTIP = "Capture and save an image";
     static final public String NEW_SESSION_TOOLTIP = "Create a new session";
     static final public String SAVE_SESSION_TOOLTIP = "Save the current session";
-    static final public String RESTORE_SESSION_TOOLTIP = "Reload the session";
+    static final public String OPEN_SESSION_TOOLTIP = "Load a session";
+    static final public String RELOAD_SESSION_TOOLTIP = "Reload the current session";
     static final public String EXIT_TOOLTIP = "Exit the application";
     static final public String IMPORT_GENOME_TOOLTIP = "Create a .genome file";
     static final public String REMOVE_IMPORTED_GENOME_TOOLTIP = "Removes user-defined genomes from the drop-down list";

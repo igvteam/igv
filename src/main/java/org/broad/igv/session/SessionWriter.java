@@ -106,6 +106,8 @@ public class SessionWriter {
 
         String xmlString = null;
 
+        this.session = session;
+
         try {
 
             // Create a DOM document
@@ -145,8 +147,9 @@ public class SessionWriter {
             globalElement.setAttribute(SessionAttribute.HAS_GENE_TRACK, "" + IGV.getInstance().hasGeneTrack());
             globalElement.setAttribute(SessionAttribute.HAS_SEQ_TRACK, "" + IGV.getInstance().hasSequenceTrack());
 
-            globalElement.setAttribute("path", outputFile.getAbsolutePath());
-
+            if(outputFile != null) {
+                globalElement.setAttribute("path", outputFile.getAbsolutePath());
+            }
 
             // Resource Files
             writeResources(outputFile, globalElement, document);
@@ -314,15 +317,14 @@ public class SessionWriter {
                     //RESOURCE ELEMENT
                     Element dataFileElement = document.createElement(SessionElement.RESOURCE);
 
-                    //REQUIRED ATTRIBUTES - Cannot be null
-
-                    boolean useRelative = PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
-
-                    String relativePath = useRelative ?
-                            FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourceLocator.getPath()) :
-                            resourceLocator.getPath();
-
-                    dataFileElement.setAttribute(SessionAttribute.PATH, relativePath);
+                    String resourcePath = resourceLocator.getPath();
+                    if(outputFile != null) {
+                        boolean useRelative = PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
+                        if(useRelative) {
+                            resourcePath = FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourcePath);
+                        }
+                    }
+                    dataFileElement.setAttribute(SessionAttribute.PATH, resourcePath);
 
                     //OPTIONAL ATTRIBUTES
 
