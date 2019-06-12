@@ -464,8 +464,6 @@ public class IGVSessionReader implements SessionReader {
 
             for (final ResourceLocator locator : dataFiles) {
 
-                final String suppliedPath = locator.getPath();
-
                 Runnable runnable = () -> {
 
                     List<Track> tracks = null;

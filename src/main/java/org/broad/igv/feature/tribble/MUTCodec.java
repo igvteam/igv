@@ -25,6 +25,10 @@
 
 package org.broad.igv.feature.tribble;
 
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.LineIterator;
+import htsjdk.tribble.readers.LineIteratorImpl;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
@@ -33,10 +37,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.MultiMap;
-import htsjdk.tribble.AsciiFeatureCodec;
-import htsjdk.tribble.readers.AsciiLineReader;
-import htsjdk.tribble.readers.LineIterator;
-import htsjdk.tribble.readers.LineIteratorImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,8 +45,8 @@ import java.io.IOException;
  * Codec for .mut and .maf mutation files
  *
  * @author jrobinso
- *         Date: 10/24/12
- *         Time: 12:05 PM
+ * Date: 10/24/12
+ * Time: 12:05 PM
  */
 public class MUTCodec extends AsciiFeatureCodec<Mutation> {
 
@@ -60,11 +60,11 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
     private int chrColumn;
     private int startColumn;
     private int endColumn;
-    private int sampleColumn;
-    private int typeColumn;
-    private int refAlleleColumn;
-    private int tumorAllele1Column;
-    private int tumorAllele2Column;
+    private int sampleColumn = -1;
+    private int typeColumn = -1;
+    private int refAlleleColumn = -1;
+    private int tumorAllele1Column = -1;
+    private int tumorAllele2Column = -1;
     private int errorCount = 0;
 
 
@@ -105,8 +105,8 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
             if (tokens.length >= 5) {
                 reader.next();
                 headers = tokens;
-                isMAF = headers.length >= 16 && headers[0].equalsIgnoreCase("Hugo_Symbol");
-                setColumns(isMAF);
+                isMAF = headers[0].equalsIgnoreCase("Hugo_Symbol");
+                setColumns(isMAF, tokens);
                 return null;
             } else {
                 throw new RuntimeException(String.format("Not enough columns in header line found in %s: %s", path, nextLine));
@@ -145,10 +145,9 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                 start = Integer.parseInt(tokens[startColumn].trim());
             } catch (NumberFormatException e) {
                 errorCount++;
-                if(errorCount > 100) {
+                if (errorCount > 100) {
                     throw new DataLoadException("Column " + (startColumn + 1) + " must be a numeric value.", path);
-                }
-                else {
+                } else {
                     log.info("Error parsing line: " + line);
                     return null;
                 }
@@ -159,10 +158,9 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                 end = Integer.parseInt(tokens[endColumn].trim());
             } catch (NumberFormatException e) {
                 errorCount++;
-                if(errorCount > 100) {
+                if (errorCount > 100) {
                     throw new DataLoadException("Column " + (endColumn + 1) + " must be a numeric value.", path);
-                }
-                else {
+                } else {
                     log.info("Error parsing line: " + line);
                     return null;
                 }
@@ -207,19 +205,91 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
         }
     }
 
+/*
+TCGA
+-----
+Hugo_Symbol
+Entrez_Gene_Id
+Center
+NCBI_Build
+Chromosome
+Start_position
+End_position
+Strand
+Variant_Classification
+Variant_Type
+Reference_Allele
+Tumor_Seq_Allele1
+Tumor_Seq_Allele2
+dbSNP_RS
+dbSNP_Val_Status
+Tumor_Sample_Barcode
+Matched_Norm_Sample_Barcode
+Match_Norm_Seq_Allele1
+Match_Norm_Seq_Allele2
+Tumor_Validation_Allele1
+Tumor_Validation_Alliele2
+Match_Norm_Validation_Allele1
+Match_Norm_Validation_Allele2
+Verification_Status
+Validation_Status
+Mutation_Status	Sequencing_Phase
 
-    private void setColumns(boolean isMAF) {
+BROAD
+-----
+Hugo_Symbol
+Entrez_Gene_Id
+Chromosome
+Start_position
+End_position
+Variant_Classification
+Variant_Type
+Reference_Allele
+Tumor_Seq_Allele1
+Tumor_Seq_Allele2
+dbSNP_RS
+dbSNP_Val_Status
+Tumor_Sample_Barcode
+Matched_Norm_Sample_Barcode
+n_ref_count
+t_ref_count
+n_alt_count
+t_alt_count
+
+ */
+
+    private void setColumns(boolean isMAF, String[] tokens) {
 
         this.isMAF = isMAF;
         if (isMAF) {
-            chrColumn = 4;
-            startColumn = 5;
-            endColumn = 6;
-            sampleColumn = 15;
-            typeColumn = 8;
-            refAlleleColumn = 10;
-            tumorAllele1Column = 11;
-            tumorAllele2Column = 12;
+            for (int i = 0; i < tokens.length; i++) {
+                switch (tokens[i].toLowerCase()) {
+                    case "chromosome":
+                        chrColumn = i;
+                        break;
+                    case "start_position":
+                        startColumn = i;
+                        break;
+                    case "end_position":
+                        endColumn = i;
+                        break;
+                    case "tumor_sample_barcode":
+                        sampleColumn = i;          // Tumor_Sample_Barcode
+                        break;
+                    case "variant_classification":
+                        typeColumn = i;
+                        break;
+                    case "reference_allele":
+                        refAlleleColumn = i;
+                        break;
+                    case "tumor_seq_allele1":
+                        tumorAllele1Column = i;
+                        break;
+                    case "tumor_seq_allele2":
+                        tumorAllele2Column = i;
+                        break;
+                }
+            }
         } else {
             chrColumn = 0;
             startColumn = 1;
