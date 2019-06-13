@@ -373,6 +373,11 @@ Match_Norm_Seq_Allele2
 
             BufferedReader reader = null;
             String path = locator.getPath();
+
+            if(path == null) {
+                return false;
+            }
+
             try {
                 reader = ParsingUtils.openBufferedReader(path);
                 if (reader == null) {
@@ -395,7 +400,6 @@ Match_Norm_Seq_Allele2
                     return false;
                 }
             } catch (IOException e) {
-                log.error("Error reading: " + path, e);
                 return false;
             } finally {
                 if (reader != null) {

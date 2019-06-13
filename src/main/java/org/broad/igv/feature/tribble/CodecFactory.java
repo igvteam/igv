@@ -115,9 +115,7 @@ public class CodecFactory {
             return new GFFCodec(GFFCodec.Version.GTF, genome);
         } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
             return new PSLCodec(genome);
-        } else if (MUTCodec.isMutationAnnotationFile(locator)) {
-            return new MUTCodec(path, genome);
-        } else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
+        }  else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".snp") || fn.endsWith(".ucscsnp")) {
             return new UCSCSnpCodec(genome);
@@ -133,7 +131,9 @@ public class CodecFactory {
             return new PAFCodec(path, genome);
         } else if (fn.endsWith(".interval_list")) {
             return new IntervalListCodec(genome);
-        } else if (fn.contains("refflat")) {
+        } else if (MUTCodec.isMutationAnnotationFile(locator)) {
+            return new MUTCodec(path, genome);
+        }else if (fn.contains("refflat")) {
             return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.REFFLAT, genome);
         } else if (fn.contains("genepred") || fn.contains("ensgene") || fn.contains("refgene")) {
             return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED, genome);
