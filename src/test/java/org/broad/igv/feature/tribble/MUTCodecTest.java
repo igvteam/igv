@@ -109,4 +109,29 @@ public class MUTCodecTest extends AbstractHeadlessTest {
         }
     }
 
+    @Test
+    public void testMafLite() throws Exception {
+        String path = TestUtils.DATA_DIR + "maf/test.maflite.tsv";
+        assertTrue(MUTCodec.isMutationAnnotationFile(new ResourceLocator(path)));
+
+        MUTCodec codec = new MUTCodec(path, genome);
+
+        BufferedReader bufferedReader = null;
+        try {
+            bufferedReader = new BufferedReader(new FileReader(path));
+            String nextLine;
+            ArrayList<Mutation> mutations = new ArrayList<>();
+            while ((nextLine = bufferedReader.readLine()) != null) {
+
+                Mutation mut = codec.decode(nextLine);
+                if (mut != null) {
+                    mutations.add(mut);
+                }
+            }
+            assertEquals(29, mutations.size());
+        } finally {
+            bufferedReader.close();
+        }
+    }
+
 }

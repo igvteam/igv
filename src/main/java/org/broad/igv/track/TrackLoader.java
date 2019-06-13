@@ -60,11 +60,10 @@ import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
-import org.broad.igv.google.Ga4ghAPIHelper;
-import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
-import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.google.Ga4ghAPIHelper;
+import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
@@ -73,7 +72,9 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.renderer.*;
+import org.broad.igv.renderer.HeatmapRenderer;
+import org.broad.igv.renderer.MutationRenderer;
+import org.broad.igv.renderer.PointsRenderer;
 import org.broad.igv.sam.*;
 import org.broad.igv.sam.reader.IndexNotFoundException;
 import org.broad.igv.tdf.TDFDataSource;
@@ -120,7 +121,7 @@ public class TrackLoader {
 
         final String path = locator.getPath().trim();
 
-        if(GoogleUtils.isGoogleDrive(path) || GoogleUtils.isGoogleCloud(path)) {
+        if (GoogleUtils.isGoogleDrive(path) || GoogleUtils.isGoogleCloud(path)) {
             GoogleUtils.checkLogin();
         }
 
@@ -181,15 +182,9 @@ public class TrackLoader {
                 loadGobyCountsArchive(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".maf")) {
-                if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
-                    loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
-                } else {
-                    loadMultipleAlignmentTrack(locator, newTracks, genome);
-                }
             } else if (typeString.endsWith(".maf.dict")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-            }  else if (typeString.endsWith("mage-tab") || ExpressionFileParser.parsableMAGE_TAB(locator)) {
+            } else if (typeString.endsWith("mage-tab") || ExpressionFileParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".db") || typeString.endsWith(".dbn")) {
@@ -217,6 +212,10 @@ public class TrackLoader {
                 loadClusterFile(locator, newTracks, genome);
             } else if (CodecFactory.hasCodec(locator, genome) && !forceNotTribble(typeString)) {
                 loadTribbleFile(locator, newTracks, genome);
+            } else if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
+                loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
+            } else if (typeString.endsWith(".maf")) {
+                loadMultipleAlignmentTrack(locator, newTracks, genome);
             } else if (AttributeManager.isSampleInfoFile(locator)) {
                 // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
@@ -224,27 +223,29 @@ public class TrackLoader {
                 MessageUtils.showMessage("<html>Unknown file type: " + path + "<br>Check file extension");
             }
 
+
             // Track line
-            TrackProperties tp = null;
-            String trackLine = locator.getTrackLine();
-            if (trackLine != null) {
-                tp = new TrackProperties();
-                ParsingUtils.parseTrackLine(trackLine, tp);
-            }
+            if (newTracks.size() > 0) {
+                TrackProperties tp = null;
+                String trackLine = locator.getTrackLine();
+                if (trackLine != null) {
+                    tp = new TrackProperties();
+                    ParsingUtils.parseTrackLine(trackLine, tp);
+                }
 
-            for (Track track : newTracks) {
-
-                if (locator.getFeatureInfoURL() != null) {
-                    track.setUrl(locator.getFeatureInfoURL());
-                }
-                if (tp != null) {
-                    track.setProperties(tp);
-                }
-                if (locator.getColor() != null) {
-                    track.setColor(locator.getColor());
-                }
-                if (locator.getSampleId() != null) {
-                    track.setSampleId(locator.getSampleId());
+                for (Track track : newTracks) {
+                    if (locator.getFeatureInfoURL() != null) {
+                        track.setUrl(locator.getFeatureInfoURL());
+                    }
+                    if (tp != null) {
+                        track.setProperties(tp);
+                    }
+                    if (locator.getColor() != null) {
+                        track.setColor(locator.getColor());
+                    }
+                    if (locator.getSampleId() != null) {
+                        track.setSampleId(locator.getSampleId());
+                    }
                 }
             }
 
@@ -262,7 +263,7 @@ public class TrackLoader {
         return typeString.endsWith(".sam") || typeString.endsWith(".bam") || typeString.endsWith(".cram") ||
                 typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
                 typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
-                typeString.endsWith(".bai") || typeString.endsWith(".csi") ||typeString.equals("alist") ||
+                typeString.endsWith(".bai") || typeString.endsWith(".csi") || typeString.equals("alist") ||
                 typeString.equals(Ga4ghAPIHelper.RESOURCE_TYPE);
     }
 
@@ -847,7 +848,7 @@ public class TrackLoader {
 
             // If the user tried to load the index,  look for the file (this is a common mistake)
             if (locator.getTypeString().endsWith(".sai") ||
-                    locator.getTypeString().endsWith(".bai")||
+                    locator.getTypeString().endsWith(".bai") ||
                     locator.getTypeString().endsWith(".csi")) {
                 MessageUtils.showMessage("<html><b>ERROR:</b> Loading SAM/BAM index files are not supported:  " + locator.getPath() +
                         "<br>Load the SAM or BAM file directly. ");

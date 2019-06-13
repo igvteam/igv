@@ -26,21 +26,20 @@
 package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.track.*;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Parses a mutation file, such as ".mut" or ".maf" (mutation annotation file)
@@ -151,5 +150,6 @@ public class MutationTrackLoader {
             reader.close();
         }
     }
+
 
 }

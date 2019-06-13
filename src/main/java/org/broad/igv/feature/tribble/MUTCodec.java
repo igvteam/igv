@@ -40,6 +40,8 @@ import org.broad.igv.util.collections.MultiMap;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * Codec for .mut and .maf mutation files
@@ -105,7 +107,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
             if (tokens.length >= 5) {
                 reader.next();
                 headers = tokens;
-                isMAF = headers[0].equalsIgnoreCase("Hugo_Symbol");
+                isMAF = headers[0].trim().equalsIgnoreCase("Hugo_Symbol") || isMafLiteFile(headers);
                 setColumns(isMAF, tokens);
                 return null;
             } else {
@@ -174,8 +176,15 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                 start--;
             }
 
-            String sampleId = tokens[sampleColumn].trim();
-            String type = tokens[typeColumn].trim();
+            String sampleId = "Unknown";
+            if(sampleColumn >= 0) {
+                sampleId = tokens[sampleColumn].trim();
+            }
+            String type = "Unknown";
+            if(typeColumn >= 0) {
+                type =
+                        tokens[typeColumn].trim();
+            }
 
             MultiMap<String, String> attributes = new MultiMap();
             int n = Math.min(headers.length, tokens.length);
@@ -256,6 +265,37 @@ t_ref_count
 n_alt_count
 t_alt_count
 
+MAFLITE
+-------
+build
+chr
+start
+end
+ref_allele
+alt_allele
+
+
+tumor_barcode
+normal_barcode
+NCBI_Build
+Strand
+Center
+source
+status
+phase
+sequencer
+Tumor_Validation_Allele1
+Tumor_Validation_Allele2
+Match_Norm_Validation_Allele1
+Match_Norm_Validation_Allele2
+Verification_Status
+Validation_Status
+Validation_Method
+Score
+BAM_file
+Match_Norm_Seq_Allele1
+Match_Norm_Seq_Allele2
+
  */
 
     private void setColumns(boolean isMAF, String[] tokens) {
@@ -265,24 +305,30 @@ t_alt_count
             for (int i = 0; i < tokens.length; i++) {
                 switch (tokens[i].toLowerCase()) {
                     case "chromosome":
+                    case "chr":
                         chrColumn = i;
                         break;
                     case "start_position":
+                    case "start":
                         startColumn = i;
                         break;
                     case "end_position":
+                    case "end":
                         endColumn = i;
                         break;
                     case "tumor_sample_barcode":
+                    case "tumor_barcode":
                         sampleColumn = i;          // Tumor_Sample_Barcode
                         break;
                     case "variant_classification":
                         typeColumn = i;
                         break;
                     case "reference_allele":
+                    case "ref_allele":
                         refAlleleColumn = i;
                         break;
                     case "tumor_seq_allele1":
+                    case "alt_allele":
                         tumorAllele1Column = i;
                         break;
                     case "tumor_seq_allele2":
@@ -320,9 +366,10 @@ t_alt_count
 
             ext = ParsingUtils.getIGVExtension(typeStringLC);
         }
+
         if (ext.equals("mut")) {
             return true;
-        } else if (ext.equals("maf")) {
+        } else  {
 
             BufferedReader reader = null;
             String path = locator.getPath();
@@ -339,8 +386,14 @@ t_alt_count
                     }
                 }
 
-                String[] tokens = nextLine.split("\t");
-                return tokens.length > 15 && tokens[0].equalsIgnoreCase("Hugo_Symbol");
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                if (tokens.length > 5 && tokens[0].equalsIgnoreCase("Hugo_Symbol")) {
+                    return true;
+                } else if (isMafLiteFile(tokens)) {
+                    return true;
+                } else {
+                    return false;
+                }
             } catch (IOException e) {
                 log.error("Error reading: " + path, e);
                 return false;
@@ -353,11 +406,19 @@ t_alt_count
                     }
                 }
             }
-        } else {
-            return false;
         }
+    }
 
 
+    public static boolean isMafLiteFile(String[] tokens) {
+        HashSet<String> tokenSet = new HashSet(Arrays.asList(tokens));
+        String[] requiredFields = {"build", "chr", "start", "end", "ref_allele", "alt_allele"};
+        for (String f : requiredFields) {
+            if (!tokenSet.contains(f)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
