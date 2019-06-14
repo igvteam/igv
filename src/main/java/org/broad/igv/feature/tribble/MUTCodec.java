@@ -427,8 +427,6 @@ Match_Norm_Seq_Allele2
 
     @Override
     public boolean canDecode(String path) {
-        String fn = path.toLowerCase();
-        if (fn.endsWith(".gz")) fn = fn.substring(0, fn.length() - 3);
-        return fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak");
+       return isMutationAnnotationFile(new ResourceLocator(path));
     }
 }

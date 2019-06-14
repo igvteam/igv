@@ -213,7 +213,7 @@ public class TrackLoader {
             } else if (CodecFactory.hasCodec(locator, genome) && !forceNotTribble(typeString)) {
                 loadTribbleFile(locator, newTracks, genome);
             } else if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
-                loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
+                loadMutFile(locator, newTracks, genome); // Must be tried before ".maf" test below
             } else if (typeString.endsWith(".maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
             } else if (AttributeManager.isSampleInfoFile(locator)) {
