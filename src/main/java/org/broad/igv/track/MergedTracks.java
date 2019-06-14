@@ -25,7 +25,6 @@
 
 package org.broad.igv.track;
 
-import jdk.nashorn.internal.scripts.JO;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
