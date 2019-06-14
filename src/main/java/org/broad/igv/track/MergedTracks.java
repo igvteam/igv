@@ -57,6 +57,8 @@ import java.util.List;
 
 public class MergedTracks extends DataTrack implements ScalableTrack {
 
+    private static double DEFAULT_ALPHA = 0.5;
+
     private Collection<DataTrack> memberTracks;
     private double alpha;
 
@@ -65,11 +67,11 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         super(null, id, name);
         initTrackList(inputTracks);
         this.autoScale = this.getAutoScale();
-        setTrackAlphas(0.5);
+        setTrackAlphas(DEFAULT_ALPHA);
     }
 
     public MergedTracks() {
-
+        this.alpha = DEFAULT_ALPHA;
     }
 
     public void setMemberTracks(Collection<DataTrack> inputTracks) {
@@ -97,6 +99,8 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
                 this.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, group);
             }
         }
+
+        setTrackAlphas(alpha);
     }
 
     @Override
@@ -130,10 +134,12 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
     public void setTrackAlphas(double alpha) {
         this.alpha = alpha;
-        int iAlpha = (int) Math.floor(alpha * 255);
-        for (Track track : memberTracks) {
-            track.setColor(ColorUtilities.modifyAlpha(track.getColor(), iAlpha));
-            track.setAltColor(ColorUtilities.modifyAlpha(track.getAltColor(), iAlpha));
+        if (memberTracks != null) {
+            int iAlpha = (int) Math.floor(alpha * 255);
+            for (Track track : memberTracks) {
+                track.setColor(ColorUtilities.modifyAlpha(track.getColor(), iAlpha));
+                track.setAltColor(ColorUtilities.modifyAlpha(track.getAltColor(), iAlpha));
+            }
         }
     }
 
@@ -351,6 +357,10 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
         super.marshalXML(document, element);
 
+        if (alpha != DEFAULT_ALPHA) {
+            element.setAttribute("alpha", String.valueOf(alpha));
+        }
+
         for (DataTrack track : memberTracks) {
             Element trackElement = document.createElement(SessionElement.TRACK);
             track.marshalXML(document, trackElement);
@@ -364,6 +374,9 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
         super.unmarshalXML(element, version);
 
+        if (element.hasAttribute("alpha")) {
+            this.alpha = Double.valueOf(element.getAttribute("alpha"));
+        }
         // Un-marshalling handled in IGVSessionReader
 
     }
@@ -437,9 +450,9 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     }
 
 
-    public JDialog getAlphaDialog () {
+    public JDialog getAlphaDialog() {
 
-       ChangeListener changeListener = new ChangeListener() {
+        ChangeListener changeListener = new ChangeListener() {
             public void stateChanged(ChangeEvent changeEvent) {
                 JSlider theSlider = (JSlider) changeEvent.getSource();
                 double alpha = theSlider.getValue() / 100.0;
