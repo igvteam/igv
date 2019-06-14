@@ -12,5 +12,5 @@ else
 fi
 
 java -showversion --module-path=$prefix/lib -Xmx1500m \
-    @igv.args \
+    @${prefix}/igv.args \
     --module=org.igv/org.broad.igv.tools.IgvTools  gui

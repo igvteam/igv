@@ -11,5 +11,5 @@ else
 fi
 
 java -showversion -Djava.awt.headless=true --module-path="${prefix}/lib" -Xmx1500m \
-    @igv.args \
+    @${prefix}/igv.args \
     --module=org.igv/org.broad.igv.tools.IgvTools  "$@"
