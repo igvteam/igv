@@ -54,7 +54,6 @@ public class VariantMenu extends IGVPopupMenu {
     static boolean sampleSortingDirection;
     static boolean qualitySortingDirection;
 
-    static boolean hasReviewTrack = false;
 
     public VariantMenu(final VariantTrack variantTrack, final Variant variant) {
         super();
@@ -92,7 +91,6 @@ public class VariantMenu extends IGVPopupMenu {
             add(getColorByMethylationRate());
         }
 
-        //add(getRenderIDItem());
 
         //Sorter
         addSeparator();
@@ -116,15 +114,12 @@ public class VariantMenu extends IGVPopupMenu {
 
         addSeparator();
         JMenuItem item = new JMenuItem("Change Squished Row Height...");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                int currentValue = track.getSquishedHeight();
-                Integer newValue = TrackMenuUtils.getIntegerInput("Squished row height", currentValue);
-                if (newValue != null) {
-                    track.setSquishedHeight(newValue);
-                    IGV.getInstance().getContentPane().repaint();
-                }
+        item.addActionListener(evt -> {
+            int currentValue = track.getSquishedHeight();
+            Integer newValue = TrackMenuUtils.getIntegerInput("Squished row height", currentValue);
+            if (newValue != null) {
+                track.setSquishedHeight(newValue);
+                IGV.getInstance().getContentPane().repaint();
             }
         });
         add(item);
@@ -141,11 +136,9 @@ public class VariantMenu extends IGVPopupMenu {
 
     private JMenuItem getFeatureVisibilityItem() {
         JMenuItem item = new JMenuItem("Set Feature Visibility Window...");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                changeVisibilityWindow();
-                IGV.getInstance().getContentPane().repaint();
-            }
+        item.addActionListener(evt -> {
+            changeVisibilityWindow();
+            IGV.getInstance().getContentPane().repaint();
         });
         return item;
     }
@@ -153,11 +146,9 @@ public class VariantMenu extends IGVPopupMenu {
 
     private JMenuItem getColorBandByAllelFrequency() {
         final JMenuItem item = new JCheckBoxMenuItem("Allele Frequency", track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FREQUENCY);
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FREQUENCY);
-                IGV.getInstance().getContentPane().repaint();
-            }
+        item.addActionListener(evt -> {
+            track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FREQUENCY);
+            IGV.getInstance().getContentPane().repaint();
         });
         return item;
     }
@@ -165,11 +156,9 @@ public class VariantMenu extends IGVPopupMenu {
 
     private JMenuItem getColorBandByAlleleFraction() {
         final JMenuItem item = new JCheckBoxMenuItem("Allele Fraction", track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FRACTION);
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FRACTION);
-                IGV.getInstance().getContentPane().repaint();
-            }
+        item.addActionListener(evt -> {
+            track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FRACTION);
+            IGV.getInstance().getContentPane().repaint();
         });
         return item;
     }
@@ -177,34 +166,28 @@ public class VariantMenu extends IGVPopupMenu {
 
     private JMenuItem getColorByGenotype() {
         final JMenuItem item = new JCheckBoxMenuItem("Genotype", track.getColorMode() == VariantTrack.ColorMode.GENOTYPE);
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                track.setColorMode(VariantTrack.ColorMode.GENOTYPE);
-                IGV.getInstance().getContentPane().repaint();
-            }
+        item.addActionListener(evt -> {
+            track.setColorMode(VariantTrack.ColorMode.GENOTYPE);
+            IGV.getInstance().getContentPane().repaint();
         });
         return item;
     }
 
     private JMenuItem getColorByMethylationRate() {
         final JMenuItem item = new JCheckBoxMenuItem("Methylation Rate", track.getColorMode() == VariantTrack.ColorMode.METHYLATION_RATE);
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                track.setColorMode(VariantTrack.ColorMode.METHYLATION_RATE);
-                IGV.getInstance().getContentPane().repaint();
-            }
+        item.addActionListener(evt -> {
+            track.setColorMode(VariantTrack.ColorMode.METHYLATION_RATE);
+            IGV.getInstance().getContentPane().repaint();
         });
         return item;
     }
 
 
     private JMenuItem getHideFilteredItem() {
-        JMenuItem item = new JCheckBoxMenuItem("Suppress Filtered Sites", track.getHideFiltered());
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                track.setHideFiltered(!track.getHideFiltered());
-                IGV.getInstance().getContentPane().repaint();
-            }
+        JMenuItem item = new JCheckBoxMenuItem("Hide Filtered Sites", track.getHideFiltered());
+        item.addActionListener(evt -> {
+            track.setHideFiltered(!track.getHideFiltered());
+            IGV.getInstance().getContentPane().repaint();
         });
         return item;
     }
@@ -214,13 +197,11 @@ public class VariantMenu extends IGVPopupMenu {
 
         JMenuItem item = new JMenuItem("Sort By Genotype");
         if (variant != null) {
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    GenotypeComparator compare = new GenotypeComparator(variant);
-                    genotypeSortingDirection = !genotypeSortingDirection;
-                    track.sortSamples(compare);
-                    IGV.getInstance().getContentPane().repaint();
-                }
+            item.addActionListener(evt -> {
+                GenotypeComparator compare = new GenotypeComparator(variant);
+                genotypeSortingDirection = !genotypeSortingDirection;
+                track.sortSamples(compare);
+                IGV.getInstance().getContentPane().repaint();
             });
         }
 
@@ -230,11 +211,7 @@ public class VariantMenu extends IGVPopupMenu {
     public JMenuItem getGenotypeGroupItem() {
 
         JMenuItem item = new JMenuItem("Group By...");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                (new GroupTracksMenuAction("", 0, IGV.getInstance())).doGroupBy();
-            }
-        });
+        item.addActionListener(evt -> (new GroupTracksMenuAction("", 0, IGV.getInstance())).doGroupBy());
         item.setEnabled(AttributeManager.getInstance().getVisibleAttributes().size() > 0);
 
         return item;
@@ -243,21 +220,19 @@ public class VariantMenu extends IGVPopupMenu {
     public JMenuItem getSampleNameSortItem(final Variant variant) {
         JMenuItem item = new JMenuItem("Sort By Sample Name");
         if (variant != null) {
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    Comparator<String> compare = new Comparator<String>() {
-                        public int compare(String o, String o1) {
-                            if (sampleSortingDirection) {
-                                return o.compareTo(o1);
-                            } else {
-                                return o1.compareTo(o);
-                            }
+            item.addActionListener(evt -> {
+                Comparator<String> compare = new Comparator<String>() {
+                    public int compare(String o, String o1) {
+                        if (sampleSortingDirection) {
+                            return o.compareTo(o1);
+                        } else {
+                            return o1.compareTo(o);
                         }
-                    };
-                    sampleSortingDirection = !sampleSortingDirection;
-                    track.sortSamples(compare);
-                    IGV.getInstance().getContentPane().repaint();
-                }
+                    }
+                };
+                sampleSortingDirection = !sampleSortingDirection;
+                track.sortSamples(compare);
+                IGV.getInstance().getContentPane().repaint();
             });
         }
         return item;
@@ -266,13 +241,11 @@ public class VariantMenu extends IGVPopupMenu {
     public JMenuItem getDepthSortItem(final Variant variant) {
         JMenuItem item = new JMenuItem("Sort By Depth");
         if (variant != null) {
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    DepthComparator compare = new DepthComparator(variant);
-                    depthSortingDirection = !depthSortingDirection;
-                    track.sortSamples(compare);
-                    IGV.getInstance().getContentPane().repaint();
-                }
+            item.addActionListener(evt -> {
+                DepthComparator compare = new DepthComparator(variant);
+                depthSortingDirection = !depthSortingDirection;
+                track.sortSamples(compare);
+                IGV.getInstance().getContentPane().repaint();
             });
 
         }
@@ -284,13 +257,11 @@ public class VariantMenu extends IGVPopupMenu {
         if (variant != null) {
             double quality = variant.getPhredScaledQual();
             if (quality > -1) {
-                item.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        QualityComparator compare = new QualityComparator(variant);
-                        qualitySortingDirection = !qualitySortingDirection;
-                        track.sortSamples(compare);
-                        IGV.getInstance().getContentPane().repaint();
-                    }
+                item.addActionListener(evt -> {
+                    QualityComparator compare = new QualityComparator(variant);
+                    qualitySortingDirection = !qualitySortingDirection;
+                    track.sortSamples(compare);
+                    IGV.getInstance().getContentPane().repaint();
                 });
             } else {
                 item.setEnabled(false);

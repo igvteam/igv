@@ -1451,6 +1451,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             while ((f = super.nextFeature(chr, center, forward, frame)) != null) {
                 if (!(f instanceof Variant) || !((Variant) f).isFiltered()) {
                     return f;
+                } else {
+                    chr = f.getChr();
+                    center = (f.getStart() + f.getEnd()) / 2 + 1;
                 }
             }
             return null;
