@@ -253,24 +253,12 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             }
         }
 
-        // Column 8 is phase for gff3,  frame for gff2.
+        // Column 8 is phase for gff3 and gtf.  Column is ambiguous for the deprecated GFF2 format,
+        // so translation is not supported.
         String phaseString = tokens[7].trim();
-        if (!phaseString.equals(".")) {
+        if (!phaseString.equals(".") && version != Version.GFF2) {
             int phaseOrFrame = Integer.parseInt(phaseString);
-            int frame;
-
-            if (version == Version.GFF3) {
-                frame = (3 - phaseOrFrame) % 3;
-            } else if (version == Version.GFF2) {
-                frame = phaseOrFrame;
-            } else {   // GTF
-                if(gencode) {
-                    frame = (3 - phaseOrFrame) % 3;   // GTF format is not consistent, GENCODE files use phase for column 8,  spec for gff2/gtf says this should be frame
-                } else {
-                    frame = phaseOrFrame;
-                }
-            }
-
+            int frame = (3 - phaseOrFrame) % 3;
             f.setReadingFrame(frame);
         }
 
