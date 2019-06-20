@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Global name="Rat (rn4) Annotations" version="1">\
+  <Resource name="Ensemble Genes" 
+            hyperlink="http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=224905643&amp;clade=mammal&amp;org=Rat&amp;db=rn4&amp;hgta_group=genes&amp;hgta_track=ensGene"
+            path="http://igvdata.broadinstitute.org/annotations/rn4/ensGene.txt.gz"/>
+  <Resource name="UCSC Known Genes" 
+            hyperlink="http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=224905643&amp;clade=mammal&amp;org=Rat&amp;db=rn4&amp;hgta_group=genes&amp;hgta_track=knownGene"
+            path="http://igvdata.broadinstitute.org/annotations/rn4/knownUcscGene.txt.gz"/>
+  <Resource name="miRNA" 
+            hyperlink="http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=224905643&amp;clade=mammal&amp;org=Rat&amp;db=rn4&amp;hgta_group=genes&amp;hgta_track=miRNA"
+            path="http://igvdata.broadinstitute.org/annotations/rn4/miRNA.bed.gz"/>
+  <Resource name="cpg Islands" 
+            hyperlink="http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=224905643&amp;clade=mammal&amp;org=Rat&amp;db=rn4&amp;hgta_group=regulation&amp;hgta_track=cpgIslandExt"
+            path="http://igvdata.broadinstitute.org/annotations/rn4/cpgIslandExt.bed.gz"/>
+  <Resource name="dbSNP 125" 
+            hyperlink="http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=224905643&amp;clade=mammal&amp;org=Rat&amp;db=rn4&amp;hgta_group=regulation&amp;hgta_track=snp125"
+            path="http://igvdata.broadinstitute.org/annotations/rn4/snp125.bed.gz"/>
+
+</Global>

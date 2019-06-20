@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Global name="Annotations (ce6)" version="1">
+
+    <Resource name="WormBase UCSC Genes"
+            path="http://www.broadinstitute.org/igvdata/annotations/ce6/Celegans.WormBase.ucscgene.txt">
+    </Resource>
+    <Resource name="WormBase Ensemble Genes"
+            path="http://www.broadinstitute.org/igvdata/annotations/ce6/Celegans.WormBase.ensgene.bed.gz">
+    </Resource>
+    <Resource name="WormBase Psuedo Genes"
+            path="http://www.broadinstitute.org/igvdata/annotations/ce6/Celegans.WormBase.psuedogenes.bed.gz">
+    </Resource>
+     <Resource name="mRNAs"
+            path="http://www.broadinstitute.org/igvdata/annotations/ce6/Celegans.mRNAs.bed.gz">
+    </Resource>
+    <Resource name="Conservation" hyperlink="http://genome.ucsc.edu/cgi-bin/hgTrackUi?hgsid=125160488%26=multiz6way"
+                  path="http://www.broadinstitute.org/igvdata/annotations/ce6/phastCon.ce6.wig.tdf">
+      <!--UCSCGene.gene-->
+    </Resource>
+
+</Global>

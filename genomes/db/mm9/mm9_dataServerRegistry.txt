@@ -1,0 +1,2 @@
+https://s3.amazonaws.com/igv.org.genomes/mm9/mm9_annotations.xml
+https://s3.amazonaws.com/igv.org.genomes/mm9/epigenetics_mm9_public.xml

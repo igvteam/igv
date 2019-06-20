@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Global name="ChIP-Seq" version="1" hyperlink="http://www.broadinstitute.org/node/681">
+    <Category name="Mikkelsen, Xu et al. (2010))" hyperlink="http://www.cell.com/abstract/S0092-8674%2810%2901016-0" version="1">
+      <Resource name="3T3L1.WCE" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1.WCE.bw"
+         trackLine="visibility=full color=0,0,0 autoScale=off viewLimits=0:30 windowingFunction=Mean smoothingWindow=Off"/> 
+      <Resource name="3T3L1t1.H3K4me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t1.H3K4me3.bw"
+         trackLine="color=0,150,0 autoScale=off viewLimits=0:30"/>
+      <Resource name="3T3L1t1.H3K4me2" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t1.H3K4me2.bw"
+         trackLine="visibility=full color=0,130,0 autoScale=off viewLimits=0:30"/>
+      <Resource name="3T3L1t1.H3K4me1" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t1.H3K4me1.bw"
+         trackLine="visibility=full color=0,110,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t1.H3K27ac" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t1.H3K27ac.bw"
+         trackLine="visibility=full color=0,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t1.H3K27me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t1.H3K27me3.bw"
+         trackLine="visibility=full color=255,0,0 autoScale=off viewLimits=0:30"/>       
+       <Resource name="3T3L1t1.H3K36me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t1.H3K36me3.bw"
+         trackLine="color=0,0,150 autoScale=off viewLimits=0:30"/>       
+       <Resource name="3T3L1t1.CTCF" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t1.CTCF.bw"
+         trackLine="color=0,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t1.H3K4me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t1.H3K4me3.bw"
+         trackLine="color=0,150,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t1.H3K4me2" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t1.H3K4me2.bw"
+         trackLine="color=0,130,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t1.H3K4me1" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t1.H3K4me1.bw"
+         trackLine="3color=0,110,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t2.H3K27ac" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t2.H3K27ac.bw"
+         trackLine="color=0,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t2.H3K27me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t2.H3K27me3.bw"
+         trackLine="color=255,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t2.H3K36me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t2.H3K36me3.bw"
+         trackLine="color=0,0,150 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t2.CTCF" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t2.CTCF.bw"
+         trackLine="color=0,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t3.H3K4me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t3.H3K4me3.bw"
+         trackLine="color=0,150,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t3.H3K4me2" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t3.H3K4me2.bw"
+         trackLine="color=0,130,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t3.H3K4me1" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t3.H3K4me1.bw"
+         trackLine="color=0,110,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t3.H3K27acc" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t3.H3K27ac.bw"
+         trackLine="color=0,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t3.H3K27me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t3.H3K27me3.bw"
+         trackLine="color=255,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t3.H3K36me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t3.H3K36me3.bw"
+         trackLine="color=0,0,150 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t3.CTCF" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t3.CTCF.bw"
+         trackLine="color=0,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t4.H3K4me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t4.H3K4me3.bw"
+         trackLine="color=0,150,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t4.H3K4me2" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t4.H3K4me2.bw"
+         trackLine="color=0,130,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t4.H3K4me1" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t4.H3K4me1.bw"
+         trackLine="color=0,110,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t4.H3K27ac" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t4.H3K27ac.bw"
+         trackLine="color=0,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t4.H3K27me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t4.H3K27me3.bw"
+         trackLine="color=255,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t4.H3K36me3" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t4.H3K36me3.bw"
+         trackLine="color=0,0,150 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t4.CTCF" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t4.CTCF.bw"
+         trackLine="3color=0,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t4.PpargAb1" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t4.PpargAb1.bw"
+         trackLine="color=0,0,0 autoScale=off viewLimits=0:30"/>
+       <Resource name="3T3L1t4.PpargAb2" path="http://www.broadinstitute.org/igvdata/epigenetics/Mikkelsen2010/3T3L1t4.PpargAb2.bw"
+         trackLine="color=0,0,0 autoScale=off viewLimits=0:30"/>
+    </Category>
+   
+</Global>
