@@ -73,20 +73,24 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
 
-        boolean indexExists;
-        // Explicit index path
+        boolean indexExists = false;
+
         String idxPath = locator.getIndexPath();
-        if (idxPath != null) {
-            if (FileUtils.isRemote(idxPath)) {
-                idxPath = HttpUtils.mapURL(idxPath);
+        if(idxPath == null) {
+            if (FileUtils.isRemote(locator.getPath())) {
+                indexExists = false;
             }
-            indexExists = true;
-        } else {
-            idxPath = ResourceLocator.indexFile(locator);
-            if (FileUtils.isRemote(idxPath)) {
-                idxPath = HttpUtils.mapURL(idxPath);
+            else {
+                String inferredPath = ResourceLocator.indexFile(locator);
+                if (FileUtils.resourceExists(inferredPath)) {
+                    idxPath = inferredPath;
+                    indexExists = true;
+                }
             }
-            indexExists = FileUtils.resourceExists(idxPath);
+        }
+        else if (FileUtils.isRemote(idxPath)) {
+            idxPath = HttpUtils.mapURL(idxPath);
+            indexExists = true; // Presumed to exist if set explicitly
         }
 
 
@@ -97,7 +101,10 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         final boolean indexRequired = size > oneGB;
         if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
             if (size > hundredMB) {
-                createIndex(locator, indexRequired);   // Note, might return null.
+                Index index = createIndex(locator, indexRequired);   // Note, might return null.
+                if(index != null) {
+                    indexExists = true;
+                }
             }
         }
 
@@ -105,9 +112,9 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         if (FileUtils.isRemote(path)) {
             path = HttpUtils.mapURL(path);
         }
-        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
+        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec,  indexExists);
 
-        if (basicReader.hasIndex()) {
+        if (indexExists) {
             return new IndexedFeatureSource(basicReader, codec, locator, genome, useCache);
         } else {
             return new NonIndexedFeatureSource(basicReader, codec, locator, genome);
