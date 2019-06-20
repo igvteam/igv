@@ -1,10 +1,8 @@
 package org.broad.igv.feature.basepair;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.bedpe.InteractionTrack;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.renderer.*;
-import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Persistable;
 
 import org.broad.igv.track.AbstractTrack;

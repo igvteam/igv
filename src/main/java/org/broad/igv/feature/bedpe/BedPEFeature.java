@@ -1,6 +1,7 @@
 package org.broad.igv.feature.bedpe;
 
 import java.awt.*;
+import java.util.Map;
 
 /**
  * Created by jrobinso on 6/29/18.
@@ -14,9 +15,11 @@ public class BedPEFeature {
     int start2;
     int end2;
     String name;
-    String score;
+    double score;
     Color color;
     int thickness = 1;
+    String type;
+    Map<String, String> attributes;
 
 
     public int getStart() {
@@ -25,6 +28,10 @@ public class BedPEFeature {
 
     public int getEnd() {
         return Math.max(end1, end2);
+    }
+
+    public boolean isSameChr() {
+        return chr1.equals(chr2);
     }
 
 }

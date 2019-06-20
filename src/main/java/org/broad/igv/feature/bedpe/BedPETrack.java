@@ -20,34 +20,38 @@ import java.awt.geom.Arc2D;
 import java.util.*;
 import java.util.List;
 
-import static org.broad.igv.feature.bedpe.InteractionTrack.Direction.DOWN;
-import static org.broad.igv.feature.bedpe.InteractionTrack.Direction.UP;
+import static org.broad.igv.feature.bedpe.BedPETrack.Direction.DOWN;
+import static org.broad.igv.feature.bedpe.BedPETrack.Direction.UP;
 
 
 /**
  * Created by jrobinso on 6/29/18.
  */
-public class InteractionTrack extends AbstractTrack {
+public class BedPETrack extends AbstractTrack {
 
     enum Direction {UP, DOWN}
     enum GraphType {block, arc}
 
-    InteractionTrack.Direction direction = DOWN;
-    GraphType graphType =GraphType.block; // GraphType.arc;  //
+    private  Genome genome;
+    BedPETrack.Direction direction = UP; //DOWN;
+    GraphType graphType =GraphType.arc;  // GraphType.block; //
     int thickness = 1;
+    double logMaxScore = 0;
 
     private Map<String, List<BedPEFeature>> featureMap;
-
-
     private PEArcRenderer arcRenderer;
     private PEBLockRenderer blockRenderer;
 
-    public InteractionTrack() {
+    private int gap = 5;
+
+
+    public BedPETrack() {
     }
 
-    public InteractionTrack(ResourceLocator locator, List<BedPEFeature> featureList, Genome genome) {
+    public BedPETrack(ResourceLocator locator, List<BedPEFeature> featureList, Genome genome) {
         super(locator);
         init(featureList, genome);
+        this.genome = genome;
         arcRenderer = new PEArcRenderer();
         blockRenderer = new PEBLockRenderer();
         setHeight(250, true);
@@ -58,21 +62,25 @@ public class InteractionTrack extends AbstractTrack {
 
         this.featureMap = new HashMap<>();
 
-        // Sort feature lists by "start" (minimum of start1, start2)
-        Collections.sort(featureList, (o1, o2) -> o1.getStart() - o2.getStart());
-
+        double maxScore = 0;
         for (BedPEFeature f : featureList) {
-
             String key = genome == null ? f.chr1 : genome.getCanonicalChrName(f.chr1);
             addToMap(f, key);
             if (!f.chr1.equals(f.chr2)) {
                 key = genome == null ? f.chr2 : genome.getCanonicalChrName(f.chr2);
                 addToMap(f, key);
             }
+
+            maxScore = Math.max(maxScore, f.score);
         }
 
-            featureMap.put(Globals.CHR_ALL, createWGFeatures(featureList, genome));
+        if(maxScore > 0) logMaxScore = Math.log10(maxScore);
 
+
+        featureMap.put(Globals.CHR_ALL, createWGFeatures(featureList, genome));
+
+        // Sort feature lists by "start" (minimum of start1, start2)
+        featureMap.values().forEach(flist -> Collections.sort(flist, (o1, o2) -> o1.getStart() - o2.getStart()));
     }
 
     private void addToMap(BedPEFeature f, String key) {
@@ -166,14 +174,14 @@ public class InteractionTrack extends AbstractTrack {
 
         IGVPopupMenu menu = new IGVPopupMenu();
 
-        menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(InteractionTrack.this)));
+        menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(BedPETrack.this)));
 
         JMenuItem item = new JMenuItem("Set Track Height...");
-        item.addActionListener(evt -> TrackMenuUtils.changeTrackHeight(Collections.singleton(InteractionTrack.this)));
+        item.addActionListener(evt -> TrackMenuUtils.changeTrackHeight(Collections.singleton(BedPETrack.this)));
         menu.add(item);
 
         item = new JMenuItem("Set Track Color...");
-        item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(InteractionTrack.this)));
+        item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(BedPETrack.this)));
         menu.add(item);
 
         item = new JMenuItem("Toggle Arc Direction");
@@ -228,12 +236,12 @@ public class InteractionTrack extends AbstractTrack {
 
         public void render(BedPEFeature feature, RenderContext context, Rectangle trackRectangle, Graphics2D g) {
 
-            // check chromosomes
+            // TODO check chromosomes
 
             double origin = context.getOrigin();
             double locScale = context.getScale();
 
-            Color trackColor = InteractionTrack.this.getColor();
+            Color trackColor = BedPETrack.this.getColor();
             double pixelStart = ((feature.getStart() - origin) / locScale);
             double pixelEnd = ((feature.getEnd() - origin) / locScale);
             double width = pixelEnd - pixelStart;
@@ -245,9 +253,9 @@ public class InteractionTrack extends AbstractTrack {
             double pe = (e - origin) / locScale;
 
             Color fcolor = feature.color == null ? trackColor : feature.color;
-            if (fcolor != null && width > trackRectangle.width) {
-                fcolor = getAlphaColor(fcolor);
-            }
+            //if (fcolor != null && width > trackRectangle.width) {
+            //    fcolor = getAlphaColor(fcolor, 0.1f);
+            //}
             if (fcolor != null) {
                 g.setColor(fcolor);
             }
@@ -255,16 +263,16 @@ public class InteractionTrack extends AbstractTrack {
                 g.setStroke(new BasicStroke(feature.thickness));
             }
 
-            drawArc(g, trackRectangle, ps, pe);
+            drawArc2(g, trackRectangle, ps, pe, feature.score, fcolor);
         }
 
 
-        private Color getAlphaColor(Color fcolor) {
+        private Color getAlphaColor(Color fcolor, float alpha) {
             Color ac = alphaColors.get(fcolor);
             if (ac == null) {
                 float[] rgb = new float[3];
                 rgb = fcolor.getRGBColorComponents(rgb);
-                ac = new Color(rgb[0], rgb[1], rgb[2], 0.1f);
+                ac = new Color(rgb[0], rgb[1], rgb[2], alpha);
                 alphaColors.put(fcolor, ac);
             }
             return ac;
@@ -298,6 +306,46 @@ public class InteractionTrack extends AbstractTrack {
             arcPath.setArcByCenter(x, y, r, angleSt, ext, Arc2D.OPEN);
 
             g.draw(arcPath);
+        }
+
+        private void drawArc2(Graphics2D g, Rectangle trackRectangle, double x1, double x2, double score, Color color) {
+
+            double pixelStart = Math.min(x1, x2);
+            double pixelEnd = Math.max(x1, x2);
+
+            int h = trackRectangle.height - gap;
+            double logMax = BedPETrack.this.logMaxScore;
+            if(logMax > 0 && score > 0){
+                h = (int) ((Math.log10(score) / logMax) * h);
+            }
+
+            if (thickness > 1) {
+                g.setStroke(new BasicStroke(thickness));
+            }
+
+            int w = (int) (pixelEnd - pixelStart);
+            if (w < 3) {
+                w = 3;
+                pixelStart--;
+            }
+
+            double y = direction == UP ?   gap + trackRectangle.y + trackRectangle.height - h : gap + trackRectangle.y - h;
+            int angleSt = direction == UP ? 0 : 180;
+            Arc2D.Double arcPath = new Arc2D.Double(
+                    pixelStart,
+                    y,
+                    w,
+                    2*h,
+                    angleSt,
+                    180,
+                    Arc2D.OPEN
+            );
+
+            g.draw(arcPath);
+
+            Color shadedColor = getAlphaColor(color, 0.05f);
+            g.setColor(shadedColor);
+            g.fill(arcPath);
         }
 
 
@@ -350,45 +398,54 @@ public class InteractionTrack extends AbstractTrack {
         public void render(BedPEFeature feature, RenderContext context, Rectangle trackRectangle, Graphics2D g) {
 
             String chr = context.getChr();
+            Genome genome = BedPETrack.this.genome;
             double origin = context.getOrigin();
             double locScale = context.getScale();
 
-            Color trackColor = InteractionTrack.this.getColor();
+            Color trackColor = BedPETrack.this.getColor();
             Color fcolor = feature.color == null ? trackColor : feature.color;
             if (fcolor != null) {
                 g.setColor(fcolor);
             }
 
+            final int h = 10;
+            final int blockY = trackRectangle.y + trackRectangle.height - h;
+
             int ps1 = (int) ((feature.start1 - origin) / locScale);
             int pe1 = (int) ((feature.end1 - origin) / locScale);
-
-            // Trim width if possible to insure a gap between blocks
-            int w1 = Math.max(1, pe1 - ps1);
-            if (w1 > 3) w1--;
-            if (w1 > 5) ps1++;
-
-            final int blockY = trackRectangle.y + trackRectangle.height - 10;
-            if (pe1 >= trackRectangle.getX() && ps1 <= trackRectangle.getMaxX()) {
-                g.fillRect(ps1, blockY, w1, 10);
+            String chr1 = genome == null ? feature.chr1 : genome.getCanonicalChrName(feature.chr1);
+            if(chr1.equals(chr)) {
+                // Trim width if possible to insure a gap between blocks
+                int w1 = Math.max(1, pe1 - ps1);
+                if (w1 > 3) w1--;
+                if (w1 > 5) ps1++;
+                if (pe1 >= trackRectangle.getX() && ps1 <= trackRectangle.getMaxX()) {
+                    g.fillRect(ps1, blockY, w1, 10);
+                }
             }
+
 
             int ps2 = (int) ((feature.start2 - origin) / locScale);
             int pe2 = (int) ((feature.end2 - origin) / locScale);
+            String chr2 = genome == null ? feature.chr2 : genome.getCanonicalChrName(feature.chr2);
+            if(chr2.equals(chr)) {
+                // Trim width if possible to insure a gap between blocks
+                int w2 = Math.max(1, pe2 - ps2);
+                if (w2 > 3) w2--;
+                if (w2 > 5) ps2++;
 
-            // Trim width if possible to insure a gap between blocks
-            int w2 = Math.max(1, pe2 - ps2);
-            if (w2 > 3) w2--;
-            if (w2 > 5) ps2++;
-
-            if (pe2 >= trackRectangle.getX() && ps2 <= trackRectangle.getMaxX()) {
-                g.fillRect(ps2, blockY, w2, 10);
+                if (pe2 >= trackRectangle.getX() && ps2 <= trackRectangle.getMaxX()) {
+                    g.fillRect(ps2, blockY, w2, 10);
+                }
             }
 
             // connecting line
-            int pl1 = Math.min(pe1, pe2);
-            int pl2 = Math.max(ps1, ps2);
-            final int connectorY = trackRectangle.y + trackRectangle.height - 5;
-            g.drawLine(pl1, connectorY, pl2, connectorY);
+            if (feature.isSameChr()) {
+                int pl1 = Math.min(pe1, pe2);
+                int pl2 = Math.max(ps1, ps2);
+                final int connectorY = blockY + h/2;
+                g.drawLine(pl1, connectorY, pl2, connectorY);
+            }
         }
 
     }

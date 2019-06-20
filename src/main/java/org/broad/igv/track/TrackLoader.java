@@ -46,7 +46,7 @@ import org.broad.igv.feature.ShapeFileUtils;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.bedpe.BedPEFeature;
 import org.broad.igv.feature.bedpe.BedPEParser;
-import org.broad.igv.feature.bedpe.InteractionTrack;
+import org.broad.igv.feature.bedpe.BedPETrack;
 import org.broad.igv.feature.bionano.SMAPParser;
 import org.broad.igv.feature.bionano.SMAPRenderer;
 import org.broad.igv.feature.dranger.DRangerParser;
@@ -206,7 +206,7 @@ public class TrackLoader {
                 loadSMAPFile(locator, newTracks, genome);
             } else if (typeString.endsWith("dsi")) {
                 loadDSIFile(locator, newTracks, genome);
-            } else if (typeString.endsWith("bedpe")) {
+            } else if (typeString.endsWith("bedpe") || typeString.endsWith("_clusters")) {
                 loadBedPEFile(locator, newTracks, genome);
             } else if (typeString.endsWith("clusters")) {
                 loadClusterFile(locator, newTracks, genome);
@@ -372,8 +372,9 @@ public class TrackLoader {
 
 
     private void loadBedPEFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        List<BedPEFeature> features = BedPEParser.parse(locator.getPath());
-        newTracks.add(new InteractionTrack(locator, features, genome));
+        boolean isClusters = locator.getTypeString().endsWith("_clusters");
+        List<BedPEFeature> features = BedPEParser.parse(locator.getPath(), isClusters, genome);
+        newTracks.add(new BedPETrack(locator, features, genome));
     }
 
     private void loadClusterFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
