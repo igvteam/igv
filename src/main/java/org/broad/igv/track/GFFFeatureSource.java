@@ -69,7 +69,8 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
 
         // Expand start/end to be sure we get adjacent CDS/Exon features
         int expandedStart = Math.max(0, start - 2000000);
-        int expandedEnd = end + 2000000;
+        long longEnd = (long) end + 2000000;   // Protect against overflow
+        int expandedEnd = (int) Math.min(Integer.MAX_VALUE, longEnd);
 
         Iterator<Feature> rawIter = wrappedSource.getFeatures(chr, expandedStart, expandedEnd);
         GFFCombiner combiner = (new GFFCombiner()).addFeatures(rawIter);
