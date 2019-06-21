@@ -75,8 +75,15 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
         Iterator<Feature> rawIter = wrappedSource.getFeatures(chr, expandedStart, expandedEnd);
         GFFCombiner combiner = (new GFFCombiner()).addFeatures(rawIter);
 
+        // Now trim features not requested
+        List<Feature> requestedFeatures = new ArrayList<>();
+        for(Feature f : combiner.combineFeatures()) {
+            if(f.getEnd() < start) continue;
+            if(f.getStart() > end) break;
+            requestedFeatures.add(f);
+        }
 
-        return new WrappedIterator(combiner.combineFeatures().iterator());
+        return new WrappedIterator(requestedFeatures.iterator());
     }
 
     @Override
