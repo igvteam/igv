@@ -185,6 +185,7 @@ tasks.withType(Test) {
 task createDist(type: Copy, dependsOn: fullJar)  {
     from ("scripts") {
         include 'igv.bat'
+        include 'igv_32.bat'
         include 'igv.command'
         include 'igv.sh'
         include 'readme.txt'
