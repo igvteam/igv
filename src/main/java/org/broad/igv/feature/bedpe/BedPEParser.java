@@ -60,13 +60,14 @@ public class BedPEParser {
                 columns = Globals.tabPattern.split(nextLine);
                 if (nextLine.trim().equals("#chrom1\tstart1\tstop1\tchrom2\tstart2\tstop2\tname\tqual\tstrand1\tstrand2\tfilters\tinfo")) {
                     tenx = true;
-                } else {for(int i=6; i<columns.length; i++) {
-                    if(columns[i].equalsIgnoreCase("color")) {
-                        colorColumn = i;
-                    } else if(columns[i].toLowerCase().equalsIgnoreCase("thickness")) {
-                        thicknessColumn = i;
+                } else {
+                    for (int i = 6; i < columns.length; i++) {
+                        if (columns[i].equalsIgnoreCase("color")) {
+                            colorColumn = i;
+                        } else if (columns[i].toLowerCase().equalsIgnoreCase("thickness")) {
+                            thicknessColumn = i;
+                        }
                     }
-                }
                 }
 
             } else if (nextLine.startsWith("track") || nextLine.startsWith("##track")) {
@@ -80,16 +81,17 @@ public class BedPEParser {
                     continue;
                 }
 
-                BedPEFeature feature = new BedPEFeature();
-                feature.chr1 = genome == null ? tokens[0] : genome.getCanonicalChrName(tokens[0]);
-                feature.start1 = Integer.parseInt(tokens[1]);
-                feature.end1 = Integer.parseInt(tokens[2]);
-                feature.chr2 = genome == null ? tokens[3] : genome.getCanonicalChrName(tokens[3]);
-                feature.start2 = Integer.parseInt(tokens[4]);
-                feature.end2 = Integer.parseInt(tokens[5]);
+                String chr1 = genome == null ? tokens[0] : genome.getCanonicalChrName(tokens[0]);
+                String chr2 = genome == null ? tokens[3] : genome.getCanonicalChrName(tokens[3]);
+                int start1 = Integer.parseInt(tokens[1]);
+                int end1 = Integer.parseInt(tokens[2]);
+                int start2 = Integer.parseInt(tokens[4]);
+                int end2 = Integer.parseInt(tokens[5]);
+
+                BedPEFeature feature = new BedPEFeature(chr1, start1, end1, chr2, start2, end2);
 
                 if (tokens.length > 6) {
-                    if(isClusters) {
+                    if (isClusters) {
                         feature.score = Double.parseDouble(tokens[6]);
                     } else {
                         feature.name = tokens[6];
@@ -103,21 +105,19 @@ public class BedPEParser {
                     feature.score = Double.parseDouble(tokens[7]);
                 }
 
-                if(tenx) {
+                if (tenx) {
                     Map<String, String> attributes = new HashMap<>();
-                    if(!tokens[8].equals(".")) {
+                    if (!tokens[8].equals(".")) {
                         attributes.put("filters", tokens[8]);
                     }
-                    String [] kvPairs = Globals.semicolonPattern.split(tokens[11]);
-                    for(String kvPair: kvPairs) {
-                        String [] kv = Globals.equalPattern.split(kvPair);
+                    String[] kvPairs = Globals.semicolonPattern.split(tokens[11]);
+                    for (String kvPair : kvPairs) {
+                        String[] kv = Globals.equalPattern.split(kvPair);
                         attributes.put(kv[0], kv[1]);
                     }
                     feature.attributes = attributes;
                     feature.type = attributes.get("TYPE");
-                }
-
-                else {
+                } else {
                     if (colorColumn > 0) {
                         String colorString = tokens[colorColumn];
                         Color c = colorCache.get(colorString);
@@ -136,12 +136,12 @@ public class BedPEParser {
 
                 features.add(feature);
             }
-
         }
 
+
         // A hack to detect "interaction" bedpe files, which are not spec compliant.  Interaction score is column 7
-        if(col7isNumeric) {
-            for(BedPEFeature f : features) {
+        if (col7isNumeric) {
+            for (BedPEFeature f : features) {
                 f.score = Double.parseDouble(f.name);
                 f.name = null;
             }
