@@ -1,4 +1,4 @@
-package org.broad.igv.feature.bedpe;
+package org.broad.igv.bedpe;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;

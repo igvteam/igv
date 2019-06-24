@@ -1,4 +1,4 @@
-package org.broad.igv.feature.bedpe;
+package org.broad.igv.bedpe;
 
 import org.broad.igv.track.RenderContext;
 
@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.broad.igv.feature.bedpe.BedPETrack.Direction.UP;
+import static org.broad.igv.bedpe.BedPETrack.Direction.UP;
 
 public class NestedArcRenderer implements BedPERenderer{
 

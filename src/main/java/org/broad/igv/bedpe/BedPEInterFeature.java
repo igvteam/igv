@@ -1,13 +1,11 @@
-package org.broad.igv.feature.bedpe;
-
-import java.awt.*;
-import java.util.Map;
+package org.broad.igv.bedpe;
 
 public class BedPEInterFeature  implements BedPE {
 
 
     private final BedPEFeature wrappedFeature;
     private final int order;
+    int row;
 
     public BedPEInterFeature(BedPEFeature wrappedFeature, int order) {
         this.wrappedFeature = wrappedFeature;
@@ -39,4 +37,17 @@ public class BedPEInterFeature  implements BedPE {
         return wrappedFeature.isSameChr();
     }
 
+    @Override
+    public void setRow(int row) {
+        this.row = row;
+    }
+
+    @Override
+    public int getRow() {
+        return row;
+    }
+
+    public String getContig() {
+        return getChr();
+    }
 }

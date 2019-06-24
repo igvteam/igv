@@ -1,4 +1,4 @@
-package org.broad.igv.feature.bedpe;
+package org.broad.igv.bedpe;
 
 import org.broad.igv.track.RenderContext;
 

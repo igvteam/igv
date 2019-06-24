@@ -1,4 +1,4 @@
-package org.broad.igv.feature.bedpe;
+package org.broad.igv.bedpe;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
@@ -19,7 +19,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-import static org.broad.igv.feature.bedpe.BedPETrack.Direction.UP;
+import static org.broad.igv.bedpe.BedPETrack.Direction.UP;
 import static org.broad.igv.track.TrackMenuUtils.refresh;
 
 
@@ -76,6 +76,11 @@ public class BedPETrack extends AbstractTrack {
 
         // Sort feature lists by "start" (minimum of start1, start2)
         featureMap.values().forEach(flist -> Collections.sort(flist, (o1, o2) -> o1.getStart() - o2.getStart()));
+
+        // Pack features for block renderer -- TODO do this lazily?
+//        for(List<BedPE> flist : featureMap.values()) {
+//            BedPEUtils.packFeatures(flist, 100);
+//        }
     }
 
     private void addToMap(BedPE f, String key) {
@@ -189,7 +194,7 @@ public class BedPETrack extends AbstractTrack {
         Map<String, GraphType> modes = new LinkedHashMap<>(4);
         modes.put("Nested Arcs", GraphType.ARC);
         modes.put("Proportional Arcs", GraphType.PROPORTIONAL_ARC);
-        modes.put("Blocks", GraphType.BLOCK);
+        //modes.put("Blocks", GraphType.BLOCK);
 
         for (final Map.Entry<String, GraphType> entry : modes.entrySet()) {
             JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
@@ -240,6 +245,7 @@ public class BedPETrack extends AbstractTrack {
     }
 
     private void setGraphType(GraphType value) {
+        // TODO adjust height
         this.graphType = value;
     }
 

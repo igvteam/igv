@@ -1,4 +1,4 @@
-package org.broad.igv.feature.bedpe;
+package org.broad.igv.bedpe;
 
 import java.awt.*;
 import java.util.Map;
@@ -20,6 +20,7 @@ public class BedPEFeature implements BedPE {
     int thickness = 1;
     String type;
     Map<String, String> attributes;
+    int row;
 
     public BedPEFeature(String chr1, int start1, int end1, String chr2, int start2, int end2) {
         this.chr1 = chr1;
@@ -57,6 +58,20 @@ public class BedPEFeature implements BedPE {
 
     public boolean isSameChr() {
         return chr1.equals(chr2);
+    }
+
+    @Override
+    public void setRow(int row) {
+        this.row = row;
+    }
+
+    @Override
+    public int getRow() {
+        return row;
+    }
+
+    public String getContig() {
+        return getChr();
     }
 
 }
