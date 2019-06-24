@@ -36,6 +36,10 @@ public class NestedArcRenderer implements BedPERenderer{
             Color trackColor = track.getColor();
             int gap = track.gap;
 
+            if (track.thickness > 1) {
+                g.setStroke(new BasicStroke(track.thickness));
+            }
+
             if (autoscale) {
                 double max = 0;
                 for (BedPE feature : features) {
@@ -57,29 +61,28 @@ public class NestedArcRenderer implements BedPERenderer{
 
             for (BedPE bedPE : features) {
 
-                BedPEFeature feature = bedPE.get();
-                double ps = ((feature.start1 + feature.end1) / 2 - origin) / locScale;
-                double pe = ((feature.start2 + feature.end2) / 2 - origin) / locScale;
-                double pixelStart = Math.min(ps, pe);
-                double pixelEnd = Math.max(ps, pe);
-                BedPETrack.Direction direction = track.direction;
+                double p1 = (bedPE.getStart() - origin) / locScale;
+                double p2 = (bedPE.getEnd() - origin) / locScale;
+
+                if (p2 >= trackRectangle.getX() && p1 <= trackRectangle.getMaxX()) {
+
+                    BedPETrack.Direction direction = track.direction;
+
+                    if (bedPE.isSameChr()) {
+
+                        BedPEFeature feature = bedPE.get();
+                        Color fcolor = feature.color == null ? trackColor : feature.color;
+
+                        double pixelStart = (feature.getMidStart() - origin) / locScale;
+                        double pixelEnd = (feature.getMidEnd() - origin) / locScale;
+
+                        int w = (int) (pixelEnd - pixelStart);
+                        if (w < 3) {
+                            w = 3;
+                            pixelStart--;
+                        }
 
 
-                if (pixelEnd >= trackRectangle.getX() && pixelStart <= trackRectangle.getMaxX()) {
-                    int w = (int) (pixelEnd - pixelStart);
-                    if (w < 3) {
-                        w = 3;
-                        pixelStart--;
-                    }
-
-                    Color fcolor = feature.color == null ? trackColor : feature.color;
-
-                    if (feature.thickness > 1) {
-                        g.setStroke(new BasicStroke(feature.thickness));
-                    }
-
-
-                    if (feature.isSameChr()) {
                         if (fcolor != null && w > trackRectangle.width) {
                             fcolor = getAlphaColor(fcolor, 0.1f);
                         }
@@ -101,8 +104,10 @@ public class NestedArcRenderer implements BedPERenderer{
                         g.draw(arcPath);
 
                     } else {
+                        Color fcolor = bedPE.get().color == null ? Color.black : bedPE.get().color;
+                        g.setColor(fcolor);
                         int h = trackRectangle.height / 2;
-                        ps = ((feature.getStart() + feature.getEnd()) / 2 - origin) / locScale;
+                        double ps = ((bedPE.getStart() + bedPE.getEnd()) / 2 - origin) / locScale;
                         int yBase = direction == UP ? trackRectangle.y + trackRectangle.height - h : trackRectangle.y + gap;
                         g.drawLine((int) ps, yBase, (int) ps, yBase + h);
 

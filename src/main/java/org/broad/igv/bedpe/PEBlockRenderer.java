@@ -21,48 +21,46 @@ public class PEBlockRenderer implements BedPERenderer {
 
         try {
             g = (Graphics2D) context.getGraphics().create();
-            String chr = context.getChr();
             double origin = context.getOrigin();
             double locScale = context.getScale();
             Color trackColor = track.getColor();
 
-            final int baseY = trackRectangle.y;
+            final int blockY = trackRectangle.y + trackRectangle.height - rowHeight;
 
             for (BedPE bedPE : features) {
 
-                BedPEFeature feature = bedPE.get();
-                Color fcolor = feature.color == null ? trackColor : feature.color;
+                Color fcolor = bedPE.getColor() == null ? trackColor : bedPE.getColor();
                 if (fcolor != null) {
                     g.setColor(fcolor);
                 }
 
-                int blockY = baseY + bedPE.getRow() * rowHeight;
 
-                if (feature.isSameChr()) {
+                if (bedPE.isSameChr()) {
+                    BedPEFeature feature = bedPE.get();
                     int ps1 = (int) ((feature.start1 - origin) / locScale);
                     int pe1 = (int) ((feature.end1 - origin) / locScale);
                     if (pe1 >= trackRectangle.getX() && ps1 <= trackRectangle.getMaxX()) {
-                        ps1 = drawBlock(ps1, pe1, baseY, g);
+                        drawBlock(ps1, pe1, blockY, g);
                     }
 
                     int ps2 = (int) ((feature.start2 - origin) / locScale);
                     int pe2 = (int) ((feature.end2 - origin) / locScale);
                     if (pe2 >= trackRectangle.getX() && ps2 <= trackRectangle.getMaxX()) {
-                        ps2 = drawBlock(ps2, pe2, baseY, g);
+                        drawBlock(ps2, pe2, blockY, g);
                     }
 
                     // connecting line
-                    if (feature.isSameChr()) {
-                        int pl1 = Math.min(pe1, pe2);
-                        int pl2 = Math.max(ps1, ps2);
-                        final int connectorY = baseY + rowHeight / 2;
-                        g.drawLine(pl1, connectorY, pl2, connectorY);
-                    }
+//                    if (feature.isSameChr()) {
+//                        int pl1 = Math.min(pe1, pe2);
+//                        int pl2 = Math.max(ps1, ps2);
+//                        final int connectorY = blockY + rowHeight / 2;
+//                        g.drawLine(pl1, connectorY, pl2, connectorY);
+//                    }
                 } else {
-                    int ps1 = (int) ((feature.getStart() - origin) / locScale);
-                    int pe1 = (int) ((feature.getEnd() - origin) / locScale);
+                    int ps1 = (int) ((bedPE.getStart() - origin) / locScale);
+                    int pe1 = (int) ((bedPE.getEnd() - origin) / locScale);
                     if (pe1 >= trackRectangle.getX() && ps1 <= trackRectangle.getMaxX()) {
-                        drawBlock(ps1, pe1, baseY, g);
+                        drawBlock(ps1, pe1, blockY, g);
                     }
 
                 }
@@ -72,13 +70,15 @@ public class PEBlockRenderer implements BedPERenderer {
         }
     }
 
-    private int drawBlock(int ps1, int pe1, int blockY, Graphics2D g) {
+    private void drawBlock(int ps1, int pe1, int blockY, Graphics2D g) {
         // Trim width if possible to insure a gap between blocks
         int w1 = Math.max(1, pe1 - ps1);
         if (w1 > 3) w1--;
-        if (w1 > 5) ps1++;
+        else if (w1 > 5) {
+            w1 -= 2;
+            ps1++;
+        }
         g.fillRect(ps1, blockY, w1, rowHeight);
-        return ps1;
     }
 
 }

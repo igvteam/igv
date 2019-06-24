@@ -1,5 +1,7 @@
 package org.broad.igv.bedpe;
 
+import java.awt.*;
+
 public class BedPEInterFeature  implements BedPE {
 
 
@@ -15,6 +17,8 @@ public class BedPEInterFeature  implements BedPE {
     public BedPEFeature get() {
         return wrappedFeature;
     }
+
+
 
     public String getChr() {
         return this.order == 1 ? wrappedFeature.chr1 : wrappedFeature.chr2;
@@ -34,7 +38,7 @@ public class BedPEInterFeature  implements BedPE {
     }
 
     public boolean isSameChr() {
-        return wrappedFeature.isSameChr();
+        return false;
     }
 
     @Override
@@ -45,6 +49,16 @@ public class BedPEInterFeature  implements BedPE {
     @Override
     public int getRow() {
         return row;
+    }
+
+    @Override
+    public Color getColor() {
+        return wrappedFeature.getColor();
+    }
+
+    @Override
+    public int getThickness() {
+        return wrappedFeature.getThickness();
     }
 
     public String getContig() {

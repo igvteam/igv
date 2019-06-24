@@ -16,6 +16,8 @@ import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
@@ -38,6 +40,7 @@ public class BedPETrack extends AbstractTrack {
     int thickness = 1;
     boolean autoscale = true;
     int gap = 5;
+    boolean showBlocks = false;
 
     private Map<String, List<BedPE>> featureMap;
     private Map<GraphType, BedPERenderer> renderers;
@@ -163,6 +166,9 @@ public class BedPETrack extends AbstractTrack {
             if (features != null && features.size() > 0) {
                 renderers.get(graphType).render(features, context, trackRectangle);
             }
+            if(showBlocks) {
+                renderers.get(GraphType.BLOCK).render(features, context, trackRectangle);
+            }
 
         } finally {
             context.clearGraphicsCache();
@@ -206,6 +212,18 @@ public class BedPETrack extends AbstractTrack {
             group.add(mm);
             menu.add(mm);
         }
+
+        menu.addSeparator();
+        JCheckBox showBlocksCB = new JCheckBox("Show Blocks");
+        showBlocksCB.setSelected(showBlocks);
+        showBlocksCB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showBlocks = showBlocksCB.isSelected();
+                refresh();
+            }
+        });
+        menu.add(showBlocksCB);
 
         menu.addSeparator();
         item = new JMenuItem("Toggle Arc Orientation");
@@ -262,6 +280,7 @@ public class BedPETrack extends AbstractTrack {
         element.setAttribute("direction", String.valueOf(direction));
         element.setAttribute("thickness", String.valueOf(thickness));
         element.setAttribute("graphType", String.valueOf(graphType));
+        element.setAttribute("showBlocks", String.valueOf(showBlocks));
 
     }
 
@@ -276,6 +295,8 @@ public class BedPETrack extends AbstractTrack {
             this.thickness = Integer.parseInt(element.getAttribute("thickness"));
         if (element.hasAttribute("graphType"))
             this.graphType = GraphType.valueOf(element.getAttribute("graphType").toUpperCase());
+        if (element.hasAttribute("showBlocks"))
+            this.showBlocks = Boolean.parseBoolean(element.getAttribute("showBlocks"));
 
     }
 

@@ -51,6 +51,14 @@ public class BedPEFeature implements BedPE {
         return Math.max(end1, end2);
     }
 
+    public int getMidStart() {
+        return Math.min ((start1 + end1) / 2, (start2 + end2) / 2);
+    }
+
+    public int getMidEnd() {
+        return Math.max ((start1 + end1) / 2, (start2 + end2) / 2);
+    }
+
     @Override
     public double getScore() {
         return score;
@@ -68,6 +76,16 @@ public class BedPEFeature implements BedPE {
     @Override
     public int getRow() {
         return row;
+    }
+
+    @Override
+    public Color getColor() {
+        return color;
+    }
+
+    @Override
+    public int getThickness() {
+        return thickness;
     }
 
     public String getContig() {
