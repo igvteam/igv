@@ -271,10 +271,10 @@ public class RulerPanel extends JPanel {
             if (dw > 5) {
                 int center = x + dw / 2;
 
-                String displayName = null;
+                String displayName = chrName;
                 if (chrName.startsWith("gi|")) {
                     displayName = Genome.getNCBIName(chrName);
-                } else {
+                } else if (chrName.length() < 5) {
                     displayName = chrName.replace("chr", "");
                 }
                 int strWidth = fontMetrics.stringWidth(displayName);
