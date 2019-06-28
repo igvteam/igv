@@ -500,8 +500,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                         value = StringUtils.decodeURL(value);
                     }
                     kvalues.put(StringUtils.intern(key), value);
-                } else {
-                    log.info("No attributes: " + description);
                 }
             }
         }

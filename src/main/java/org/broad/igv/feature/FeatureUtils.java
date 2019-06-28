@@ -475,23 +475,17 @@ public class FeatureUtils {
     }
 
 
-    private static final Comparator<Feature> FEATURE_CONTAINS_COMPARATOR = new Comparator<Feature>() {
-        public int compare(Feature o1, Feature o2) {
-            int genomeStart2 = o2.getStart();
-            int genomeStart1 = o1.getEnd();
-            if (genomeStart2 >= genomeStart1 && o2.getEnd() <= o1.getEnd()) {
-                return 0;
-            } else {
-                return genomeStart1 - genomeStart2;
-            }
+    private static final Comparator<Feature> FEATURE_CONTAINS_COMPARATOR = (o1, o2) -> {
+        int genomeStart2 = o2.getStart();
+        int genomeStart1 = o1.getEnd();
+        if (genomeStart2 >= genomeStart1 && o2.getEnd() <= o1.getEnd()) {
+            return 0;
+        } else {
+            return genomeStart1 - genomeStart2;
         }
     };
 
-    public static final Comparator<Feature> FEATURE_START_COMPARATOR = new Comparator<Feature>() {
-        public int compare(Feature o1, Feature o2) {
-            return o1.getStart() - o2.getStart();
-        }
-    };
+    public static final Comparator<Feature> FEATURE_START_COMPARATOR = (o1, o2) -> o1.getStart() - o2.getStart();
 
     /**
      * Compute reading frames

@@ -10,10 +10,8 @@ import org.broad.igv.util.ParsingUtils;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jrobinso on 6/29/18.
@@ -106,7 +104,7 @@ public class BedPEParser {
                 }
 
                 if (tenx) {
-                    Map<String, String> attributes = new HashMap<>();
+                    Map<String, String> attributes = new LinkedHashMap<>();
                     if (!tokens[8].equals(".")) {
                         attributes.put("filters", tokens[8]);
                     }

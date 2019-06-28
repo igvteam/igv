@@ -1,6 +1,7 @@
 package org.broad.igv.bedpe;
 
-import org.broad.igv.feature.Locatable;
+
+import htsjdk.samtools.util.Locatable;
 
 import java.awt.*;
 
@@ -19,4 +20,12 @@ public interface BedPE extends Locatable {
     Color getColor();
 
     int getThickness();
+
+    void setShape(BedPEShape s);
+
+    BedPEShape getShape();
+
+    String getValueString();
+
+    double getCenterDistance();
 }

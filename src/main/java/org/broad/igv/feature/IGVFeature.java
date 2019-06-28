@@ -26,6 +26,7 @@
 
 package org.broad.igv.feature;
 
+import htsjdk.samtools.util.Locatable;
 import org.broad.igv.util.collections.MultiMap;
 
 import java.awt.*;

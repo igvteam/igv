@@ -94,14 +94,16 @@ public class NestedArcRenderer implements BedPERenderer{
                         double a = w / 2;
                         double r = a / sinTheta;
                         double b = cosTheta * r;
-                        double x = pixelStart + a;
-                        double y = direction == UP ? trackBaseLine + b : gap + trackRectangle.y - b;
+                        double xc = pixelStart + a;
+                        double yc = direction == UP ? trackBaseLine + b : gap + trackRectangle.y - b;
                         double angleSt = direction == UP ? 90 - Math.toDegrees(theta) : 270 - Math.toDegrees(theta);
                         double ext = Math.toDegrees(2 * theta);
 
                         Arc2D.Double arcPath = new Arc2D.Double();
-                        arcPath.setArcByCenter(x, y, r, angleSt, ext, Arc2D.OPEN);
+                        arcPath.setArcByCenter(xc, yc, r, angleSt, ext, Arc2D.OPEN);
                         g.draw(arcPath);
+
+                        feature.setShape(new NAShape(xc, yc, r));
 
                     } else {
                         Color fcolor = bedPE.get().color == null ? Color.black : bedPE.get().color;
@@ -112,6 +114,7 @@ public class NestedArcRenderer implements BedPERenderer{
                         g.drawLine((int) ps, yBase, (int) ps, yBase + h);
 
                     }
+                } else {
 
                 }
             }
@@ -171,6 +174,27 @@ public class NestedArcRenderer implements BedPERenderer{
         }
     }
 
+
+    public static class NAShape implements BedPEShape {
+
+        double xc;
+        double yc;
+        double r;
+
+        public NAShape(double xc, double yc, double r) {
+            this.xc = xc;
+            this.yc = yc;
+            this.r = r;
+        }
+
+        public boolean contains(double x, double y) {
+
+            double dx = x - xc;
+            double dy = y - yc;
+            double dist = Math.sqrt(dx*dx + dy*dy);
+            return Math.abs(r - dist) <= 3;
+        }
+    }
 
 }
 

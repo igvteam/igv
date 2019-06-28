@@ -21,6 +21,7 @@ public class BedPEFeature implements BedPE {
     String type;
     Map<String, String> attributes;
     int row;
+    BedPEShape shape;
 
     public BedPEFeature(String chr1, int start1, int end1, String chr2, int start2, int end2) {
         this.chr1 = chr1;
@@ -92,4 +93,40 @@ public class BedPEFeature implements BedPE {
         return getChr();
     }
 
+    @Override
+    public BedPEShape getShape() {
+        return shape;
+    }
+
+    @Override
+    public void setShape(BedPEShape shape) {
+        this.shape = shape;
+    }
+
+    public String getValueString() {
+
+        StringBuffer buf = new StringBuffer();
+
+        String locus1 = chr1 + ":" + start1 + "-" + end1;
+        String locus2 = chr2 + ":" + start2 + "-" + end2;
+        if(name != null && name.length() > 0 && !name.equals(".")) {
+            buf.append(name + "<br>");
+        }
+        buf.append(locus1);
+        buf.append("<br>" + locus2);
+        buf.append("<br>Score: " + score);
+        if(attributes != null) {
+            buf.append("<br><hr>");
+            for (Map.Entry<String, String> entry : attributes.entrySet()) {
+                buf.append("<br>" + entry.getKey() + ": " + entry.getValue());
+            }
+        }
+
+        return buf.toString();
+    }
+
+    @Override
+    public double getCenterDistance() {
+        return Math.abs((start1 + end1) / 2.0 - (start2 + end2)  / 2.0);
+    }
 }

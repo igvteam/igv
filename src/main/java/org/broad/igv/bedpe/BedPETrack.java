@@ -2,14 +2,12 @@ package org.broad.igv.bedpe;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.AbstractTrack;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.TrackClickEvent;
-import org.broad.igv.track.TrackMenuUtils;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.FeatureCache;
 import org.broad.igv.util.ResourceLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -42,8 +40,9 @@ public class BedPETrack extends AbstractTrack {
     int gap = 5;
     boolean showBlocks = false;
 
-    private Map<String, List<BedPE>> featureMap;
+    //private Map<String, List<BedPE>> featureMap;
     private Map<GraphType, BedPERenderer> renderers;
+    private FeatureCache<BedPE> featureCache;
 
     public BedPETrack() {
     }
@@ -63,39 +62,55 @@ public class BedPETrack extends AbstractTrack {
 
     private void init(List<BedPEFeature> featureList, Genome genome) {
 
-        this.featureMap = new HashMap<>();
+//        this.featureMap = new HashMap<>();
+//
+//        for (BedPEFeature f : featureList) {
+//            String key = genome == null ? f.chr1 : genome.getCanonicalChrName(f.chr1);
+//            if (f.chr1.equals(f.chr2)) {
+//                addToMap(f, key);
+//            } else {
+//                addToMap(new BedPEInterFeature(f, 1), key);
+//                String key2 = genome == null ? f.chr2 : genome.getCanonicalChrName(f.chr2);
+//                addToMap(new BedPEInterFeature(f, 2), key2);
+//            }
+//        }
+//        featureMap.put(Globals.CHR_ALL, createWGFeatures(featureList, genome));
+//
+//        // Sort feature lists by "start" (minimum of start1, start2)
+//        featureMap.values().forEach(flist -> Collections.sort(flist, (o1, o2) -> o1.getStart() - o2.getStart()));
+//
+//        // Pack features for block renderer -- TODO do this lazily?
+//        for(List<BedPE> flist : featureMap.values()) {
+//            BedPEUtils.packFeatures(flist, 100);
+//        }
+
+        List<BedPE> newList = new ArrayList<>((int) (1.2 * featureList.size()));
 
         for (BedPEFeature f : featureList) {
             String key = genome == null ? f.chr1 : genome.getCanonicalChrName(f.chr1);
             if (f.chr1.equals(f.chr2)) {
-                addToMap(f, key);
+                newList.add(f);
             } else {
-                addToMap(new BedPEInterFeature(f, 1), key);
-                String key2 = genome == null ? f.chr2 : genome.getCanonicalChrName(f.chr2);
-                addToMap(new BedPEInterFeature(f, 2), key2);
+                newList.add(new BedPEInterFeature(f, 1));
+                newList.add(new BedPEInterFeature(f, 2));
             }
         }
-        featureMap.put(Globals.CHR_ALL, createWGFeatures(featureList, genome));
+        newList.addAll(createWGFeatures(featureList, genome));
 
-        // Sort feature lists by "start" (minimum of start1, start2)
-        featureMap.values().forEach(flist -> Collections.sort(flist, (o1, o2) -> o1.getStart() - o2.getStart()));
+        featureCache = new FeatureCache<>(newList, 50);
 
-        // Pack features for block renderer -- TODO do this lazily?
-//        for(List<BedPE> flist : featureMap.values()) {
-//            BedPEUtils.packFeatures(flist, 100);
+    }
+
+//    private void addToMap(BedPE f, String key) {
+//        List<BedPE> features = featureMap.get(key);
+//        double maxScore = 0;
+//        if (features == null) {
+//            features = new ArrayList<>();
+//            featureMap.put(key, features);
 //        }
-    }
-
-    private void addToMap(BedPE f, String key) {
-        List<BedPE> features = featureMap.get(key);
-        double maxScore = 0;
-        if (features == null) {
-            features = new ArrayList<>();
-            featureMap.put(key, features);
-        }
-        features.add(f);
-
-    }
+//        features.add(f);
+//
+//    }
 
 
     private List<BedPE> createWGFeatures(List<BedPEFeature> features, Genome genome) {
@@ -135,20 +150,22 @@ public class BedPETrack extends AbstractTrack {
 
     private List<BedPE> getFeaturesOverlapping(String chr, double start, double end) {
 
-        List<BedPE> features = new ArrayList<>();
-        List<BedPE> allFeatures = featureMap.get(chr);
+//        List<BedPE> features = new ArrayList<>();
+//        List<BedPE> allFeatures = featureMap.get(chr);
+//
+//        // TODO - optimize
+//        if (allFeatures != null) {
+//            for (BedPE f : allFeatures) {
+//                if (f.getStart() > end) break;
+//
+//                if (f.getEnd() >= start) {
+//                    features.add(f);
+//                }
+//            }
+//        }
+//        return features;
 
-        // TODO - optimize
-        if (allFeatures != null) {
-            for (BedPE f : allFeatures) {
-                if (f.getStart() > end) break;
-
-                if (f.getEnd() >= start) {
-                    features.add(f);
-                }
-            }
-        }
-        return features;
+        return featureCache.getFeatures(chr, (int) start, (int) end);
     }
 
     @Override
@@ -166,7 +183,7 @@ public class BedPETrack extends AbstractTrack {
             if (features != null && features.size() > 0) {
                 renderers.get(graphType).render(features, context, trackRectangle);
             }
-            if(showBlocks) {
+            if (showBlocks) {
                 renderers.get(GraphType.BLOCK).render(features, context, trackRectangle);
             }
 
@@ -175,7 +192,6 @@ public class BedPETrack extends AbstractTrack {
             g2d.setClip(clip);
         }
     }
-
 
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
@@ -269,6 +285,25 @@ public class BedPETrack extends AbstractTrack {
 
     @Override
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
+
+        List<BedPE> candidates = getFeaturesOverlapping(frame.getChrName(), (int) position, (int) position + 1);
+
+        // Sort candidate features smallest to largest
+        Collections.sort(candidates, (o1, o2) -> {
+            double d1 = o1.getCenterDistance();
+            double d2 = o2.getCenterDistance();
+            if (d1 > d2) return 1;
+            else if (d1 < d2) return -1;
+            else return 0;
+        });
+
+        for (BedPE f : candidates) {
+            BedPEShape s = f.getShape();
+            if (s != null && s.contains(mouseX, mouseY)) {
+                return f.getValueString();
+            }
+        }
+
         return super.getValueStringAt(chr, position, mouseX, mouseY, frame);
     }
 

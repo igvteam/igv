@@ -90,6 +90,8 @@ public class ProportionalArcRenderer implements BedPERenderer {
                         g.setColor(shadedColor);
                         g.fill(arcPath);
 
+                        bedPE.setShape(new PAShape(pixelStart + w/2, y + h, w/2, h));
+
                     } else {
                         Color fcolor = bedPE.get().color == null ? Color.black : bedPE.get().color;
                         g.setColor(fcolor);
@@ -97,7 +99,9 @@ public class ProportionalArcRenderer implements BedPERenderer {
                         int yBase = direction == UP ? trackRectangle.y + trackRectangle.height - h : trackRectangle.y + gap;
                         g.drawLine((int) ps, yBase, (int) ps, yBase + h);
                     }
-
+                }
+                else {
+                    bedPE.setShape(null);
                 }
             }
         } finally {
@@ -133,5 +137,29 @@ public class ProportionalArcRenderer implements BedPERenderer {
         return ac;
     }
 
+    //(x-h)^2/a^2 + (y-k)^2/b^2 <= 1
+    public static class PAShape implements BedPEShape{
+
+        double h;   //xc
+        double k;   //yc
+        double a2;   // x axis
+        double b2;   // y axis
+
+        public PAShape(double h, double k, double a, double b) {
+            this.h = h;
+            this.k = k;
+            this.a2 = a*a;
+            this.b2 = b*b;
+        }
+
+        @Override
+        public boolean contains(double x, double y) {
+
+            double dx = x - h;
+            double dy = y - k;
+            double e = dx*dx / a2 + dy*dy / b2;
+            return e > 0.95 && e < 1.05;
+        }
+    }
 }
 

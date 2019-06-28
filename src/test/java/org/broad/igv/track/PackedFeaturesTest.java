@@ -26,12 +26,8 @@
 package org.broad.igv.track;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.Locatable;
-import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.util.TestUtils;
-import htsjdk.tribble.AbstractFeatureReader;
 import htsjdk.tribble.Feature;
-import htsjdk.tribble.FeatureCodec;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -75,7 +71,7 @@ public class PackedFeaturesTest extends AbstractHeadlessTest {
         assertEquals(expected.getRowCount(), actual.getRowCount());
     }
 
-    static class TestFeature implements Feature, Locatable {
+    static class TestFeature implements Feature {
         String chr;
         int start;
         int end;
