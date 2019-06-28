@@ -45,6 +45,7 @@ import java.awt.event.MouseEvent;
  */
 public class ZoomSliderPanel extends JPanel {
 
+    private static final Color TRANSPARENT_GRAY = new Color(200, 200, 200, 150);
     static Color TICK_GRAY = new Color(90, 90, 90);
     static Color TICK_BLUE = new Color(25, 50, 200);
 
@@ -59,9 +60,10 @@ public class ZoomSliderPanel extends JPanel {
      * Should correspond to "maxZoomLevel" in class referenceFrame.
      */
     int numZoomLevels = 25;
-
-
     private int minZoomLevel = 0;
+    private ReferenceFrame referenceFrame;
+
+
 
     /**
      * Set the allowed zoom level, user cannot zoom out past this level
@@ -72,8 +74,7 @@ public class ZoomSliderPanel extends JPanel {
         this.minZoomLevel = minZoomLevel;
     }
 
-    private static final Color TRANSPARENT_GRAY = new Color(200, 200, 200, 150);
-    private ReferenceFrame referenceFrame;
+
 
     public ZoomSliderPanel(){
         this(null);
@@ -171,7 +172,7 @@ public class ZoomSliderPanel extends JPanel {
 
         // Draw current level -- zoomIndex is the zoom level + 1.
 
-        int zoom = (toolZoom >= 0 ? toolZoom : getReferenceFrame().getAdjustedZoom());
+        int zoom = getReferenceFrame().getAdjustedZoom();
 
         if (enabled) {
             if (zoom >= 0 && zoom < zoomLevelRects.length) {
@@ -194,21 +195,21 @@ public class ZoomSliderPanel extends JPanel {
         transGraphics.dispose();
     }
 
-    int setZoom(MouseEvent e) {
+    void setZoom(MouseEvent e) {
 
         if (zoomPlusRect.contains(e.getX(), e.getY())) {
-            toolZoom++;
-        } else if (zoomMinusRect.contains(e.getX(), e.getY()) && toolZoom > minZoomLevel) {
-            toolZoom--;
+            getReferenceFrame().doZoomIncrement(1);
+        } else if (zoomMinusRect.contains(e.getX(), e.getY())) {
+            getReferenceFrame().doZoomIncrement(-1);
         } else {
             for (int i = 0; i < zoomLevelRects.length; i++) {
                 Rectangle rect = zoomLevelRects[i];
                 if (rect.contains(e.getX(), e.getY()) && i >= minZoomLevel) {
-                    toolZoom = i;
+                    getReferenceFrame().setAdjustedZoom(i);
+                    break;
                 }
             }
         }
-        return toolZoom;
     }
 
 
@@ -217,7 +218,6 @@ public class ZoomSliderPanel extends JPanel {
         return referenceFrame;
     }
 
-    int toolZoom = -1;
 
     private void init() {
 
@@ -244,7 +244,7 @@ public class ZoomSliderPanel extends JPanel {
                 if (!isEnabled()) {
                     return;
                 }
-                toolZoom = Math.max(0, getReferenceFrame().getAdjustedZoom());
+                //toolZoom = Math.max(0, getReferenceFrame().getAdjustedZoom());
             }
 
             @Override
@@ -252,20 +252,8 @@ public class ZoomSliderPanel extends JPanel {
                 if (!isEnabled()) {
                     return;
                 }
-                //Sometimes the zoom doesn't change, don't need to do anything in that case
-                int oldToolZoom = toolZoom;
-                int diff = setZoom(e) - oldToolZoom;
-                if(diff == 0) {
-                    toolZoom = -1;
-                    return;
-                }
-
+                setZoom(e);
                 repaint();
-
-                int effectiveZoom = toolZoom + getReferenceFrame().getMinZoom();
-                getReferenceFrame().changeZoom(effectiveZoom);
-                toolZoom = -1;
-
             }
 
 
@@ -273,8 +261,8 @@ public class ZoomSliderPanel extends JPanel {
             public void mouseDragged(MouseEvent e) {
                 // Dragging zoom tool is disable.  Generates too many
                 // repaint events.
-                setZoom(e);
-                repaint();
+                //setZoom(e);
+                //repaint();
             }
         };
 
