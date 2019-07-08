@@ -25,9 +25,8 @@
 
 package org.broad.igv.track;
 
-import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.util.TestUtils;
 import htsjdk.tribble.Feature;
+import org.broad.igv.AbstractHeadlessTest;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -60,15 +59,6 @@ public class PackedFeaturesTest extends AbstractHeadlessTest {
         PackedFeatures<TestFeature> pf = new PackedFeatures("chr1", 0, 1000, features.iterator(), "");
         assertEquals(4, pf.getRowCount());
 
-    }
-
-
-    private void assertPackedFeaturesEqual(PackedFeatures<? extends Feature> expected, PackedFeatures<? extends Feature> actual) {
-
-        TestUtils.assertFeatureListsEqual(expected.getFeatures().iterator(), actual.getFeatures().iterator());
-        assertTrue(expected.getFeatures().size() > 0);
-        assertEquals(expected.getMaxFeatureLength(), actual.getMaxFeatureLength());
-        assertEquals(expected.getRowCount(), actual.getRowCount());
     }
 
     static class TestFeature implements Feature {

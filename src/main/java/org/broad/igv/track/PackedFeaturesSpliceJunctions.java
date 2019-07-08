@@ -28,9 +28,13 @@ package org.broad.igv.track;
 
 import htsjdk.samtools.util.Locatable;
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.SpliceJunctionFeature;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.ui.util.MessageUtils;
+import htsjdk.tribble.Feature;
 
 import java.util.*;
 
@@ -50,7 +54,7 @@ import java.util.*;
  * where the exon is present has more coverage in the first junction, but the absent-exon condition has more
  * coverage overall.  These are kind of degenerate cases, so only worth handling if someone complains.
  */
-public class PackedFeaturesSpliceJunctions<T extends Locatable> extends PackedFeatures {
+public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeatures {
 
     private static Logger log = Logger.getLogger(PackedFeaturesSpliceJunctions.class);
 
@@ -63,7 +67,7 @@ public class PackedFeaturesSpliceJunctions<T extends Locatable> extends PackedFe
      * @param feature
      * @return
      */
-    protected int getFeatureStartForPacking(Locatable feature)
+    protected int getFeatureStartForPacking(Feature feature)
     {
         return ((SpliceJunctionFeature) feature).getJunctionStart();
     }
@@ -74,7 +78,7 @@ public class PackedFeaturesSpliceJunctions<T extends Locatable> extends PackedFe
      * @param feature
      * @return
      */
-    protected int getFeatureEndForPacking(Locatable feature)
+    protected int getFeatureEndForPacking(Feature feature)
     {
         return ((SpliceJunctionFeature) feature).getJunctionEnd();
     }
@@ -101,8 +105,8 @@ public class PackedFeaturesSpliceJunctions<T extends Locatable> extends PackedFe
         List<FeatureRow> posRows = packFeaturesOneStrand(iterSplitter.getPosIter());
         List<FeatureRow> negativeRows = packFeaturesOneStrand(iterSplitter.getNegIter());
 
-        Comparator startComparator = new Comparator<Locatable>() {
-            public int compare(Locatable row1, Locatable row2) {
+        Comparator startComparator = new Comparator<Feature>() {
+            public int compare(Feature row1, Feature row2) {
                 return row1.getStart() - row2.getStart();
             }
         };
@@ -112,7 +116,7 @@ public class PackedFeaturesSpliceJunctions<T extends Locatable> extends PackedFe
         features.clear();
         for (int i=0; i<numRows; i++)
         {
-            List<Locatable> posAndNegFeatures = new ArrayList<Locatable>();
+            List<Feature> posAndNegFeatures = new ArrayList<Feature>();
             if (negativeRows.size() > i)
                 posAndNegFeatures.addAll(negativeRows.get(i).getFeatures());
             if (posRows.size() > i)
@@ -122,7 +126,7 @@ public class PackedFeaturesSpliceJunctions<T extends Locatable> extends PackedFe
             {
                 Collections.sort(posAndNegFeatures, startComparator);
                 FeatureRow resultRow = new FeatureRow();
-                for (Locatable feature : posAndNegFeatures)
+                for (Feature feature : posAndNegFeatures)
                     resultRow.addFeature(feature);
                 result.add(resultRow);
                 features.addAll(posAndNegFeatures);
@@ -241,8 +245,8 @@ public class PackedFeaturesSpliceJunctions<T extends Locatable> extends PackedFe
     protected class IteratorSplitterByCharge {
         Iterator origIter;
 
-        List<Locatable> posBuffer = new ArrayList<Locatable>();
-        List<Locatable> negBuffer = new ArrayList<Locatable>();
+        List<Feature> posBuffer = new ArrayList<Feature>();
+        List<Feature> negBuffer = new ArrayList<Feature>();
 
         PerStrandIter posIter;
         PerStrandIter negIter;
@@ -266,13 +270,13 @@ public class PackedFeaturesSpliceJunctions<T extends Locatable> extends PackedFe
          * An iterator of Features for a single strand. Polls the original iterator for new features and
          * either returns them or buffers them in the other strand's buffer, accordingly
          */
-        protected class PerStrandIter implements Iterator<Locatable> {
-            List<Locatable> buffer;
-            List<Locatable> otherBuffer;
+        protected class PerStrandIter implements Iterator<Feature> {
+            List<Feature> buffer;
+            List<Feature> otherBuffer;
             Strand strand;
 
 
-            public PerStrandIter(List<Locatable> buffer, List<Locatable> otherBuffer, Strand strand) {
+            public PerStrandIter(List<Feature> buffer, List<Feature> otherBuffer, Strand strand) {
                 this.buffer = buffer;
                 this.otherBuffer = otherBuffer;
                 this.strand = strand;
@@ -300,7 +304,7 @@ public class PackedFeaturesSpliceJunctions<T extends Locatable> extends PackedFe
              * appropriate strand, buffering the other strand features as we go
              * @return
              */
-            public Locatable next() {
+            public Feature next() {
                 while (buffer.isEmpty() && origIter.hasNext())
                 {
                     BasicFeature feature = (BasicFeature) origIter.next();
@@ -311,7 +315,7 @@ public class PackedFeaturesSpliceJunctions<T extends Locatable> extends PackedFe
                 }
                 if (buffer.isEmpty())
                     return null;
-                Locatable result = buffer.get(0);
+                Feature result = buffer.get(0);
                 buffer.remove(0);
                 return result;
             }
