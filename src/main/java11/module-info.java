@@ -3,8 +3,6 @@ module org.igv {
     exports org.broad.igv.tools;
     exports org.broad.igv.ui;
 
-    requires AbsoluteLayout;
-//    requires ant; // XXX: I cannot see why this is required
     requires com.google.common;
     requires protobuf.java;
     requires commons.math3;
@@ -26,7 +24,7 @@ module org.igv {
     requires goby.io;
     requires icb.utils;
     requires fastutil;
-    requires batik.xml;
+    requires batik.codec;
     requires batik.svggen;
     requires batik.dom;
     requires dsiutils;

@@ -192,7 +192,7 @@ public class SnapshotUtilities {
             fos = new FileOutputStream(selectedFile);
             g = (Graphics2D) constructor.newInstance("eps", fos, 0, 0, target.getWidth(), target.getHeight(), colorModeValue);
 
-            paintImage(target, g, width, height, paintOffscreen);
+            paintImage(target, (SVGGraphics2D) g, width, height, paintOffscreen);
 
             graphicsClass.getMethod("close").invoke(g);
 
@@ -269,7 +269,7 @@ public class SnapshotUtilities {
         }
     }
 
-    private static void paintImage(Component target, Graphics2D g, int width, int height, boolean paintOffscreen) {
+    private static void paintImage(Component target, SVGGraphics2D g, int width, int height, boolean paintOffscreen) {
         log.debug("Painting to target " + target + " , offscreen " + paintOffscreen);
         if (paintOffscreen) {
             Rectangle rect = new Rectangle(0, 0, width, height);
@@ -296,7 +296,7 @@ public class SnapshotUtilities {
         BufferedImage image = getDeviceCompatibleImage(width, height);
         Graphics2D g = image.createGraphics();
 
-        paintImage(target, g, width, height, paintOffscreen);
+        paintImage(target, (SVGGraphics2D) g, width, height, paintOffscreen);
 
         selectedFile = fixFileExt(selectedFile, allowedExts, format);
         if (selectedFile != null) {

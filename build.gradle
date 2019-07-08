@@ -79,6 +79,7 @@ configurations {
         exclude group: 'org.apache.commons', module: 'commons-math'
 
         // Batik deps
+        exclude group: 'org.apache.xmlgraphics', module: 'batik-script'
         exclude group: 'xml-apis', module: 'xml-apis'
         exclude group: 'xml-apis', module: 'xml-apis-ext'
         exclude group: 'xalan', module: 'serializer'
@@ -122,6 +123,7 @@ dependencies {
         [group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: '1.11'],
         [group: 'org.apache.xmlgraphics', name: 'batik-codec', version: '1.11'],
         [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'],
+        [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
 
         // Amazon deps
         [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.5.0'],
@@ -200,14 +202,14 @@ test {
     doFirst {
         jvmArgs = [
             '-Dcom.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize',
-            '--module-path',  classpath.asPath, 
-            '--add-modules', 'junit', 
-            '--add-modules', 'fest.swing', 
+            '--module-path',  classpath.asPath,
+            '--add-modules', 'junit',
+            '--add-modules', 'fest.swing',
             '--add-modules', 'ALL-MODULE-PATH',
-            '--add-reads', "$moduleName=junit", 
+            '--add-reads', "$moduleName=junit",
             '--add-reads', "$moduleName=fest.swing",
             '@scripts/java11/test_suite.args',
-            '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath, 
+            '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath,
         ]
         classpath = files()
     }
