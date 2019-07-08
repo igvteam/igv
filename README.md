@@ -1,7 +1,7 @@
 # igv
 [![Build Status](https://travis-ci.org/umccr/igv.svg?branch=umccr)](https://travis-ci.org/umccr/igv)
 
-Integrative Genomics Viewer - dekstop genome visualization tool for Mac, Windows, and Linux.
+Integrative Genomics Viewer - desktop genome visualization tool for Mac, Windows, and Linux.
 
 ### Building
 
@@ -35,8 +35,8 @@ NOTE: If on a Windows platform use ```./gradlew.bat'``` in the instructions belo
     * All four JARs must be in the same location in order to run IGV.  It can be run directly from
     'build/IGV-dist' 
     
-  *  Launch with 'igv.sh' on UNIX, 'igv.command' on Mac, and 'igv.bat' on Windows.  These scripts can
-    be edited to adjust JVM flags like maximum memory, etc.
+  *  Launch with 'igv.sh' on UNIX, 'igv.command' on Mac, and 'igv.bat' (or 'igv_32.bat' for 32-bit Java) on Windows.  These scripts can
+    be edited to adjust JVM flags like maximum memory, etc.  
     
   *  All other runtime dependencies are bundled into igv.jar.  There is also an igv-minimal.jar in
     'build/libs' containing just the IGV classes and resources for those who prefer to manage 

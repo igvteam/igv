@@ -360,23 +360,32 @@ public class TrackMenuUtils {
 
             JMenuItem unmergeItem = new JMenuItem("Separate Tracks");
             menu.add(unmergeItem);
-
             if (merged) {
-
-                unmergeItem.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        Track firstTrack = tracks.iterator().next();
-                        TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
-                        final MergedTracks mergedTracks = (MergedTracks) firstTrack;
-                        mergedTracks.setTrackAlphas(255);
-                        panel.addTracks(mergedTracks.getMemberTracks());
-                        panel.moveSelectedTracksTo(mergedTracks.getMemberTracks(), mergedTracks, true);
-                        IGV.getInstance().removeTracks(Arrays.asList(mergedTracks));
-                    }
+                unmergeItem.addActionListener(e -> {
+                    Track firstTrack1 = tracks.iterator().next();
+                    TrackPanel panel = TrackPanel.getParentPanel(firstTrack1);
+                    final MergedTracks mergedTracks = (MergedTracks) firstTrack1;
+                    mergedTracks.setTrackAlphas(1.0);
+                    panel.addTracks(mergedTracks.getMemberTracks());
+                    panel.moveSelectedTracksTo(mergedTracks.getMemberTracks(), mergedTracks, true);
+                    IGV.getInstance().removeTracks(Arrays.asList(mergedTracks));
                 });
             } else {
                 unmergeItem.setEnabled(false);
+            }
+
+            // Add color transparency item if merged
+            if(merged) {
+                Track firstTrack1 = tracks.iterator().next();
+                final MergedTracks mergedTracks = (MergedTracks) firstTrack1;
+
+                JMenuItem alphaItem = new JMenuItem("Adjust Transparency");
+                alphaItem.addActionListener(e -> {
+                    JDialog alphaDialog = mergedTracks.getAlphaDialog();
+                    alphaDialog.setVisible(true);
+                });
+                menu.add(alphaItem);
+
             }
         }
 
@@ -1106,31 +1115,6 @@ public class TrackMenuUtils {
         if (selectedTracks.isEmpty()) {
             return;
         }
-
-        StringBuffer buffer = new StringBuffer();
-        for (Track track : selectedTracks) {
-            buffer.append("\n\t");
-            buffer.append(track.getName());
-        }
-        String deleteItems = buffer.toString();
-
-        JTextArea textArea = new JTextArea();
-        textArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        textArea.setText(deleteItems);
-
-        JOptionPane optionPane = new JOptionPane(scrollPane,
-                JOptionPane.PLAIN_MESSAGE,
-                JOptionPane.YES_NO_OPTION);
-        optionPane.setPreferredSize(new Dimension(550, 500));
-        JDialog dialog = optionPane.createDialog(IGV.getMainFrame(), "Remove The Following Tracks");
-        dialog.setVisible(true);
-
-        Object choice = optionPane.getValue();
-        if ((choice == null) || (JOptionPane.YES_OPTION != ((Integer) choice).intValue())) {
-            return;
-        }
-
         IGV.getInstance().removeTracks(selectedTracks);
         IGV.getInstance().doRefresh();
     }

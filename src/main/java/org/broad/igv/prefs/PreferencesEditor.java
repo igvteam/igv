@@ -33,7 +33,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;

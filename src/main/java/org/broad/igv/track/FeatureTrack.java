@@ -48,7 +48,6 @@ import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.variant.VariantTrack;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -815,10 +814,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             if (cs != null) {
                 cs.setPosEnd(max);
             }
-            if(this.dataRange == null) {
+            if (this.dataRange == null) {
                 setDataRange(new DataRange(0, 0, max));
-            }
-            else {
+            } else {
                 this.dataRange.maximum = max;
             }
             coverageRenderer.render(scores, context, inputRect, this);
@@ -946,10 +944,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 FeatureSource rawSource = source;
                 if (source instanceof CachingFeatureSource) {
                     rawSource = ((CachingFeatureSource) source).getSource();
-                } else {
-                    f = FeatureTrackUtils.nextFeature(source, chr, packedFeatures.getStart(), packedFeatures.getEnd(), forward);
                 }
-
+                f = FeatureTrackUtils.nextFeature(rawSource, chr, packedFeatures.getStart(), packedFeatures.getEnd(), forward);
             }
         }
 
@@ -1049,26 +1045,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             MotifFinderSource source = new MotifFinderSource();
             source.unmarshalXML(sourceElement, version);
             this.source = source;
-        }
-
-    }
-
-
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        if (source == null) return;
-        FeatureSource rawSource = source;
-        if (rawSource instanceof CachingFeatureSource) {
-            rawSource = ((CachingFeatureSource) rawSource).getSource();
-        }
-
-        if (rawSource instanceof MotifFinderSource) {
-            Element sourceElement = document.createElement("SequenceMatchSource");
-            ((MotifFinderSource) rawSource).marshalXML(document, sourceElement);
-            element.appendChild(sourceElement);
         }
 
     }

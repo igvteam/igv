@@ -1,0 +1,11 @@
+http://www.broadinstitute.org/igvdata/annotations/hg18/hg18_annotations.xml
+http://www.broadinstitute.org/igvdata/hg18/Metabric/metabric.xml
+http://igv.broadinstitute.org/data/hg18/tcga/tcga_external.xml
+http://www.broadinstitute.org/igvdata/Tumorscape/Tumorscape.xml
+http://www.broadinstitute.org/igvdata/encode/hg18/hg18_encode_color.xml
+http://www.broadinstitute.org/igvdata/epigenetics/epigenetics_hg18_public.xml
+http://www.broadinstitute.org/igvdata/epigenetics/WilmsTumor/wilms_tumor.xml
+http://www.broadinstitute.org/igvdata/29mammals/29mammals.xml
+http://www.broadinstitute.org/igvdata/BodyMap/BodyMap.xml
+http://www.broadinstitute.org/igvdata/tutorials/tutorials.xml
+

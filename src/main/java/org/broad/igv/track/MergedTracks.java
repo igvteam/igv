@@ -29,6 +29,7 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.session.SessionElement;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -37,6 +38,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,18 +57,21 @@ import java.util.List;
 
 public class MergedTracks extends DataTrack implements ScalableTrack {
 
+    private static double DEFAULT_ALPHA = 0.5;
+
     private Collection<DataTrack> memberTracks;
+    private double alpha;
 
 
     public MergedTracks(String id, String name, Collection<DataTrack> inputTracks) {
         super(null, id, name);
         initTrackList(inputTracks);
         this.autoScale = this.getAutoScale();
-        setTrackAlphas(120);
+        setTrackAlphas(DEFAULT_ALPHA);
     }
 
     public MergedTracks() {
-
+        this.alpha = DEFAULT_ALPHA;
     }
 
     public void setMemberTracks(Collection<DataTrack> inputTracks) {
@@ -86,26 +92,28 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         this.removeAttribute(AttributeManager.GROUP_AUTOSCALE);
         if (memberTracks.size() > 0) {
             String group = memberTracks.iterator().next().getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
-            if(group != null) {
+            if (group != null) {
                 for (Track t : memberTracks) {
-                    if(!group.equals(t.getAttributeValue(AttributeManager.GROUP_AUTOSCALE))) return;
+                    if (!group.equals(t.getAttributeValue(AttributeManager.GROUP_AUTOSCALE))) return;
                 }
                 this.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, group);
             }
         }
+
+        setTrackAlphas(alpha);
     }
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-       return  this.memberTracks.stream().allMatch((t) -> t.isReadyToPaint(frame));
+        return this.memberTracks.stream().allMatch((t) -> t.isReadyToPaint(frame));
     }
 
 
     @Override
     public synchronized void load(ReferenceFrame referenceFrame) {
 
-        for(DataTrack t : memberTracks) {
-            if(!t.isReadyToPaint(referenceFrame)) {
+        for (DataTrack t : memberTracks) {
+            if (!t.isReadyToPaint(referenceFrame)) {
                 t.load(referenceFrame);
             }
         }
@@ -124,11 +132,19 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         return this.memberTracks;
     }
 
-    public void setTrackAlphas(int alpha) {
-        for (Track track : memberTracks) {
-            track.setColor(ColorUtilities.modifyAlpha(track.getColor(), alpha));
-            track.setAltColor(ColorUtilities.modifyAlpha(track.getAltColor(), alpha));
+    public void setTrackAlphas(double alpha) {
+        this.alpha = alpha;
+        if (memberTracks != null) {
+            int iAlpha = (int) Math.floor(alpha * 255);
+            for (Track track : memberTracks) {
+                track.setColor(ColorUtilities.modifyAlpha(track.getColor(), iAlpha));
+                track.setAltColor(ColorUtilities.modifyAlpha(track.getAltColor(), iAlpha));
+            }
         }
+    }
+
+    public double getTrackAlpha() {
+        return alpha;
     }
 
 
@@ -341,6 +357,10 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
         super.marshalXML(document, element);
 
+        if (alpha != DEFAULT_ALPHA) {
+            element.setAttribute("alpha", String.valueOf(alpha));
+        }
+
         for (DataTrack track : memberTracks) {
             Element trackElement = document.createElement(SessionElement.TRACK);
             track.marshalXML(document, trackElement);
@@ -354,6 +374,9 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
         super.unmarshalXML(element, version);
 
+        if (element.hasAttribute("alpha")) {
+            this.alpha = Double.valueOf(element.getAttribute("alpha"));
+        }
         // Un-marshalling handled in IGVSessionReader
 
     }
@@ -424,6 +447,34 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         public int getIconHeight() {
             return this.iconSize;
         }
+    }
+
+
+    public JDialog getAlphaDialog() {
+
+        ChangeListener changeListener = new ChangeListener() {
+            public void stateChanged(ChangeEvent changeEvent) {
+                JSlider theSlider = (JSlider) changeEvent.getSource();
+                double alpha = theSlider.getValue() / 100.0;
+                MergedTracks.this.setTrackAlphas(alpha);
+                IGV.getInstance().getContentPane().repaint();
+            }
+        };
+
+        JOptionPane optionPane = new JOptionPane();
+
+        int initialValue = (int) Math.floor(MergedTracks.this.getTrackAlpha() * 100);
+        JSlider slider = new JSlider(0, 100, initialValue);
+        slider.setMajorTickSpacing(10);
+        slider.setPaintTicks(false);
+        slider.setPaintLabels(false);
+        slider.addChangeListener(changeListener);
+
+        optionPane.setMessage(new Object[]{"Adjust transparency: ", slider});
+        optionPane.setMessageType(JOptionPane.QUESTION_MESSAGE);
+        optionPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
+        JDialog dialog = optionPane.createDialog(IGV.getMainFrame(), "Transparency");
+        return dialog;
     }
 
 

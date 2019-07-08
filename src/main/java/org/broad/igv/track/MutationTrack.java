@@ -91,59 +91,8 @@ public class MutationTrack extends FeatureTrack {
 
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
-
-        Feature f = getFeatureAtMousePosition(te);
-        if (f != null && f instanceof Mutation) {
-
-            final Mutation mut = (Mutation) f;
-            final MouseEvent me = te.getMouseEvent();
-            System.out.println("Submitting");
-            LongRunningTask.submit(new NamedRunnable() {
-                public String getName() {
-                    return "Call OMA";
-                }
-
-                public void run() {
-
-                    StringBuffer buf = new StringBuffer();
-                    buf.append("<html>");
-
-                    buf.append("<p style=\"font-size:medium;\"><b>");
-                    buf.append(mut.getDescription());
-                    buf.append("</b></p><br><hr>");
-
-                    buf.append(mut.getFullDescription());
-
-                    final String omaURL = mut.getOMAUrl();
-                    if (omaURL != null) {
-                        System.out.println("Running");
-                        String omaText = getOMAText(mut, omaURL);
-                        if (omaText != null) {
-                            buf.append("<hr>");
-                            buf.append(omaText);
-                        }
-                    }
-
-                    buf.append("</html>");
-
-
-                    final TooltipTextFrame tf = new TooltipTextFrame(MutationTrack.this.getName(), buf.toString());
-                    Point p = me.getComponent().getLocationOnScreen();
-                    tf.setLocation(Math.max(0, p.x + me.getX() - 150), Math.max(0, p.y + me.getY() - 150));
-
-                    UIUtilities.invokeOnEventThread(new Runnable() {
-                        public void run() {
-                            tf.setVisible(true);
-                        }
-                    });
-
-                }
-            });
-
-
-            return true;
-        }
-        return false;
+        super.openTooltipWindow(te);
+        return true;
     }
 
 

@@ -25,7 +25,6 @@
 
 package org.broad.igv.ui.panel;
 
-import com.jidesoft.swing.JidePopupMenu;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.RegionScoreType;
@@ -41,7 +40,7 @@ import java.util.Set;
  * @author jrobinso
  * @date Sep 18, 2010
  */
-public class RegionMenu extends JidePopupMenu {
+public class RegionMenu extends JPopupMenu {
 
     RegionOfInterest roi;
     ReferenceFrame frame;

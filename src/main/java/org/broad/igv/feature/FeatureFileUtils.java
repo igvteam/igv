@@ -40,9 +40,55 @@ import java.util.*;
  */
 public class FeatureFileUtils {
 
+    public static void main(String[] args) throws IOException {
+        //createImports(args[0], args[1], args[2], args[3], args[4]);
+        splitRepeatMasker(args[0], args[1], args[2]);
+    }
 
-    static Set<String> types = new HashSet(Arrays.asList("SINE", "LINE", "LTR", "DNA", "Simple_repeat",
-            "Low_complexity", "Satellite", "RNA", "Other", "Unknown", "Uncategorized"));
+    public static void splitRepeatMasker(String iFile, String outputDirectory, String prefix) throws IOException {
+
+
+        BufferedReader br = null;
+        Map<String, PrintWriter> pws = new HashMap();
+
+        try {
+            br = new BufferedReader(new FileReader(iFile));
+            File dir = new File(outputDirectory);
+
+
+            String nextLine;
+            while ((nextLine = br.readLine()) != null) {
+                if (nextLine.startsWith("#")) continue;
+                String[] tokens = nextLine.split("\t");
+                String repClass = tokens[11].replace("?", "");
+
+                // Rerrange columns for legal bed
+                PrintWriter pw = pws.get(repClass);
+                if(pw == null) {
+                    File f = new File(dir, prefix + repClass + ".bed");
+                    pw = new PrintWriter(new BufferedWriter(new FileWriter(f)));
+                    pws.put(repClass, pw );
+
+//                    System.out.println("<Resource name=\"" + repClass + "\"");
+//                    System.out.println("path=\"https://s3.amazonaws.com/igv.org.genomes/hg38/rmsk/" + f.getName() + ".gz\"");
+//                    System.out.println("trackLine='useScore=1'/>");
+                }
+
+                pw.println(tokens[5] + "\t" + tokens[6] + "\t" + tokens[7] + "\t" +
+                        tokens[10] + "\t" + tokens[1]+ "\t" + tokens[9]);
+            }
+
+
+        } finally {
+            if (br != null) {
+                br.close();
+            }
+            for (PrintWriter pw : pws.values()) {
+                pw.close();
+            }
+        }
+
+    }
 
     /**
      * Compute feature density in units of # / window.  Note: This function could be extended to other file types by
@@ -176,60 +222,6 @@ public class FeatureFileUtils {
 
     }
 
-    public static void splitRepeatMasker(String iFile, String outputDirectory, String prefix) throws IOException {
-
-
-        BufferedReader br = null;
-        Map<String, PrintWriter> pws = new HashMap();
-
-        try {
-            br = new BufferedReader(new FileReader(iFile));
-            File dir = new File(outputDirectory);
-            for (String type : types) {
-                File f = new File(dir, prefix + type + ".bed");
-                pws.put(type, new PrintWriter(new BufferedWriter(new FileWriter(f))));
-            }
-
-            String nextLine;
-            while ((nextLine = br.readLine()) != null) {
-                if (nextLine.startsWith("#")) continue;
-                String[] tokens = nextLine.split("\t");
-                String type = getType(tokens[5]);
-
-                // Rerrange columns for legal bed
-                pws.get(type).println(tokens[0] + "\t" + tokens[1] + "\t" + tokens[2] + "\t" +
-                        tokens[4] + "\t" + tokens[3]);
-            }
-
-
-        } finally {
-            if (br != null) {
-                br.close();
-            }
-            for (PrintWriter pw : pws.values()) {
-                pw.close();
-            }
-        }
-
-    }
-
-    public static String getType(String s) {
-
-        s = s.replace("?", "");
-
-        if (s.contains("RNA")) {
-            return "RNA";
-        } else if (s.equals("RC")) {
-            return "Other";
-        } else if (s.equals("repClass")) {
-            return "Other";
-        } else if (types.contains(s)) {
-            return s;
-        } else {
-            return "Uncategorized";
-        }
-
-    }
 
     /**
      * Given a GFF File, creates a new GFF file for each type. Any feature type
@@ -598,11 +590,5 @@ public class FeatureFileUtils {
 
     }
 
-
-
-
-    public static void main(String[] args) throws IOException {
-        createImports(args[0], args[1], args[2], args[3], args[4]);
-    }
 
 }

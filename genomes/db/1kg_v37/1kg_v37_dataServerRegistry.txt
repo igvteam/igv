@@ -1,0 +1,5 @@
+https://s3.amazonaws.com/igv.org.genomes/hg19/hg19_annotations.xml
+http://gdac.broadinstitute.org/tap/igv/load/tcga_hg19.xml
+http://www.broadinstitute.org/igvdata/encode/hg19/hg19_encode.xml
+http://www.broadinstitute.org/igvdata/1KG/b37/1KG.s3.xml
+http://www.broadinstitute.org/igvdata/tutorials/tutorials.hg19.xml

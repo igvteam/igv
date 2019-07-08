@@ -154,9 +154,17 @@ public class Main {
 
         DirectoryManager.initializeLog();
         log.info("Startup  " + Globals.applicationString());
-        log.info("Java " + System.getProperty(Globals.JAVA_VERSION_STRING));
+        log.info("Java " + System.getProperty(Globals.JAVA_VERSION_STRING) 
+            + " (build " + System.getProperty("java.vm.version")
+            + ") " + System.getProperty("java.version.date", ""));
+        log.info("Java Vendor: " + System.getProperty("java.vendor")
+            + " " + System.getProperty("java.vendor.url", ""));
+        log.info("JVM: " + System.getProperty("java.vm.name", "")
+            + " " + System.getProperty("java.vendor.version", "")
+            + "   " + System.getProperty("java.compiler", ""));
         log.info("Default User Directory: " + DirectoryManager.getUserDirectory());
-        log.info("OS: " + System.getProperty("os.name"));
+        log.info("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version")
+            + " " + System.getProperty("os.arch"));
         System.setProperty("http.agent", Globals.applicationString());
 
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());

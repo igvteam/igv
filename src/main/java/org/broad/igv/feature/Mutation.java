@@ -99,13 +99,34 @@ public class Mutation implements IGVFeature {
     }
 
 
-    // TODO -- experimental, note this only works for hg18 FIX
     public String getOMAUrl() {
         if (refAllele == null) return null;
         String genome = IGV.getInstance().getGenomeManager().getGenomeId();
         String url = "http://mutationassessor.org/r3/?cm=var&var=" + genome + "," + getOMAName();
         return url;
 
+    }
+
+    public String getCravatLink() {
+
+        String genomeID = IGV.getInstance().getGenomeManager().getGenomeId();
+        if ("hg38".equals(genomeID) || "GRCh38".equals(genomeID)) {
+            if(refAllele == null) return null;
+            String altAllele = altAllele1;
+            if (refAllele.equals(altAllele1)) {
+                altAllele = altAllele2;
+            }
+
+            //http://www.cravat.us/CRAVAT/variant.html?variant=chr22_40418496_+_A_G
+            String cravatChr = chr.startsWith("chr") ? chr : "chr" + chr;
+            int position = start + 1;
+            return "<a target='_blank' " +
+                    "href='http://www.cravat.us/CRAVAT/variant.html?variant=" +
+                    cravatChr + "_" + position + "_+_" + refAllele + "_" + altAllele + "'>Cravat " + refAllele + "->" + altAllele + "</a>";
+        }
+        else {
+            return null;
+        }
     }
 
 
@@ -165,7 +186,7 @@ public class Mutation implements IGVFeature {
         return desc.toString();
     }
 
-    public String getFullDescription() {
+    public String getValueString(double position, int mouseX, WindowFunction ignored) {
         if (valueString == null) {
             StringBuffer buf = new StringBuffer();
             buf.append("Type: ");
@@ -173,23 +194,19 @@ public class Mutation implements IGVFeature {
             if (attributes != null) {
                 attributes.printHtml(buf, 100);
             }
+
+            if(getOMAName() != null) {
+                buf.append("<br/><a href=\"" + getOMAUrl() + "\">Mutation Assessor</a>");
+            }
+
+            String cravatLink = getCravatLink();
+            if(cravatLink != null) {
+                buf.append("<br/>" + cravatLink);
+            }
+
             valueString = buf.toString();
         }
         return valueString;
-
-    }
-
-
-    public String getValueString(double position, int mouseX, WindowFunction ignored) {
-        if (refAllele != null) {
-            StringBuffer buffer = new StringBuffer();
-            buffer.append(getDescription());
-            buffer.append("<br>");
-            buffer.append("<i><b>Click mutation for more...</b></i>");
-            return buffer.toString();
-        } else {
-            return getFullDescription();
-        }
     }
 
 

@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.StringUtils;
 

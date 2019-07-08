@@ -7,7 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.aws.IGVS3Object;
-import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.google.OAuthUtils;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
@@ -186,16 +186,16 @@ public class AmazonUtils {
     }
 
 
-    /**
-     * Generates a so-called "pre-signed" URLs (https://docs.aws.amazon.com/AmazonS3/latest/dev/ShareObjectPreSignedURLJavaSDK.html)
-     * such as:
-     *
-     * s3://igv-bam-test/NA12878.bam
-     * https://s3-<REGION>.amazonaws.com/igv-bam-test/NA12878.bam
-     *
-     * @param s3UrlString
-     * @return Presigned url
-     */
+//    /**
+//     * Generates a so-called "pre-signed" URLs (https://docs.aws.amazon.com/AmazonS3/latest/dev/ShareObjectPreSignedURLJavaSDK.html)
+//     * such as:
+//     *
+//     * s3://igv-bam-test/NA12878.bam
+//     * https://s3-<REGION>.amazonaws.com/igv-bam-test/NA12878.bam
+//     *
+//     * @param s3UrlString
+//     * @return Presigned url
+//     */
 
 //    public static String translateAmazonCloudURL(String S3urlString) {
 //        Tuple<String, String> bandk = bucketAndKey(S3urlString);

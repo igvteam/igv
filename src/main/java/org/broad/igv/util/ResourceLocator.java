@@ -28,9 +28,9 @@ package org.broad.igv.util;
 import htsjdk.tribble.Tribble;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.broad.igv.ga4gh.Ga4ghAPIHelper;
-import org.broad.igv.gs.GSUtils;
-import org.broad.igv.ga4gh.GoogleUtils;
+import com.google.gson.JsonObject;
+import org.broad.igv.google.Ga4ghAPIHelper;
+import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.gs.GSUtils;
 
 import java.awt.*;
@@ -128,6 +128,18 @@ public class ResourceLocator {
      */
     public ResourceLocator(String path) {
         this.setPath(path);
+
+        if(path != null && path.startsWith("https://") && GoogleUtils.isGoogleDrive(path)) {
+            this.resolveGoogleDrive(path);
+        }
+
+    }
+
+    private void resolveGoogleDrive(String path) {
+
+        JsonObject fileInfo = GoogleUtils.getDriveFileInfo(path);
+        this.name = fileInfo.get("name").getAsString();
+        this.type = getTypeString(this.name);
     }
 
     /**
@@ -159,23 +171,27 @@ public class ResourceLocator {
         return type;
     }
 
+    public String getTypeString() {
+        return this.getTypeString(this.path);
+    }
+
     /**
      * Return a string suitable for determining file type based on extension
      * May or may not be a full, readable path. txt and gz extensions are stripped
      *
      * @return
      */
-    public String getTypeString() {
+    public String getTypeString(String pathOrName) {
         if (type != null) {
             return type;
         } else {
 
-            String typeString = path.toLowerCase();
+            String typeString = pathOrName.toLowerCase();
             if (path.startsWith("http://") || path.startsWith("https://") ||
                 path.startsWith("gs://") || path.startsWith("s3://")) {
 
                 try {
-                    URL url = HttpUtils.createURL(path);
+                    URL url = HttpUtils.createURL(pathOrName);
 
                     typeString = url.getPath().toLowerCase();
                     String query = url.getQuery();
@@ -195,8 +211,8 @@ public class ResourceLocator {
                     }
 
                 } catch (MalformedURLException e) {
-                    log.error("Error interpreting url: " + path, e);
-                    typeString = path;
+                    log.error("Error interpreting url: " + pathOrName, e);
+                    typeString = pathOrName;
                 }
             }
 

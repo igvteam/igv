@@ -36,14 +36,14 @@ import static junit.framework.Assert.assertEquals;
 
 /**
  * @author jrobinso
- *         Date: 2/18/13
- *         Time: 11:48 AM
+ * Date: 2/18/13
+ * Time: 11:48 AM
  */
 public class MAFParserTest {
     @Test
     public void testParse() throws Exception {
 
-        String mafFile = TestUtils.DATA_DIR + "maf/ucscSample.maf";
+        String mafFile = TestUtils.DATA_DIR + "maf_ucsc/ucscSample.maf";
 
         MAFIndex.blockSize = 1;
 
@@ -52,7 +52,6 @@ public class MAFParserTest {
         List<MultipleAlignmentBlock> alignments = parser.loadAlignments("chr1", 0, 1000000);
 
         assertEquals(3, alignments.size());
-
         // Last alignment has 2 gaps of 3 bases in human relative ot guinea pig
         // s hg18.chr1                       43219 50 + 247249719 G---ATG---TCATAATAAATGGTGCATATCCAGAGTGCAAGATGATTCAGTCTCA
         // s cavPor3.scaffold_32          16022892 55 +  25641242 GGACATGGAACAATAATAACTGATGCAC-TGTAGAGCACAATATGATATAGTTTCT
@@ -72,16 +71,11 @@ public class MAFParserTest {
         assertEquals(43219 + 4, secondGap.position, 1.0e-6);
         assertEquals(7, secondGap.startIdx);
         assertEquals(3, secondGap.size);
-
-        for (int i = ma.getStart(); i < ma.getEnd(); i++) {
-            System.out.println(i + "  " + ma.getGapAdjustedIndex(i));
-        }
-
         assertEquals("hg18 Multiz", parser.getTrackName());
 
         String[] expectedSpeciesOrder = new String[]{"hg18", "tarSyr1", "gorGor1", "panTro2", "ponAbe2", "bosTau4",
                 "equCab2", "ornAna1", "cavPor3", "canFam2", "rheMac2"};
-        Object [] species = parser.getSpecies().toArray();
+        Object[] species = parser.getSpecies().toArray();
         Assert.assertArrayEquals(expectedSpeciesOrder, species);
 
         String indexFile = mafFile + ".index";

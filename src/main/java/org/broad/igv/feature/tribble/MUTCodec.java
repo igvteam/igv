@@ -41,13 +41,15 @@ import org.broad.igv.util.collections.MultiMap;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * Codec for .mut and .maf mutation files
  *
  * @author jrobinso
- *         Date: 10/24/12
- *         Time: 12:05 PM
+ * Date: 10/24/12
+ * Time: 12:05 PM
  */
 public class MUTCodec extends AsciiFeatureCodec<Mutation> {
 
@@ -61,11 +63,11 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
     private int chrColumn;
     private int startColumn;
     private int endColumn;
-    private int sampleColumn;
-    private int typeColumn;
-    private int refAlleleColumn;
-    private int tumorAllele1Column;
-    private int tumorAllele2Column;
+    private int sampleColumn = -1;
+    private int typeColumn = -1;
+    private int refAlleleColumn = -1;
+    private int tumorAllele1Column = -1;
+    private int tumorAllele2Column = -1;
     private int errorCount = 0;
 
 
@@ -106,8 +108,8 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
             if (tokens.length >= 5) {
                 reader.next();
                 headers = tokens;
-                isMAF = headers.length >= 16 && headers[0].equalsIgnoreCase("Hugo_Symbol");
-                setColumns(isMAF);
+                isMAF = headers[0].trim().equalsIgnoreCase("Hugo_Symbol") || isMafLiteFile(headers);
+                setColumns(isMAF, tokens);
                 return null;
             } else {
                 throw new RuntimeException(String.format("Not enough columns in header line found in %s: %s", path, nextLine));
@@ -146,10 +148,9 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                 start = Integer.parseInt(tokens[startColumn].trim());
             } catch (NumberFormatException e) {
                 errorCount++;
-                if(errorCount > 100) {
+                if (errorCount > 100) {
                     throw new DataLoadException("Column " + (startColumn + 1) + " must be a numeric value.", path);
-                }
-                else {
+                } else {
                     log.info("Error parsing line: " + line);
                     return null;
                 }
@@ -160,10 +161,9 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                 end = Integer.parseInt(tokens[endColumn].trim());
             } catch (NumberFormatException e) {
                 errorCount++;
-                if(errorCount > 100) {
+                if (errorCount > 100) {
                     throw new DataLoadException("Column " + (endColumn + 1) + " must be a numeric value.", path);
-                }
-                else {
+                } else {
                     log.info("Error parsing line: " + line);
                     return null;
                 }
@@ -177,8 +177,15 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                 start--;
             }
 
-            String sampleId = tokens[sampleColumn].trim();
-            String type = tokens[typeColumn].trim();
+            String sampleId = "Unknown";
+            if(sampleColumn >= 0) {
+                sampleId = tokens[sampleColumn].trim();
+            }
+            String type = "Unknown";
+            if(typeColumn >= 0) {
+                type =
+                        tokens[typeColumn].trim();
+            }
 
             MultiMap<String, String> attributes = new MultiMap();
             int n = Math.min(headers.length, tokens.length);
@@ -208,19 +215,128 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
         }
     }
 
+/*
+TCGA
+-----
+Hugo_Symbol
+Entrez_Gene_Id
+Center
+NCBI_Build
+Chromosome
+Start_position
+End_position
+Strand
+Variant_Classification
+Variant_Type
+Reference_Allele
+Tumor_Seq_Allele1
+Tumor_Seq_Allele2
+dbSNP_RS
+dbSNP_Val_Status
+Tumor_Sample_Barcode
+Matched_Norm_Sample_Barcode
+Match_Norm_Seq_Allele1
+Match_Norm_Seq_Allele2
+Tumor_Validation_Allele1
+Tumor_Validation_Alliele2
+Match_Norm_Validation_Allele1
+Match_Norm_Validation_Allele2
+Verification_Status
+Validation_Status
+Mutation_Status	Sequencing_Phase
 
-    private void setColumns(boolean isMAF) {
+BROAD
+-----
+Hugo_Symbol
+Entrez_Gene_Id
+Chromosome
+Start_position
+End_position
+Variant_Classification
+Variant_Type
+Reference_Allele
+Tumor_Seq_Allele1
+Tumor_Seq_Allele2
+dbSNP_RS
+dbSNP_Val_Status
+Tumor_Sample_Barcode
+Matched_Norm_Sample_Barcode
+n_ref_count
+t_ref_count
+n_alt_count
+t_alt_count
+
+MAFLITE
+-------
+build
+chr
+start
+end
+ref_allele
+alt_allele
+
+
+tumor_barcode
+normal_barcode
+NCBI_Build
+Strand
+Center
+source
+status
+phase
+sequencer
+Tumor_Validation_Allele1
+Tumor_Validation_Allele2
+Match_Norm_Validation_Allele1
+Match_Norm_Validation_Allele2
+Verification_Status
+Validation_Status
+Validation_Method
+Score
+BAM_file
+Match_Norm_Seq_Allele1
+Match_Norm_Seq_Allele2
+
+ */
+
+    private void setColumns(boolean isMAF, String[] tokens) {
 
         this.isMAF = isMAF;
         if (isMAF) {
-            chrColumn = 4;
-            startColumn = 5;
-            endColumn = 6;
-            sampleColumn = 15;
-            typeColumn = 8;
-            refAlleleColumn = 10;
-            tumorAllele1Column = 11;
-            tumorAllele2Column = 12;
+            for (int i = 0; i < tokens.length; i++) {
+                switch (tokens[i].toLowerCase()) {
+                    case "chromosome":
+                    case "chr":
+                        chrColumn = i;
+                        break;
+                    case "start_position":
+                    case "start":
+                        startColumn = i;
+                        break;
+                    case "end_position":
+                    case "end":
+                        endColumn = i;
+                        break;
+                    case "tumor_sample_barcode":
+                    case "tumor_barcode":
+                        sampleColumn = i;          // Tumor_Sample_Barcode
+                        break;
+                    case "variant_classification":
+                        typeColumn = i;
+                        break;
+                    case "reference_allele":
+                    case "ref_allele":
+                        refAlleleColumn = i;
+                        break;
+                    case "tumor_seq_allele1":
+                    case "alt_allele":
+                        tumorAllele1Column = i;
+                        break;
+                    case "tumor_seq_allele2":
+                        tumorAllele2Column = i;
+                        break;
+                }
+            }
         } else {
             chrColumn = 0;
             startColumn = 1;
@@ -251,12 +367,18 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
 
             ext = ParsingUtils.getIGVExtension(typeStringLC);
         }
+
         if (ext.equals("mut")) {
             return true;
-        } else if (ext.equals("maf")) {
+        } else  {
 
             BufferedReader reader = null;
             String path = locator.getPath();
+
+            if(path == null) {
+                return false;
+            }
+
             try {
                 reader = ParsingUtils.openBufferedReader(path);
                 if (reader == null) {
@@ -270,10 +392,15 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                     }
                 }
 
-                String[] tokens = nextLine.split("\t");
-                return tokens.length > 15 && tokens[0].equalsIgnoreCase("Hugo_Symbol");
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                if (tokens.length > 5 && tokens[0].equalsIgnoreCase("Hugo_Symbol")) {
+                    return true;
+                } else if (isMafLiteFile(tokens)) {
+                    return true;
+                } else {
+                    return false;
+                }
             } catch (IOException e) {
-                log.error("Error reading: " + path, e);
                 return false;
             } finally {
                 if (reader != null) {
@@ -284,17 +411,23 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                     }
                 }
             }
-        } else {
-            return false;
         }
+    }
 
 
+    public static boolean isMafLiteFile(String[] tokens) {
+        HashSet<String> tokenSet = new HashSet(Arrays.asList(tokens));
+        String[] requiredFields = {"build", "chr", "start", "end", "ref_allele", "alt_allele"};
+        for (String f : requiredFields) {
+            if (!tokenSet.contains(f)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public boolean canDecode(String path) {
-        String fn = path.toLowerCase();
-        if (fn.endsWith(".gz")) fn = fn.substring(0, fn.length() - 3);
-        return fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak");
+       return isMutationAnnotationFile(new ResourceLocator(path));
     }
 }

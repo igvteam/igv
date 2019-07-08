@@ -29,7 +29,7 @@ section
 sectionEnd
 
 Function un.onInit
-    MessageBox MB_YESNO "This will uninstall IGV_@VERSION@.  Continue?" IDYES NoAbort
+    MessageBox MB_YESNO "This will uninstall IGV_@VERSION@.  Continue?" /SD IDYES IDYES NoAbort
       Abort ; causes uninstaller to quit.
     NoAbort:
 FunctionEnd

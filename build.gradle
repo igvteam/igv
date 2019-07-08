@@ -110,7 +110,8 @@ dependencies {
         [group: 'com.google.protobuf', name: 'protobuf-java', version: '3.7.0-rc1'],
         [group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'],
         [group: 'commons-io', name: 'commons-io', version: '2.6'],
-        [group: 'com.github.samtools', name: 'htsjdk', version: '2.19.0'],
+        //[group: 'com.github.samtools', name: 'htsjdk', version: '2.19.0'],
+        // holding upstream htsjdk back from Maven for this @igvteam jar hack: https://github.com/igvteam/igv/issues/646
         [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.2'],
         [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.2'],
         [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
@@ -226,6 +227,11 @@ task createDist(type: Copy, dependsOn: copyToLib)  {
     from ('scripts/java11') {
         include '*.bat'
         include '*.sh'
+
+//task createDist(type: Copy, dependsOn: fullJar)  {
+//    from ("scripts") {
+//        include 'igv.bat'
+//        include 'igv_32.bat'
         include 'igv.command'
         include 'igv.args'
         include 'readme.txt'

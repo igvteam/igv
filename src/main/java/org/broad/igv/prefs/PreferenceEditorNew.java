@@ -7,6 +7,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -183,25 +184,34 @@ public class PreferenceEditorNew {
                         field.setPreferredSize(d);
                         field.setMaximumSize(d);
                         field.addActionListener(event -> {
-                            final String text = field.getText();
+                            String text = field.getText();
                             if (validate(text, pref.getType())) {
+                                // TODO -- make base64 an explicit type
+                                if (pref.getKey().equals(Constants.PROXY_PW)) {
+                                    text = Utilities.base64Encode(text);
+                                }
+
                                 updatedPrefs.put(pref.getKey(), text);
                             } else {
                                 field.setText(preferences.get(pref.getKey()));
                             }
                         });
                         field.addFocusListener(new FocusAdapter() {
-							@Override
-							public void focusLost(FocusEvent e) {
-								// Validate and save the value if the Preference field loses focus
-                                final String text = field.getText();
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                // Validate and save the value if the Preference field loses focus
+                                String text = field.getText();
                                 if (validate(text, pref.getType())) {
+                                    // TODO -- make base64 an explicit type
+                                    if (pref.getKey().equals(Constants.PROXY_PW)) {
+                                        text = Utilities.base64Encode(text);
+                                    }
                                     updatedPrefs.put(pref.getKey(), text);
                                 } else {
                                     field.setText(preferences.get(pref.getKey()));
                                 }
-							}
-						});
+                            }
+                        });
 
                         grid.addLayoutComponent(label, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 5, 2, 3), 2, 2));
                         grid.addLayoutComponent(field, new GridBagConstraints(1, row, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(3, 2, 2, 5), 2, 2));
@@ -325,7 +335,6 @@ public class PreferenceEditorNew {
 
         return true;
     }
-
 
 
 }

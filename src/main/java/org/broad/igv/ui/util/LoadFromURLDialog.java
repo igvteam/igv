@@ -147,7 +147,7 @@ public class LoadFromURLDialog extends JDialog {
                     new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- label3 ----
-                label3.setText("<html><i>Specify url to an index file. <b>Required for BAM and tabix indexed files</b></i>");
+                label3.setText("<html><i>Specify url to an index file. <b>Required for BAM and indexed files</b></i>");
                 contentPanel.add(label3, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 10, 0), 0, 0));

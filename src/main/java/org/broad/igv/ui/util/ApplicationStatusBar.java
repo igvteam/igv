@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;

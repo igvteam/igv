@@ -172,10 +172,8 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
             try {
                 int thickStart = Integer.parseInt(tokens[6]);
                 int thickEnd = Integer.parseInt(tokens[7]);
-                if (thickStart >= start && thickEnd <= end) {
-                    feature.setThickStart(Integer.parseInt(tokens[6]));
-                    feature.setThickEnd(Integer.parseInt(tokens[7]));
-                }
+                feature.setThickStart(Math.max(start, thickStart));
+                feature.setThickEnd(Math.min(end, thickEnd));
             } catch (NumberFormatException e) {
                 return feature;
             }

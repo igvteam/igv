@@ -35,11 +35,10 @@ import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.RemoveGenomesDialog;
-import org.broad.igv.ga4gh.Ga4ghAPIHelper;
-import org.broad.igv.ga4gh.GoogleUtils;
-import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.google.GoogleUtils;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
@@ -56,7 +55,10 @@ import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
-import org.broad.igv.util.*;
+import org.broad.igv.util.AmazonUtils;
+import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 
@@ -304,13 +306,18 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new OpenSessionMenuAction("Open Session...", KeyEvent.VK_O, igv);
-        menuAction.setToolTipText(UIConstants.RESTORE_SESSION_TOOLTIP);
+        menuAction.setToolTipText(OPEN_SESSION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, igv);
         menuAction.setToolTipText(UIConstants.SAVE_SESSION_TOOLTIP);
         JMenuItem saveSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         menuItems.add(saveSessionItem);
+
+        menuAction = new ReloadSessionMenuAction("Reload Session", -1, igv);
+        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
+        JMenuItem reloadSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        menuItems.add(reloadSessionItem);
 
         menuItems.add(new JSeparator());
 

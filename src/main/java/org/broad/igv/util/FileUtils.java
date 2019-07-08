@@ -246,6 +246,35 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Return the first line not starting with commentChar
+     *
+     * @param path
+     * @param commentChar
+     * @return
+     * @throws IOException
+     */
+    public static String getFirstLine(String path, String commentChar) throws IOException {
+
+        if(path == null) return null;
+
+        BufferedReader reader = null;
+        try {
+            reader = ParsingUtils.openBufferedReader(path);
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                if (commentChar != null && nextLine.startsWith(commentChar)) {
+                    continue;
+                }
+                return nextLine;
+            }
+            return null;
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+    }
 
     /**
      * Copy a file from one location to another, using buffered writing

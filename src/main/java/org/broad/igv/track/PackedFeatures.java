@@ -25,9 +25,9 @@
 
 package org.broad.igv.track;
 
-import htsjdk.tribble.Feature;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.broad.igv.feature.Locatable;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -40,7 +40,7 @@ import java.util.*;
  * @author jrobinso
  * @date Oct 7, 2010
  */
-public class PackedFeatures<T extends Feature>{
+public class PackedFeatures<T extends Locatable>{
     protected String trackName;
     protected String chr;
     protected int start;
@@ -65,7 +65,7 @@ public class PackedFeatures<T extends Feature>{
         rows = Collections.emptyList();
     }
 
-    PackedFeatures(String chr, int start, int end, Iterator<T> iter, String trackName) {
+    public PackedFeatures(String chr, int start, int end, Iterator<T> iter, String trackName) {
         this.trackName = trackName;
         this.chr = chr;
         this.start = start;
@@ -81,7 +81,7 @@ public class PackedFeatures<T extends Feature>{
      * @param feature
      * @return
      */
-    protected int getFeatureStartForPacking(Feature feature)
+    protected int getFeatureStartForPacking(Locatable feature)
     {
         return feature.getStart();
     }
@@ -93,7 +93,7 @@ public class PackedFeatures<T extends Feature>{
      * @param feature
      * @return
      */
-    protected int getFeatureEndForPacking(Feature feature)
+    protected int getFeatureEndForPacking(Locatable feature)
     {
         return feature.getEnd();
     }
@@ -128,7 +128,7 @@ public class PackedFeatures<T extends Feature>{
 
         LinkedHashMap<Integer, PriorityQueue<T>> bucketArray = new LinkedHashMap();
         Comparator pqComparator = new Comparator<T>() {
-            public int compare(Feature row1, Feature row2) {
+            public int compare(Locatable row1, Locatable row2) {
                 return (row2.getEnd() - row2.getStart()) - (row1.getEnd() - row2.getStart());
             }
         };

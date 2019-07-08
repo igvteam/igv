@@ -41,6 +41,7 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.CollUtils;
+import org.broad.igv.util.stream.IGVUrlHelperFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,31 +72,49 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     public static TribbleFeatureSource getFeatureSource(ResourceLocator locator, Genome genome, boolean useCache) throws IOException, TribbleIndexNotFoundException {
 
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
-        String idxPath = ResourceLocator.indexFile(locator);
-        if(FileUtils.isRemote(idxPath)) {
-            idxPath = HttpUtils.createURL(idxPath).toString();
+
+        boolean indexExists = false;
+
+        String idxPath = locator.getIndexPath();
+        if(idxPath == null) {
+            if (FileUtils.isRemote(locator.getPath())) {
+                indexExists = false;
+            }
+            else {
+                String inferredPath = ResourceLocator.indexFile(locator);
+                if (FileUtils.resourceExists(inferredPath)) {
+                    idxPath = inferredPath;
+                    indexExists = true;
+                }
+            }
         }
-        String path = locator.getPath();
-        if(FileUtils.isRemote(path)) {
-            path = HttpUtils.createURL(path).toString();
+        else if (FileUtils.isRemote(idxPath)) {
+            idxPath = HttpUtils.mapURL(idxPath);
+            indexExists = true; // Presumed to exist if set explicitly
         }
 
-        boolean indexExists = FileUtils.resourceExists(idxPath);
 
         // Optionally let the user create an index.
         final int hundredMB = 100000000;
         final int oneGB = 1000000000;
         long size = FileUtils.getLength(locator.getPath());
-        final boolean indexRequired =  size > oneGB;
+        final boolean indexRequired = size > oneGB;
         if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
             if (size > hundredMB) {
-                createIndex(locator, indexRequired);   // Note, might return null.
+                Index index = createIndex(locator, indexRequired);   // Note, might return null.
+                if(index != null) {
+                    indexExists = true;
+                }
             }
         }
 
-        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
+        String path = locator.getPath();
+        if (FileUtils.isRemote(path)) {
+            path = HttpUtils.mapURL(path);
+        }
+        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec,  indexExists);
 
-        if (basicReader.hasIndex()) {
+        if (indexExists) {
             return new IndexedFeatureSource(basicReader, codec, locator, genome, useCache);
         } else {
             return new NonIndexedFeatureSource(basicReader, codec, locator, genome);
@@ -335,9 +354,9 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         @Override
         public void dispose() {
             super.dispose();
-            for(List<Feature> featureList : featureMap.values()) {
-                for(Feature f : featureList) {
-                    if(f instanceof NamedFeature) FeatureDB.removeFeature((NamedFeature) f, genome);
+            for (List<Feature> featureList : featureMap.values()) {
+                for (Feature f : featureList) {
+                    if (f instanceof NamedFeature) FeatureDB.removeFeature((NamedFeature) f, genome);
                 }
             }
         }

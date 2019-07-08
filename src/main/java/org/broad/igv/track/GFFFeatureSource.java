@@ -68,11 +68,23 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
     @Override
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
 
-        Iterator<Feature> rawIter = wrappedSource.getFeatures(chr, start, end);
+        // Expand start/end to be sure we get adjacent CDS/Exon features
+        int expandedStart = Math.max(0, start - 2000000);
+        long longEnd = (long) end + 2000000;   // Protect against overflow
+        int expandedEnd = (int) Math.min(Integer.MAX_VALUE, longEnd);
+
+        Iterator<Feature> rawIter = wrappedSource.getFeatures(chr, expandedStart, expandedEnd);
         GFFCombiner combiner = (new GFFCombiner()).addFeatures(rawIter);
 
+        // Now trim features not requested
+        List<Feature> requestedFeatures = new ArrayList<>();
+        for(Feature f : combiner.combineFeatures()) {
+            if(f.getEnd() < start) continue;
+            if(f.getStart() > end) break;
+            requestedFeatures.add(f);
+        }
 
-        return new WrappedIterator(combiner.combineFeatures().iterator());
+        return new WrappedIterator(requestedFeatures.iterator());
     }
 
     @Override

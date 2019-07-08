@@ -34,8 +34,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;
-import org.broad.igv.ga4gh.GoogleUtils;
-import org.broad.igv.ga4gh.OAuthUtils;
+import org.broad.igv.google.GoogleUtils;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
@@ -43,7 +43,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.collections.CI;
 import org.broad.igv.util.ftp.FTPUtils;
-import org.broad.igv.util.stream.IGVUrlHelper;
+import org.broad.igv.util.stream.IGVUrlHelperFactory;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -102,7 +102,7 @@ public class HttpUtils {
 
     private HttpUtils() {
 
-        htsjdk.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
+        htsjdk.tribble.util.ParsingUtils.registerHelperFactory(new IGVUrlHelperFactory());
 
         // if (!Globals.checkJavaVersion("1.8")) {
         disableCertificateValidation();
@@ -129,7 +129,12 @@ public class HttpUtils {
      */
     public static URL createURL(String urlString) throws MalformedURLException {
 
-        urlString = urlString.trim();
+        urlString = mapURL(urlString.trim());
+
+        return new URL(urlString);
+    }
+
+    public static String mapURL(String urlString) throws MalformedURLException {
 
         if (urlString.startsWith("gs://")) {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
@@ -151,13 +156,16 @@ public class HttpUtils {
             urlString = urlString.replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net");
         } else if (host.equals("www.broadinstitute.org")) {
             urlString = urlString.replace("www.broadinstitute.org/igvdata", "data.broadinstitute.org/igvdata");
+        } else if(host.equals("www.dropbox.com")) {
+            urlString = urlString.replace("//www.dropbox.com", "//dl.dropboxusercontent.com");
+        } else if(host.equals("drive.google.com")) {
+            urlString = GoogleUtils.driveDownloadURL(urlString);
         }
 
         // data.broadinstitute.org requires https
         urlString = urlString.replace("http://data.broadinstitute.org", "https://data.broadinstitute.org");
 
-
-        return new URL(urlString);
+        return urlString;
     }
 
     public static boolean isRemoteURL(String string) {
@@ -359,7 +367,10 @@ public class HttpUtils {
     private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
 
         // Keep track of urls for which "HEAD" does not work (e.g. Amazon with signed urls).
-        boolean tryHead = headURLCache.containsKey(url) ? headURLCache.get(url) : true;
+        String urlString = url.toString();
+        boolean isAWS = urlString.contains("AWSAccessKeyId");
+        boolean tryHead =
+                isAWS == false && (headURLCache.containsKey(url) ? headURLCache.get(url) : true);
 
         if (tryHead) {
             try {
@@ -819,7 +830,8 @@ public class HttpUtils {
 
             int code = conn.getResponseCode();
 
-            if (requestProperties != null && requestProperties.containsKey("Range") && code == 200 && method.equals("GET")) {
+            if (!isDropboxHost(url.getHost()) && requestProperties != null && requestProperties.containsKey("Range") && code == 200 && method.equals("GET")) {
+
                 log.error("Range header removed by client or ignored by server for url: " + url.toString());
 
                 if (!SwingUtilities.isEventDispatchThread()) {
@@ -883,6 +895,10 @@ public class HttpUtils {
             }
         }
         return conn;
+    }
+
+    private boolean isDropboxHost(String host) {
+        return(host.equals("dl.dropboxusercontent.com") || host.equals("www.dropbox.com"));
     }
 
     private URL addQueryParameter(URL url, String userProject, String projectID) {

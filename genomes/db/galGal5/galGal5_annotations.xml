@@ -28,6 +28,7 @@
 <Global name="Annotations" version="1">
 
     <Resource name="Top level"
-              path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/galGal5/ref_Gallus_gallus-5.0_top_level.sorted.gff3.gz"/>
+              path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/galGal5/ref_Gallus_gallus-5.0_top_level.sorted.gff3.gz"
+              index="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/galGal5/ref_Gallus_gallus-5.0_top_level.sorted.gff3.gz.tbi"/>
 
 </Global>
