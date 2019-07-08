@@ -8,20 +8,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.broad.igv.bedpe.BedPETrack.Direction.UP;
+import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
 
 public class NestedArcRenderer implements BedPERenderer{
 
 
     private Map<Color, Color> alphaColors = new HashMap<>();
 
-    BedPETrack track;
+    InteractionTrack track;
     double theta = Math.toRadians(45);
     double sinTheta = Math.sin(theta);
     double cosTheta = Math.cos(theta);
     boolean autoscale = true;
 
-    public NestedArcRenderer(BedPETrack track) {
+    public NestedArcRenderer(InteractionTrack track) {
         this.track = track;
     }
 
@@ -66,7 +66,7 @@ public class NestedArcRenderer implements BedPERenderer{
 
                 if (p2 >= trackRectangle.getX() && p1 <= trackRectangle.getMaxX()) {
 
-                    BedPETrack.Direction direction = track.direction;
+                    InteractionTrack.Direction direction = track.direction;
 
                     if (bedPE.isSameChr()) {
 

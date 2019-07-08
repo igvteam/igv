@@ -2,7 +2,10 @@ package org.broad.igv.bedpe;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.*;
+import org.broad.igv.track.AbstractTrack;
+import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.TrackClickEvent;
+import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -19,21 +22,21 @@ import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
-import static org.broad.igv.bedpe.BedPETrack.Direction.UP;
+import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
 import static org.broad.igv.track.TrackMenuUtils.refresh;
 
 
 /**
  * Created by jrobinso on 6/29/18.
  */
-public class BedPETrack extends AbstractTrack {
+public class InteractionTrack extends AbstractTrack {
 
     enum Direction {UP, DOWN}
 
     enum GraphType {BLOCK, ARC, PROPORTIONAL_ARC}
 
     private Genome genome;
-    BedPETrack.Direction direction = UP; //DOWN;
+    InteractionTrack.Direction direction = UP; //DOWN;
     GraphType graphType = GraphType.ARC;  // GraphType.block; //
     int thickness = 1;
     boolean autoscale = true;
@@ -44,10 +47,10 @@ public class BedPETrack extends AbstractTrack {
     private Map<GraphType, BedPERenderer> renderers;
     private FeatureCache<BedPE> featureCache;
 
-    public BedPETrack() {
+    public InteractionTrack() {
     }
 
-    public BedPETrack(ResourceLocator locator, List<BedPEFeature> featureList, Genome genome) {
+    public InteractionTrack(ResourceLocator locator, List<BedPEFeature> featureList, Genome genome) {
         super(locator);
         init(featureList, genome);
         this.genome = genome;
@@ -61,28 +64,6 @@ public class BedPETrack extends AbstractTrack {
     }
 
     private void init(List<BedPEFeature> featureList, Genome genome) {
-
-//        this.featureMap = new HashMap<>();
-//
-//        for (BedPEFeature f : featureList) {
-//            String key = genome == null ? f.chr1 : genome.getCanonicalChrName(f.chr1);
-//            if (f.chr1.equals(f.chr2)) {
-//                addToMap(f, key);
-//            } else {
-//                addToMap(new BedPEInterFeature(f, 1), key);
-//                String key2 = genome == null ? f.chr2 : genome.getCanonicalChrName(f.chr2);
-//                addToMap(new BedPEInterFeature(f, 2), key2);
-//            }
-//        }
-//        featureMap.put(Globals.CHR_ALL, createWGFeatures(featureList, genome));
-//
-//        // Sort feature lists by "start" (minimum of start1, start2)
-//        featureMap.values().forEach(flist -> Collections.sort(flist, (o1, o2) -> o1.getStart() - o2.getStart()));
-//
-//        // Pack features for block renderer -- TODO do this lazily?
-//        for(List<BedPE> flist : featureMap.values()) {
-//            BedPEUtils.packFeatures(flist, 100);
-//        }
 
         List<BedPE> newList = new ArrayList<>((int) (1.2 * featureList.size()));
 
@@ -100,17 +81,6 @@ public class BedPETrack extends AbstractTrack {
         featureCache = new FeatureCache<>(newList, 50);
 
     }
-
-//    private void addToMap(BedPE f, String key) {
-//        List<BedPE> features = featureMap.get(key);
-//        double maxScore = 0;
-//        if (features == null) {
-//            features = new ArrayList<>();
-//            featureMap.put(key, features);
-//        }
-//        features.add(f);
-//
-//    }
 
 
     private List<BedPE> createWGFeatures(List<BedPEFeature> features, Genome genome) {
@@ -150,21 +120,6 @@ public class BedPETrack extends AbstractTrack {
 
     private List<BedPE> getFeaturesOverlapping(String chr, double start, double end) {
 
-//        List<BedPE> features = new ArrayList<>();
-//        List<BedPE> allFeatures = featureMap.get(chr);
-//
-//        // TODO - optimize
-//        if (allFeatures != null) {
-//            for (BedPE f : allFeatures) {
-//                if (f.getStart() > end) break;
-//
-//                if (f.getEnd() >= start) {
-//                    features.add(f);
-//                }
-//            }
-//        }
-//        return features;
-
         return featureCache.getFeatures(chr, (int) start, (int) end);
     }
 
@@ -198,14 +153,14 @@ public class BedPETrack extends AbstractTrack {
 
         IGVPopupMenu menu = new IGVPopupMenu();
 
-        menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(BedPETrack.this)));
+        menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(InteractionTrack.this)));
 
         JMenuItem item = new JMenuItem("Set Track Height...");
-        item.addActionListener(evt -> TrackMenuUtils.changeTrackHeight(Collections.singleton(BedPETrack.this)));
+        item.addActionListener(evt -> TrackMenuUtils.changeTrackHeight(Collections.singleton(InteractionTrack.this)));
         menu.add(item);
 
         item = new JMenuItem("Set Track Color...");
-        item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(BedPETrack.this)));
+        item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(InteractionTrack.this)));
         menu.add(item);
 
 
@@ -220,7 +175,7 @@ public class BedPETrack extends AbstractTrack {
 
         for (final Map.Entry<String, GraphType> entry : modes.entrySet()) {
             JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
-            mm.setSelected(BedPETrack.this.graphType == entry.getValue());
+            mm.setSelected(InteractionTrack.this.graphType == entry.getValue());
             mm.addActionListener(evt -> {
                 setGraphType(entry.getValue());
                 refresh();
@@ -289,13 +244,23 @@ public class BedPETrack extends AbstractTrack {
         List<BedPE> candidates = getFeaturesOverlapping(frame.getChrName(), (int) position, (int) position + 1);
 
         // Sort candidate features smallest to largest
-        Collections.sort(candidates, (o1, o2) -> {
-            double d1 = o1.getCenterDistance();
-            double d2 = o2.getCenterDistance();
-            if (d1 > d2) return 1;
-            else if (d1 < d2) return -1;
-            else return 0;
-        });
+        Comparator<BedPE> sorter = graphType == GraphType.PROPORTIONAL_ARC ?
+                (o1, o2) -> {
+                    double score1 = o1.getScore();
+                    double score2 = o2.getScore();
+                    if (score1 > score2) return 1;
+                    else if (score1 < score2) return -1;
+                    else return 0;
+                } :
+                (o1, o2) -> {
+                    double d1 = o1.getCenterDistance();
+                    double d2 = o2.getCenterDistance();
+                    if (d1 > d2) return 1;
+                    else if (d1 < d2) return -1;
+                    else return 0;
+                };
+
+        Collections.sort(candidates, sorter);
 
         for (BedPE f : candidates) {
             BedPEShape s = f.getShape();

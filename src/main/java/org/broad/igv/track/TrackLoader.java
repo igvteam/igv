@@ -46,7 +46,7 @@ import org.broad.igv.feature.ShapeFileUtils;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.bedpe.BedPEFeature;
 import org.broad.igv.bedpe.BedPEParser;
-import org.broad.igv.bedpe.BedPETrack;
+import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.feature.bionano.SMAPParser;
 import org.broad.igv.feature.bionano.SMAPRenderer;
 import org.broad.igv.feature.dranger.DRangerParser;
@@ -374,7 +374,7 @@ public class TrackLoader {
     private void loadBedPEFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
         boolean isClusters = locator.getTypeString().endsWith("_clusters");
         List<BedPEFeature> features = BedPEParser.parse(locator.getPath(), isClusters, genome);
-        newTracks.add(new BedPETrack(locator, features, genome));
+        newTracks.add(new InteractionTrack(locator, features, genome));
     }
 
     private void loadClusterFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {

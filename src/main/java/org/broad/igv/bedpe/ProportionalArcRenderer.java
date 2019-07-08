@@ -8,17 +8,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.broad.igv.bedpe.BedPETrack.Direction.UP;
+import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
 
 public class ProportionalArcRenderer implements BedPERenderer {
 
 
     private Map<Color, Color> alphaColors = new HashMap<>();
 
-    BedPETrack track;
+    InteractionTrack track;
     private double logMaxScore = 1;
 
-    public ProportionalArcRenderer(BedPETrack track) {
+    public ProportionalArcRenderer(InteractionTrack track) {
         this.track = track;
     }
 
@@ -47,7 +47,7 @@ public class ProportionalArcRenderer implements BedPERenderer {
 
                 if (p2 >= trackRectangle.getX() && p1 <= trackRectangle.getMaxX()) {
 
-                    BedPETrack.Direction direction = track.direction;
+                    InteractionTrack.Direction direction = track.direction;
                     int gap = track.gap;
                     int h = trackRectangle.height - gap;
                     double logMax = logMaxScore;
@@ -158,7 +158,7 @@ public class ProportionalArcRenderer implements BedPERenderer {
             double dx = x - h;
             double dy = y - k;
             double e = dx*dx / a2 + dy*dy / b2;
-            return e > 0.95 && e < 1.05;
+            return  e < 1.0;
         }
     }
 }

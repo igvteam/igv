@@ -7,10 +7,10 @@ import java.util.List;
 
 public class PEBlockRenderer implements BedPERenderer {
 
-    BedPETrack track;
+    InteractionTrack track;
     int rowHeight = 10;
 
-    public PEBlockRenderer(BedPETrack track) {
+    public PEBlockRenderer(InteractionTrack track) {
         this.track = track;
     }
 
