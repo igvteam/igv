@@ -73,24 +73,25 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
 
-        boolean indexExists = false;
-
+        boolean indexExists;
+        // Explicit index path
         String idxPath = locator.getIndexPath();
-        if(idxPath == null) {
-            if (FileUtils.isRemote(locator.getPath())) {
+        if (idxPath != null) {
+            if (FileUtils.isRemote(idxPath)) {
+                idxPath = HttpUtils.mapURL(idxPath);
+            }
+            indexExists = true;
+        } else {
+            idxPath = ResourceLocator.indexFile(locator);
+            if(idxPath == null) {
                 indexExists = false;
             }
             else {
-                String inferredPath = ResourceLocator.indexFile(locator);
-                if (FileUtils.resourceExists(inferredPath)) {
-                    idxPath = inferredPath;
-                    indexExists = true;
+                if (FileUtils.isRemote(idxPath)) {
+                    idxPath = HttpUtils.mapURL(idxPath);
                 }
+                indexExists = FileUtils.resourceExists(idxPath);
             }
-        }
-        else if (FileUtils.isRemote(idxPath)) {
-            idxPath = HttpUtils.mapURL(idxPath);
-            indexExists = true; // Presumed to exist if set explicitly
         }
 
 
@@ -101,10 +102,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         final boolean indexRequired = size > oneGB;
         if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
             if (size > hundredMB) {
-                Index index = createIndex(locator, indexRequired);   // Note, might return null.
-                if(index != null) {
-                    indexExists = true;
-                }
+                createIndex(locator, indexRequired);   // Note, might return null.
             }
         }
 
@@ -112,9 +110,9 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         if (FileUtils.isRemote(path)) {
             path = HttpUtils.mapURL(path);
         }
-        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec,  indexExists);
+        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
 
-        if (indexExists) {
+        if (basicReader.hasIndex()) {
             return new IndexedFeatureSource(basicReader, codec, locator, genome, useCache);
         } else {
             return new NonIndexedFeatureSource(basicReader, codec, locator, genome);
