@@ -20,7 +20,7 @@ public class BedPEParser {
 
     private static Logger log = Logger.getLogger(BedPEParser.class);
 
-    public static List<BedPEFeature> parse(String file, boolean isClusters, Genome genome) throws IOException {
+    public static List<BedPEFeature> parse(String file, Genome genome) throws IOException {
 
         int colorColumn = -1;
         int thicknessColumn = -1;
@@ -89,12 +89,9 @@ public class BedPEParser {
                 BedPEFeature feature = new BedPEFeature(chr1, start1, end1, chr2, start2, end2);
 
                 if (tokens.length > 6) {
-                    if (isClusters) {
-                        feature.score = Double.parseDouble(tokens[6]);
-                    } else {
-                        feature.name = tokens[6];
-                        col7isNumeric = col7isNumeric && isNumeric(tokens[6]);
-                    }
+                    feature.name = tokens[6];
+                    col7isNumeric = col7isNumeric && isNumeric(tokens[6]);
+
                 } else {
                     col7isNumeric = false;
                 }

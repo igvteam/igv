@@ -372,8 +372,7 @@ public class TrackLoader {
 
 
     private void loadBedPEFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        boolean isClusters = locator.getTypeString().endsWith("_clusters");
-        List<BedPEFeature> features = BedPEParser.parse(locator.getPath(), isClusters, genome);
+        List<BedPEFeature> features = BedPEParser.parse(locator.getPath(), genome);
         newTracks.add(new InteractionTrack(locator, features, genome));
     }
 
