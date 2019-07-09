@@ -76,6 +76,10 @@ final public class Constants {
     public static final String SESSION_RELATIVE_PATH = "SESSION.RELATIVE_PATH";
     public static final String SHOW_SIZE_WARNING = "SHOW_SIZE_WARNING";
 
+    // Interaction track
+    public static final String ARC_TYPE = "ARC_TYPE";
+    public static final String ARC_DIRECTION = "ARC_DIRECTION";
+
     // Chart (bar, heatmap, plots) options
     public static final String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
     public static final String CHART_DRAW_TOP_BORDER = "CHART.DRAW_TOP_BORDER";

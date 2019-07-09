@@ -1,7 +1,10 @@
 package org.broad.igv.bedpe;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.TrackClickEvent;
@@ -31,13 +34,16 @@ import static org.broad.igv.track.TrackMenuUtils.refresh;
  */
 public class InteractionTrack extends AbstractTrack {
 
+    private static Logger log = Logger.getLogger(InteractionTrack.class);
+
+
     enum Direction {UP, DOWN}
 
-    enum GraphType {BLOCK, ARC, PROPORTIONAL_ARC}
+    enum GraphType {BLOCK, NESTED_ARC, PROPORTIONAL_ARC}
 
     private Genome genome;
     InteractionTrack.Direction direction = UP; //DOWN;
-    GraphType graphType = GraphType.ARC;  // GraphType.block; //
+    GraphType graphType = GraphType.NESTED_ARC;  // GraphType.block; //
     int thickness = 1;
     boolean autoscale = true;
     int gap = 5;
@@ -58,9 +64,28 @@ public class InteractionTrack extends AbstractTrack {
         setColor(new Color(180, 25, 137));
 
         renderers = new HashMap<>();
-        renderers.put(GraphType.ARC, new NestedArcRenderer(this));
+        renderers.put(GraphType.NESTED_ARC, new NestedArcRenderer(this));
         renderers.put(GraphType.PROPORTIONAL_ARC, new ProportionalArcRenderer(this));
         renderers.put(GraphType.BLOCK, new PEBlockRenderer(this));
+
+        String typeString = PreferencesManager.getPreferences().get(Constants.ARC_TYPE);
+        if(typeString != null) {
+            try {
+                graphType = GraphType.valueOf(typeString);
+            } catch (IllegalArgumentException e) {
+                log.error("Illegal graph type: " + typeString, e);
+                graphType = GraphType.NESTED_ARC; // default
+            }
+        }
+        String directionString = PreferencesManager.getPreferences().get(Constants.ARC_DIRECTION);
+        if(directionString != null) {
+            try {
+                direction = Direction.valueOf(directionString);
+            } catch (IllegalArgumentException e) {
+                log.error("Illegal arc direction: " + directionString, e);
+                direction = UP; // default
+            }
+        }
     }
 
     private void init(List<BedPEFeature> featureList, Genome genome) {
@@ -169,7 +194,7 @@ public class InteractionTrack extends AbstractTrack {
         //enum GraphType {BLOCK, ARC, PROPORTIONAL_ARC}
         ButtonGroup group = new ButtonGroup();
         Map<String, GraphType> modes = new LinkedHashMap<>(4);
-        modes.put("Nested Arcs", GraphType.ARC);
+        modes.put("Nested Arcs", GraphType.NESTED_ARC);
         modes.put("Proportional Arcs", GraphType.PROPORTIONAL_ARC);
         //modes.put("Blocks", GraphType.BLOCK);
 
@@ -178,6 +203,7 @@ public class InteractionTrack extends AbstractTrack {
             mm.setSelected(InteractionTrack.this.graphType == entry.getValue());
             mm.addActionListener(evt -> {
                 setGraphType(entry.getValue());
+                PreferencesManager.getPreferences().put(Constants.ARC_TYPE, entry.getValue().toString());
                 refresh();
             });
             group.add(mm);
@@ -293,8 +319,11 @@ public class InteractionTrack extends AbstractTrack {
             this.direction = Direction.valueOf(element.getAttribute("direction"));
         if (element.hasAttribute("thickness"))
             this.thickness = Integer.parseInt(element.getAttribute("thickness"));
-        if (element.hasAttribute("graphType"))
-            this.graphType = GraphType.valueOf(element.getAttribute("graphType").toUpperCase());
+        if (element.hasAttribute("graphType")) {
+            String typeString = element.getAttribute("graphType").toUpperCase();
+            if(typeString.equals("ARC")) typeString = "NESTED_ARC";  // backward compatibility
+            this.graphType = GraphType.valueOf(typeString);
+        }
         if (element.hasAttribute("showBlocks"))
             this.showBlocks = Boolean.parseBoolean(element.getAttribute("showBlocks"));
 

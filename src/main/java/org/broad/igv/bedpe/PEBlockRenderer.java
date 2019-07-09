@@ -25,7 +25,9 @@ public class PEBlockRenderer implements BedPERenderer {
             double locScale = context.getScale();
             Color trackColor = track.getColor();
 
-            final int blockY = trackRectangle.y + trackRectangle.height - rowHeight;
+            final int blockY = track.direction == InteractionTrack.Direction.DOWN ?
+                    trackRectangle.y :
+                    trackRectangle.y + trackRectangle.height - rowHeight;
 
             for (BedPE bedPE : features) {
 
@@ -49,13 +51,7 @@ public class PEBlockRenderer implements BedPERenderer {
                         drawBlock(ps2, pe2, blockY, g);
                     }
 
-                    // connecting line
-//                    if (feature.isSameChr()) {
-//                        int pl1 = Math.min(pe1, pe2);
-//                        int pl2 = Math.max(ps1, ps2);
-//                        final int connectorY = blockY + rowHeight / 2;
-//                        g.drawLine(pl1, connectorY, pl2, connectorY);
-//                    }
+
                 } else {
                     int ps1 = (int) ((bedPE.getStart() - origin) / locScale);
                     int pe1 = (int) ((bedPE.getEnd() - origin) / locScale);
