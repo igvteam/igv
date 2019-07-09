@@ -9,6 +9,7 @@ import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -36,6 +37,10 @@ public class InteractionTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(InteractionTrack.class);
 
+    protected static final int AXIS_AREA_WIDTH = 60;
+    protected static Color axisLineColor = new Color(255, 180, 180);
+    private JCheckBoxMenuItem autoscaleCB;
+    private JMenuItem maxScoreItem;
 
     enum Direction {UP, DOWN}
 
@@ -46,8 +51,10 @@ public class InteractionTrack extends AbstractTrack {
     GraphType graphType = GraphType.NESTED_ARC;  // GraphType.block; //
     int thickness = 1;
     boolean autoscale = true;
+    double maxScore = -1;
     int gap = 5;
     boolean showBlocks = false;
+
 
     //private Map<String, List<BedPE>> featureMap;
     private Map<GraphType, BedPERenderer> renderers;
@@ -69,7 +76,7 @@ public class InteractionTrack extends AbstractTrack {
         renderers.put(GraphType.BLOCK, new PEBlockRenderer(this));
 
         String typeString = PreferencesManager.getPreferences().get(Constants.ARC_TYPE);
-        if(typeString != null) {
+        if (typeString != null) {
             try {
                 graphType = GraphType.valueOf(typeString);
             } catch (IllegalArgumentException e) {
@@ -78,7 +85,7 @@ public class InteractionTrack extends AbstractTrack {
             }
         }
         String directionString = PreferencesManager.getPreferences().get(Constants.ARC_DIRECTION);
-        if(directionString != null) {
+        if (directionString != null) {
             try {
                 direction = Direction.valueOf(directionString);
             } catch (IllegalArgumentException e) {
@@ -161,6 +168,14 @@ public class InteractionTrack extends AbstractTrack {
             String chr = context.getReferenceFrame().getChrName();
             List<BedPE> features = getFeaturesOverlapping(chr, context.getOrigin(), context.getEndLocation());
             if (features != null && features.size() > 0) {
+
+                if (graphType == GraphType.PROPORTIONAL_ARC) {
+                    if(autoscale || maxScore <= 0) {
+                        maxScore = autoscale(features);
+                    }
+                    drawScale(context, trackRectangle);
+                }
+
                 renderers.get(graphType).render(features, context, trackRectangle);
             }
             if (showBlocks) {
@@ -171,7 +186,48 @@ public class InteractionTrack extends AbstractTrack {
             context.clearGraphicsCache();
             g2d.setClip(clip);
         }
+
     }
+
+    /**
+     * Draw scale in top left of rectangle
+
+     * @param context
+     * @param arect
+     */
+    public  void drawScale(RenderContext context, Rectangle arect){
+        if (context.multiframe == false) {
+            Graphics2D g = context.getGraphic2DForColor(Color.black);
+            Font font = g.getFont();
+            Font smallFont = FontManager.getFont(8);
+            try {
+                g.setFont(smallFont);
+                String minString = "0";
+                String fmtString = maxScore > 10 ? "%.0f" : "%.2f";
+                String maxString = String.format(fmtString, maxScore);
+                String scale = "[" + minString + " - " + maxString + "]";
+                g.drawString(scale, arect.x + 5, arect.y + 10);
+
+            } finally {
+                g.setFont(font);
+            }
+        }
+    }
+
+
+    /**
+     * Autoscale max height -- specific to proportional arc mode
+     *
+     * @param features
+     */
+    private double autoscale(List<BedPE> features) {
+        double maxScore = 0;
+        for (BedPE f : features) {
+            maxScore = Math.max(maxScore, f.getScore());
+        }
+        return maxScore;
+    }
+
 
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
@@ -204,6 +260,8 @@ public class InteractionTrack extends AbstractTrack {
             mm.addActionListener(evt -> {
                 setGraphType(entry.getValue());
                 PreferencesManager.getPreferences().put(Constants.ARC_TYPE, entry.getValue().toString());
+                autoscaleCB.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
+                maxScoreItem.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
                 refresh();
             });
             group.add(mm);
@@ -211,16 +269,46 @@ public class InteractionTrack extends AbstractTrack {
         }
 
         menu.addSeparator();
-        JCheckBox showBlocksCB = new JCheckBox("Show Blocks");
+        JCheckBoxMenuItem showBlocksCB = new JCheckBoxMenuItem("Show Blocks");
         showBlocksCB.setSelected(showBlocks);
-        showBlocksCB.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showBlocks = showBlocksCB.isSelected();
-                refresh();
-            }
+        showBlocksCB.addActionListener(e -> {
+            showBlocks = showBlocksCB.isSelected();
+            refresh();
         });
         menu.add(showBlocksCB);
+
+        menu.addSeparator();
+        autoscaleCB = new JCheckBoxMenuItem("Autoscale");
+        autoscaleCB.setSelected(autoscale);
+        autoscaleCB.addActionListener(e -> {
+            autoscale = autoscaleCB.isSelected();
+            refresh();
+        });
+        menu.add(autoscaleCB);
+
+        maxScoreItem = new JMenuItem("Set Max Score...");
+        maxScoreItem.addActionListener(e -> {
+            String maxScoreString = MessageUtils.showInputDialog("Enter maximum score:", String.valueOf(InteractionTrack.this.maxScore));
+            if (maxScoreString != null) {
+                try {
+                    double ms = Double.parseDouble(maxScoreString);
+                    if (ms > 0) {
+                        maxScore = ms;
+                        autoscale = false;
+                        refresh();
+                    } else {
+                        MessageUtils.showMessage("maximum score must be > 0");
+                    }
+                } catch (NumberFormatException e1) {
+                    MessageUtils.showMessage("maximum score must be a number");
+                }
+            }
+        });
+        menu.add(maxScoreItem);
+
+        autoscaleCB.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
+        maxScoreItem.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
+
 
         menu.addSeparator();
         item = new JMenuItem("Toggle Arc Orientation");
@@ -307,6 +395,10 @@ public class InteractionTrack extends AbstractTrack {
         element.setAttribute("thickness", String.valueOf(thickness));
         element.setAttribute("graphType", String.valueOf(graphType));
         element.setAttribute("showBlocks", String.valueOf(showBlocks));
+        element.setAttribute("autoscale", String.valueOf(autoscale));
+        if (!autoscale) {
+            element.setAttribute("maxScore", String.valueOf(maxScore));
+        }
 
     }
 
@@ -321,11 +413,17 @@ public class InteractionTrack extends AbstractTrack {
             this.thickness = Integer.parseInt(element.getAttribute("thickness"));
         if (element.hasAttribute("graphType")) {
             String typeString = element.getAttribute("graphType").toUpperCase();
-            if(typeString.equals("ARC")) typeString = "NESTED_ARC";  // backward compatibility
+            if (typeString.equals("ARC")) typeString = "NESTED_ARC";  // backward compatibility
             this.graphType = GraphType.valueOf(typeString);
         }
         if (element.hasAttribute("showBlocks"))
             this.showBlocks = Boolean.parseBoolean(element.getAttribute("showBlocks"));
+        if (element.hasAttribute("autoscale")) {
+            this.autoscale = Boolean.parseBoolean(element.getAttribute("autoscale"));
+        }
+        if (element.hasAttribute("maxScore")) {
+            this.maxScore = Double.parseDouble(element.getAttribute("maxScore"));
+        }
 
     }
 

@@ -16,7 +16,6 @@ public class ProportionalArcRenderer implements BedPERenderer {
     private Map<Color, Color> alphaColors = new HashMap<>();
 
     InteractionTrack track;
-    private double logMaxScore = 1;
 
     public ProportionalArcRenderer(InteractionTrack track) {
         this.track = track;
@@ -36,10 +35,6 @@ public class ProportionalArcRenderer implements BedPERenderer {
                 g.setStroke(new BasicStroke(track.thickness));
             }
 
-            if (track.autoscale) {
-                autoscale(features);
-            }
-
             for (BedPE bedPE : features) {
 
                 double p1 = (bedPE.getStart() - origin) / locScale;
@@ -50,8 +45,11 @@ public class ProportionalArcRenderer implements BedPERenderer {
                     InteractionTrack.Direction direction = track.direction;
                     int gap = track.gap;
                     int h = trackRectangle.height - gap;
-                    double logMax = logMaxScore;
-                    if (logMax > 0 && bedPE.getScore() > 0) {
+
+
+
+                    if (track.maxScore > 0 && bedPE.getScore() > 0) {
+                        double logMax = Math.log10(track.maxScore);
                         h = (int) ((Math.log10(bedPE.getScore()) / logMax) * h);
                     }
 
@@ -109,22 +107,6 @@ public class ProportionalArcRenderer implements BedPERenderer {
         }
     }
 
-    /**
-     * Autoscale max height -- specific to proportional arc mode
-     *
-     * @param features
-     */
-    private void autoscale(List<BedPE> features) {
-        double maxScore = 0;
-        for (BedPE f : features) {
-            maxScore = Math.max(maxScore, f.getScore());
-        }
-        if (maxScore > 0) {
-            logMaxScore = Math.log10(maxScore);
-        } else {
-            logMaxScore = 1;
-        }
-    }
 
     private Color getAlphaColor(Color fcolor, float alpha) {
         Color ac = alphaColors.get(fcolor);
