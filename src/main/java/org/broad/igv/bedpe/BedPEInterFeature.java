@@ -8,6 +8,7 @@ public class BedPEInterFeature  implements BedPE {
     private final BedPEFeature wrappedFeature;
     private final int order;
     int row;
+    BedPEShape shape;
 
     public BedPEInterFeature(BedPEFeature wrappedFeature, int order) {
         this.wrappedFeature = wrappedFeature;
@@ -17,8 +18,6 @@ public class BedPEInterFeature  implements BedPE {
     public BedPEFeature get() {
         return wrappedFeature;
     }
-
-
 
     public String getChr() {
         return this.order == 1 ? wrappedFeature.chr1 : wrappedFeature.chr2;
@@ -61,7 +60,29 @@ public class BedPEInterFeature  implements BedPE {
         return wrappedFeature.getThickness();
     }
 
+    @Override
+    public void setShape(BedPEShape s) {
+         this.shape = s;
+    }
+
+    @Override
+    public BedPEShape getShape() {
+        return shape;
+    }
+
+    @Override
+    public String getValueString() {
+        return wrappedFeature.getValueString();
+    }
+
+    @Override
+    public double getCenterDistance() {
+        return 0;
+    }
+
     public String getContig() {
         return getChr();
     }
+
+
 }

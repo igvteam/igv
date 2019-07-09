@@ -106,7 +106,6 @@ public class BedPEUtils {
         }
     }
 
-
     public static void packFeatures(List<BedPE> features, int maxRows) {
 
         int gap = 2;
@@ -174,5 +173,6 @@ public class BedPEUtils {
         } // while (allocatedCount)
 
     }
+
 
 }

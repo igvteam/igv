@@ -11,10 +11,8 @@ import org.broad.igv.util.ParsingUtils;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jrobinso on 6/29/18.
@@ -23,7 +21,7 @@ public class BedPEParser {
 
     private static Logger log = LogManager.getLogger(BedPEParser.class);
 
-    public static List<BedPEFeature> parse(String file, boolean isClusters, Genome genome) throws IOException {
+    public static List<BedPEFeature> parse(String file, Genome genome) throws IOException {
 
         int colorColumn = -1;
         int thicknessColumn = -1;
@@ -92,12 +90,9 @@ public class BedPEParser {
                 BedPEFeature feature = new BedPEFeature(chr1, start1, end1, chr2, start2, end2);
 
                 if (tokens.length > 6) {
-                    if (isClusters) {
-                        feature.score = Double.parseDouble(tokens[6]);
-                    } else {
-                        feature.name = tokens[6];
-                        col7isNumeric = col7isNumeric && isNumeric(tokens[6]);
-                    }
+                    feature.name = tokens[6];
+                    col7isNumeric = col7isNumeric && isNumeric(tokens[6]);
+
                 } else {
                     col7isNumeric = false;
                 }
@@ -107,7 +102,7 @@ public class BedPEParser {
                 }
 
                 if (tenx) {
-                    Map<String, String> attributes = new HashMap<>();
+                    Map<String, String> attributes = new LinkedHashMap<>();
                     if (!tokens[8].equals(".")) {
                         attributes.put("filters", tokens[8]);
                     }

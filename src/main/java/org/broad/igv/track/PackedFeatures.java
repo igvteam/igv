@@ -27,9 +27,10 @@ package org.broad.igv.track;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.broad.igv.feature.Locatable;
+import htsjdk.samtools.util.Locatable;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
+import htsjdk.tribble.Feature;
 
 import java.util.*;
 
@@ -40,7 +41,7 @@ import java.util.*;
  * @author jrobinso
  * @date Oct 7, 2010
  */
-public class PackedFeatures<T extends Locatable>{
+public class PackedFeatures<T extends Feature>{
     protected String trackName;
     protected String chr;
     protected int start;
@@ -65,7 +66,7 @@ public class PackedFeatures<T extends Locatable>{
         rows = Collections.emptyList();
     }
 
-    public PackedFeatures(String chr, int start, int end, Iterator<T> iter, String trackName) {
+    PackedFeatures(String chr, int start, int end, Iterator<T> iter, String trackName) {
         this.trackName = trackName;
         this.chr = chr;
         this.start = start;
@@ -81,7 +82,7 @@ public class PackedFeatures<T extends Locatable>{
      * @param feature
      * @return
      */
-    protected int getFeatureStartForPacking(Locatable feature)
+    protected int getFeatureStartForPacking(Feature feature)
     {
         return feature.getStart();
     }
@@ -93,7 +94,7 @@ public class PackedFeatures<T extends Locatable>{
      * @param feature
      * @return
      */
-    protected int getFeatureEndForPacking(Locatable feature)
+    protected int getFeatureEndForPacking(Feature feature)
     {
         return feature.getEnd();
     }
@@ -128,7 +129,7 @@ public class PackedFeatures<T extends Locatable>{
 
         LinkedHashMap<Integer, PriorityQueue<T>> bucketArray = new LinkedHashMap();
         Comparator pqComparator = new Comparator<T>() {
-            public int compare(Locatable row1, Locatable row2) {
+            public int compare(Feature row1, Feature row2) {
                 return (row2.getEnd() - row2.getStart()) - (row1.getEnd() - row2.getStart());
             }
         };

@@ -29,6 +29,7 @@ import htsjdk.tribble.Tribble;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import com.google.gson.JsonObject;
+import htsjdk.tribble.Tribble;
 import org.broad.igv.google.Ga4ghAPIHelper;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.gs.GSUtils;
@@ -481,11 +482,18 @@ public class ResourceLocator {
     public static String indexFile(ResourceLocator locator) {
         if (locator.getIndexPath() != null) {
             return locator.getIndexPath();
-        }
-        String indexExtension =
-                (locator.getURLPath().toLowerCase().endsWith(".gz") || locator.getPath().toLowerCase().endsWith(".bgz")) ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
+        } else {
 
-        return appendToPath(locator, indexExtension);
+            if(isCloudURL(locator.getPath())) {
+                return null;   // Can't infer google & dropbox paths
+            }
+            else {
+                String indexExtension =
+                        (locator.getURLPath().toLowerCase().endsWith(".gz") || locator.getPath().toLowerCase().endsWith(".bgz")) ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
+
+                return appendToPath(locator, indexExtension);
+            }
+        }
     }
 
     public void setAttribute(String key, Object value) {
@@ -504,6 +512,28 @@ public class ResourceLocator {
         return indexed;
     }
 
+    private static boolean isCloudURL(String path) {
+
+        try {
+            if (path.startsWith("gs://")) {
+                return true;
+            }
+            if (GoogleUtils.isGoogleURL(path)) {
+                return true;
+            }
+            if (path.startsWith("http://") || path.startsWith("https://")) {
+                String host = new URL(path).getHost();
+                if (host.equals("www.dropbox.com") || host.equals("dl.dropboxusercontent.com")) {
+                    return true;
+                }
+            }
+
+            return false;
+
+        } catch (MalformedURLException e) {
+            return false;
+        }
+    }
 
     /**
      * FOR LOAD FROM SERVER

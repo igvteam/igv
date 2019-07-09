@@ -8,17 +8,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.broad.igv.bedpe.BedPETrack.Direction.UP;
+import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
 
 public class ProportionalArcRenderer implements BedPERenderer {
 
 
     private Map<Color, Color> alphaColors = new HashMap<>();
 
-    BedPETrack track;
-    private double logMaxScore = 1;
+    InteractionTrack track;
 
-    public ProportionalArcRenderer(BedPETrack track) {
+    public ProportionalArcRenderer(InteractionTrack track) {
         this.track = track;
     }
 
@@ -36,10 +35,6 @@ public class ProportionalArcRenderer implements BedPERenderer {
                 g.setStroke(new BasicStroke(track.thickness));
             }
 
-            if (track.autoscale) {
-                autoscale(features);
-            }
-
             for (BedPE bedPE : features) {
 
                 double p1 = (bedPE.getStart() - origin) / locScale;
@@ -47,11 +42,14 @@ public class ProportionalArcRenderer implements BedPERenderer {
 
                 if (p2 >= trackRectangle.getX() && p1 <= trackRectangle.getMaxX()) {
 
-                    BedPETrack.Direction direction = track.direction;
+                    InteractionTrack.Direction direction = track.direction;
                     int gap = track.gap;
                     int h = trackRectangle.height - gap;
-                    double logMax = logMaxScore;
-                    if (logMax > 0 && bedPE.getScore() > 0) {
+
+
+
+                    if (track.maxScore > 0 && bedPE.getScore() > 0) {
+                        double logMax = Math.log10(track.maxScore);
                         h = (int) ((Math.log10(bedPE.getScore()) / logMax) * h);
                     }
 
@@ -90,6 +88,8 @@ public class ProportionalArcRenderer implements BedPERenderer {
                         g.setColor(shadedColor);
                         g.fill(arcPath);
 
+                        bedPE.setShape(new PAShape(pixelStart + w/2, y + h, w/2, h));
+
                     } else {
                         Color fcolor = bedPE.get().color == null ? Color.black : bedPE.get().color;
                         g.setColor(fcolor);
@@ -97,7 +97,9 @@ public class ProportionalArcRenderer implements BedPERenderer {
                         int yBase = direction == UP ? trackRectangle.y + trackRectangle.height - h : trackRectangle.y + gap;
                         g.drawLine((int) ps, yBase, (int) ps, yBase + h);
                     }
-
+                }
+                else {
+                    bedPE.setShape(null);
                 }
             }
         } finally {
@@ -105,22 +107,6 @@ public class ProportionalArcRenderer implements BedPERenderer {
         }
     }
 
-    /**
-     * Autoscale max height -- specific to proportional arc mode
-     *
-     * @param features
-     */
-    private void autoscale(List<BedPE> features) {
-        double maxScore = 0;
-        for (BedPE f : features) {
-            maxScore = Math.max(maxScore, f.getScore());
-        }
-        if (maxScore > 0) {
-            logMaxScore = Math.log10(maxScore);
-        } else {
-            logMaxScore = 1;
-        }
-    }
 
     private Color getAlphaColor(Color fcolor, float alpha) {
         Color ac = alphaColors.get(fcolor);
@@ -133,5 +119,29 @@ public class ProportionalArcRenderer implements BedPERenderer {
         return ac;
     }
 
+    //(x-h)^2/a^2 + (y-k)^2/b^2 <= 1
+    public static class PAShape implements BedPEShape{
+
+        double h;   //xc
+        double k;   //yc
+        double a2;   // x axis
+        double b2;   // y axis
+
+        public PAShape(double h, double k, double a, double b) {
+            this.h = h;
+            this.k = k;
+            this.a2 = a*a;
+            this.b2 = b*b;
+        }
+
+        @Override
+        public boolean contains(double x, double y) {
+
+            double dx = x - h;
+            double dy = y - k;
+            double e = dx*dx / a2 + dy*dy / b2;
+            return  e < 1.0;
+        }
+    }
 }
 

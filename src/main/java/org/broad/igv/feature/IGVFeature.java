@@ -26,13 +26,14 @@
 
 package org.broad.igv.feature;
 
+import htsjdk.samtools.util.Locatable;
 import org.broad.igv.util.collections.MultiMap;
 
 import java.awt.*;
 import java.util.List;
 
 
-public interface IGVFeature extends LocusScore, NamedFeature, Locatable {
+public interface IGVFeature extends LocusScore, NamedFeature {
 
     public String getType();
 

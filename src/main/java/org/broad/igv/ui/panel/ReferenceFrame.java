@@ -476,6 +476,10 @@ public class ReferenceFrame {
         return zoom - minZoom;
     }
 
+    public void setAdjustedZoom(int zoom) {
+        this.doSetZoom(minZoom + zoom);
+    }
+
     /**
      * Determine if this view will change at all based on the {@code newChrName}
      * The view changes if newChrName != {@code #this.chr} or if we are not
