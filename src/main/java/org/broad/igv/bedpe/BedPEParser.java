@@ -7,7 +7,6 @@ import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.omg.CORBA.UNKNOWN;
 
 import java.awt.*;
 import java.io.BufferedReader;
