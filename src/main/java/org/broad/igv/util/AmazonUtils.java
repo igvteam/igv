@@ -120,6 +120,7 @@ public class AmazonUtils {
 
         ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
         ListBucketsResponse listBucketsResponse = s3Client.listBuckets(listBucketsRequest);
+        // XXX: Filter out buckets that I do not have permissions for
         listBucketsResponse.buckets().stream().forEach(x -> bucketsList.add(x.name()));
 
         return bucketsList;

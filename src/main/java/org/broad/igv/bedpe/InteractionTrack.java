@@ -1,6 +1,7 @@
 package org.broad.igv.bedpe;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.Constants;
@@ -21,8 +22,6 @@ import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
@@ -35,7 +34,7 @@ import static org.broad.igv.track.TrackMenuUtils.refresh;
  */
 public class InteractionTrack extends AbstractTrack {
 
-    private static Logger log = Logger.getLogger(InteractionTrack.class);
+    private static Logger log = LogManager.getLogger(InteractionTrack.class);
 
     protected static final int AXIS_AREA_WIDTH = 60;
     protected static Color axisLineColor = new Color(255, 180, 180);
