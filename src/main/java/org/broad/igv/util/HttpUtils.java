@@ -43,6 +43,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.collections.CI;
 import org.broad.igv.util.ftp.FTPUtils;
+import org.broad.igv.util.stream.IGVUrlHelper;
 import org.broad.igv.util.stream.IGVUrlHelperFactory;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -102,7 +103,8 @@ public class HttpUtils {
 
     private HttpUtils() {
 
-        htsjdk.tribble.util.ParsingUtils.registerHelperFactory(new IGVUrlHelperFactory());
+        //htsjdk.tribble.util.ParsingUtils.registerHelperFactory(new IGVUrlHelperFactory());
+        htsjdk.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
 
         // if (!Globals.checkJavaVersion("1.8")) {
         disableCertificateValidation();

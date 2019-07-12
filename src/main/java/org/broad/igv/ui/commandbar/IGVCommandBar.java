@@ -307,6 +307,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             Genome genome = event.genome;
             refreshGenomeListComboBox();
             chromosomeComboBox.updateChromosFromGenome(genome);
+            String chrName = FrameManager.getDefaultFrame().getChrName();
+            zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
         } else if (e instanceof GenomeResetEvent) {
             refreshGenomeListComboBox();
         } else {

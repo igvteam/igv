@@ -1078,30 +1078,55 @@ public abstract class AbstractTrack implements Track {
         this.id = element.getAttribute("id");
 
         if (element.hasAttribute("displayMode")) {
-            this.displayMode = DisplayMode.valueOf(element.getAttribute("displayMode"));
+            try {
+                this.displayMode = DisplayMode.valueOf(element.getAttribute("displayMode"));
+            } catch (IllegalArgumentException e) {
+                log.error("Unrecognized displayMode: " + element.getAttribute("displayMode"));
+                this.displayMode = DisplayMode.COLLAPSED;
+            }
         }
 
         if (element.hasAttribute("color")) {
-            Color c = ColorUtilities.stringToColor(element.getAttribute("color"));
-            this.posColor = c;
-            this.altColor = c;  // default
+            try {
+                Color c = ColorUtilities.stringToColor(element.getAttribute("color"));
+                this.posColor = c;
+                this.altColor = c;  // default
+            } catch (Exception e) {
+                log.error("Unrecognized color: " + element.getAttribute("color"));
+            }
         }
 
         if (element.hasAttribute("altColor")) {
-            Color c = ColorUtilities.stringToColor(element.getAttribute("altColor"));
-            this.altColor = c;
+            try {
+                Color c = ColorUtilities.stringToColor(element.getAttribute("altColor"));
+                this.altColor = c;
+            } catch (Exception e) {
+                log.error("Unrecognized altColor: " + element.getAttribute("altColor"));
+            }
         }
 
         if (element.hasAttribute("colorScale")) {
-            this.colorScale = (ContinuousColorScale) ColorScaleFactory.getScaleFromString(element.getAttribute("colorScale"));
+            try {
+                this.colorScale = (ContinuousColorScale) ColorScaleFactory.getScaleFromString(element.getAttribute("colorScale"));
+            } catch (Exception e) {
+                log.error("Unrecognized colorScale: " + element.getAttribute("colorScale"));
+            }
         }
 
         if (element.hasAttribute("visible")) {
-            this.setVisible(Boolean.parseBoolean(element.getAttribute("visible")));
+            try {
+                this.setVisible(Boolean.parseBoolean(element.getAttribute("visible")));
+            } catch (Exception e) {
+                log.error("Unrecognized visisbilty: " + element.getAttribute("visible"));
+            }
         }
 
         if (element.hasAttribute("autoScale")) {
-            this.autoScale = Boolean.valueOf(element.getAttribute("autoScale"));
+            try {
+                this.autoScale = Boolean.valueOf(element.getAttribute("autoScale"));
+            } catch (Exception e) {
+                log.error("Unrecognized autoScale: " + element.getAttribute("autoScale"));
+            }
         }
 
         if (element.hasAttribute("autoscaleGroup")) {
@@ -1109,39 +1134,59 @@ public abstract class AbstractTrack implements Track {
         }
 
         if (element.hasAttribute("featureVisibilityWindow")) {
-            this.visibilityWindow = Integer.parseInt(element.getAttribute("featureVisibilityWindow"));
+            try {
+                this.visibilityWindow = Integer.parseInt(element.getAttribute("featureVisibilityWindow"));
+            } catch (NumberFormatException e) {
+                log.error("Unrecognized featureVisibilityWindow: " + element.getAttribute("featureVisibilityWindow"));
+            }
         }
 
         if (element.hasAttribute("fontSize")) {
-            this.fontSize = Integer.parseInt(element.getAttribute("fontSize"));
+            try {
+                this.fontSize = Integer.parseInt(element.getAttribute("fontSize"));
+            } catch (NumberFormatException e) {
+                log.error("Unrecognized fontSize: " + element.getAttribute("fontSize"));
+            }
         }
 
         if (element.hasAttribute("height")) {
-            this.height = Integer.parseInt(element.getAttribute("height"));
+            try {
+                this.height = Integer.parseInt(element.getAttribute("height"));
+            } catch (NumberFormatException e) {
+                log.error("Unrecognized height: " + element.getAttribute("height"));
+            }
         }
 
         if (element.hasAttribute("windowFunction")) {
             try {
                 this.setWindowFunction(WindowFunction.valueOf(element.getAttribute("windowFunction")));
             } catch (IllegalArgumentException e) {
-                log.error("Unknown window function: " + element.getAttribute("windowFunction"), e);
+                log.error("Unknown windowFunction: " + element.getAttribute("windowFunction"), e);
             }
         }
 
         // Set DataRange -- legacy (pre V3 sessions)
         if (version <= 3 && element.hasAttribute(SessionAttribute.SCALE)) {
             String scale = element.getAttribute(SessionAttribute.SCALE);
-            String[] axis = scale.split(",");
-            float minimum = Float.parseFloat(axis[0]);
-            float baseline = Float.parseFloat(axis[1]);
-            float maximum = Float.parseFloat(axis[2]);
-            setDataRange(new DataRange(minimum, baseline, maximum));
+            try {
+                String[] axis = scale.split(",");
+                float minimum = Float.parseFloat(axis[0]);
+                float baseline = Float.parseFloat(axis[1]);
+                float maximum = Float.parseFloat(axis[2]);
+                setDataRange(new DataRange(minimum, baseline, maximum));
+            } catch (NumberFormatException e) {
+                log.error("Unrecognized dataRange: " + element.getAttribute("scale"));
+            }
         }
 
         NodeList nodeList = element.getElementsByTagName("DataRange");
         if (nodeList != null && nodeList.getLength() > 0) {
             Element dataRangeElement = (Element) nodeList.item(0);
-            this.dataRange = new DataRange(dataRangeElement, version);
+            try {
+                this.dataRange = new DataRange(dataRangeElement, version);
+            } catch (Exception e) {
+                log.error("Unrecognized DataRange");
+            }
         }
     }
 

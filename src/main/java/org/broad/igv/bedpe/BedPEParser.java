@@ -7,6 +7,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -21,11 +22,13 @@ public class BedPEParser {
 
     private static Logger log = LogManager.getLogger(BedPEParser.class);
 
-    public static List<BedPEFeature> parse(String file, Genome genome) throws IOException {
+    enum DatasetType {TENX, CLUSTER, UNKNOWN}
+
+    public static Dataset parse(ResourceLocator locator, Genome genome) throws IOException {
 
         int colorColumn = -1;
         int thicknessColumn = -1;
-        boolean tenx = false;
+        DatasetType type = DatasetType.UNKNOWN;
         boolean parsedHeader = true;
         String[] columns;
         boolean col7isNumeric = true;   // Until proven otherwise
@@ -33,7 +36,7 @@ public class BedPEParser {
         Map<String, Color> colorCache = new HashMap<>();
         List<BedPEFeature> features = new ArrayList<>();
         BufferedReader br = null;
-        br = ParsingUtils.openBufferedReader(file);
+        br = ParsingUtils.openBufferedReader(locator.getPath());
         String nextLine;
         while ((nextLine = br.readLine()) != null) {
 
@@ -58,7 +61,7 @@ public class BedPEParser {
             } else if (nextLine.startsWith("#")) {
                 columns = Globals.tabPattern.split(nextLine);
                 if (nextLine.trim().equals("#chrom1\tstart1\tstop1\tchrom2\tstart2\tstop2\tname\tqual\tstrand1\tstrand2\tfilters\tinfo")) {
-                    tenx = true;
+                    type = DatasetType.TENX;
                 } else {
                     for (int i = 6; i < columns.length; i++) {
                         if (columns[i].equalsIgnoreCase("color")) {
@@ -101,7 +104,7 @@ public class BedPEParser {
                     feature.score = Double.parseDouble(tokens[7]);
                 }
 
-                if (tenx) {
+                if (type == DatasetType.TENX) {
                     Map<String, String> attributes = new LinkedHashMap<>();
                     if (!tokens[8].equals(".")) {
                         attributes.put("filters", tokens[8]);
@@ -141,9 +144,12 @@ public class BedPEParser {
                 f.score = Double.parseDouble(f.name);
                 f.name = null;
             }
+            if(type == DatasetType.UNKNOWN) {
+                type = DatasetType.CLUSTER;   // A guess
+            }
         }
 
-        return features;
+        return new Dataset(type, features);
 
 
     }
@@ -151,6 +157,17 @@ public class BedPEParser {
 
     public static boolean isNumeric(String strNum) {
         return strNum.matches("-?\\d+(\\.\\d+)?");
+    }
+
+    public static class Dataset {
+
+        public DatasetType type;
+        public List<BedPEFeature> features;
+
+        public Dataset(DatasetType type, List<BedPEFeature> features) {
+            this.type = type;
+            this.features = features;
+        }
     }
 
 }
