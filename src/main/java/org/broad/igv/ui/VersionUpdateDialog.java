@@ -31,14 +31,16 @@ import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.util.BrowserLauncher;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.event.*;
+
+import static org.broad.igv.ui.UIConstants.SERVER_BASE_URL;
 
 /**
  * @author Jim Robinson

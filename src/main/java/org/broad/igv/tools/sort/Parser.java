@@ -25,8 +25,8 @@
 
 package org.broad.igv.tools.sort;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.broad.igv.Globals;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 

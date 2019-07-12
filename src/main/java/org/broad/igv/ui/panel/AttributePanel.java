@@ -50,8 +50,8 @@ import org.broad.igv.ui.util.Packable;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso

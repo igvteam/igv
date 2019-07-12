@@ -25,8 +25,8 @@
 
 package org.broad.igv.sam.reader;
 
-import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SamFileHeaderMerger;
+import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;

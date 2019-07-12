@@ -37,8 +37,6 @@ import com.google.common.base.Objects;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
-import org.broad.igv.event.DataLoadedEvent;
-import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -50,6 +48,8 @@ import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.util.DataPanelTool;
 
 import javax.swing.*;

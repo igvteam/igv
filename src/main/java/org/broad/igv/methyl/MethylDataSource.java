@@ -25,6 +25,8 @@
 
 package org.broad.igv.methyl;
 
+import org.broad.igv.data.DataSource;
+
 import java.util.Iterator;
 
 /**

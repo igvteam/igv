@@ -27,10 +27,7 @@ package org.broad.igv.util;
 
 import org.broad.igv.Globals;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 /**

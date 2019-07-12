@@ -26,14 +26,14 @@
 package org.broad.igv.feature.tribble;
 
 import htsjdk.samtools.util.LocationAware;
-import htsjdk.tribble.AbstractFeatureCodec;
-import htsjdk.tribble.FeatureCodecHeader;
-import htsjdk.tribble.readers.PositionalBufferedStream;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;
+import htsjdk.tribble.AbstractFeatureCodec;
+import htsjdk.tribble.FeatureCodecHeader;
+import htsjdk.tribble.readers.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;

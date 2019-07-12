@@ -30,8 +30,8 @@
 
 package org.broad.igv.feature;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.AbstractHeadlessTest;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.io.IOException;

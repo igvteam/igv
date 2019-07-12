@@ -25,9 +25,9 @@
 
 package org.broad.igv.variant.util;
 
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.TrackGroupEvent;
-import org.broad.igv.track.AttributeManager;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;

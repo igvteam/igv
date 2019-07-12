@@ -25,15 +25,12 @@
 
 package org.broad.igv.feature.genome;
 
-import htsjdk.tribble.Feature;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.Exon;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.*;
 import org.broad.igv.util.ParsingUtils;
+import htsjdk.tribble.Feature;
 import org.broad.igv.util.StringUtils;
 
 import java.io.*;

@@ -25,7 +25,6 @@
 
 package org.broad.igv.data;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -39,6 +38,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.DownsampledDoubleArrayList;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.util.HashMap;
 import java.util.HashSet;

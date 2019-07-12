@@ -26,9 +26,9 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.Globals;
+import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
-import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 

@@ -30,7 +30,6 @@
 package org.broad.igv.track;
 
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
@@ -39,6 +38,7 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
+import htsjdk.tribble.Feature;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;

@@ -38,6 +38,9 @@ import org.broad.igv.ui.IGV;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  *

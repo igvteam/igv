@@ -30,11 +30,13 @@
 
 package org.broad.igv.util.collections;
 
+import org.broad.igv.util.collections.IntArrayList;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @author jrobinso

@@ -35,8 +35,8 @@ import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.CombinedDataSource;
-import org.broad.igv.feature.Range;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -70,8 +70,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso

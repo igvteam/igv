@@ -1,5 +1,5 @@
 # igv
-[![Build Status](https://travis-ci.org/umccr/igv.svg?branch=umccr)](https://travis-ci.org/umccr/igv)
+[![Build Status](https://travis-ci.org/igvteam/igv.svg?branch=master)](https://travis-ci.org/igvteam/igv)
 
 Integrative Genomics Viewer - desktop genome visualization tool for Mac, Windows, and Linux.
 

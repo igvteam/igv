@@ -28,12 +28,13 @@ package org.broad.igv.util;
 import htsjdk.tribble.util.LittleEndianInputStream;
 import htsjdk.tribble.util.LittleEndianOutputStream;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.*;
 
 import static junit.framework.Assert.assertEquals;
+
+import org.junit.Ignore;
 
 
 /**

@@ -33,6 +33,7 @@ import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.WaitCursorManager.CursorToken;
 import org.broad.igv.ui.util.MessageUtils;
 
+import javax.swing.*;
 import java.util.concurrent.*;
 
 /**

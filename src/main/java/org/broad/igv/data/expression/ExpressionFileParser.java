@@ -37,7 +37,6 @@ package org.broad.igv.data.expression;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
@@ -50,6 +49,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MagetabSignalDialog;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.BufferedReader;
 import java.io.File;

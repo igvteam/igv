@@ -26,12 +26,14 @@
 
 package org.broad.igv.feature.tribble;
 
-import htsjdk.tribble.CloseableTribbleIterator;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.FeatureReader;
+import htsjdk.tribble.TribbleIndexedFeatureReader;
+import htsjdk.tribble.index.Index;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.AbstractCacher;
+import htsjdk.tribble.CloseableTribbleIterator;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureReader;
 
 import java.io.IOException;
 import java.util.ArrayList;

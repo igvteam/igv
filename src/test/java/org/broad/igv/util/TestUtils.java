@@ -27,18 +27,18 @@ package org.broad.igv.util;
 
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.commandbar.GenomeListManager;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.AsciiLineReader;
 import org.junit.Assert;
 import org.junit.Ignore;
 
@@ -50,6 +50,8 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 import static junit.framework.Assert.assertTrue;

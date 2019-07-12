@@ -1,17 +1,16 @@
 package org.broad.igv.sam.lite;
 
+import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.util.StringUtil;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.*;
 import org.broad.igv.sam.ReadMate;
-import org.broad.igv.sam.SAMAlignment;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by jrobinso on 3/13/17.

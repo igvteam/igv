@@ -54,8 +54,8 @@ import org.w3c.dom.NodeList;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Track which displays features, typically showing regions of the genome

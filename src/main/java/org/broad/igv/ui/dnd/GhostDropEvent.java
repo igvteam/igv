@@ -28,10 +28,9 @@ package org.broad.igv.ui.dnd;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.TrackPanel;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.awt.Point;
 
 public class GhostDropEvent {
     private Point point;

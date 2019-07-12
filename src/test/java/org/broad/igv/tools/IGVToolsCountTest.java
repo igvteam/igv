@@ -25,9 +25,6 @@
 
 package org.broad.igv.tools;
 
-import htsjdk.tribble.AbstractFeatureReader;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.FeatureCodec;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.data.WiggleParser;
@@ -41,6 +38,9 @@ import org.broad.igv.tdf.TDFTile;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

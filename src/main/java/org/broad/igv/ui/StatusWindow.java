@@ -29,8 +29,8 @@
 
 package org.broad.igv.ui;
 
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 /**
  * @author Stan Diamond

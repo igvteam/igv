@@ -29,11 +29,12 @@
  */
 package org.broad.igv.sam.reader;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.DotAlignedAlignment;
+import org.broad.igv.util.ParsingUtils;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 

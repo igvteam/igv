@@ -25,13 +25,13 @@
 
 package org.broad.igv.variant;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.vcf.VCFVariant;
+import htsjdk.tribble.Feature;
 import org.junit.Assert;
 import org.junit.Test;
 

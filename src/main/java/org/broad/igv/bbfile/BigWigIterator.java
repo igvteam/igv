@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.CompressionUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 

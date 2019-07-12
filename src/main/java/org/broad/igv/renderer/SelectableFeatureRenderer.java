@@ -25,11 +25,17 @@
 
 package org.broad.igv.renderer;
 
+import com.google.common.base.Predicate;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IExon;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.Track;
+import org.broad.igv.util.collections.CollUtils;
 
 import java.awt.*;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**

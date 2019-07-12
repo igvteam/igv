@@ -49,8 +49,8 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import static org.broad.igv.prefs.Constants.SASHIMI_SHOW_COVERAGE;
 

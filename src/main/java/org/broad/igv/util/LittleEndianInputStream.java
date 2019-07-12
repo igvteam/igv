@@ -25,7 +25,9 @@
 
 package org.broad.igv.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 

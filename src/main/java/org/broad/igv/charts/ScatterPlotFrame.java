@@ -34,10 +34,11 @@ import org.broad.igv.track.TrackType;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.border.*;
 
 /**
  * @author Jim Robinson

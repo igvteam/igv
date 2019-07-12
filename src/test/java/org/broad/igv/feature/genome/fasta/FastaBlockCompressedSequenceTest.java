@@ -2,7 +2,7 @@ package org.broad.igv.feature.genome.fasta;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Created by jrobinso on 6/23/17.

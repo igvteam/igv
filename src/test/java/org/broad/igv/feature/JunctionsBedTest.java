@@ -25,14 +25,18 @@
 
 package org.broad.igv.feature;
 
-import htsjdk.tribble.AbstractFeatureReader;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.TestUtils;
+import htsjdk.tribble.AbstractFeatureReader;
+import org.junit.AfterClass;
+
+import static org.junit.Assert.*;
+
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Iterator;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Jim Robinson

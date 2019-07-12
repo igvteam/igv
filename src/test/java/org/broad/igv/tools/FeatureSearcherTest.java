@@ -25,7 +25,6 @@
 
 package org.broad.igv.tools;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.track.FeatureSource;
@@ -33,6 +32,7 @@ import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.io.IOException;

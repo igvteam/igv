@@ -1,7 +1,6 @@
 package org.broad.igv.feature.sprite;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by jrobinso on 6/30/18.

@@ -25,6 +25,8 @@
 
 package org.broad.igv.util.collections;
 
+import org.broad.igv.util.IntComparator;
+
 /**
  * Author: jrobinso
  * Date: Jul 22, 2010

@@ -37,8 +37,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
 import java.io.Serializable;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import static org.broad.igv.prefs.Constants.BACKGROUND_COLOR;
 

@@ -1,6 +1,5 @@
 package org.broad.igv.feature.basepair;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
@@ -10,8 +9,10 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 

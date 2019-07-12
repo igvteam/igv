@@ -29,11 +29,10 @@
 
 package org.broad.igv.util;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.border.*;
 
 /**
  * @author Jim Robinson

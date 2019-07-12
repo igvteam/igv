@@ -25,14 +25,14 @@
 
 package org.broad.igv.data;
 
-import htsjdk.tribble.AbstractFeatureReader;
-import htsjdk.tribble.FeatureCodec;
 import org.apache.commons.lang.ArrayUtils;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.util.TestUtils;
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.tribble.FeatureCodec;
 import org.junit.Test;
 
 import java.util.ArrayList;

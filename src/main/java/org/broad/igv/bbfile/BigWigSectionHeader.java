@@ -29,8 +29,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.LittleEndianInputStream;
 
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.DataInputStream;
 
 /**
  * Created by IntelliJ IDEA.

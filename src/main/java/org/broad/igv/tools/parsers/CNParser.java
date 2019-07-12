@@ -29,7 +29,6 @@
  */
 package org.broad.igv.tools.parsers;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
@@ -37,6 +36,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 import java.util.Set;

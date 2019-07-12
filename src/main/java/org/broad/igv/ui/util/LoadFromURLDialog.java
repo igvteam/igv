@@ -29,10 +29,12 @@
 
 package org.broad.igv.ui.util;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.swing.*;
+import javax.swing.border.*;
 
 /**
  * @author James Robinson

@@ -31,6 +31,7 @@ package org.broad.igv.ui.action;
 
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.SortDialog;
 import org.broad.igv.ui.util.UIUtilities;
 

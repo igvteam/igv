@@ -26,6 +26,10 @@
 package org.broad.igv.feature.tribble;
 
 import htsjdk.samtools.util.LocationAware;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.variant.vcf.VCFVariant;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureCodec;
 import htsjdk.tribble.FeatureCodecHeader;
@@ -33,10 +37,9 @@ import htsjdk.tribble.readers.AsciiLineReader;
 import htsjdk.tribble.readers.AsciiLineReaderIterator;
 import htsjdk.tribble.readers.PositionalBufferedStream;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.variant.vcf.VCFVariant;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import java.io.IOException;
 import java.io.InputStream;

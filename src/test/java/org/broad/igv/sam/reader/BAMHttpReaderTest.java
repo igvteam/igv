@@ -39,6 +39,8 @@ import org.broad.igv.util.ResourceLocator;
 import org.junit.*;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 

@@ -28,7 +28,6 @@ package org.broad.igv.data;
 //~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
@@ -43,6 +42,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

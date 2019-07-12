@@ -26,6 +26,8 @@
 package org.broad.igv.util;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;

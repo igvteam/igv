@@ -27,11 +27,11 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import htsjdk.tribble.Feature;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.MultiMap;
+import htsjdk.tribble.Feature;
 
 import java.awt.*;
 import java.util.List;

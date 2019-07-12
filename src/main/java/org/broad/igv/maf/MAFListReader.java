@@ -28,8 +28,11 @@ package org.broad.igv.maf;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;

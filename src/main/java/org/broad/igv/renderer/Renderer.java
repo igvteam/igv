@@ -30,9 +30,9 @@
 
 package org.broad.igv.renderer;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
+import htsjdk.tribble.Feature;
 
 import java.awt.*;
 

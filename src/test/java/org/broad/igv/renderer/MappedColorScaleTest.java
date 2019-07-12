@@ -31,13 +31,12 @@
 package org.broad.igv.renderer;
 
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.awt.*;
 import java.util.HashMap;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author jrobinso

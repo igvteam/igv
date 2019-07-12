@@ -25,9 +25,9 @@
 
 package org.broad.igv.util.collections;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.FeatureUtils;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.util.ArrayList;

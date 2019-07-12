@@ -25,12 +25,12 @@
 
 package org.broad.igv.feature;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.MutationTrack;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.util.HashSet;

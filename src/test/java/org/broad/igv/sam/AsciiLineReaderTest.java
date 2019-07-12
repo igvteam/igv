@@ -29,8 +29,8 @@
  */
 package org.broad.igv.sam;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.TestUtils;
+import htsjdk.tribble.readers.AsciiLineReader;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;

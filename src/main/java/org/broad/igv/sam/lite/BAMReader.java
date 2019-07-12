@@ -3,21 +3,25 @@ package org.broad.igv.sam.lite;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.tribble.util.LittleEndianInputStream;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.AlignmentBlock;
-import org.broad.igv.sam.AlignmentBlockImpl;
+import org.broad.igv.sam.*;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentReader;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.*;
+import java.util.zip.DataFormatException;
 
 /**
  * Created by jrobinso on 3/9/17.

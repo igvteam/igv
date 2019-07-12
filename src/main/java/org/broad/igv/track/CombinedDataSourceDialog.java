@@ -128,7 +128,7 @@ public class CombinedDataSourceDialog extends JDialog {
 
     private void helpButtonActionPerformed(ActionEvent e) {
         String defInfo = "Error retrieving help. See the IGV User Guide.";
-        InputStream is = this.getClass().getResourceAsStream("/bedtools_help.txt");
+        InputStream is = this.getClass().getResourceAsStream("/resources/bedtools_help.txt");
         String info = "";
         String line;
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));

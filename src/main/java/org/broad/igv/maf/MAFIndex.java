@@ -25,12 +25,12 @@
 
 package org.broad.igv.maf;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.broad.igv.Globals;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.index.Interval;
 import org.broad.igv.util.index.IntervalTree;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.*;

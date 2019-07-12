@@ -84,9 +84,8 @@ public class Main {
 
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
 
-        //final Main.IGVArgs igvArgs = new Main.IGVArgs(args);
+        final Main.IGVArgs igvArgs = new Main.IGVArgs(args);
         String flargs[] = new String[0];
-        final Main.IGVArgs igvArgs = new Main.IGVArgs(flargs);
 
         // Do this early
         if (igvArgs.igvDirectory != null) {
@@ -412,8 +411,6 @@ public class Main {
         public String igvDirectory = null;
         public String forceVersion = null;
 
-//      XXX: Clashes with -D JVM parameters:
-//       "com.sanityinc.jargs.CmdLineParser$UnknownSuboptionException: Illegal option: 'D' in '-Dfile.encoding=UTF-8'"
         IGVArgs(String[] args) {
             if (args != null) {
                 parseArgs(args);

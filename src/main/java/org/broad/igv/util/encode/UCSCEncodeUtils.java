@@ -29,8 +29,11 @@ import org.broad.igv.Globals;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 
+import java.awt.*;
 import java.io.*;
+import java.net.URL;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso

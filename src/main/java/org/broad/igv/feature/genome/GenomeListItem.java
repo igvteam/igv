@@ -25,7 +25,13 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.feature.genome.fasta.FastaUtils;
+import org.broad.igv.util.HttpUtils;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.Objects;
+import java.util.zip.ZipException;
 
 /**
  * A container for specific genome information which can be used to

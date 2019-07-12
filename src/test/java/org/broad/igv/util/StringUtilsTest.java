@@ -25,6 +25,7 @@
 
 package org.broad.igv.util;
 
+import org.broad.igv.Globals;
 import org.junit.Test;
 
 import java.util.List;

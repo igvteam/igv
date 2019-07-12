@@ -26,10 +26,6 @@
 
 package org.broad.igv.ui.util;
 
-import htsjdk.tribble.FeatureCodec;
-import htsjdk.tribble.TribbleException;
-import htsjdk.tribble.index.Index;
-import htsjdk.tribble.index.IndexFactory;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.exceptions.DataLoadException;
@@ -39,15 +35,19 @@ import org.broad.igv.sam.reader.AlignmentIndexer;
 import org.broad.igv.sam.reader.FeatureIndex;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
+import htsjdk.tribble.FeatureCodec;
+import htsjdk.tribble.TribbleException;
+import htsjdk.tribble.index.Index;
+import htsjdk.tribble.index.IndexFactory;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import javax.swing.*;
+import javax.swing.border.*;
+
 
 
 public class IndexCreatorDialog extends JDialog {

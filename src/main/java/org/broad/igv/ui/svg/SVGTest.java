@@ -29,9 +29,7 @@ import org.broad.igv.ui.FontManager;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 
 /**
  * @author jrobinso

@@ -25,6 +25,8 @@
 
 package org.broad.igv.sam;
 
+import org.broad.igv.feature.genome.Genome;
+
 /**
  * Created by jrobinso on 9/22/15.
  */

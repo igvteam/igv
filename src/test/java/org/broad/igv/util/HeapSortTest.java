@@ -30,13 +30,12 @@
 package org.broad.igv.util;
 
 import org.junit.AfterClass;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Comparator;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author jrobinso

@@ -25,7 +25,6 @@
 
 package org.broad.igv.track;
 
-import htsjdk.tribble.Feature;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.AbstractFeatureParser;
@@ -38,6 +37,7 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.LRUCache;
+import htsjdk.tribble.Feature;
 
 import java.io.BufferedReader;
 import java.io.File;

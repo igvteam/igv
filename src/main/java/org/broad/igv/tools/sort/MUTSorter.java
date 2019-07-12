@@ -25,8 +25,8 @@
 
 package org.broad.igv.tools.sort;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.broad.igv.feature.tribble.MUTCodec;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.File;
 import java.io.IOException;

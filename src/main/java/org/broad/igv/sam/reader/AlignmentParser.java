@@ -30,8 +30,8 @@
 
 package org.broad.igv.sam.reader;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.broad.igv.sam.Alignment;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 

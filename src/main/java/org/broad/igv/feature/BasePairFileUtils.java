@@ -25,11 +25,12 @@
 
 package org.broad.igv.feature;
 
-
-import org.broad.igv.Globals;
 import org.broad.igv.feature.basepair.BasePairFeature;
+import org.broad.igv.Globals;
 
-import java.awt.*;
+
+import java.awt.Color;
+import java.awt.Point;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;

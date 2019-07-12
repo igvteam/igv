@@ -33,6 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.ParsingUtils;
 
 import java.awt.*;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

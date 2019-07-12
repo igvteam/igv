@@ -5,8 +5,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;

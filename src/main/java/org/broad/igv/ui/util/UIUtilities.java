@@ -37,6 +37,7 @@ import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.lang.reflect.InvocationTargetException;
 
 

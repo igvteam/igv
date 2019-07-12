@@ -34,12 +34,11 @@ import com.sanityinc.jargs.CmdLineParser;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.exceptions.DataLoadException;
+import static org.broad.igv.util.ParsingUtils.openBufferedReader;
 
 import java.io.*;
 import java.util.LinkedList;
 import java.util.Queue;
-
-import static org.broad.igv.util.ParsingUtils.openBufferedReader;
 
 public class SequenceGC {
 

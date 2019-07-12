@@ -30,14 +30,14 @@
 package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
-import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.util.blat.BlatClient;
+import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
-import org.broad.igv.util.blat.BlatClient;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;

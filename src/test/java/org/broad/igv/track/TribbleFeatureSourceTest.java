@@ -27,11 +27,11 @@ package org.broad.igv.track;
 
 import org.broad.igv.Globals;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.TestUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.broad.igv.util.TestUtils;
 
 
 /**

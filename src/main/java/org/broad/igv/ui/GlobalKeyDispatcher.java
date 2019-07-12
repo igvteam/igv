@@ -56,8 +56,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import static org.broad.igv.prefs.Constants.SAM_SORT_BY_TAG;
-import static org.broad.igv.prefs.Constants.SAM_SORT_OPTION;
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * @author jrobinso

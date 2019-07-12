@@ -35,6 +35,7 @@ package org.broad.igv.gs;
  */
 
 import org.apache.logging.log4j.Logger;
+import org.broad.igv.gs.GSFileBrowser;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.gs.dm.DMUtils;
 import org.broad.igv.session.Session;

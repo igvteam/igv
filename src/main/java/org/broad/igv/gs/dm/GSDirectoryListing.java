@@ -29,6 +29,7 @@ package org.broad.igv.gs.dm;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 
 /**

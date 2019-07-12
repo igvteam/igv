@@ -29,8 +29,11 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.FeatureRenderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
+import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
 
 import java.awt.*;
+import java.awt.geom.Arc2D;
 import java.util.List;
 
 

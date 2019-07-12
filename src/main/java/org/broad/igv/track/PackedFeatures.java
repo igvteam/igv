@@ -25,9 +25,9 @@
 
 package org.broad.igv.track;
 
+import htsjdk.samtools.util.Locatable;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import htsjdk.samtools.util.Locatable;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import htsjdk.tribble.Feature;

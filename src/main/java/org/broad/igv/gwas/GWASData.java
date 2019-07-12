@@ -28,6 +28,7 @@ package org.broad.igv.gwas;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.collections.DoubleArrayList;
+import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 
 import java.util.LinkedHashMap;

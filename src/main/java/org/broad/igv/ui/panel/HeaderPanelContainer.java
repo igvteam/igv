@@ -35,8 +35,7 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * The drag & drop code was modified from the excellent example of Bryan E. Smith.

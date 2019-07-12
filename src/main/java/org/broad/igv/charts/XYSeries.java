@@ -25,6 +25,8 @@
 
 package org.broad.igv.charts;
 
+import org.broad.igv.util.collections.DoubleArrayList;
+
 import java.util.ArrayList;
 import java.util.List;
 

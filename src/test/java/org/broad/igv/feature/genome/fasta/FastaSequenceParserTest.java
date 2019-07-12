@@ -26,6 +26,7 @@
 package org.broad.igv.feature.genome.fasta;
 
 import org.broad.igv.feature.genome.InMemorySequence;
+import org.broad.igv.feature.genome.fasta.FastaSequenceParser;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

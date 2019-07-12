@@ -25,10 +25,6 @@
 
 package org.broad.igv.tools.parsers;
 
-import htsjdk.tribble.AbstractFeatureReader;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.FeatureCodec;
-import htsjdk.tribble.bed.BEDCodec;
 import junit.framework.Assert;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
@@ -39,6 +35,10 @@ import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.TestUtils;
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureCodec;
+import htsjdk.tribble.bed.BEDCodec;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

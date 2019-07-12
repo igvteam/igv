@@ -26,7 +26,11 @@
 package org.broad.igv.track;
 
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.ui.panel.ReferenceFrame;
+
+import java.util.List;
+
 
 /**
  * @author jrobinso

@@ -25,7 +25,6 @@
 
 package org.broad.igv.track;
 
-import htsjdk.tribble.Feature;
 import htsjdk.tribble.Tribble;
 import htsjdk.tribble.index.Index;
 import htsjdk.tribble.index.IndexFactory;
@@ -40,6 +39,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.util.ResourceLocator;
+import htsjdk.tribble.Feature;
 
 import java.io.IOException;
 import java.util.*;

@@ -40,8 +40,8 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Container for a group of tracks.  Behaves as a single unit when sorting

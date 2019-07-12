@@ -31,11 +31,12 @@ import org.apache.logging.log4j.LogManager;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.LittleEndianInputStream;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.DataInputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 

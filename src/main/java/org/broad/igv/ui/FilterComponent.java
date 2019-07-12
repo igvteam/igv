@@ -26,6 +26,7 @@
 package org.broad.igv.ui;
 
 import com.jidesoft.swing.JideButton;
+import org.broad.igv.ui.TrackFilterPane;
 import org.broad.igv.util.Filter;
 import org.broad.igv.util.FilterElement;
 import org.broad.igv.util.FilterElement.BooleanOperator;

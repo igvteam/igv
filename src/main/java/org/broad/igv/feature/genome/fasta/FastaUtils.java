@@ -25,13 +25,13 @@
 
 package org.broad.igv.feature.genome.fasta;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.HashSet;

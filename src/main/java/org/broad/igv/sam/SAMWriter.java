@@ -38,10 +38,7 @@ import org.broad.igv.util.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Write SAM/BAM Alignments to a file or stream

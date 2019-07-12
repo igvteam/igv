@@ -61,8 +61,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Class to parse an IGV session file

@@ -30,8 +30,8 @@ import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.FontManager;
 
 import java.awt.*;
 import java.util.List;

@@ -25,12 +25,12 @@
 
 package org.broad.igv.feature.tribble;
 
-import htsjdk.tribble.AbstractFeatureReader;
-import htsjdk.variant.vcf.VCFCodec;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.TestUtils;
+import htsjdk.tribble.AbstractFeatureReader;
+import htsjdk.variant.vcf.VCFCodec;
 import org.junit.Assert;
 import org.junit.Test;
 

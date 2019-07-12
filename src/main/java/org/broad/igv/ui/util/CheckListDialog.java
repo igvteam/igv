@@ -31,13 +31,12 @@ package org.broad.igv.ui.util;
 
 import org.broad.igv.util.Utilities;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
+import java.awt.event.*;
 import java.util.*;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.border.*;
 
 /**
  * @author Jim Robinson

@@ -43,8 +43,8 @@ import org.broad.igv.util.collections.MultiMap;
 import java.awt.*;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 
 /**

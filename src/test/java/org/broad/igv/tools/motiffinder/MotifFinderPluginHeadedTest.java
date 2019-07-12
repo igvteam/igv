@@ -25,7 +25,6 @@
 
 package org.broad.igv.tools.motiffinder;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.batch.CommandExecutor;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.track.FeatureTrack;
@@ -36,6 +35,7 @@ import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.TestUtils;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import javax.swing.*;

@@ -1,5 +1,7 @@
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.Globals;
+import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.Strand;

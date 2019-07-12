@@ -41,7 +41,7 @@ import java.awt.*;
  */
 public class IGVPanel extends JPanel implements Paintable {
 
-    private static final Logger log = LogManager.getLogger(IGVPanel.class);
+    private static Logger log = LogManager.getLogger(IGVPanel.class);
 
     // Backpointer to parent
     MainPanel mainPanel;

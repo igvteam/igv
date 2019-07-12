@@ -26,11 +26,11 @@
 package org.broad.igv.feature;
 
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import htsjdk.tribble.Feature;
 
 import java.io.*;
 import java.util.*;

@@ -31,9 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
-import org.broad.igv.track.GFFFeatureSource;
-import org.broad.igv.track.TrackLoader;
-import org.broad.igv.track.TrackProperties;
+import org.broad.igv.track.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;

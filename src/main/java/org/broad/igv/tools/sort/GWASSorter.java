@@ -25,10 +25,10 @@
 
 package org.broad.igv.tools.sort;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.gwas.GWASParser;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.ArrayList;

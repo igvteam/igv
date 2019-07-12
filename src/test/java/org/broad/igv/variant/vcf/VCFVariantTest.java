@@ -25,11 +25,11 @@
 
 package org.broad.igv.variant.vcf;
 
-import htsjdk.variant.variantcontext.VariantContext;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

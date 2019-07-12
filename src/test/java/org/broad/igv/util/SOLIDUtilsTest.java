@@ -25,9 +25,9 @@
 
 package org.broad.igv.util;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import org.broad.igv.util.SOLIDUtils;
 
 /**
  * User: jrobinso

@@ -25,7 +25,6 @@
 
 package org.broad.igv.feature.tribble;
 
-import htsjdk.tribble.Feature;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.Globals;
@@ -34,8 +33,10 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.collections.MultiMap;
+import htsjdk.tribble.Feature;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 

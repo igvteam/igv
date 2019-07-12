@@ -29,14 +29,13 @@
  */
 package org.broad.igv.data;
 
-import org.broad.igv.data.seg.SegmentedChromosomeData;
 import org.junit.*;
+import static org.junit.Assert.assertEquals;
+import org.broad.igv.data.seg.SegmentedChromosomeData;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author jrobinso

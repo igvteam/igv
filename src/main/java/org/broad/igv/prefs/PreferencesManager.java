@@ -1,17 +1,18 @@
 package org.broad.igv.prefs;
 
-import htsjdk.samtools.util.BufferedLineReader;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.util.ParsingUtils;
 
+
 import java.io.*;
-import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -24,7 +25,7 @@ public class PreferencesManager implements IGVEventObserver {
     public static final String INFO_KEY = "info";
 
     private static List<PreferenceGroup> preferenceGroupList;
-    private static final Logger log = LogManager.getLogger(PreferencesManager.class);
+    private static Logger log = LogManager.getLogger(PreferencesManager.class);
     private static Map<String, IGVPreferences> preferencesMap = Collections.synchronizedMap(new HashMap<>());
     private static IGVPreferences genericDefaults;
 
@@ -213,7 +214,6 @@ public class PreferencesManager implements IGVEventObserver {
         String group = null;
 
         try {
-            //XXX: What's the best way to handle paths on Java11 in a portable manner?
             reader = new BufferedReader(new InputStreamReader(PreferenceEditorNew.class.getResourceAsStream("/org/broad/igv/prefs/preferences.tab")));
             while ((nextLine = reader.readLine()) != null) {
                 nextLine = nextLine.trim();

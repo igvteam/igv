@@ -25,12 +25,12 @@
 
 package org.broad.igv.tools.converters;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.io.BufferedReader;

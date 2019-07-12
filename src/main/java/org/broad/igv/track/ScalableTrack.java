@@ -26,8 +26,12 @@
 
 package org.broad.igv.track;
 
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.ui.panel.ReferenceFrame;
+
+import java.util.List;
+
 
 /**
  * Created by jrobinson on 5/3/16.

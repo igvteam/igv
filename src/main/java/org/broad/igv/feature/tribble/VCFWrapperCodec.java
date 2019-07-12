@@ -25,15 +25,15 @@
 
 package org.broad.igv.feature.tribble;
 
-import htsjdk.tribble.AsciiFeatureCodec;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.readers.LineIterator;
-import htsjdk.variant.variantcontext.VariantContext;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.vcf.VCFVariant;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.LineIterator;
+import htsjdk.variant.variantcontext.VariantContext;
 
 import java.io.IOException;
 

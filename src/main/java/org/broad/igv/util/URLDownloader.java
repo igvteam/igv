@@ -25,6 +25,7 @@
 
 package org.broad.igv.util;
 
+import org.broad.igv.ui.util.ProgressMonitor;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 

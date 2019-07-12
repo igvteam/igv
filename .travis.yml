@@ -1,18 +1,15 @@
-sudo: false
 language: java
-# https://stackoverflow.com/questions/52930532/groovy-jdk-11-disable-the-warning-message
-env:
-  - GROOVY_TURN_OFF_JAVA_WARNINGS=true
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -rf $HOME/.gradle/caches/*/plugin-resolution/
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-  - "$HOME/.gradle/caches/"
-  - "$HOME/.gradle/wrapper/"
-jdk:
-  - openjdk11
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+jdk: openjdk11
 install:
-  - "./gradlew assemble"
+- ./gradlew -b build_java11.gradle assemble
 script:
-  - "./gradlew build --stacktrace"
+- ./gradlew -b build_java11.gradle check
+- jdk_switcher use openjdk8
+- ./gradlew compileJava

@@ -25,10 +25,10 @@
 
 package org.broad.igv.track;
 
-import htsjdk.tribble.Feature;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.*;
+import htsjdk.tribble.Feature;
 
 import java.io.IOException;
 import java.util.*;

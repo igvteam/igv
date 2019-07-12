@@ -27,6 +27,7 @@ package org.broad.igv.batch;
 
 
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -35,6 +36,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestClient {
 

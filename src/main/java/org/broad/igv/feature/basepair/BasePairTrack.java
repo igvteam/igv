@@ -28,7 +28,7 @@ import java.util.List;
 
 public class BasePairTrack extends AbstractTrack {
 
-    static Logger log = LogManager.getLogger(BasePairFileParser.class);
+    static Logger log = LogManager.getLogger(BasePairTrack.class);
 
     private BasePairRenderer basePairRenderer = new BasePairRenderer();
     private BasePairData basePairData = new BasePairData();

@@ -25,17 +25,19 @@
 
 package org.broad.igv.feature;
 
-import htsjdk.tribble.Feature;
+import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.track.GFFFeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import static junit.framework.Assert.*;
 
 

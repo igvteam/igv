@@ -25,15 +25,15 @@
 
 package org.broad.igv.feature.tribble;
 
-import htsjdk.tribble.AsciiFeatureCodec;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.exception.CodecLineParsingException;
-import htsjdk.tribble.readers.LineIterator;
 import org.broad.igv.feature.FeatureType;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.exception.CodecLineParsingException;
+import htsjdk.tribble.readers.LineIterator;
 
 /**
  * @author jrobinso

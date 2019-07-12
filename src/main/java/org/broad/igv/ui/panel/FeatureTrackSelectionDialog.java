@@ -34,7 +34,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 
 import java.awt.*;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Dialog used for selecting a single FeatureTrack

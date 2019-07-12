@@ -25,7 +25,6 @@
 
 package org.broad.igv.track;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataTile;
@@ -37,6 +36,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.collections.CollUtils;
+import htsjdk.tribble.Feature;
 
 import java.util.*;
 

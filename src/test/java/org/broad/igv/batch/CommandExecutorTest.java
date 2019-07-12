@@ -25,10 +25,11 @@
 
 package org.broad.igv.batch;
 
+import org.apache.commons.lang.StringUtils;
 import org.broad.igv.Globals;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
@@ -44,13 +45,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import static junit.framework.Assert.*;
 import static org.junit.Assert.assertTrue;

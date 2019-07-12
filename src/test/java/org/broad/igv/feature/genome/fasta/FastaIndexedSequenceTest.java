@@ -28,6 +28,8 @@ package org.broad.igv.feature.genome.fasta;
 import org.broad.igv.feature.genome.IGVSequence;
 import org.broad.igv.feature.genome.Sequence;
 import org.broad.igv.feature.genome.SequenceWrapper;
+import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
+import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;

@@ -1,5 +1,8 @@
 package org.broad.igv.session;
 
+import org.broad.igv.track.BlatTrack;
+
+
 import java.util.HashMap;
 import java.util.Map;
 

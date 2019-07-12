@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.sam.AlignmentTrack.GroupOption;
 
 import java.util.*;
 

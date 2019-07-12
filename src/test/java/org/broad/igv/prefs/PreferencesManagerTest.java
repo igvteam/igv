@@ -6,8 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.broad.igv.prefs.Constants.TRACK_HEIGHT_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Created by jrobinso on 1/22/17.

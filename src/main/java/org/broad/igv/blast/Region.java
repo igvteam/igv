@@ -27,7 +27,7 @@ package org.broad.igv.blast;
 
 import org.broad.igv.util.ChromosomeColors;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
