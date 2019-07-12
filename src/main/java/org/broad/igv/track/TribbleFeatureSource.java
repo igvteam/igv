@@ -33,6 +33,7 @@ import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.*;
+import org.broad.igv.feature.tribble.reader.IGVComponentMethods;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.IndexCreatorDialog;
@@ -41,7 +42,6 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.CollUtils;
-import org.broad.igv.util.stream.IGVUrlHelperFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,6 +71,8 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
     public static TribbleFeatureSource getFeatureSource(ResourceLocator locator, Genome genome, boolean useCache) throws IOException, TribbleIndexNotFoundException {
 
+        AbstractFeatureReader.setComponentMethods(IGVComponentMethods.getInstance());
+
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
 
         boolean indexExists;
@@ -83,10 +85,9 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             indexExists = true;
         } else {
             idxPath = ResourceLocator.indexFile(locator);
-            if(idxPath == null) {
+            if (idxPath == null) {
                 indexExists = false;
-            }
-            else {
+            } else {
                 if (FileUtils.isRemote(idxPath)) {
                     idxPath = HttpUtils.mapURL(idxPath);
                 }
