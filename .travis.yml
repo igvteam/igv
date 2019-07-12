@@ -8,8 +8,8 @@ cache:
     - $HOME/.gradle/wrapper/
 jdk: openjdk11
 install:
-- ./gradlew -b build_java11.gradle assemble
+- ./gradlew assemble
 script:
-- ./gradlew -b build_java11.gradle check
-- jdk_switcher use openjdk8
-- ./gradlew compileJava
+- ./gradlew check
+  #- jdk_switcher use openjdk8
+  #- ./gradlew compileJava
