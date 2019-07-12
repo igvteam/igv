@@ -519,7 +519,7 @@ public abstract class SAMAlignment implements Alignment {
         String cigarString = getCigarString();
         // Abbreviate long CIGAR strings.  Retain the start and end of the CIGAR, which show
         // clipping; trim the middle.
-        int maxCigarStringLength = 60;
+        int maxCigarStringLength = 1000;
         if (cigarString.length() > maxCigarStringLength) {
             // Match only full <length><operator> pairs at the beginning and end of the string.
             Matcher lMatcher = Pattern.compile("^(.{1," + Integer.toString(maxCigarStringLength / 2 - 1) + "}[A-Z])").matcher(cigarString);
