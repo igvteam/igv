@@ -220,10 +220,10 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         int end;
         int col = 3;
         try {
-            start = Integer.parseInt(tokens[col]) - 1;
+            start = (int)Double.parseDouble(tokens[col]) - 1;
             if (start < 0) throw new ParserException("Start index must be 1 or larger; GFF is 1-based", -1, line);
             col++;
-            end = Integer.parseInt(tokens[col]);
+            end = (int) Double.parseDouble(tokens[col]);
         } catch (NumberFormatException ne) {
             String msg = String.format("Column %d must contain a numeric value. %s", col + 1, ne.getMessage());
             throw new ParserException(msg, -1, line);
