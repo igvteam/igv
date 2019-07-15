@@ -117,7 +117,7 @@ S. cerevisiae (GSM552910)	https://s3.amazonaws.com/igv.broadinstitute.org/genome
 S. cerevisiae (Y55)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/Y55.genome	Y55
 S. cerevisiae (sacCer1)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/sacCer1.genome	sacCer1
 S. cerevisiae (sacCer2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/sacCer2.genome	sacCer2
-S. cerevisiae (sacCer3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/sacCer3.genome	sacCer3
+S. cerevisiae (sacCer3)	https://s3.amazonaws.com/igv.org.genomes/sacCer3/sacCer3.genome	sacCer3
 S. cerevisiae (sk1)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/sk1.genome	sk1
 S. pombe (ASM294v2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ASM294v2.genome	ASM294v2
 S. purpuratus (2.5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/spur_2.5.genome	spur_2.5

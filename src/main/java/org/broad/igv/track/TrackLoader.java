@@ -372,7 +372,7 @@ public class TrackLoader {
 
 
     private void loadBedPEFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        List<BedPEFeature> features = BedPEParser.parse(locator.getPath(), genome);
+        BedPEParser.Dataset features = BedPEParser.parse(locator, genome);
         newTracks.add(new InteractionTrack(locator, features, genome));
     }
 
