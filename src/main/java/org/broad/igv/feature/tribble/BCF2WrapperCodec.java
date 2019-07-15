@@ -40,9 +40,6 @@ import htsjdk.variant.variantcontext.VariantContext;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 /**
  * @author Jacob Silterra
  * @date 2013-Jun-14

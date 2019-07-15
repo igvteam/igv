@@ -50,7 +50,7 @@ import java.util.List;
 public class SetTrackHeightMenuAction extends MenuAction {
 
     IGV mainFrame;
-    private static Logger log = Logger.getLogger(SetTrackHeightMenuAction.class);
+    static Logger log = Logger.getLogger(SetTrackHeightMenuAction.class);
 
     static int lastTrackHeight = -1;
 

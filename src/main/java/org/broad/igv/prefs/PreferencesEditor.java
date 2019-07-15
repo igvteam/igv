@@ -73,7 +73,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class PreferencesEditor extends javax.swing.JDialog {
 
-    private static Logger log = Logger.getLogger(PreferencesEditor.class);
+    static Logger log = Logger.getLogger(PreferencesEditor.class);
 
     private boolean canceled = false;
     Map<String, String> updatedPreferenceMap = Collections.synchronizedMap(new HashMap<String, String>() {

@@ -25,6 +25,7 @@
 
 package org.broad.igv.util.ftp;
 
+
 import htsjdk.samtools.SAMException;
 import htsjdk.samtools.seekablestream.UserPasswordInput;
 import htsjdk.samtools.util.ftp.FTPClient;

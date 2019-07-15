@@ -4,7 +4,6 @@ package org.broad.igv.feature.basepair;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.basepair.BasePairTrack.*;
-import org.apache.logging.log4j.LogManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.color.ColorUtilities;
 

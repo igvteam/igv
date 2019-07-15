@@ -73,4 +73,5 @@ public class MenuAction extends AbstractAction {
     public void setToolTipText(String toolTipText) {
         this.toolTipText = toolTipText;
     }
+
 }

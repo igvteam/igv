@@ -28,8 +28,8 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.log4j.Logger;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;

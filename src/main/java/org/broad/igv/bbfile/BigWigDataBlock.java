@@ -29,9 +29,9 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.CompressionUtils;
 
+import java.util.ArrayList;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.ArrayList;
 import java.util.Map;
 
 /**

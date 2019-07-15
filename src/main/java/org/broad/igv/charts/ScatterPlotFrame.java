@@ -31,8 +31,6 @@ package org.broad.igv.charts;
 
 import org.broad.igv.track.TrackType;
 
-import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.DecimalFormat;

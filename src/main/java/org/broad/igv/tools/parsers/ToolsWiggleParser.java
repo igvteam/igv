@@ -27,7 +27,6 @@ package org.broad.igv.tools.parsers;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.WiggleDataset;

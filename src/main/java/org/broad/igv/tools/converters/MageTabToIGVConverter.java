@@ -34,7 +34,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.sort.SortableRecord;
 import org.broad.igv.tools.sort.SortableRecordCodec;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.util.collections.SortingCollection;
 
 import java.io.*;
 import java.util.Comparator;

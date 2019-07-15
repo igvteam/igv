@@ -34,8 +34,6 @@ import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.track.GFFFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.broad.igv.feature.genome.ChromosomeNameComparator;
-import org.broad.igv.util.collections.SortingCollection;
 
 import java.io.*;
 import java.util.Comparator;

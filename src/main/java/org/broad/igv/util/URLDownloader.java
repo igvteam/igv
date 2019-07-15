@@ -25,8 +25,8 @@
 
 package org.broad.igv.util;
 
-import org.broad.igv.ui.util.ProgressMonitor;
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.util.ProgressMonitor;
 
 import java.io.*;
 import java.net.HttpURLConnection;

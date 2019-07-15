@@ -52,7 +52,7 @@ import java.util.Set;
  *         Time: 11:43:18 AM
  */
 public class GobyAlignmentQueryReader implements AlignmentReader {
-    private static Logger LOG = Logger.getLogger(GobyAlignmentQueryReader.class);
+    private static final Logger LOG = Logger.getLogger(GobyAlignmentQueryReader.class);
 
     private AlignmentReaderImpl reader = null;
     private final String basename;

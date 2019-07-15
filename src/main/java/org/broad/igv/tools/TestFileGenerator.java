@@ -29,9 +29,9 @@
  */
 package org.broad.igv.tools;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.HttpUtils;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.net.URL;

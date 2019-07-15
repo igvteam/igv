@@ -26,10 +26,10 @@
 
 package org.broad.igv.feature;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.util.collections.LRUCache;
 import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
-import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;

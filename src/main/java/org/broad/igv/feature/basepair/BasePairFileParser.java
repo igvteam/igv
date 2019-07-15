@@ -12,8 +12,6 @@ import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class BasePairFileParser {
 

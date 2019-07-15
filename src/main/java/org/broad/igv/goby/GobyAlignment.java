@@ -64,7 +64,7 @@ public class GobyAlignment implements Alignment {
     /**
      * Used to log debug and informational messages.
      */
-    private static Logger log = Logger.getLogger(GobyAlignment.class);
+    private static final Logger LOG = Logger.getLogger(GobyAlignment.class);
 
     protected final Alignments.AlignmentEntry entry;
     private final GobyAlignmentIterator iterator;

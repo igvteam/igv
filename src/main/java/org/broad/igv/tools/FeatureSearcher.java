@@ -25,7 +25,6 @@
 
 package org.broad.igv.tools;
 
-import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;

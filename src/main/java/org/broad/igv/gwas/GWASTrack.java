@@ -65,7 +65,7 @@ import java.util.Collection;
  */
 public class GWASTrack extends AbstractTrack {
 
-    private static Logger log = Logger.getLogger(GWASTrack.class);
+    private static final Logger log = Logger.getLogger(GWASTrack.class);
     private static final int AXIS_AREA_WIDTH = 60;
     private static final DecimalFormat formatter = new DecimalFormat();
 

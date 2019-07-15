@@ -48,7 +48,6 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 
-
 public class IndexCreatorDialog extends JDialog {
 
     private static Logger log = Logger.getLogger(IndexCreatorDialog.class);

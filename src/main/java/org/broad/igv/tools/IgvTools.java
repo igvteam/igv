@@ -94,7 +94,7 @@ public class IgvTools {
     public static final String CMD_VCFTOBED = "vcftobed";
     public static final String CMD_DENSITIESTOBEDGRAPH = "densitiestobedgraph";
     public static final String CMD_GEN_GENOME_LIST = "genGenomeList";
-    private static Logger log = Logger.getLogger(IgvTools.class);
+    static private Logger log = Logger.getLogger(IgvTools.class);
 
     static final String CMD_TILE = "tile";
     static final String CMD_TOTDF = "totdf";

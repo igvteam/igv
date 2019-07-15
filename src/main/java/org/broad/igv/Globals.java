@@ -26,13 +26,13 @@
 package org.broad.igv;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.renderer.SequenceRenderer;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Properties;
 import java.util.regex.Pattern;
 
 /**

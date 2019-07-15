@@ -36,8 +36,8 @@ package org.broad.igv.track;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.feature.IGVFeature;
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.GisticScore;
 import org.broad.igv.feature.LocusScore;

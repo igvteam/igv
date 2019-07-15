@@ -34,6 +34,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.*;
 import java.net.MalformedURLException;

@@ -48,7 +48,7 @@ import java.util.*;
  */
 public class AminoAcidManager {
 
-    private static Logger log = Logger.getLogger(AminoAcidManager.class);
+    private static final Logger log = Logger.getLogger(AminoAcidManager.class);
 
     /**
      * File which contains listing of amino acid names.

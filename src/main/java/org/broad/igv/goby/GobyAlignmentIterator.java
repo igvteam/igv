@@ -53,7 +53,7 @@ import java.util.NoSuchElementException;
  *         Time: 12:01:40 PM
  */
 public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
-    private static Logger LOG = Logger.getLogger(GobyAlignmentIterator.class);
+    private static final Logger LOG = Logger.getLogger(GobyAlignmentIterator.class);
 
     private int targetIndex;
     private int startReferencePosition;

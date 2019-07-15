@@ -49,7 +49,7 @@ import static java.lang.Math.log10;
  */
 public class GWASParser {
 
-    private static Logger log = Logger.getLogger(GWASParser.class);
+    private static final Logger log = Logger.getLogger(GWASParser.class);
     private ResourceLocator locator;
     
     Genome genome;

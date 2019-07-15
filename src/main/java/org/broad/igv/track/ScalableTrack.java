@@ -32,7 +32,6 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.util.List;
 
-
 /**
  * Created by jrobinson on 5/3/16.
  */

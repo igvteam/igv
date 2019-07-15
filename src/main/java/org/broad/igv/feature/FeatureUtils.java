@@ -31,7 +31,6 @@
 package org.broad.igv.feature;
 
 import com.google.common.base.Predicate;
-import htsjdk.tribble.Feature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import htsjdk.tribble.Feature;

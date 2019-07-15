@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.awt.Point;
 
+
 public class GhostDropEvent {
     private Point point;
     private Point startPoint;

@@ -29,8 +29,6 @@
  */
 package org.broad.igv.feature;
 
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.FeatureCodec;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
@@ -56,6 +54,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
 /**
  * @author jrobinso
  */

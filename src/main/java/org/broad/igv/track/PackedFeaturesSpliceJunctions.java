@@ -26,8 +26,8 @@
 
 package org.broad.igv.track;
 
-import org.apache.log4j.Logger;
 import htsjdk.samtools.util.Locatable;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;

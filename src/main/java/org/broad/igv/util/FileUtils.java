@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
  */
 public class FileUtils {
 
-    private static Logger log = Logger.getLogger(FileUtils.class);
+    private static final Logger log = Logger.getLogger(FileUtils.class);
 
     final public static String LINE_SEPARATOR = System.getProperty("line.separator");
     final public static String FILE_SEP = System.getProperty("file.separator");

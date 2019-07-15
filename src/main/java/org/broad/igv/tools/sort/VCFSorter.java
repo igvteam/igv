@@ -25,8 +25,8 @@
 
 package org.broad.igv.tools.sort;
 
-import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.log4j.Logger;
+import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.File;
 import java.io.IOException;

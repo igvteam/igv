@@ -43,7 +43,7 @@ import java.util.ArrayList;
  */
 public class DescriptionCache {
 
-    private static Logger log = Logger.getLogger(DescriptionCache.class);
+    private static final Logger log = Logger.getLogger(DescriptionCache.class);
 
 
     // Maximum amount of values stored in the cache

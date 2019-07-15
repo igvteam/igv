@@ -41,8 +41,6 @@ import htsjdk.tribble.readers.AsciiLineReader;
 import java.io.IOException;
 import java.util.*;
 
-
-
 /**
  * Parses a mutation file, such as ".mut" or ".maf" (mutation annotation file)
  *

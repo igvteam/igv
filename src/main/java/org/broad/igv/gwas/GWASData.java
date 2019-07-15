@@ -42,7 +42,7 @@ import java.util.LinkedHashMap;
  */
 public class GWASData {
 
-    private static Logger log = Logger.getLogger(GWASData.class);
+    private static final Logger log = Logger.getLogger(GWASData.class);
 
 
     // Location of the data points, chr and nucleotide location

@@ -20,7 +20,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 // This class downloads a file from a URL.
 public class Downloader implements Runnable {
 
-    private static Logger log = Logger.getLogger(Downloader.class);
+    private static final Logger log = Logger.getLogger(Downloader.class);
 
     // Max size of download buffer.
     private static final int MAX_BUFFER_SIZE = 1000000;    // Max buffer size

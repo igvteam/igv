@@ -43,7 +43,7 @@ import java.util.*;
  */
 public class AlignmentPacker {
 
-    private static Logger log = Logger.getLogger(AlignmentPacker.class);
+    private static final Logger log = Logger.getLogger(AlignmentPacker.class);
 
     /**
      * Minimum gap between the end of one alignment and start of another.

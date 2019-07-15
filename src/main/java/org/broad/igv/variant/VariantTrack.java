@@ -48,6 +48,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;

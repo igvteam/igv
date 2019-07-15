@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
  */
 public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
 
-    private static Logger log = Logger.getLogger(IGVBEDCodec.class);
+    private static final Logger log = Logger.getLogger(IGVBEDCodec.class);
 
     static final Pattern BR_PATTERN = Pattern.compile("<br>");
     static final Pattern EQ_PATTERN = Pattern.compile("=");
