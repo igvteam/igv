@@ -28,8 +28,7 @@ package org.broad.igv.track;
 //~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.Feature;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -68,7 +67,7 @@ public abstract class AbstractTrack implements Track {
     public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.COLLAPSED;
     public static final int DEFAULT_HEIGHT = -1;
     public static final int VISIBILITY_WINDOW = -1;
-    private static Logger log = LogManager.getLogger(AbstractTrack.class);
+    private static Logger log = Logger.getLogger(AbstractTrack.class);
 
     /**
      * Classes which we have tried to marshal/unmarshal

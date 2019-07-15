@@ -35,8 +35,7 @@ package org.broad.igv.ui.util;
 
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
 import org.broad.igv.util.RuntimeUtils;
@@ -57,7 +56,7 @@ import java.lang.reflect.Constructor;
  */
 public class SnapshotUtilities {
 
-    private static Logger log = LogManager.getLogger(SnapshotUtilities.class);
+    private static Logger log = Logger.getLogger(SnapshotUtilities.class);
 
 
     private static String EPSClassName = "net.sf.epsgraphics.EpsGraphics";

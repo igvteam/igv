@@ -32,15 +32,14 @@
  */
 package org.broad.igv.bbfile;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /*
  *   Container class for B+ tree leaf node.
 * */
 public class BPTreeLeafNodeItem implements BPTreeNodeItem {
 
-    private static Logger log = LogManager.getLogger(BPTreeLeafNodeItem.class);
+    private static Logger log = Logger.getLogger(BPTreeLeafNodeItem.class);
     private final boolean isLeafItem = true;
     private long leafIndex;    // leaf index in B+ tree item list
 

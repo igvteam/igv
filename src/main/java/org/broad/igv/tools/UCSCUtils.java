@@ -29,8 +29,7 @@
  */
 package org.broad.igv.tools;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 
@@ -39,7 +38,7 @@ import java.io.*;
  */
 public class UCSCUtils {
 
-    static private Logger log = LogManager.getLogger(UCSCUtils.class);
+    static private Logger log = Logger.getLogger(UCSCUtils.class);
 
     /**
      * 0 bin smallint(5) unsigned not null,	# bin scheme for indexing

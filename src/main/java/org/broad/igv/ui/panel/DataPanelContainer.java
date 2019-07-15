@@ -25,8 +25,7 @@
 
 package org.broad.igv.ui.panel;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.*;
@@ -53,7 +52,7 @@ import java.util.List;
  */
 public class DataPanelContainer extends TrackPanelComponent implements Paintable {
 
-    private static Logger log = LogManager.getLogger(DataPanelContainer.class);
+    private static Logger log = Logger.getLogger(DataPanelContainer.class);
 
     TrackPanel parent;
 

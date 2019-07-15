@@ -27,8 +27,7 @@ package org.broad.igv.tools;
 
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentReader;
@@ -44,7 +43,7 @@ import java.util.Iterator;
  */
 public class PairedEndStats {
 
-    static private Logger log = LogManager.getLogger(PairedEndStats.class);
+    static private Logger log = Logger.getLogger(PairedEndStats.class);
 
     private double minPercentileInsertSize;
     private double maxPercentileInsertSize;

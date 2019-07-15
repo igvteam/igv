@@ -26,8 +26,7 @@
 package org.broad.igv.tools.converters;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 
 import java.io.*;
@@ -46,7 +45,7 @@ import java.util.Arrays;
  */
 public class ExpressionFormatter {
 
-    private static Logger log = LogManager.getLogger(ExpressionFormatter.class);
+    private static Logger log = Logger.getLogger(ExpressionFormatter.class);
 
     enum FileType {
         GCT, RES, TAB

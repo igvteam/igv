@@ -29,8 +29,7 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.google.Ga4ghAlignmentReader;
 import org.broad.igv.google.Ga4ghProvider;
@@ -47,7 +46,7 @@ import java.util.*;
  * @author jrobinso
  */
 public class AlignmentReaderFactory {
-    private static Logger log = LogManager.getLogger(AlignmentReaderFactory.class);
+    private static Logger log = Logger.getLogger(AlignmentReaderFactory.class);
 
     static {
         SamReaderFactory.setDefaultValidationStringency(ValidationStringency.SILENT);

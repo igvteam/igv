@@ -25,8 +25,7 @@
 
 package org.broad.igv.ui.panel;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -38,7 +37,7 @@ import java.awt.*;
  */
 public class DataPanelLayout implements LayoutManager {
 
-    private static Logger log = LogManager.getLogger(DataPanelLayout.class);
+    private static Logger log = Logger.getLogger(DataPanelLayout.class);
 
     static final int default_hgap = 6;
 

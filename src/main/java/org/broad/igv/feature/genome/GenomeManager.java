@@ -38,8 +38,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeChangeEvent;
@@ -101,7 +100,7 @@ public class GenomeManager {
     public static final String SEQUENCE_MAP_FILE = "sequenceMap.txt";
     public static final long ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
 
-    private static Logger log = LogManager.getLogger(GenomeManager.class);
+    private static Logger log = Logger.getLogger(GenomeManager.class);
 
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
     

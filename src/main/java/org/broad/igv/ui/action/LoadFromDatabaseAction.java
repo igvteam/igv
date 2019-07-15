@@ -31,8 +31,7 @@ package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -51,7 +50,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class LoadFromDatabaseAction extends MenuAction {
 
-    static Logger log = LogManager.getLogger(LoadFromDatabaseAction.class);
+    static Logger log = Logger.getLogger(LoadFromDatabaseAction.class);
     IGV mainFrame;
 
 

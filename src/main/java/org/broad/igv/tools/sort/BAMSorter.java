@@ -28,8 +28,7 @@ package org.broad.igv.tools.sort;
 
 import htsjdk.samtools.*;
 import htsjdk.samtools.util.CloserUtil;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
 
 import java.io.File;
@@ -38,7 +37,7 @@ import java.util.Comparator;
 
 public class BAMSorter implements Sorter {
 
-    private static Logger log = LogManager.getLogger(BAMSorter.class);
+    private static Logger log = Logger.getLogger(BAMSorter.class);
 
     File inputFile;
     File outputFile;

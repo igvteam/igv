@@ -25,8 +25,7 @@
 
 package org.broad.igv.util;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 
 import java.io.*;
@@ -42,7 +41,7 @@ import java.util.zip.Inflater;
  */
 public class CompressionUtils {
 
-    private static Logger log = LogManager.getLogger(CompressionUtils.class);
+    private static Logger log = Logger.getLogger(CompressionUtils.class);
 
     private Deflater deflater;
     private Inflater decompressor;

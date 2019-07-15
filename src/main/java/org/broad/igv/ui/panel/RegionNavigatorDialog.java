@@ -26,8 +26,7 @@
 
 package org.broad.igv.ui.panel;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
@@ -62,7 +61,7 @@ import java.util.List;
  */
 public class RegionNavigatorDialog extends JDialog implements Observer, IGVEventObserver {
 
-    private static Logger log = LogManager.getLogger(AttributePanel.class);
+    private static Logger log = Logger.getLogger(AttributePanel.class);
 
     //Column indexes, in case table structure changes
     private static final int TABLE_COLINDEX_CHR = 0;

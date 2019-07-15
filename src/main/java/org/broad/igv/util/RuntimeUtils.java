@@ -29,8 +29,7 @@
  */
 package org.broad.igv.util;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -49,7 +48,7 @@ import java.util.List;
  */
 public class RuntimeUtils {
 
-    private static Logger log = LogManager.getLogger(RuntimeUtils.class);
+    private static Logger log = Logger.getLogger(RuntimeUtils.class);
 
     public static long getAvailableMemory() {
         Runtime runtime = Runtime.getRuntime();

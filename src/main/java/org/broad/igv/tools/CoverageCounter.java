@@ -26,8 +26,7 @@
 package org.broad.igv.tools;
 
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Strand;
@@ -46,7 +45,7 @@ import java.util.*;
  */
 public class CoverageCounter {
 
-    static private Logger log = LogManager.getLogger(CoverageCounter.class);
+    static private Logger log = Logger.getLogger(CoverageCounter.class);
 
     /**
      * The path to the alignment file being counted.

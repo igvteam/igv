@@ -25,8 +25,7 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * Created by IntelliJ IDEA.
@@ -46,7 +45,7 @@ import org.apache.logging.log4j.LogManager;
 
 abstract class RPTreeNodeItem {
 
-    private static Logger log = LogManager.getLogger(RPTreeNodeItem.class);
+    private static Logger log = Logger.getLogger(RPTreeNodeItem.class);
 
 
     protected RPChromosomeRegion chromosomeBounds; // chromosome bounds for item

@@ -31,8 +31,7 @@
 package org.broad.igv.track;
 
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.prefs.Constants;
@@ -67,7 +66,7 @@ public class AttributeManager {
     public static final String GROUP_AUTOSCALE = "AUTOSCALE GROUP";
     public static List<String> defaultTrackAttributes = Arrays.asList(Globals.TRACK_NAME_ATTRIBUTE,
             Globals.TRACK_DATA_FILE_ATTRIBUTE, Globals.TRACK_DATA_TYPE_ATTRIBUTE);
-    private static Logger log = LogManager.getLogger(AttributeManager.class);
+    private static Logger log = Logger.getLogger(AttributeManager.class);
 
     private static AttributeManager singleton;
     final public static String ATTRIBUTES_LOADED_PROPERTY = "ATTRIBUTES_LOADED_PROPERTY";

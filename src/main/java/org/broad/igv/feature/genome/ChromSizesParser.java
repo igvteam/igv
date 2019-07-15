@@ -25,8 +25,7 @@
 
 package org.broad.igv.feature.genome;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.util.ParsingUtils;
@@ -43,7 +42,7 @@ import java.util.List;
  */
 public class ChromSizesParser {
 
-    private static Logger log = LogManager.getLogger(ChromSizesParser.class);
+    private static Logger log = Logger.getLogger(ChromSizesParser.class);
 
     public static List<Chromosome> parse(String path) throws IOException {
 

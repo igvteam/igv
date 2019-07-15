@@ -26,8 +26,7 @@
 package org.broad.igv.feature.tribble;
 
 import htsjdk.samtools.util.LocationAware;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.variant.vcf.VCFVariant;
 import htsjdk.tribble.Feature;
@@ -50,7 +49,7 @@ import java.io.InputStream;
  */
 public class BCF2WrapperCodec implements FeatureCodec<VCFVariant, PositionalBufferedStream> {
 
-    private static Logger log = LogManager.getLogger(BCF2WrapperCodec.class);
+    private static Logger log = Logger.getLogger(BCF2WrapperCodec.class);
 
     FeatureCodec<VariantContext, PositionalBufferedStream> wrappedCodec;
     Genome genome;

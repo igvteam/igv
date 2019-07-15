@@ -3,8 +3,7 @@ package org.broad.igv.util;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import htsjdk.samtools.util.Tuple;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.google.OAuthUtils;
@@ -26,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class AmazonUtils {
-    private static Logger log = LogManager.getLogger(AmazonUtils.class);
+    private static Logger log = Logger.getLogger(AmazonUtils.class);
 
     // AWS specific objects
     private static S3Client s3Client;

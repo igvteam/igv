@@ -28,8 +28,7 @@ package org.broad.igv.tools.motiffinder;
 import com.google.common.collect.Iterators;
 import htsjdk.samtools.util.SequenceUtil;
 import htsjdk.tribble.Feature;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
@@ -62,7 +61,7 @@ import java.util.regex.Pattern;
 
 public class MotifFinderSource implements FeatureSource<Feature>, Persistable {
 
-    private static Logger log = LogManager.getLogger(MotifFinderSource.class);
+    private static Logger log = Logger.getLogger(MotifFinderSource.class);
 
     private String pattern;
 

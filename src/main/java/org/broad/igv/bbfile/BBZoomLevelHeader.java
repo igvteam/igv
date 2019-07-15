@@ -26,8 +26,7 @@
 package org.broad.igv.bbfile;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.ByteArrayInputStream;
@@ -50,7 +49,7 @@ import java.io.IOException;
 * */
 public class BBZoomLevelHeader {
 
-    private static Logger log = LogManager.getLogger(BBZoomLevelHeader.class);
+    private static Logger log = Logger.getLogger(BBZoomLevelHeader.class);
 
     static public final int ZOOM_LEVEL_HEADER_SIZE = 24;
 

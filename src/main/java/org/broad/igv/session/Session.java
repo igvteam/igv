@@ -25,8 +25,7 @@
 
 package org.broad.igv.session;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -58,7 +57,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class Session implements IGVEventObserver {
 
-    private static Logger log = LogManager.getLogger(Session.class);
+    private static Logger log = Logger.getLogger(Session.class);
     private String ucscId;
 
     public void setUcscId(String ucscId) {

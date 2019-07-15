@@ -31,8 +31,7 @@ package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -58,7 +57,7 @@ import java.util.*;
  */
 public class LoadFromServerAction extends MenuAction {
 
-    static Logger log = LogManager.getLogger(LoadFromServerAction.class);
+    static Logger log = Logger.getLogger(LoadFromServerAction.class);
     IGV mainFrame;
 
     // Keep track of authorization failures so user isn't constantly harranged

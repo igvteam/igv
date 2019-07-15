@@ -26,8 +26,7 @@
 package org.broad.igv.data;
 
 import com.google.common.collect.Iterators;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.track.DataTrack;
@@ -46,7 +45,7 @@ import java.util.*;
  */
 public class CombinedDataSource implements DataSource {
 
-    private static Logger log = LogManager.getLogger(CombinedDataSource.class);
+    private static Logger log = Logger.getLogger(CombinedDataSource.class);
 
     public enum Operation {
         ADD("+"),

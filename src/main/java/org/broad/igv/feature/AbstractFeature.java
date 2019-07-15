@@ -27,8 +27,7 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.MultiMap;
 import htsjdk.tribble.Feature;
@@ -41,7 +40,7 @@ import java.util.List;
  */
 abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feature {
 
-    private static Logger log = LogManager.getLogger(AbstractFeature.class);
+    private static Logger log = Logger.getLogger(AbstractFeature.class);
     protected Strand strand = Strand.NONE;
     protected String chromosome;
     protected int start = -1;

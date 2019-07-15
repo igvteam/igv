@@ -25,8 +25,7 @@
 
 package org.broad.igv.sam;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.util.collections.IntArrayList;
 
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ import java.util.List;
  */
 public class SparseAlignmentCounts extends BaseAlignmentCounts {
 
-    private static Logger log = LogManager.getLogger(SparseAlignmentCounts.class);
+    private static Logger log = Logger.getLogger(SparseAlignmentCounts.class);
     private int maxCount = 0;
     List<Integer> indices;
 

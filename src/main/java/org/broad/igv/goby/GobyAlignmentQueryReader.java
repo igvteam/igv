@@ -31,8 +31,7 @@ import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.lang.MutableString;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 
@@ -53,7 +52,7 @@ import java.util.Set;
  *         Time: 11:43:18 AM
  */
 public class GobyAlignmentQueryReader implements AlignmentReader {
-    private static final Logger LOG = LogManager.getLogger(GobyAlignmentQueryReader.class);
+    private static Logger LOG = Logger.getLogger(GobyAlignmentQueryReader.class);
 
     private AlignmentReaderImpl reader = null;
     private final String basename;

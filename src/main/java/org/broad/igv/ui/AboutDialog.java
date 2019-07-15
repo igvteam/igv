@@ -30,8 +30,7 @@
  */
 package org.broad.igv.ui;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 
 /**
@@ -39,7 +38,7 @@ import org.broad.igv.Globals;
  */
 public class AboutDialog extends javax.swing.JDialog {
 
-    private static Logger logger = LogManager.getLogger(AboutDialog.class);
+    private static Logger logger = Logger.getLogger(AboutDialog.class);
 
     /**
      * Creates new form AboutDialog

@@ -51,8 +51,7 @@ package org.broad.igv.util;
  * THE SOFTWARE.
  */
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -71,7 +70,7 @@ import java.util.List;
 
 public class IntervalTree<T> {
 
-    private static Logger logger = LogManager.getLogger(IntervalTree.class);
+    private static Logger logger = Logger.getLogger(IntervalTree.class);
 
     boolean immutable = false;
     IntervalTree.Node root;

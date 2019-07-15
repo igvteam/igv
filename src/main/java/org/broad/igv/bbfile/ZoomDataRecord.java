@@ -25,8 +25,7 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * Created by IntelliJ IDEA.
@@ -41,7 +40,7 @@ import org.apache.logging.log4j.LogManager;
 * */
 public class ZoomDataRecord {
 
-    private static Logger log = LogManager.getLogger(ZoomDataRecord.class);
+    private static Logger log = Logger.getLogger(ZoomDataRecord.class);
 
     public static final int RECORD_SIZE = 32;
 

@@ -32,8 +32,7 @@ package org.broad.igv.sam.reader;
 import htsjdk.samtools.*;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.igv.sam.PicardAlignment;
 import org.broad.igv.sam.cram.IGVReferenceSource;
@@ -59,7 +58,7 @@ import java.util.Set;
  */
 public class SAMReader implements AlignmentReader<PicardAlignment> {
 
-    static Logger log = LogManager.getLogger(SAMReader.class);
+    static Logger log = Logger.getLogger(SAMReader.class);
     String samFile;
     FeatureIndex featureIndex;
     SAMFileHeader header;

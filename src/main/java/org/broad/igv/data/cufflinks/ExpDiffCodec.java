@@ -25,8 +25,7 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.util.ParsingUtils;
 
@@ -37,7 +36,7 @@ import org.broad.igv.util.ParsingUtils;
 */
 public class ExpDiffCodec extends CufflinksCodec<ExpDiffValue>{
 
-    private static Logger log = LogManager.getLogger(ExpDiffCodec.class);
+    private static Logger log = Logger.getLogger(ExpDiffCodec.class);
 
     int geneColumn = 1;
     int locusColumn = 2;

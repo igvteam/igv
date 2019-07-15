@@ -25,8 +25,7 @@
 
 package org.broad.igv.gwas;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -66,7 +65,7 @@ import java.util.Collection;
  */
 public class GWASTrack extends AbstractTrack {
 
-    private static final Logger log = LogManager.getLogger(GWASTrack.class);
+    private static Logger log = Logger.getLogger(GWASTrack.class);
     private static final int AXIS_AREA_WIDTH = 60;
     private static final DecimalFormat formatter = new DecimalFormat();
 

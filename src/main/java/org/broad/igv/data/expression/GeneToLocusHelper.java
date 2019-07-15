@@ -26,8 +26,7 @@
 package org.broad.igv.data.expression;
 
 import htsjdk.tribble.Feature;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
@@ -47,7 +46,7 @@ import java.util.*;
  */
 public class GeneToLocusHelper {
 
-    private static Logger log = LogManager.getLogger(GeneToLocusHelper.class);
+    private static Logger log = Logger.getLogger(GeneToLocusHelper.class);
 
     static String LOCUS_START_DELIMITER = "|@";
     static String LOCUS_END_DELIMITER = "|";

@@ -26,8 +26,7 @@
 
 package org.broad.igv.track;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import htsjdk.samtools.util.Locatable;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
@@ -57,7 +56,7 @@ import java.util.*;
  */
 public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeatures {
 
-    private static Logger log = LogManager.getLogger(PackedFeaturesSpliceJunctions.class);
+    private static Logger log = Logger.getLogger(PackedFeaturesSpliceJunctions.class);
 
     public PackedFeaturesSpliceJunctions(String chr, int start, int end, Iterator<T> iter, String trackName) {
         super(chr, start, end, iter, trackName);

@@ -26,8 +26,7 @@
 package org.broad.igv.gs;
 
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -42,7 +41,7 @@ import java.net.URL;
  * @date Jun 9, 2011
  */
 public class GSUtils {
-    static final Logger log = LogManager.getLogger(GSUtils.class);
+    static final Logger log = Logger.getLogger(GSUtils.class);
 
 
     /*

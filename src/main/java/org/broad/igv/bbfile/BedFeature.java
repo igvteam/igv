@@ -25,8 +25,7 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * Created by IntelliJ IDEA.
@@ -72,7 +71,7 @@ import org.apache.logging.log4j.LogManager;
 * */
 public class BedFeature {
 
-    private static Logger log = LogManager.getLogger(BedFeature.class);
+    private static Logger log = Logger.getLogger(BedFeature.class);
 
     private int itemIndex;     // data record index
 

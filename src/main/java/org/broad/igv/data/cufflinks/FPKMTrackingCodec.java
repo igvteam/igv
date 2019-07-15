@@ -25,8 +25,7 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.util.ParsingUtils;
 
@@ -38,7 +37,7 @@ import org.broad.igv.util.ParsingUtils;
 */
 public class FPKMTrackingCodec extends CufflinksCodec<FPKMValue>{
 
-    private static Logger log = LogManager.getLogger(FPKMTrackingCodec.class);
+    private static Logger log = Logger.getLogger(FPKMTrackingCodec.class);
 
     int geneColumn = 4;
     int locusColumn  = 6;

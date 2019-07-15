@@ -26,8 +26,7 @@
 package org.broad.igv.feature;
 
 import htsjdk.tribble.Feature;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
@@ -47,7 +46,7 @@ import java.util.Set;
 @Deprecated
 public class GFFParser implements FeatureParser {
 
-    static Logger log = LogManager.getLogger(GFFParser.class);
+    static Logger log = Logger.getLogger(GFFParser.class);
 
     private TrackProperties trackProperties = null;
 

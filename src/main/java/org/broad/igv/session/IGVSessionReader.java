@@ -25,8 +25,7 @@
 
 package org.broad.igv.session;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.feature.Locus;
@@ -69,7 +68,7 @@ import java.util.List;
  */
 public class IGVSessionReader implements SessionReader {
 
-    private static Logger log = LogManager.getLogger(IGVSessionReader.class);
+    private static Logger log = Logger.getLogger(IGVSessionReader.class);
     private static String INPUT_FILE_KEY = "INPUT_FILE_KEY";
     // Temporary values used in processing
 

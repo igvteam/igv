@@ -26,8 +26,7 @@
 package org.broad.igv.util;
 
 import org.broad.igv.ui.util.ProgressMonitor;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -41,7 +40,7 @@ import java.net.URL;
  */
 public class URLDownloader implements Runnable {
 
-    private static Logger log = LogManager.getLogger(URLDownloader.class);
+    private static Logger log = Logger.getLogger(URLDownloader.class);
 
     private javax.swing.ProgressMonitor monitor = null;
 

@@ -32,8 +32,7 @@ package org.broad.igv.data;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
@@ -50,7 +49,7 @@ import java.util.Map;
  */
 public class DatasetDataSource extends AbstractDataSource {
 
-    private Logger log = LogManager.getLogger(DatasetDataSource.class);
+    private Logger log = Logger.getLogger(DatasetDataSource.class);
 
     String trackId;
     Dataset dataset;

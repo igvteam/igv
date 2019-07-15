@@ -28,8 +28,7 @@ package org.broad.igv.track;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.blast.BlastMapping;
@@ -106,7 +105,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class TrackLoader {
 
-    private static Logger log = LogManager.getLogger(TrackLoader.class);
+    private static Logger log = Logger.getLogger(TrackLoader.class);
 
     private static Collection<? extends Class> NOLogExceptions = Arrays.asList(TribbleIndexNotFoundException.class);
 

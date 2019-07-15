@@ -30,8 +30,7 @@
 package org.broad.igv.tools;
 
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.*;
@@ -46,7 +45,7 @@ import java.util.zip.GZIPInputStream;
  */
 public class TestFileGenerator {
 
-    static private Logger log = LogManager.getLogger(TestFileGenerator.class);
+    static private Logger log = Logger.getLogger(TestFileGenerator.class);
 
     public static void main(String[] args) {
         generateTestFile("/Users/jrobinso/IGV/test_25thousand.gct", true, 25000, 100);

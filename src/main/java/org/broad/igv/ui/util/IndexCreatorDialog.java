@@ -26,8 +26,7 @@
 
 package org.broad.igv.ui.util;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
@@ -52,7 +51,7 @@ import javax.swing.border.*;
 
 public class IndexCreatorDialog extends JDialog {
 
-    private static Logger log = LogManager.getLogger(IndexCreatorDialog.class);
+    private static Logger log = Logger.getLogger(IndexCreatorDialog.class);
 
     File file;
     File idxFile;

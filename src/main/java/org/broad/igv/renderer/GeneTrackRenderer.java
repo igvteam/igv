@@ -32,15 +32,14 @@ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 
 /**
  * @author jrobinso
  */
 public class GeneTrackRenderer extends IGVFeatureRenderer {
-    Logger log = LogManager.getLogger(GeneTrackRenderer.class);
+    Logger log = Logger.getLogger(GeneTrackRenderer.class);
 
     /**
      * Method description

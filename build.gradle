@@ -68,7 +68,7 @@ configurations {
         exclude group: 'org.codehaus.mojo', module: 'animal-sniffer-annotations'
         exclude group: 'org.checkerframework', module: 'checker-qual'
         exclude group: 'com.ibm.icu', module: 'icu4j'
-        exclude group: 'log4j', module: 'log4j'
+//        exclude group: 'log4j', module: 'log4j'
 
         exclude group: 'xmlpull', module: 'xmlpull'
         exclude group: 'xpp3', module: 'xpp3_min'
@@ -112,8 +112,9 @@ dependencies {
         [group: 'commons-io', name: 'commons-io', version: '2.6'],
         //[group: 'com.github.samtools', name: 'htsjdk', version: '2.19.0'],
         // holding upstream htsjdk back from Maven for this @igvteam jar hack: https://github.com/igvteam/igv/issues/646
-        [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.2'],
-        [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.2'],
+        [group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.11.0'],
+        [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'],
+        [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'],
         [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
         [group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],
         [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],

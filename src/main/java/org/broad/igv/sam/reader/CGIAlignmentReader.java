@@ -29,8 +29,7 @@ import htsjdk.samtools.*;
 import htsjdk.samtools.util.BufferedLineReader;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.samtools.util.LineReader;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.PicardAlignment;
@@ -57,7 +56,7 @@ import java.util.Set;
 
 public class CGIAlignmentReader implements AlignmentReader {
 
-    private static Logger log = LogManager.getLogger(CGIAlignmentReader.class);
+    private static Logger log = Logger.getLogger(CGIAlignmentReader.class);
 
     private final SamReaderFactory factory;
 

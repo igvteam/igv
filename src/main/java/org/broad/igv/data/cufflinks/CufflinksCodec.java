@@ -28,8 +28,7 @@ package org.broad.igv.data.cufflinks;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.readers.LineIterator;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.util.ParsingUtils;
 
@@ -39,7 +38,7 @@ import org.broad.igv.util.ParsingUtils;
  */
 public abstract class CufflinksCodec<T extends Feature> extends AsciiFeatureCodec<T> {
 
-    private static Logger log = LogManager.getLogger(CufflinksCodec.class);
+    private static Logger log = Logger.getLogger(CufflinksCodec.class);
 
     String path;
 

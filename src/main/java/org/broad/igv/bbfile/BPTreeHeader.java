@@ -26,8 +26,7 @@
 package org.broad.igv.bbfile;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.ByteArrayInputStream;
@@ -49,7 +48,7 @@ import java.io.IOException;
  * */
 public class  BPTreeHeader {
 
-    private static Logger log = LogManager.getLogger(BPTreeHeader.class);
+    private static Logger log = Logger.getLogger(BPTreeHeader.class);
 
     static public final int BPTREE_HEADER_SIZE = 32;
 

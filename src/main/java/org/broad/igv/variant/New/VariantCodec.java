@@ -2,8 +2,7 @@ package org.broad.igv.variant.New;
 
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.readers.LineIterator;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
@@ -22,7 +21,7 @@ import java.util.Map;
  */
 public class VariantCodec extends AsciiFeatureCodec<Variant> {
 
-    private static Logger log = LogManager.getLogger(VariantCodec.class);
+    private static Logger log = Logger.getLogger(VariantCodec.class);
 
     Genome genome;
     VCFHeader header;

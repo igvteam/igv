@@ -30,8 +30,7 @@ package org.broad.igv.renderer;
 //~--- non-JDK imports --------------------------------------------------------
 
  import org.apache.commons.math3.stat.Frequency;
- import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+ import org.apache.log4j.Logger;
  import org.broad.igv.feature.IGVFeature;
  import org.broad.igv.feature.SpliceJunctionFeature;
  import org.broad.igv.feature.Strand;
@@ -58,7 +57,7 @@ import org.apache.logging.log4j.LogManager;
  */
 public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
-    private static Logger log = LogManager.getLogger(SpliceJunctionRenderer.class);
+    private static Logger log = Logger.getLogger(SpliceJunctionRenderer.class);
 
     //color for drawing all arcs
     Color ARC_COLOR_NEG = new Color(50, 50, 150, 140); //transparent dull blue

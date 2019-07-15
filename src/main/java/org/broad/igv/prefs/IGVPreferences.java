@@ -30,8 +30,7 @@
 package org.broad.igv.prefs;
 
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
@@ -57,7 +56,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class IGVPreferences {
 
-    private static Logger log = LogManager.getLogger(IGVPreferences.class);
+    private static Logger log = Logger.getLogger(IGVPreferences.class);
 
     IGVPreferences parent;
 

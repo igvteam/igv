@@ -29,8 +29,7 @@ package org.broad.igv.sam.cram;
 
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -54,7 +53,7 @@ import java.io.IOException;
 
 public class IGVReferenceSource implements CRAMReferenceSource {
 
-    private static Logger log = LogManager.getLogger(IGVReferenceSource.class);
+    private static Logger log = Logger.getLogger(IGVReferenceSource.class);
 
     static ObjectCache<String, byte[]> cachedSequences = new ObjectCache<String, byte[]>(2);
 

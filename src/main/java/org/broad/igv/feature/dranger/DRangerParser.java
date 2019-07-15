@@ -29,8 +29,7 @@
  */
 package org.broad.igv.feature.dranger;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
@@ -66,7 +65,7 @@ public class DRangerParser {
     int qualityColumn;
     int scoreColumn;
 
-    static Logger log = LogManager.getLogger(DRangerParser.class);
+    static Logger log = Logger.getLogger(DRangerParser.class);
 
     //num	chr1	str1	pos1	chr2	str2	pos2
     //1	    chr1	(+)	21083863	chr1	(+)	25279578

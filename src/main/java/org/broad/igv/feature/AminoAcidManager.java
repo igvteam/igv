@@ -33,8 +33,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 import com.google.gson.*;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.util.ParsingUtils;
 
@@ -49,7 +48,7 @@ import java.util.*;
  */
 public class AminoAcidManager {
 
-    private static final Logger log = LogManager.getLogger(AminoAcidManager.class);
+    private static Logger log = Logger.getLogger(AminoAcidManager.class);
 
     /**
      * File which contains listing of amino acid names.

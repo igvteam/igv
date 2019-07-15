@@ -30,8 +30,7 @@
 package org.broad.igv.ui;
 
 import htsjdk.tribble.Feature;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
@@ -63,7 +62,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
-    private static Logger log = LogManager.getLogger(GlobalKeyDispatcher.class);
+    private static Logger log = Logger.getLogger(GlobalKeyDispatcher.class);
 
     private final InputMap inputMap = new InputMap();
     private final ActionMap actionMap = new ActionMap();

@@ -31,8 +31,7 @@ package org.broad.igv.feature;
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureCodec;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
@@ -62,7 +61,7 @@ import java.util.Set;
  */
 public abstract class AbstractFeatureParser implements FeatureParser {
 
-    private static Logger log = LogManager.getLogger(IGV.class);
+    private static Logger log = Logger.getLogger(IGV.class);
     protected int startBase = 0;
     boolean gffTags = false;
 

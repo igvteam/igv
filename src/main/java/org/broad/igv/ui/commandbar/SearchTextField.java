@@ -1,8 +1,7 @@
 package org.broad.igv.ui.commandbar;
 
 import com.jidesoft.hints.ListDataIntelliHints;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.ui.IGV;
@@ -19,7 +18,7 @@ import java.util.List;
  */
 public class SearchTextField extends JTextField {
 
-    static Logger log = LogManager.getLogger(SearchTextField.class);
+    static Logger log = Logger.getLogger(SearchTextField.class);
 
     public SearchTextField() {
 

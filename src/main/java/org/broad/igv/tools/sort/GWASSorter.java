@@ -25,8 +25,7 @@
 
 package org.broad.igv.tools.sort;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.gwas.GWASParser;
 import htsjdk.tribble.readers.AsciiLineReader;
 
@@ -40,7 +39,7 @@ import java.util.List;
  */
 public class GWASSorter extends AsciiSorter {
 
-    static Logger log = LogManager.getLogger(GWASSorter.class);
+    static Logger log = Logger.getLogger(GWASSorter.class);
 
     List<String> headerLines = new ArrayList<String>();
     private GWASParser.GWASColumns columns;

@@ -29,8 +29,7 @@
  */
 package org.broad.igv.sam.reader;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.DotAlignedAlignment;
 import org.broad.igv.util.ParsingUtils;
@@ -43,7 +42,7 @@ import java.io.IOException;
  */
 public class DotAlignedParser implements AlignmentParser {
 
-    private static Logger log = LogManager.getLogger(DotAlignedParser.class);
+    private static Logger log = Logger.getLogger(DotAlignedParser.class);
 
     public static int CHROMOSOME_COLUMN = 0;
     private static int START_COLUMN = 1;

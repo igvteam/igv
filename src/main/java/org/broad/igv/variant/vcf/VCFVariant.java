@@ -25,8 +25,7 @@
 
 package org.broad.igv.variant.vcf;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.variant.Allele;
 import org.broad.igv.variant.Genotype;
 import org.broad.igv.variant.Variant;
@@ -42,7 +41,7 @@ import java.util.*;
  */
 public class VCFVariant implements Variant {
 
-    private static Logger log = LogManager.getLogger(Variant.class);
+    private static Logger log = Logger.getLogger(Variant.class);
 
     VariantContext variantContext;
     List<Allele> alternateAlleles;

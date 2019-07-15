@@ -26,8 +26,7 @@
 package org.broad.igv.track;
 
 import htsjdk.samtools.util.Locatable;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import htsjdk.tribble.Feature;
@@ -48,7 +47,7 @@ public class PackedFeatures<T extends Feature>{
     protected int end;
     protected List<T> features;
     protected List<FeatureRow> rows;
-    private static Logger log = LogManager.getLogger(PackedFeatures.class);
+    private static Logger log = Logger.getLogger(PackedFeatures.class);
     protected int maxFeatureLength = 0;
     protected static int maxLevels = 1000000;
 

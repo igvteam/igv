@@ -29,8 +29,7 @@ package org.broad.igv.feature;
 import org.broad.igv.util.collections.LRUCache;
 import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +47,7 @@ import java.util.List;
  */
 public abstract class AbstractCacher {
 
-    private static Logger log = LogManager.getLogger(AbstractCacher.class);
+    private static Logger log = Logger.getLogger(AbstractCacher.class);
 
     protected int binSize = Integer.MAX_VALUE;
     protected LRUCache<String, Bin> cache;

@@ -29,8 +29,7 @@
  */
 package org.broad.igv.ui.action;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.UIUtilities;
@@ -43,7 +42,7 @@ import java.awt.event.ActionEvent;
  */
 public class ClearRegionsMenuAction extends MenuAction {
 
-    static Logger log = LogManager.getLogger(ClearRegionsMenuAction.class);
+    static Logger log = Logger.getLogger(ClearRegionsMenuAction.class);
     IGV mainFrame;
 
     public ClearRegionsMenuAction(String label, IGV mainFrame) {

@@ -29,8 +29,7 @@
 
 package org.broad.igv.lists;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -62,7 +61,7 @@ import java.util.List;
  */
 public class GeneListManagerUI extends JDialog {
 
-    private static Logger log = LogManager.getLogger(GeneListManagerUI.class);
+    private static Logger log = Logger.getLogger(GeneListManagerUI.class);
 
     private static String ALL = "All";
     private static String DEFAULT_ACTION_TEXT = "View";

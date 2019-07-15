@@ -37,8 +37,7 @@ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.prefs.IGVPreferences;
@@ -57,7 +56,7 @@ import static org.broad.igv.prefs.Constants.CHART_DRAW_Y_AXIS;
  */
 public abstract class DataRenderer implements Renderer<LocusScore> {
 
-    private static Logger log = LogManager.getLogger(DataRenderer.class);
+    private static Logger log = Logger.getLogger(DataRenderer.class);
 
     protected static final int AXIS_AREA_WIDTH = 60;
     protected static Color axisLineColor = new Color(255, 180, 180);

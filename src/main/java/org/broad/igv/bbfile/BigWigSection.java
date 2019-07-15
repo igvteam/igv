@@ -25,8 +25,7 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.ByteArrayInputStream;
@@ -45,7 +44,7 @@ import java.util.Map;
  */
 public class BigWigSection {
 
-    private static Logger log = LogManager.getLogger(BigWigSection.class);
+    private static Logger log = Logger.getLogger(BigWigSection.class);
 
     private boolean isLowToHigh;       // byte order is low to high if true; else high to low
     private LittleEndianInputStream lbdis;   // input stream reader for low to high byte ordered data

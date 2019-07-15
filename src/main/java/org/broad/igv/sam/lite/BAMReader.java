@@ -4,8 +4,7 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.LittleEndianInputStream;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.*;
@@ -28,7 +27,7 @@ import java.util.zip.DataFormatException;
  */
 public class BAMReader implements AlignmentReader<Alignment> {
 
-    private static Logger log = LogManager.getLogger(BAMReader.class);
+    private static Logger log = Logger.getLogger(BAMReader.class);
     private final String path;
     private final String indexPath;
     int BAM_MAGIC = 21840194;

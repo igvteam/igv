@@ -25,8 +25,7 @@
 
 package org.broad.igv.ui;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -90,7 +89,7 @@ import static org.broad.igv.ui.UIConstants.*;
  */
 public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
-    private static Logger log = LogManager.getLogger(IGVMenuBar.class);
+    private static Logger log = Logger.getLogger(IGVMenuBar.class);
     public static final String GENOMESPACE_REG_TOOLTIP = "Register for GenomeSpace";
     public static final String GENOMESPACE_REG_PAGE = "http://www.genomespace.org/register";
 

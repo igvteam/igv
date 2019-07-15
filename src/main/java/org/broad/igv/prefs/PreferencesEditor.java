@@ -26,8 +26,7 @@
 package org.broad.igv.prefs;
 
 import com.jidesoft.dialog.ButtonPanel;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
@@ -74,7 +73,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class PreferencesEditor extends javax.swing.JDialog {
 
-    private static Logger log = LogManager.getLogger(PreferencesEditor.class);
+    private static Logger log = Logger.getLogger(PreferencesEditor.class);
 
     private boolean canceled = false;
     Map<String, String> updatedPreferenceMap = Collections.synchronizedMap(new HashMap<String, String>() {

@@ -25,8 +25,7 @@
 
 package org.broad.igv.ui;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.AminoAcidManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.fest.swing.fixture.FrameFixture;
@@ -44,7 +43,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class IGVCommandBarTest extends AbstractHeadedTest {
 
-    private static Logger log = LogManager.getLogger(IGVCommandBarTest.class);
+    private static Logger log = Logger.getLogger(IGVCommandBarTest.class);
 
     private static FrameFixture frame;
 

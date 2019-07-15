@@ -26,8 +26,7 @@
 package org.broad.igv.bbfile;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.ByteArrayInputStream;
@@ -58,7 +57,7 @@ import java.io.IOException;
 * */
 public class BBZoomLevelFormat {
 
-    private static Logger log = LogManager.getLogger(BBZoomLevelFormat.class);
+    private static Logger log = Logger.getLogger(BBZoomLevelFormat.class);
 
     // size of zoom level format header is 4 byte; only accounts for zoomCount of Table O
     public static final int ZOOM_FORMAT_HEADER_SIZE = 4;

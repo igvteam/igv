@@ -34,8 +34,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 
 import java.io.IOException;
@@ -54,7 +53,7 @@ import java.util.NoSuchElementException;
  *         Time: 12:01:40 PM
  */
 public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
-    private static final Logger LOG = LogManager.getLogger(GobyAlignmentIterator.class);
+    private static Logger LOG = Logger.getLogger(GobyAlignmentIterator.class);
 
     private int targetIndex;
     private int startReferencePosition;

@@ -25,8 +25,7 @@
 
 package org.broad.igv.sam;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.event.RefreshEvent;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Range;
@@ -56,7 +55,7 @@ import static org.broad.igv.prefs.Constants.*;
 
 public class AlignmentDataManager implements IGVEventObserver {
 
-    private static Logger log = LogManager.getLogger(AlignmentDataManager.class);
+    private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
 
     private List<AlignmentInterval> intervalCache;

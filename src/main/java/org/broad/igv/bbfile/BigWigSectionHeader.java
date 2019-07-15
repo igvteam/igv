@@ -25,8 +25,7 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.IOException;
@@ -54,7 +53,7 @@ public class BigWigSectionHeader {
         Unknown     // bad value
     }
 
-    private static Logger log = LogManager.getLogger(BigWigSectionHeader.class);
+    private static Logger log = Logger.getLogger(BigWigSectionHeader.class);
 
     public static final int SECTION_HEADER_SIZE = 24;
     public static final int FIXEDSTEP_ITEM_SIZE = 4;

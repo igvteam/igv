@@ -25,8 +25,7 @@
 
 package org.broad.igv.maf;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
@@ -50,7 +49,7 @@ import java.util.*;
  */
 public class MAFListReader implements MAFReader {
 
-    private static Logger log = LogManager.getLogger(MAFListReader.class);
+    private static Logger log = Logger.getLogger(MAFListReader.class);
 
     List<String> chrNames;
 

@@ -32,8 +32,7 @@
 package org.broad.igv.ui.util;
 
 import com.jidesoft.swing.JideButton;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.util.BrowserLauncher;
 
 import java.awt.*;
@@ -45,7 +44,7 @@ import java.io.IOException;
  */
 public class LinkCheckBox extends javax.swing.JPanel {
 
-    private static Logger log = LogManager.getLogger(LinkCheckBox.class);
+    private static Logger log = Logger.getLogger(LinkCheckBox.class);
     private String hyperLink;
 
     /**

@@ -27,8 +27,7 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
@@ -48,7 +47,7 @@ import java.util.Map;
  */
 public class Mutation implements IGVFeature {
 
-    private static Logger log = LogManager.getLogger(Mutation.class);
+    private static Logger log = Logger.getLogger(Mutation.class);
     private static Map<String, Color> colors;
 
     private String sampleId;

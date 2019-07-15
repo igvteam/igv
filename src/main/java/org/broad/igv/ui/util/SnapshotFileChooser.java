@@ -43,7 +43,7 @@ import java.util.LinkedHashMap;
  */
 public class SnapshotFileChooser extends JFileChooser {
 
-    //private static Logger log = LogManager.getLogger(SnapshotFileChooser.class);
+    //private static Logger log = Logger.getLogger(SnapshotFileChooser.class);
 
     private static LinkedHashMap<SnapshotFileType, SnapshotFileFilter> SNAPSHOT_TYPE_TO_FILTER = new LinkedHashMap();
 

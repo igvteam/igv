@@ -25,8 +25,7 @@
 
 package org.broad.igv.ui.action;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
@@ -50,7 +49,7 @@ import java.util.List;
  */
 public class ExportTrackNamesMenuAction extends MenuAction {
 
-    static Logger log = LogManager.getLogger(ClearRegionsMenuAction.class);
+    static Logger log = Logger.getLogger(ClearRegionsMenuAction.class);
     IGV igv;
 
     public ExportTrackNamesMenuAction(String label, IGV mainFrame) {

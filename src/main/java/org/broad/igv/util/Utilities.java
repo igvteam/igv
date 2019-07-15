@@ -28,8 +28,7 @@ package org.broad.igv.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import biz.source_code.base64Coder.Base64Coder;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -59,7 +58,7 @@ import java.util.zip.CRC32;
  */
 public class Utilities {
 
-    private static Logger log = LogManager.getLogger(Utilities.class);
+    private static Logger log = Logger.getLogger(Utilities.class);
 
     public static String base64Encode(String str) {
         return Base64Coder.encodeString(str);

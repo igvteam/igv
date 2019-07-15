@@ -26,8 +26,7 @@
 package org.broad.igv.google;
 
 import com.google.gson.*;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
@@ -52,7 +51,7 @@ import java.util.zip.GZIPInputStream;
  */
 public class Ga4ghAPIHelper {
 
-    private static Logger log = LogManager.getLogger(Ga4ghAPIHelper.class);
+    private static Logger log = Logger.getLogger(Ga4ghAPIHelper.class);
 
     public static final String RESOURCE_TYPE = "ga4gh";
 

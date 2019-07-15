@@ -1,7 +1,6 @@
 package org.broad.igv.feature.basepair;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.Persistable;
@@ -28,7 +27,7 @@ import java.util.List;
 
 public class BasePairTrack extends AbstractTrack {
 
-    static Logger log = LogManager.getLogger(BasePairTrack.class);
+    static Logger log = Logger.getLogger(BasePairTrack.class);
 
     private BasePairRenderer basePairRenderer = new BasePairRenderer();
     private BasePairData basePairData = new BasePairData();

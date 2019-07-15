@@ -27,8 +27,7 @@ package org.broad.igv.sam;
 
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
@@ -56,7 +55,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class AlignmentTileLoader implements IGVEventObserver {
 
-    private static Logger log = LogManager.getLogger(AlignmentTileLoader.class);
+    private static Logger log = Logger.getLogger(AlignmentTileLoader.class);
 
     private static Set<WeakReference<AlignmentTileLoader>> activeLoaders = Collections.synchronizedSet(new HashSet());
 

@@ -26,8 +26,7 @@
 package org.broad.igv.aws;
 
 import htsjdk.samtools.util.Tuple;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
@@ -50,7 +49,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 
 public class S3LoadDialog extends JDialog {
 
-    private static Logger log = LogManager.getLogger(S3LoadDialog.class);
+    private static Logger log = Logger.getLogger(S3LoadDialog.class);
 
     private final DefaultTreeModel treeModel;
     String selectedId;

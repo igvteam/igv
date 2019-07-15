@@ -29,8 +29,7 @@ package org.broad.igv.ui.util;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
 import org.broad.igv.ui.FontManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.google.OAuthUtils;
@@ -51,7 +50,7 @@ import java.util.TimerTask;
  */
 public class ApplicationStatusBar extends JPanel implements IGVEventObserver { //StatusBar {
 
-    static Logger log = LogManager.getLogger(ApplicationStatusBar.class);
+    static Logger log = Logger.getLogger(ApplicationStatusBar.class);
     public JButton stopButton;
     private JLabel messageBox;
     private JLabel messageBox2;

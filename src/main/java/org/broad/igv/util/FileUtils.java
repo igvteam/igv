@@ -27,8 +27,7 @@ package org.broad.igv.util;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.util.ftp.FTPUtils;
 
 import java.io.*;
@@ -42,7 +41,7 @@ import java.util.regex.Pattern;
  */
 public class FileUtils {
 
-    private static final Logger log = LogManager.getLogger(FileUtils.class);
+    private static Logger log = Logger.getLogger(FileUtils.class);
 
     final public static String LINE_SEPARATOR = System.getProperty("line.separator");
     final public static String FILE_SEP = System.getProperty("file.separator");

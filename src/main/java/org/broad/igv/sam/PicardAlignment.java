@@ -30,8 +30,7 @@ package org.broad.igv.sam;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
@@ -47,7 +46,7 @@ import java.util.List;
  */
 public class PicardAlignment extends SAMAlignment implements Alignment {
 
-    private static Logger log = LogManager.getLogger(PicardAlignment.class);
+    private static Logger log = Logger.getLogger(PicardAlignment.class);
     private static IGVPreferences prefMgr = PreferencesManager.getPreferences();
 
     private static final int READ_PAIRED_FLAG = 0x1;

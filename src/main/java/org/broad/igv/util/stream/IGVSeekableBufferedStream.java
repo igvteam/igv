@@ -27,8 +27,7 @@ package org.broad.igv.util.stream;
 
 import com.google.common.primitives.Ints;
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
@@ -42,7 +41,7 @@ import static java.lang.System.arraycopy;
  */
 public class IGVSeekableBufferedStream extends SeekableStream {
 
-    private static Logger log = LogManager.getLogger(IGVSeekableBufferedStream.class);
+    private static Logger log = Logger.getLogger(IGVSeekableBufferedStream.class);
 
     public static final int DEFAULT_BUFFER_SIZE = 512000;
 
