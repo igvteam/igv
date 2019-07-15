@@ -1237,10 +1237,20 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private static IGVPreferences getPreferences(ExperimentType type) {
 
-        // Disable experimentType preferences for 2.4
-        if (Globals.VERSION.contains("2.4")) {
-            return PreferencesManager.getPreferences(NULL_CATEGORY);
-        } else {
+        try {
+            // Disable experimentType preferences for 2.4
+            if (Globals.VERSION.contains("2.4")) {
+                return PreferencesManager.getPreferences(NULL_CATEGORY);
+            } else {
+                String prefKey = Constants.NULL_CATEGORY;
+                if (type == ExperimentType.THIRD_GEN) {
+                    prefKey = Constants.THIRD_GEN;
+                } else if (type == ExperimentType.RNA) {
+                    prefKey = Constants.RNA;
+                }
+                return PreferencesManager.getPreferences(prefKey);
+            }
+        } catch (NullPointerException e) {
             String prefKey = Constants.NULL_CATEGORY;
             if (type == ExperimentType.THIRD_GEN) {
                 prefKey = Constants.THIRD_GEN;
