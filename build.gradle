@@ -68,7 +68,7 @@ configurations {
         exclude group: 'org.codehaus.mojo', module: 'animal-sniffer-annotations'
         exclude group: 'org.checkerframework', module: 'checker-qual'
         exclude group: 'com.ibm.icu', module: 'icu4j'
-//        exclude group: 'log4j', module: 'log4j'
+        exclude group: 'log4j', module: 'log4j'
 
         exclude group: 'xmlpull', module: 'xmlpull'
         exclude group: 'xpp3', module: 'xpp3_min'
@@ -78,27 +78,19 @@ configurations {
         exclude group: 'org.apache.ant', module: 'ant-launcher'
         exclude group: 'org.apache.commons', module: 'commons-math'
 
-        // Batik deps
+        // Batik deps exclusions
         exclude group: 'org.apache.xmlgraphics', module: 'batik-script'
+        exclude group: 'org.apache.xmlgraphics', module: 'batik-anim'
+        exclude group: 'org.apache.xmlgraphics', module: 'batik-gvt'
+
         exclude group: 'xml-apis', module: 'xml-apis'
         exclude group: 'xml-apis', module: 'xml-apis-ext'
         exclude group: 'xalan', module: 'serializer'
         exclude group: 'xalan', module: 'xalan'
 
-        // Amazon deps
+        // Amazon deps exclusions
         exclude group: 'software.amazon', module: 'flow'
         exclude group: 'software.amazon.awssdk', module: 'annotations'
-        //exclude group: 'software.amazon.awssdk', module: 'aws-xml-protocol'
-        //exclude group: 'software.amazon.awssdk', module: 'http-client-spi'
-        //exclude group: 'software.amazon.awssdk', module: 'apache-client'
-        //exclude group: 'software.amazon.awssdk', module: 'utils'
-        //exclude group: 'software.amazon.awssdk', module: 'annotations'
-        //exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
-        //exclude group: 'com.fasterxml.jackson.core', module: 'jackson-annotations'
-        //exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
-        //exclude group: 'org.reactivestreams', module: 'reactive-streams'
-        //exclude group: 'com.typesafe.netty', module: 'netty-reactive-streams'
-        //exclude group: 'com.typesafe.netty', module: 'netty-reactive-streams-http'
     }
 }
 
@@ -125,6 +117,7 @@ dependencies {
         [group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: '1.11'],
         [group: 'org.apache.xmlgraphics', name: 'batik-codec', version: '1.11'],
         [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'],
+        [group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.26'],
         [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
 
         // Amazon deps
