@@ -42,8 +42,6 @@ import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.TimerTask;
 
-//import org.broad.igv.event.StopEvent;
-
 
 /**
  * @author eflakes

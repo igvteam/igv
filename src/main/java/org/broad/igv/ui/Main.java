@@ -85,7 +85,6 @@ public class Main {
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
 
         final Main.IGVArgs igvArgs = new Main.IGVArgs(args);
-        String flargs[] = new String[0];
 
         // Do this early
         if (igvArgs.igvDirectory != null) {
