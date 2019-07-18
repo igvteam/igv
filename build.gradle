@@ -29,6 +29,18 @@ import org.apache.tools.ant.filters.ReplaceTokens
 mainClassName = 'org.broad.igv.ui.Main'
 ext.moduleName = 'org.igv'
 
+// Set up the ProGuard optimizing task
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        // Proguard
+        [group: 'net.sf.proguard', name: 'proguard-gradle', version: '6.1.1']
+        //classpath ':proguard:'
+    }
+}
+
 buildDir = 'build'
 
 wrapper { }
@@ -137,7 +149,7 @@ processResources {
     // Set the current timestamp for release builds; pass in a blank property to enable (i.e. -Ptimestamp="" at CLI)
     if (timestamp.equals("")) { timestamp = new Date().format("MM/dd/yyyy hh:mm aa") }
 
-    filesMatching('.properties') {
+    filesMatching('resources/about.properties') {
         filter (ReplaceTokens,
                 tokens: [ VERSION: version, BUILD: buildNumber, DEFAULT_MASTER_RESOURCE_URL: dataServerUrl,
                           TIMESTAMP: timestamp, DEVELOPMENT: development ])
@@ -166,13 +178,49 @@ compileJava {
     }
 }
 
+
+//optimizeFullJar(type: proguard.gradle.ProGuardTask, dependsOn: fullJar) {
+//    // EXPERIMENTAL: Optimize the fullJar to remove unused classes.
+//    // This still needs tuning for correctness, and as a result we are not distributing the
+//    // jar it creates.  It is still useful because of the reports it generates, however.
+//    doFirst { mkdir "proguard_log" }
+//
+//    verbose
+//    injars "${buildDir}/libs/igv.jar"
+//    outjars "${buildDir}/libs/igv-OPT.jar"
+//    // Note that this points to the *JRE* jars.
+//    libraryjars "${System.getProperty('java.home')}/lib",
+//            jarfilter: 'rt.jar,charsets.jar,jce.jar,jfr.jar,jsse.jar,resources.jar,ext/jfxrt.jar'
+//    libraryjars "lib", jarfilter: 'batik-codec-1.10.jar,goby-io-igv-1.1.jar,log4j-core-2.11.0.jar'
+//    configuration "lib_build/proguard_full_client.cfg"
+//    printusage "proguard_log/proguard_full_client_log_${timestamp_fs}.txt"
+//    printseeds "proguard_log/proguard_full_client_seeds_${timestamp_fs}.txt"
+//}
+//
+//optimizeMinJar(type: proguard.gradle.ProGuardTask, dependsOn: jar) {
+//    // EXPERIMENTAL: Optimize the minimal jar to remove unused classes (that is, our code base only).
+//    // As above, needs tuning for correctness.  The IGV-focused report it produces is more useful.
+//    doFirst { mkdir "proguard_log" }
+//
+//    verbose
+//    injars "${buildDir}/libs/igv-minimal.jar"
+//    outjars "${buildDir}/libs/igv-minimal-OPT.jar"
+//    libraryjars "${System.getProperty('java.home')}/lib",
+//            jarfilter: 'rt.jar,charsets.jar,jce.jar,jfr.jar,jsse.jar,resources.jar,ext/jfxrt.jar'
+//    // This is the difference from the above: consider all dependencies as libraryjars
+//    libraryjars "lib", filter: '!META-INF/**/module-info.class'
+//    configuration "lib_build/proguard_min_client.cfg"
+//    printusage "proguard_log/proguard_min_client_log_${timestamp_fs}.txt"
+//    printseeds "proguard_log/proguard_min_client_seeds_${timestamp_fs}.txt"
+//}
+
 tasks.withType(Test) {
     systemProperties = System.getProperties()
     systemProperties['java.awt.headless'] = 'true'
     systemProperties['make.fail'] = 'false'
     systemProperties['include.longrunning'] = 'false'
     systemProperties['ignore.ioexceptions'] = 'false'
-    maxHeapSize = '2000m'
+    maxHeapSize = '2g'
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     
     
@@ -215,6 +263,14 @@ task copyToLib(type: Copy, dependsOn: jar) {
     from configurations.default
     into "${buildDir}/deplibs"
 }
+
+task proguard(type: proguard.gradle.ProGuardTask) {
+    configuration 'proguard.txt'
+
+    injars 'build/libs/proguard-gradle-example.jar'
+    outjars 'build/libs/proguard-gradle-example.out.jar'
+}
+
 
 task createDist(type: Copy, dependsOn: copyToLib)  {
     from ("web/IGV_64.png")
