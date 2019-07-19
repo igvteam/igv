@@ -44,7 +44,6 @@ import org.broad.igv.feature.GisticFileParser;
 import org.broad.igv.feature.MutationTrackLoader;
 import org.broad.igv.feature.ShapeFileUtils;
 import org.broad.igv.feature.basepair.BasePairTrack;
-import org.broad.igv.bedpe.BedPEFeature;
 import org.broad.igv.bedpe.BedPEParser;
 import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.feature.bionano.SMAPParser;
@@ -84,10 +83,7 @@ import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.ConvertFileDialog;
 import org.broad.igv.ui.util.ConvertOptions;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.*;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
 
@@ -123,6 +119,11 @@ public class TrackLoader {
 
         if (GoogleUtils.isGoogleDrive(path) || GoogleUtils.isGoogleCloud(path)) {
             GoogleUtils.checkLogin();
+        }
+        // Check if the AWS credentials are still valid. If not, re-login and renew pre-signed urls
+        if (AmazonUtils.isAwsS3Path(path)) {
+            AmazonUtils.checkLogin();
+            AmazonUtils.checkResourcePath(locator);
         }
 
         log.info("Loading resource, path " + path);

@@ -91,6 +91,8 @@ configurations {
         // Amazon deps exclusions
         exclude group: 'software.amazon', module: 'flow'
         exclude group: 'software.amazon.awssdk', module: 'annotations'
+
+        exclude group: 'com.github.samtools', module: 'htsjdk'
     }
 }
 
