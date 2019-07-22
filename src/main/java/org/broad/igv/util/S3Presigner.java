@@ -1,5 +1,14 @@
 package org.broad.igv.util;
 
+/*
+*
+* This is a transitional class until the official java-aws-sdk-v2 includes a S3 URL presigners class, see:
+*
+* https://github.com/aws/aws-sdk-java-v2/issues/849#issuecomment-468892839
+* https://github.com/aws/aws-sdk-java-v2/issues/203
+*
+*/
+
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.time.Duration;

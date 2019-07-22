@@ -18,7 +18,6 @@ module org.igv {
     requires jdk.xml.dom;
     requires log4j;
     requires org.apache.logging.log4j;
-    requires org.apache.logging.log4j.core;
     requires swing.layout;
     requires jide.common;
     requires org.apache.commons.io;

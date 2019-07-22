@@ -92,7 +92,9 @@ configurations {
 
         // Batik deps exclusions
         exclude group: 'org.apache.xmlgraphics', module: 'batik-script'
+        exclude group: 'org.apache.xmlgraphics', module: 'batik-bridge'
         exclude group: 'org.apache.xmlgraphics', module: 'batik-anim'
+        exclude group: 'org.apache.xmlgraphics', module: 'batik-css'
         exclude group: 'org.apache.xmlgraphics', module: 'batik-gvt'
 
         exclude group: 'xml-apis', module: 'xml-apis'
@@ -104,6 +106,8 @@ configurations {
         exclude group: 'software.amazon', module: 'flow'
         exclude group: 'software.amazon.awssdk', module: 'annotations'
 
+        // Exclude very old htsjdk from Goby while we wait for https://github.com/igvteam/igv/issues/646
+        // ... then we can uncomment the htsjdk below when a Maven artifact is published
         exclude group: 'com.github.samtools', module: 'htsjdk'
     }
 }
@@ -119,8 +123,8 @@ dependencies {
         //[group: 'com.github.samtools', name: 'htsjdk', version: '2.19.0'],
         // holding upstream htsjdk back from Maven for this @igvteam jar hack: https://github.com/igvteam/igv/issues/646
         [group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.11.0'],
-        [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'],
-        [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'],
+        //[group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'],
+        //[group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'],
         [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
         [group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],
         [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],
@@ -135,9 +139,9 @@ dependencies {
         [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
 
         // Amazon deps
-        [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.5.0'],
-        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.5.0'],
-        [group: 'software.amazon.awssdk', name: 's3', version: '2.5.0']
+        [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.7.5'],
+        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.7.5'],
+        [group: 'software.amazon.awssdk', name: 's3', version: '2.7.5']
     )
 
     testImplementation(
@@ -216,6 +220,15 @@ compileJava {
 //    printseeds "proguard_log/proguard_min_client_seeds_${timestamp_fs}.txt"
 //}
 
+// https://stackoverflow.com/questions/24917820/android-studio-lint-reports-cannot-infer-argument-types
+task proguard(type: proguard.gradle.ProGuardTask) {
+//    configuration 'proguard.txt'
+//
+    injars "${buildDir}/libs/igv.jar"
+    outjars "${buildDir}/libs/igv-OPT.jar"
+}
+
+
 tasks.withType(Test) {
     systemProperties = System.getProperties()
     systemProperties['java.awt.headless'] = 'true'
@@ -265,14 +278,6 @@ task copyToLib(type: Copy, dependsOn: jar) {
     from configurations.default
     into "${buildDir}/deplibs"
 }
-
-task proguard(type: proguard.gradle.ProGuardTask) {
-    configuration 'proguard.txt'
-
-    injars 'build/libs/proguard-gradle-example.jar'
-    outjars 'build/libs/proguard-gradle-example.out.jar'
-}
-
 
 task createDist(type: Copy, dependsOn: copyToLib)  {
     from ("web/IGV_64.png")

@@ -418,7 +418,9 @@ public class OAuthUtils {
     *
     */
     public static Duration getExpirationTime() {
-        return Duration.ofMillis(expirationTime - System.currentTimeMillis());
+        Duration expiration = Duration.ofMillis(expirationTime - System.currentTimeMillis());
+        log.debug("Current expiration time of credentials (and presigned urls is): "+ expiration.toSeconds() + " seconds");
+        return expiration;
     }
 
     public static Date getExpirationDate() {
