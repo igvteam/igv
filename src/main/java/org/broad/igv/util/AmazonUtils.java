@@ -8,6 +8,7 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.ui.util.MessageUtils;
+import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -77,8 +78,7 @@ public class AmazonUtils {
         CognitoIdentityClientBuilder cognitoIdentityBuilder = CognitoIdentityClient.builder();
         // Avoid "software.amazon.awssdk.core.exception.SdkClientException: Unable to load credentials from any of the providers in the chain AwsCredentialsProviderChain("
         // https://stackoverflow.com/questions/36604024/sts-saml-and-java-sdk-unable-to-load-aws-credentials-from-any-provider-in-the-c
-        AwsBasicCredentials emptyCreds = AwsBasicCredentials.create("foo","bar");
-        cognitoIdentityBuilder.region(AWSREGION).credentialsProvider(StaticCredentialsProvider.create(emptyCreds));
+        cognitoIdentityBuilder.region(AWSREGION).credentialsProvider(AnonymousCredentialsProvider.create());
         cognitoIdentityClient = cognitoIdentityBuilder.build();
 
         // "To provide end-user credentials, first make an unsigned call to GetId."
