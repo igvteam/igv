@@ -103,10 +103,6 @@ public class AmazonUtils {
      * @param credentials AWS credentials
      *
      */
-    // XXX: In the current implementation, the user needs a barebones ~/.aws/credentials file with bogus aws_access_key_id
-    //  and aws_secret_access_key defined.
-    //  Using Cognito's AnonymousAuthenticationChainProvider should solve it (but needs refactoring) to avoid exception:
-    //  "software.amazon.awssdk.core.exception.SdkClientException: Unable to load credentials from any of the providers in the chain"
     public static void updateS3Client(Credentials credentials) {
         AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
                                                                    credentials.secretKey(),
