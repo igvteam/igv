@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.ui.util.MessageUtils;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
@@ -105,6 +106,7 @@ public class AmazonUtils {
         AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
                                                                    credentials.secretKey(),
                                                                    credentials.sessionToken());
+
         StaticCredentialsProvider s3CredsProvider = StaticCredentialsProvider.create(creds);
         s3Client = S3Client.builder().credentialsProvider(s3CredsProvider).region(AWSREGION).build();
     }
@@ -264,4 +266,44 @@ public class AmazonUtils {
         return presigned.toString();
     }
 
+
+    public static Boolean isAwsS3Path(String path) {
+        // TODO: perhaps add some more checks
+        return (path.contains("s3") && path.contains("amazonaws.com"));
+    }
+
+    public static void checkLogin() {
+        try {
+            if (!OAuthUtils.getInstance().isLoggedIn()) {
+                OAuthUtils.getInstance().doSecureLogin();
+            }
+        } catch (IOException e) {
+            MessageUtils.showErrorMessage("Error initializing OAuth", e);
+            log.error("Error initializing OAuth", e);
+        }
+    }
+
+    public static void checkResourcePath(ResourceLocator locator) {
+        // TODO: FLO: should check if the pre-signed URL is valid, before renewing it and updating the ResourceLocator
+        // TODO: could also be optimised
+        String oldPath = locator.path;
+        log.debug("Renewing pre-signed URL: " + oldPath);
+        String simplePath = oldPath.substring(0, oldPath.indexOf('?'));
+        simplePath = simplePath.replaceFirst("https", "s3");
+        simplePath = simplePath.replaceAll("//(.+)[.]s3[.][^/]+", "//$1");
+
+        String newPath = translateAmazonCloudURL(simplePath);
+        log.debug("New pre-signed URL: " + newPath);
+        locator.path = newPath;
+
+
+        String oldIndexPath = locator.indexPath;
+        String simpleIndexPath = oldIndexPath.substring(0, oldIndexPath.indexOf('?'));
+        simpleIndexPath = simpleIndexPath.replaceFirst("https", "s3");
+        simpleIndexPath = simpleIndexPath.replaceAll("//(.+)[.]s3[.][^/]+", "//$1");
+
+        String newIndexPath = translateAmazonCloudURL(simpleIndexPath);
+        locator.indexPath = newIndexPath;
+
+    }
 }

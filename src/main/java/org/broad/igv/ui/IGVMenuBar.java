@@ -979,8 +979,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         final JMenuItem login = new JMenuItem("Login");
         login.addActionListener(e -> {
             try {
-                // Set appropriate scope for AWS Cognito and go through the oauth flow
-                oauth.setScope("email%20openid%20profile");
                 oauth.openAuthorizationPage(); // should trigger and event and UI takes over
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
