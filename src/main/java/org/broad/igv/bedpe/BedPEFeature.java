@@ -15,6 +15,7 @@ public class BedPEFeature implements BedPE {
     int start2;
     int end2;
     String name;
+    String scoreString = "";
     double score;
     Color color;
     int thickness = 1;
@@ -114,7 +115,7 @@ public class BedPEFeature implements BedPE {
         }
         buf.append(locus1);
         buf.append("<br>" + locus2);
-        buf.append("<br>Score: " + score);
+        buf.append("<br>Score: " + scoreString);
         if(attributes != null) {
             buf.append("<br><hr>");
             for (Map.Entry<String, String> entry : attributes.entrySet()) {

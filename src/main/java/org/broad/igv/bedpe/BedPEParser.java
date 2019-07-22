@@ -29,7 +29,9 @@ public class BedPEParser {
         int thicknessColumn = -1;
         DatasetType type = DatasetType.UNKNOWN;
         boolean parsedHeader = true;
-        String[] columns;
+
+        // Default column headers from BedPE spec.  Can be overriden
+        String[] columns = {"chrom1", "start1", "stop1", "chrom2", "start2", "stop2", "name", "score", "strand1", "strand2"};
         boolean col7isNumeric = true;   // Until proven otherwise
 
         Map<String, Color> colorCache = new HashMap<>();
@@ -37,31 +39,36 @@ public class BedPEParser {
         BufferedReader br = null;
         br = ParsingUtils.openBufferedReader(locator.getPath());
         String nextLine;
+        boolean firstLine = true;
         while ((nextLine = br.readLine()) != null) {
 
-            if (nextLine.startsWith("#columns")) {
-                // An IGV hack, not sure anyone is using this
-                try {
-                    String[] t1 = ParsingUtils.WHITESPACE_PATTERN.split(nextLine);
-                    if (t1.length == 2) {
-                        String[] t2 = ParsingUtils.SEMI_COLON_PATTERN.split(t1[1]);
-                        for (String keyValue : t2) {
-                            String[] t = keyValue.split("=");
-                            if (t[0].equals("color")) {
-                                colorColumn = Integer.parseInt(t[1]) - 1;
-                            } else if (t[0].equals("thickness")) {
-                                thicknessColumn = Integer.parseInt(t[1]) - 1;
-                            }
-                        }
-                    }
-                } catch (NumberFormatException e) {
-                    log.error("Error parsing #column line.", e);
-                }
-            } else if (nextLine.startsWith("#")) {
-                columns = Globals.tabPattern.split(nextLine);
-                if (nextLine.trim().equals("#chrom1\tstart1\tstop1\tchrom2\tstart2\tstop2\tname\tqual\tstrand1\tstrand2\tfilters\tinfo")) {
-                    type = DatasetType.TENX;
-                } else {
+//            if (nextLine.startsWith("#columns")) {
+//                // An IGV hack, not sure anyone is using this
+//                try {
+//                    String[] t1 = ParsingUtils.WHITESPACE_PATTERN.split(nextLine);
+//                    if (t1.length == 2) {
+//                        String[] t2 = ParsingUtils.SEMI_COLON_PATTERN.split(t1[1]);
+//                        for (String keyValue : t2) {
+//                            String[] t = keyValue.split("=");
+//                            if (t[0].equals("color")) {
+//                                colorColumn = Integer.parseInt(t[1]) - 1;
+//                            } else if (t[0].equals("thickness")) {
+//                                thicknessColumn = Integer.parseInt(t[1]) - 1;
+//                            }
+//                        }
+//                    }
+//                } catch (NumberFormatException e) {
+//                    log.error("Error parsing #column line.", e);
+//                }
+//            } else
+            if (nextLine.trim().equals("#chrom1\tstart1\tstop1\tchrom2\tstart2\tstop2\tname\tqual\tstrand1\tstrand2\tfilters\tinfo")) {
+                type = DatasetType.TENX;
+            }
+            if (nextLine.startsWith("#") || nextLine.startsWith("chr1\tx1\tx2")) {
+
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                if (tokens.length >= 6) {
+                    columns = tokens;
                     for (int i = 6; i < columns.length; i++) {
                         if (columns[i].equalsIgnoreCase("color")) {
                             colorColumn = i;
@@ -70,10 +77,16 @@ public class BedPEParser {
                         }
                     }
                 }
-
             } else if (nextLine.startsWith("track") || nextLine.startsWith("##track")) {
                 TrackProperties trackProperties = new TrackProperties();
                 ParsingUtils.parseTrackLine(nextLine, trackProperties);
+            } else if (firstLine && nextLine.startsWith("chromosome1\tx1\tx2") || nextLine.startsWith("chr1\tx1\tx2")) {
+                columns = Globals.tabPattern.split(nextLine);
+                for (int i = 6; i < columns.length; i++) {
+                    if (columns[i].equalsIgnoreCase("color")) {
+                        colorColumn = i;
+                    }
+                }
             } else {
                 String[] tokens = Globals.tabPattern.split(nextLine);
 
@@ -100,40 +113,57 @@ public class BedPEParser {
                 }
 
                 if (tokens.length > 7) {
-                    feature.score = Double.parseDouble(tokens[7]);
+                    feature.scoreString = tokens[7];
+                    try {
+                        feature.score = Double.parseDouble(tokens[7]);
+                    } catch (NumberFormatException e) {
+                        feature.score = 0;
+                    }
                 }
 
-                if (type == DatasetType.TENX) {
+                if (tokens.length > 8) {
                     Map<String, String> attributes = new LinkedHashMap<>();
-                    if (!tokens[8].equals(".")) {
-                        attributes.put("filters", tokens[8]);
-                    }
-                    String[] kvPairs = Globals.semicolonPattern.split(tokens[11]);
-                    for (String kvPair : kvPairs) {
-                        String[] kv = Globals.equalPattern.split(kvPair);
-                        attributes.put(kv[0], kv[1]);
+
+                    for (int i = 8; i < tokens.length; i++) {
+
+                        String t = tokens[i];
+                        String c = columns != null && columns.length > i ? columns[i] : String.valueOf(i);
+
+                        if (c.equals("info") && t.contains("=")) {
+                            String[] kvPairs = Globals.semicolonPattern.split(tokens[11]);
+                            for (String kvPair : kvPairs) {
+                                String[] kv = Globals.equalPattern.split(kvPair);
+                                if (kv.length > 1) {
+                                    attributes.put(kv[0], kv[1]);
+                                }
+                            }
+                        } else {
+                            attributes.put(c, t);
+                        }
                     }
                     feature.attributes = attributes;
                     feature.type = attributes.get("TYPE");
-                } else {
-                    if (colorColumn > 0) {
-                        String colorString = tokens[colorColumn];
-                        Color c = colorCache.get(colorString);
-                        if (c == null) {
-                            c = ColorUtilities.stringToColor(colorString);
-                            colorCache.put(colorString, c);
-                        }
-                        feature.color = c;
-                    }
-
-                    if (thicknessColumn > 0) {
-                        feature.thickness = Integer.parseInt(tokens[thicknessColumn]);
-                    }
                 }
+
+                if (colorColumn > 0) {
+                    String colorString = tokens[colorColumn];
+                    Color c = colorCache.get(colorString);
+                    if (c == null) {
+                        c = ColorUtilities.stringToColor(colorString);
+                        colorCache.put(colorString, c);
+                    }
+                    feature.color = c;
+                }
+
+                if (thicknessColumn > 0) {
+                    feature.thickness = Integer.parseInt(tokens[thicknessColumn]);
+                }
+
                 // Skipping remaining fields for now
 
                 features.add(feature);
             }
+            firstLine = false;
         }
 
 
@@ -143,7 +173,7 @@ public class BedPEParser {
                 f.score = Double.parseDouble(f.name);
                 f.name = null;
             }
-            if(type == DatasetType.UNKNOWN) {
+            if (type == DatasetType.UNKNOWN) {
                 type = DatasetType.CLUSTER;   // A guess
             }
         }
