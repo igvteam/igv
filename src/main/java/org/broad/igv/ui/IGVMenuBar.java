@@ -979,7 +979,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         final JMenuItem login = new JMenuItem("Login");
         login.addActionListener(e -> {
             try {
+                // TODO: FLO: why not OAuthUtils.getInstance().doSecureLogin() ??
                 oauth.openAuthorizationPage(); // should trigger and event and UI takes over
+                // TODO: FLO: could start a refresh thread here? And end it below on Logout
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
                 log.error("Error fetching oAuth tokens", ex);
@@ -989,7 +991,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menu.add(login);
 
         final JMenuItem logout = new JMenuItem("Logout");
-        logout.addActionListener(e -> oauth.logout());
+        logout.addActionListener(e -> {
+            // TODO: FLO: could end refresh thread here?
+            oauth.logout();
+        });
         logout.setEnabled(false);
         menu.add(logout);
 

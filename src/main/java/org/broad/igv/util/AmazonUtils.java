@@ -119,6 +119,11 @@ public class AmazonUtils {
     public static ArrayList<String> ListBucketsForUser() {
         ArrayList<String> bucketsList = new ArrayList<>();
 
+        try {
+            OAuthUtils.getInstance().getAccessToken();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
         ListBucketsResponse listBucketsResponse = s3Client.listBuckets(listBucketsRequest);
         // XXX: Filter out buckets that I do not have permissions for
@@ -139,6 +144,11 @@ public class AmazonUtils {
     public static ArrayList<IGVS3Object> ListBucketObjects(String bucketName, String prefix) {
         ArrayList<IGVS3Object> objects = new ArrayList<>();
         log.debug("Listing objects for bucketName: "+ bucketName);
+        try {
+            OAuthUtils.getInstance().getAccessToken();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         try {
             // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
             // """
@@ -285,7 +295,10 @@ public class AmazonUtils {
 
     public static void checkResourcePath(ResourceLocator locator) {
         // TODO: FLO: should check if the pre-signed URL is valid, before renewing it and updating the ResourceLocator
-        // TODO: could also be optimised
+        // TODO: FLO: split in two methods: one for validity check and one for URL renewal
+        // TODO: FLO: perhaps the first part is not needed if we keep the URLs always fresh/valid
+        // TODO: FLO: needs combination with Track ID matcher to make sure ResourceLocator path == track ID
+        // TODO: FLO: could also be optimised
         String oldPath = locator.path;
         log.debug("Renewing pre-signed URL: " + oldPath);
         String simplePath = oldPath.substring(0, oldPath.indexOf('?'));

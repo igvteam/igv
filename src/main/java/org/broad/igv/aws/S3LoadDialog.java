@@ -56,7 +56,6 @@ public class S3LoadDialog extends JDialog {
 
     public S3LoadDialog(Frame owner) {
         super(owner);
-        ArrayList<String> datasets = AmazonUtils.ListBucketsForUser();
         initComponents();
 
         S3TreeNode root = new S3TreeNode(new IGVS3Object("S3", true), true);

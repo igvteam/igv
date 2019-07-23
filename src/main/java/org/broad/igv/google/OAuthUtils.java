@@ -399,7 +399,9 @@ public class OAuthUtils {
     public String getAccessToken() {
 
         // Check expiration time, with 1 minute cushion
-        if (accessToken == null || (System.currentTimeMillis() > (expirationTime - 60 * 1000))) {
+//        if (accessToken == null || (System.currentTimeMillis() > (expirationTime - 60 * 1000))) {
+        if (accessToken == null || true) {
+            System.out.println("Yay");
             if (refreshToken != null) {
                 try {
                     this.refreshAccessToken();
