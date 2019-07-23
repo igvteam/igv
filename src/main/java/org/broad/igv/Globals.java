@@ -120,26 +120,25 @@ public class Globals {
     public static String versionURL = "https://data.broadinstitute.org/igv/projects/current/version.txt";
     public static String downloadURL = "http://www.broadinstitute.org/igv/download";
     static {
+        Properties properties = new Properties();
         try {
-            Properties properties = new Properties();
-            properties.load(new FileReader(".properties"));
-
-            VERSION = properties.getProperty("version", "???");
-            BUILD = properties.getProperty("build", "???");
-            TIMESTAMP = properties.getProperty("timestamp", "???");
-            BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
-
-            //Runtime property overrides compile-time property, if both exist.
-            //If neither exist we default to false
-            final String developmentProperty = System.getProperty("development", properties.getProperty("development", "false"));
-            development = Boolean.parseBoolean(developmentProperty);
-            if(development){
-                log.warn("Development mode is enabled");
-            }
-
+            properties.load(Globals.class.getResourceAsStream("/resources/about.properties"));
         } catch (IOException e) {
             log.error("*** Error retrieving version and build information! ***", e);
         }
+        VERSION = properties.getProperty("version", "???");
+        BUILD = properties.getProperty("build", "???");
+        TIMESTAMP = properties.getProperty("timestamp", "???");
+        BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
+
+        //Runtime property overrides compile-time property, if both exist.
+        //If neither exist we default to false
+        final String developmentProperty = System.getProperty("development", properties.getProperty("development", "false"));
+        development = Boolean.parseBoolean(developmentProperty);
+        if(development){
+            log.warn("Development mode is enabled");
+        }
+
     }
 
     public static void setHeadless(boolean bool) {
