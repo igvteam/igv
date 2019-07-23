@@ -22,9 +22,12 @@
 // THE SOFTWARE.
 
 apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
 apply plugin: 'application'
 
 import org.apache.tools.ant.filters.ReplaceTokens
+import proguard.gradle.ProGuardTask
 
 mainClassName = 'org.broad.igv.ui.Main'
 ext.moduleName = 'org.igv'
@@ -37,13 +40,11 @@ buildscript {
     dependencies {
         // Proguard
         [group: 'net.sf.proguard', name: 'proguard-gradle', version: '6.1.1']
-        //classpath ':proguard:'
+        classpath 'net.sf.proguard:proguard-gradle:6.1.1'
     }
 }
 
 buildDir = 'build'
-
-wrapper { }
 
 repositories {
     mavenCentral()
@@ -139,9 +140,9 @@ dependencies {
         [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
 
         // Amazon deps
-        [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.7.5'],
-        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.7.5'],
-        [group: 'software.amazon.awssdk', name: 's3', version: '2.7.5']
+        [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.7.8'],
+        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.7.8'],
+        [group: 'software.amazon.awssdk', name: 's3', version: '2.7.8']
     )
 
     testImplementation(
@@ -153,7 +154,7 @@ dependencies {
 
 processResources {
     // Set the current timestamp for release builds; pass in a blank property to enable (i.e. -Ptimestamp="" at CLI)
-    if (timestamp.equals("")) { timestamp = new Date().format("MM/dd/yyyy hh:mm aa") }
+    if (timestamp == "") { timestamp = new Date().format("MM/dd/yyyy hh:mm aa") }
 
     filesMatching('resources/about.properties') {
         filter (ReplaceTokens,
@@ -163,7 +164,6 @@ processResources {
 }
 
 jar {
-    archiveName = 'igv.jar'
     manifest {
         attributes(
             "Permissions": "all-permissions",
@@ -181,6 +181,27 @@ compileJava {
             '--module-path', classpath.asPath,
         ]
         classpath = files()
+    }
+}
+
+task fullJar(type: Jar, dependsOn: jar) {
+    // Based on https://discuss.gradle.org/t/removing-dependencies-from-a-jar-file-during-jar-task/5521/3
+    from {
+        ((configurations.compile - configurations.jarsForClasspath) + "${buildDir}/libs/igv.jar").collect {
+            zipTree(it)
+        }
+    } {
+        exclude "META-INF/**"
+    }
+
+    manifest {
+        attributes(
+                "Permissions": "all-permissions",
+                "Application-Name": "IGV",
+                "Built-By": System.getProperty('user.name'),
+                "Main-Class": mainClassName,
+                "Class-Path": configurations.jarsForClasspath.collect { it.getName() }.join(' ')
+        )
     }
 }
 
@@ -220,10 +241,9 @@ compileJava {
 //    printseeds "proguard_log/proguard_min_client_seeds_${timestamp_fs}.txt"
 //}
 
-// https://stackoverflow.com/questions/24917820/android-studio-lint-reports-cannot-infer-argument-types
-task proguard(type: proguard.gradle.ProGuardTask) {
+task myproguard(type: ProGuardTask) {
 //    configuration 'proguard.txt'
-//
+
     injars "${buildDir}/libs/igv.jar"
     outjars "${buildDir}/libs/igv-OPT.jar"
 }
@@ -408,7 +428,7 @@ task createWinExeDist(type: Exec, dependsOn: createWinDist) {
     commandLine(makensisCommand, "-O${buildDir}/tmp/nsis-build.log",
                 "${buildDir}/IGV-WinExe-dist/installer.nsi")
     doLast {
-        if (makensisCommand.equals("")) {
+        if (makensisCommand == "") {
             throw new GradleException("Required property not set: makensisCommand");
         }
     }
