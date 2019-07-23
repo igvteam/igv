@@ -140,7 +140,11 @@ public class HttpUtils {
         if (urlString.startsWith("gs://")) {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
         } else if (urlString.startsWith("s3://")) {
-            urlString = AmazonUtils.translateAmazonCloudURL(urlString);
+            try {
+                urlString = AmazonUtils.translateAmazonCloudURL(urlString);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         if (GoogleUtils.isGoogleCloud(urlString)) {

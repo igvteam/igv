@@ -120,10 +120,9 @@ public class TrackLoader {
         if (GoogleUtils.isGoogleDrive(path) || GoogleUtils.isGoogleCloud(path)) {
             GoogleUtils.checkLogin();
         }
-        // Check if the AWS credentials are still valid. If not, re-login and renew pre-signed urls
+//        // Check if the AWS credentials are still valid. If not, re-login and renew pre-signed urls
         if (AmazonUtils.isAwsS3Path(path)) {
             AmazonUtils.checkLogin();
-            AmazonUtils.checkResourcePath(locator);
         }
 
         log.info("Loading resource, path " + path);
@@ -233,7 +232,7 @@ public class TrackLoader {
                     tp = new TrackProperties();
                     ParsingUtils.parseTrackLine(trackLine, tp);
                 }
-
+                // XXX: Map back from presigned URL to S3 url
                 for (Track track : newTracks) {
                     if (locator.getFeatureInfoURL() != null) {
                         track.setUrl(locator.getFeatureInfoURL());

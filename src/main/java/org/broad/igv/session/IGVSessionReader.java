@@ -915,24 +915,6 @@ public class IGVSessionReader implements SessionReader {
 
         List<Track> matchedTracks = allTracks.get(id);
 
-        // Plug in pre-signed URL check:
-        // When renewing pre-signed URLs the track ID does no longer match the value of the session file (due to updated session tokens, expiration time, etc)
-        // We try to find a match between the tracks loaded via the updated pre-singed URLs of the ResourceLocator and the out-dated ID retrieved from the session file
-        // For that we strip the URLs (ResourceLocator path and session track ID) of all parameters and then compare the resulting base URLs
-        // We should only apply this kind of fuzzy comparison to AWS S3 pre-signed URLs, as it will probably not apply to other scenarios
-        // Therefore we check that the ID/URL conforms to AWS URL patterns (e.g. amazonaws.com domain, .s3. in the path, https protocol, perhaps URL attributes, etc)
-        if (matchedTracks == null) {
-            if (AmazonUtils.isAwsS3Path(id)) {
-                String cleanedId = id.substring(0, id.indexOf('?'));
-                for (String idKey : allTracks.keySet()) {
-                    if (idKey.startsWith(cleanedId)) {
-                        matchedTracks = allTracks.get(idKey);
-                    }
-                }
-            }
-        }
-
-
         if (matchedTracks == null) {
             //Try creating an "absolute" path for the id
             if (id != null) {

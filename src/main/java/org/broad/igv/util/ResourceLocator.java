@@ -339,11 +339,12 @@ public class ResourceLocator {
 
     public void setPath(String path) {
         if (path != null && path.startsWith("file://")) {
-            this.path = path.substring(7);
+            this.path = path.substring("file://".length());
         } else if (path != null && path.startsWith("gs://")) {
             this.path = GoogleUtils.translateGoogleCloudURL(path);
         } else if (path != null && path.startsWith("s3://")) {
-            this.path = AmazonUtils.translateAmazonCloudURL(path);
+            //this.path = AmazonUtils.translateAmazonCloudURL(path);
+            this.path = path;
 
             // Set UI human-readable short name for the file
             String objFname = "";
@@ -358,7 +359,7 @@ public class ResourceLocator {
 
             String s3UrlIndexPath = detectIndexPath(path);
 
-            this.setIndexPath(AmazonUtils.translateAmazonCloudURL(s3UrlIndexPath));
+            this.setIndexPath(s3UrlIndexPath);
 
         } else {
             this.path = path;

@@ -8,12 +8,11 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.ui.util.MessageUtils;
-import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.*;
+import software.amazon.awssdk.core.SdkField;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
+import software.amazon.awssdk.core.io.SdkFilterInputStream;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClient;
 import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClientBuilder;
@@ -32,6 +31,8 @@ public class AmazonUtils {
     private static Logger log = Logger.getLogger(AmazonUtils.class);
 
     // AWS specific objects
+    // XXX: Centralized
+    // private static CredsProvider;
     private static S3Client s3Client;
     private static CognitoIdentityClient cognitoIdentityClient;
     private static Region AWSREGION = Region.of(GetCognitoConfig().get("aws_region").getAsString());
@@ -76,16 +77,17 @@ public class AmazonUtils {
         // https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/cognitoidentity/CognitoIdentityClient.html
         // Build the Cognito client
         CognitoIdentityClientBuilder cognitoIdentityBuilder = CognitoIdentityClient.builder();
+
         // Avoid "software.amazon.awssdk.core.exception.SdkClientException: Unable to load credentials from any of the providers in the chain AwsCredentialsProviderChain("
         // https://stackoverflow.com/questions/36604024/sts-saml-and-java-sdk-unable-to-load-aws-credentials-from-any-provider-in-the-c
         cognitoIdentityBuilder.region(AWSREGION).credentialsProvider(AnonymousCredentialsProvider.create());
         cognitoIdentityClient = cognitoIdentityBuilder.build();
 
+
         // "To provide end-user credentials, first make an unsigned call to GetId."
         GetIdRequest.Builder idrequest = GetIdRequest.builder().identityPoolId(federatedPoolId)
                                                                .logins(logins);
         GetIdResponse idResult = cognitoIdentityClient.getId(idrequest.build());
-        idResult.identityId();
 
         // "Next, make an unsigned call to GetCredentialsForIdentity."
         GetCredentialsForIdentityRequest.Builder authedIds = GetCredentialsForIdentityRequest.builder();
@@ -122,9 +124,11 @@ public class AmazonUtils {
 
         try {
             OAuthUtils.getInstance().getAccessToken();
+            updateS3Client(GetCognitoAWSCredentials());
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
         ListBucketsResponse listBucketsResponse = s3Client.listBuckets(listBucketsRequest);
         // XXX: Filter out buckets that I do not have permissions for
@@ -145,11 +149,14 @@ public class AmazonUtils {
     public static ArrayList<IGVS3Object> ListBucketObjects(String bucketName, String prefix) {
         ArrayList<IGVS3Object> objects = new ArrayList<>();
         log.debug("Listing objects for bucketName: "+ bucketName);
+
         try {
             OAuthUtils.getInstance().getAccessToken();
+            updateS3Client(GetCognitoAWSCredentials());
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         try {
             // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
             // """
@@ -198,54 +205,6 @@ public class AmazonUtils {
         return objects;
     }
 
-
-//    /**
-//     * Generates a so-called "pre-signed" URLs (https://docs.aws.amazon.com/AmazonS3/latest/dev/ShareObjectPreSignedURLJavaSDK.html)
-//     * such as:
-//     *
-//     * s3://igv-bam-test/NA12878.bam
-//     * https://s3-<REGION>.amazonaws.com/igv-bam-test/NA12878.bam
-//     *
-//     * @param s3UrlString
-//     * @return Presigned url
-//     */
-
-//    public static String translateAmazonCloudURL(String S3urlString) {
-//        Tuple<String, String> bandk = bucketAndKey(S3urlString);
-//        String bucketName = bandk.a;
-//        String objectKey = bandk.b;
-//
-//        log.debug("Generating pre-signed URL for: "+ bandk.a + "/" + bandk.b);
-//
-//        GeneratePresignedUrlRequest generatePresignedUrlRequest =
-//                new GeneratePresignedUrlRequest(bucketName, objectKey)
-//                        .withMethod(HttpMethod.GET)
-//                        .withExpiration(OAuthUtils.getExpirationDate());
-//
-//        return s3Client.generatePresignedUrl(generatePresignedUrlRequest).toString();
-//    }
-
-
-//    public String translateAmazonCloudURL(String s3UrlString) {
-//        // XXX: This is just a workaround needed for AWS JAVA SDK v2 since it does not support presigned URLs
-//        //      at the time of writing this, based on this Kotlin code:
-//        //      https://github.com/aws/aws-sdk-java-v2/issues/868
-//        Aws4PresignerParams params = Aws4PresignerParams.builder()
-//                .expirationTime(OAuthUtils.getExpirationDate().toInstant())
-//                .awsCredentials(CREDENTIALS)
-//                .signingName("s3")
-//                .signingRegion(AWSREGION)
-//                .build();
-//        SdkHttpClient request = SdkHttpFullRequest
-//                .encodedPath(s3UrlString.replace("s3:/", ""))
-//                .host("s3."+AWSREGION+".amazonaws.com")
-//                .method("GET")
-//                .protocol("https")
-//                .build();
-//        SdkHttpFullRequest result = AwsS3V4Signer.create().presign(request, params);
-//        return result.getUri().toString();
-//    }
-
     public static Tuple<String, String> bucketAndKey(String S3urlString) {
         AmazonS3URI s3URI = new AmazonS3URI(S3urlString);
         String bucket = s3URI.getBucket();
@@ -255,11 +214,15 @@ public class AmazonUtils {
         return new Tuple(bucket, key);
     }
 
-    public static String translateAmazonCloudURL(String s3UrlString) {
+    // Amazon S3 Presign URLs
+    public static String translateAmazonCloudURL(String s3UrlString) throws IOException {
+        // Make sure access token are valid (refreshes token internally)
+        OAuthUtils.getInstance().getAccessToken();
+
         Credentials credentials = GetCognitoAWSCredentials();
         AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
-                credentials.secretKey(),
-                credentials.sessionToken());
+                                                                   credentials.secretKey(),
+                                                                   credentials.sessionToken());
         StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
 
         S3Presigner s3Presigner = S3Presigner.builder()
@@ -277,10 +240,9 @@ public class AmazonUtils {
         return presigned.toString();
     }
 
-
     public static Boolean isAwsS3Path(String path) {
         // TODO: perhaps add some more checks
-        return (path.contains("s3") && path.contains("amazonaws.com"));
+        return (path.startsWith("s3://"));
     }
 
     public static void checkLogin() {
@@ -292,32 +254,5 @@ public class AmazonUtils {
             MessageUtils.showErrorMessage("Error initializing OAuth", e);
             log.error("Error initializing OAuth", e);
         }
-    }
-
-    public static void checkResourcePath(ResourceLocator locator) {
-        // TODO: FLO: should check if the pre-signed URL is valid, before renewing it and updating the ResourceLocator
-        // TODO: FLO: split in two methods: one for validity check and one for URL renewal
-        // TODO: FLO: perhaps the first part is not needed if we keep the URLs always fresh/valid
-        // TODO: FLO: needs combination with Track ID matcher to make sure ResourceLocator path == track ID
-        // TODO: FLO: could also be optimised
-        String oldPath = locator.path;
-        log.debug("Renewing pre-signed URL: " + oldPath);
-        String simplePath = oldPath.substring(0, oldPath.indexOf('?'));
-        simplePath = simplePath.replaceFirst("https", "s3");
-        simplePath = simplePath.replaceAll("//(.+)[.]s3[.][^/]+", "//$1");
-
-        String newPath = translateAmazonCloudURL(simplePath);
-        log.debug("New pre-signed URL: " + newPath);
-        locator.path = newPath;
-
-
-        String oldIndexPath = locator.indexPath;
-        String simpleIndexPath = oldIndexPath.substring(0, oldIndexPath.indexOf('?'));
-        simpleIndexPath = simpleIndexPath.replaceFirst("https", "s3");
-        simpleIndexPath = simpleIndexPath.replaceAll("//(.+)[.]s3[.][^/]+", "//$1");
-
-        String newIndexPath = translateAmazonCloudURL(simpleIndexPath);
-        locator.indexPath = newIndexPath;
-
     }
 }
