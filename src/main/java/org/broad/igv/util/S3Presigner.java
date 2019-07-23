@@ -176,8 +176,6 @@ public class S3Presigner {
 			// remove all headers because a Browser that downloads the shared URL will not send the exact values. X-Amz-SignedHeaders should only contain the host header.
 			SdkHttpFullRequest modifiedSdkRequest = (SdkHttpFullRequest) context.httpRequest().toBuilder().clearHeaders().build();
 
-			System.out.println("FLOOOOOO"+Instant.ofEpochSecond(0));
-			System.out.println("FLAAAAAA"+expirationTime);
 
 			executionAttributes.putAttribute(AwsSignerExecutionAttribute.AWS_CREDENTIALS, awsCredentialsProvider.resolveCredentials());
 			executionAttributes.putAttribute(AwsSignerExecutionAttribute.PRESIGNER_EXPIRATION, Instant.ofEpochSecond(System.currentTimeMillis()/1000).plus(expirationTime));
