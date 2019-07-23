@@ -865,7 +865,6 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        // TODO: FLO: Possibly recreate that mechanism to update track IDs whenever a ResourceLocators pre-signed URL changes (due to renewed AWS credentials)
         TrackPanel panel = IGV.getInstance().getTrackPanel(panelName);
         panel.addTracks(panelTracks);
     }

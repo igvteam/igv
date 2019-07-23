@@ -343,7 +343,6 @@ public class ResourceLocator {
         } else if (path != null && path.startsWith("gs://")) {
             this.path = GoogleUtils.translateGoogleCloudURL(path);
         } else if (path != null && path.startsWith("s3://")) {
-            //this.path = AmazonUtils.translateAmazonCloudURL(path);
             this.path = path;
 
             // Set UI human-readable short name for the file
@@ -405,7 +404,7 @@ public class ResourceLocator {
         } else if (inputPath.contains(".vcf.gz")) {
             indexPath = inputPath + ".tbi";
         } else {
-            log.debug("S3 object filetype could not be determined from S3 url");
+            log.debug("S3 index object filetype could not be determined from S3 url");
         }
         return indexPath;
     }

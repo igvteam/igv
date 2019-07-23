@@ -113,6 +113,7 @@ public class OAuthUtils {
 
     private OAuthUtils() throws IOException {
         // XXX: Refactor/rethink this for multiple providers
+        // SECURITY: this is definitely a bad practice, we should NOT persist (refresh) tokens locally, ever.
         //restoreRefreshToken();
         fetchOauthProperties();
     }
@@ -322,7 +323,8 @@ public class OAuthUtils {
         }
 
         // Try to store in java.util.prefs
-        saveRefreshToken();
+        // SECURITY: @igvteam, this is definitely a bad practice, we should NOT persist (refresh) tokens locally, ever.
+        //saveRefreshToken();
     }
 
 
@@ -399,8 +401,7 @@ public class OAuthUtils {
     public String getAccessToken() {
 
         // Check expiration time, with 1 minute cushion
-//        if (accessToken == null || (System.currentTimeMillis() > (expirationTime - 60 * 1000))) {
-        if (accessToken == null || true) {
+        if (accessToken == null || (System.currentTimeMillis() > (expirationTime - 60 * 1000))) {
             if (refreshToken != null) {
                 try {
                     this.refreshAccessToken();
@@ -501,7 +502,8 @@ public class OAuthUtils {
     public void updateSaveOption(boolean aBoolean) {
         if (aBoolean) {
             if (refreshToken != null) {
-                saveRefreshToken();
+                // SECURITY: this is definitely a bad practice, we should NOT persist (refresh) tokens locally, ever.
+                //saveRefreshToken();
             }
         } else {
             removeRefreshToken();

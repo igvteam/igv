@@ -9,15 +9,12 @@ import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import software.amazon.awssdk.auth.credentials.*;
-import software.amazon.awssdk.core.SdkField;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
-import software.amazon.awssdk.core.io.SdkFilterInputStream;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClient;
 import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClientBuilder;
 import software.amazon.awssdk.services.cognitoidentity.model.*;
-import software.amazon.awssdk.services.s3.S3BaseClientBuilder;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
@@ -31,8 +28,6 @@ public class AmazonUtils {
     private static Logger log = Logger.getLogger(AmazonUtils.class);
 
     // AWS specific objects
-    // XXX: Centralized
-    // private static CredsProvider;
     private static S3Client s3Client;
     private static CognitoIdentityClient cognitoIdentityClient;
     private static Region AWSREGION = Region.of(GetCognitoConfig().get("aws_region").getAsString());
@@ -79,6 +74,7 @@ public class AmazonUtils {
         CognitoIdentityClientBuilder cognitoIdentityBuilder = CognitoIdentityClient.builder();
 
         // Avoid "software.amazon.awssdk.core.exception.SdkClientException: Unable to load credentials from any of the providers in the chain AwsCredentialsProviderChain("
+        // The use of the AnonymousCredentialsProvider essentially bypasses the provider chain's requirement to access ~/.aws/credentials.
         // https://stackoverflow.com/questions/36604024/sts-saml-and-java-sdk-unable-to-load-aws-credentials-from-any-provider-in-the-c
         cognitoIdentityBuilder.region(AWSREGION).credentialsProvider(AnonymousCredentialsProvider.create());
         cognitoIdentityClient = cognitoIdentityBuilder.build();
