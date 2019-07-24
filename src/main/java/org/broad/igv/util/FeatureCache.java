@@ -48,7 +48,6 @@ public class FeatureCache<T extends Locatable> {
 
         features.sort(getPositionComparator());
 
-
         for (T f : features) {
 
             final String chr = f.getContig();
@@ -101,6 +100,11 @@ public class FeatureCache<T extends Locatable> {
                 }
             }
         }
+
+        IntervalTree<List<T>> tree = featureMap.get(lastChr);
+        tree.insert(new Interval(currentMin, currentMax, currentFeatureList));
+
+
     }
 
     private  Comparator<T> getPositionComparator() {

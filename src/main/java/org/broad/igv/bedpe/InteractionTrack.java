@@ -41,6 +41,7 @@ public class InteractionTrack extends AbstractTrack {
     protected static Color axisLineColor = new Color(255, 180, 180);
     private JCheckBoxMenuItem autoscaleCB;
     private JMenuItem maxScoreItem;
+    private List<BedPE> wgFeatures;
 
 
     enum Direction {UP, DOWN}
@@ -101,6 +102,15 @@ public class InteractionTrack extends AbstractTrack {
         } else {
             direction = UP;
         }
+
+        String blockString = PreferencesManager.getPreferences().get(Constants.ARC_BLOCKS);
+        if (blockString != null) {
+            try {
+                showBlocks = Boolean.valueOf(blockString);
+            } catch (IllegalArgumentException e) {
+                log.error("Illegal arc blocks option: " + blockString, e);
+            }
+        }
     }
 
     private void init(List<BedPEFeature> featureList, Genome genome) {
@@ -116,9 +126,11 @@ public class InteractionTrack extends AbstractTrack {
                 newList.add(new BedPEInterFeature(f, 2));
             }
         }
-        newList.addAll(createWGFeatures(featureList, genome));
 
         featureCache = new FeatureCache<>(newList, 50);
+
+        wgFeatures = createWGFeatures(featureList, genome);
+
 
     }
 
@@ -160,7 +172,11 @@ public class InteractionTrack extends AbstractTrack {
 
     private List<BedPE> getFeaturesOverlapping(String chr, double start, double end) {
 
-        return featureCache.getFeatures(chr, (int) start, (int) end);
+        if(chr.equals(Globals.CHR_ALL)) {
+            return wgFeatures;
+        } else {
+            return featureCache.getFeatures(chr, (int) start, (int) end);
+        }
     }
 
     @Override
@@ -281,6 +297,7 @@ public class InteractionTrack extends AbstractTrack {
         showBlocksCB.setSelected(showBlocks);
         showBlocksCB.addActionListener(e -> {
             showBlocks = showBlocksCB.isSelected();
+            PreferencesManager.getPreferences().put(Constants.ARC_BLOCKS, String.valueOf(showBlocksCB.isSelected()));
             refresh();
         });
         menu.add(showBlocksCB);

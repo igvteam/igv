@@ -42,28 +42,28 @@ public class BedPEParser {
         boolean firstLine = true;
         while ((nextLine = br.readLine()) != null) {
 
-//            if (nextLine.startsWith("#columns")) {
-//                // An IGV hack, not sure anyone is using this
-//                try {
-//                    String[] t1 = ParsingUtils.WHITESPACE_PATTERN.split(nextLine);
-//                    if (t1.length == 2) {
-//                        String[] t2 = ParsingUtils.SEMI_COLON_PATTERN.split(t1[1]);
-//                        for (String keyValue : t2) {
-//                            String[] t = keyValue.split("=");
-//                            if (t[0].equals("color")) {
-//                                colorColumn = Integer.parseInt(t[1]) - 1;
-//                            } else if (t[0].equals("thickness")) {
-//                                thicknessColumn = Integer.parseInt(t[1]) - 1;
-//                            }
-//                        }
-//                    }
-//                } catch (NumberFormatException e) {
-//                    log.error("Error parsing #column line.", e);
-//                }
-//            } else
-            if (nextLine.trim().equals("#chrom1\tstart1\tstop1\tchrom2\tstart2\tstop2\tname\tqual\tstrand1\tstrand2\tfilters\tinfo")) {
+            if (nextLine.startsWith("#columns")) {
+                // An IGV hack, not sure anyone is using this
+                try {
+                    String[] t1 = ParsingUtils.WHITESPACE_PATTERN.split(nextLine);
+                    if (t1.length == 2) {
+                        String[] t2 = ParsingUtils.SEMI_COLON_PATTERN.split(t1[1]);
+                        for (String keyValue : t2) {
+                            String[] t = keyValue.split("=");
+                            if (t[0].equals("color")) {
+                                colorColumn = Integer.parseInt(t[1]) - 1;
+                            } else if (t[0].equals("thickness")) {
+                                thicknessColumn = Integer.parseInt(t[1]) - 1;
+                            }
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    log.error("Error parsing #column line.", e);
+                }
+            } else if (nextLine.trim().equals("#chrom1\tstart1\tstop1\tchrom2\tstart2\tstop2\tname\tqual\tstrand1\tstrand2\tfilters\tinfo")) {
                 type = DatasetType.TENX;
             }
+
             if (nextLine.startsWith("#") || nextLine.startsWith("chr1\tx1\tx2")) {
 
                 String[] tokens = Globals.tabPattern.split(nextLine);
@@ -171,6 +171,7 @@ public class BedPEParser {
         if (col7isNumeric) {
             for (BedPEFeature f : features) {
                 f.score = Double.parseDouble(f.name);
+                f.scoreString = f.name;
                 f.name = null;
             }
             if (type == DatasetType.UNKNOWN) {
