@@ -53,12 +53,12 @@ public class BedPEFeature implements BedPE {
         return Math.max(end1, end2);
     }
 
-    public int getMidStart() {
-        return Math.min ((start1 + end1) / 2, (start2 + end2) / 2);
+    public double getMidStart() {
+        return Math.min ((start1 + end1) / 2.0, (start2 + end2) / 2.0);
     }
 
-    public int getMidEnd() {
-        return Math.max ((start1 + end1) / 2, (start2 + end2) / 2);
+    public double getMidEnd() {
+        return Math.max ((start1 + end1) / 2.0, (start2 + end2) / 2.0);
     }
 
     @Override
