@@ -18,11 +18,18 @@ import software.amazon.awssdk.services.cognitoidentity.model.*;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
+import software.amazon.awssdk.utils.http.SdkHttpUtils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 public class AmazonUtils {
     private static Logger log = Logger.getLogger(AmazonUtils.class);
@@ -232,7 +239,7 @@ public class AmazonUtils {
         String filename = bandk.b;
 
         URI presigned = s3Presigner.presignS3DownloadLink(bucket, filename);
-        log.debug("AWS presigned URL from translateAmazonCloudURL is: "+presigned);
+        log.info("AWS presigned URL from translateAmazonCloudURL is: "+presigned);
         return presigned.toString();
     }
 
@@ -250,5 +257,42 @@ public class AmazonUtils {
             MessageUtils.showErrorMessage("Error initializing OAuth", e);
             log.error("Error initializing OAuth", e);
         }
+    }
+
+
+    public static boolean isS3ReadRequired(ResourceLocator locator) throws MalformedURLException {
+        String aPath = locator.getPath();
+        boolean s3ReadReq = false;
+
+        if(isAwsS3Path(aPath)){
+            if (signedURLValid(new URL(aPath))) {
+                s3ReadReq = true;
+            }
+        }
+
+        return s3ReadReq;
+    }
+
+    /**
+    * Checks whether a (pre)signed url is still accessible or it has expired, based on
+    * current system time. No request/head required to the presigned object since we have all information
+    * available on the AWS URL parameters, i.e:
+    *
+    * X-Amz-Expires=12 (in seconds)
+    * X-Amz-Date=20190725T045535Z
+    *
+    **/
+    public static boolean signedURLValid(URL url){
+        Duration presignedTime = signedURLValidity(url);
+
+        return System.currentTimeMillis() * 60 * 1000 < presignedTime.toMillis(); // seconds
+    }
+
+    public static Duration signedURLValidity(URL url){
+        //XXX: Which Java date parsing stuff is best/safer in 2019? https://www.baeldung.com/java-string-to-date
+        Map<String, String> params = StringUtils.getQueryMap(url.toString());
+        Duration amzExpires = new Duration.ofSeconds(Duration.parse(params.get("X-Amz-Date"))).plusSeconds(Long.parseLong(params.get("X-Amz-Expires")));
+        log.debug("The date of expiration is "+amzExpires+" for url: "+url.toString());
+        return amzExpires;
     }
 }

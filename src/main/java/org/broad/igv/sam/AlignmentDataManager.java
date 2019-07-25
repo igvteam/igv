@@ -41,6 +41,7 @@ import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.IntArrayList;
 
@@ -73,7 +74,13 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
-        reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
+        // XXX: Explain better why we need this to happen exactly here, i.e, elaborate on:
+        // XXX: 1. Why S3 Select is not an option.
+        // XXX: 2. How using (pre)-signed URLs is beneficial in terms of IGV (http classes) code reuse and security.
+        // XXX: 3. Just caching, limiting outbound requests if presigned url is valid, does not slow down the regular reads.
+        // The time-gated limit for an AWS signed URL has expired, we need to re-sign the URL with the newly acquired
+        // access token, otherwise we will face an Access Denied error.
+        reader = AmazonUtils.isS3ReadRequired(locator) ? new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)) : reader;
         peStats = new HashMap();
         initLoadOptions();
         initChrMap(genome);
@@ -122,7 +129,9 @@ public class AlignmentDataManager implements IGVEventObserver {
             // Build a chr size -> name lookup table.   We will assume sizes are unique.  This will be used if no alias
             // is defined for a sequence.
             Map<Long, String> inverseDict = null;
-            Map<String, Long> sequenceDictionary = reader.getSequenceDictionary();
+            //Map<String, Long> sequenceDictionary = reader.getSequenceDictionary();
+            // XXX:
+            Map<String, Long> sequenceDictionary = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)).getSequenceDictionary();
 
             if (sequenceDictionary != null) {
 
@@ -154,7 +163,7 @@ public class AlignmentDataManager implements IGVEventObserver {
             }
 
 
-            List<String> seqNames = reader.getSequenceNames();
+            List<String> seqNames = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)).getSequenceNames();
             if (seqNames != null) {
                 for (String seq : seqNames) {
 
@@ -178,7 +187,12 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public AlignmentTileLoader getReader() {
-        return reader;
+        try {
+            return new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public ResourceLocator getLocator() {
@@ -190,15 +204,30 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public boolean isPairedEnd() {
-        return reader.isPairedEnd();
+        try {
+            return new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)).isPairedEnd();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean hasYCTags() {
-        return reader.hasYCTags();
+        try {
+            return new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)).hasYCTags();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean hasIndex() {
-        return reader.hasIndex();
+        try {
+            return new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)).hasIndex();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public void setInferredExperimentType(AlignmentTrack.ExperimentType inferredExperimentType) {
@@ -231,12 +260,12 @@ public class AlignmentDataManager implements IGVEventObserver {
      * @return
      */
     public List<String> getSequenceNames() throws IOException {
-        return reader.getSequenceNames();
+        return new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)).getSequenceNames();
     }
 
-    public Map<String, Long> getSequenceDictionary() {
-        return reader.getSequenceDictionary();
-    }
+//    public Map<String, Long> getSequenceDictionary() {
+//        return reader.getSequenceDictionary();
+//    }
 
 
     public AlignmentInterval getLoadedInterval(ReferenceFrame frame) {
@@ -402,8 +431,13 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         ReadStats readStats = new ReadStats();
 
-        AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, spliceJunctionHelper,
-                downsampleOptions, readStats, peStats, bisulfiteContext);
+        AlignmentTileLoader.AlignmentTile t = null;
+        try {
+            t = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)).loadTile(sequence, start, end, spliceJunctionHelper,
+                    downsampleOptions, readStats, peStats, bisulfiteContext);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 //
         if (inferredExperimentType == null) {
             readStats.compute();
@@ -514,9 +548,9 @@ public class AlignmentDataManager implements IGVEventObserver {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        if (reader != null) {
+        if (new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)) != null) {
             try {
-                reader.close();
+                new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)).close();
             } catch (IOException ex) {
                 log.error("Error closing AlignmentQueryReader. ", ex);
             }
@@ -548,16 +582,26 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public boolean isTenX() {
-        return reader.isTenX();
+        try {
+            return new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)).isTenX();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean isPhased() {
-        return reader.isPhased();
+        try {
+            return new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator)).isPhased();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
-    public boolean isMoleculo() {
-        return reader.isMoleculo();
-    }
+//    public boolean isMoleculo() {
+//        return reader.isMoleculo();
+//    }
 
     public Collection<AlignmentInterval> getLoadedIntervals() {
         return intervalCache;

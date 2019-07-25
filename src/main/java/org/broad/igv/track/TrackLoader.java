@@ -232,7 +232,6 @@ public class TrackLoader {
                     tp = new TrackProperties();
                     ParsingUtils.parseTrackLine(trackLine, tp);
                 }
-                // XXX: Map back from presigned URL to S3 url
                 for (Track track : newTracks) {
                     if (locator.getFeatureInfoURL() != null) {
                         track.setUrl(locator.getFeatureInfoURL());
