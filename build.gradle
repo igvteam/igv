@@ -32,7 +32,7 @@ import proguard.gradle.ProGuardTask
 mainClassName = 'org.broad.igv.ui.Main'
 ext.moduleName = 'org.igv'
 
-// Set up the ProGuard optimizing task
+// Build sourceset for ProGuard
 buildscript {
     repositories {
         mavenCentral()
@@ -108,7 +108,7 @@ configurations {
         exclude group: 'software.amazon.awssdk', module: 'annotations'
 
         // Exclude very old htsjdk from Goby while we wait for https://github.com/igvteam/igv/issues/646
-        // ... then we can uncomment the htsjdk below when a Maven artifact is published
+        // ... then we can comment the htsjdk below when a Maven artifact is published
         exclude group: 'com.github.samtools', module: 'htsjdk'
     }
 }
@@ -124,8 +124,8 @@ dependencies {
         //[group: 'com.github.samtools', name: 'htsjdk', version: '2.19.0'],
         // holding upstream htsjdk back from Maven for this @igvteam jar hack: https://github.com/igvteam/igv/issues/646
         [group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.11.0'],
-        //[group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'],
-        //[group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'],
+        [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'],
+        [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'],
         [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
         [group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],
         [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],
@@ -187,7 +187,7 @@ compileJava {
 task fullJar(type: Jar, dependsOn: jar) {
     // Based on https://discuss.gradle.org/t/removing-dependencies-from-a-jar-file-during-jar-task/5521/3
     from {
-        ((configurations.compile - configurations.jarsForClasspath) + "${buildDir}/libs/igv.jar").collect {
+        ((configurations.compile - configurations.jarsForClasspath) + "${buildDir}/libs/igv-user.jar").collect {
             zipTree(it)
         }
     } {
@@ -244,8 +244,12 @@ task fullJar(type: Jar, dependsOn: jar) {
 task myproguard(type: ProGuardTask) {
 //    configuration 'proguard.txt'
 
-    injars "${buildDir}/libs/igv.jar"
-    outjars "${buildDir}/libs/igv-OPT.jar"
+    injars "${buildDir}/libs/igv-.jar"
+    injars "${buildDir}/deplibs/*.jar"
+    outjars "${buildDir}/libs/igv-proguard.jar"
+
+    //libraryjars "lib", jarfilter:"lib/**.jar"
+    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
 }
 
 
@@ -298,17 +302,12 @@ task copyToLib(type: Copy, dependsOn: jar) {
     from configurations.default
     into "${buildDir}/deplibs"
 }
-
+//task createDist(type: Copy, dependsOn: fullJar)  {
 task createDist(type: Copy, dependsOn: copyToLib)  {
     from ("web/IGV_64.png")
-    from ('scripts/java11') {
+    from ("scripts/java11") {
         include '*.bat'
         include '*.sh'
-
-//task createDist(type: Copy, dependsOn: fullJar)  {
-//    from ("scripts") {
-//        include 'igv.bat'
-//        include 'igv_32.bat'
         include 'igv.command'
         include 'igv.args'
         include 'readme.txt'

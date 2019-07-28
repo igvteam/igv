@@ -176,23 +176,24 @@ public class StringUtils {
     }
 
     /**
-     * Return query parameters on a map
+     * Return query parameters on a map, borrowed from:
+     * https://stackoverflow.com/questions/13592236/parse-a-uri-string-into-name-value-collection
      *
-     * @param query
+     *
+     * @param url
      * @return parameters
      */
 
-    public static Map<String, String> getQueryMap(String query)
-    {
-        String[] params = query.split("&");
-        Map<String, String> map = new HashMap<String, String>();
-        for (String param : params)
-        {
-            String name = param.split("=")[0];
-            String value = param.split("=")[1];
-            map.put(name, value);
+    // Striking that the Java URL base class or related utils do not handle this sort of util/helper method.
+    public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+        Map<String, String> query_pairs = new LinkedHashMap<>();
+        String query = url.getQuery();
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
         }
-        return map;
+        return query_pairs;
     }
 
     /**

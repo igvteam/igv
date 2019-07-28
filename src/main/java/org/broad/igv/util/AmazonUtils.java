@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import htsjdk.samtools.util.Tuple;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
+import org.broad.igv.Globals;
 import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -21,15 +22,15 @@ import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 import software.amazon.awssdk.utils.http.SdkHttpUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class AmazonUtils {
     private static Logger log = Logger.getLogger(AmazonUtils.class);
@@ -38,6 +39,7 @@ public class AmazonUtils {
     private static S3Client s3Client;
     private static CognitoIdentityClient cognitoIdentityClient;
     private static Region AWSREGION = Region.of(GetCognitoConfig().get("aws_region").getAsString());
+    private static Map<String, String> locatorTos3PresignedMap = new HashMap<>();
 
     public static JsonObject GetCognitoConfig() {
         try {
@@ -218,29 +220,49 @@ public class AmazonUtils {
     }
 
     // Amazon S3 Presign URLs
-    public static String translateAmazonCloudURL(String s3UrlString) throws IOException {
+    // Also keeps an internal mapping between ResourceLocator and active/valid signed URLs.
+
+    private static String createPresignedURL(String s3Path) throws IOException {
         // Make sure access token are valid (refreshes token internally)
         OAuthUtils.getInstance().getAccessToken();
 
         Credentials credentials = GetCognitoAWSCredentials();
         AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
-                                                                   credentials.secretKey(),
-                                                                   credentials.sessionToken());
+                credentials.secretKey(),
+                credentials.sessionToken());
         StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
 
         S3Presigner s3Presigner = S3Presigner.builder()
-                                             .expiration(OAuthUtils.getExpirationTime())
-                                             .awsCredentials(awsCredsProvider)
-                                             .region(AWSREGION)
-                                             .build();
+                .expiration(OAuthUtils.getExpirationTime())
+                .awsCredentials(awsCredsProvider)
+                .region(AWSREGION)
+                .build();
 
-        Tuple<String, String> bandk = bucketAndKey(s3UrlString);
+        Tuple<String, String> bandk = bucketAndKey(s3Path);
         String bucket = bandk.a;
         String filename = bandk.b;
 
         URI presigned = s3Presigner.presignS3DownloadLink(bucket, filename);
         log.info("AWS presigned URL from translateAmazonCloudURL is: "+presigned);
         return presigned.toString();
+    }
+
+    /**
+     *
+     * @param s3UrlString
+     * @return
+     * @throws IOException
+     */
+
+    public static String translateAmazonCloudURL(String s3UrlString) throws IOException {
+        String presignedUrl = locatorTos3PresignedMap.get(s3UrlString);
+
+        if (presignedUrl == null || !isPresignedURLValid(new URL(presignedUrl))) {
+            presignedUrl = createPresignedURL(s3UrlString);
+            locatorTos3PresignedMap.put(s3UrlString, presignedUrl);
+        }
+
+        return presignedUrl;
     }
 
     public static Boolean isAwsS3Path(String path) {
@@ -259,40 +281,50 @@ public class AmazonUtils {
         }
     }
 
+    public static boolean isS3PresignedValid(String url) throws MalformedURLException {
+        String s3Mapping = locatorTos3PresignedMap.get(url);
 
-    public static boolean isS3ReadRequired(ResourceLocator locator) throws MalformedURLException {
-        String aPath = locator.getPath();
-        boolean s3ReadReq = false;
-
-        if(isAwsS3Path(aPath)){
-            if (signedURLValid(new URL(aPath))) {
-                s3ReadReq = true;
-            }
-        }
-
-        return s3ReadReq;
+        return s3Mapping != null && isPresignedURLValid(new URL(s3Mapping));
     }
 
     /**
-    * Checks whether a (pre)signed url is still accessible or it has expired, based on
-    * current system time. No request/head required to the presigned object since we have all information
-    * available on the AWS URL parameters, i.e:
+    * Checks whether a (pre)signed url is still accessible or it has expired, offline.
+    * No extra request/head is required to the presigned object since we have all information
+    * available on the AWS URL parameters themselves, namely:
     *
     * X-Amz-Expires=12 (in seconds)
     * X-Amz-Date=20190725T045535Z
     *
     **/
-    public static boolean signedURLValid(URL url){
-        Duration presignedTime = signedURLValidity(url);
 
-        return System.currentTimeMillis() * 60 * 1000 < presignedTime.toMillis(); // seconds
+    private static boolean isPresignedURLValid(URL url){
+        boolean isValidSignedUrl;
+
+        try {
+            long presignedTime = signedURLValidity(url);
+            isValidSignedUrl = presignedTime - Globals.TOKEN_EXPIRE_GRACE_TIME > 0; // Duration in milliseconds
+        } catch (ParseException e) {
+            log.error("The AWS signed URL date parameter X-Amz-Date has incorrect formatting");
+            isValidSignedUrl = false;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            isValidSignedUrl = false;
+        }
+
+        return isValidSignedUrl;
     }
 
-    public static Duration signedURLValidity(URL url){
-        //XXX: Which Java date parsing stuff is best/safer in 2019? https://www.baeldung.com/java-string-to-date
-        Map<String, String> params = StringUtils.getQueryMap(url.toString());
-        Duration amzExpires = new Duration.ofSeconds(Duration.parse(params.get("X-Amz-Date"))).plusSeconds(Long.parseLong(params.get("X-Amz-Expires")));
-        log.debug("The date of expiration is "+amzExpires+" for url: "+url.toString());
-        return amzExpires;
+    private static long signedURLValidity(URL url) throws ParseException, UnsupportedEncodingException {
+        Map<String, String> params = StringUtils.splitQuery(url);
+        String amzDateStr = params.get("X-Amz-Date");
+        long amzExpires = Long.parseLong(params.get("X-Amz-Expires"));
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
+        Date amzDate = formatter.parse(amzDateStr);
+
+        long millisToExpiration = amzDate.getTime() + amzExpires * 1000;
+
+        log.debug("The date of expiration is "+amzDate+", expires after "+amzExpires+" seconds for url: "+url);
+        return millisToExpiration;
     }
 }

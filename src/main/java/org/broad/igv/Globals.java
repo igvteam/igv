@@ -63,6 +63,7 @@ public class Globals {
     private static boolean testing = false;
     public static int CONNECT_TIMEOUT = 20000;        // 20 seconds
     public static int READ_TIMEOUT = 1000 * 3 * 60;   // 3 minutes
+    public static int TOKEN_EXPIRE_GRACE_TIME = 1000 * 1 * 60; // 1 minute
 
     /**
      * Field description
