@@ -294,6 +294,8 @@ public class AmazonUtils {
     *
     * X-Amz-Expires=12 (in seconds)
     * X-Amz-Date=20190725T045535Z
+     *
+    * NOTE: X-Amz-Date is expressed in Zulu (military) time. The rest is on UTC, so we'll use UTC
     *
     **/
 
@@ -302,7 +304,7 @@ public class AmazonUtils {
 
         try {
             long presignedTime = signedURLValidity(url);
-            isValidSignedUrl = presignedTime - Globals.TOKEN_EXPIRE_GRACE_TIME > 0; // Duration in milliseconds
+            isValidSignedUrl = presignedTime - System.currentTimeMillis() - Globals.TOKEN_EXPIRE_GRACE_TIME > 0; // Duration in milliseconds
         } catch (ParseException e) {
             log.error("The AWS signed URL date parameter X-Amz-Date has incorrect formatting");
             isValidSignedUrl = false;
@@ -320,11 +322,12 @@ public class AmazonUtils {
         long amzExpires = Long.parseLong(params.get("X-Amz-Expires"));
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC")); // XXX: Hope that does the Zulu -> UTC conversion?
         Date amzDate = formatter.parse(amzDateStr);
 
-        long millisToExpiration = amzDate.getTime() + amzExpires * 1000;
+        long timeOfExpirationMillis = amzDate.getTime() + amzExpires * 1000;
 
         log.debug("The date of expiration is "+amzDate+", expires after "+amzExpires+" seconds for url: "+url);
-        return millisToExpiration;
+        return timeOfExpirationMillis;
     }
 }
