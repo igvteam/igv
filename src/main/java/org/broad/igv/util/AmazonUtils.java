@@ -322,7 +322,7 @@ public class AmazonUtils {
         long amzExpires = Long.parseLong(params.get("X-Amz-Expires"));
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
-        formatter.setTimeZone(TimeZone.getTimeZone("UTC")); // XXX: Hope that does the Zulu -> UTC conversion?
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC")); // Zulu -> UTC conversion
         Date amzDate = formatter.parse(amzDateStr);
 
         long timeOfExpirationMillis = amzDate.getTime() + amzExpires * 1000;
