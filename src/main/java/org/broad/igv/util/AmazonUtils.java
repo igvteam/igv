@@ -139,7 +139,15 @@ public class AmazonUtils {
         // XXX: Filter out buckets that I do not have permissions for
         listBucketsResponse.buckets().stream().forEach(x -> bucketsList.add(x.name()));
 
-        return bucketsList;
+        ArrayList<String> bucketsFinalList = new ArrayList<>();
+        for (String bucket : bucketsList) {
+            if (AmazonUtils.ListBucketObjects(bucket, "").size() > 0) {
+                bucketsFinalList.add(bucket);
+            }
+        }
+
+
+        return bucketsFinalList;
     }
 
     /**
@@ -197,14 +205,10 @@ public class AmazonUtils {
                 response.continuationToken();
             } while (response.isTruncated());
 
-        } catch(SdkServiceException e) {
+        } catch(SdkServiceException | SdkClientException e) {
             // The call was transmitted successfully, but Amazon S3 couldn't process
             // it, so it returned an error response.
-            e.printStackTrace();
-        } catch(SdkClientException e) {
-            // Amazon S3 couldn't be contacted for a response, or the client
-            // couldn't parse the response from Amazon S3.
-            e.printStackTrace();
+            log.debug("AccessDenied for ListBucket " + bucketName + " with prefix " + prefix);
         }
 
         return objects;
