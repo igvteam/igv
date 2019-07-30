@@ -31,6 +31,9 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class AmazonUtils {
     private static Logger log = Logger.getLogger(AmazonUtils.class);
@@ -131,7 +134,7 @@ public class AmazonUtils {
      * This method returns the details of the user and bucket lists.
      * @return bucket list
      */
-    public static ArrayList<String> ListBucketsForUser() {
+    public static List<String> ListBucketsForUser() {
         ArrayList<String> bucketsList = new ArrayList<>();
 
         try {
@@ -146,15 +149,35 @@ public class AmazonUtils {
         // XXX: Filter out buckets that I do not have permissions for
         listBucketsResponse.buckets().stream().forEach(x -> bucketsList.add(x.name()));
 
-        ArrayList<String> bucketsFinalList = new ArrayList<>();
-        for (String bucket : bucketsList) {
-            if (AmazonUtils.ListBucketObjects(bucket, "").size() > 0) {
-                bucketsFinalList.add(bucket);
-            }
-        }
-
+        List<String> bucketsFinalList = getReadableBUckets(bucketsList) ;
 
         return bucketsFinalList;
+    }
+
+    private static List<String> getReadableBUckets(List<String> buckets) {
+        List<CompletableFuture<String>> futures =
+                buckets.stream()
+                        .map(bucket -> {
+                            CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+                                if (AmazonUtils.ListBucketObjects(bucket, "").size() > 0) {
+                                    return bucket;
+                                }
+
+                                return null;
+                            });
+
+                            return future;
+                        })
+                        .collect(Collectors.toList());
+
+        List<String> result =
+                futures.stream()
+                        .map(CompletableFuture::join)
+                        .collect(Collectors.toList());
+
+        result.removeAll(Collections.singleton(null));
+
+        return result;
     }
 
     /**

@@ -43,6 +43,7 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.List;
 
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
@@ -64,7 +65,7 @@ public class S3LoadDialog extends JDialog {
         this.selectionTree.setModel(treeModel);
 
         // List toplevel buckets
-        ArrayList<String> buckets = AmazonUtils.ListBucketsForUser();
+        List<String> buckets = AmazonUtils.ListBucketsForUser();
         for (String bucket: buckets) {
             IGVS3Object bucket_obj = new IGVS3Object(bucket, true);
             root.add(new S3TreeNode(bucket_obj, true));
@@ -161,7 +162,6 @@ public class S3LoadDialog extends JDialog {
         selectedId = null;
         setVisible(false);
     }
-
 
     private void updateModel(DefaultMutableTreeNode parent) {
         DefaultTreeModel model = treeModel;

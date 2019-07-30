@@ -997,7 +997,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         final JMenuItem s3_object = new JMenuItem("Load from S3 bucket");
         s3_object.addActionListener(e -> {
-            ArrayList<String> buckets = AmazonUtils.ListBucketsForUser();
+            List<String> buckets = AmazonUtils.ListBucketsForUser();
             log.debug(buckets);
 
             UIUtilities.invokeOnEventThread(() -> {
