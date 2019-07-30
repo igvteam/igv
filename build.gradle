@@ -44,7 +44,7 @@ buildscript {
     }
 }
 
-buildDir = 'build'
+//buildDir = 'build'
 
 repositories {
     mavenCentral()
@@ -164,6 +164,7 @@ processResources {
 }
 
 jar {
+    archiveFileName = 'igv.jar'
     manifest {
         attributes(
             "Permissions": "all-permissions",
@@ -181,6 +182,194 @@ compileJava {
             '--module-path', classpath.asPath,
         ]
         classpath = files()
+    }
+}
+
+tasks.withType(Test) {
+    systemProperties = System.getProperties()
+    systemProperties['java.awt.headless'] = 'true'
+    systemProperties['make.fail'] = 'false'
+    systemProperties['include.longrunning'] = 'false'
+    systemProperties['ignore.ioexceptions'] = 'false'
+    maxHeapSize = '2g'
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+}
+
+compileTestJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs = [
+            '--module-path',  classpath.asPath,
+            '--add-modules', 'junit',
+            '--add-modules', 'fest.swing',
+            '--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath,
+        ]
+        classpath = files()
+    }
+}
+
+test {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        jvmArgs = [
+            '-Dcom.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize',
+            '--module-path',  classpath.asPath,
+            '--add-modules', 'junit',
+            '--add-modules', 'fest.swing',
+            '--add-modules', 'ALL-MODULE-PATH',
+            '--add-reads', "$moduleName=junit",
+            '--add-reads', "$moduleName=fest.swing",
+            '@scripts/java11/test_suite.args',
+            '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath,
+        ]
+        classpath = files()
+    }
+}
+
+// XXX: Perhaps not the standard Gradle way to ship this?
+//task copyToLib(type: Copy, dependsOn: jar) {
+//    from configurations.default
+//    into "${buildDir}/deplibs"
+//}
+//task createDist(type: Copy, dependsOn: copyToLib)  {
+task createDist(type: Copy, dependsOn: jar)  {
+    from ("web/IGV_64.png")
+    from ("scripts/java11") {
+        include '*.bat'
+        include '*.sh'
+        include 'igv.command'
+        include 'igv.args'
+        include 'readme.txt'
+        include 'igvtools*'
+    }
+    with copySpec {
+        from ("${buildDir}/libs")
+        from ("lib") { include '*.jar' }
+        into "lib"
+    }
+    with copySpec {
+        from ("${buildDir}/libs")
+        from ("lib") { include '*.jar' }
+        into "lib"
+    }
+    with copySpec { from ("genomes/sizes") { } into "lib/genomes" }
+
+    into "${buildDir}/IGV-dist"
+}
+
+task createDistZip(type: Zip, dependsOn: createDist) {
+    from("${buildDir}/IGV-dist")
+}
+
+task createLinuxDistZip(type: Zip, dependsOn: createDist) {
+    archiveAppendix = "Linux"
+    if (!jdkBundleLinux == "") {
+        with copySpec { from jdkBundleLinux into "jdk-11" }
+    }
+    from ("${buildDir}/IGV-dist") {
+        exclude "*.bat"
+        exclude "*.command"
+    }
+}
+
+task createMacDistZip(type: Zip, dependsOn: createDist) {
+    archiveAppendix = "Mac"
+
+    from ("${buildDir}/IGV-dist") {
+        exclude "*.bat"
+        exclude "*_hidpi*"
+        exclude "igvtools*"
+        exclude 'lib/genomes'
+    }
+}
+
+task createMacAppDist(type: Copy, dependsOn: createDist) {
+    if (!jdkBundleMac == "") {
+        with copySpec { from jdkBundleMac into "IGV_OSX_${version}.app/Contents/jdk-11" }
+    }
+    with copySpec {
+        from ("scripts/mac.app") {
+            exclude "Contents/Info.plist.template"
+            exclude "Contents/MacOS/JavaAppLauncher"
+        }
+        into "IGV_OSX_${version}.app"
+    }
+    with copySpec {
+        from ("scripts/java11/Info.plist.template")
+        filter (ReplaceTokens, tokens: [ VERSION: version ])
+        rename "Info.plist.template", "Info.plist"
+        into "IGV_OSX_${version}.app/Contents"
+    }
+    with copySpec {
+        from ("scripts/java11/IGV_mac.app.command")
+        rename "IGV_mac.app.command", "IGV"
+        into "IGV_OSX_${version}.app/Contents/MacOS"
+    }
+    with copySpec {
+        from ("web/IGV_64.png")
+        into "IGV_OSX_${version}.app/Contents/Resources"
+    }
+    with copySpec {
+        from ("${buildDir}/IGV-dist/") include 'igv.args'
+        into "IGV_OSX_${version}.app/Contents/Java/"
+    }
+    with copySpec {
+        from ("${buildDir}/IGV-dist/lib") include '*.jar'
+        into "IGV_OSX_${version}.app/Contents/Java/lib"
+    }
+    into "${buildDir}/IGV-MacApp-dist"
+
+    doLast {
+        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-MacApp-dist/IGV_OSX_${version}.app" ) }
+    }
+}
+
+
+task createWinDist(type: Copy, dependsOn: createDist) {
+    if (!jdkBundleWindows == "") {
+        with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-11" }
+    }
+    with copySpec {
+        from("${buildDir}/IGV-dist") {
+            exclude "*.sh"
+            exclude "*.command"
+            exclude "igvtools*"
+            exclude "igvtools_gui"
+            exclude "igvtools_gui_hidpi"
+            exclude 'lib/genomes'
+        }
+        from ("resources") { include "IGV_64.ico" }
+        into "IGV_${version}"
+    }
+
+    with copySpec {
+        // Create a build-specific NSIS installer script.
+        from ("scripts/nsis/installer.nsi")
+        filter (ReplaceTokens, tokens: [ VERSION: version ])
+    }
+    from ("scripts/nsis") { include "license_win.txt" }
+    into "${buildDir}/IGV-WinExe-dist"
+}
+
+task createWinExeDist(type: Exec, dependsOn: createWinDist) {
+    commandLine(makensisCommand, "-O${buildDir}/tmp/nsis-build.log",
+                "${buildDir}/IGV-WinExe-dist/installer.nsi")
+    doLast {
+        if (makensisCommand == "") {
+            throw new GradleException("Required property not set: makensisCommand");
+        }
+    }
+}
+
+task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
+    standardInput = new ByteArrayInputStream( keyPassword.getBytes() );
+    commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha1",
+                "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
+                "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-dist/IGV_Win_${version}-installer.exe")
+    doLast {
+        if (signcodeCommand == "") {
+            throw new GradleException("Required property not set: signcodeCommand");
+        }
     }
 }
 
@@ -205,6 +394,11 @@ task fullJar(type: Jar, dependsOn: jar) {
     }
 }
 
+//build.dependsOn createDistZip,createLinuxDistZip,createMacDistZip,createMacAppDistZip
+
+if (!makensisCommand == "" && !signcodeCommand == "") {
+    build.dependsOn signWinExeDist
+}
 
 //optimizeFullJar(type: proguard.gradle.ProGuardTask, dependsOn: fullJar) {
 //    // EXPERIMENTAL: Optimize the fullJar to remove unused classes.
@@ -250,203 +444,4 @@ task myproguard(type: ProGuardTask) {
 
     //libraryjars "lib", jarfilter:"lib/**.jar"
     libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
-}
-
-
-tasks.withType(Test) {
-    systemProperties = System.getProperties()
-    systemProperties['java.awt.headless'] = 'true'
-    systemProperties['make.fail'] = 'false'
-    systemProperties['include.longrunning'] = 'false'
-    systemProperties['ignore.ioexceptions'] = 'false'
-    maxHeapSize = '2g'
-    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
-    
-    
-    
-}
-
-compileTestJava {
-    inputs.property("moduleName", moduleName)
-    doFirst {
-        options.compilerArgs = [
-            '--module-path',  classpath.asPath, 
-            '--add-modules', 'junit',
-            '--add-modules', 'fest.swing',
-            '--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath, 
-        ]
-        classpath = files()
-    }
-}
-
-test {
-    inputs.property("moduleName", moduleName)
-    doFirst {
-        jvmArgs = [
-            '-Dcom.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize',
-            '--module-path',  classpath.asPath,
-            '--add-modules', 'junit',
-            '--add-modules', 'fest.swing',
-            '--add-modules', 'ALL-MODULE-PATH',
-            '--add-reads', "$moduleName=junit",
-            '--add-reads', "$moduleName=fest.swing",
-            '@scripts/java11/test_suite.args',
-            '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath,
-        ]
-        classpath = files()
-    }
-}
-
-// XXX: Perhaps not the standard Gradle way to ship this?
-task copyToLib(type: Copy, dependsOn: jar) {
-    from configurations.default
-    into "${buildDir}/deplibs"
-}
-//task createDist(type: Copy, dependsOn: fullJar)  {
-task createDist(type: Copy, dependsOn: copyToLib)  {
-    from ("web/IGV_64.png")
-    from ("scripts/java11") {
-        include '*.bat'
-        include '*.sh'
-        include 'igv.command'
-        include 'igv.args'
-        include 'readme.txt'
-        include 'igvtools*'
-    }
-    with copySpec {
-        from ("${buildDir}/libs")
-        from ("lib") { include '*.jar' }
-        into "lib"
-    }
-    // XXX: Perhaps not the best way to ship deplibs either
-    with copySpec {
-        from ("${buildDir}/deplibs")
-        from ("lib") { include '*.jar' }
-        into "lib"
-    }
-
-    with copySpec { from ("genomes/sizes") { } into "lib/genomes" }
-
-    into "${buildDir}/IGV-dist"
-}
-
-task createLinuxDistZip(type: Zip, dependsOn: createDist) {
-    baseName = "IGV_Linux"
-    archiveName = createLinuxDistZip.baseName + "_${version}.zip"
-    destinationDir = file("${buildDir}/distZip")
-    if (!jdkBundleLinux.equals("")) {
-        with copySpec { from jdkBundleLinux into "jdk-11" }
-    }
-    from ("${buildDir}/IGV-dist") {
-        exclude "*.bat"
-        exclude "*.command"
-    }
-    into createLinuxDistZip.baseName + "_${version}"
-
-    doLast {
-        project.exec { commandLine('chmod', '775', createLinuxDistZip.archivePath) }
-    }
-}
-
-task createMacAppDist(type: Copy, dependsOn: createDist) {
-    if (!jdkBundleMac.equals("")) {
-        with copySpec { from jdkBundleMac into "IGV_OSX_${version}.app/Contents/jdk-11" }
-    }
-    with copySpec {
-        from ("scripts/mac.app") {
-            exclude "Contents/Info.plist.template"
-            exclude "Contents/MacOS/JavaAppLauncher"
-        }
-        into "IGV_OSX_${version}.app"
-    }
-    with copySpec {
-        from ("scripts/java11/Info.plist.template")
-        filter (ReplaceTokens, tokens: [ VERSION: version ])
-        rename "Info.plist.template", "Info.plist"
-        into "IGV_OSX_${version}.app/Contents"
-    }
-    with copySpec {
-        from ("scripts/java11/IGV_mac.app.command")
-        rename "IGV_mac.app.command", "IGV"
-        into "IGV_OSX_${version}.app/Contents/MacOS"
-    }
-    with copySpec {
-        from ("web/IGV_64.png")
-        into "IGV_OSX_${version}.app/Contents/Resources"
-    }
-    with copySpec {
-        from ("${buildDir}/IGV-dist/") include 'igv.args'
-        into "IGV_OSX_${version}.app/Contents/Java/"
-    }
-    with copySpec {
-        from ("${buildDir}/IGV-dist/lib") include '*.jar'
-        into "IGV_OSX_${version}.app/Contents/Java/lib"
-    }
-    into "${buildDir}/IGV-MacApp-dist"
-
-    doLast {
-        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-MacApp-dist/IGV_OSX_${version}.app" ) }
-    }
-}
-
-task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveName = "IGV_OSX_${version}.app.zip"
-    destinationDir = file("${buildDir}/distZip")
-    from "${buildDir}/IGV-MacApp-dist"
-
-    doLast {
-        project.exec { commandLine('chmod', '775', createMacAppDistZip.archivePath ) }
-    }
-}
-
-task createWinDist(type: Copy, dependsOn: createDist) {
-    if (!jdkBundleWindows.equals("")) {
-        with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-11" }
-    }
-    with copySpec {
-        from("${buildDir}/IGV-dist") {
-            exclude "*.sh"
-            exclude "*.command"
-            exclude "igvtools"
-            exclude "igvtools_gui"
-            exclude "igvtools_gui_hidpi"
-        }
-        from ("resources") { include "IGV_64.ico" }
-        into "IGV_${version}"
-    }
-    with copySpec {
-        // Create a build-specific NSIS installer script.
-        from ("scripts/nsis/installer.nsi")
-        filter (ReplaceTokens, tokens: [ VERSION: version ])
-    }
-    from ("scripts/nsis") { include "license_win.txt" }
-    into "${buildDir}/IGV-WinExe-dist"
-}
-
-task createWinExeDist(type: Exec, dependsOn: createWinDist) {
-    commandLine(makensisCommand, "-O${buildDir}/tmp/nsis-build.log",
-                "${buildDir}/IGV-WinExe-dist/installer.nsi")
-    doLast {
-        if (makensisCommand == "") {
-            throw new GradleException("Required property not set: makensisCommand");
-        }
-    }
-}
-
-task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
-    standardInput = new ByteArrayInputStream( keyPassword.getBytes() );
-    commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha1",
-                "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
-                "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-dist/IGV_${version}-installer.exe")
-    doLast {
-        if (signcodeCommand.equals("")) {
-            throw new GradleException("Required property not set: signcodeCommand");
-        }
-    }
-}
-
-build.dependsOn createLinuxDistZip,createMacAppDistZip
-
-if (!makensisCommand.equals("") && !signcodeCommand.equals("")) {
-    build.dependsOn signWinExeDist
 }
