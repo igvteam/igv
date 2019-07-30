@@ -406,47 +406,15 @@ if (!makensisCommand == "" && !signcodeCommand == "") {
     dependsOn signWinExeDist
 }
 
-//optimizeFullJar(type: proguard.gradle.ProGuardTask, dependsOn: fullJar) {
-//    // EXPERIMENTAL: Optimize the fullJar to remove unused classes.
-//    // This still needs tuning for correctness, and as a result we are not distributing the
-//    // jar it creates.  It is still useful because of the reports it generates, however.
-//    doFirst { mkdir "proguard_log" }
+// XXX: META-INF versions support (Java11) seem to clash with proguard at this point in time:
+// https://sourceforge.net/p/proguard/bugs/665/
+// https://sourceforge.net/p/proguard/discussion/182456/thread/8c56b22dc2/?limit=25
+//task myproguard(type: ProGuardTask) {
+////    configuration 'proguard.txt'
 //
-//    verbose
-//    injars "${buildDir}/libs/igv.jar"
-//    outjars "${buildDir}/libs/igv-OPT.jar"
-//    // Note that this points to the *JRE* jars.
-//    libraryjars "${System.getProperty('java.home')}/lib",
-//            jarfilter: 'rt.jar,charsets.jar,jce.jar,jfr.jar,jsse.jar,resources.jar,ext/jfxrt.jar'
-//    libraryjars "lib", jarfilter: 'batik-codec-1.10.jar,goby-io-igv-1.1.jar,log4j-core-2.11.0.jar'
-//    configuration "lib_build/proguard_full_client.cfg"
-//    printusage "proguard_log/proguard_full_client_log_${timestamp_fs}.txt"
-//    printseeds "proguard_log/proguard_full_client_seeds_${timestamp_fs}.txt"
+//    injars "${buildDir}/IGV-dist/lib"
+//    outjars "${buildDir}/libs/igv-proguard.jar"
+//
+//    //libraryjars "${buildDir}/IGV-dist/lib", jarfilter:"lib/**.jar(!META-INF/**)"
+//    //libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
 //}
-//
-//optimizeMinJar(type: proguard.gradle.ProGuardTask, dependsOn: jar) {
-//    // EXPERIMENTAL: Optimize the minimal jar to remove unused classes (that is, our code base only).
-//    // As above, needs tuning for correctness.  The IGV-focused report it produces is more useful.
-//    doFirst { mkdir "proguard_log" }
-//
-//    verbose
-//    injars "${buildDir}/libs/igv-minimal.jar"
-//    outjars "${buildDir}/libs/igv-minimal-OPT.jar"
-//    libraryjars "${System.getProperty('java.home')}/lib",
-//            jarfilter: 'rt.jar,charsets.jar,jce.jar,jfr.jar,jsse.jar,resources.jar,ext/jfxrt.jar'
-//    // This is the difference from the above: consider all dependencies as libraryjars
-//    libraryjars "lib", filter: '!META-INF/**/module-info.class'
-//    configuration "lib_build/proguard_min_client.cfg"
-//    printusage "proguard_log/proguard_min_client_log_${timestamp_fs}.txt"
-//    printseeds "proguard_log/proguard_min_client_seeds_${timestamp_fs}.txt"
-//}
-
-task myproguard(type: ProGuardTask) {
-//    configuration 'proguard.txt'
-
-    injars "${buildDir}/IGV-dist/lib"
-    outjars "${buildDir}/libs/igv-proguard.jar"
-
-    //libraryjars "lib", jarfilter:"lib/**.jar"
-    //libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
-}
