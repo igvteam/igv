@@ -38,7 +38,6 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // Proguard
         [group: 'net.sf.proguard', name: 'proguard-gradle', version: '6.1.1']
         classpath 'net.sf.proguard:proguard-gradle:6.1.1'
     }
@@ -63,7 +62,6 @@ sourceSets {
 }
 
 configurations {
-    jarsForClasspath
     implementation {
         exclude group: 'com.google.code.findbugs', module: 'annotations'
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
@@ -121,6 +119,9 @@ dependencies {
         [group: 'com.google.protobuf', name: 'protobuf-java', version: '3.7.0-rc1'],
         [group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'],
         [group: 'commons-io', name: 'commons-io', version: '2.6'],
+        [group: 'org.apache.commons', name: 'commons-compress', version: '1.18'],
+        [group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.7.3'], 
+        [group: 'org.apache.commons', name: 'commons-jexl', version: '2.1.1'],
         //[group: 'com.github.samtools', name: 'htsjdk', version: '2.19.0'],
         // holding upstream htsjdk back from Maven for this @igvteam jar hack: https://github.com/igvteam/igv/issues/646
         [group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.11.0'],
@@ -252,6 +253,11 @@ task createDist(type: Copy, dependsOn: jar)  {
         from ("lib") { include '*.jar' }
         into "lib"
     }
+    // Copies all Maven-fetched dependency jars
+    with copySpec {
+        from configurations.default
+        into "lib"
+    }
     with copySpec { from ("genomes/sizes") { } into "lib/genomes" }
 
     into "${buildDir}/IGV-dist"
@@ -285,45 +291,45 @@ task createMacDistZip(type: Zip, dependsOn: createDist) {
 
 task createMacAppDist(type: Copy, dependsOn: createDist) {
     if (!jdkBundleMac == "") {
-        with copySpec { from jdkBundleMac into "IGV_OSX_${version}.app/Contents/jdk-11" }
+        with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-11" }
     }
     with copySpec {
         from ("scripts/mac.app") {
             exclude "Contents/Info.plist.template"
             exclude "Contents/MacOS/JavaAppLauncher"
         }
-        into "IGV_OSX_${version}.app"
+        into "IGV_${version}.app"
     }
     with copySpec {
         from ("scripts/java11/Info.plist.template")
         filter (ReplaceTokens, tokens: [ VERSION: version ])
         rename "Info.plist.template", "Info.plist"
-        into "IGV_OSX_${version}.app/Contents"
+        into "IGV_${version}.app/Contents"
     }
     with copySpec {
         from ("scripts/java11/IGV_mac.app.command")
         rename "IGV_mac.app.command", "IGV"
-        into "IGV_OSX_${version}.app/Contents/MacOS"
+        into "IGV_${version}.app/Contents/MacOS"
     }
     with copySpec {
         from ("web/IGV_64.png")
-        into "IGV_OSX_${version}.app/Contents/Resources"
+        into "IGV_${version}.app/Contents/Resources"
     }
     with copySpec {
         from ("${buildDir}/IGV-dist/") include 'igv.args'
-        into "IGV_OSX_${version}.app/Contents/Java/"
+        into "IGV_${version}.app/Contents/Java/"
     }
     with copySpec {
         from ("${buildDir}/IGV-dist/lib") include '*.jar'
-        into "IGV_OSX_${version}.app/Contents/Java/lib"
+        into "IGV_${version}.app/Contents/Java/lib"
     }
     into "${buildDir}/IGV-MacApp-dist"
-
-    doLast {
-        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-MacApp-dist/IGV_OSX_${version}.app" ) }
-    }
 }
 
+task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
+    archiveAppendix = "Mac"
+    from("${buildDir}/IGV-MacApp-dist")
+}
 
 task createWinDist(type: Copy, dependsOn: createDist) {
     if (!jdkBundleWindows == "") {
@@ -376,7 +382,7 @@ task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
 task fullJar(type: Jar, dependsOn: jar) {
     // Based on https://discuss.gradle.org/t/removing-dependencies-from-a-jar-file-during-jar-task/5521/3
     from {
-        ((configurations.compile - configurations.jarsForClasspath) + "${buildDir}/libs/igv-user.jar").collect {
+        ((configurations.compile - configurations.default) + "${buildDir}/libs/igv.jar").collect {
             zipTree(it)
         }
     } {
@@ -389,7 +395,7 @@ task fullJar(type: Jar, dependsOn: jar) {
                 "Application-Name": "IGV",
                 "Built-By": System.getProperty('user.name'),
                 "Main-Class": mainClassName,
-                "Class-Path": configurations.jarsForClasspath.collect { it.getName() }.join(' ')
+                "Class-Path": configurations.default.collect { it.getName() }.join(' ')
         )
     }
 }
@@ -397,7 +403,7 @@ task fullJar(type: Jar, dependsOn: jar) {
 //build.dependsOn createDistZip,createLinuxDistZip,createMacDistZip,createMacAppDistZip
 
 if (!makensisCommand == "" && !signcodeCommand == "") {
-    build.dependsOn signWinExeDist
+    dependsOn signWinExeDist
 }
 
 //optimizeFullJar(type: proguard.gradle.ProGuardTask, dependsOn: fullJar) {
@@ -438,10 +444,9 @@ if (!makensisCommand == "" && !signcodeCommand == "") {
 task myproguard(type: ProGuardTask) {
 //    configuration 'proguard.txt'
 
-    injars "${buildDir}/libs/igv-.jar"
-    injars "${buildDir}/deplibs/*.jar"
+    injars "${buildDir}/IGV-dist/lib"
     outjars "${buildDir}/libs/igv-proguard.jar"
 
     //libraryjars "lib", jarfilter:"lib/**.jar"
-    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+    //libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
 }
