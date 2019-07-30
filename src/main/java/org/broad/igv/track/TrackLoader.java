@@ -125,7 +125,7 @@ public class TrackLoader {
             AmazonUtils.checkLogin();
         }
 
-        log.info("Loading resource, path " + path);
+        log.debug("Loading resource, path " + path);
         try {
             String typeString = locator.getTypeString();
 

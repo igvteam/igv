@@ -277,7 +277,7 @@ public class AmazonUtils {
         String filename = bandk.b;
 
         URI presigned = s3Presigner.presignS3DownloadLink(bucket, filename);
-        log.info("AWS presigned URL from translateAmazonCloudURL is: "+presigned);
+        log.debug("AWS presigned URL from translateAmazonCloudURL is: "+presigned);
         return presigned.toString();
     }
 

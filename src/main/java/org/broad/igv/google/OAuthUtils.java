@@ -397,7 +397,7 @@ public class OAuthUtils {
 
         // Check expiration time, with 1 minute cushion
         if (accessToken == null || (System.currentTimeMillis() > (expirationTime - Globals.TOKEN_EXPIRE_GRACE_TIME))) {
-        log.info("Refreshing access token!");
+        log.debug("Refreshing access token!");
             if (refreshToken != null) {
                 try {
                     this.refreshAccessToken();
@@ -417,7 +417,7 @@ public class OAuthUtils {
     */
     public static Duration getExpirationTime() {
         Duration expiration = Duration.ofMillis(expirationTime - System.currentTimeMillis());
-        log.info("Current expiration time of credentials (and presigned urls is): "+ expiration.toSeconds() + " seconds and expirationTime in class is: "+expirationTime);
+        log.debug("Current expiration time of credentials (and presigned urls is): "+ expiration.toSeconds() + " seconds and expirationTime in class is: "+expirationTime);
         return expiration;
     }
 
