@@ -397,7 +397,6 @@ public class OAuthUtils {
 
         // Check expiration time, with 1 minute cushion
         if (accessToken == null || (System.currentTimeMillis() > (expirationTime - Globals.TOKEN_EXPIRE_GRACE_TIME))) {
-        //if (accessToken == null || (System.currentTimeMillis() > (expirationTime - 60 * 1000 * 57))) {
         log.info("Refreshing access token!");
             if (refreshToken != null) {
                 try {

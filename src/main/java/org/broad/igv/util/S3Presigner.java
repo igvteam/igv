@@ -178,9 +178,7 @@ public class S3Presigner {
 
 
 			executionAttributes.putAttribute(AwsSignerExecutionAttribute.AWS_CREDENTIALS, awsCredentialsProvider.resolveCredentials());
-			//executionAttributes.putAttribute(AwsSignerExecutionAttribute.PRESIGNER_EXPIRATION, Instant.ofEpochSecond(System.currentTimeMillis()/1000).plus(expirationTime));
-			// XXX: Short presigned
-			executionAttributes.putAttribute(AwsSignerExecutionAttribute.PRESIGNER_EXPIRATION, Instant.ofEpochSecond(System.currentTimeMillis()/1000).plus(Duration.ofMinutes(4)));
+			executionAttributes.putAttribute(AwsSignerExecutionAttribute.PRESIGNER_EXPIRATION, Instant.ofEpochSecond(System.currentTimeMillis()/1000).plus(expirationTime));
 			executionAttributes.putAttribute(AwsSignerExecutionAttribute.SERVICE_SIGNING_NAME, "s3");
 			executionAttributes.putAttribute(AwsSignerExecutionAttribute.SIGNING_REGION, region);
 			executionAttributes.putAttribute(AwsSignerExecutionAttribute.TIME_OFFSET, timeOffset);
