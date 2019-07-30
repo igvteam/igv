@@ -357,6 +357,11 @@ task createWinDist(type: Copy, dependsOn: createDist) {
     into "${buildDir}/IGV-WinExe-dist"
 }
 
+task createWinDistZip(type: Zip, dependsOn: createWinDist) {
+    archiveAppendix = "Win"
+    from("${buildDir}/IGV-WinExe-dist")
+}
+
 task createWinExeDist(type: Exec, dependsOn: createWinDist) {
     commandLine(makensisCommand, "-O${buildDir}/tmp/nsis-build.log",
                 "${buildDir}/IGV-WinExe-dist/installer.nsi")

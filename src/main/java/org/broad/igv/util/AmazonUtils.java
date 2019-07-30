@@ -38,7 +38,7 @@ public class AmazonUtils {
     // AWS specific objects
     private static S3Client s3Client;
     private static CognitoIdentityClient cognitoIdentityClient;
-    private static Region AWSREGION = Region.of(GetCognitoConfig().get("aws_region").getAsString());
+    private static Region AWSREGION;
     private static Map<String, String> locatorTos3PresignedMap = new HashMap<>();
 
     public static JsonObject GetCognitoConfig() {
@@ -54,6 +54,13 @@ public class AmazonUtils {
         }
 
         return null;
+    }
+
+    private static Region getAWSREGION() {
+        if (AWSREGION == null) {
+            AWSREGION = Region.of(GetCognitoConfig().get("aws_region").getAsString());
+        }
+        return AWSREGION;
     }
 
     /**
@@ -85,7 +92,7 @@ public class AmazonUtils {
         // Avoid "software.amazon.awssdk.core.exception.SdkClientException: Unable to load credentials from any of the providers in the chain AwsCredentialsProviderChain("
         // The use of the AnonymousCredentialsProvider essentially bypasses the provider chain's requirement to access ~/.aws/credentials.
         // https://stackoverflow.com/questions/36604024/sts-saml-and-java-sdk-unable-to-load-aws-credentials-from-any-provider-in-the-c
-        cognitoIdentityBuilder.region(AWSREGION).credentialsProvider(AnonymousCredentialsProvider.create());
+        cognitoIdentityBuilder.region(getAWSREGION()).credentialsProvider(AnonymousCredentialsProvider.create());
         cognitoIdentityClient = cognitoIdentityBuilder.build();
 
 
@@ -116,7 +123,7 @@ public class AmazonUtils {
                                                                    credentials.sessionToken());
 
         StaticCredentialsProvider s3CredsProvider = StaticCredentialsProvider.create(creds);
-        s3Client = S3Client.builder().credentialsProvider(s3CredsProvider).region(AWSREGION).build();
+        s3Client = S3Client.builder().credentialsProvider(s3CredsProvider).region(getAWSREGION()).build();
     }
 
 
@@ -239,7 +246,7 @@ public class AmazonUtils {
         S3Presigner s3Presigner = S3Presigner.builder()
                 .expiration(OAuthUtils.getExpirationTime())
                 .awsCredentials(awsCredsProvider)
-                .region(AWSREGION)
+                .region(getAWSREGION())
                 .build();
 
         Tuple<String, String> bandk = bucketAndKey(s3Path);
