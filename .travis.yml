@@ -1,7 +1,4 @@
 language: java
-before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
     - $HOME/.gradle/caches/
@@ -11,5 +8,3 @@ install:
 - ./gradlew assemble
 script:
 - ./gradlew check
-  #- jdk_switcher use openjdk8
-  #- ./gradlew compileJava
