@@ -7,4 +7,4 @@ jdk: openjdk11
 install:
 - ./gradlew assemble
 script:
-- yes | ./gradlew check --scan
+- ./gradlew check --debug
