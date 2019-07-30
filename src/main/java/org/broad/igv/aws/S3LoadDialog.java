@@ -36,13 +36,19 @@ import org.broad.igv.util.ResourceLocator;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -77,6 +83,13 @@ public class S3LoadDialog extends JDialog {
         treeModel.reload();
     }
 
+    /**
+     * Loads the selected resources when the Load button is pressed.
+     * This one only one way of loading files. The other one is via mouse double click (see initComponents())
+     * The main differences are that this method can handle multiple selected files, which are defined by the selection
+     * in the tree at the time of loading, vs the mounse coordinates in when double clicking.
+     * @param e
+     */
     private void loadButtonActionPerformed(ActionEvent e) {
 
         setVisible(false);
@@ -87,35 +100,50 @@ public class S3LoadDialog extends JDialog {
             ArrayList<ResourceLocator> finalLocators = new ArrayList<>();
 
             for (TreePath path : paths) {
-                Object[] selectedObjects = path.getPath();
-
-                String bucketName = ((S3TreeNode) selectedObjects[1]).getUserObject().getName();
-                String s3Key = "";
-
-                for (int i = 2; i < selectedObjects.length; i++) {
-                    S3TreeNode selectedObject = (S3TreeNode) selectedObjects[i];
-                    IGVS3Object selectedIGVS3Object = selectedObject.getUserObject();
-                    s3Key += selectedIGVS3Object.getName() + "/";
+                if (isFilePath(path)) {
+                    Tuple<String, String> bucket_key = getBucketAndKeyFromTreePath(path);
+                    preLocatorPaths.add(bucket_key);
                 }
-
-                s3Key = s3Key.substring(0, s3Key.length() - 1);
-                log.debug("Loading S3 object key: " + s3Key + " from bucket " + bucketName);
-
-                preLocatorPaths.add(new Tuple<>(bucketName, s3Key));
             }
 
             for (Tuple<String, String> preLocator: preLocatorPaths) {
-                String bucketName = preLocator.a;
-                String s3objPath = preLocator.b;
-
-                String s3Path = "s3://"+bucketName+"/"+s3objPath;
-
-                ResourceLocator locator = new ResourceLocator(s3Path);
+                ResourceLocator locator = getResourceLocatorFromBucketKey(preLocator);
                 finalLocators.add(locator);
             }
 
             IGV.getInstance().loadTracks(finalLocators);
         });
+    }
+
+    private boolean isFilePath(TreePath path) {
+        return ((S3TreeNode) path.getLastPathComponent()).isLeaf();
+    }
+
+    private ResourceLocator getResourceLocatorFromBucketKey(Tuple<String, String> preLocator) {
+        String bucketName = preLocator.a;
+        String s3objPath = preLocator.b;
+
+        String s3Path = "s3://"+bucketName+"/"+s3objPath;
+
+        return new ResourceLocator(s3Path);
+    }
+
+    private Tuple<String, String> getBucketAndKeyFromTreePath(TreePath path) {
+        Object[] selectedObjects = path.getPath();
+
+        String bucketName = ((S3TreeNode) selectedObjects[1]).getUserObject().getName();
+        String s3Key = "";
+
+        for (int i = 2; i < selectedObjects.length; i++) {
+            S3TreeNode selectedObject = (S3TreeNode) selectedObjects[i];
+            IGVS3Object selectedIGVS3Object = selectedObject.getUserObject();
+            s3Key += selectedIGVS3Object.getName() + "/";
+        }
+
+        s3Key = s3Key.substring(0, s3Key.length() - 1);
+        log.debug("Loading S3 object key: " + s3Key + " from bucket " + bucketName);
+
+        return new Tuple<>(bucketName, s3Key);
     }
 
     private void treeWillExpandActionPerformed(TreeExpansionEvent event) {
@@ -152,7 +180,6 @@ public class S3LoadDialog extends JDialog {
             }
         }
     }
-
 
     private void cancelButtonActionPerformed(ActionEvent e) {
         selectedId = null;
@@ -194,6 +221,23 @@ public class S3LoadDialog extends JDialog {
 
             public void treeWillCollapse(TreeExpansionEvent event) {
                 log.debug("Tree collapsing");
+            }
+        });
+        selectionTree.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                int selRow = selectionTree.getRowForLocation(e.getX(), e.getY());
+                TreePath selPath = selectionTree.getPathForLocation(e.getX(), e.getY());
+                if(selRow != -1) {
+                    if(e.getClickCount() == 2) {
+                        // similar behaviour to loadButtonActionPerformed, see docs there for details
+                        if (isFilePath(selPath)) {
+                            Tuple<String, String> bucket_and_key = getBucketAndKeyFromTreePath(selPath);
+                            ResourceLocator loc = getResourceLocatorFromBucketKey(bucket_and_key);
+                            IGV.getInstance().loadTracks(Collections.singletonList(loc));
+                            setVisible(false);
+                        }
+                    }
+                }
             }
         });
 
