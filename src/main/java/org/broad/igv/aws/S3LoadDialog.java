@@ -125,35 +125,31 @@ public class S3LoadDialog extends JDialog {
         S3TreeNode parentNode = (S3TreeNode) parent;
         IGVS3Object IGVS3Object = parentNode.getUserObject();
 
-        if (IGVS3Object.isDir()) {
-            Object[] path = parentNode.getUserObjectPath(); // fullpath to S3 object
-            String currentBucket = path[1].toString();
-            String prefix = "";
+        // only load child folder/files if they haven't been loaded already
+        if (parentNode.getChildCount() == 0) {
+            if (IGVS3Object.isDir()) {
+                Object[] path = parentNode.getUserObjectPath(); // fullpath to S3 object
+                String currentBucket = path[1].toString();
+                String prefix = "";
 
-            for (int i = 2; i < path.length; i++) {
-                prefix += path[i] + "/";
-            }
-
-            log.debug("S3 bucket prefix is: "+prefix);
-
-            try {
-                // List contents of bucket with path-prefix passed
-                ArrayList<IGVS3Object> IGVS3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
-                // For each item in the bucket:
-                //  1) create an IGVS3Object
-                //    1.1) Name of object.
-                //    1.2) Dir or file: .getPrefix or null, according to S3 API
-                for (IGVS3Object s3Obj: IGVS3Objects) {
-                    // Add it to the corresponding POJO...
-                    parentNode.add(new S3TreeNode(s3Obj));
+                for (int i = 2; i < path.length; i++) {
+                    prefix += path[i] + "/";
                 }
-            } catch (S3Exception e){
-                MessageUtils.showErrorMessage("Amazon S3: Access denied to bucket: "+currentBucket, e);
-                log.error("Permission denied on S3 bucket ListObjects: ");
-            }
 
-            // ... and update the model
-            updateModel(parentNode);
+                log.debug("S3 bucket prefix is: "+prefix);
+
+                try {
+                    // List contents of bucket with path-prefix passed
+                    ArrayList<IGVS3Object> IGVS3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
+                    parentNode.addS3Children(IGVS3Objects);
+                } catch (S3Exception e){
+                    MessageUtils.showErrorMessage("Amazon S3: Access denied to bucket: "+currentBucket, e);
+                    log.error("Permission denied on S3 bucket ListObjects: ");
+                }
+
+                // ... and update the model
+                updateModel(parentNode);
+            }
         }
     }
 
