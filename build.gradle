@@ -43,12 +43,6 @@ buildscript {
     }
 }
 
-// Auto-accept build scans when running on CI
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
-}
-
 //buildDir = 'build'
 
 repositories {
