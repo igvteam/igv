@@ -359,9 +359,6 @@ public class OAuthUtils {
             // Refresh token has failed, reauthorize from scratch
             reauthorize();
         }
-
-        // XXX: Make sure we re-presign all URLs and re-load all tracks?
-
     }
 
     private void reauthorize() throws IOException {
