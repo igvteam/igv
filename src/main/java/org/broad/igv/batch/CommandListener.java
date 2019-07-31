@@ -128,7 +128,6 @@ public class CommandListener implements Runnable {
                     try {
                         clientSocket.close();
                         clientSocket = null;
-                        isListening = false;
                     } catch (IOException e) {
                         log.error("Error in client socket loop", e);
                         isListening = false;
