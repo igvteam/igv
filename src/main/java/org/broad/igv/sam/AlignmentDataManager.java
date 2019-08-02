@@ -75,12 +75,9 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
-        // XXX: Explain better why we need this to happen exactly here, i.e, elaborate on:
-        // XXX: 1. Why S3 Select is not an option.
-        // XXX: 2. How using (pre)-signed URLs is beneficial in terms of IGV (http classes) code reuse and security.
-        // XXX: 3. Just caching, limiting outbound requests if presigned url is valid, does not slow down the regular reads.
         // The time-gated limit for an AWS signed URL has expired, we need to re-sign the URL with the newly acquired
-        // access token, otherwise we will face an Access Denied error.
+        // access token, otherwise we will face an Access Denied error. CheckReader() provides a very low overhead
+        // mechanism to refresh expired presigned URLs.
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         initLoadOptions();
