@@ -113,7 +113,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         }
         AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
 
-        if (basicReader.hasIndex()) {
+        if (indexExists) { //basicReader.hasIndex()) {
             return new IndexedFeatureSource(basicReader, codec, locator, genome, useCache);
         } else {
             return new NonIndexedFeatureSource(basicReader, codec, locator, genome);
