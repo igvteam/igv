@@ -8,7 +8,7 @@ import java.util.List;
 public class PEBlockRenderer implements BedPERenderer {
 
     InteractionTrack track;
-    int rowHeight = 10;
+    int rowHeight = 6;
 
     public PEBlockRenderer(InteractionTrack track) {
         this.track = track;

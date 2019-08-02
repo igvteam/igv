@@ -703,7 +703,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 color = feature.getName().equals("gain") ? DULL_RED : DULL_BLUE;
             } else {
                 // Only used if feature color is not set
-                color = track.getColor();
+                Color altColor = track.getAltColor();
+                color =  feature.getStrand() == Strand.NEGATIVE && altColor != null ?
+                        track.getAltColor() :
+                        track.getColor();
             }
 
         }

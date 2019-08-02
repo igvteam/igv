@@ -79,6 +79,7 @@ final public class Constants {
     // Interaction track
     public static final String ARC_TYPE = "ARC_TYPE";
     public static final String ARC_DIRECTION = "ARC_DIRECTION";
+    public static final String ARC_BLOCKS = "ARC_BLOCKS";
 
     // Chart (bar, heatmap, plots) options
     public static final String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";

@@ -49,8 +49,8 @@ public class ProportionalArcRenderer implements BedPERenderer {
 
 
                     if (track.maxScore > 0 && bedPE.getScore() > 0) {
-                        double logMax = Math.log10(track.maxScore);
-                        h = (int) ((Math.log10(bedPE.getScore()) / logMax) * h);
+                        double logMax = Math.log10(track.maxScore + 1);
+                        h = (int) ((Math.log10(bedPE.getScore() + 1) / logMax) * h);
                     }
 
                     if (bedPE.isSameChr()) {
