@@ -22,7 +22,6 @@
 // THE SOFTWARE.
 
 apply plugin: 'java'
-apply plugin: 'idea'
 apply plugin: 'maven'
 apply plugin: 'application'
 
@@ -42,8 +41,6 @@ buildscript {
         classpath 'net.sf.proguard:proguard-gradle:6.1.1'
     }
 }
-
-//buildDir = 'build'
 
 repositories {
     mavenCentral()
@@ -227,12 +224,6 @@ test {
     }
 }
 
-// XXX: Perhaps not the standard Gradle way to ship this?
-//task copyToLib(type: Copy, dependsOn: jar) {
-//    from configurations.default
-//    into "${buildDir}/deplibs"
-//}
-//task createDist(type: Copy, dependsOn: copyToLib)  {
 task createDist(type: Copy, dependsOn: jar)  {
     from ("web/IGV_64.png")
     from ("scripts/java11") {

@@ -28,7 +28,6 @@ package org.broad.igv;
 import org.apache.log4j.Logger;
 import org.broad.igv.renderer.SequenceRenderer;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -132,7 +131,7 @@ public class Globals {
         TIMESTAMP = properties.getProperty("timestamp", "???");
         BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
 
-        //Runtime property overrides compile-time property, if both exist.
+         //Runtime property overrides compile-time property, if both exist.
         //If neither exist we default to false
         final String developmentProperty = System.getProperty("development", properties.getProperty("development", "false"));
         development = Boolean.parseBoolean(developmentProperty);

@@ -128,6 +128,7 @@ public class CommandListener implements Runnable {
                     try {
                         clientSocket.close();
                         clientSocket = null;
+                        // We do set isListening = false here, otherwise logout/login state change falls back to OOB
                     } catch (IOException e) {
                         log.error("Error in client socket loop", e);
                         isListening = false;
@@ -168,6 +169,7 @@ public class CommandListener implements Runnable {
 
 
             while (!halt && (inputLine = in.readLine()) != null) {
+
                 String cmd = inputLine;
                 if (cmd.startsWith("GET")) {
 
@@ -180,11 +182,8 @@ public class CommandListener implements Runnable {
                         if (tokens.length == 2) {
                             headers.put(tokens[0].trim(), tokens[1].trim());
                         }
-                        log.debug("Tokens (as in *tokenized* headers, not oauth tokens):  "+Arrays.toString(tokens));
                     }
-
-                    log.debug("Headers: "+headers);
-                    log.debug("Command: "+cmd);
+                    log.info(cmd);
 
                     String command = null;
                     Map<String, String> params = null;
@@ -195,13 +194,11 @@ public class CommandListener implements Runnable {
                     } else {
                         String[] parts = tokens[1].split("\\?");
                         command = parts[0];
-                        log.debug("Parts of the request: "+Arrays.toString(parts));
                         params = parts.length < 2 ? new HashMap() : parseParameters(parts[1]);
                     }
 
                     // Detect google oauth callback
                     if (command.equals("/oauthCallback")) {
-                        log.debug("Response parameters: " + params.toString());
                         if (params.containsKey("code")) {
                             OAuthUtils.getInstance().setAuthorizationCode(params.get("code"));
                         } else if (params.containsKey("token")) {

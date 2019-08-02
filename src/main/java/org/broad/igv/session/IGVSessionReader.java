@@ -469,8 +469,8 @@ public class IGVSessionReader implements SessionReader {
                     List<Track> tracks = null;
 
                     try {
-                        tracks = igv.load(locator);
 
+                        tracks = igv.load(locator);
 
                         for (Track track : tracks) {
 
