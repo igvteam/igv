@@ -75,7 +75,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
 
-        boolean indexExists;
+        boolean indexExists = false;
         // Explicit index path
         String idxPath = locator.getIndexPath();
         if (idxPath != null) {
@@ -84,14 +84,17 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             }
             indexExists = true;
         } else {
-            idxPath = ResourceLocator.indexFile(locator);
-            if (idxPath == null) {
+            String maybeIdxPath = ResourceLocator.indexFile(locator);
+            if (maybeIdxPath == null) {
                 indexExists = false;
             } else {
-                if (FileUtils.isRemote(idxPath)) {
-                    idxPath = HttpUtils.mapURL(idxPath);
+                if (FileUtils.isRemote(maybeIdxPath)) {
+                    maybeIdxPath = HttpUtils.mapURL(maybeIdxPath);
                 }
-                indexExists = FileUtils.resourceExists(idxPath);
+                if(FileUtils.resourceExists(maybeIdxPath)) {
+                    indexExists = true;
+                    idxPath = maybeIdxPath;
+                }
             }
         }
 
@@ -114,7 +117,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
 
         if (indexExists) { //basicReader.hasIndex()) {
-            return new IndexedFeatureSource(basicReader, codec, locator, genome, useCache);
+            return new IndexedFeatureSource(basicReader, codec, locator, genome, true);
         } else {
             return new NonIndexedFeatureSource(basicReader, codec, locator, genome);
         }
