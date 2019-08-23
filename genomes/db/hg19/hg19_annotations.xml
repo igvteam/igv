@@ -80,7 +80,6 @@
                   index="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/snp147.hg19.ucscsnp.gz.tbi"/>
         <Resource name="Genomic Structural Variation (DGV)"  trackline='itemRgb="On"'
                   path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/dgv.bed.gz"
-                  index="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/dgv.bed.gz.tbi"
                   hyperlink="http://projects.tcag.ca/variation/"
                   url="http://genome.ucsc.edu/cgi-bin/hgc?g=dgv&amp;i=$$"/>
 

@@ -148,9 +148,12 @@ public class RemoveGenomesDialog extends JDialog {
         for (GenomeListItem item : removedValuesList) {
 
             String loc = item.getPath();
-            if (!HttpUtils.isRemoteURL(loc)) {
+            boolean isGenomeFile = loc.toLowerCase().equals(".genome");
+            if (isGenomeFile && !HttpUtils.isRemoteURL(loc)) {
                 File genFile = new File(loc);
-                genFile.delete();
+                if (DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), genFile)) {
+                    genFile.delete();
+                }
             }
 
             File localFasta = GenomeManager.getInstance().getLocalFasta(item.getId());
@@ -161,7 +164,7 @@ public class RemoveGenomesDialog extends JDialog {
                     if (MessageUtils.confirm("Delete fasta file: " + localFasta.getAbsolutePath() + "?")) {
                         localFasta.delete();
                         File indexFile = new File(localFasta.getAbsolutePath() + ".fai");
-                        if(indexFile.exists()) {
+                        if (indexFile.exists()) {
                             indexFile.delete();
                         }
                     }
