@@ -268,7 +268,7 @@ public class SnapshotUtilities {
         }
     }
 
-    private static void paintImage(Component target, SVGGraphics2D g, int width, int height, boolean paintOffscreen) {
+    private static void paintImage(Component target, Graphics2D g, int width, int height, boolean paintOffscreen) {
         log.debug("Painting to target " + target + " , offscreen " + paintOffscreen);
         if (paintOffscreen) {
             Rectangle rect = new Rectangle(0, 0, width, height);

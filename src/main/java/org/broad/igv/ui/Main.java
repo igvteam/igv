@@ -92,10 +92,6 @@ public class Main {
         }
 
         Runnable runnable = () -> {
-
-            // This is a workaround for an internal JVM crash that was happening on Windows 10 (Creators Update).
-            // TODO: remove when enough users have migrated to Java 8u141 or greater.
-            // http://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8179014
             if (Globals.IS_WINDOWS && System.getProperty("os.name").contains("10")) {
                 UIManager.put("FileChooser.useSystemExtensionHiding", false);
             }
