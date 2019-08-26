@@ -239,11 +239,6 @@ task createDist(type: Copy, dependsOn: jar)  {
         from ("lib") { include '*.jar' }
         into "lib"
     }
-    with copySpec {
-        from ("${buildDir}/libs")
-        from ("lib") { include '*.jar' }
-        into "lib"
-    }
     // Copies all Maven-fetched dependency jars
     with copySpec {
         from configurations.default
@@ -255,33 +250,41 @@ task createDist(type: Copy, dependsOn: jar)  {
 }
 
 task createDistZip(type: Zip, dependsOn: createDist) {
+    archiveName = "IGV_${version}.zip"
     from("${buildDir}/IGV-dist")
+    into "IGV_${version}"
 }
 
 task createLinuxDistZip(type: Zip, dependsOn: createDist) {
-    archiveAppendix = "Linux"
-    if (!jdkBundleLinux == "") {
+    archiveName = "IGV_Linux_${version}.zip"
+    if (jdkBundleLinux != "") {
         with copySpec { from jdkBundleLinux into "jdk-11" }
     }
     from ("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*.command"
+        exclude 'igvtools*'
+        exclude 'lib/genomes'
     }
+    into "IGV_Linux_${version}"
 }
 
 task createMacDistZip(type: Zip, dependsOn: createDist) {
-    archiveAppendix = "Mac"
-
+    archiveName = "IGV_Mac_${version}.zip"
+    if (jdkBundleMac != "") {
+        with copySpec { from jdkBundleMac into "jdk-11" }
+    }
     from ("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*_hidpi*"
         exclude "igvtools*"
         exclude 'lib/genomes'
     }
+    into "IGV_Mac_${version}"
 }
 
 task createMacAppDist(type: Copy, dependsOn: createDist) {
-    if (!jdkBundleMac == "") {
+    if (jdkBundleMac != "") {
         with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-11" }
     }
     with copySpec {
@@ -315,15 +318,23 @@ task createMacAppDist(type: Copy, dependsOn: createDist) {
         into "IGV_${version}.app/Contents/Java/lib"
     }
     into "${buildDir}/IGV-MacApp-dist"
+
+    doLast {
+        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-MacApp-dist/IGV_${version}.app" ) }
+    }
 }
 
 task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveAppendix = "Mac"
+    archiveName = "IGV_${version}.app.zip"
     from("${buildDir}/IGV-MacApp-dist")
+    
+    doLast {
+        project.exec { commandLine('chmod', '775', createMacAppDistZip.archivePath ) }
+    }
 }
 
 task createWinDist(type: Copy, dependsOn: createDist) {
-    if (!jdkBundleWindows == "") {
+    if (jdkBundleWindows != "") {
         with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-11" }
     }
     with copySpec {
@@ -346,11 +357,6 @@ task createWinDist(type: Copy, dependsOn: createDist) {
     }
     from ("scripts/nsis") { include "license_win.txt" }
     into "${buildDir}/IGV-WinExe-dist"
-}
-
-task createWinDistZip(type: Zip, dependsOn: createWinDist) {
-    archiveAppendix = "Win"
-    from("${buildDir}/IGV-WinExe-dist")
 }
 
 task createWinExeDist(type: Exec, dependsOn: createWinDist) {
@@ -398,9 +404,9 @@ task fullJar(type: Jar, dependsOn: jar) {
 
 //build.dependsOn createDistZip,createLinuxDistZip,createMacDistZip,createMacAppDistZip
 
-if (!makensisCommand == "" && !signcodeCommand == "") {
-    dependsOn signWinExeDist
-}
+//if (!makensisCommand == "" && !signcodeCommand == "") {
+//    dependsOn signWinExeDist
+//}
 
 // XXX: META-INF versions support (Java11) seem to clash with proguard at this point in time:
 // https://sourceforge.net/p/proguard/bugs/665/
