@@ -190,11 +190,15 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
 
         try {
-            AWSMenu = createAWSMenu();
-            AWSMenu.setVisible(true);
-            menus.add(AWSMenu);
-        } catch (IOException e) {
+            if (AmazonUtils.isAWSProviderPresent()) {
+                log.info("Adding Amazon cloud menu to the UI");
+                AWSMenu = createAWSMenu();
+                AWSMenu.setVisible(true);
+                menus.add(AWSMenu);
+            }
+        } catch(IOException e){
             log.error("Error creating the Amazon AWS menu: " + e.getMessage());
+            AWSMenu.setVisible(false);
         }
 
         menus.add(createHelpMenu());

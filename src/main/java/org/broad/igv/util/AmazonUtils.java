@@ -53,10 +53,28 @@ public class AmazonUtils {
             JsonObject json_obj = parser.parse(json_file).getAsJsonObject();
             return json_obj;
         } catch (IOException io) {
-            log.error("Cannot read oauth-config.json config file");
+            log.info("oauth-config.json config file not present. Amazon S3 support disabled.");
         }
 
         return null;
+    }
+
+    public static boolean isAWSProviderPresent() {
+        boolean OauthAWSConfigured;
+
+        try {
+            if (GetCognitoConfig().get("auth_provider").getAsString().contains("Amazon")) {
+                log.info("AWS configuration found. AWS support enabled under 'Amazon' menu");
+                OauthAWSConfigured = true;
+            } else {
+                log.info("AWS configuration not found.");
+                OauthAWSConfigured = false;
+            }
+        } catch (NullPointerException np) {
+            OauthAWSConfigured = false;
+        }
+
+        return OauthAWSConfigured;
     }
 
     private static Region getAWSREGION() {
