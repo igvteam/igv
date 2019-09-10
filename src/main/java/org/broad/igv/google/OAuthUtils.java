@@ -380,6 +380,9 @@ public class OAuthUtils {
     public JsonObject fetchUserProfile(JsonObject jwt_payload) throws IOException {
         try {
             currentUserName = jwt_payload.has("name") ? jwt_payload.get("name").getAsString() : null;
+            if(currentUserName == null && jwt_payload.has("cognito:username")) {
+                currentUserName = jwt_payload.get("cognito:username").getAsString();
+            }
             currentUserEmail = jwt_payload.has("email") ? jwt_payload.get("email").getAsString() : null;
             currentUserID = jwt_payload.has("id") ? jwt_payload.get("id").getAsString() : null;
 
