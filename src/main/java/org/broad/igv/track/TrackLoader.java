@@ -84,10 +84,7 @@ import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.ConvertFileDialog;
 import org.broad.igv.ui.util.ConvertOptions;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.*;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
 
@@ -123,6 +120,10 @@ public class TrackLoader {
 
         if (GoogleUtils.isGoogleDrive(path) || GoogleUtils.isGoogleCloud(path)) {
             GoogleUtils.checkLogin();
+        }
+        // Check if the AWS credentials are still valid. If not, re-login and renew pre-signed urls
+        if (AmazonUtils.isAwsS3Path(path)) {
+            AmazonUtils.checkLogin();
         }
 
         log.info("Loading resource, path " + path);

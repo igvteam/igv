@@ -191,7 +191,7 @@ public class SnapshotUtilities {
             fos = new FileOutputStream(selectedFile);
             g = (Graphics2D) constructor.newInstance("eps", fos, 0, 0, target.getWidth(), target.getHeight(), colorModeValue);
 
-            paintImage(target, g, width, height, paintOffscreen);
+            paintImage(target, (SVGGraphics2D) g, width, height, paintOffscreen);
 
             graphicsClass.getMethod("close").invoke(g);
 
@@ -295,7 +295,7 @@ public class SnapshotUtilities {
         BufferedImage image = getDeviceCompatibleImage(width, height);
         Graphics2D g = image.createGraphics();
 
-        paintImage(target, g, width, height, paintOffscreen);
+        paintImage(target, (SVGGraphics2D) g, width, height, paintOffscreen);
 
         selectedFile = fixFileExt(selectedFile, allowedExts, format);
         if (selectedFile != null) {

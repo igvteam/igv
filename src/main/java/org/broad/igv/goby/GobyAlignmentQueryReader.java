@@ -25,7 +25,7 @@
 
 package org.broad.igv.goby;
 
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import org.campagnelab.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.lang.MutableString;

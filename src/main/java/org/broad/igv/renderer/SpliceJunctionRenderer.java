@@ -29,7 +29,7 @@ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
- import org.apache.commons.math.stat.Frequency;
+ import org.apache.commons.math3.stat.Frequency;
  import org.apache.log4j.Logger;
  import org.broad.igv.feature.IGVFeature;
  import org.broad.igv.feature.SpliceJunctionFeature;

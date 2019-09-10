@@ -128,7 +128,7 @@ public class CommandListener implements Runnable {
                     try {
                         clientSocket.close();
                         clientSocket = null;
-                        isListening = false;
+                        // We do NOT set isListening = false here, otherwise logout/login state change falls back to OOB
                     } catch (IOException e) {
                         log.error("Error in client socket loop", e);
                         isListening = false;
@@ -183,7 +183,6 @@ public class CommandListener implements Runnable {
                             headers.put(tokens[0].trim(), tokens[1].trim());
                         }
                     }
-
                     log.info(cmd);
 
                     String command = null;

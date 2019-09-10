@@ -29,7 +29,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import htsjdk.tribble.Feature;
-import org.apache.commons.math.stat.StatUtils;
+import org.apache.commons.math3.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;

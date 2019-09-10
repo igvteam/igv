@@ -1,15 +1,10 @@
 language: java
-before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 jdk: openjdk11
 install:
-- ./gradlew -b build_java11.gradle assemble
+- ./gradlew assemble
 script:
-- ./gradlew -b build_java11.gradle check
-- jdk_switcher use openjdk8
-- ./gradlew compileJava
+- ./gradlew check

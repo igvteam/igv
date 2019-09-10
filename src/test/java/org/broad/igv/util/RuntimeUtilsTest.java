@@ -58,7 +58,7 @@ public class RuntimeUtilsTest extends AbstractHeadlessTest {
             expLines = 2;
         }
 
-        Assume.assumeNotNull(fullCmd);
+        assert fullCmd != null;
         Process process = RuntimeUtils.startExternalProcess(fullCmd, null, null);
         InputStream is = process.getInputStream();
         BufferedReader bis = new BufferedReader(new InputStreamReader(is));

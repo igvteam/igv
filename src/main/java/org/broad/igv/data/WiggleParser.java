@@ -25,7 +25,7 @@
 
 package org.broad.igv.data;
 
-import org.apache.commons.math.stat.StatUtils;
+import org.apache.commons.math3.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;

@@ -25,7 +25,7 @@
 
 package org.broad.igv.sam;
 
-import org.apache.commons.math.stat.StatUtils;
+import org.apache.commons.math3.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.collections.DownsampledDoubleArrayList;
 

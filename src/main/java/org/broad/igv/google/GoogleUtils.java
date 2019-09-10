@@ -34,7 +34,7 @@ public class GoogleUtils {
     }
 
     public static boolean isGoogleCloud(String url) {
-        return url != null && (url.startsWith("gs://") || url.contains(GS_HOST));
+        return url != null && (url.startsWith("gs://") || url.contains(GOOGLE_API_HOST));
     }
 
     public static boolean isGoogleDrive(String url) {

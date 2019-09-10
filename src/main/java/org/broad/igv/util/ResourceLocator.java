@@ -186,8 +186,9 @@ public class ResourceLocator {
         } else {
 
             String typeString = pathOrName.toLowerCase();
+            if (path.startsWith("http://") || path.startsWith("https://") ||
+                path.startsWith("gs://") || path.startsWith("s3://")) {
 
-            if (pathOrName.startsWith("http://") || pathOrName.startsWith("https://") || pathOrName.startsWith("gs://")) {
                 try {
                     URL url = HttpUtils.createURL(pathOrName);
 
@@ -338,9 +339,27 @@ public class ResourceLocator {
 
     public void setPath(String path) {
         if (path != null && path.startsWith("file://")) {
-            this.path = path.substring(7);
-//        } else if (path != null && path.startsWith("gs://")) {
-//            this.path = GoogleUtils.translateGoogleCloudURL(path);
+            this.path = path.substring("file://".length());
+        } else if (path != null && path.startsWith("gs://")) {
+            this.path = GoogleUtils.translateGoogleCloudURL(path);
+        } else if (path != null && path.startsWith("s3://")) {
+            this.path = path;
+
+            // Set UI human-readable short name for the file
+            String objFname = "";
+            if (path.contains("/")) {
+                objFname = path.substring(path.lastIndexOf('/')).replace("/", "");
+            } else {
+                objFname = path;
+            }
+
+            log.debug("S3 object filename visible in IGV UI is: "+ objFname);
+            this.setName(objFname);
+
+            String s3UrlIndexPath = detectIndexPath(path);
+
+            this.setIndexPath(s3UrlIndexPath);
+
         } else {
             this.path = path;
         }
@@ -368,6 +387,26 @@ public class ResourceLocator {
 
     public void setIndexPath(String indexPath) {
         this.indexPath = indexPath;
+    }
+
+    // XXX: Why does IGV not do that across all providers already?
+
+    /**
+     * Takes in a non-pre-signed URL and returns its (guessed) indexfile.
+     * @param inputPath: Path containing vcf/bam file
+     * @return indexPath: Guessed path containing the corresponding index (in the CWD-equivalent dir level)
+     */
+    public String detectIndexPath(String inputPath) {
+        log.debug("detectIndexPath() input S3 path is: "+inputPath);
+        String indexPath = "";
+        if (inputPath.contains(".bam")) {
+            indexPath = inputPath + ".bai";
+        } else if (inputPath.contains(".vcf.gz")) {
+            indexPath = inputPath + ".tbi";
+        } else {
+            log.debug("S3 index object filetype could not be determined from S3 url");
+        }
+        return indexPath;
     }
 
     public String getUsername() {

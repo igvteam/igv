@@ -139,7 +139,14 @@ public class HttpUtils {
 
         if (urlString.startsWith("gs://")) {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
+        } else if (AmazonUtils.isAwsS3Path(urlString)) {
+            try {
+                urlString = AmazonUtils.translateAmazonCloudURL(urlString);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
         if (GoogleUtils.isGoogleCloud(urlString)) {
             if (urlString.indexOf("alt=media") < 0) {
                 urlString = urlString + (urlString.indexOf('?') > 0 ? "&" : "?") + "alt=media";
@@ -253,6 +260,8 @@ public class HttpUtils {
         }
         byte[] postDataBytes = postData.toString().getBytes();
 
+        log.debug("Raw POST request: "+postData.toString());
+
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -264,6 +273,9 @@ public class HttpUtils {
         for (int c; (c = in.read()) >= 0; ) {
             response.append((char) c);
         }
+
+        in.close();
+
         return response.toString();
 
     }
@@ -374,7 +386,8 @@ public class HttpUtils {
                 if (e instanceof FileNotFoundException) {
                     throw e;
                 }
-                log.info("HEAD request failed for url: " + url.toExternalForm() + ".  Trying GET");
+                log.debug("HEAD request failed for url: " + url.toExternalForm());
+                log.debug("Trying GET instead for url: "+ url.toExternalForm());
                 headURLCache.put(url, false);
             }
         }
@@ -710,7 +723,7 @@ public class HttpUtils {
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
         // string to dynamically map url - dwm08
-        if (url.getHost().equals(GoogleUtils.GS_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
+        if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
             url = HttpUtils.createURL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
         }
 
@@ -806,7 +819,8 @@ public class HttpUtils {
         }
         conn.setRequestProperty("User-Agent", Globals.applicationString());
 
-        if (url.getHost().equals(GoogleUtils.GS_HOST) || url.getHost().startsWith("igvweb02")) {
+        // XXX: What is this?
+        if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) || url.getHost().startsWith("igvweb02")) {
             String token = OAuthUtils.getInstance().getAccessToken();
             if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
         }

@@ -595,12 +595,20 @@ public class IGV implements IGVEventObserver {
 
     final public void doViewPreferences() {
 
-        // 2.x releases -- swing editor
-        if (Globals.VERSION.contains("2.4")) {
-            PreferencesEditor dialog = new PreferencesEditor(this.mainFrame, true);
-            dialog.setVisible(true);
-        } else {
-            // 3.0 releases -- javafx
+        try {
+            // 2.x releases -- swing editor
+            if (Globals.VERSION.contains("2.4")) {
+                PreferencesEditor dialog = new PreferencesEditor(this.mainFrame, true);
+                dialog.setVisible(true);
+            } else {
+                // 3.0 releases -- javafx
+                try {
+                    PreferenceEditorNew.open(this.mainFrame);
+                } catch (IOException e) {
+                    log.error("Error openining preference dialog", e);
+                }
+            }
+        } catch (NullPointerException ne) {
             try {
                 PreferenceEditorNew.open(this.mainFrame);
             } catch (IOException e) {

@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
+import org.broad.igv.aws.S3LoadDialog;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.google.GoogleUtils;
@@ -53,6 +54,7 @@ import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
+import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
@@ -109,6 +111,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private static IGVMenuBar instance;
     private JMenu googleMenu;
+    private JMenu AWSMenu;
     private JMenuItem encodeMenuItem;
 
     public void notifyGenomeServerReachable(boolean reachable) {
@@ -184,6 +187,18 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             menus.add(googleMenu);
         } catch (IOException e) {
             log.error("Error creating google menu: " + e.getMessage());
+        }
+
+        try {
+            if (AmazonUtils.isAWSProviderPresent()) {
+                log.info("Adding Amazon cloud menu to the UI");
+                AWSMenu = createAWSMenu();
+                AWSMenu.setVisible(true);
+                menus.add(AWSMenu);
+            }
+        } catch(IOException e){
+            log.error("Error creating the Amazon AWS menu: " + e.getMessage());
+            AWSMenu.setVisible(false);
         }
 
         menus.add(createHelpMenu());
@@ -958,12 +973,93 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return menu;
     }
 
+    private JMenu createAWSMenu() throws IOException {
+
+        final OAuthUtils oauth = OAuthUtils.getInstance();
+
+        oauth.setAuthProvider("Amazon");
+        JMenu menu = new JMenu(oauth.getAuthProvider());
+
+        final JMenuItem login = new JMenuItem("Login");
+        login.addActionListener(e -> {
+            try {
+                oauth.openAuthorizationPage(); // should trigger and event and UI takes over
+            } catch (Exception ex) {
+                MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
+                log.error("Error fetching oAuth tokens", ex);
+            }
+        });
+        login.setEnabled(false);
+        menu.add(login);
+
+        final JMenuItem logout = new JMenuItem("Logout");
+        logout.addActionListener(e -> {
+            oauth.logout();
+        });
+        logout.setEnabled(false);
+        menu.add(logout);
+
+        final JMenuItem loadS3 = new JMenuItem("Load from S3 bucket");
+        loadS3.addActionListener(e -> {
+            List<String> buckets = AmazonUtils.ListBucketsForUser();
+            log.debug(buckets);
+
+            UIUtilities.invokeOnEventThread(() -> {
+                S3LoadDialog dlg = new S3LoadDialog(IGV.getMainFrame());
+                dlg.setModal(true);
+                dlg.setVisible(true);
+                dlg.dispose();
+            });
+        });
+        loadS3.setEnabled(false);
+        menu.add(loadS3);
+
+        menu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                Runnable runnable = () -> {
+                    boolean loggedIn = false;
+                    try {
+                        loggedIn = OAuthUtils.getInstance().isLoggedIn();
+                        log.debug("MenuBar is user loggedIn?: "+loggedIn);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (loggedIn) {
+                        login.setText(oauth.getCurrentUserName());
+                    } else {
+                        login.setText("Login ...");
+                    }
+                    login.setEnabled(!loggedIn);
+                    logout.setEnabled(loggedIn);
+                    loadS3.setEnabled(loggedIn);
+                };
+
+                LongRunningTask.submit(runnable);
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+
+            }
+
+        });
+
+        return menu;
+    }
+
     private JMenu createGoogleMenu() throws IOException {
 
     	// Dynamically name menu - dwm08
         final OAuthUtils oauth = OAuthUtils.getInstance();
 
-        JMenu menu =  new JMenu(oauth.authProvider);
+        oauth.setAuthProvider("Google");
+        JMenu menu =  new JMenu(oauth.getAuthProvider());
 
         final JMenuItem login = new JMenuItem("Login ... ");
         login.addActionListener(e -> {
@@ -975,7 +1071,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
 
         });
-        login.setEnabled(false);
+        //login.setEnabled(false);
         menu.add(login);
 
 
@@ -996,7 +1092,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             @Override
             public void menuSelected(MenuEvent e) {
                 Runnable runnable = () -> {
-                    boolean loggedIn = oauth.isLoggedIn();
+                    boolean loggedIn = false;
+                    try {
+                        loggedIn = OAuthUtils.getInstance().isLoggedIn();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
                     if (loggedIn) {
                         login.setText(oauth.getCurrentUserName());
                     } else {
@@ -1018,8 +1119,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             public void menuCanceled(MenuEvent e) {
 
             }
-        });
 
+        });
 
         return menu;
     }

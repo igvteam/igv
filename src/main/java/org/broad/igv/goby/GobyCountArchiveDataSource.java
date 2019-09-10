@@ -25,10 +25,10 @@
 
 package org.broad.igv.goby;
 
-import edu.cornell.med.icb.goby.counts.CachingCountsArchiveReader;
-import edu.cornell.med.icb.goby.counts.CountBinningAdapterI;
-import edu.cornell.med.icb.goby.counts.CountBinningAdaptor;
-import edu.cornell.med.icb.goby.counts.CountsReader;
+import org.campagnelab.goby.counts.CachingCountsArchiveReader;
+import org.campagnelab.goby.counts.CountBinningAdapterI;
+import org.campagnelab.goby.counts.CountBinningAdaptor;
+import org.campagnelab.goby.counts.CountsReader;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.io.FilenameUtils;

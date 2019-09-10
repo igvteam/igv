@@ -36,10 +36,8 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -175,6 +173,27 @@ public class StringUtils {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Return query parameters on a map, borrowed from:
+     * https://stackoverflow.com/questions/13592236/parse-a-uri-string-into-name-value-collection
+     *
+     *
+     * @param url
+     * @return parameters
+     */
+
+    // Striking that the Java URL base class or related utils do not handle this sort of util/helper method.
+    public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+        Map<String, String> query_pairs = new LinkedHashMap<>();
+        String query = url.getQuery();
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+        }
+        return query_pairs;
     }
 
     /**

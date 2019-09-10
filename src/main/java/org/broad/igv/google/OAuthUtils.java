@@ -25,16 +25,20 @@
 
 package org.broad.igv.google;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
+import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.JWTParser;
+import software.amazon.awssdk.services.cognitoidentity.model.Credentials;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -44,11 +48,19 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.net.URLDecoder;
+import java.time.Duration;
+import java.util.*;
 import java.util.prefs.Preferences;
+
+// XXX: Both Oauth and JWT classes need a serious refactor/audit. Multi-provider support, concurrency, security, etc...:
+// WARNING: This class requires a thorough security audit of Oauth/JWT implementations. I would recommend going through:
+// https://www.owasp.org/index.php/JSON_Web_Token_(JWT)_Cheat_Sheet_for_Java
+//
+// And potentially refactor/substitute this logic with:
+//
+// https://github.com/auth0/java-jwt.
+// https://developers.google.com/api-client-library/java/google-oauth-java-client/
 
 /**
  * Created by jrobinso on 11/19/14.
@@ -57,7 +69,7 @@ public class OAuthUtils {
 
     private static Logger log = Logger.getLogger(OAuthUtils.class);
 
-    public String authProvider = "Google";
+    private String authProvider = "";
     private String appIdURI = null;
     public static String findString = null;
     public static String replaceString = null;
@@ -68,7 +80,7 @@ public class OAuthUtils {
     private String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
     private String driveScope = "https://www.googleapis.com/auth/drive.readonly";
     private String emailScope = "https://www.googleapis.com/auth/userinfo.email";
-    private String state = "%2Fprofile";
+    private String state = UUID.randomUUID().toString(); // "RFC6749: An opaque value used by the client to maintain state"
     private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
     private String oobURI = "urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob";
     private String clientId;
@@ -79,10 +91,14 @@ public class OAuthUtils {
     private String authorizationCode;
     private String accessToken;
     private String refreshToken;
-    private long expirationTime;
+    private static long expirationTime; // in milliseconds
 
     private static OAuthUtils theInstance;
     private String currentUserName;
+    private String currentUserEmail;
+    private String currentUserID;
+
+    private static JsonObject response;
 
     // by default this is the google scope
     private String scope = driveScope + "%20" + gsScope + "%20" + emailScope;
@@ -97,16 +113,19 @@ public class OAuthUtils {
     }
 
     private OAuthUtils() throws IOException {
-        restoreRefreshToken();
+        // XXX: Refactor/rethink this for multiple providers
+        // SECURITY: this is definitely a bad practice, we should NOT persist (refresh) tokens locally, ever.
+        //restoreRefreshToken();
         fetchOauthProperties();
     }
 
     public void fetchOauthProperties() throws IOException {
 
         String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
-        //IGVPreferences.getInstance().get(IGVPreferences.OAUTH_CONFIG);
 
         if (oauthConfig == null || !FileUtils.resourceExists(oauthConfig)) {
+            // Remote provisioning of OAUTH attributes
+            log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from: "+PROPERTIES_URL);
             String propString = HttpUtils.getInstance().getContentsAsGzippedString(HttpUtils.createURL(PROPERTIES_URL));
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
@@ -115,30 +134,36 @@ public class OAuthUtils {
             tokenURI = obj.get("token_uri").getAsString();
             clientId = obj.get("client_id").getAsString();
         } else {
-            // Custom oauth parameters.    -- dwm08
+            // Local IGV user directory override of OAUTH config
+            log.debug("Loading Oauth properties from: " + oauthConfig);
             JsonParser parser = new JsonParser();
             String json = FileUtils.getContents(oauthConfig);
             JsonObject obj = parser.parse(json).getAsJsonObject();
-            authURI = obj.get("authorization_endpoint").getAsString();
-            clientSecret = obj.get("client_secret").getAsString();
-            tokenURI = obj.get("token_endpoint").getAsString();
-            clientId = obj.get("client_id").getAsString();
-            GoogleUtils.GS_HOST = obj.get("hosts").getAsString();
-            appIdURI = obj.get("app_id_uri").getAsString();
-            authProvider = obj.get("auth_provider").getAsString();
-            String scope = obj.get("scope").getAsString();
+
+            // Mandatory attributes, fail hard if not present
+            try {
+                clientId = obj.get("client_id").getAsString();
+                authURI = obj.get("authorization_endpoint").getAsString();
+                tokenURI = obj.get("token_endpoint").getAsString();
+            } catch (Exception e) {
+                throw new IOException(oauthConfig+" is missing crucial attributes such as: client_id, " +
+                                                  "authorization_endpoint or token_endpoint");
+            }
+            
+            // Optional or custom attributes, fail on runtime, depending on identity provider configuration
+            clientSecret = obj.has("client_secret") ? obj.get("client_secret").getAsString() : null;
+            setAuthProvider(obj.has("auth_provider") ? obj.get("auth_provider").getAsString() : authProvider);
+            tokenURI = obj.has("token_endpoint") ? obj.get("token_endpoint").getAsString() : null;
+            appIdURI = obj.has("app_id_uri") ? obj.get("app_id_uri").getAsString() : null;
+            setScope(obj.has("scope") ? obj.get("scope").getAsString() : scope);
+            // Accomodate Jim's custom case
             if (scope.equals("none")) {
-                this.scope = null;
-            }
-            JsonElement je = obj.get("find_string");
-            if (je != null) {
-                findString = je.getAsString();
-            }
-            je = obj.get("replace_string");
-            if (je != null) {
-                replaceString = je.getAsString();
+                setScope(null);
             }
 
+            // @igvteam custom oauth attributes
+            GoogleUtils.GS_HOST = obj.has("hosts") ? obj.get("hosts").getAsString() : null;
+            authProvider = obj.has("auth_provider") ? obj.get("auth_provider").getAsString() : null;
         }
     }
 
@@ -155,19 +180,14 @@ public class OAuthUtils {
     public void openAuthorizationPage() throws IOException, URISyntaxException {
         Desktop desktop = Desktop.getDesktop();
 
-        // properties moved to early init dwm08
-        //if (clientId == null) fetchOauthProperties();
-
         String redirect = oobURI;
         // if the listener is active, then set the redirect URI.  dwm08
         if (CommandListener.isListening()) {
             redirect = redirectURI;
         }
         String url;
-        // for auth providers that need scope,
-        // set the scope parameter
-        //if (scope != null) {
         if (appIdURI == null) {
+            log.debug("appIdURI is null, skipping resource setting");
             url = authURI + "?" +
                     "scope=" + scope + "&" +
                     "state=" + state + "&" +
@@ -175,11 +195,9 @@ public class OAuthUtils {
                     "response_type=code&" +
                     "client_id=" + clientId; // Native app
         }
-        // for auth providers that need the resource setting
-        // the the resource paremeter
-        //else if (appIdURI != null) {
-        else {
 
+        else {
+            log.debug("appIdURI is not null, setting resource= as part of the authURI");
             url = authURI + "?" +
                     "scope=" + scope + "&" +
                     "state=" + state + "&" +
@@ -188,12 +206,12 @@ public class OAuthUtils {
                     "resource=" + appIdURI + "&" +
                     "client_id=" + clientId; // Native app
         }
-//        else {
-//        	throw new IOException("Either scope or resource must be provided to authenticate.");
-//        }
 
-        // check if the "browse" Desktop action is suppported (many Linux DEs cannot directly
+        log.debug("URL for the auth page is: "+url);
+
+        // check if the "browse" Desktop action is supported (many Linux DEs cannot directly
         // launch browsers!)
+
         if (desktop.isSupported(Desktop.Action.BROWSE)) {
             desktop.browse(new URI(url));
         } else { // otherwise, display a dialog box for the user to copy the URL manually.
@@ -208,56 +226,100 @@ public class OAuthUtils {
                 setAuthorizationCode(ac, oobURI);
             }
         }
-
     }
 
-    // Called from port listener upon receiving the oauth request with a "code" parameter
+
+    // Called from port listener (org.broad.igv.batch.CommandListener) upon receiving the oauth request with a "code" parameter
     public void setAuthorizationCode(String ac) throws IOException {
         setAuthorizationCode(ac, redirectURI);
     }
 
     public void setAuthorizationCode(String ac, String redirect) throws IOException {
         authorizationCode = ac;
+        log.debug("oauth code parameter: "+ac);
+        log.debug("url-encoded redirect_uri: "+redirect);
         fetchTokens(redirect);
-        fetchUserProfile();
     }
 
-    // Called from port listener upon receiving the oauth request with a "token" parameter TODO -- does this ever happen?
-    public void setAccessToken(String accessToken) throws IOException {
+    // Called from port listener upon receiving the oauth request with a "token" parameter
+    public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
-        fetchUserProfile();
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
     }
 
     private void fetchTokens(String redirect) throws IOException {
-
-        // properties moved to early init dwm08
-        //if (clientId == null) fetchOauthProperties();
 
         URL url = HttpUtils.createURL(tokenURI);
 
         Map<String, String> params = new HashMap<String, String>();
         params.put("code", authorizationCode);
         params.put("client_id", clientId);
-        params.put("client_secret", clientSecret);
-        params.put("redirect_uri", redirect);
+        // pointless to have clientsecret on a publicly distributed client software?
+        if (clientSecret != null) { params.put("client_secret", clientSecret); }
+        params.put("redirect_uri", new URLDecoder().decode(redirectURI, "utf-8"));
         params.put("grant_type", "authorization_code");
 
-        // set the resource if it necessary for the auth provider dwm08
+        //  set the resource if it necessary for the auth provider dwm08
         if (appIdURI != null) {
             params.put("resource", appIdURI);
         }
 
-        String response = HttpUtils.getInstance().doPost(url, params);
-        JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(response).getAsJsonObject();
 
-        accessToken = obj.getAsJsonPrimitive("access_token").getAsString();
-        refreshToken = obj.getAsJsonPrimitive("refresh_token").getAsString();
-        expirationTime = System.currentTimeMillis() + (obj.getAsJsonPrimitive("expires_in").getAsInt() * 1000);
+        try {
+            String idToken;
+
+            String res = HttpUtils.getInstance().doPost(url, params);
+            JsonParser parser = new JsonParser();
+
+            setResponse(parser.parse(res).getAsJsonObject());
+
+            accessToken = response.get("access_token").getAsString();
+            refreshToken = response.get("refresh_token").getAsString();
+            idToken = response.get("id_token").getAsString();
+
+            log.debug("Oauth2 refresh token: "+refreshToken);
+            log.debug("Oauth2 token_id: "+idToken);
+            log.debug("Oauth2 access token: "+accessToken);
+            log.debug("Oauth2 state: "+state);
+
+            refreshToken = response.get("refresh_token").getAsString();
+            expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
+
+            JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
+
+            // Populate this class with user profile attributes
+            fetchUserProfile(payload);
+
+
+            if (authProvider.equals("Amazon")) {
+                // Get AWS credentials after getting relevant tokens
+                Credentials aws_credentials;
+                aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
+
+                // Update S3 client with newly acquired token
+                AmazonUtils.updateS3Client(aws_credentials);
+            }
+
+
+            // Notify UI that we are authz'd/authn'd
+            if (isLoggedIn()) {
+                IGVEventBus.getInstance().post(new AuthStateEvent(true, this.authProvider, this.getCurrentUserName()));
+            }
+
+        } catch(Exception e) {
+            log.error(e);
+            e.printStackTrace();
+        }
 
         // Try to store in java.util.prefs
-        saveRefreshToken();
+        // SECURITY: @igvteam, this is definitely a bad practice, we should NOT persist (refresh) tokens locally, ever.
+        // saveRefreshToken();
     }
+
+
 
     /**
      * Fetch a new access token from a refresh token.
@@ -268,8 +330,6 @@ public class OAuthUtils {
 
         // properties moved to early init dwm08
         //if (clientId == null) fetchOauthProperties();
-
-        URL url = HttpUtils.createURL(tokenURI);
 
         Map<String, String> params = new HashMap<String, String>();
         params.put("refresh_token", refreshToken);
@@ -282,20 +342,23 @@ public class OAuthUtils {
             params.put("resource", appIdURI);
         }
 
+        // Poke the token refresh endpoint to get new access key
+        URL url = HttpUtils.createURL(tokenURI);
+
         String response = HttpUtils.getInstance().doPost(url, params);
         JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(response).getAsJsonObject();
+
+        setResponse(parser.parse(response).getAsJsonObject());
+        JsonObject obj = getResponse();
 
         JsonPrimitive atprim = obj.getAsJsonPrimitive("access_token");
         if (atprim != null) {
             accessToken = obj.getAsJsonPrimitive("access_token").getAsString();
             expirationTime = System.currentTimeMillis() + (obj.getAsJsonPrimitive("expires_in").getAsInt() * 1000);
-            fetchUserProfile();
         } else {
             // Refresh token has failed, reauthorize from scratch
             reauthorize();
         }
-
     }
 
     private void reauthorize() throws IOException {
@@ -314,20 +377,16 @@ public class OAuthUtils {
      *
      * @throws IOException
      */
-    public JsonObject fetchUserProfile() throws IOException {
-
+    public JsonObject fetchUserProfile(JsonObject jwt_payload) throws IOException {
         try {
+            currentUserName = jwt_payload.has("name") ? jwt_payload.get("name").getAsString() : null;
+            if(currentUserName == null && jwt_payload.has("cognito:username")) {
+                currentUserName = jwt_payload.get("cognito:username").getAsString();
+            }
+            currentUserEmail = jwt_payload.has("email") ? jwt_payload.get("email").getAsString() : null;
+            currentUserID = jwt_payload.has("id") ? jwt_payload.get("id").getAsString() : null;
 
-            URL url = new URL("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken);
-            String response = HttpUtils.getInstance().getContentsAsJSON(url);
-            JsonParser parser = new JsonParser();
-            JsonObject obj = parser.parse(response).getAsJsonObject();
-
-            currentUserName = obj.get("name").getAsString();
-            //currentUserEmail = obj.get("email").getAsString();
-            //currentUserID = obj.get("id").getAsString();
-
-            return obj;
+            return jwt_payload;
         } catch (Throwable exception) {
             log.error(exception);
             return null;
@@ -337,7 +396,8 @@ public class OAuthUtils {
     public String getAccessToken() {
 
         // Check expiration time, with 1 minute cushion
-        if (accessToken == null || (System.currentTimeMillis() > (expirationTime - 60 * 1000))) {
+        if (accessToken == null || (System.currentTimeMillis() > (expirationTime - Globals.TOKEN_EXPIRE_GRACE_TIME))) {
+        log.debug("Refreshing access token!");
             if (refreshToken != null) {
                 try {
                     this.refreshAccessToken();
@@ -348,6 +408,51 @@ public class OAuthUtils {
         }
 
         return accessToken;
+    }
+
+    /**
+    *
+    * Get OAuth credential tokens expiration time (in seconds).
+    *
+    */
+    public static Duration getExpirationTime() {
+        Duration expiration = Duration.ofMillis(expirationTime - System.currentTimeMillis());
+        log.debug("Current expiration time of credentials (and presigned urls is): "+ expiration.toSeconds() + " seconds and expirationTime in class is: "+expirationTime);
+        return expiration;
+    }
+
+    public static Date getExpirationDate() {
+        return new Date(expirationTime);
+    }
+
+    public class AuthStateEvent {
+        boolean authenticated;
+        String authProvider;
+        String userName;
+        String email;
+
+        // Assuming that if this event is called, we are indeed autz/authn'd
+        public AuthStateEvent(boolean authenticated, String authProvider, String userName) {
+            this.authenticated = authenticated;
+            this.authProvider = authProvider;
+            this.userName = userName;
+        }
+
+        public boolean isAuthenticated() {
+            return authenticated;
+        }
+
+        public String getAuthProvider() {
+            return authProvider;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public String getEmail() {
+            return currentUserEmail;
+        }
     }
 
     public boolean isLoggedIn() {
@@ -393,7 +498,8 @@ public class OAuthUtils {
     public void updateSaveOption(boolean aBoolean) {
         if (aBoolean) {
             if (refreshToken != null) {
-                saveRefreshToken();
+                // SECURITY: this is definitely a bad practice, we should NOT persist (refresh) tokens locally, ever.
+                //saveRefreshToken();
             }
         } else {
             removeRefreshToken();
@@ -430,7 +536,7 @@ public class OAuthUtils {
     }
 
     /**
-     * Generate a set of all urls in the sessino file
+     * Generate a set of all urls in the session file
      *
      * @param sessionPath
      * @return list of urls
@@ -484,5 +590,21 @@ public class OAuthUtils {
                 }
             }
         }
+    }
+
+    public static JsonObject getResponse() {
+        return response;
+    }
+
+    public static void setResponse(JsonObject res) {
+        response = res;
+    }
+
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(String authProvider) {
+        this.authProvider = authProvider;
     }
 }

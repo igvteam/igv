@@ -25,9 +25,9 @@
 
 package org.broad.igv.goby;
 
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
+import org.campagnelab.goby.alignments.AlignmentReaderImpl;
+import org.campagnelab.goby.alignments.Alignments;
+import org.campagnelab.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;

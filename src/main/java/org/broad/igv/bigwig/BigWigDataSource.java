@@ -25,7 +25,7 @@
 
 package org.broad.igv.bigwig;
 
-import org.apache.commons.math.stat.StatUtils;
+import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.bbfile.*;
 import org.broad.igv.data.AbstractDataSource;
