@@ -999,8 +999,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         logout.setEnabled(false);
         menu.add(logout);
 
-        final JMenuItem s3_object = new JMenuItem("Load from S3 bucket");
-        s3_object.addActionListener(e -> {
+        final JMenuItem loadS3 = new JMenuItem("Load from S3 bucket");
+        loadS3.addActionListener(e -> {
             List<String> buckets = AmazonUtils.ListBucketsForUser();
             log.debug(buckets);
 
@@ -1011,7 +1011,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 dlg.dispose();
             });
         });
-        menu.add(s3_object);
+        loadS3.setEnabled(false);
+        menu.add(loadS3);
 
         menu.addMenuListener(new MenuListener() {
             @Override
@@ -1031,6 +1032,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     }
                     login.setEnabled(!loggedIn);
                     logout.setEnabled(loggedIn);
+                    loadS3.setEnabled(loggedIn);
                 };
 
                 LongRunningTask.submit(runnable);
