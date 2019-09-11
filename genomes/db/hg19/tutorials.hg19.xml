@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Global name="Tutorials" version="1">
+    <Category name="UI Basics (Encode)">
+        <Resource trackLine="viewLimits=0:25" name="GM12878 H3K27ac" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k27acStdSig.wig.tdf"/>
+        <Resource trackLine="viewLimits=0:25" name="GM12878 H3K27me3" color="255,0,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k27me3StdSig.wig.tdf"/>
+        <Resource trackLine="viewLimits=0:25" name="GM12878 H3K36me3" color="0,0,150" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k36me3StdSig.wig.tdf"/>
+        <Resource trackLine="viewLimits=0:25" name="GM12878 H3K4me1" color="0,150,0" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me1StdSig.wig.tdf"/>
+    </Category>
+    <Category name="RNA-Seq (Body Map)">
+        <Resource name="Heart"
+                  path="http://www.broadinstitute.org/igvdata/tutorials/SL2C5A3/heart.bodyMap.bam"/>
+        <Resource name="Liver"
+                  path="http://www.broadinstitute.org/igvdata/tutorials/SL2C5A3/liver.bodyMap.bam"/>
+    </Category>
+</Global>
