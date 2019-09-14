@@ -463,13 +463,13 @@ public class HttpUtils {
         String pw = null;
 
         IGVPreferences prefMgr = PreferencesManager.getPreferences();
-        useProxy = prefMgr.getAsBoolean(USE_PROXY);
         proxyHost = prefMgr.get(PROXY_HOST, null);
         try {
             proxyPort = Integer.parseInt(prefMgr.get(PROXY_PORT, "-1"));
         } catch (NumberFormatException e) {
             proxyPort = -1;
         }
+        useProxy = prefMgr.getAsBoolean(USE_PROXY) && proxyHost != null && proxyHost.trim().length() > 0;
         auth = prefMgr.getAsBoolean(PROXY_AUTHENTICATE);
         user = prefMgr.get(PROXY_USER, null);
         String pwString = prefMgr.get(PROXY_PW, null);
