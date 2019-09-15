@@ -33,7 +33,7 @@ VARIANT_COLOR_BY_ALLELE_FREQ	Color by allele frequency (uncheck to color by alle
 #Mutations
 
 ##Color Options
-COVER_OVERLAY_KEY	Color Mutations	boolean	FALSE
+COVER_OVERLAY_KEY	Color Mutations	boolean	TRUE
 MUTATION_INDEL_COLOR_KEY	Indel	color	0,200,0
 MUTATION_MISSENSE_COLOR_KEY	Missense	color	170,20,240
 MUTATION_NONSENSE_COLOR_KE	Nonsense	color	50,30,75
@@ -45,6 +45,7 @@ MUTATION_Non-coding_Transcript_COLOR	Non-coding Transcript	color	0,0,150
 MUTATION_Other_AA_changing_COLOR	Other AA Changing	color	0,150,150
 MUTATION_Other_likely_neutral_COLO	Other Likely NeutralR	color	225,180,225
 MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
+
 
 #Charts
 CHART.DRAW_TOP_BORDER	Draw top border	boolean	FALSE
@@ -281,3 +282,14 @@ GENE_LIST_BED_FORMAT	FALSE
 showLOS	TRUE
 DEBUG.PROXY	FALSE
 
+MUTATION_INDEL_COLOR_KEY	Indel	color	0,200,0
+MUTATION_MISSENSE_COLOR_KEY	Missense	color	170,20,240
+MUTATION_NONSENSE_COLOR_KE	Nonsense	color	50,30,75
+MUTATION_SPLICE_SITE_COLOR_KEY	Splice Site	color	150,0,150
+MUTATION_SYNONYMOUS_COLOR_KEY	Synonymous	color	200,170,200
+MUTATION_TARGETED_REGION_COLOR_KEY	Targeted Region	color	236,155,43
+MUTATION_Truncating_COLOR	Truncating	color	150,0,0
+MUTATION_Non-coding_Transcript_COLOR	Non-coding Transcript	color	0,0,150
+MUTATION_Other_AA_changing_COLOR	Other AA Changing	color	0,150,150
+MUTATION_Other_likely_neutral_COLO	Other Likely NeutralR	color	225,180,225
+MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
