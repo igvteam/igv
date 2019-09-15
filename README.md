@@ -31,14 +31,12 @@ Both [OpenJDK](https://openjdk.java.net/) and [Amazon's Correto Java 11](https:/
     * All four JARs must be in the same location in order to run IGV.  It can be run directly from
     'build/IGV-<YOUR_PLATFORM>'.
 
-    * Launch with `igv.sh` on UNIX, `igv.command` on Mac, and `igv.bat` (or 'igv_32.bat' for 32-bit Java) on Windows.
+    * Launch IGV with `igv.sh` on Linux, `igv.command` on Mac, and `igv.bat`.
      These scripts can be edited to adjust JVM flags like maximum memory, etc.
 
-* Use ```./gradlew createToolsDist``` to build an igvtools distribution directory (found in 
-  'build/IGVTools-dist') containing the igvtools.jar and dependencies (same as for IGV, above)  
-  JAR dependencies plus helper scripts for running and launching.
-  As above, these JARs will be identical aside from signing, timestamps, etc. and all must be
-  present together to run.  See igvtools_readme.txt for more info.
+    * To run igvtools from the command line use the script `igvtools` on Linux and Mac, or igvtools.bat
+    on Windows. 
+
   
 * Use ```./gradlew test``` to run the test suite.  See 'src/test/README.txt' for more information about running
   the tests.
