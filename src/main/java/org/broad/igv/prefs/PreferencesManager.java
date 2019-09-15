@@ -92,6 +92,7 @@ public class PreferencesManager implements IGVEventObserver {
             Map<String, Map<String, String>> userPrefs = loadUserPreferences();
 
             final IGVPreferences nullPrefs = new IGVPreferences(userPrefs.get(NULL_CATEGORY), genericDefaults);
+            extractMutationColors(nullPrefs);
             preferencesMap.put(NULL_CATEGORY, nullPrefs);
             preferencesMap.put(RNA, new IGVPreferences(userPrefs.get(RNA), rnaDefaults));
             preferencesMap.put(THIRD_GEN, new IGVPreferences(userPrefs.get(THIRD_GEN), thirdGenDefaults));
@@ -102,6 +103,21 @@ public class PreferencesManager implements IGVEventObserver {
         }
 
         IGVEventBus.getInstance().subscribe(PreferencesChangeEvent.class, theInstance);
+    }
+
+    private static void extractMutationColors(IGVPreferences prefs) {
+        String cts = prefs.get("MUTATION_COLOR_TABLE");
+        if(cts != null) {
+            String [] tokens= cts.split(";");
+            for(String t : tokens) {
+                String [] kv = t.split("=");
+                if(kv.length  == 2) {
+                    String key = IGVPreferences.getMutationColorKey(kv[0]);
+                    prefs.put(key, kv[1]);
+                }
+            }
+            prefs.remove("MUTATION_COLOR_TABLE");
+        }
     }
 
     public static IGVPreferences getPreferences() {
@@ -136,7 +152,6 @@ public class PreferencesManager implements IGVEventObserver {
             if (preferences != null) {
                 preferences.putAll(entry.getValue());
             }
-
         }
     }
 

@@ -4,6 +4,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Utilities;
@@ -12,16 +14,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static org.broad.igv.prefs.Constants.MUTATION_COLOR_TABLE;
 
 public class PreferenceEditorNew {
-	
+
     private static Logger log = Logger.getLogger(PreferenceEditorNew.class);
-    
-	private static final Font labelFont = new Font("Lucida Grande", Font.BOLD, 14);
+
+    private static final Font labelFont = new Font("Lucida Grande", Font.BOLD, 14);
 
     public static void main(String[] args) throws IOException {
         open(null);
@@ -33,8 +37,10 @@ public class PreferenceEditorNew {
         SwingUtilities.invokeLater(() -> {
             JDialog frame = new JDialog(parent, "Preferences", true);
             final JPanel panel = new JPanel();
-            
-            SwingUtilities.invokeLater(() -> { init(frame, panel, preferenceGroups); });
+
+            SwingUtilities.invokeLater(() -> {
+                init(frame, panel, preferenceGroups);
+            });
             panel.setPreferredSize(new Dimension(750, 590));
             panel.setMaximumSize(new Dimension(750, 590));
             frame.add(panel);
@@ -50,12 +56,12 @@ public class PreferenceEditorNew {
     private static void init(final JDialog parent, JPanel panel, List<PreferencesManager.PreferenceGroup> preferenceGroups) {
 
         // final Map<String, String> updatedPrefs = new HashMap<>();
-    	
-    	JTabbedPane tabbedPane = new JTabbedPane();
+
+        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(750, 590));
         tabbedPane.setMaximumSize(new Dimension(750, 590));
-    	panel.setLayout(new BorderLayout());
-    	panel.add(tabbedPane, BorderLayout.CENTER);
+        panel.setLayout(new BorderLayout());
+        panel.add(tabbedPane, BorderLayout.CENTER);
 
         Map<String, Map<String, String>> updatedPreferencesMap = new HashMap<>();
         for (PreferencesManager.PreferenceGroup entry : preferenceGroups) {
@@ -82,7 +88,7 @@ public class PreferenceEditorNew {
             GridBagLayout contentGrid = new GridBagLayout();
             content.setLayout(contentGrid);
             scrollPane.setViewportView(content);
-            
+
             JPanel group = new JPanel();
 
             int row = 0;
@@ -103,9 +109,9 @@ public class PreferenceEditorNew {
 
                 try {
                     if (pref.getKey().equals(PreferencesManager.SEPARATOR_KEY)) {
-                    	JSeparator sep = new JSeparator();
-                    	grid.addLayoutComponent(sep, new GridBagConstraints(0, row, 4, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 5, 2));
-                    	group.add(sep);
+                        JSeparator sep = new JSeparator();
+                        grid.addLayoutComponent(sep, new GridBagConstraints(0, row, 4, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 5, 2));
+                        group.add(sep);
                         row++;
                         continue;
                     }
@@ -114,8 +120,8 @@ public class PreferenceEditorNew {
                         row++;
                         JLabel label = new JLabel(pref.getLabel());
                         label.setFont(labelFont);
-                    	grid.addLayoutComponent(label, new GridBagConstraints(0, row, 4, 1, 1.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(3, 5, 5, 5), 5, 2));
-                    	group.add(label);
+                        grid.addLayoutComponent(label, new GridBagConstraints(0, row, 4, 1, 1.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(3, 5, 5, 5), 5, 2));
+                        group.add(label);
                         row++;
                         continue;
                     }
@@ -125,7 +131,7 @@ public class PreferenceEditorNew {
                         row = 0;
 
                         if (group.getComponentCount() > 0) {
-                        	// Don't create a new JPanel and Layout if nothing has been added to the existing one.
+                            // Don't create a new JPanel and Layout if nothing has been added to the existing one.
                             group = new JPanel();
                             grid = new GridBagLayout();
                             group.setLayout(grid);
@@ -138,7 +144,7 @@ public class PreferenceEditorNew {
                             grid.addLayoutComponent(groupSpacer, new GridBagConstraints(0, row++, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
                             group.add(groupSpacer);
                         }
-                        
+
                         currentGroup = pref.group;
                         group.setBorder(BorderFactory.createTitledBorder(currentGroup));
                     }
@@ -284,7 +290,7 @@ public class PreferenceEditorNew {
             content.add(contentSpacer);
         }
 
-        
+
         JPanel saveCancelPanel = new JPanel();
         saveCancelPanel.setBackground(new Color(0x33, 0x66, 0x99));
         saveCancelPanel.setPreferredSize(new Dimension(750, 40));
@@ -302,6 +308,11 @@ public class PreferenceEditorNew {
         saveButton.setMaximumSize(new Dimension(100, 30));
         saveButton.setDefaultCapable(true);
         saveButton.addActionListener((event) -> {
+
+            for (Map<String, String> prefs : updatedPreferencesMap.values()) {
+                extractMutationPreferences(prefs);
+            }
+
             PreferencesManager.updateAll(updatedPreferencesMap);
             SwingUtilities.invokeLater(() -> parent.setVisible(false));
             if (IGV.hasInstance()) {
@@ -332,6 +343,34 @@ public class PreferenceEditorNew {
         }
 
         return true;
+    }
+
+
+    static private void extractMutationPreferences(Map<String, String> prefs) {
+
+        PaletteColorTable ct = PreferencesManager.getPreferences().getMutationColorScheme();
+        Set<String> keys = new HashSet(ct.getKeys());
+        keys.addAll(Arrays.asList("Indel", "Missense", "Nonsense", "Splice_site", "Synonymous", "Targeted_Region",
+                "Unknown", "Truncating", "Non-coding_Transcript", "Other_AA_changing", "Other_likely_neutral"));
+
+        List<Map.Entry<String, String>> mutColors = new ArrayList<>();
+        for (Map.Entry<String, String> entry : prefs.entrySet()) {
+            if (keys.contains(entry.getKey())) {
+                mutColors.add(entry);
+            }
+        }
+
+        if (!mutColors.isEmpty()) {
+            for (Map.Entry<String, String> entry : mutColors) {
+                ct.getColorMap().put(entry.getKey(), ColorUtilities.stringToColor(entry.getValue()));
+            }
+            String mapString = ct.getMapAsString();
+            prefs.put(MUTATION_COLOR_TABLE, mapString);
+
+            for (String key : keys) {
+                prefs.remove(key);
+            }
+        }
     }
 
 

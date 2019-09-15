@@ -260,12 +260,14 @@ public class IGVPreferences {
         }
         colorScaleCache.remove(key);
         objectCache.remove(key);
+        mutationColorScheme = null;
     }
 
     private void clearCaches() {
         colorScaleCache.clear();
         booleanCache.clear();
         objectCache.clear();
+        mutationColorScheme = null;
     }
 
     public void put(String key, String value) {
@@ -774,6 +776,27 @@ public class IGVPreferences {
         }
 
         return colorTable;
+    }
+
+    static String getMutationColorKey(String type) {
+        switch(type) {
+            case "Indel":
+                return MUTATION_INDEL_COLOR_KEY;
+            case "Missense":
+                return MUTATION_MISSENSE_COLOR_KEY;
+            case "Nonsense":
+                return MUTATION_NONSENSE_COLOR_KEY;
+            case "Splice_site":
+                return MUTATION_SPLICE_SITE_COLOR_KEY;
+            case "Synonymous":
+                return MUTATION_SYNONYMOUS_COLOR_KEY;
+            case "Targeted_region":
+                return MUTATION_TARGETED_REGION_COLOR_KEY;
+            case "Unknown":
+                return MUTATION_UNKNOWN_COLOR_KEY;
+            default:
+                return "MUTATION_" + type + "_COLOR";
+        }
     }
 
 

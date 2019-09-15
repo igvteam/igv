@@ -42,7 +42,7 @@ import org.broad.igv.ui.color.*;
 /**
  * @author Jim Robinson
  */
-public class ColorMapEditor extends JDialog {
+public class MutationColorMapEditor extends JDialog {
 
     boolean canceled = false;
 
@@ -51,16 +51,23 @@ public class ColorMapEditor extends JDialog {
     private JButton cancelButton;
     private JScrollPane scrollPane1;
     private JPanel editPanel;
+    private JCheckBox useColorsCB;
+    private boolean useColors;
 
     private Map<String, Color> changedColors;
 
-    public ColorMapEditor(Frame owner, Map<String, Color> colors) {
+    public MutationColorMapEditor(Frame owner, Map<String, Color> colors, boolean useColors) {
         super(owner);
         setModal(true);
         changedColors = new HashMap<String, Color>();
         initComponents();
         initContent(colors);
         setSize(300, 500);
+        this.useColors = useColors;
+    }
+
+    public boolean getUseColors() {
+        return useColorsCB.isSelected();
     }
 
     public Map<String, Color> getChangedColors() {
@@ -72,6 +79,8 @@ public class ColorMapEditor extends JDialog {
 
     private void initContent(final Map<String, Color> colors) {
 
+        editPanel.add(useColorsCB);
+        editPanel.add(new JLabel());
         for (Map.Entry<String, Color> entry : colors.entrySet()) {
             final JLabel label = new JLabel(entry.getKey());
             final ColorChooserPanel colorChooserPanel = new ColorChooserPanel(entry.getValue());
@@ -93,7 +102,7 @@ public class ColorMapEditor extends JDialog {
 
 
 
-    public ColorMapEditor(Dialog owner) {
+    public MutationColorMapEditor(Dialog owner) {
         super(owner);
         initComponents();
     }
@@ -104,6 +113,8 @@ public class ColorMapEditor extends JDialog {
         cancelButton = new JButton();
         scrollPane1 = new JScrollPane();
         editPanel = new JPanel();
+        useColorsCB = new JCheckBox("Color Mutations");
+        useColorsCB.setSelected(this.useColors);
 
         //======== this ========
         Container contentPane = getContentPane();

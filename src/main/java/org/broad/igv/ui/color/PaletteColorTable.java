@@ -55,10 +55,11 @@ public class PaletteColorTable implements ColorTable {
     }
 
     public void put(String key, Color c) {
-        colorMap.put(key, c);
+        colorMap.put(key.toLowerCase(), c);
     }
 
     public Color get(String key) {
+        key =key.toLowerCase();
         Color c = colorMap.get(key);
         if (c == null) {
             final int colorIdx = colorMap.size();

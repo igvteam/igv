@@ -41,7 +41,7 @@ import org.broad.igv.ui.Main;
 import org.broad.igv.ui.color.ColorChooserPanel;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.ui.legend.ColorMapEditor;
+import org.broad.igv.ui.legend.MutationColorMapEditor;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.FontChooser;
 import org.broad.igv.ui.util.MessageUtils;
@@ -3143,7 +3143,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void chooseMutationColorsButtonActionPerformed(ActionEvent e) {
         PaletteColorTable ct = PreferencesManager.getPreferences().getMutationColorScheme();
-        ColorMapEditor editor = new ColorMapEditor(IGV.getMainFrame(), ct.getColorMap());
+        MutationColorMapEditor editor = new MutationColorMapEditor(IGV.getMainFrame(), ct.getColorMap(), IGV.getInstance().getSession().getColorOverlay());
         editor.setVisible(true);
 
         Map<String, Color> changedColors = editor.getChangedColors();

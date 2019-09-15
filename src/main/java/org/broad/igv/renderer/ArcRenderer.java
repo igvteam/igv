@@ -52,11 +52,7 @@ public class ArcRenderer extends FeatureRenderer {
         double maxWidth = 1;
         if (featureList != null && featureList.size() > 0) {
 
-            Rectangle lastRect = null;
-
-            boolean colorOverlay = IGV.getInstance().getSession().getColorOverlay();
-
-            // Get max feature width
+           // Get max feature width
             for (IGVFeature feature : featureList) {
                 // Note -- don't cast these to an int until the range is checked.
                 // could get an overflow.
