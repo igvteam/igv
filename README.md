@@ -16,19 +16,14 @@ NOTE: If on a Windows platform use ```./gradlew.bat'``` in the instructions belo
 
 #### Folder structure and build targets
 
-Both [OpenJDK](https://openjdk.java.net/) and [Amazon's Correto Java 11](https://aws.amazon.com/corretto/) distributions have been tested with IGV.
+IGV has been tested with [AdoptOpenJDK](https://adoptopenjdk.net), [OpenJDK](https://openjdk.java.net/) and [Amazon's Correto Java 11](https://aws.amazon.com/corretto/) distributions have been tested with IGV.  The IGV bundles ship with embedded JREs from AdoptOpenJDK.
 
 * Install Gradle for your platform.  See https://gradle.org/ for details.
 
 * Use ```./gradlew createDist``` to build a distribution directory (found in ```build/distributions```) containing 
-  the igv.jar and its required runtime third-party dependencies (batik-codec, goby, and log4j-core) as
-  well as helper scripts for launching.
+  the igv.jar and its required runtime third-party dependencies as well as helper scripts for launching.
 
-    * These four JARs will be identical to those available in the download bundles from our website, 
-    with the exception that they will not be signed with our certificate (required for JNLP) and
-    will have slightly different build properties (timestamp, etc) in about.properties.
-
-    * All four JARs must be in the same location in order to run IGV.  It can be run directly from
+    * This folder structure is required in order to run IGV.  It can be run directly from
     'build/IGV-<YOUR_PLATFORM>'.
 
     * Launch IGV with `igv.sh` on Linux, `igv.command` on Mac, and `igv.bat`.

@@ -4,7 +4,8 @@ IGV BINARY DISTRIBUTION
 
 Prerequisites:
 
-Java 8.0 (http://www.java.com).  Not compatible with Java 9+
+Java 11 (http://openjdk.java.net).  This is bundled with our distributions.
+Not compatible with Java 8, 9, 10.
 
 
 Instructions:
@@ -13,26 +14,39 @@ Instructions:
 
 2. To start IGV execute the following from the command line,
 
-     java -Xmx750m -jar igv.jar
+     java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
 
-Alternatively, you can start IGV with one of the following scripts.  You might have to make the script executable
-(chmod a+x igv.sh).
+Note that the command line has become more complex with Java 11 compared to Java 8.  
+Alternatively, you can start IGV with one of the following scripts; this is 
+recommended.  Some of these may not be present depending on the distribution you 
+downloaded.  You might have to make the script executable (chmod a+x igv.sh).  
 
 
 igv.bat       (for Windows)
 igv.sh        (for Linux and macOS)
+igv_hidpi.sh  (for Linux with HiDPI displays)
 igv.command   (for macOS, double-click to start)
 
-The shell scripts are configured to start IGV with 1500MB of memory (1 GB
-for the bat script).  This is a reasonable default for most machines.  If 
-you are working with very large datasets you can increase the amount of 
-memory available to IGV by editing the first line of the startup script.
+The bat and shell scripts are configured to start IGV with 4GB of
+memory.  This is a reasonable default for most machines.  If you are
+working with very large datasets you can increase the amount of memory
+available to IGV by editing the first line of the startup script.
 Specifically change the value of the "-Xmx" parameter.  For example,
-to start IGV with 1 GB of memory  change the value
+to start IGV with 8 GB of memory change the value
 
-   -Xmx1500m
+   -Xmx4g
 
 to
 
-   -Xmx1000m
+   -Xmx8g
 
+The igv_hidpi.sh script is set up for 2x scaling.  To modify it to do 4x scaling, for 
+example, change the value
+
+   -Dsun.java2d.uiScale=2
+
+to
+
+   -Dsun.java2d.uiScale=4
+
+Fractional values are *NOT* supported at this time. 
