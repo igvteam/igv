@@ -45,4 +45,4 @@ Note that Gradle creates a number of other subdirectories in 'build'.  These can
 
 #### Amazon Web Services support
 
-For more details on how to use IGV with AWS, please refer to `docs/AWS.md`.
+For more details on how to use IGV with AWS, please refer to the [UMCCR documentation](https://umccr.org/blog/igv-amazon-backend-setup/).
