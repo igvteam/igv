@@ -246,6 +246,10 @@ task createDist(type: Copy, dependsOn: jar)  {
     into "${buildDir}/IGV-dist"
 }
 
+tasks.distZip.enabled = false
+tasks.distTar.enabled = false
+tasks.startScripts.enabled = false
+
 task createDistZip(type: Zip, dependsOn: createDist) {
     archiveName = "IGV_${version}.zip"
     from("${buildDir}/IGV-dist")

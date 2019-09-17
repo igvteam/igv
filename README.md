@@ -20,18 +20,17 @@ IGV has been tested with [AdoptOpenJDK](https://adoptopenjdk.net), [OpenJDK](htt
 
 * Install Gradle for your platform.  See https://gradle.org/ for details.
 
-* Use ```./gradlew createDist``` to build a distribution directory (found in ```build/distributions```) containing 
+* Use ```./gradlew createDist``` to build a distribution directory (found in ```build/IGV-dist```) containing 
   the igv.jar and its required runtime third-party dependencies as well as helper scripts for launching.
 
-    * This folder structure is required in order to run IGV.  It can be run directly from
-    'build/IGV-<YOUR_PLATFORM>'.
-
-    * Launch IGV with `igv.sh` on Linux, `igv.command` on Mac, and `igv.bat`.
-     These scripts can be edited to adjust JVM flags like maximum memory, etc.
+    * Launch IGV with `igv.sh` or `igv_hidpi.sh` on Linux, `igv.command` on Mac, and `igv.bat` on Windows.
+     These scripts can be edited to adjust JVM flags like maximum memory, etc.  See the instructions in 
+     readme.txt in that directory.
 
     * To run igvtools from the command line use the script `igvtools` on Linux and Mac, or igvtools.bat
-    on Windows. 
+      on Windows.  See the instructions in igvtools_readme.txt in that directory.
 
+    * The launcher scripts expect this folder structure in order to run IGV.
   
 * Use ```./gradlew test``` to run the test suite.  See 'src/test/README.txt' for more information about running
   the tests.
