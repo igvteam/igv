@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2007-2018 Broad Institute
+// Copyright (c) 2007-2019 Broad Institute
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,9 +48,6 @@ repositories {
 
 sourceSets {
     main {
-        java {
-            srcDirs = ['src/main/java', 'src/main/java11']
-        }
         resources {
             srcDirs = ['src/main/resources', 'src/main/resources-jlfgr-1_0']
             exclude "**/*LICENSE*", "**/META-INF"
@@ -213,7 +210,7 @@ test {
             '--add-modules', 'ALL-MODULE-PATH',
             '--add-reads', "$moduleName=junit",
             '--add-reads', "$moduleName=fest.swing",
-            '@scripts/java11/test_suite.args',
+            '@scripts/test_suite.args',
             '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath,
         ]
         classpath = files()
@@ -222,7 +219,7 @@ test {
 
 task createDist(type: Copy, dependsOn: jar)  {
     from ("web/IGV_64.png")
-    from ("scripts/java11") {
+    from ("scripts") {
         include '*.bat'
         include '*.sh'
         include 'igv.command'
@@ -244,6 +241,10 @@ task createDist(type: Copy, dependsOn: jar)  {
 
     into "${buildDir}/IGV-dist"
 }
+
+tasks.distZip.enabled = false
+tasks.distTar.enabled = false
+tasks.startScripts.enabled = false
 
 task createDistZip(type: Zip, dependsOn: createDist) {
     archiveName = "IGV_${version}.zip"
@@ -286,20 +287,14 @@ task createMacAppDist(type: Copy, dependsOn: createDist) {
     with copySpec {
         from ("scripts/mac.app") {
             exclude "Contents/Info.plist.template"
-            exclude "Contents/MacOS/JavaAppLauncher"
         }
         into "IGV_${version}.app"
     }
     with copySpec {
-        from ("scripts/java11/Info.plist.template")
+        from ("scripts/mac.app/Contents/Info.plist.template")
         filter (ReplaceTokens, tokens: [ VERSION: version ])
         rename "Info.plist.template", "Info.plist"
         into "IGV_${version}.app/Contents"
-    }
-    with copySpec {
-        from ("scripts/java11/IGV_mac.app.command")
-        rename "IGV_mac.app.command", "IGV"
-        into "IGV_${version}.app/Contents/MacOS"
     }
     with copySpec {
         from ("web/IGV_64.png")

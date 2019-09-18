@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>JavaAppLauncher</string>
+	<string>IGV</string>
 	<key>CFBundleIconFile</key>
 	<string>igv_icon.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>IGV_@VERSION@</string>
+	<string>IGV</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -28,16 +28,6 @@
 	<string></string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
-	<key>JVMMainClassName</key>
-	<string>org.broad.igv.ui.Main</string>
-	<key>JVMOptions</key>
-	<array>
-		<string>-Dapple.laf.useScreenMenuBar=true</string>
-		<string>-Xmx4g</string>
-		<string>-Xdock:name=IGV</string>
-	</array>
-	<key>JVMArguments</key>
-	<array/>
 	<key>NSHighResolutionCapable</key>
     <string>true</string>
 </dict>

@@ -3,8 +3,8 @@ feature count density (coverage),  sorting, and indexing data files.
 See also http://www.broadinstitute.org/software/igv/igvtools_commandline.
 
 ***************************************************************************
-Java 8 is required for this release.  See our website for more information
-about support for Java 9 and up.
+Java 11 is required for this release.  See our website for more
+information about support for Java 8.
 ***************************************************************************
 
 ---------------------------------------------------------------------------
@@ -14,6 +14,7 @@ The utilities are invoked from one of the following scripts:
 
    igvtools (command line version for Linux and  macOS 10.x)
    igvtools_gui (gui version for Linux and  macOS 10.x)
+   igvtools_gui_hidpi (HiDPI gui version for Linux)
    igvtools_gui.command (alternative double-clickable gui version for macOS 10.x)
 
    igvtools.bat (command line version for Windows)
@@ -34,14 +35,17 @@ Starting with java
 Igvtools can also be started directly using java as shown below.  This option
 allows more control over java parameters, such as the maximum memory to
 allocate.  In the example below igvtools is started with 1500 MB of memory
-allocated
+allocated and launched in the location where you have unpacked IGVTools.
 
-   java -Xmx1500m  -jar lib/igvtools.jar [command] [options][arguments]
+   java -Xmx1500m --module-path=lib @igv.args --module=org.igv/org.broad.igv.tools.IgvTools [command] [options][arguments]
 
 To start with a gui the command is
 
-   java -Xmx1500m  -jar lib/igvtools.jar gui
-   
+   java -Xmx1500m --module-path=lib @igv.args --module=org.igv/org.broad.igv.tools.IgvTools gui
+
+Note that the command line has become more complex with Java 11 compared to
+Java 8.  We recommend the shell scripts above for most users.
+
 ---------------------------------------------------------------------------
 Memory settings
 ---------------------------------------------------------------------------
@@ -49,9 +53,27 @@ Memory settings
 The scripts above allocate a fixed amount of memory.  If this amount is not
 available on your platform you will get an obscure error along the lines of
 "Could not start the Virtual Machine".   If this happens you will need to
-edit the scripts to reduce the amount of memory requested,  or use the java
+edit the scripts to reduce the amount of memory requested,  or use the Java
 startup option.  The memory is set via a "-Xmx" parameter. For example
 -Xmx1500m  requests 1500 MB,  -Xmx1g requests 1 gigabyte.
+
+---------------------------------------------------------------------------
+HiDPI settings
+---------------------------------------------------------------------------
+
+HiDPI is supported natively by Java on Mac and Windows.  Users on these
+platforms can ignore this section. 
+
+For Linux users, the igvtools_gui_hidpi script is set up for 2x scaling.  
+To modify it to do 4x scaling, for example, change the value
+
+   -Dsun.java2d.uiScale=2
+
+to
+
+   -Dsun.java2d.uiScale=4
+
+Fractional values are *NOT* supported at this time. 
 
 ---------------------------------------------------------------------------
 Genome
