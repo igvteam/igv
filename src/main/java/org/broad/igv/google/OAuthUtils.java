@@ -38,7 +38,7 @@ import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.JWTParser;
-import software.amazon.awssdk.services.cognitoidentity.model.Credentials;
+import software.amazon.awssdk.services.sts.model.Credentials;
 
 import java.awt.*;
 import java.io.BufferedReader;

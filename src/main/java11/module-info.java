@@ -36,6 +36,7 @@ module org.igv {
     requires software.amazon.awssdk.services.s3;
     requires software.amazon.awssdk.auth;
     requires software.amazon.awssdk.services.cognitoidentity;
+    requires software.amazon.awssdk.services.sts;
     requires software.amazon.awssdk.http;
     requires software.amazon.awssdk.utils;
 }
