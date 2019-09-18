@@ -16,10 +16,13 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClient;
 import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClientBuilder;
 import software.amazon.awssdk.services.cognitoidentity.model.*;
+import software.amazon.awssdk.services.sts.model.AssumeRoleWithWebIdentityRequest;
+import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
-import software.amazon.awssdk.utils.http.SdkHttpUtils;
+import software.amazon.awssdk.services.sts.model.AssumeRoleWithWebIdentityResponse;
+import software.amazon.awssdk.services.sts.model.Credentials;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -28,11 +31,8 @@ import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class AmazonUtils {
@@ -98,37 +98,67 @@ public class AmazonUtils {
 
         log.debug("JWT payload id token: "+payload);
 
+        // Collect necessary information from federated IdP for Authentication purposes
         String idTokenStr = response.get("id_token").getAsString();
         String idProvider = payload.get("iss").toString().replace("https://", "")
                                                          .replace("\"", "");
+        String email = payload.get("email").getAsString();
+        String federatedPoolId = igv_oauth_conf.get("aws_cognito_fed_pool_id").getAsString();
+        String cognitoRoleARN = igv_oauth_conf.get("aws_cognito_role_arn").getAsString();
+
         HashMap<String, String> logins = new HashMap<>();
         logins.put(idProvider, idTokenStr);
 
-        String federatedPoolId = igv_oauth_conf.get("aws_cognito_fed_pool_id").getAsString();
+        // Avoid "software.amazon.awssdk.core.exception.SdkClientException: Unable to load credentials from any of the providers in the chain AwsCredentialsProviderChain("
+        // The use of the AnonymousCredentialsProvider essentially bypasses the provider chain's requirement to access ~/.aws/credentials.
+        // https://stackoverflow.com/questions/36604024/sts-saml-and-java-sdk-unable-to-load-aws-credentials-from-any-provider-in-the-c
+        AnonymousCredentialsProvider anoCredProv = AnonymousCredentialsProvider.create();
 
         // https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/cognitoidentity/CognitoIdentityClient.html
         // Build the Cognito client
         CognitoIdentityClientBuilder cognitoIdentityBuilder = CognitoIdentityClient.builder();
 
-        // Avoid "software.amazon.awssdk.core.exception.SdkClientException: Unable to load credentials from any of the providers in the chain AwsCredentialsProviderChain("
-        // The use of the AnonymousCredentialsProvider essentially bypasses the provider chain's requirement to access ~/.aws/credentials.
-        // https://stackoverflow.com/questions/36604024/sts-saml-and-java-sdk-unable-to-load-aws-credentials-from-any-provider-in-the-c
-        cognitoIdentityBuilder.region(getAWSREGION()).credentialsProvider(AnonymousCredentialsProvider.create());
+        cognitoIdentityBuilder.region(getAWSREGION()).credentialsProvider(anoCredProv);
         cognitoIdentityClient = cognitoIdentityBuilder.build();
 
 
-        // "To provide end-user credentials, first make an unsigned call to GetId."
+        // https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html
+        // Basic (Classic) Authflow
+        // Uses AssumeRoleWithWebIdentity and facilitates CloudTrail logging. Uses one more request but provides user traceability.
         GetIdRequest.Builder idrequest = GetIdRequest.builder().identityPoolId(federatedPoolId)
                                                                .logins(logins);
         GetIdResponse idResult = cognitoIdentityClient.getId(idrequest.build());
 
-        // "Next, make an unsigned call to GetCredentialsForIdentity."
-        GetCredentialsForIdentityRequest.Builder authedIds = GetCredentialsForIdentityRequest.builder();
-        authedIds.identityId(idResult.identityId()).logins(logins);
+        GetOpenIdTokenRequest.Builder openidrequest = GetOpenIdTokenRequest.builder().logins(logins).identityId(idResult.identityId());
+        GetOpenIdTokenResponse openId = cognitoIdentityClient.getOpenIdToken(openidrequest.build());
 
-        GetCredentialsForIdentityResponse authedRes = cognitoIdentityClient.getCredentialsForIdentity(authedIds.build());
 
-        return authedRes.credentials();
+        AssumeRoleWithWebIdentityRequest.Builder webidrequest = AssumeRoleWithWebIdentityRequest.builder().webIdentityToken(openId.token())
+                                                                                                          .roleSessionName(email)
+                                                                                                          .roleArn(cognitoRoleARN);
+
+        AssumeRoleWithWebIdentityResponse stsClientResponse = StsClient.builder().credentialsProvider(anoCredProv)
+                                                                                 .region(getAWSREGION())
+                                                                                 .build()
+                                                                                 .assumeRoleWithWebIdentity(webidrequest.build());
+
+//      // Enhanced (Simplified) Authflow
+//      // Major drawback: Does not store federated user information on CloudTrail only authenticated role name appears in logs.
+//
+//        // "To provide end-user credentials, first make an unsigned call to GetId."
+//        GetIdRequest.Builder idrequest = GetIdRequest.builder().identityPoolId(federatedPoolId)
+//                                                               .logins(logins);
+//        GetIdResponse idResult = cognitoIdentityClient.getId(idrequest.build());
+//
+//        // "Next, make an unsigned call to GetCredentialsForIdentity."
+//        GetCredentialsForIdentityRequest.Builder authedIds = GetCredentialsForIdentityRequest.builder();
+//        authedIds.identityId(idResult.identityId()).logins(logins);
+//
+//        GetCredentialsForIdentityResponse authedRes = cognitoIdentityClient.getCredentialsForIdentity(authedIds.build());
+//
+//        return authedRes.credentials()
+
+        return stsClientResponse.credentials();
     }
 
 
@@ -140,7 +170,7 @@ public class AmazonUtils {
      */
     public static void updateS3Client(Credentials credentials) {
         AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
-                                                                   credentials.secretKey(),
+                                                                   credentials.secretAccessKey(),
                                                                    credentials.sessionToken());
 
         StaticCredentialsProvider s3CredsProvider = StaticCredentialsProvider.create(creds);
@@ -280,7 +310,7 @@ public class AmazonUtils {
 
         Credentials credentials = GetCognitoAWSCredentials();
         AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
-                credentials.secretKey(),
+                credentials.secretAccessKey(),
                 credentials.sessionToken());
         StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
 
