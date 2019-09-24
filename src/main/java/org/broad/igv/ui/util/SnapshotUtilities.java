@@ -295,7 +295,7 @@ public class SnapshotUtilities {
         BufferedImage image = getDeviceCompatibleImage(width, height);
         Graphics2D g = image.createGraphics();
 
-        paintImage(target, (SVGGraphics2D) g, width, height, paintOffscreen);
+        paintImage(target, g, width, height, paintOffscreen);
 
         selectedFile = fixFileExt(selectedFile, allowedExts, format);
         if (selectedFile != null) {
