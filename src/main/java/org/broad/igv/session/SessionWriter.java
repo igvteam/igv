@@ -31,7 +31,8 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.track.*;
+import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
@@ -46,11 +47,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.swing.*;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -59,12 +62,11 @@ public class SessionWriter {
 
     static Logger log = Logger.getLogger(SessionWriter.class);
 
-    Session session;
+    private Session session;
     private static int CURRENT_VERSION = 8;
+    private File outputFile;
+    private Document document;
 
-    private static final String TRACK_TAG = SessionElement.TRACK;
-
-    Document document;
 
     /**
      * Method description
@@ -83,8 +85,7 @@ public class SessionWriter {
         this.session = session;
 
         if (outputFile == null) {
-            RuntimeException e = new RuntimeException("Can't save session file: " + outputFile);
-            log.error("Session Management Error", e);
+            log.error("Session Management Error: NULL outputFile");
         }
 
         String xmlString = createXmlFromSession(session, outputFile);
@@ -107,6 +108,7 @@ public class SessionWriter {
         String xmlString = null;
 
         this.session = session;
+        this.outputFile = outputFile;
 
         try {
 
@@ -146,10 +148,6 @@ public class SessionWriter {
 
             globalElement.setAttribute(SessionAttribute.HAS_GENE_TRACK, "" + IGV.getInstance().hasGeneTrack());
             globalElement.setAttribute(SessionAttribute.HAS_SEQ_TRACK, "" + IGV.getInstance().hasSequenceTrack());
-
-            if(outputFile != null) {
-                globalElement.setAttribute("path", outputFile.getAbsolutePath());
-            }
 
             // Resource Files
             writeResources(outputFile, globalElement, document);
@@ -318,16 +316,15 @@ public class SessionWriter {
                     Element dataFileElement = document.createElement(SessionElement.RESOURCE);
 
                     String resourcePath = resourceLocator.getPath();
-                    if(outputFile != null) {
+                    if (outputFile != null) {
                         boolean useRelative = PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
-                        if(useRelative) {
+                        if (useRelative) {
                             resourcePath = FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourcePath);
                         }
                     }
                     dataFileElement.setAttribute(SessionAttribute.PATH, resourcePath);
 
                     //OPTIONAL ATTRIBUTES
-
                     if (resourceLocator.getName() != null) {
                         dataFileElement.setAttribute(SessionAttribute.NAME, resourceLocator.getName());
                     }
@@ -384,9 +381,16 @@ public class SessionWriter {
                     Element element = document.createElement("Track");
                     element.setAttribute("clazz", SessionElement.getXMLClassName(track.getClass()));
 
+                    String id = track.getId();
+                    boolean useRelative = PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
+                    if (useRelative && !FileUtils.isRemote(id)) {
+                        id = FileUtils.getRelativePath(this.outputFile.getAbsolutePath(), id);
+                    }
+                    element.setAttribute("id", id);
+
                     track.marshalXML(document, element);
 
-                    if(track.isNumeric() && track.getDataRange() != null) {
+                    if (track.isNumeric() && track.getDataRange() != null) {
                         Element dataRangeElement = document.createElement(SessionElement.DATA_RANGE);
                         track.getDataRange().marshalXML(document, dataRangeElement);
                         element.appendChild(dataRangeElement);

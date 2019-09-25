@@ -1014,11 +1014,9 @@ public abstract class AbstractTrack implements Track {
     @Override
     public void marshalXML(Document document, Element element) {
 
-        element.setAttribute("id", id);
         element.setAttribute("name", name);
         element.setAttribute("fontSize", String.valueOf(fontSize));
         element.setAttribute("visible", String.valueOf(visible));
-
 
         if (posColor != DEFAULT_COLOR) {
             element.setAttribute(SessionAttribute.COLOR, ColorUtilities.colorToString(posColor));
