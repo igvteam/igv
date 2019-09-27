@@ -80,7 +80,7 @@ public class IGVSessionReaderTest extends AbstractHeadlessTest {
         sessionReader.dataFiles = new ArrayList<ResourceLocator>();
         for (int el = 0; el < elements.getLength(); el++) {
             Element element = (Element) elements.item(el);
-            sessionReader.processResource(session, element, new HashMap(), sessionPath, null);
+            sessionReader.processResource(session, element, new HashMap(), sessionPath);
         }
         assertEquals(elements.getLength(), sessionReader.dataFiles.size());
 
