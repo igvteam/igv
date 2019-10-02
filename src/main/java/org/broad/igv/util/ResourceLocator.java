@@ -186,8 +186,8 @@ public class ResourceLocator {
         } else {
 
             String typeString = pathOrName.toLowerCase();
-            if (path.startsWith("http://") || path.startsWith("https://") ||
-                path.startsWith("gs://") || path.startsWith("s3://")) {
+            if (typeString.startsWith("http://") || typeString.startsWith("https://") ||
+                    typeString.startsWith("gs://") || typeString.startsWith("s3://")) {
 
                 try {
                     URL url = HttpUtils.createURL(pathOrName);
