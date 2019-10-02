@@ -39,6 +39,7 @@ public class IGVUrlHelper implements URLHelper {
     }
 
     public InputStream openInputStream() throws IOException {
+        log.info("openInputStream");
         return HttpUtils.getInstance().openConnectionStream(url);
     }
 
