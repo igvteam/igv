@@ -72,7 +72,7 @@ public class LegendDialog extends JDialog {
             ((LegendPanel) rnaiPanel).resetPreferencesToDefault();
             ((LegendPanel) lohCanvas).resetPreferencesToDefault();
             ((LegendPanel) methylationCanvas).resetPreferencesToDefault();
-            ((LegendPanel) mutationCanvas).resetPreferencesToDefault();
+            //((LegendPanel) mutationCanvas).resetPreferencesToDefault();
         }
 
     }
@@ -98,7 +98,7 @@ public class LegendDialog extends JDialog {
     }
 
     private void mutationButtonActionPerformed(ActionEvent e) {
-        ((LegendPanel) mutationCanvas).edit();
+       // ((LegendPanel) mutationCanvas).edit();
     }
 
 
@@ -115,7 +115,7 @@ public class LegendDialog extends JDialog {
         legendLabel2 = new JLabel();
         jLabel2 = new JLabel();
         expressionCanvas = new HeatmapLegendPanel(TrackType.GENE_EXPRESSION);
-        mutationCanvas = new MutationLegendPanel();
+       // mutationCanvas = new MutationLegendPanel();
         legendLabel3 = new JLabel();
         legendLabel4 = new JLabel();
         rnaiPanel = new HeatmapLegendPanel(TrackType.RNAI);
@@ -237,28 +237,28 @@ public class LegendDialog extends JDialog {
             panel1.add(expressionCanvas);
             expressionCanvas.setBounds(110, 87, 485, 62);
 
-            //======== mutationCanvas ========
-            {
-                mutationCanvas.setBorder(null);
-
-                GroupLayout mutationCanvasLayout = new GroupLayout(mutationCanvas);
-                mutationCanvas.setLayout(mutationCanvasLayout);
-                mutationCanvasLayout.setHorizontalGroup(
-                    mutationCanvasLayout.createParallelGroup()
-                        .add(0, 485, Short.MAX_VALUE)
-                );
-                mutationCanvasLayout.setVerticalGroup(
-                    mutationCanvasLayout.createParallelGroup()
-                        .add(0, 62, Short.MAX_VALUE)
-                );
-            }
-            panel1.add(mutationCanvas);
-            mutationCanvas.setBounds(110, 407, 485, 62);
-
-            //---- legendLabel3 ----
-            legendLabel3.setText("Mutation");
-            panel1.add(legendLabel3);
-            legendLabel3.setBounds(new Rectangle(new Point(0, 430), legendLabel3.getPreferredSize()));
+//            //======== mutationCanvas ========
+//            {
+//                mutationCanvas.setBorder(null);
+//
+//                GroupLayout mutationCanvasLayout = new GroupLayout(mutationCanvas);
+//                mutationCanvas.setLayout(mutationCanvasLayout);
+//                mutationCanvasLayout.setHorizontalGroup(
+//                    mutationCanvasLayout.createParallelGroup()
+//                        .add(0, 485, Short.MAX_VALUE)
+//                );
+//                mutationCanvasLayout.setVerticalGroup(
+//                    mutationCanvasLayout.createParallelGroup()
+//                        .add(0, 62, Short.MAX_VALUE)
+//                );
+//            }
+//            panel1.add(mutationCanvas);
+//            mutationCanvas.setBounds(110, 407, 485, 62);
+//
+//            //---- legendLabel3 ----
+//            legendLabel3.setText("Mutation");
+//            panel1.add(legendLabel3);
+//            legendLabel3.setBounds(new Rectangle(new Point(0, 430), legendLabel3.getPreferredSize()));
 
             //---- legendLabel4 ----
             legendLabel4.setText("RNAi");
@@ -334,14 +334,14 @@ public class LegendDialog extends JDialog {
             lohButton.setBounds(new Rectangle(new Point(620, 327), lohButton.getPreferredSize()));
 
             //---- mutationButton ----
-            mutationButton.setText("Edit");
-            mutationButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mutationButtonActionPerformed(e);
-                }
-            });
-            panel1.add(mutationButton);
-            mutationButton.setBounds(new Rectangle(new Point(620, 424), mutationButton.getPreferredSize()));
+//            mutationButton.setText("Edit");
+//            mutationButton.addActionListener(new ActionListener() {
+//                public void actionPerformed(ActionEvent e) {
+//                    mutationButtonActionPerformed(e);
+//                }
+//            });
+//            panel1.add(mutationButton);
+//            mutationButton.setBounds(new Rectangle(new Point(620, 424), mutationButton.getPreferredSize()));
 
             { // compute preferred size
                 Dimension preferredSize = new Dimension();

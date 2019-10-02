@@ -87,6 +87,7 @@ public class OAuthUtils {
     private String clientSecret;
     private String authURI;
     private String tokenURI;
+    private String apiKey;
 
     private String authorizationCode;
     private String accessToken;
@@ -125,7 +126,7 @@ public class OAuthUtils {
 
         if (oauthConfig == null || !FileUtils.resourceExists(oauthConfig)) {
             // Remote provisioning of OAUTH attributes
-            log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from: "+PROPERTIES_URL);
+            log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from: " + PROPERTIES_URL);
             String propString = HttpUtils.getInstance().getContentsAsGzippedString(HttpUtils.createURL(PROPERTIES_URL));
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
@@ -133,6 +134,9 @@ public class OAuthUtils {
             clientSecret = obj.get("client_secret").getAsString();
             tokenURI = obj.get("token_uri").getAsString();
             clientId = obj.get("client_id").getAsString();
+            if (obj.has("apiKey")) {
+                apiKey = obj.get("apiKey").getAsString();
+            }
         } else {
             // Local IGV user directory override of OAUTH config
             log.debug("Loading Oauth properties from: " + oauthConfig);
@@ -146,10 +150,10 @@ public class OAuthUtils {
                 authURI = obj.get("authorization_endpoint").getAsString();
                 tokenURI = obj.get("token_endpoint").getAsString();
             } catch (Exception e) {
-                throw new IOException(oauthConfig+" is missing crucial attributes such as: client_id, " +
-                                                  "authorization_endpoint or token_endpoint");
+                throw new IOException(oauthConfig + " is missing crucial attributes such as: client_id, " +
+                        "authorization_endpoint or token_endpoint");
             }
-            
+
             // Optional or custom attributes, fail on runtime, depending on identity provider configuration
             clientSecret = obj.has("client_secret") ? obj.get("client_secret").getAsString() : null;
             setAuthProvider(obj.has("auth_provider") ? obj.get("auth_provider").getAsString() : authProvider);
@@ -194,9 +198,7 @@ public class OAuthUtils {
                     "redirect_uri=" + redirect + "&" +
                     "response_type=code&" +
                     "client_id=" + clientId; // Native app
-        }
-
-        else {
+        } else {
             log.debug("appIdURI is not null, setting resource= as part of the authURI");
             url = authURI + "?" +
                     "scope=" + scope + "&" +
@@ -207,7 +209,7 @@ public class OAuthUtils {
                     "client_id=" + clientId; // Native app
         }
 
-        log.debug("URL for the auth page is: "+url);
+        log.debug("URL for the auth page is: " + url);
 
         // check if the "browse" Desktop action is supported (many Linux DEs cannot directly
         // launch browsers!)
@@ -236,8 +238,8 @@ public class OAuthUtils {
 
     public void setAuthorizationCode(String ac, String redirect) throws IOException {
         authorizationCode = ac;
-        log.debug("oauth code parameter: "+ac);
-        log.debug("url-encoded redirect_uri: "+redirect);
+        log.debug("oauth code parameter: " + ac);
+        log.debug("url-encoded redirect_uri: " + redirect);
         fetchTokens(redirect);
     }
 
@@ -258,7 +260,9 @@ public class OAuthUtils {
         params.put("code", authorizationCode);
         params.put("client_id", clientId);
         // pointless to have clientsecret on a publicly distributed client software?
-        if (clientSecret != null) { params.put("client_secret", clientSecret); }
+        if (clientSecret != null) {
+            params.put("client_secret", clientSecret);
+        }
         params.put("redirect_uri", new URLDecoder().decode(redirectURI, "utf-8"));
         params.put("grant_type", "authorization_code");
 
@@ -280,10 +284,10 @@ public class OAuthUtils {
             refreshToken = response.get("refresh_token").getAsString();
             idToken = response.get("id_token").getAsString();
 
-            log.debug("Oauth2 refresh token: "+refreshToken);
-            log.debug("Oauth2 token_id: "+idToken);
-            log.debug("Oauth2 access token: "+accessToken);
-            log.debug("Oauth2 state: "+state);
+            log.debug("Oauth2 refresh token: " + refreshToken);
+            log.debug("Oauth2 token_id: " + idToken);
+            log.debug("Oauth2 access token: " + accessToken);
+            log.debug("Oauth2 state: " + state);
 
             refreshToken = response.get("refresh_token").getAsString();
             expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
@@ -309,7 +313,7 @@ public class OAuthUtils {
                 IGVEventBus.getInstance().post(new AuthStateEvent(true, this.authProvider, this.getCurrentUserName()));
             }
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error(e);
             e.printStackTrace();
         }
@@ -318,7 +322,6 @@ public class OAuthUtils {
         // SECURITY: @igvteam, this is definitely a bad practice, we should NOT persist (refresh) tokens locally, ever.
         // saveRefreshToken();
     }
-
 
 
     /**
@@ -380,7 +383,7 @@ public class OAuthUtils {
     public JsonObject fetchUserProfile(JsonObject jwt_payload) throws IOException {
         try {
             currentUserName = jwt_payload.has("name") ? jwt_payload.get("name").getAsString() : null;
-            if(currentUserName == null && jwt_payload.has("cognito:username")) {
+            if (currentUserName == null && jwt_payload.has("cognito:username")) {
                 currentUserName = jwt_payload.get("cognito:username").getAsString();
             }
             currentUserEmail = jwt_payload.has("email") ? jwt_payload.get("email").getAsString() : null;
@@ -397,7 +400,7 @@ public class OAuthUtils {
 
         // Check expiration time, with 1 minute cushion
         if (accessToken == null || (System.currentTimeMillis() > (expirationTime - Globals.TOKEN_EXPIRE_GRACE_TIME))) {
-        log.debug("Refreshing access token!");
+            log.debug("Refreshing access token!");
             if (refreshToken != null) {
                 try {
                     this.refreshAccessToken();
@@ -411,13 +414,11 @@ public class OAuthUtils {
     }
 
     /**
-    *
-    * Get OAuth credential tokens expiration time (in seconds).
-    *
-    */
+     * Get OAuth credential tokens expiration time (in seconds).
+     */
     public static Duration getExpirationTime() {
         Duration expiration = Duration.ofMillis(expirationTime - System.currentTimeMillis());
-        log.debug("Current expiration time of credentials (and presigned urls is): "+ expiration.toSeconds() + " seconds and expirationTime in class is: "+expirationTime);
+        log.debug("Current expiration time of credentials (and presigned urls is): " + expiration.toSeconds() + " seconds and expirationTime in class is: " + expirationTime);
         return expiration;
     }
 

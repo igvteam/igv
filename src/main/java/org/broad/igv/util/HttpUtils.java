@@ -820,7 +820,7 @@ public class HttpUtils {
         conn.setRequestProperty("User-Agent", Globals.applicationString());
 
         // XXX: What is this?
-        if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) || url.getHost().startsWith("igvweb02")) {
+        if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST)) {
             String token = OAuthUtils.getInstance().getAccessToken();
             if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
         }

@@ -1,5 +1,5 @@
 #General
-SESSION.RELATIVE_PATH	Use relative paths in session files	boolean	FALSE
+SESSION.RELATIVE_PATH	Use relative paths in session files	boolean	TRUE
 IGV.single.track.pane	Display all tracks in a single panel	boolean	FALSE
 IGV.track.show.attribute.views	Show attribute panel	boolean	FALSE
 SHOW_DEFAULT_TRACK_ATTRIBUTES	Show default track attributes	boolean	FALSE
@@ -43,7 +43,7 @@ MUTATION_TARGETED_REGION_COLOR_KEY	Targeted Region	color	236,155,43
 MUTATION_Truncating_COLOR	Truncating	color	150,0,0
 MUTATION_Non-coding_Transcript_COLOR	Non-coding Transcript	color	0,0,150
 MUTATION_Other_AA_changing_COLOR	Other AA Changing	color	0,150,150
-MUTATION_Other_likely_neutral_COLO	Other Likely NeutralR	color	225,180,225
+MUTATION_Other_likely_neutral_COLOR	Other Likely Neutralcolor	225,180,225
 MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
 
 
