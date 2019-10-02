@@ -821,7 +821,9 @@ public class HttpUtils {
 
         // XXX: What is this?
         if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST)) {
+            log.info("Getting access token");
             String token = OAuthUtils.getInstance().getAccessToken();
+            log.info("Setting bearer " + token);
             if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
         }
 

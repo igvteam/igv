@@ -317,10 +317,6 @@ public class OAuthUtils {
             log.error(e);
             e.printStackTrace();
         }
-
-        // Try to store in java.util.prefs
-        // SECURITY: @igvteam, this is definitely a bad practice, we should NOT persist (refresh) tokens locally, ever.
-        // saveRefreshToken();
     }
 
 
