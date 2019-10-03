@@ -46,6 +46,11 @@ public class IGVUrlHelperFactory implements URLHelperFactory {
 
     private static IGVUrlHelperFactory theInstance;
 
+    static {
+        System.out.println("Setting helper factory");
+        htsjdk.tribble.util.ParsingUtils.registerHelperFactory(IGVUrlHelperFactory.getInstance());
+    }
+
     public static IGVUrlHelperFactory getInstance() {
         if(theInstance == null) {
             theInstance = new IGVUrlHelperFactory();
