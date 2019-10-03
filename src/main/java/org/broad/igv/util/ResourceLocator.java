@@ -401,7 +401,7 @@ public class ResourceLocator {
         String indexPath = "";
         if (inputPath.contains(".bam")) {
             indexPath = inputPath + ".bai";
-        } else if (inputPath.contains(".vcf.gz")) {
+        } else if (inputPath.endsWith(".gz")) {
             indexPath = inputPath + ".tbi";
         } else {
             log.debug("S3 index object filetype could not be determined from S3 url");
@@ -481,14 +481,12 @@ public class ResourceLocator {
         if (locator.getIndexPath() != null) {
             return locator.getIndexPath();
         } else {
-
-            if(isCloudURL(locator.getPath())) {
+            if(isCloudOrDropbox(locator.getPath())) {
                 return null;   // Can't infer google & dropbox paths
             }
             else {
                 String indexExtension =
                         (locator.getURLPath().toLowerCase().endsWith(".gz") || locator.getPath().toLowerCase().endsWith(".bgz")) ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
-
                 return appendToPath(locator, indexExtension);
             }
         }
@@ -510,13 +508,9 @@ public class ResourceLocator {
         return indexed;
     }
 
-    private static boolean isCloudURL(String path) {
-
+    private static boolean isCloudOrDropbox(String path) {
         try {
-            if (path.startsWith("gs://")) {
-                return true;
-            }
-            if (GoogleUtils.isGoogleURL(path)) {
+            if (GoogleUtils.isGoogleDrive(path)) {
                 return true;
             }
             if (path.startsWith("http://") || path.startsWith("https://")) {
@@ -525,9 +519,7 @@ public class ResourceLocator {
                     return true;
                 }
             }
-
             return false;
-
         } catch (MalformedURLException e) {
             return false;
         }
