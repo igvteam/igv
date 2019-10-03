@@ -115,8 +115,6 @@ public class OAuthUtils {
 
     private OAuthUtils() throws IOException {
         // XXX: Refactor/rethink this for multiple providers
-        // SECURITY: this is definitely a bad practice, we should NOT persist (refresh) tokens locally, ever.
-        //restoreRefreshToken();
         fetchOauthProperties();
     }
 
@@ -418,10 +416,6 @@ public class OAuthUtils {
         return expiration;
     }
 
-    public static Date getExpirationDate() {
-        return new Date(expirationTime);
-    }
-
     public class AuthStateEvent {
         boolean authenticated;
         String authProvider;
@@ -466,22 +460,6 @@ public class OAuthUtils {
         expirationTime = -1;
         currentUserName = null;
         removeRefreshToken();
-    }
-
-    private void saveRefreshToken() {
-        try {
-            Preferences.userRoot().put(REFRESH_TOKEN_KEY, refreshToken);
-        } catch (Exception e) {
-            log.error("Error storing refresh token", e);
-        }
-    }
-
-    private void restoreRefreshToken() {
-        try {
-            refreshToken = Preferences.userRoot().get(REFRESH_TOKEN_KEY, null);
-        } catch (Exception e) {
-            log.error("Error fetching oauth refresh token", e);
-        }
     }
 
     private void removeRefreshToken() {
