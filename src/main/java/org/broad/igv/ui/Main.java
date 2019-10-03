@@ -28,7 +28,6 @@ package org.broad.igv.ui;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import com.sanityinc.jargs.CmdLineParser;
 import htsjdk.samtools.seekablestream.SeekableStreamFactory;
-
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -38,6 +37,7 @@ import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
+import org.broad.igv.util.stream.IGVUrlHelperFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -83,6 +83,10 @@ public class Main {
     public static void main(final String args[]) {
 
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
+
+        System.out.println("Setting helper factory");
+        htsjdk.tribble.util.ParsingUtils.registerHelperFactory(IGVUrlHelperFactory.getInstance());
+
 
         final Main.IGVArgs igvArgs = new Main.IGVArgs(args);
 
@@ -148,17 +152,17 @@ public class Main {
 
         DirectoryManager.initializeLog();
         log.info("Startup  " + Globals.applicationString());
-        log.info("Java " + System.getProperty(Globals.JAVA_VERSION_STRING) 
-            + " (build " + System.getProperty("java.vm.version")
-            + ") " + System.getProperty("java.version.date", ""));
+        log.info("Java " + System.getProperty(Globals.JAVA_VERSION_STRING)
+                + " (build " + System.getProperty("java.vm.version")
+                + ") " + System.getProperty("java.version.date", ""));
         log.info("Java Vendor: " + System.getProperty("java.vendor")
-            + " " + System.getProperty("java.vendor.url", ""));
+                + " " + System.getProperty("java.vendor.url", ""));
         log.info("JVM: " + System.getProperty("java.vm.name", "")
-            + " " + System.getProperty("java.vendor.version", "")
-            + "   " + System.getProperty("java.compiler", ""));
+                + " " + System.getProperty("java.vendor.version", "")
+                + "   " + System.getProperty("java.compiler", ""));
         log.info("Default User Directory: " + DirectoryManager.getUserDirectory());
         log.info("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version")
-            + " " + System.getProperty("os.arch"));
+                + " " + System.getProperty("os.arch"));
         System.setProperty("http.agent", Globals.applicationString());
 
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
@@ -472,7 +476,7 @@ public class Main {
 
             String[] nonOptionArgs = parser.getRemainingArgs();
 
-            if(parser.getOptionValue(versionOption) != null) {
+            if (parser.getOptionValue(versionOption) != null) {
                 System.out.println(Globals.VERSION);
                 System.exit(0);
             }
@@ -490,7 +494,7 @@ public class Main {
 
                 } else if (nonOptionArgs.length == 1) {
 
-                        decodeNonOptionArgsLegacy(nonOptionArgs);
+                    decodeNonOptionArgsLegacy(nonOptionArgs);
 
                 } else {  //nonOptionArgs.length == 2
 
