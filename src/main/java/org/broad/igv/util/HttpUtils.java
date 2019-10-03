@@ -102,8 +102,7 @@ public class HttpUtils {
 
     private HttpUtils() {
 
-        //htsjdk.tribble.util.ParsingUtils.registerHelperFactory(new IGVUrlHelperFactory());
-        htsjdk.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
+        htsjdk.tribble.util.ParsingUtils.registerHelperFactory(IGVUrlHelperFactory.getInstance());
 
         // if (!Globals.checkJavaVersion("1.8")) {
         disableCertificateValidation();
