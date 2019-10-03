@@ -17,6 +17,7 @@ Page instfiles
 UninstPage instfiles
 
 section
+     SetShellVarContext all
      setOutPath "$INSTDIR"
      File /a /r IGV_@VERSION@\*.*
      createShortCut "$DESKTOP\IGV_@VERSION@.lnk" "$INSTDIR\igv.bat" "" "$INSTDIR\IGV_64.ico"
@@ -37,7 +38,10 @@ FunctionEnd
 #RequestExecutionLevel admin
 
 section "Uninstall"
+    SetShellVarContext all
 	setAutoClose true
+	Delete "$SMPROGRAMS\IGV_@VERSION@\IGV.lnk"
+	Delete "$SMPROGRAMS\IGV_@VERSION@\uninstaller.lnk"
 	RMDir /r "$SMPROGRAMS\IGV_@VERSION@"
 	Delete "$Desktop\IGV_@VERSION@.lnk"
 	
