@@ -79,14 +79,14 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         boolean indexExists = false;
         // Explicit index path
         String idxPath = locator.getIndexPath();
-        if (idxPath != null) {
+        if (idxPath != null && idxPath.length() >0 )  {
             if (FileUtils.isRemote(idxPath)) {
                 idxPath = HttpUtils.mapURL(idxPath);
             }
             indexExists = true;
         } else {
             String maybeIdxPath = ResourceLocator.indexFile(locator);
-            if (maybeIdxPath == null) {
+            if (maybeIdxPath == null || maybeIdxPath.length() == 0) {
                 indexExists = false;
             } else {
                 if (FileUtils.isRemote(maybeIdxPath)) {
