@@ -702,7 +702,7 @@ public class HttpUtils {
     }
 
     private HttpURLConnection openConnection(URL url, Map<String, String> requestProperties, String method) throws IOException {
-        return openConnection(url, requestProperties, method, 0);
+        return openConnection(url, requestProperties, method, 0, 0);
     }
 
     /**
@@ -716,7 +716,7 @@ public class HttpUtils {
      */
     private HttpURLConnection openConnection(
 
-            URL url, Map<String, String> requestProperties, String method, int redirectCount) throws IOException {
+            URL url, Map<String, String> requestProperties, String method, int redirectCount, int retries) throws IOException {
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
         // string to dynamically map url - dwm08
@@ -737,9 +737,7 @@ public class HttpUtils {
             url = HttpUtils.createURL(newPath);
         }
 
-
         Proxy sysProxy = null;
-
         boolean igvProxySettingsExist = proxySettings != null && proxySettings.useProxy;
         boolean checkSystemProxy =
                 !PreferencesManager.getPreferences().getAsBoolean("PROXY.DISABLE_CHECK") && !igvProxySettingsExist;
@@ -748,7 +746,6 @@ public class HttpUtils {
         if (checkSystemProxy) {
             sysProxy = getSystemProxy(url.toExternalForm());
         }
-
 
         boolean useProxy =
                 (sysProxy != null && sysProxy.type() != Proxy.Type.DIRECT) ||
@@ -774,7 +771,6 @@ public class HttpUtils {
                 }
             }
             conn = (HttpURLConnection) url.openConnection(proxy);
-
             if (igvProxySettingsExist && proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
                 byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
 
@@ -786,8 +782,7 @@ public class HttpUtils {
                 log.info("PROXY NOT USED ");
                 if (proxySettings.getWhitelist().contains(url.getHost())) {
                     log.info(url.getHost() + " is whitelisted");
-                }
-                ;
+                };
             }
             conn = (HttpURLConnection) url.openConnection();
         }
@@ -798,12 +793,6 @@ public class HttpUtils {
             if (!"HEAD".equals(method))
                 conn.setRequestProperty("Accept", "text/plain");
         }
-
-        //There seems to be a bug with JWS caches, so we avoid caching
-        //This default is persistent, really should be available statically but isn't
-        conn.setDefaultUseCaches(false);
-        conn.setUseCaches(false);
-
 
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
         conn.setReadTimeout(Globals.READ_TIMEOUT);
@@ -816,14 +805,15 @@ public class HttpUtils {
         }
         conn.setRequestProperty("User-Agent", Globals.applicationString());
 
-        // XXX: What is this?
-        if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST)) {
+        // If this is a Google URL and we have an access token use it.
+        if (GoogleUtils.isGoogleURL(url.toExternalForm())) {
             String token = OAuthUtils.getInstance().getAccessToken();
-            if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
-        }
-
-        if(url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && GoogleUtils.getProjectID() != null && GoogleUtils.getProjectID().length() > 0) {
-            url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
+            if (token != null)  {
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+            }
+            if(GoogleUtils.getProjectID() != null && GoogleUtils.getProjectID().length() > 0) {
+                url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
+            }
         }
 
         if (method.equals("PUT")) {
@@ -845,7 +835,7 @@ public class HttpUtils {
                 int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
                 requestProperties.remove("Range"); // < VERY IMPORTANT
                 URL wsUrl = HttpUtils.createURL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
-                return openConnection(wsUrl, requestProperties, "GET", redirectCount);
+                return openConnection(wsUrl, requestProperties, "GET", redirectCount, retries);
             }
 
             if (log.isDebugEnabled()) {
@@ -855,15 +845,12 @@ public class HttpUtils {
             // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
             // for example http -> https.
             if (code >= 300 && code < 400) {
-
                 if (redirectCount > MAX_REDIRECTS) {
                     throw new IOException("Too many redirects");
                 }
-
                 String newLocation = conn.getHeaderField("Location");
                 log.debug("Redirecting to " + newLocation);
-
-                return openConnection(HttpUtils.createURL(newLocation), requestProperties, method, ++redirectCount);
+                return openConnection(HttpUtils.createURL(newLocation), requestProperties, method, ++redirectCount, retries);
             }
 
             // TODO -- handle other response codes.
@@ -877,6 +864,10 @@ public class HttpUtils {
                     message = "File not found: " + url.toString();
                     throw new FileNotFoundException(message);
                 } else if (code == 401) {
+                    if(GoogleUtils.isGoogleURL(url.toExternalForm()) && retries == 0) {
+                        GoogleUtils.checkLogin();
+                        return openConnection(url, requestProperties, method, redirectCount, ++retries);
+                    }
                     message = "You must log in to access this file";
                     throw new HttpResponseException(code, message, "");
                 } else if (code == 403) {
