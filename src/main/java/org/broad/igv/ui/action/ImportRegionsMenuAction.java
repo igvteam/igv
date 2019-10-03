@@ -31,6 +31,8 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -111,7 +113,13 @@ public class ImportRegionsMenuAction extends MenuAction {
                             String name = data.length > 3 ? data[3] : null;
                             int start = Integer.parseInt(data[1]) - coordConvention;
                             int end = data.length > 2 ? Integer.parseInt(data[2]) : start + 1;
-                            RegionOfInterest regionOfInterest = new RegionOfInterest(data[0], start, end, name);
+                            String chr = data[0];
+                            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                            if(genome != null) {
+                                chr = genome.getCanonicalChrName(chr);
+                            }
+                            RegionOfInterest regionOfInterest = new RegionOfInterest(chr, start, end, name);
+
                             mainFrame.addRegionOfInterest(regionOfInterest);
                         } catch (NumberFormatException numberFormatException) {
                             log.error("Error importing regions of interest", numberFormatException);
