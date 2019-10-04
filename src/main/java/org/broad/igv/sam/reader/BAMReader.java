@@ -37,9 +37,12 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.URLUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -132,7 +135,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
 
     public List<String> getSequenceNames() {
         if (sequenceNames == null) {
-           loadSequenceDictionary();
+            loadSequenceDictionary();
         }
         return sequenceNames;
     }
@@ -145,7 +148,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         return sequenceDictionary;
     }
 
-    private void loadSequenceDictionary () {
+    private void loadSequenceDictionary() {
 
         SAMFileHeader header = getFileHeader();
         sequenceNames = new ArrayList();
@@ -202,7 +205,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
                 URL url = HttpUtils.createURL(locator.getPath());
                 String queryString = url.getQuery();
                 if (queryString != null) {
-                    Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
+                    Map<String, String> parameters = URLUtils.parseQueryString(queryString);
                     if (parameters.containsKey("index")) {
                         idx = parameters.get("index");
 
@@ -228,43 +231,43 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
 
         String indexPath;
 
-        if (FileUtils.isRemote(pathOrURL)) {
+        if (URLUtils.isURL(pathOrURL)) {
 
-            // Try .bam.bai
-            indexPath = getIndexURL(pathOrURL, ".bai");
-            pathsTried.add(indexPath);
-            if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
-                return indexPath;
-            }
+            String path = URLUtils.getPath(pathOrURL);
 
-            // Try .bai
-            if (pathOrURL.endsWith(".bam")) {
-                indexPath = getIndexURL(pathOrURL.substring(0, pathOrURL.length() - 4), ".bai");
+            if (path.endsWith(".bam")) {
+                // Try .bam.bai
+                indexPath = URLUtils.addExtension(pathOrURL, ".bai");
+                pathsTried.add(indexPath);
+                if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
+                    return indexPath;
+                }
+
+                // Try .bai
+                indexPath = URLUtils.replaceExtension(pathOrURL, ".bam", ".bai");
+                pathsTried.add(indexPath);
+                if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
+                    return indexPath;
+                }
+
+                // Try .bam.csi
+                indexPath = URLUtils.addExtension(pathOrURL, ".csi");
+                pathsTried.add(indexPath);
+                if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
+                    return indexPath;
+                }
+
+                // Try .csi
+                indexPath = URLUtils.replaceExtension(pathOrURL, ".bam", ".csi");
                 pathsTried.add(indexPath);
                 if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
                     return indexPath;
                 }
             }
 
-            // Try .bam.csi
-            indexPath = getIndexURL(pathOrURL, ".csi");
-            pathsTried.add(indexPath);
-            if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
-                return indexPath;
-            }
-
-            // Try .csi
-            if (pathOrURL.endsWith(".bam")) {
-                indexPath = getIndexURL(pathOrURL.substring(0, pathOrURL.length() - 4), ".bai");
-                pathsTried.add(indexPath);
-                if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
-                    return indexPath;
-                }
-            }
-
-            // Try cram
-            if (pathOrURL.endsWith(".cram")) {
-                indexPath = getIndexURL(pathOrURL, ".crai");
+            //  cram
+            if (path.endsWith(".cram")) {
+                indexPath = URLUtils.addExtension(pathOrURL, ".crai");
                 if (FileUtils.resourceExists(indexPath)) {
                     pathsTried.add(indexPath);
                     return indexPath;
@@ -275,7 +278,6 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
                     }
                 }
             }
-
 
 
         } else {
@@ -350,36 +352,6 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
 
     }
 
-    private String getIndexURL(String urlString, String extension) {
-
-        String indexPath = null;
-
-        if(urlString.startsWith("gs://")) {
-            return urlString + extension;
-        }
-        else {
-            try {
-                URL url = HttpUtils.createURL(urlString);
-                String queryString = url.getQuery();
-                if (queryString == null) {
-                    indexPath = urlString + extension;
-                } else {
-                    Map<String, String> parameters = HttpUtils.parseQueryString(queryString);
-                    if (parameters.containsKey("file")) {
-                        String bamFile = parameters.get("file");
-                        String bamIndexFile = bamFile + extension;
-                        String newQueryString = queryString.replace(bamFile, bamIndexFile);
-                        indexPath = urlString.replace(queryString, newQueryString);
-                    } else {
-                        indexPath = urlString.replace(url.getPath(), url.getPath() + extension);
-                    }
-                }
-            } catch (MalformedURLException e) {
-                log.error(e.getMessage(), e);
-            }
-            return indexPath;
-        }
-    }
 
     static CloseableIterator<PicardAlignment> EMPTY_ITERATOR = new CloseableIterator<PicardAlignment>() {
         @Override

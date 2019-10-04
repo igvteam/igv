@@ -55,6 +55,9 @@ public class FileUtils {
         if (isRemote(path)) {
             return HttpUtils.getInstance().resourceAvailable(path);
         } else {
+            if(path.startsWith("file://")) {
+                path = path.substring(7);
+            }
             return (new File(path)).exists();
         }
 

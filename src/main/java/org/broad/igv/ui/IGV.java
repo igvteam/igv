@@ -2174,7 +2174,7 @@ public class IGV implements IGVEventObserver {
                         String p = dataFiles.get(i).trim();
 
                         // Decode local file paths
-                        if (HttpUtils.isURL(p) && !FileUtils.isRemote(p)) {
+                        if (URLUtils.isURL(p) && !FileUtils.isRemote(p)) {
                             p = StringUtils.decodeURL(p);
                         }
 
@@ -2188,7 +2188,7 @@ public class IGV implements IGVEventObserver {
                         //Set index file, iff one was passed
                         if (indexFiles != null && i < indexFiles.length) {
                             String idxP = indexFiles[i];
-                            if (HttpUtils.isURL(idxP) && !FileUtils.isRemote(idxP)) {
+                            if (URLUtils.isURL(idxP) && !FileUtils.isRemote(idxP)) {
                                 idxP = StringUtils.decodeURL(idxP);
                             }
                             if (idxP.length() > 0) {
@@ -2199,7 +2199,7 @@ public class IGV implements IGVEventObserver {
                         //Set coverage file, iff one was passed
                         if (coverageFiles != null && i < coverageFiles.length) {
                             String covP = coverageFiles[i];
-                            if (HttpUtils.isURL(covP) && !FileUtils.isRemote(covP)) {
+                            if (URLUtils.isURL(covP) && !FileUtils.isRemote(covP)) {
                                 covP = StringUtils.decodeURL(covP);
                             }
                             if (covP.length() > 0) {

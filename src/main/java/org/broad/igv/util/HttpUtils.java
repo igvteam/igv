@@ -84,7 +84,6 @@ public class HttpUtils {
 
     private String defaultUserName = null;
     private char[] defaultPassword = null;
-    private static Pattern URLmatcher = Pattern.compile(".{1,8}://.*");
 
     // static provided to support unit testing
     private static boolean BYTE_RANGE_DISABLED = false;
@@ -989,29 +988,6 @@ public class HttpUtils {
 
     public void shutdown() {
         // Do any cleanup required here
-    }
-
-    /**
-     * Checks if the string is a URL (not necessarily remote, can be any protocol)
-     *
-     * @param f
-     * @return
-     */
-    public static boolean isURL(String f) {
-        return f.startsWith("http://") || f.startsWith("ftp://") || f.startsWith("https://") || f.startsWith("gs://")
-                || URLmatcher.matcher(f).matches();
-    }
-
-    public static Map<String, String> parseQueryString(String query) {
-        String[] params = query.split("&");
-        Map<String, String> map = new HashMap<String, String>();
-        for (String param : params) {
-            String[] name_val = param.split("=", 2);
-            if (name_val.length == 2) {
-                map.put(name_val[0], name_val[1]);
-            }
-        }
-        return map;
     }
 
     public static class ProxySettings {

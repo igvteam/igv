@@ -195,7 +195,7 @@ public class ResourceLocator {
                     typeString = url.getPath().toLowerCase();
                     String query = url.getQuery();
                     if (query != null) {
-                        Map<String, String> queryMap = HttpUtils.parseQueryString(query);
+                        Map<String, String> queryMap = URLUtils.parseQueryString(query);
                         // If type is set explicitly use it
                         if (queryMap.containsKey("dataformat")) {
                             String format = queryMap.get("dataformat");

@@ -665,7 +665,7 @@ public class CommandExecutor {
 
     static boolean needsDecode(String fileString) {
         String decodedString = decodeSafe(fileString);
-        return (decodedString != null && (HttpUtils.isURL(fileString) || HttpUtils.isURL(decodedString)));
+        return (decodedString != null && (URLUtils.isURL(fileString) || URLUtils.isURL(decodedString)));
     }
 
     private static String decodeSafe(String string) {
