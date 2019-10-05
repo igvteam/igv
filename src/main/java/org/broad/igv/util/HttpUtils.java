@@ -667,13 +667,7 @@ public class HttpUtils {
     }
 
     private String readContents(InputStream is) throws IOException {
-        BufferedInputStream bis = new BufferedInputStream(is);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        int b;
-        while ((b = bis.read()) >= 0) {
-            bos.write(b);
-        }
-        return new String(bos.toByteArray());
+        return ParsingUtils.readContentsFromStream(is);
     }
 
     public String readErrorStream(HttpURLConnection connection) throws IOException {
@@ -806,7 +800,7 @@ public class HttpUtils {
 
         // If this is a Google URL and we have an access token use it.
         if (GoogleUtils.isGoogleURL(url.toExternalForm())) {
-            String token = OAuthUtils.getInstance().getAccessToken();
+            String token = OAuthUtils.getInstance().getProvider().getAccessToken();
             if (token != null)  {
                 conn.setRequestProperty("Authorization", "Bearer " + token);
             }

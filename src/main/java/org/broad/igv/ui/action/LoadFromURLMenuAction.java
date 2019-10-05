@@ -145,7 +145,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             // if user is not currently logged in, attempt to
             // log in user
 //            try {
-//               OAuthUtils.getInstance().doSecureLogin();
+//               OAuthUtils.getInstance().getProvider().doSecureLogin();
 //            } catch (IOException e) {
 //                log.error("Error connecting to OAuth: " + e.getMessage());
 //            }

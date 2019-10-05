@@ -235,7 +235,7 @@ public class Ga4ghAPIHelper {
 
         String authKey = provider.getApiKey();
         String baseURL = provider.getBaseURL();
-        String token = OAuthUtils.getInstance().getAccessToken();
+        String token = OAuthUtils.getInstance().getProvider().getAccessToken();
 
         String fullUrl = baseURL + command;
         if (authKey != null) {
@@ -351,7 +351,7 @@ public class Ga4ghAPIHelper {
 
         if (option == 1) {
             try {
-                OAuthUtils.getInstance().openAuthorizationPage();
+                OAuthUtils.getInstance().getProvider().openAuthorizationPage();
             } catch (Exception e) {
                 MessageUtils.showErrorMessage("Error fetching oAuth token", e);
                 log.error("Error fetching oAuth tokens", e);

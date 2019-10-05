@@ -45,8 +45,8 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.*;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.lists.GeneList;
@@ -71,10 +71,13 @@ import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 
@@ -1111,11 +1114,9 @@ public class IGV implements IGVEventObserver {
         // check to see if any files in session file are on protected (oauth) server. If
         // so, make sure user is logged into
         // server before -proceeding
-        try {
-            OAuthUtils.getInstance().checkServerLogin(sessionPath);
-        } catch (IOException e) {
-            log.error("Error creating OAuth instance" + e.getMessage());
-        }
+
+        OAuthUtils.getInstance().getProvider().checkServerLogin(sessionPath);
+
 
         Runnable runnable = new Runnable() {
             public void run() {

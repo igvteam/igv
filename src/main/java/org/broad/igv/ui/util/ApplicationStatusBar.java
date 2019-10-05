@@ -29,6 +29,7 @@ package org.broad.igv.ui.util;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
 import org.apache.log4j.Logger;
+import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -113,7 +114,7 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
         timer.schedule(updateTask, 0, 1000);
 
         // Once we get positive result from the auth flow, perhaps fetch user full name and/or profile avatar?
-        IGVEventBus.getInstance().subscribe(OAuthUtils.AuthStateEvent.class, this);
+        IGVEventBus.getInstance().subscribe(OAuthProvider.AuthStateEvent.class, this);
     }
 
     public void setMessage(final String message) {
@@ -160,11 +161,11 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
 
     @Override
     public void receiveEvent(Object event) {
-        if(event instanceof OAuthUtils.AuthStateEvent) {
-            boolean isAuthed = ((OAuthUtils.AuthStateEvent) event).isAuthenticated();
-            String authProvider = ((OAuthUtils.AuthStateEvent) event).getAuthProvider();
-            String userName = ((OAuthUtils.AuthStateEvent) event).getUserName();
-            String email = ((OAuthUtils.AuthStateEvent) event).getEmail();
+        if(event instanceof OAuthProvider.AuthStateEvent) {
+            boolean isAuthed = ((OAuthProvider.AuthStateEvent) event).isAuthenticated();
+            String authProvider = ((OAuthProvider.AuthStateEvent) event).getAuthProvider();
+            String userName = ((OAuthProvider.AuthStateEvent) event).getUserName();
+            String email = ((OAuthProvider.AuthStateEvent) event).getEmail();
 
             if (isAuthed) {
                 setMessage3("Logged in as: " + email + " via " + authProvider);

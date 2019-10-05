@@ -151,7 +151,7 @@ public class Ga4ghAlignmentReader implements AlignmentReader<Alignment> {
         URL url = HttpUtils.createURL(baseURL + "/readgroupsets/" + readsetId + (authKey == null ? "" : "?key=" + authKey));   // TODO -- field selection?
 
         Map<String, String> headers = new HashMap<String, String>();
-        String token = OAuthUtils.getInstance().getAccessToken();
+        String token = OAuthUtils.getInstance().getProvider().getAccessToken();
         if (token != null) {
             headers.put("Authorization", "Bearer " + token);
         }

@@ -174,12 +174,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
 
 
-            if (updatedPreferenceMap.containsKey(SAVE_GOOGLE_CREDENTIALS)) {
-                try {
-                    OAuthUtils.getInstance().updateSaveOption(Boolean.valueOf(updatedPreferenceMap.get(SAVE_GOOGLE_CREDENTIALS)));
-                } catch (IOException e) {
-                    log.error("Error saving oauth token: " + e.getMessage());
-                }
+            if (updatedPreferenceMap.containsKey(PROVISIONING_URL)) {
+                    // TODO -- update OAuthUtils
             }
 
             updatedPreferenceMap.clear();

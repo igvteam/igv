@@ -200,9 +200,9 @@ public class CommandListener implements Runnable {
                     // Detect google oauth callback
                     if (command.equals("/oauthCallback")) {
                         if (params.containsKey("code")) {
-                            OAuthUtils.getInstance().setAuthorizationCode(params.get("code"));
+                            OAuthUtils.getInstance().setAuthorizationCode(params);
                         } else if (params.containsKey("token")) {
-                            OAuthUtils.getInstance().setAccessToken(params.get("token"));
+                            OAuthUtils.getInstance().setAccessToken(params);
                         }
                         sendTextResponse(out, "OK");
                     } else {
