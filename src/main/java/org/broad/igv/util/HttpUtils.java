@@ -149,7 +149,7 @@ public class HttpUtils {
             }
         }
 
-        String host = new URL(urlString).getHost();
+        String host = URLUtils.getHost(urlString);  
         if (host.equals("igv.broadinstitute.org")) {
             urlString = urlString.replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org");
         } else if (host.equals("igvdata.broadinstitute.org")) {
