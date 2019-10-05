@@ -93,7 +93,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         if (requireIndex) {
 
             String indexPath = getExplicitIndexPath(locator);
-            if (indexPath == null) {
+            if (indexPath == null || indexPath.length() == 0) {
                 indexPath = getIndexPath(locator.getPath());
             }
 

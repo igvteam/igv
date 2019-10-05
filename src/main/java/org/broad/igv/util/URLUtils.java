@@ -24,6 +24,12 @@ public class URLUtils {
         return fauxURL.getQuery();
     }
 
+
+    public static String getHost(String url) throws MalformedURLException {
+        URL fauxURL = getFauxUrl(url);
+        return fauxURL.getHost();
+    }
+
     public static Map<String, String> parseQueryString(String query) {
         String[] params = query.split("&");
         Map<String, String> map = new HashMap<String, String>();
