@@ -516,12 +516,8 @@ public class SearchCommand {
         start = Math.max(0, start - delta);
         end = end + delta;
 
-        if (PreferencesManager.getPreferences().getAsBoolean(Constants.SEARCH_ZOOM)) {
             referenceFrame.jumpTo(chr, start, end);
-        } else {
-            int center = (start + end) / 2;
-            referenceFrame.centerOnLocation(chr, center);
-        }
+
     }
 
     /**

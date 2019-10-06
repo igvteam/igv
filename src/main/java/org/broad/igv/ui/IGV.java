@@ -45,14 +45,13 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.*;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferenceEditorNew;
-import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionSelectionEvent;
@@ -71,10 +70,13 @@ import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 
@@ -594,26 +596,10 @@ public class IGV implements IGVEventObserver {
 
 
     final public void doViewPreferences() {
-
         try {
-            // 2.x releases -- swing editor
-            if (Globals.VERSION.contains("2.4")) {
-                PreferencesEditor dialog = new PreferencesEditor(this.mainFrame, true);
-                dialog.setVisible(true);
-            } else {
-                // 3.0 releases -- javafx
-                try {
-                    PreferenceEditorNew.open(this.mainFrame);
-                } catch (IOException e) {
-                    log.error("Error openining preference dialog", e);
-                }
-            }
-        } catch (NullPointerException ne) {
-            try {
-                PreferenceEditorNew.open(this.mainFrame);
-            } catch (IOException e) {
-                log.error("Error openining preference dialog", e);
-            }
+            PreferenceEditorNew.open(this.mainFrame);
+        } catch (Exception e) {
+            log.error("Error openining preference dialog", e);
         }
     }
 
