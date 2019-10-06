@@ -41,11 +41,11 @@ public class PreferenceEditorNew {
             SwingUtilities.invokeLater(() -> {
                 init(frame, panel, preferenceGroups);
             });
-            panel.setPreferredSize(new Dimension(750, 590));
-            panel.setMaximumSize(new Dimension(750, 590));
+            panel.setPreferredSize(new Dimension(850, 590));
+            panel.setMaximumSize(new Dimension(850, 590));
             frame.add(panel);
             frame.pack();
-            frame.setSize(800, 600);
+            frame.setSize(900, 600);
             frame.setLocationRelativeTo(parent);
             frame.setVisible(true);
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
