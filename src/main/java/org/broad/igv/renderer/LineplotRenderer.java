@@ -57,6 +57,7 @@ public class LineplotRenderer extends XYPlotRenderer {
     @Override
     public void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle arect) {
 
+        if (locusScores.size() == 0) return;
 
         Rectangle adjustedRect = calculateDrawingRect(arect);
 
@@ -80,31 +81,20 @@ public class LineplotRenderer extends XYPlotRenderer {
         // Calculate the Y scale factor.
         double yScaleFactor = adjustedRect.getHeight() / (maxValue - minValue);
 
-        int lastPx = 0;
-        int lastPy = Integer.MIN_VALUE;
+
+        int lastPx = (int) ((locusScores.get(0).getStart() - origin) / locScale);
+        int lastPy = (int) (adjustedRect.getY() + (maxValue - 0) * yScaleFactor);
+
         for (LocusScore score : locusScores) {
-            // Note -- don't cast these to an int until the range is checked.
-            // could get an overflow.
-            double x = ((score.getStart() - origin) / locScale);
-            double dx = (score.getEnd() - score.getStart()) / locScale;
 
             float dataY = score.getScore();
-
-            // Compute the pixel y location.  
-            double y = adjustedRect.getY() + (maxValue - dataY) * yScaleFactor;
-
-            if ((x + dx < 0 || lastPy == Integer.MIN_VALUE)) {
-                // Offscreen.  Just record the points
-                lastPx = (int) (x + dx);
-                lastPy = (int) (y);
-                continue;
-            }
-
-
             // Missing data in a dataset is signifed by NaN.  Just skip these.
-            if (!Float.isNaN(dataY)) {
+            if (Float.isNaN(dataY)) {
+
+                double x = ((score.getStart() - origin) / locScale);
+                double dx = (score.getEnd() - score.getStart()) / locScale;
                 int pX = (int) x;
-                int pY = (int) y;
+                int pY = (int) (adjustedRect.getY() + (maxValue - dataY) * yScaleFactor);
                 double slope = ((double) pY - lastPy) / (pX - lastPx);
 
                 int clippedLastPX = lastPx;
@@ -127,7 +117,6 @@ public class LineplotRenderer extends XYPlotRenderer {
 
                 g.drawLine(clippedLastPX, clippedLastPY, clippedPX, clippedPY);
 
-
                 if (dx >= 1 && (clippedPY == pY)) {
                     g.drawLine(pX, clippedPY, (int) (pX + dx), clippedPY);
                 }
@@ -138,8 +127,6 @@ public class LineplotRenderer extends XYPlotRenderer {
                 if (lastPx > adjustedRect.getMaxX()) {
                     break;
                 }
-
-
             }
         }
 
