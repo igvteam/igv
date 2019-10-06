@@ -139,13 +139,13 @@ public class HttpUtils {
             try {
                 urlString = AmazonUtils.translateAmazonCloudURL(urlString);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e);
             }
         }
 
         if (GoogleUtils.isGoogleCloud(urlString)) {
             if (urlString.indexOf("alt=media") < 0) {
-                urlString = urlString + (urlString.indexOf('?') > 0 ? "&" : "?") + "alt=media";
+                urlString = URLUtils.addParameter(urlString, "alt=media");
             }
         }
 
