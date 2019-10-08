@@ -127,7 +127,7 @@ public class OAuthUtils {
     }
 
     public void loadProvisioningURL(String provisioningURL) throws IOException {
-        if (provisioningURL != null) {
+        if (provisioningURL != null && provisioningURL.length() > 0) {
             InputStream is = ParsingUtils.openInputStream(provisioningURL);
             String json = ParsingUtils.readContentsFromStream(is);
             parseProviderJson(json, provisioningURL);
