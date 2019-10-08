@@ -32,6 +32,9 @@ package org.broad.igv.batch;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -44,9 +47,6 @@ import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.event.DataLoadedEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -58,8 +58,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -180,12 +180,7 @@ public class CommandExecutor {
             } else if (cmd.equals("zoomout")) {
                 FrameManager.incrementZoom(-1);
             } else if ("oauth".equals(cmd)) {
-                try {
-                    OAuthUtils.getInstance().setAccessToken(param1);
-                } catch (IOException e1) {
-                    log.error(e1);
-                    return e1.getMessage();
-                }
+                OAuthUtils.getInstance().getProvider().setAccessToken(param1);
             } else {
                 result = "UNKOWN COMMAND: " + command;
                 log.error(result);
@@ -208,9 +203,7 @@ public class CommandExecutor {
 
         } catch (
                 IOException e
-                )
-
-        {
+        ) {
             log.error(e);
             result = "Error: " + e.getMessage();
         }
@@ -272,20 +265,20 @@ public class CommandExecutor {
         List<Track> tracks = igv.getAllTracks();
         boolean logScale;
         try {
-            if(logScaleString.equalsIgnoreCase("true") || logScaleString.equalsIgnoreCase("false")){
+            if (logScaleString.equalsIgnoreCase("true") || logScaleString.equalsIgnoreCase("false")) {
                 logScale = Boolean.valueOf(logScaleString);
-            }else{
+            } else {
                 return "ERROR: logscale value (" + logScaleString + ")is not 'true' or 'false'.";
             }
         } catch (IllegalArgumentException e) {
             return e.getMessage();
         }
-        DataRange.Type scaleType = logScale==true ?
+        DataRange.Type scaleType = logScale == true ?
                 DataRange.Type.LOG :
                 DataRange.Type.LINEAR;
         for (Track track : tracks) {
             if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                    track.getDataRange().setType(scaleType);
+                track.getDataRange().setType(scaleType);
             }
         }
         IGV.getInstance().revalidateTrackPanels();
@@ -931,7 +924,7 @@ public class CommandExecutor {
             return AlignmentTrack.SortOption.MATE_CHR;
         } else if (str.equalsIgnoreCase("readOrder")) {
             return AlignmentTrack.SortOption.READ_ORDER;
-        }else {
+        } else {
             try {
                 return AlignmentTrack.SortOption.valueOf(str.toUpperCase());
             } catch (IllegalArgumentException e) {

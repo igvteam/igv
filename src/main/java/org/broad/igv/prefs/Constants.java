@@ -250,8 +250,8 @@ final public class Constants {
     public static final String DB_NAME = "DB_NAME";
     public static final String DB_PORT = "DB_PORT";
 
-    // Letter of support dialog
-    public static final String SHOW_LOS = "showLOS";
+    // OAuth provisioning
+    public static final String PROVISIONING_URL = "PROVISIONING.URL";
 
     // Experimental
     public static final String SCORE_VARIANTS = "SCORE_VARIANTS";

@@ -392,7 +392,7 @@ public class PreferencesManager implements IGVEventObserver {
         }
 
         String getDefaultValue() {
-            return tokens[3];
+            return tokens[3] == null || tokens[3].equals("null") ? null : tokens[3];
         }
 
         String getComment() {

@@ -85,13 +85,11 @@ public class ParsingUtils {
 
     }
 
-
     public static AsciiLineReader openAsciiReader(ResourceLocator locator) throws IOException {
         InputStream stream = openInputStreamGZ(locator);
         return new AsciiLineReader(stream);
 
     }
-
     public static InputStream openInputStream(String path) throws IOException {
         return openInputStreamGZ(new ResourceLocator(path));
     }
@@ -123,6 +121,16 @@ public class ParsingUtils {
         } else {
             return inputStream;
         }
+    }
+
+    public static String readContentsFromStream(InputStream is) throws IOException {
+        BufferedInputStream bis = new BufferedInputStream(is);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        int b;
+        while ((b = bis.read()) >= 0) {
+            bos.write(b);
+        }
+        return new String(bos.toByteArray());
     }
 
     /**

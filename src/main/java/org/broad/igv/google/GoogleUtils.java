@@ -21,8 +21,6 @@ import static org.broad.igv.prefs.Constants.SAVE_GOOGLE_CREDENTIALS;
  */
 public class GoogleUtils {
 
-
-    public static String GS_HOST = "www.googleapis.com";
     private static Logger log = Logger.getLogger(GoogleUtils.class);
 
     private static String ProjectID;
@@ -48,13 +46,8 @@ public class GoogleUtils {
     }
 
     public static void checkLogin() {
-        try {
-            if (!OAuthUtils.getInstance().isLoggedIn()) {
-                OAuthUtils.getInstance().doSecureLogin();
-            }
-        } catch (IOException e) {
-            MessageUtils.showErrorMessage("Error initializing OAuth", e);
-            log.error("Error initializing OAuth", e);
+        if (!OAuthUtils.getInstance().getProvider().isLoggedIn()) {
+            OAuthUtils.getInstance().getProvider().doSecureLogin();
         }
     }
 
@@ -168,7 +161,7 @@ public class GoogleUtils {
 
         String fileUrl = "https://drive.google.com/file/d/1Q4uEV2tv0aIyIvGqvwnOpBdmqVeFAPIw/view?usp=sharing";
 
-        //OAuthUtils.getInstance().openAuthorizationPage();
+        //OAuthUtils.getInstance().getProvider().openAuthorizationPage();
         JsonObject obj = GoogleUtils.getDriveFileInfo(fileUrl);
 
         System.out.println(obj);

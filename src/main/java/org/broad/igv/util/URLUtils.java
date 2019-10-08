@@ -66,6 +66,10 @@ public class URLUtils {
         return url.replaceFirst(path, newPath);
     }
 
+    public static String addParameter(String urlString, String parameter) {
+        return (urlString.indexOf('?') > 0 ? "&" : "?") + parameter;
+    }
+
     /**
      * Checks if the string is a URL (not necessarily remote, can be any protocol)
      *

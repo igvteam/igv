@@ -1097,11 +1097,9 @@ public class IGV implements IGVEventObserver {
         // check to see if any files in session file are on protected (oauth) server. If
         // so, make sure user is logged into
         // server before -proceeding
-        try {
-            OAuthUtils.getInstance().checkServerLogin(sessionPath);
-        } catch (IOException e) {
-            log.error("Error creating OAuth instance" + e.getMessage());
-        }
+
+        OAuthUtils.getInstance().getProvider().checkServerLogin(sessionPath);
+
 
         Runnable runnable = new Runnable() {
             public void run() {

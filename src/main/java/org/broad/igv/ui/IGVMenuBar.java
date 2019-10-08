@@ -31,8 +31,13 @@ import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.aws.S3LoadDialog;
 import org.broad.igv.charts.ScatterPlotUtils;
+import org.broad.igv.event.GenomeChangeEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.RemoveGenomesDialog;
 import org.broad.igv.google.GoogleUtils;
+import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
@@ -43,10 +48,6 @@ import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
-import org.broad.igv.event.GenomeChangeEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.feature.genome.RemoveGenomesDialog;
 import org.broad.igv.ui.commandbar.GenomeComboBox;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.FrameManager;
@@ -135,7 +136,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
             throw new IllegalStateException("Cannot create another IGVMenuBar, use getInstance");
         }
-        UIUtilities.invokeAndWaitOnEventThread(() ->instance = new IGVMenuBar(igv));
+        UIUtilities.invokeAndWaitOnEventThread(() -> instance = new IGVMenuBar(igv));
         return instance;
     }
 
@@ -190,13 +191,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
 
         try {
-            if (AmazonUtils.isAWSProviderPresent()) {
-                log.info("Adding Amazon cloud menu to the UI");
-                AWSMenu = createAWSMenu();
-                AWSMenu.setVisible(true);
-                menus.add(AWSMenu);
-            }
-        } catch(IOException e){
+            AWSMenu = createAWSMenu();
+            AWSMenu.setVisible(AmazonUtils.isAWSProviderPresent());
+            menus.add(AWSMenu);
+
+        } catch (IOException e) {
             log.error("Error creating the Amazon AWS menu: " + e.getMessage());
             AWSMenu.setVisible(false);
         }
@@ -206,6 +205,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // Experimental -- remove for production release
 
         return menus;
+    }
+
+    public void updateAWSMenu() {
+        AWSMenu.setVisible(AmazonUtils.isAWSProviderPresent());
     }
 
     /**
@@ -295,11 +298,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
 
 
-
         encodeMenuItem = MenuAndToolbarUtils.createMenuItem(new BrowseEncodeAction("Load from ENCODE (2012)...", KeyEvent.VK_E, igv));
         menuItems.add(encodeMenuItem);
         String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-        encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(genomeId));
+        encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(genomeId));
 
         menuItems.add(new JSeparator());
 
@@ -965,14 +967,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private JMenu createAWSMenu() throws IOException {
 
-        final OAuthUtils oauth = OAuthUtils.getInstance();
-
-        oauth.setAuthProvider("Amazon");
-        JMenu menu = new JMenu(oauth.getAuthProvider());
+        JMenu menu = new JMenu("Amazon");
 
         final JMenuItem login = new JMenuItem("Login");
         login.addActionListener(e -> {
             try {
+                OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
                 oauth.openAuthorizationPage(); // should trigger and event and UI takes over
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
@@ -984,6 +984,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         final JMenuItem logout = new JMenuItem("Logout");
         logout.addActionListener(e -> {
+            OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
             oauth.logout();
         });
         logout.setEnabled(false);
@@ -1008,13 +1009,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             @Override
             public void menuSelected(MenuEvent e) {
                 Runnable runnable = () -> {
+                    OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
                     boolean loggedIn = false;
-                    try {
-                        loggedIn = OAuthUtils.getInstance().isLoggedIn();
-                        log.debug("MenuBar is user loggedIn?: "+loggedIn);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+                    loggedIn = oauth.isLoggedIn();
+                    log.debug("MenuBar is user loggedIn?: " + loggedIn);
+
                     if (loggedIn) {
                         login.setText(oauth.getCurrentUserName());
                     } else {
@@ -1045,11 +1044,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private JMenu createGoogleMenu() throws IOException {
 
-    	// Dynamically name menu - dwm08
-        final OAuthUtils oauth = OAuthUtils.getInstance();
+        // Dynamically name menu - dwm08
+        final OAuthProvider oauth = OAuthUtils.getInstance().getProvider();
 
         oauth.setAuthProvider("Google");
-        JMenu menu =  new JMenu(oauth.getAuthProvider());
+        JMenu menu = new JMenu(oauth.getAuthProvider());
 
         final JMenuItem login = new JMenuItem("Login ... ");
         login.addActionListener(e -> {
@@ -1082,12 +1081,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             @Override
             public void menuSelected(MenuEvent e) {
                 Runnable runnable = () -> {
-                    boolean loggedIn = false;
-                    try {
-                        loggedIn = OAuthUtils.getInstance().isLoggedIn();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+                    boolean loggedIn = OAuthUtils.getInstance().getProvider().isLoggedIn();
+
                     if (loggedIn) {
                         login.setText(oauth.getCurrentUserName());
                     } else {
@@ -1193,8 +1188,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     @Override
     public void receiveEvent(final Object event) {
 
-        if(event instanceof GenomeChangeEvent) {
-            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible (EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome.getId())));
+        if (event instanceof GenomeChangeEvent) {
+            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome.getId())));
         }
     }
 }
