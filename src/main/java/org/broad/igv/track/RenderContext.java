@@ -146,14 +146,6 @@ public class RenderContext {
         return referenceFrame;
     }
 
-    public boolean isMerged() {
-        return merged;
-    }
-
-    public void setMerged(boolean merged) {
-        this.merged = merged;
-    }
-
     /**
      * Release graphics objects
      *

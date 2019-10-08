@@ -34,8 +34,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.CombinedDataSource;
-import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -69,8 +69,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -374,7 +374,7 @@ public class TrackMenuUtils {
             }
 
             // Add color transparency item if merged
-            if(merged) {
+            if (merged) {
                 Track firstTrack1 = tracks.iterator().next();
                 final MergedTracks mergedTracks = (MergedTracks) firstTrack1;
 
@@ -540,7 +540,7 @@ public class TrackMenuUtils {
             List<String> colors = track.getRenderOptions().getColors();
             List<String> colorLabels = track.getRenderOptions().getColorLabels();
             // iterate in reverse order so colors appearing first in list are the ones rendered on top
-            for (int i=colors.size()-1; i>=0; --i) {
+            for (int i = colors.size() - 1; i >= 0; --i) {
                 String key = colors.get(i) + ' ' + colorLabels.get(i);
                 if (!keys.contains(key)) {
                     keys.add(key);
@@ -561,7 +561,7 @@ public class TrackMenuUtils {
             p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
             p.add(colorBox);
             p.add(Box.createHorizontalStrut(1));
-            p.add(new JLabel(" "+label));
+            p.add(new JLabel(" " + label));
             p.add(Box.createGlue());
             p.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -570,7 +570,7 @@ public class TrackMenuUtils {
             double w = p.getPreferredSize().getWidth();
             double h = p.getPreferredSize().getHeight();
             Dimension size = new Dimension();
-            size.setSize(w, h+8);
+            size.setSize(w, h + 8);
             item.setPreferredSize(size);
 
             item.addActionListener(new ActionListener() {
@@ -593,12 +593,12 @@ public class TrackMenuUtils {
         int upCount = 0;
         int downCount = 0;
         BasePairTrack.ArcDirection currentArcDirection = null; // mixed up and down
-        for (BasePairTrack track: bpTracks) {
+        for (BasePairTrack track : bpTracks) {
             if (track.getRenderOptions().getArcDirection() == BasePairTrack.ArcDirection.UP) ++upCount;
             if (track.getRenderOptions().getArcDirection() == BasePairTrack.ArcDirection.DOWN) ++downCount;
         }
-        if (upCount==0) currentArcDirection = BasePairTrack.ArcDirection.DOWN;
-        if (downCount==0) currentArcDirection = BasePairTrack.ArcDirection.UP;
+        if (upCount == 0) currentArcDirection = BasePairTrack.ArcDirection.DOWN;
+        if (downCount == 0) currentArcDirection = BasePairTrack.ArcDirection.UP;
 
         ButtonGroup group = new ButtonGroup();
         Map<String, BasePairTrack.ArcDirection> arcDirections = new LinkedHashMap<String, BasePairTrack.ArcDirection>(3);
@@ -969,24 +969,19 @@ public class TrackMenuUtils {
 
         final JMenuItem autoscaleItem = new JMenuItem("Group Autoscale");
 
+        autoscaleItem.addActionListener(evt -> {
 
-        autoscaleItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-
-                int nextAutoscaleGroup = IGV.getInstance().getSession().getNextAutoscaleGroup();
-
-                for (Track t : selectedTracks) {
-                    t.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, "" + nextAutoscaleGroup);
-                    t.setAutoScale(false);
-                }
-
-                PreferencesManager.getPreferences().setShowAttributeView(true);
-                IGV.getInstance().getMainPanel().invalidate();
-                IGV.getInstance().doRefresh();
-
-
+            int nextAutoscaleGroup = IGV.getInstance().getSession().getNextAutoscaleGroup();
+            for (Track t : selectedTracks) {
+                t.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, "" + nextAutoscaleGroup);
+                t.setAutoScale(false);
             }
+
+            PreferencesManager.getPreferences().setShowAttributeView(true);
+            IGV.getInstance().getMainPanel().invalidate();
+            IGV.getInstance().doRefresh();
+
+
         });
 
         return autoscaleItem;
@@ -1303,7 +1298,6 @@ public class TrackMenuUtils {
     }
 
     /**
-     *
      * @author stevenbusan
      */
     public static void changeBasePairTrackColor(final List<BasePairTrack> tracks,
@@ -1315,7 +1309,7 @@ public class TrackMenuUtils {
         }
 
         Color newColor = UIUtilities.showColorChooserDialog(
-                "Select Arc Color ("+currentLabel+")",
+                "Select Arc Color (" + currentLabel + ")",
                 currentColor);
 
         if (newColor == null) {
@@ -1412,10 +1406,10 @@ public class TrackMenuUtils {
     public static JMenuItem getCopySequenceItem(final Feature f) {
 
         final Strand strand;
-        if(f instanceof IGVFeature) {
+        if (f instanceof IGVFeature) {
             strand = ((IGVFeature) f).getStrand();
         } else {
-           strand = Strand.NONE;
+            strand = Strand.NONE;
         }
 
         JMenuItem item = new JMenuItem("Copy Sequence");
@@ -1446,7 +1440,7 @@ public class TrackMenuUtils {
             public void actionPerformed(ActionEvent evt) {
 
                 final Strand strand;
-                if(f instanceof IGVFeature) {
+                if (f instanceof IGVFeature) {
                     strand = ((IGVFeature) f).getStrand();
                 } else {
                     strand = Strand.NONE;

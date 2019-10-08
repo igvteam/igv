@@ -30,6 +30,7 @@
 package org.broad.igv.track;
 
 
+import htsjdk.tribble.Feature;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
@@ -38,7 +39,6 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
-import htsjdk.tribble.Feature;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -48,7 +48,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public interface Track extends Persistable{
+public interface Track extends Persistable {
 
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED
@@ -133,6 +133,7 @@ public interface Track extends Persistable{
     /**
      * Return ALL ResourceLocators associated with this track.
      * For most tracks, this will just be a collection of size 1
+     *
      * @return
      */
     Collection<ResourceLocator> getResourceLocators();
@@ -147,7 +148,9 @@ public interface Track extends Persistable{
 
     boolean isVisible();
 
-    default boolean isNumeric() {return false;}
+    default boolean isNumeric() {
+        return false;
+    }
 
     void setOverlayed(boolean overlayVisible);
 
@@ -172,6 +175,7 @@ public interface Track extends Persistable{
     /**
      * Manually specify the data range.
      * {@code autoScale} must be turned off elsewhere, if applicable
+     *
      * @param axisDefinition
      */
     void setDataRange(DataRange axisDefinition);
@@ -253,7 +257,7 @@ public interface Track extends Persistable{
     float getYLine();
 
     void dispose();
-    
+
     boolean getAutoScale();
 
     void setAutoScale(boolean autoScale);

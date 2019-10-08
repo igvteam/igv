@@ -76,10 +76,7 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
             // has caused concurrent modification exceptions.
             synchronized (scores) {
                 renderScores(track, scores, context, rect);
-
-                if(context.isMerged() == false) {
-                    renderAxis(track, context, rect);
-                }
+                renderAxis(track, context, rect);
             }
         }
         renderBorder(track, context, rect);
@@ -110,7 +107,7 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
         if (context.getChr().equals(Globals.CHR_ALL)) {
             return;
         }
-        if (prefs.getAsBoolean(CHART_DRAW_Y_AXIS))  {
+        if (prefs.getAsBoolean(CHART_DRAW_Y_AXIS)) {
 
             Rectangle axisRect = new Rectangle(rect.x, rect.y + 1, AXIS_AREA_WIDTH, rect.height);
             Graphics2D whiteGraphics = context.getGraphic2DForColor(Color.white);
@@ -128,22 +125,24 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
 
     /**
      * Render the provided scores. No border, scales, axes, or anything else
+     *
      * @param track
      * @param scores
      * @param context
      * @param arect
      */
     public abstract void renderScores(Track track, List<LocusScore> scores,
-                                         RenderContext context, Rectangle arect);
+                                      RenderContext context, Rectangle arect);
 
 
     /**
      * Draw scale in top left of rectangle
+     *
      * @param range
      * @param context
      * @param arect
      */
-    public static void drawScale(DataRange range, RenderContext context, Rectangle arect){
+    public static void drawScale(DataRange range, RenderContext context, Rectangle arect) {
         if (range != null && context.multiframe == false) {
             Graphics2D g = context.getGraphic2DForColor(Color.black);
             Font font = g.getFont();
