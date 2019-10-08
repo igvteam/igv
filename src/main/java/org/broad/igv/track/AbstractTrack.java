@@ -1047,6 +1047,10 @@ public abstract class AbstractTrack implements Track {
             element.setAttribute("height", String.valueOf(this.height));
         }
 
+        if(showDataRange == false) {
+            element.setAttribute("showDataRange", Boolean.toString(showDataRange));
+        }
+
         if (isNumeric()) {
             if (autoscaleGroup != null) {
                 element.setAttribute("autoscaleGroup", this.autoscaleGroup);
@@ -1130,6 +1134,14 @@ public abstract class AbstractTrack implements Track {
         if (element.hasAttribute("autoscaleGroup")) {
             String autoscaleGroup = element.getAttribute("autoscaleGroup");
             this.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, "" + autoscaleGroup);
+        }
+
+        if (element.hasAttribute("showDataRange")) {
+            try {
+                this.showDataRange = Boolean.valueOf(element.getAttribute("showDataRange"));
+            } catch (Exception e) {
+                log.error("Unrecognized showDataRange: " + element.getAttribute("showDataRange"));
+            }
         }
 
         if (element.hasAttribute("featureVisibilityWindow")) {

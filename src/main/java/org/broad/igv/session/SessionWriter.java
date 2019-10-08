@@ -383,7 +383,7 @@ public class SessionWriter {
 
                     String id = track.getId();
                     boolean useRelative = PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
-                    if (useRelative && !FileUtils.isRemote(id)) {
+                    if (useRelative && !FileUtils.isRemote(id) && this.outputFile != null) {
                         id = FileUtils.getRelativePath(this.outputFile.getAbsolutePath(), id);
                     }
                     element.setAttribute("id", id);

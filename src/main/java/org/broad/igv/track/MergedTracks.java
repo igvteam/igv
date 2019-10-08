@@ -156,7 +156,6 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
     @Override
     public void render(RenderContext context, Rectangle rect) {
-
         for (Track track : memberTracks) {
             track.render(context, rect);
         }
