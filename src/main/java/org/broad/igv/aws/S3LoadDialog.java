@@ -25,8 +25,8 @@
 
 package org.broad.igv.aws;
 
-import htsjdk.samtools.util.Tuple;
 import org.apache.log4j.Logger;
+import org.apache.commons.lang3.tuple.Triple;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
@@ -36,8 +36,6 @@ import org.broad.igv.util.ResourceLocator;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -47,7 +45,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -65,7 +62,7 @@ public class S3LoadDialog extends JDialog {
         super(owner);
         initComponents();
 
-        S3TreeNode root = new S3TreeNode(new IGVS3Object("S3", true), true);
+        S3TreeNode root = new S3TreeNode(new IGVS3Object("S3", true, "STANDARD"), true);
 
         treeModel = new DefaultTreeModel(root);
         this.selectionTree.setModel(treeModel);
@@ -73,7 +70,7 @@ public class S3LoadDialog extends JDialog {
         // List toplevel buckets
         List<String> buckets = AmazonUtils.ListBucketsForUser();
         for (String bucket: buckets) {
-            IGVS3Object bucket_obj = new IGVS3Object(bucket, true);
+            IGVS3Object bucket_obj = new IGVS3Object(bucket, true, "STANDARD");
             root.add(new S3TreeNode(bucket_obj, true));
         }
 
@@ -87,7 +84,7 @@ public class S3LoadDialog extends JDialog {
      * Loads the selected resources when the Load button is pressed.
      * This one only one way of loading files. The other one is via mouse double click (see initComponents())
      * The main differences are that this method can handle multiple selected files, which are defined by the selection
-     * in the tree at the time of loading, vs the mounse coordinates in when double clicking.
+     * in the tree at the time of loading, vs the mouse coordinates in when double clicking.
      * @param e
      */
     private void loadButtonActionPerformed(ActionEvent e) {
@@ -96,17 +93,22 @@ public class S3LoadDialog extends JDialog {
 
         LongRunningTask.submit(() -> {
             TreePath[] paths = selectionTree.getSelectionPaths();
-            ArrayList<Tuple<String, String>> preLocatorPaths = new ArrayList<>();
+            // Reminder: ArrayList<Triple<Bucket, Key, StorageClass>>
+            ArrayList<Triple<String, String, String>> preLocatorPaths = new ArrayList<>();
             ArrayList<ResourceLocator> finalLocators = new ArrayList<>();
 
             for (TreePath path : paths) {
                 if (isFilePath(path)) {
-                    Tuple<String, String> bucket_key = getBucketAndKeyFromTreePath(path);
+                    Triple<String, String, String> bucket_key = getBucketAndKeyFromTreePath(path);
                     preLocatorPaths.add(bucket_key);
                 }
             }
 
-            for (Tuple<String, String> preLocator: preLocatorPaths) {
+            for (Triple<String, String, String> preLocator: preLocatorPaths) {
+                String S3ObjectStorageClass = preLocator.getRight();
+                if (S3ObjectStorageClass != "STANDARD") {
+                    log.info("This object is archived in either GLACIER or DEEP GLACIER tier");
+                }
                 ResourceLocator locator = getResourceLocatorFromBucketKey(preLocator);
                 finalLocators.add(locator);
             }
@@ -119,31 +121,33 @@ public class S3LoadDialog extends JDialog {
         return ((S3TreeNode) path.getLastPathComponent()).isLeaf();
     }
 
-    private ResourceLocator getResourceLocatorFromBucketKey(Tuple<String, String> preLocator) {
-        String bucketName = preLocator.a;
-        String s3objPath = preLocator.b;
+    private ResourceLocator getResourceLocatorFromBucketKey(Triple<String, String, String> preLocator) {
+        String bucketName = preLocator.getLeft();
+        String s3objPath = preLocator.getMiddle();
 
         String s3Path = "s3://"+bucketName+"/"+s3objPath;
 
         return new ResourceLocator(s3Path);
     }
 
-    private Tuple<String, String> getBucketAndKeyFromTreePath(TreePath path) {
+    private Triple<String, String, String> getBucketAndKeyFromTreePath(TreePath path) {
         Object[] selectedObjects = path.getPath();
 
         String bucketName = ((S3TreeNode) selectedObjects[1]).getUserObject().getName();
         String s3Key = "";
+        String storageClass = "STANDARD";
 
         for (int i = 2; i < selectedObjects.length; i++) {
             S3TreeNode selectedObject = (S3TreeNode) selectedObjects[i];
             IGVS3Object selectedIGVS3Object = selectedObject.getUserObject();
+            storageClass = selectedIGVS3Object.getStorageClass();
             s3Key += selectedIGVS3Object.getName() + "/";
         }
 
         s3Key = s3Key.substring(0, s3Key.length() - 1);
         log.debug("Loading S3 object key: " + s3Key + " from bucket " + bucketName);
 
-        return new Tuple<>(bucketName, s3Key);
+        return Triple.of(bucketName, s3Key, storageClass);
     }
 
     private void treeWillExpandActionPerformed(TreeExpansionEvent event) {
@@ -170,7 +174,7 @@ public class S3LoadDialog extends JDialog {
                     // List contents of bucket with path-prefix passed
                     ArrayList<IGVS3Object> IGVS3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
                     parentNode.addS3Children(IGVS3Objects);
-                } catch (S3Exception e){
+                } catch (S3Exception e) {
                     MessageUtils.showErrorMessage("Amazon S3: Access denied to bucket: "+currentBucket, e);
                     log.error("Permission denied on S3 bucket ListObjects: ");
                 }
@@ -231,7 +235,7 @@ public class S3LoadDialog extends JDialog {
                     if(e.getClickCount() == 2) {
                         // similar behaviour to loadButtonActionPerformed, see docs there for details
                         if (isFilePath(selPath)) {
-                            Tuple<String, String> bucket_and_key = getBucketAndKeyFromTreePath(selPath);
+                            Triple<String, String, String> bucket_and_key = getBucketAndKeyFromTreePath(selPath);
                             ResourceLocator loc = getResourceLocatorFromBucketKey(bucket_and_key);
                             IGV.getInstance().loadTracks(Collections.singletonList(loc));
                             setVisible(false);

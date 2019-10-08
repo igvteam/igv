@@ -269,12 +269,12 @@ public class AmazonUtils {
                 for (CommonPrefix folder : resultIt.commonPrefixes()) {
                     log.debug("S3 Bucket folder: "+folder);
                     folder_prefix = folder.prefix().substring(0, folder.prefix().length()-1); // Chop off last / of the folder for UI purposes
-                    objects.add(new IGVS3Object(folder_prefix.replace(prefix, ""), true));
+                    objects.add(new IGVS3Object(folder_prefix.replace(prefix, ""), true, "STANDARD"));
                 }
 
                 for (S3Object content: response.contents()) {
                     log.debug("S3 Bucket key: "+content.key());
-                    objects.add(new IGVS3Object(content.key().replace(prefix, ""), false));
+                    objects.add(new IGVS3Object(content.key().replace(prefix, ""), false, content.storageClassAsString()));
                 }
                 // If there are more than maxKeys keys in the bucket, get a continuation token
                 // and list the next objects.
