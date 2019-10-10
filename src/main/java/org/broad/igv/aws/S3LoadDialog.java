@@ -100,14 +100,17 @@ public class S3LoadDialog extends JDialog {
             for (TreePath path : paths) {
                 if (isFilePath(path)) {
                     Triple<String, String, String> bucketKeyTier = getBucketKeyTierFromTreePath(path);
+                    String S3objBucket = bucketKeyTier.getLeft();
+                    String S3objKey = bucketKeyTier.getMiddle();
                     String S3ObjectStorageClass = bucketKeyTier.getRight();
 
                     try {
                         if (S3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
                             S3ObjectStorageClass.contains("GLACIER")) throw S3Exception.builder().build();
                     } catch (S3Exception s3e) {
-                        MessageUtils.showErrorMessage("Amazon S3 object is in " + S3ObjectStorageClass + " storage tier, not accessible at this moment." +
-                                "Please contact your local system administrator", s3e);
+                        MessageUtils.showErrorMessage("Amazon S3 object is in " + S3ObjectStorageClass + " storage tier, not accessible at this moment. " +
+                                "Please contact your local system administrator about object: s3://" + S3objBucket + "/" + S3objKey, s3e);
+                        return;
                     }
 
                     preLocatorPaths.add(bucketKeyTier);
@@ -250,14 +253,17 @@ public class S3LoadDialog extends JDialog {
                         // similar behaviour to loadButtonActionPerformed, see docs there for details
                         if (isFilePath(selPath)) {
                             Triple<String, String, String> bucket_key_tier = getBucketKeyTierFromTreePath(selPath);
+                            String S3ObjectBucket = bucket_key_tier.getLeft();
+                            String S3ObjectKey = bucket_key_tier.getMiddle();
                             String S3ObjectStorageClass = bucket_key_tier.getRight();
 
                             try {
                                 if (S3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
-                                    S3ObjectStorageClass.contains("GLACIER")) throw S3Exception.builder().build();
+                                        S3ObjectStorageClass.contains("GLACIER")) throw S3Exception.builder().build();
                             } catch (S3Exception s3e) {
-                                MessageUtils.showErrorMessage("Amazon S3 object is in " + S3ObjectStorageClass + " storage tier, not accessible at this moment." +
-                                        "Please contact your local system administrator", s3e);
+                                MessageUtils.showErrorMessage("Amazon S3 object is in " + S3ObjectStorageClass + " storage tier, not accessible at this moment. " +
+                                        "Please contact your local system administrator about object: s3://" + S3ObjectBucket +  "/" + S3ObjectKey, s3e);
+                                return;
                             }
 
                             ResourceLocator loc = getResourceLocatorFromBucketKey(bucket_key_tier);
