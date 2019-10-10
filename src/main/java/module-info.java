@@ -22,6 +22,7 @@ module org.igv {
     requires swing.layout;
     requires jide.common;
     requires org.apache.commons.io;
+    requires org.apache.commons.lang3;
     requires goby.io;
     requires icb.utils;
     requires fastutil;
