@@ -1015,6 +1015,7 @@ public abstract class AbstractTrack implements Track {
     public void marshalXML(Document document, Element element) {
 
         element.setAttribute("name", name);
+        element.setAttribute("id", id);
         element.setAttribute("fontSize", String.valueOf(fontSize));
         element.setAttribute("visible", String.valueOf(visible));
 
@@ -1044,6 +1045,10 @@ public abstract class AbstractTrack implements Track {
 
         if (height != DEFAULT_HEIGHT) {
             element.setAttribute("height", String.valueOf(this.height));
+        }
+
+        if(showDataRange == false) {
+            element.setAttribute("showDataRange", Boolean.toString(showDataRange));
         }
 
         if (isNumeric()) {
@@ -1127,7 +1132,16 @@ public abstract class AbstractTrack implements Track {
         }
 
         if (element.hasAttribute("autoscaleGroup")) {
-            this.autoscaleGroup = element.getAttribute("autoscaleGroup");
+            String autoscaleGroup = element.getAttribute("autoscaleGroup");
+            this.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, "" + autoscaleGroup);
+        }
+
+        if (element.hasAttribute("showDataRange")) {
+            try {
+                this.showDataRange = Boolean.valueOf(element.getAttribute("showDataRange"));
+            } catch (Exception e) {
+                log.error("Unrecognized showDataRange: " + element.getAttribute("showDataRange"));
+            }
         }
 
         if (element.hasAttribute("featureVisibilityWindow")) {

@@ -88,17 +88,23 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
             }
         }
 
-        // Set the group autoscale attribute only of all tracks are in the same group
-        this.removeAttribute(AttributeManager.GROUP_AUTOSCALE);
-        if (memberTracks.size() > 0) {
+        // Set the group autoscale attribute only IF all tracks are in the same group
+        if (memberTracks != null && memberTracks.size() > 1) {
             String group = memberTracks.iterator().next().getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
             if (group != null) {
                 for (Track t : memberTracks) {
-                    if (!group.equals(t.getAttributeValue(AttributeManager.GROUP_AUTOSCALE))) return;
+                    if (!group.equals(t.getAttributeValue(AttributeManager.GROUP_AUTOSCALE))) {
+                        this.removeAttribute(AttributeManager.GROUP_AUTOSCALE);
+                        group = null;
+                        break;
+                    }
                 }
-                this.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, group);
+                if (group != null) {
+                    this.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, group);
+                }
             }
         }
+
 
         setTrackAlphas(alpha);
     }
@@ -150,8 +156,6 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
     @Override
     public void render(RenderContext context, Rectangle rect) {
-
-        context.setMerged(true);
         for (Track track : memberTracks) {
             track.render(context, rect);
         }
@@ -237,7 +241,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     @Override
     public void setAttributeValue(String name, String value) {
         super.setAttributeValue(name, value);
-        if (name.equals(AttributeManager.GROUP_AUTOSCALE)) {
+        if (name.equals(AttributeManager.GROUP_AUTOSCALE) && memberTracks != null) {
             for (Track track : memberTracks) {
                 track.setAttributeValue(name, value);
             }

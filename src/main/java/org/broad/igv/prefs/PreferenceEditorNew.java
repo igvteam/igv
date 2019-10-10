@@ -3,15 +3,18 @@ package org.broad.igv.prefs;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.*;
 
 import static org.broad.igv.prefs.Constants.MUTATION_COLOR_TABLE;
+import static org.broad.igv.prefs.Constants.PROVISIONING_URL;
 
 public class PreferenceEditorNew {
 
@@ -58,8 +62,8 @@ public class PreferenceEditorNew {
         // final Map<String, String> updatedPrefs = new HashMap<>();
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.setPreferredSize(new Dimension(750, 590));
-        tabbedPane.setMaximumSize(new Dimension(750, 590));
+        tabbedPane.setPreferredSize(new Dimension(850, 590));
+        tabbedPane.setMaximumSize(new Dimension(850, 590));
         panel.setLayout(new BorderLayout());
         panel.add(tabbedPane, BorderLayout.CENTER);
 
@@ -308,21 +312,38 @@ public class PreferenceEditorNew {
         saveButton.setMaximumSize(new Dimension(100, 30));
         saveButton.setDefaultCapable(true);
         saveButton.addActionListener((event) -> {
-
-            for (Map<String, String> prefs : updatedPreferencesMap.values()) {
-                extractMutationPreferences(prefs);
-            }
-
-            PreferencesManager.updateAll(updatedPreferencesMap);
+            saveAction(event, updatedPreferencesMap);
             SwingUtilities.invokeLater(() -> parent.setVisible(false));
-            if (IGV.hasInstance()) {
-                IGV.getInstance().doRefresh();
-            }
         });
         saveCancelPanel.add(cancelButton);
         saveCancelPanel.add(saveButton);
 
         panel.add(saveCancelPanel, BorderLayout.SOUTH);
+    }
+
+    private static void saveAction(ActionEvent event, Map<String, Map<String, String>> updatedPreferencesMap) {
+
+        for (Map<String, String> prefs : updatedPreferencesMap.values()) {
+            extractMutationPreferences(prefs);
+        }
+
+        PreferencesManager.updateAll(updatedPreferencesMap);
+
+        for (Map<String, String> map : updatedPreferencesMap.values()) {
+            if (map.containsKey(PROVISIONING_URL)) {
+
+                try {
+                    OAuthUtils.getInstance().loadProvisioningURL(map.get(PROVISIONING_URL));
+                } catch (IOException e) {
+                    MessageUtils.showErrorMessage("Error loading provisioning URL", e);
+                }
+                break;
+            }
+        }
+
+        if (IGV.hasInstance()) {
+            IGV.getInstance().doRefresh();
+        }
     }
 
 

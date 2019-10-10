@@ -31,6 +31,7 @@ import htsjdk.samtools.seekablestream.SeekableStreamFactory;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.FileUtils;
@@ -85,6 +86,8 @@ public class Main {
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
 
         htsjdk.tribble.util.ParsingUtils.registerHelperFactory(IGVUrlHelperFactory.getInstance());
+
+        OAuthUtils.getInstance();  // Initialize oauth
 
 
         final Main.IGVArgs igvArgs = new Main.IGVArgs(args);
