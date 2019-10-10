@@ -99,16 +99,23 @@ public class S3LoadDialog extends JDialog {
 
             for (TreePath path : paths) {
                 if (isFilePath(path)) {
-                    Triple<String, String, String> bucket_key = getBucketAndKeyFromTreePath(path);
-                    preLocatorPaths.add(bucket_key);
+                    Triple<String, String, String> bucketKeyTier = getBucketKeyTierFromTreePath(path);
+                    String S3ObjectStorageClass = bucketKeyTier.getRight();
+
+                    try {
+                        if (S3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
+                            S3ObjectStorageClass.contains("GLACIER")) throw S3Exception.builder().build();
+                    } catch (S3Exception s3e) {
+                        MessageUtils.showErrorMessage("Amazon S3 object is in " + S3ObjectStorageClass + " storage tier, not accessible at this moment." +
+                                "Please contact your local system administrator", s3e);
+                    }
+
+                    preLocatorPaths.add(bucketKeyTier);
                 }
             }
 
             for (Triple<String, String, String> preLocator: preLocatorPaths) {
-                String S3ObjectStorageClass = preLocator.getRight();
-                if (S3ObjectStorageClass != "STANDARD") {
-                    log.info("This object is archived in either GLACIER or DEEP GLACIER tier");
-                }
+
                 ResourceLocator locator = getResourceLocatorFromBucketKey(preLocator);
                 finalLocators.add(locator);
             }
@@ -130,7 +137,7 @@ public class S3LoadDialog extends JDialog {
         return new ResourceLocator(s3Path);
     }
 
-    private Triple<String, String, String> getBucketAndKeyFromTreePath(TreePath path) {
+    private Triple<String, String, String> getBucketKeyTierFromTreePath(TreePath path) {
         Object[] selectedObjects = path.getPath();
 
         String bucketName = ((S3TreeNode) selectedObjects[1]).getUserObject().getName();
@@ -199,6 +206,13 @@ public class S3LoadDialog extends JDialog {
         }
     }
 
+    // Determines whether the object is immediately available.
+    // On AWS this means present in STANDARD, IA, INTELLIGENT TIERING object access tiers.
+    // Tiers GLACIER and DEEP GLACIER are not immediately retrievable.
+//    private boolean isObjectAccessible() {
+//
+//    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -235,8 +249,18 @@ public class S3LoadDialog extends JDialog {
                     if(e.getClickCount() == 2) {
                         // similar behaviour to loadButtonActionPerformed, see docs there for details
                         if (isFilePath(selPath)) {
-                            Triple<String, String, String> bucket_and_key = getBucketAndKeyFromTreePath(selPath);
-                            ResourceLocator loc = getResourceLocatorFromBucketKey(bucket_and_key);
+                            Triple<String, String, String> bucket_key_tier = getBucketKeyTierFromTreePath(selPath);
+                            String S3ObjectStorageClass = bucket_key_tier.getRight();
+
+                            try {
+                                if (S3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
+                                    S3ObjectStorageClass.contains("GLACIER")) throw S3Exception.builder().build();
+                            } catch (S3Exception s3e) {
+                                MessageUtils.showErrorMessage("Amazon S3 object is in " + S3ObjectStorageClass + " storage tier, not accessible at this moment." +
+                                        "Please contact your local system administrator", s3e);
+                            }
+
+                            ResourceLocator loc = getResourceLocatorFromBucketKey(bucket_key_tier);
                             IGV.getInstance().loadTracks(Collections.singletonList(loc));
                             setVisible(false);
                         }
