@@ -85,7 +85,7 @@ public class Main {
 
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
 
-        htsjdk.tribble.util.ParsingUtils.registerHelperFactory(IGVUrlHelperFactory.getInstance());
+        htsjdk.tribble.util.ParsingUtils.setURLHelperFactory(IGVUrlHelperFactory.getInstance());
 
         OAuthUtils.getInstance();  // Initialize oauth
 
