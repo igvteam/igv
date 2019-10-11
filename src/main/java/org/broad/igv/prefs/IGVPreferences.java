@@ -61,6 +61,7 @@ public class IGVPreferences {
     IGVPreferences parent;
 
     Map<String, String> userPreferences;
+    Map<String, String> defaults;
     // Preferences which should persist for this session only
     Set<String> overrideKeys = new HashSet<>();
 
@@ -75,8 +76,10 @@ public class IGVPreferences {
     }
 
     public IGVPreferences(Map<String, String> userPreferences,
+                          Map<String, String> defaults,
                           IGVPreferences parent) {
         this.parent = parent;
+        this.defaults = defaults;
         this.userPreferences = userPreferences == null ? new HashMap<>() : userPreferences;
     }
 
@@ -85,6 +88,9 @@ public class IGVPreferences {
 
         if(userPreferences.containsKey(key)) {
             return userPreferences.get(key);
+        }
+        else if(defaults != null && defaults.containsKey(key)) {
+            return defaults.get(key);
         }
         else if(parent != null) {
             return parent.get(key);
@@ -126,7 +132,7 @@ public class IGVPreferences {
                 log.error("No default value for: " + key);
                 return false;
             }
-            boolValue = new Boolean(get(key, value));
+            boolValue = Boolean.valueOf(get(key, value));
             booleanCache.put(key, boolValue);
         }
         return boolValue.booleanValue();

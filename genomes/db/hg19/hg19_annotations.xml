@@ -92,7 +92,7 @@
                       index="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/LINE.rmask.gz.tbi"/>
             <Resource name="LTR"
                       path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/LTR.rmask.gz"
-                      index="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/LTR.rmask.gz"/>
+                      index="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/LTR.rmask.gz.tbi"/>
             <Resource name="DNA"
                       path="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/DNA.rmask.gz"
                       index="https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/variations/DNA.rmask.gz.tbi"/>

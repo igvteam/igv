@@ -36,7 +36,9 @@ import com.jidesoft.swing.JideToggleButton;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.*;
-import org.broad.igv.feature.genome.*;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.History;
@@ -48,7 +50,9 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ZoomSliderPanel;
-import org.broad.igv.ui.util.*;
+import org.broad.igv.ui.util.IconFactory;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -166,8 +170,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         GenomeListItem selectedItem = GenomeListManager.getInstance().getGenomeListItem(genomeId);
 
-        if (selectedItem == null) {
-
+        if (selectedItem == null || !genomeComboBox.hasItem(selectedItem)) {
             try {
                 GenomeManager.getInstance().loadGenomeById(genomeId);
             } catch (IOException e) {

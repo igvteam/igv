@@ -229,7 +229,7 @@ public class CommandExecutor {
     }
 
     private String overridePreference(String prefKey, String prefVal) {
-        PreferencesManager.getPreferences().override(prefKey, prefVal);
+        PreferencesManager.setOverride(prefKey, prefVal);
         return "OK";
     }
 
@@ -367,7 +367,6 @@ public class CommandExecutor {
         if (GenomeManager.getInstance().getCurrentGenome().getId().equals(genomeID)) {
             return result;
         }
-
 
         String genomePath = genomeID;
         if (!ParsingUtils.fileExists(genomePath)) {
