@@ -572,8 +572,12 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
     }
 
-    final private int drawFeatureName(IGVFeature feature, Track.DisplayMode mode, int pixelStart, int pixelEnd,
-                                      int lastFeatureEndedAtPixelX, Graphics2D g2D,
+    final private int drawFeatureName(IGVFeature feature,
+                                      Track.DisplayMode mode,
+                                      int pixelStart,
+                                      int pixelEnd,
+                                      int lastFeatureEndedAtPixelX,
+                                      Graphics2D g2D,
                                       int textBaselineY) {
 
         String name = feature.getName();

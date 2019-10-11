@@ -134,7 +134,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 clipRect.height = rect.height;
                 g2d.setClip(clipRect);
                 g2d.translate(c.getX(), 0);
-                ((DataPanel) c).paintOffscreen(g2d, rect);
+                ((DataPanel) c).paintOffscreen(g2d, clipRect);
 
             }
         }
