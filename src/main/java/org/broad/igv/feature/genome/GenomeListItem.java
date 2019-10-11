@@ -103,8 +103,6 @@ public class GenomeListItem {
 
         GenomeListItem that = (GenomeListItem) o;
 
-        if (displayableName != null ? !displayableName.equals(that.displayableName) : that.displayableName != null)
-            return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (path != null ? !path.equals(that.path) : that.path != null) return false;
 
@@ -113,7 +111,7 @@ public class GenomeListItem {
 
     @Override
     public int hashCode() {
-        return Objects.hash(displayableName, path, id);
+        return Objects.hash(path, id);
     }
 
 

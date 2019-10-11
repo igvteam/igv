@@ -37,7 +37,19 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
         setModel(getModelForGenomeListComboBox());
         String curId = GenomeManager.getInstance().getGenomeId();
         Object item = GenomeListManager.getInstance().getLoadedGenomeListItemById(curId);
-        if (item != null) setSelectedItem(item);
+        if (item != null) {
+            setSelectedItem(item);
+        }
+    }
+
+    public boolean hasItem(Object item) {
+        int c = this.getItemCount();
+        for(int i=0; i<c; i++) {
+            if(item.equals(this.getItemAt(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -65,7 +77,6 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
     class GenomeBoxActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent) {
-
             Object selItem = getSelectedItem();
             if (!(selItem instanceof GenomeListItem)) {
                 return;

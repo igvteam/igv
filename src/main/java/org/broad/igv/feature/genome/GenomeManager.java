@@ -165,7 +165,6 @@ public class GenomeManager {
             loadGenome(genomeId, null);
 
         } else {
-
             final ProgressMonitor[] monitor = {new ProgressMonitor()};
             final ProgressBar.ProgressDialog[] progressDialog = new ProgressBar.ProgressDialog[1];
             UIUtilities.invokeAndWaitOnEventThread(() -> {
@@ -184,8 +183,6 @@ public class GenomeManager {
                     progressDialog[0].setVisible(false);
                 });
             }
-
-
         }
     }
 
