@@ -45,6 +45,8 @@ public interface Variant extends Feature {
      */
     String getID();
 
+    boolean hasLog10PError();
+
     /**
      * @return the type of this variant as a String.  Any String value is legal, typical values from VCF files include
      * NO_VARIATION, SNP, MNP, INDEL, SYMBOLIC, MIXED

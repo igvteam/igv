@@ -198,6 +198,11 @@ public class VCFVariant implements Variant {
         return variantContext.getPhredScaledQual();
     }
 
+    @Override
+    public boolean hasLog10PError() {
+        return variantContext.hasLog10PError();
+    }
+
     public String getType() {
         return variantContext.getType().toString();
     }

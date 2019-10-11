@@ -1014,7 +1014,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             toolTip.append("<br>Alternate: " + alternateString);
         }
 
-        toolTip.append("<br>Qual: " + numFormat.format(variant.getPhredScaledQual()));
+        double qual = variant.getPhredScaledQual();
+        String qualString =  variant.hasLog10PError() ? numFormat.format(qual) : ".";
+        toolTip.append("<br>Qual: " + qualString);
         toolTip.append("<br>Type: " + variant.getType());
         if (variant.isFiltered()) {
             toolTip.append("<br>Is Filtered Out: Yes</b>");
