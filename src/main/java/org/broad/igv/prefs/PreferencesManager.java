@@ -85,17 +85,19 @@ public class PreferencesManager implements IGVEventObserver {
                 }
             }
 
-            genericDefaults = new IGVPreferences(defaultPreferences.get(NULL_CATEGORY), null);
-            IGVPreferences rnaDefaults = new IGVPreferences(defaultPreferences.get(RNA), genericDefaults);
-            IGVPreferences thirdGenDefaults = new IGVPreferences(defaultPreferences.get(THIRD_GEN), genericDefaults);
+            genericDefaults = new IGVPreferences(defaultPreferences.get(NULL_CATEGORY), null, null);
+
+            Map<String, String> defaults = defaultPreferences.get(NULL_CATEGORY);
+            Map<String, String> rnaDefaults = defaultPreferences.get(RNA);
+            Map<String, String> thirdGenDefaults = defaultPreferences.get(THIRD_GEN);
 
             Map<String, Map<String, String>> userPrefs = loadUserPreferences();
 
-            final IGVPreferences nullPrefs = new IGVPreferences(userPrefs.get(NULL_CATEGORY), genericDefaults);
+            final IGVPreferences nullPrefs = new IGVPreferences(userPrefs.get(NULL_CATEGORY), defaults, null);
             extractMutationColors(nullPrefs);
             preferencesMap.put(NULL_CATEGORY, nullPrefs);
-            preferencesMap.put(RNA, new IGVPreferences(userPrefs.get(RNA), rnaDefaults));
-            preferencesMap.put(THIRD_GEN, new IGVPreferences(userPrefs.get(THIRD_GEN), thirdGenDefaults));
+            preferencesMap.put(RNA, new IGVPreferences(userPrefs.get(RNA), rnaDefaults, nullPrefs));
+            preferencesMap.put(THIRD_GEN, new IGVPreferences(userPrefs.get(THIRD_GEN), thirdGenDefaults, nullPrefs));
 
 
         } catch (IOException e) {
@@ -162,7 +164,6 @@ public class PreferencesManager implements IGVEventObserver {
         }
 
         Map<String, Map<String, String>> overrides = load(overridePropertyFilePath);
-
         for (Map.Entry<String, Map<String, String>> entry : overrides.entrySet()) {
 
             IGVPreferences prefs = preferencesMap.containsKey(entry.getKey()) ?
@@ -171,7 +172,6 @@ public class PreferencesManager implements IGVEventObserver {
 
             prefs.addOverrides(entry.getValue());
         }
-
     }
 
     private static Map<String, Map<String, String>> load(String prefFileName) {
@@ -315,6 +315,22 @@ public class PreferencesManager implements IGVEventObserver {
         }
 
         return defs;
+    }
+
+    /**
+     * Override a preference for this session.  We don't have a parameter to indicate experiment type so override
+     * it for all preference categories.
+     * @param prefKey
+     * @param prefVal
+     */
+    public static void setOverride(String prefKey, String prefVal) {
+
+        if (preferenceGroupList == null) {
+            init();
+        }
+        for(IGVPreferences prefs : preferencesMap.values()) {
+            prefs.override(prefKey, prefVal);
+        }
     }
 
     private synchronized void storePreferences() {

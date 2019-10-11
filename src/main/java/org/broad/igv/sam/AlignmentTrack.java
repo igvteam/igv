@@ -114,8 +114,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private CoverageTrack coverageTrack;
     private SpliceJunctionTrack spliceJunctionTrack;
 
-    RenderOptions renderOptions = new RenderOptions(ExperimentType.OTHER);
-
+    RenderOptions renderOptions;
 
     private int expandedHeight = 14;
     private int collapsedHeight = 9;
@@ -295,6 +294,18 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             boolean showJunction = getPreferences(type).getAsBoolean(Constants.SAM_SHOW_JUNCTION_TRACK);
             if (showJunction != spliceJunctionTrack.isVisible()) {
                 spliceJunctionTrack.setVisible(showJunction);
+                IGV.getInstance().revalidateTrackPanels();
+            }
+
+            boolean showCoverage = getPreferences(type).getAsBoolean(SAM_SHOW_COV_TRACK);
+            if (showCoverage != coverageTrack.isVisible()) {
+                coverageTrack.setVisible(showCoverage);
+                IGV.getInstance().revalidateTrackPanels();
+            }
+
+            boolean showAlignments = getPreferences(type).getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK);
+            if (showAlignments != isVisible()) {
+                setVisible(showAlignments);
                 IGV.getInstance().revalidateTrackPanels();
             }
         }
@@ -2554,7 +2565,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         public void refreshDefaults(ExperimentType experimentType) {
-            defaultValues = new DefaultValues(getPreferences(experimentType));
+            IGVPreferences prefs = getPreferences(experimentType);
+            defaultValues = new DefaultValues(prefs);
         }
 
 
