@@ -44,6 +44,7 @@ public class AmazonUtils {
 
     // AWS specific objects
     private static S3Client s3Client;
+    private static List<String> bucketsFinalList = new ArrayList<>();
     private static CognitoIdentityClient cognitoIdentityClient;
     private static Region AWSREGION;
     private static Map<String, String> locatorTos3PresignedMap = new HashMap<>();
@@ -185,22 +186,24 @@ public class AmazonUtils {
      * @return bucket list
      */
     public static List<String> ListBucketsForUser() {
-        ArrayList<String> bucketsList = new ArrayList<>();
+        if (bucketsFinalList.isEmpty()) {
+            OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
+            updateS3Client(GetCognitoAWSCredentials());
 
-        OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
-        updateS3Client(GetCognitoAWSCredentials());
+            List<String> bucketsList = new ArrayList<>();
 
-        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
-        ListBucketsResponse listBucketsResponse = s3Client.listBuckets(listBucketsRequest);
-        // XXX: Filter out buckets that I do not have permissions for
-        listBucketsResponse.buckets().stream().forEach(x -> bucketsList.add(x.name()));
+            ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
+            ListBucketsResponse listBucketsResponse = s3Client.listBuckets(listBucketsRequest);
+            listBucketsResponse.buckets().stream().forEach(x -> bucketsList.add(x.name()));
 
-        List<String> bucketsFinalList = getReadableBUckets(bucketsList);
+            // Filter out buckets that the user does not have permissions for
+            bucketsFinalList = getReadableBuckets(bucketsList);
+        }
 
         return bucketsFinalList;
     }
 
-    private static List<String> getReadableBUckets(List<String> buckets) {
+    private static List<String> getReadableBuckets(List<String> buckets) {
         List<CompletableFuture<String>> futures =
                 buckets.stream()
                         .map(bucket -> {
