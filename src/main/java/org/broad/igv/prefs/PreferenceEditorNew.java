@@ -84,6 +84,7 @@ public class PreferenceEditorNew {
             scrollPane.setPreferredSize(new Dimension(750, 590));
             scrollPane.setMaximumSize(new Dimension(750, 590));
             scrollPane.setName(tabLabel);
+            scrollPane.getVerticalScrollBar().setUnitIncrement(16);
             tabbedPane.addTab(tabLabel, scrollPane);
 
             JPanel content = new JPanel();
