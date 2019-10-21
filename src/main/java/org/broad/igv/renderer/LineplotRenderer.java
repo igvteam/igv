@@ -89,7 +89,7 @@ public class LineplotRenderer extends XYPlotRenderer {
 
             float dataY = score.getScore();
             // Missing data in a dataset is signifed by NaN.  Just skip these.
-            if (Float.isNaN(dataY)) {
+            if (!Float.isNaN(dataY)) {
 
                 double x = ((score.getStart() - origin) / locScale);
                 double dx = (score.getEnd() - score.getStart()) / locScale;
