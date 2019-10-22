@@ -64,7 +64,7 @@ HIV-2	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001722.genome	N
 Horse (equCab2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/equCab2.genome	equCab2
 Human (1kg reference, b36)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/1kg_ref.genome	1kg_ref
 Human (1kg, b37+decoy)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/1kg_v37.genome	1kg_v37
-Human (b37)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/b37.genome	b37
+Human (b37)	https://s3.amazonaws.com/igv.org.genomes/b37/b37.genome	b37
 Human Adenovirus C	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001405.genome	NC_001405
 Human Herpesvirus 4, Type 1	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/HHV4_Type1.genome	HHV4_Type1
 Human Herpesvirus 4, Type 2	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/HHV4_Type2.genome	HHV4_Type2
