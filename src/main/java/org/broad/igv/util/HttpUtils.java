@@ -42,8 +42,6 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.collections.CI;
 import org.broad.igv.util.ftp.FTPUtils;
-import org.broad.igv.util.stream.IGVUrlHelper;
-import org.broad.igv.util.stream.IGVUrlHelperFactory;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -57,9 +55,8 @@ import java.io.*;
 import java.net.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -149,17 +146,18 @@ public class HttpUtils {
             }
         }
 
-        String host = URLUtils.getHost(urlString);  
+        String host = URLUtils.getHost(urlString);
         if (host.equals("igv.broadinstitute.org")) {
             urlString = urlString.replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org");
         } else if (host.equals("igvdata.broadinstitute.org")) {
-            // Cloudfront server
-            urlString = urlString.replace("igvdata.broadinstitute.org", "dn7ywbm9isq8j.cloudfront.net");
+            urlString = urlString.replace("igvdata.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org");
+        } else if (host.equals("dn7ywbm9isq8j.cloudfront.net")) {
+            urlString = urlString.replace("dn7ywbm9isq8j.cloudfront.net", "s3.amazonaws.com/igv.broadinstitute.org");
         } else if (host.equals("www.broadinstitute.org")) {
             urlString = urlString.replace("www.broadinstitute.org/igvdata", "data.broadinstitute.org/igvdata");
-        } else if(host.equals("www.dropbox.com")) {
+        } else if (host.equals("www.dropbox.com")) {
             urlString = urlString.replace("//www.dropbox.com", "//dl.dropboxusercontent.com");
-        } else if(host.equals("drive.google.com")) {
+        } else if (host.equals("drive.google.com")) {
             urlString = GoogleUtils.driveDownloadURL(urlString);
         }
 
@@ -256,7 +254,7 @@ public class HttpUtils {
         }
         byte[] postDataBytes = postData.toString().getBytes();
 
-        log.debug("Raw POST request: "+postData.toString());
+        log.debug("Raw POST request: " + postData.toString());
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
@@ -347,7 +345,7 @@ public class HttpUtils {
                     }
                 return false;
             } finally {
-                if(conn != null) {
+                if (conn != null) {
                     try {
                         conn.disconnect();
                     } catch (Exception e) {
@@ -383,7 +381,7 @@ public class HttpUtils {
                     throw e;
                 }
                 log.debug("HEAD request failed for url: " + url.toExternalForm());
-                log.debug("Trying GET instead for url: "+ url.toExternalForm());
+                log.debug("Trying GET instead for url: " + url.toExternalForm());
                 headURLCache.put(url, false);
             }
         }
@@ -775,7 +773,8 @@ public class HttpUtils {
                 log.info("PROXY NOT USED ");
                 if (proxySettings.getWhitelist().contains(url.getHost())) {
                     log.info(url.getHost() + " is whitelisted");
-                };
+                }
+                ;
             }
             conn = (HttpURLConnection) url.openConnection();
         }
@@ -801,10 +800,10 @@ public class HttpUtils {
         // If this is a Google URL and we have an access token use it.
         if (GoogleUtils.isGoogleURL(url.toExternalForm())) {
             String token = OAuthUtils.getInstance().getProvider().getAccessToken();
-            if (token != null)  {
+            if (token != null) {
                 conn.setRequestProperty("Authorization", "Bearer " + token);
             }
-            if(GoogleUtils.getProjectID() != null && GoogleUtils.getProjectID().length() > 0) {
+            if (GoogleUtils.getProjectID() != null && GoogleUtils.getProjectID().length() > 0) {
                 url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
             }
         }
@@ -857,7 +856,7 @@ public class HttpUtils {
                     message = "File not found: " + url.toString();
                     throw new FileNotFoundException(message);
                 } else if (code == 401) {
-                    if(GoogleUtils.isGoogleURL(url.toExternalForm()) && retries == 0) {
+                    if (GoogleUtils.isGoogleURL(url.toExternalForm()) && retries == 0) {
                         GoogleUtils.checkLogin();
                         return openConnection(url, requestProperties, method, redirectCount, ++retries);
                     }
@@ -884,7 +883,7 @@ public class HttpUtils {
     }
 
     private boolean isDropboxHost(String host) {
-        return(host.equals("dl.dropboxusercontent.com") || host.equals("www.dropbox.com"));
+        return (host.equals("dl.dropboxusercontent.com") || host.equals("www.dropbox.com"));
     }
 
     private URL addQueryParameter(URL url, String userProject, String projectID) {
