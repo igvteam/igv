@@ -184,8 +184,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         try {
             googleMenu = createGoogleMenu();
-            googleMenu.setVisible(PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU));
-            menus.add(googleMenu);
+            if(googleMenu != null) {
+                googleMenu.setVisible(PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU));
+                menus.add(googleMenu);
+            }
         } catch (IOException e) {
             log.error("Error creating google menu: " + e.getMessage());
         }
@@ -1047,67 +1049,69 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // Dynamically name menu - dwm08
         final OAuthProvider oauth = OAuthUtils.getInstance().getProvider();
 
-        oauth.setAuthProvider("Google");
-        JMenu menu = new JMenu(oauth.getAuthProvider());
+        if(oauth != null) {  // TODO -- how do we know this is a google provider?
+            oauth.setAuthProvider("Google");
+            JMenu menu = new JMenu(oauth.getAuthProvider());
 
-        final JMenuItem login = new JMenuItem("Login ... ");
-        login.addActionListener(e -> {
-            try {
-                oauth.openAuthorizationPage();
-            } catch (Exception ex) {
-                MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
-                log.error("Error fetching oAuth tokens", ex);
-            }
+            final JMenuItem login = new JMenuItem("Login ... ");
+            login.addActionListener(e -> {
+                try {
+                    oauth.openAuthorizationPage();
+                } catch (Exception ex) {
+                    MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
+                    log.error("Error fetching oAuth tokens", ex);
+                }
 
-        });
-        //login.setEnabled(false);
-        menu.add(login);
-
-
-        final JMenuItem logout = new JMenuItem("Logout ");
-        logout.addActionListener(e -> {
-            oauth.logout();
-            GoogleUtils.setProjectID(null);
-        });
-        logout.setEnabled(false);
-        menu.add(logout);
-
-        final JMenuItem projectID = new JMenuItem("Enter Project ID ...");
-        projectID.addActionListener(e -> GoogleUtils.enterGoogleProjectID());
-        menu.add(projectID);
+            });
+            //login.setEnabled(false);
+            menu.add(login);
 
 
-        menu.addMenuListener(new MenuListener() {
-            @Override
-            public void menuSelected(MenuEvent e) {
-                Runnable runnable = () -> {
-                    boolean loggedIn = OAuthUtils.getInstance().getProvider().isLoggedIn();
+            final JMenuItem logout = new JMenuItem("Logout ");
+            logout.addActionListener(e -> {
+                oauth.logout();
+                GoogleUtils.setProjectID(null);
+            });
+            logout.setEnabled(false);
+            menu.add(logout);
 
-                    if (loggedIn) {
-                        login.setText(oauth.getCurrentUserName());
-                    } else {
-                        login.setText("Login ...");
-                    }
-                    login.setEnabled(!loggedIn);
-                    logout.setEnabled(loggedIn);
-                };
+            final JMenuItem projectID = new JMenuItem("Enter Project ID ...");
+            projectID.addActionListener(e -> GoogleUtils.enterGoogleProjectID());
+            menu.add(projectID);
 
-                LongRunningTask.submit(runnable);
-            }
+            menu.addMenuListener(new MenuListener() {
+                @Override
+                public void menuSelected(MenuEvent e) {
+                    Runnable runnable = () -> {
+                        boolean loggedIn = OAuthUtils.getInstance().getProvider().isLoggedIn();
 
-            @Override
-            public void menuDeselected(MenuEvent e) {
+                        if (loggedIn) {
+                            login.setText(oauth.getCurrentUserName());
+                        } else {
+                            login.setText("Login ...");
+                        }
+                        login.setEnabled(!loggedIn);
+                        logout.setEnabled(loggedIn);
+                    };
 
-            }
+                    LongRunningTask.submit(runnable);
+                }
 
-            @Override
-            public void menuCanceled(MenuEvent e) {
+                @Override
+                public void menuDeselected(MenuEvent e) {
 
-            }
+                }
 
-        });
+                @Override
+                public void menuCanceled(MenuEvent e) {
 
-        return menu;
+                }
+
+            });
+            return menu;
+        } else {
+            return null;
+        }
     }
 
 //    public void enableRemoveGenomes() {
@@ -1182,7 +1186,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
     public void enableGoogleMenu(boolean aBoolean) {
-        googleMenu.setVisible(aBoolean);
+        if(googleMenu != null) {
+            googleMenu.setVisible(aBoolean);
+        }
     }
 
     @Override
