@@ -115,7 +115,7 @@ public class CodecFactory {
             return new GFFCodec(GFFCodec.Version.GTF, genome);
         } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
             return new PSLCodec(genome);
-        }  else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
+        }  else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak") || fn.endsWith(".regionpeak")) {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".snp") || fn.endsWith(".ucscsnp")) {
             return new UCSCSnpCodec(genome);

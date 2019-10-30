@@ -423,7 +423,10 @@ public class TrackLoader {
                     t.setHeight(15);
                 }
             }
-            if (locator.getPath().contains(".narrowPeak") || locator.getPath().contains(".broadPeak") || locator.getPath().contains(".gappedPeak")) {
+            if (locator.getPath().contains(".narrowPeak") ||
+                    locator.getPath().contains(".broadPeak") ||
+                    locator.getPath().contains(".gappedPeak")||
+                    locator.getPath().contains(".regionPeak") ) {
                 t.setUseScore(true);
             }
             newTracks.add(t);
