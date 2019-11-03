@@ -52,9 +52,9 @@ public class BlastMapping extends BasicFeature {
         this.queryBlock = queryBlock;
         this.subjectBlock = subjectBlock;
 
-        this.setStart(Math.min(queryBlock.getStart(), queryBlock.getEnd()));
-        this.setEnd(Math.max(queryBlock.getStart(), queryBlock.getEnd()));
-        this.setName("[" + subjectBlock.getContig() + ":" + subjectBlock.getStart() + "-" + subjectBlock.getEnd() + "]");
+        this.setStart(Math.min(subjectBlock.getStart(), subjectBlock.getEnd()));
+        this.setEnd(Math.max(subjectBlock.getStart(), subjectBlock.getEnd()));
+        this.setName("[" + queryBlock.getContig() + ":" + queryBlock.getStart() + "-" + queryBlock.getEnd() + "]");
         this.setScore(percentIden);
 
     }
@@ -71,11 +71,11 @@ public class BlastMapping extends BasicFeature {
 
     @Override
     public String getChr() {
-        return queryBlock.getContig();
+        return subjectBlock.getContig();
     }
 
     public Strand getStrand() {
-        return subjectBlock.getStrand();
+        return queryBlock.getStrand();
     }
 
     public boolean containsQueryPosition(String contig, int position) {
