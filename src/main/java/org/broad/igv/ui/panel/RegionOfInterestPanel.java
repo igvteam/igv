@@ -231,17 +231,45 @@ public class RegionOfInterestPanel extends JPanel {
 
     class ROIMouseAdapater extends MouseInputAdapter {
 
-        @Override
+       @Override
         public void mousePressed(MouseEvent e) {
-            showPopup(e);
+            if((e.getModifiers() & MouseEvent.CTRL_MASK) != 0 ){
+                focusROI = getRegionOfInterest(e.getX());
+                if(focusROI!=null){
+                    int curPos = (int) frame.getChromosomePosition(e.getX());
+                    int startDist = Math.abs(focusROI.getStart()-curPos);
+                    int endDist = Math.abs(focusROI.getEnd()-curPos);
+                    if(startDist<endDist){
+                        switchStartOrEnd = true;
+                    }else{
+                        switchStartOrEnd = false;
+                    }
+                }
+            }else{
+                showPopup(e);
+            }
         }
 
+        RegionOfInterest focusROI;
+        boolean switchStartOrEnd;
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            if(focusROI!=null){
+                if(switchStartOrEnd){
+                    focusROI.setStart((int) frame.getChromosomePosition(e.getX()));
+                }else{
+                    focusROI.setEnd((int) frame.getChromosomePosition(e.getX()));
+                }
+                RegionOfInterestPanel.this.repaint();
+
+            }
+        }
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            focusROI = null;
             //showPopup(e);
         }
-
 
         @Override
         public void mouseMoved(MouseEvent e) {
