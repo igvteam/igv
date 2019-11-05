@@ -218,7 +218,7 @@ public class Main {
                 }
 
             } catch (Exception e) {
-                log.error("Error checking version", e);
+                // ignore
             } finally {
 
             }
