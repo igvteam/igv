@@ -35,7 +35,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.google.OAuthUtils;
-import org.broad.igv.gs.GSUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -98,10 +97,7 @@ public class HttpUtils {
 
     private HttpUtils() {
 
-        // if (!Globals.checkJavaVersion("1.8")) {
         disableCertificateValidation();
-        // }
-        CookieHandler.setDefault(new IGVCookieManager());
         Authenticator.setDefault(new IGVAuthenticator());
 
         try {
@@ -779,12 +775,10 @@ public class HttpUtils {
             conn = (HttpURLConnection) url.openConnection();
         }
 
-        if (GSUtils.isGenomeSpace(url)) {
-            conn.setRequestProperty("Accept", "application/json,text/plain");
-        } else {
-            if (!"HEAD".equals(method))
+            if (!"HEAD".equals(method)) {
                 conn.setRequestProperty("Accept", "text/plain");
-        }
+            }
+
 
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
         conn.setReadTimeout(Globals.READ_TIMEOUT);
@@ -1058,13 +1052,7 @@ public class HttpUtils {
 
             Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
 
-            boolean isGenomeSpace = GSUtils.isGenomeSpace(getRequestingURL());
-            if (isGenomeSpace) {
-                // If we are being challenged by GS the token must be bad/expired
-                GSUtils.logout();
-            }
-
-            LoginDialog dlg = new LoginDialog(owner, isGenomeSpace, urlString, isProxyChallenge);
+            LoginDialog dlg = new LoginDialog(owner, urlString, isProxyChallenge);
             dlg.setVisible(true);
             if (dlg.isCanceled()) {
                 return null;
@@ -1128,86 +1116,6 @@ public class HttpUtils {
             n += count;
         }
     }
-
-
-    /**
-     * Extension of CookieManager that grabs cookies from the GenomeSpace identity server to store locally.
-     * This is to support the GenomeSpace "single sign-on". Examples ...
-     * gs-username=igvtest; Domain=.genomespace.org; Expires=Mon, 21-Jul-2031 03:27:23 GMT; Path=/
-     * gs-token=HnR9rBShNO4dTXk8cKXVJT98Oe0jWVY+; Domain=.genomespace.org; Expires=Mon, 21-Jul-2031 03:27:23 GMT; Path=/
-     */
-
-    static class IGVCookieManager extends CookieHandler {
-
-
-        CookieManager wrappedManager;
-
-        public IGVCookieManager() {
-            wrappedManager = new CookieManager();
-        }
-
-        @Override
-        public Map<String, List<String>> get(URI uri, Map<String, List<String>> requestHeaders) throws IOException {
-
-            Map<String, List<String>> headers = new HashMap<String, List<String>>();
-            headers.putAll(wrappedManager.get(uri, requestHeaders));
-
-            if (GSUtils.isGenomeSpace(uri.toURL())) {
-                String token = GSUtils.getGSToken();
-                if (token != null) {
-                    List<String> cookieList = headers.get("Cookie");
-                    boolean needsTokenCookie = true;
-                    boolean needsToolCookie = true;
-                    if (cookieList == null) {
-                        cookieList = new ArrayList<String>(1);
-                        headers.put("Cookie", cookieList);
-                    }
-
-                    for (String cookie : cookieList) {
-                        if (cookie.startsWith("gs-token")) {
-                            needsTokenCookie = false;
-                        } else if (cookie.startsWith("gs-toolname")) {
-                            needsToolCookie = false;
-                        }
-                    }
-                    if (needsTokenCookie) {
-                        cookieList.add("gs-token=" + token);
-                    }
-                    if (needsToolCookie) {
-                        cookieList.add("gs-toolname=IGV");
-                    }
-                }
-            }
-
-            return Collections.unmodifiableMap(headers);
-        }
-
-        @Override
-        public void put(URI uri, Map<String, List<String>> responseHeaders) throws IOException {
-            String urilc = uri.toString().toLowerCase();
-            if (urilc.contains("identity") && urilc.contains("genomespace")) {
-                List<String> cookies = responseHeaders.get("Set-Cookie");
-                if (cookies != null) {
-                    for (String cstring : cookies) {
-                        List<HttpCookie> cookieList = HttpCookie.parse(cstring);
-                        for (HttpCookie cookie : cookieList) {
-                            String cookieName = cookie.getName();
-                            String value = cookie.getValue();
-                            if (cookieName.equals("gs-token")) {
-                                //log.debug("gs-token: " + value);
-                                GSUtils.setGSToken(value);
-                            } else if (cookieName.equals("gs-username")) {
-                                //log.debug("gs-username: " + value);
-                                GSUtils.setGSUser(value);
-                            }
-                        }
-                    }
-                }
-            }
-            wrappedManager.put(uri, responseHeaders);
-        }
-    }
-
 
     public class UnsatisfiableRangeException extends RuntimeException {
 

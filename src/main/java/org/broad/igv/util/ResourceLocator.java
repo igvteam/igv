@@ -30,7 +30,6 @@ import htsjdk.tribble.Tribble;
 import org.apache.log4j.Logger;
 import org.broad.igv.google.Ga4ghAPIHelper;
 import org.broad.igv.google.GoogleUtils;
-import org.broad.igv.gs.GSUtils;
 
 import java.awt.*;
 import java.io.File;
@@ -128,7 +127,7 @@ public class ResourceLocator {
     public ResourceLocator(String path) {
         this.setPath(path);
 
-        if(path != null && path.startsWith("https://") && GoogleUtils.isGoogleDrive(path)) {
+        if (path != null && path.startsWith("https://") && GoogleUtils.isGoogleDrive(path)) {
             this.resolveGoogleDrive(path);
         }
 
@@ -199,11 +198,7 @@ public class ResourceLocator {
                         // If type is set explicitly use it
                         if (queryMap.containsKey("dataformat")) {
                             String format = queryMap.get("dataformat");
-                            if (format.contains("genomespace")) {
-                                typeString = GSUtils.parseDataFormatString(format);
-                            } else {
-                                typeString = format;
-                            }
+                            typeString = format;
                         } else if (queryMap.containsKey("file")) {
                             typeString = queryMap.get("file");
                         }
@@ -353,7 +348,7 @@ public class ResourceLocator {
                 objFname = path;
             }
 
-            log.debug("S3 object filename visible in IGV UI is: "+ objFname);
+            log.debug("S3 object filename visible in IGV UI is: " + objFname);
             this.setName(objFname);
 
             String s3UrlIndexPath = detectIndexPath(path);
@@ -393,11 +388,12 @@ public class ResourceLocator {
 
     /**
      * Takes in a non-pre-signed URL and returns its (guessed) indexfile.
+     *
      * @param inputPath: Path containing vcf/bam file
      * @return indexPath: Guessed path containing the corresponding index (in the CWD-equivalent dir level)
      */
     public String detectIndexPath(String inputPath) {
-        log.debug("detectIndexPath() input S3 path is: "+inputPath);
+        log.debug("detectIndexPath() input S3 path is: " + inputPath);
         String indexPath = "";
         if (inputPath.contains(".bam")) {
             indexPath = inputPath + ".bai";
@@ -481,10 +477,9 @@ public class ResourceLocator {
         if (locator.getIndexPath() != null) {
             return locator.getIndexPath();
         } else {
-            if(isCloudOrDropbox(locator.getPath())) {
+            if (isCloudOrDropbox(locator.getPath())) {
                 return null;   // Can't infer google & dropbox paths
-            }
-            else {
+            } else {
                 String indexExtension =
                         (locator.getURLPath().toLowerCase().endsWith(".gz") || locator.getPath().toLowerCase().endsWith(".bgz")) ? ".tbi" : Tribble.STANDARD_INDEX_EXTENSION;
                 return appendToPath(locator, indexExtension);

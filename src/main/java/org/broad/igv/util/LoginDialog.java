@@ -29,10 +29,11 @@
 
 package org.broad.igv.util;
 
-import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * @author Jim Robinson
@@ -42,24 +43,19 @@ public class LoginDialog extends JDialog {
     boolean canceled = false;
 
     public LoginDialog(Frame owner) {
-        this(owner, false, "", false);
+        this(owner,  "", false);
     }
 
-    public LoginDialog(Frame owner, boolean isGenomeSpace, String resource, boolean proxyChallenge) {
+    public LoginDialog(Frame owner, String resource, boolean proxyChallenge) {
         super(owner);
         initComponents();
-        getRootPane().setDefaultButton(okButton);
-        if (isGenomeSpace) {
-            promptLabel.setText("Please login to your GenomeSpace account");
-            iconLabel.setVisible(true);
+        if (proxyChallenge) {
+            promptLabel.setText("<html>Please enter username and password for your Proxy server to access<br>" + resource);
         } else {
-            if (proxyChallenge) {
-                promptLabel.setText("<html>Please enter username and password for your Proxy server to access<br>" + resource);
-            } else {
-                promptLabel.setText("<html>Please enter username and password to access<br>" + resource);
-            }
-            iconLabel.setVisible(false);
+            promptLabel.setText("<html>Please enter username and password to access<br>" + resource);
         }
+        iconLabel.setVisible(false);
+
     }
 
     public String getUsername() {

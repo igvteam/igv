@@ -39,9 +39,6 @@ import org.broad.igv.feature.genome.RemoveGenomesDialog;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.google.OAuthUtils;
-import org.broad.igv.gs.GSOpenSessionMenuAction;
-import org.broad.igv.gs.GSSaveSessionMenuAction;
-import org.broad.igv.gs.GSUtils;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.tools.IgvToolsGui;
@@ -177,7 +174,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         refreshToolsMenu();
         menus.add(toolsMenu);
 
-        menus.add(createGenomeSpaceMenu());
         extrasMenu = createExtrasMenu();
         //extrasMenu.setVisible(false);
         menus.add(extrasMenu);
@@ -807,62 +803,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             Globals.CONNECT_TIMEOUT = connectTimeout;
             Globals.READ_TIMEOUT = readTimeout;
         }
-    }
-
-    private JMenu createGenomeSpaceMenu() {
-
-        JMenu menu = new JMenu("GenomeSpace");
-
-        MenuAction menuAction = null;
-        menuAction = new LoadFromGSMenuAction("Load File from GenomeSpace...", KeyEvent.VK_U, igv);
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menu.addSeparator();
-        menuAction = new LoadGenomeFromGSMenuAction("Load Genome from GenomeSpace...", KeyEvent.VK_Z, igv);
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menu.addSeparator();
-
-        menuAction = new GSSaveSessionMenuAction("Save Session to GenomeSpace...", igv);
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new GSOpenSessionMenuAction("Load Session from GenomeSpace...", igv);
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menu.add(new JSeparator());
-        menuAction = new MenuAction("Logout") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                GSUtils.logout();
-                if (MessageUtils.confirm("You must shutdown IGV to complete the GenomeSpace logout. Shutdown now?")) {
-                    doExitApplication();
-                }
-            }
-        };
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menu.add(new JSeparator());
-        menuAction =
-                new MenuAction("Register... ") {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            BrowserLauncher.openURL(GENOMESPACE_REG_PAGE);
-                        } catch (IOException ex) {
-                            log.error("Error opening browser", ex);
-                        }
-
-                    }
-                };
-        menuAction.setToolTipText(GENOMESPACE_REG_TOOLTIP);
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        menu.setVisible(PreferencesManager.getPreferences().getAsBoolean(GENOME_SPACE_ENABLE));
-
-
-        return menu;
     }
 
     private JMenu createExtrasMenu() {
