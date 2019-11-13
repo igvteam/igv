@@ -506,9 +506,6 @@ public class AttributeManager {
     }
 
     public String getSampleFor(String track) {
-
-        //return trackSampleMappings.get(track);
-
         if (trackSampleMappings.containsKey(track)) {
             return trackSampleMappings.get(track);
         } else if (isTCGAName(track)) {

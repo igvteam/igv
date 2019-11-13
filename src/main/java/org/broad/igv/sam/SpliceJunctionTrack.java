@@ -104,6 +104,14 @@ public class SpliceJunctionTrack extends FeatureTrack {
     public SpliceJunctionTrack() {
     }
 
+    @Override
+    public String getSample() {
+        if (sampleId != null) {
+            return sampleId;    // Explicitly set sample ID (e.g. from server load XML)
+        }
+        return alignmentTrack.getSample();
+    }
+
     protected boolean isShowFeatures(ReferenceFrame frame) {
         float maxRange = PreferencesManager.getPreferences().getAsFloat(Constants.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;

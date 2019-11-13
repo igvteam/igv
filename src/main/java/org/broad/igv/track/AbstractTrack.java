@@ -109,7 +109,7 @@ public abstract class AbstractTrack implements Track {
 
     protected int fontSize = PreferencesManager.getPreferences().getAsInt(DEFAULT_FONT_SIZE);
     private boolean showDataRange = true;
-    private String sampleId;
+    protected String sampleId;
 
     private ResourceLocator resourceLocator;
 
@@ -407,16 +407,11 @@ public abstract class AbstractTrack implements Track {
     }
 
     public String getSample() {
-
         if (sampleId != null) {
-            return sampleId;
+            return sampleId;    // Explicitly set sample ID (e.g. from server load XML)
         }
-//        String sample = AttributeManager.getInstance().getSampleFor(getName());
-//        return sample != null ? sample : getName();
-
         sampleId = AttributeManager.getInstance().getSampleFor(getName());
         return sampleId != null ? sampleId : getName();
-
     }
 
 

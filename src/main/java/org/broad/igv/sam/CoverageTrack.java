@@ -139,6 +139,13 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     }
 
+    @Override
+    public String getSample() {
+        if (sampleId != null) {
+            return sampleId;    // Explicitly set sample ID (e.g. from server load XML)
+        }
+        return alignmentTrack.getSample();
+    }
 
     @Override
     public boolean isNumeric() {
