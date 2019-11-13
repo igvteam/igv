@@ -106,6 +106,9 @@ SAM.FLAG_UNMAPPED_PAIR	Flag unmapped pairs	boolean	FALSE
 SAM.SHOW_SOFT_CLIPPED	Show soft-clipped bases	boolean	FALSE
 SAM.SHOW_CENTER_LINE	Show center line	boolean	FALSE
 SAM.HIDDEN_TAGS	Hidden SAM tags	string	SA,MD,XA,RG
+---
+SAM.FILTER_ALIGNMENTS	Filter alignments by read group	boolean	FALSE
+SAM.FILTER_URL	URL or path to read group filter file	string	null
 ##Coverage Track Options
 SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2f
 SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
@@ -198,8 +201,7 @@ SAM.AUTOSORT	FALSE
 SAM.SHADE_CENTER	TRUE
 SAM.SHOW_REF_SEQ	FALSE
 SAM.SHADE_BASE_QUALITY	QUALITY
-SAM.FILTER_ALIGNMENTS	FALSE
-SAM.FILTER_URL	null
+
 SAM.BISULFITE_CONTEXT	CG
 SAM.FLAG_ZERO_QUALITY	TRUE
 SAM.NOMESEQ_ENABLED	FALSE
