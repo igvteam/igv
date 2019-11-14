@@ -219,7 +219,7 @@ public class FileUtils {
 
 
     /**
-     * Test to see if the first comment line (first line not starting with #) is tab-delimited with the
+     * Test to see if the first non-comment line (first line not starting with #) is tab-delimited with the
      * given number of minimum columns.  Limit the test to the first 1,000 lines.
      */
     public static boolean isTabDelimited(ResourceLocator loc, int minColumnCount) throws IOException {

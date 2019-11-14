@@ -367,7 +367,7 @@ public class AttributeManager {
     /**
      * Load sample table, which might optionally have 3 sections
      * #sampletable (default)
-     * #samplemappint (track id -> sample mapping table)
+     * #samplemapping (track id -> sample mapping table)
      * #colors (color table)
      */
     private void loadSampleTable(AsciiLineReader reader, String path) throws IOException {
@@ -413,6 +413,7 @@ public class AttributeManager {
                     }
                 }
             } else if (section.equals("#samplemapping")) {
+                foundAttributes = true;
                 if (tokens.length < 2) {
                     continue;
                 }
@@ -421,6 +422,7 @@ public class AttributeManager {
                 trackSampleMappings.put(track, sample);
 
             } else if (section.equals("#colors")) {
+                foundAttributes = true;
                 parseColors(tokens);
 
             }
@@ -428,8 +430,6 @@ public class AttributeManager {
         if (!foundAttributes) {
             throw new DataLoadException("Could not determine file type.  Does file have proper extension? ", path);
         }
-
-
     }
 
 
