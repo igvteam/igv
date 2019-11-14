@@ -41,13 +41,16 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.HttpUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.io.IOException;
+import java.net.URL;
 import java.util.List;
+import java.util.*;
 
 /**
  * A class for performing search actions.  The class takes a view context and
@@ -158,8 +161,8 @@ public class SearchCommand {
      *                     Partial matches to a feature name (EG) will return multiple results, and
      *                     ask the user which they want.
      * @return result
-     *         List<SearchResult> describing the results of the search. Will never
-     *         be null, field type will equal ResultType.ERROR if something went wrong.
+     * List<SearchResult> describing the results of the search. Will never
+     * be null, field type will equal ResultType.ERROR if something went wrong.
      */
     public List<SearchResult> runSearch(String searchString) {
 
@@ -282,7 +285,7 @@ public class SearchCommand {
      *
      * @param results
      * @return SearchResults which the user has selected.
-     *         Will be null if cancelled
+     * Will be null if cancelled
      */
     private List<SearchResult> askUserFeature(List<SearchResult> results) {
 
@@ -364,7 +367,6 @@ public class SearchCommand {
             result = calcChromoLocus(token);
             if (result.type != ResultType.ERROR) {
                 results.add(result);
-                return results;
             }
         }
 
@@ -411,24 +413,37 @@ public class SearchCommand {
                 results.add(result);
 
             }
-            return results;
-        }
-
-        if (types.contains(ResultType.FEATURE)) {
+        } else if (types.contains(ResultType.FEATURE)) {
             //Check if we have an exact name for the feature name
             NamedFeature feat = FeatureDB.getFeature(token.toUpperCase().trim());
             if (feat != null) {
                 results.add(new SearchResult(feat));
-                return results;
             }
-
         }
 
-        result = new SearchResult();
-        result.setMessage("Invalid token: " + token);
-        results.add(result);
-        return results;
+        // If results are empty try the webservice
+        if(results.isEmpty()) {
+            try {
+                String tmp = "https://igv.org/genomes/locus.php?genome=$GENOME$&name=$FEATURE$";
+                String genomeID = GenomeManager.getInstance().getGenomeId();
+                if (genomeID != null) {
+                    URL url = new URL(tmp.replace("$GENOME$", genomeID).replace("$FEATURE$", token));
+                    String r = HttpUtils.getInstance().getContentsAsString(url);
+                    String[] t = Globals.whitespacePattern.split(r);
+                    if(t.length > 2) {
+                        Locus l = Locus.fromString(t[1]);
+                        SearchResult sr = new SearchResult(ResultType.FEATURE, l.getChr(), l.getStart(), l.getEnd());
+                        sr.locus = t[0];
+                        results.add(sr);
+                    }
+                }
+            } catch (IOException e) {
+                log.error("Search webservice error", e);
+            }
+        }
 
+
+        return results;
     }
 
 
@@ -488,10 +503,9 @@ public class SearchCommand {
 
         if (chromosome != null && !searchString.equals(Globals.CHR_ALL)) {
             if (startEnd != null) {
-                if(startEnd[1] >= startEnd[0]) {
+                if (startEnd[1] >= startEnd[0]) {
                     return new SearchResult(ResultType.LOCUS, chr, startEnd[0], startEnd[1]);
-                }
-                else {
+                } else {
                     SearchResult error = new SearchResult(ResultType.ERROR, chr, startEnd[0], startEnd[1]);
                     error.setMessage("End must be greater than start");
                     return error;
@@ -505,10 +519,9 @@ public class SearchCommand {
     private void showFlankedRegion(String chr, int start, int end) {
         int flankingRegion = PreferencesManager.getPreferences().getAsInt(Constants.FLANKING_REGION);
         int delta;
-        if((end - start) == 1) {
+        if ((end - start) == 1) {
             delta = 20; // Don't show flanking region for single base jumps, use 40bp window
-        }
-        else if (flankingRegion < 0) {
+        } else if (flankingRegion < 0) {
             delta = (-flankingRegion * (end - start)) / 100;
         } else {
             delta = flankingRegion;
@@ -516,7 +529,7 @@ public class SearchCommand {
         start = Math.max(0, start - delta);
         end = end + delta;
 
-            referenceFrame.jumpTo(chr, start, end);
+        referenceFrame.jumpTo(chr, start, end);
 
     }
 
@@ -548,7 +561,7 @@ public class SearchCommand {
                 end = center + widen;
             }
 
-            return new int[]{Math.min(start, end)-1, Math.max(start, end)};
+            return new int[]{Math.min(start, end) - 1, Math.max(start, end)};
         } catch (NumberFormatException numberFormatException) {
             return null;
         }
