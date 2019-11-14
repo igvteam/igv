@@ -222,13 +222,17 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         renderer = new AlignmentRenderer(this);
 
         showGroupLine = getPreferences().getAsBoolean(SAM_SHOW_GROUP_SEPARATOR);
-        setDisplayMode(DisplayMode.EXPANDED);
+
+        try {
+            setDisplayMode(DisplayMode.valueOf(prefs.get(SAM_DISPLAY_MODE).toUpperCase()));
+        } catch(Exception e) {
+            setDisplayMode(DisplayMode.EXPANDED);
+        }
 
         if (prefs.getAsBoolean(SAM_SHOW_REF_SEQ)) {
             sequenceTrack = new SequenceTrack("Reference sequence");
             sequenceTrack.setHeight(14);
         }
-
         if (renderOptions.colorOption == ColorOption.BISULFITE) {
             setExperimentType(ExperimentType.BISULFITE);
         }
