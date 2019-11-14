@@ -1,6 +1,5 @@
 package org.broad.igv.sam.lite;
 
-import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.util.StringUtil;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
@@ -66,8 +65,8 @@ public class BAMAlignment extends SAMAlignment {
     }
 
     @Override
-    public int getReadLength() {
-        return sequence.length;
+    public String getReadLengthString() {
+        return String.valueOf(sequence.length);
     }
 
     @Override

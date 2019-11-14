@@ -31,6 +31,7 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
@@ -210,8 +211,13 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
     }
 
     @Override
-    public int getReadLength() {
-        return record.getReadString().length();
+    public String getReadLengthString() {
+        String rs = record.getReadString();
+        if(rs.equals("*") || rs.equals("")) {
+            return "undefined";
+        } else {
+            return  Globals.DECIMAL_FORMAT.format(rs.length()) + "bp";
+        }
     }
 
     @Override

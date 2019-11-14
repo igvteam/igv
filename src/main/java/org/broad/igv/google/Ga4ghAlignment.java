@@ -210,8 +210,8 @@ public class Ga4ghAlignment extends SAMAlignment {
         return cigarString;
     }
 
-    public int getReadLength() {
-        return readSequence.length();
+    public String getReadLengthString() {
+        return String.valueOf(readSequence.length());
     }
 
     public String getReadSequence() {

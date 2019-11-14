@@ -142,7 +142,7 @@ public abstract class SAMAlignment implements Alignment {
 
     abstract public String getCigarString();
 
-    abstract public int getReadLength();
+    abstract public String getReadLengthString();
 
     abstract public String getReadSequence();
 
@@ -513,7 +513,7 @@ public abstract class SAMAlignment implements Alignment {
         if (readGroup != null) {
             buf.append("Read group = " + readGroup + "<br>");
         }
-        buf.append("Read length = " + Globals.DECIMAL_FORMAT.format(getReadLength()) + "bp<br>");
+        buf.append("Read length = " + getReadLengthString() + "<br>");
 
 
         String cigarString = getCigarString();

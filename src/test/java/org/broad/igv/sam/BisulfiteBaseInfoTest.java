@@ -87,8 +87,8 @@ public class BisulfiteBaseInfoTest {
         }
 
         @Override
-        public int getReadLength() {
-            return 0;
+        public String getReadLengthString() {
+            return "0";
         }
 
         @Override
