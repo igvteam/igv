@@ -89,7 +89,6 @@ public class Main {
 
         OAuthUtils.getInstance();  // Initialize oauth
 
-
         final Main.IGVArgs igvArgs = new Main.IGVArgs(args);
 
         // Do this early
@@ -437,6 +436,7 @@ public class Main {
             CmdLineParser.Option igvDirectoryOption = parser.addStringOption("igvDirectory");
             CmdLineParser.Option forceVersionOption = parser.addStringOption("forceVersion");
             CmdLineParser.Option versionOption = parser.addBooleanOption("version");
+            CmdLineParser.Option helpOption = parser.addBooleanOption("help");
 
             try {
                 parser.parse(args);
@@ -480,6 +480,11 @@ public class Main {
 
             if (parser.getOptionValue(versionOption) != null) {
                 System.out.println(Globals.VERSION);
+                System.exit(0);
+            }
+
+            if(parser.getOptionValue(helpOption) != null) {
+                printHelp();
                 System.exit(0);
             }
 
@@ -623,6 +628,22 @@ public class Main {
             return name;
         }
 
+        private void printHelp() {
+            System.out.println("Command line options:");
+            System.out.println("Space delimited list of data files to load");
+            System.out.println("--preferences, -o  Path or URL to a preference property file");
+            System.out.println("--batch. -b  Path or url to a batch command file");
+            System.out.println("--port, -p  IGV command port number (defaults to 60151)");
+            System.out.println("--genome, -g  Genome ID (e.g hg19) or path or url to .genome or indexed fasta file");
+            System.out.println("--dataServerURL, -d  Path or url to a data server registry file");
+            System.out.println("--genomeServerURL, -u  Path or url to a genome server registry file");
+            System.out.println("--indexFile, -i  Index file or comma delimited list of index files corresponding to data files");
+            System.out.println("--coverageFile, -c  Coverage file or comma delimited list of coverage files corresponding to data files");
+            System.out.println("--name, -n  Name or comma-delimited list of names for tracks corresponding to data files");
+            System.out.println("--locus, -l  Initial locus");
+            System.out.println("--igvDirectory Path to the local igv directory.  Defaults to <user home>/igv");
+            System.out.println("--version  Print the IGV version and exit");
+            System.out.println("--help Print this output and exit");
+        }
     }
-
 }
