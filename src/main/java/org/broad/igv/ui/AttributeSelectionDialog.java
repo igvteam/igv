@@ -31,7 +31,12 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.track.AttributeManager;
+
 import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author eflakes
@@ -39,22 +44,20 @@ import javax.swing.*;
 public class AttributeSelectionDialog extends javax.swing.JDialog {
 
     private javax.swing.JButton cancelButton;
-    JComboBox comboBox;
-    private javax.swing.JLabel genomeComboBoxLabel;
+    private JComboBox comboBox;
+    private javax.swing.JLabel comboBoxLabel;
     private javax.swing.JButton okButton;
     private boolean isCanceled = true;
+    private String[] selArray;
 
     /**
      * Creates new form GenomeSelectionDialog
      */
-    public AttributeSelectionDialog(java.awt.Frame parent, String action, boolean modal) {
-        super(parent, modal);
+    public AttributeSelectionDialog(java.awt.Frame parent, String action) {
+        super(parent, true);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         initComponents(action);
         setLocationRelativeTo(parent);
-    }
-
-    public void setModel(ComboBoxModel model) {
-        comboBox.setModel(model);
     }
 
     public void setSelectedItem(Object selection) {
@@ -65,8 +68,9 @@ public class AttributeSelectionDialog extends javax.swing.JDialog {
         comboBox.setSelectedIndex(index);
     }
 
-    public int getSelectedIndex() {
-        return comboBox.getSelectedIndex();
+    public String getSelected() {
+        int selIndex = comboBox.getSelectedIndex();
+        return (isCanceled || selIndex == 0 ? null : selArray[selIndex]);
     }
 
     public boolean isCanceled() {
@@ -81,68 +85,46 @@ public class AttributeSelectionDialog extends javax.swing.JDialog {
      */
     private void initComponents(String action) {
 
-        comboBox = new JComboBox();
-        genomeComboBoxLabel = new javax.swing.JLabel();
-        okButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
+        List<String> attributeKeys = AttributeManager.getInstance().getVisibleAttributes();
+        ArrayList<String> selections = new ArrayList<>();
+        selections.add("None");
+        selections.addAll(attributeKeys);
+        this.selArray = selections.toArray(new String[]{});
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(action);
-        setResizable(false);
+        getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
+        JPanel attributeSelectionPanel = new JPanel();
+        getContentPane().add(attributeSelectionPanel);
+        attributeSelectionPanel.setLayout(new FlowLayout());
+        comboBoxLabel = new javax.swing.JLabel(action + " Tracks By:");
+        attributeSelectionPanel.add(comboBoxLabel);
+        comboBox = new JComboBox();
+        comboBox.setModel(new javax.swing.DefaultComboBoxModel(selArray));
         comboBox.setEditable(false);
+        attributeSelectionPanel.add(comboBox);
 
-        genomeComboBoxLabel.setText(action + " Tracks By:");
-
+        JPanel buttonPanel = new JPanel();
+        getContentPane().add(buttonPanel);
+        okButton = new javax.swing.JButton();
         okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
+        buttonPanel.add(okButton);
 
+        cancelButton = new javax.swing.JButton();
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
+        buttonPanel.add(cancelButton);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(genomeComboBoxLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 112, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(comboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 318, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap())
-                        .add(layout.createSequentialGroup()
-                                .add(145, 145, 145)
-                                .add(okButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(cancelButton)
-                                .addContainerGap(183, Short.MAX_VALUE))
-        );
-
-        layout.linkSize(new java.awt.Component[]{cancelButton, okButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        layout.setVerticalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(layout.createSequentialGroup()
-                                .add(50, 50, 50)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                        .add(genomeComboBoxLabel)
-                                        .add(comboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .add(18, 18, 18)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                        .add(okButton)
-                                        .add(cancelButton))
-                                .addContainerGap())
-        );
-
-        layout.linkSize(new java.awt.Component[]{cancelButton, okButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         pack();
     }

@@ -355,13 +355,7 @@ public class TrackMenuUtils {
             menu.add(unmergeItem);
             if (merged) {
                 unmergeItem.addActionListener(e -> {
-                    Track firstTrack1 = tracks.iterator().next();
-                    TrackPanel panel = TrackPanel.getParentPanel(firstTrack1);
-                    final MergedTracks mergedTracks = (MergedTracks) firstTrack1;
-                    mergedTracks.setTrackAlphas(1.0);
-                    panel.addTracks(mergedTracks.getMemberTracks());
-                    panel.moveSelectedTracksTo(mergedTracks.getMemberTracks(), mergedTracks, true);
-                    IGV.getInstance().removeTracks(Arrays.asList(mergedTracks));
+                    OverlayTracksMenuAction.unmerge(tracks);
                 });
             } else {
                 unmergeItem.setEnabled(false);
