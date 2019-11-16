@@ -69,7 +69,7 @@ public class CommandExecutor {
 
     private File snapshotDirectory;
     private IGV igv;
-    private int sleepInterval = 2000;
+    private int sleepInterval = 0; //2000;
 
 
     public CommandExecutor() {
@@ -876,7 +876,7 @@ public class CommandExecutor {
 
         try {
             return IGV.getInstance().createSnapshotNonInteractive(target, file, true);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error(e);
             return e.getMessage();
         }

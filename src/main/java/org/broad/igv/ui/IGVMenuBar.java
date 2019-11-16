@@ -30,6 +30,7 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.aws.S3LoadDialog;
+import org.broad.igv.batch.CommandExecutor;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -831,13 +832,25 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
 
+        JMenuItem memTest = new JMenuItem("Memory test");
+        memTest.addActionListener(e -> {
+            CommandExecutor exe = new CommandExecutor();
+            int count = 1;
+            int start = 0;
+            exe.execute("snapshotDirectory /Users/jrobinso/Downloads/tmp");
+            while(count++ < 10000) {
+                exe.execute("goto chr1:" + start + "-" + (start + 1000));
+                exe.execute("snapshot");
+                start += 1000;
+            }
+        });
+        menuItems.add(memTest);
+
         MenuAction menuAction = null;
 
         // Preferences reset
         menuAction = new ResetPreferencesAction("Reset Preferences", IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
         menuItems.add(new JSeparator());
 
 

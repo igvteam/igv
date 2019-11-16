@@ -273,7 +273,11 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
         if (visible != sequenceVisible.get(frameName)) {
             sequenceVisible.put(frameName, visible);
-            UIUtilities.invokeAndWaitOnEventThread(() -> context.getPanel().revalidate());
+            UIUtilities.invokeAndWaitOnEventThread(() -> {
+                if (context.getPanel() != null) {
+                    context.getPanel().revalidate();
+                }
+            });
         }
         if (visible) {
             LoadedDataInterval<SeqCache> sequenceInterval = loadedIntervalCache.get(frameName);
