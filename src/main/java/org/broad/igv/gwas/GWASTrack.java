@@ -130,7 +130,7 @@ public class GWASTrack extends AbstractTrack {
     public GWASTrack() {
     }
 
-    String getDisplayName() {
+    public String getDisplayName() {
         return displayName;
     }
 

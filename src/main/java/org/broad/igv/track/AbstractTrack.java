@@ -214,7 +214,7 @@ public abstract class AbstractTrack implements Track {
         return name;
     }
 
-    private String getDisplayName() {
+    public String getDisplayName() {
 
         String sampleKey = IGV.getInstance().getSession().getTrackAttributeName();
         if (sampleKey != null && sampleKey.trim().length() > 0) {

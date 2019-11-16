@@ -46,11 +46,11 @@ import java.util.*;
 public class OverlayTracksMenuAction extends MenuAction {
 
     //static Logger log = Logger.getLogger(GroupTracksMenuAction.class);
-    IGV mainFrame;
+    IGV igv;
 
-    public OverlayTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public OverlayTracksMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
     }
 
     @Override
@@ -58,7 +58,7 @@ public class OverlayTracksMenuAction extends MenuAction {
 
         UIUtilities.invokeOnEventThread(() -> {
 
-            final AttributeSelectionDialog dlg = new AttributeSelectionDialog(mainFrame.getMainFrame(), "Overlay");
+            final AttributeSelectionDialog dlg = new AttributeSelectionDialog(igv.getMainFrame(), "Overlay");
             dlg.setVisible(true);
 
             if (!dlg.isCanceled()) {
@@ -84,7 +84,7 @@ public class OverlayTracksMenuAction extends MenuAction {
                         String name = entry.getKey();
                         merge(entry.getValue(), name);
                     }
-                    mainFrame.doRefresh();
+                    igv.doRefresh();
                 }
 
             }

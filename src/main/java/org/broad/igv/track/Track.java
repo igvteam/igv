@@ -122,6 +122,8 @@ public interface Track extends Persistable {
 
     String getName();
 
+    String getDisplayName();
+
     String getNameValueString(int y);
 
     String getSample();

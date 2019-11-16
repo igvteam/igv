@@ -170,10 +170,18 @@ public class Session implements IGVEventObserver {
         return path;
     }
 
+    /**
+     * Set a preference value for this session only
+     * @param key
+     * @param value
+     */
     public void setPreference(String key, String value) {
         preferences.put(key, value);
     }
 
+    public void removePreference(String key) {
+        preferences.remove(key);
+    }
 
     public void setColorScale(TrackType trackType, ContinuousColorScale colorScale) {
         colorScales.put(trackType, colorScale);
@@ -261,7 +269,6 @@ public class Session implements IGVEventObserver {
         final String key = TRACK_ATTRIBUTE_NAME_KEY;
         if (preferences.containsKey(key)) {
             return preferences.get(key);
-
         }
         return PreferencesManager.getPreferences().get(TRACK_ATTRIBUTE_NAME_KEY);
     }
