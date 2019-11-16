@@ -487,6 +487,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         filterTracksAction.setToolTipText(UIConstants.FILTER_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(filterTracksAction));
 
+        // Overlay tracks
+        menuAction = new OverlayTracksMenuAction("Overlay Data Tracks... ", KeyEvent.VK_G, IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.OVERLAY_TRACKS_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+
         menuItems.add(new JSeparator());
 
         // Reset Tracks

@@ -30,25 +30,27 @@
 package org.broad.igv.ui.action;
 
 import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.DataTrack;
+import org.broad.igv.track.MergedTracks;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.AttributeSelectionDialog;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
  */
-public class GroupTracksMenuAction extends MenuAction {
+public class OverlayTracksMenuAction extends MenuAction {
 
     //static Logger log = Logger.getLogger(GroupTracksMenuAction.class);
     IGV mainFrame;
 
-    public GroupTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public OverlayTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
     }
@@ -56,51 +58,59 @@ public class GroupTracksMenuAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        doGroupBy();
-
-    }
-
-    final public void doGroupBy() {
-
-
         UIUtilities.invokeOnEventThread(new Runnable() {
 
             public void run() {
 
-                final AttributeSelectionDialog dlg = new AttributeSelectionDialog(
-                        mainFrame.getMainFrame(),
-                        "Group",
-                        true);
-
+                final AttributeSelectionDialog dlg = new AttributeSelectionDialog(mainFrame.getMainFrame(), "Overlay", true);
                 List<String> attributeKeys = AttributeManager.getInstance().getVisibleAttributes();
-
                 ArrayList<String> selections = new ArrayList(attributeKeys);
-
                 selections.add(0, "None");
                 String[] selArray = selections.toArray(new String[]{});
-
-                dlg.setModel(new javax.swing.DefaultComboBoxModel(selArray));
+                dlg.setModel(new DefaultComboBoxModel(selArray));
                 dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-                String currentSelection = IGV.getInstance().getGroupByAttribute();
-                if (currentSelection == null) {
-                    dlg.setSelectedIndex(0);
-                } else {
-                    dlg.setSelectedItem(currentSelection);
-                }
-
                 dlg.setVisible(true);
 
                 if (!dlg.isCanceled()) {
                     int selIndex = dlg.getSelectedIndex();
-                    String selectedAttribute = (selIndex == 0 ? null : selArray[selIndex]);
-                    IGV.getInstance().setGroupByAttribute(selectedAttribute);
-                    mainFrame.doRefresh();
+                    if (selIndex == 0) {
+                        // undo all merges
+                    } else {
+                        String selectedAttribute = selArray[selIndex];
+
+                        List<DataTrack> tracks = IGV.getInstance().getDataTracks();
+                        Map<String, List<DataTrack>> groups = new HashMap<>();
+                        for (DataTrack t : tracks) {
+                            String v = t.getAttributeValue(selectedAttribute);
+                            if (v != null) {
+                                List<DataTrack> tlist = groups.get(v);
+                                if (tlist == null) {
+                                    tlist = new ArrayList<>();
+                                    groups.put(v, tlist);
+                                }
+                                tlist.add(t);
+                            }
+                        }
+
+                        for (Map.Entry<String, List<DataTrack>> entry : groups.entrySet()) {
+                            String name = entry.getKey();
+                            merge(entry.getValue(), name);
+                        }
+                        mainFrame.doRefresh();
+                    }
 
                 }
-
             }
-
         });
     }
+
+    public static void merge(List<DataTrack> dataTrackList, String name) {
+        MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), name, dataTrackList);
+        Track firstTrack12 = dataTrackList.iterator().next();
+        TrackPanel panel = TrackPanel.getParentPanel(firstTrack12);
+        panel.addTrack(mergedTracks);
+        panel.moveSelectedTracksTo(Arrays.asList(mergedTracks), firstTrack12, false);
+        panel.removeTracks(dataTrackList);
+    }
+
 }

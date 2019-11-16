@@ -64,6 +64,7 @@ public class UIConstants {
 
     static final public String SORT_TRACKS_TOOLTIP = "Sort tracks by attribute value";
     static final public String GROUP_TRACKS_TOOLTIP = "Group tracks by attribute value";
+    static final public String OVERLAY_TRACKS_TOOLTIP = "Overlay data (wig) tracks by attribute value";
     static final public String FILTER_TRACKS_TOOLTIP = "Filter tracks by attribute value";
     static final public String SET_DEFAULT_TRACK_HEIGHT_TOOLTIP = "Set the height for all tracks";
     static final public String FIT_DATA_TO_WINDOW_TOOLTIP =
