@@ -1,0 +1,4 @@
+load https://1000genomes.s3.amazonaws.com/phase3/data/HG01883/alignment/HG01883.mapped.ILLUMINA.bwa.ACB.low_coverage.20130415.bam
+load https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/alignment/HG01879.mapped.ILLUMINA.bwa.ACB.low_coverage.20120522.bam
+goto myc
+squish HG01879.mapped.ILLUMINA.bwa.ACB.low_coverage.20120522.bam
