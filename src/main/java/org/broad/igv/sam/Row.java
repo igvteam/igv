@@ -73,7 +73,7 @@ public class Row implements Comparable<Row> {
         } else {
             switch (option) {
                 case START:
-                    return centerAlignment.getStart();
+                    return centerAlignment.getAlignmentStart();
                 case STRAND:
                     if(centerAlignment instanceof LinkedAlignment) {
                            return ((LinkedAlignment) centerAlignment).getStrandAtPosition(center) == Strand.NEGATIVE ? 1 : -1;
