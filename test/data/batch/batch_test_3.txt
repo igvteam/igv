@@ -1,6 +1,0 @@
-snapshotDirectory /Users/jrobinso/
-maxPanelHeight 2000
-load http://www.broadinstitute.org/igvdata/BodyMap/hg19/IlluminaHiSeq2000_BodySites/brain_merged/accepted_hits.bam
-goto chr8:128,746,315-128,755,680
-snapshot
-new

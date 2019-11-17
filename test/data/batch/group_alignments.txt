@@ -1,1 +1,6 @@
-group FIRST_OF_PAIR_STRAND
+preferences SAM.COLOR_BY STRAND
+load https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/alignment/HG01879.mapped.ILLUMINA.bwa.ACB.low_coverage.20120522.bam
+goto chr8:128,749,315
+group STRAND
+sort BASE chr8:128,749,315
+
