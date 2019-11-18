@@ -52,9 +52,10 @@ import java.util.Collection;
  */
 public class RegionOfInterestPanel extends JPanel {
 
-    PopupMenu popup;
-
     ReferenceFrame frame;
+    RegionOfInterest focusROI;
+    boolean switchStartOrEnd;
+
 
     // There can only be 1 selected region, irrespective of the number of panels
     private static RegionOfInterest selectedRegion = null;
@@ -231,36 +232,36 @@ public class RegionOfInterestPanel extends JPanel {
 
     class ROIMouseAdapater extends MouseInputAdapter {
 
-       @Override
+        @Override
         public void mousePressed(MouseEvent e) {
-            if((e.getModifiers() & MouseEvent.CTRL_MASK) != 0 ){
+            if ((e.getModifiers() & MouseEvent.CTRL_MASK) != 0) {
                 focusROI = getRegionOfInterest(e.getX());
-                if(focusROI!=null){
+                if (focusROI != null) {
                     int curPos = (int) frame.getChromosomePosition(e.getX());
-                    int startDist = Math.abs(focusROI.getStart()-curPos);
-                    int endDist = Math.abs(focusROI.getEnd()-curPos);
-                    if(startDist<endDist){
+                    int startDist = Math.abs(focusROI.getStart() - curPos);
+                    int endDist = Math.abs(focusROI.getEnd() - curPos);
+                    if (startDist < endDist) {
                         switchStartOrEnd = true;
-                    }else{
+                    } else {
                         switchStartOrEnd = false;
                     }
                 }
-            }else{
+            } else {
                 showPopup(e);
             }
         }
 
-        RegionOfInterest focusROI;
-        boolean switchStartOrEnd;
         @Override
         public void mouseDragged(MouseEvent e) {
-            if(focusROI!=null){
-                if(switchStartOrEnd){
+            if (focusROI != null) {
+
+                if (switchStartOrEnd) {
                     focusROI.setStart((int) frame.getChromosomePosition(e.getX()));
-                }else{
+                } else {
                     focusROI.setEnd((int) frame.getChromosomePosition(e.getX()));
                 }
-                RegionOfInterestPanel.this.repaint();
+                IGV.getInstance().repaint();
+               // RegionOfInterestPanel.this.repaint();
 
             }
         }
@@ -276,7 +277,7 @@ public class RegionOfInterestPanel extends JPanel {
             RegionOfInterest roi = getRegionOfInterest(e.getX());
             if (roi != null) {
                 setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                setToolTipText(roi.getTooltip());
+                setToolTipText("<html>" + roi.getTooltip() + "<br>To resize use ctrl-click-drag.");
                 if (selectedRegion != roi) {
                     selectedRegion = roi;
                     IGV.getInstance().revalidateTrackPanels();
