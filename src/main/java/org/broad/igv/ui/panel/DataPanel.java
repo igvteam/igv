@@ -80,11 +80,8 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     // Thread pool for loading data
     private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
 
-    private boolean isWaitingForToolTipText = false;
-
     private DataPanelTool defaultTool;
     private DataPanelTool currentTool;
-    // private Point tooltipTextPosition;
     private ReferenceFrame frame;
     private DataPanelContainer parent;
     private DataPanelPainter painter;

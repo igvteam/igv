@@ -348,31 +348,7 @@ public class RulerPanel extends JPanel {
 
         MouseInputAdapter mouseAdapter = new MouseInputAdapter() {
 
-            int lastMousePressX;
-
-            @Override
-            public void mouseClicked(MouseEvent evt) {
-                final MouseEvent e = evt;
-                setCursor(Cursor.getDefaultCursor());
-                WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-                try {
-
-                    if (!isWholeGenomeView()) {
-                        double newLocation = frame.getChromosomePosition(e.getX());
-                        frame.centerOnLocation(newLocation);
-                    } else {
-                        for (final ClickLink link : chromosomeRects) {
-                            if (link.region.contains(e.getPoint())) {
-                                final String chrName = link.value;
-                                frame.changeChromosome(chrName, true);
-                            }
-                        }
-                    }
-                } finally {
-                    WaitCursorManager.removeWaitCursor(token);
-                }
-
-            }
+            private MouseEvent mouseDown;
 
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -410,7 +386,6 @@ public class RulerPanel extends JPanel {
 
             }
 
-
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (Math.abs(e.getPoint().getX() - dragStart) > 1) {
@@ -420,24 +395,71 @@ public class RulerPanel extends JPanel {
                 }
             }
 
-            @Override
-            public void mousePressed(MouseEvent e) {
-                dragStart = e.getX();
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (dragging) {
-                    dragEnd = e.getX();
-                    dragging = false;
-                    zoom();
+         @Override
+            public void mousePressed(final MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    // ignore
+                }
+                else {
+                    dragStart = e.getX();
+                    mouseDown = e;
                 }
             }
 
-            //@Override
-            //public void mouseExited(MouseEvent e) {
-            //dragging = false;
-            //}
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    // ignore
+                } else {
+                    if (dragging) {
+                        dragEnd = e.getX();
+                        dragging = false;
+                        zoom();
+                    } else {
+                        if (mouseDown != null && distance(mouseDown, e) < 5) {
+                            doMouseClick(e);
+                        }
+                    }
+                }
+            }
+
+            private double distance(MouseEvent e1, MouseEvent e2) {
+                double dx = e1.getX() - e2.getX();
+                double dy = e1.getY() - e2.getY();
+                return Math.sqrt(dx*dx + dy*dy);
+            }
+
+
+            /**
+             * mouseClick is not used because in Java a mouseClick is emitted ONLY if the mouse has not moved
+             * between press and release.  This is really difficult to achieve, even if trying.
+             *
+             * @param evt
+             */
+            public void doMouseClick(MouseEvent evt) {
+                final MouseEvent e = evt;
+                setCursor(Cursor.getDefaultCursor());
+                WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+                try {
+
+                    if (!isWholeGenomeView()) {
+                        double newLocation = frame.getChromosomePosition(e.getX());
+                        frame.centerOnLocation(newLocation);
+                    } else {
+                        for (final ClickLink link : chromosomeRects) {
+                            if (link.region.contains(e.getPoint())) {
+                                final String chrName = link.value;
+                                frame.changeChromosome(chrName, true);
+                            }
+                        }
+                    }
+                } finally {
+                    WaitCursorManager.removeWaitCursor(token);
+                }
+
+            }
+
         };
 
         addMouseMotionListener(mouseAdapter);
