@@ -46,6 +46,7 @@ import org.broad.igv.ui.dnd.AbstractGhostDropManager;
 import org.broad.igv.ui.dnd.GhostDropEvent;
 import org.broad.igv.ui.dnd.GhostDropListener;
 import org.broad.igv.ui.dnd.GhostGlassPane;
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.UIUtilities;
 import org.jdesktop.layout.GroupLayout;
 
@@ -359,7 +360,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
      * Mouse adapter for the track name panel.  Supports multiple selection,
      * popup menu, and drag & drop within or between name panels.
      */
-    class NamePanelMouseAdapter extends MouseInputAdapter {
+    class NamePanelMouseAdapter extends IGVMouseInputAdapter {
 
         boolean isDragging = false;
         List<Track> dragTracks = new ArrayList();
@@ -370,6 +371,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
          * Mouse down.  Track selection logic goes here.
          */
         public void mousePressed(MouseEvent e) {
+            super.mousePressed(e);
 
             dragStart = e.getPoint();
 
@@ -428,14 +430,12 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
 
-            if (log.isTraceEnabled()) {
-                log.trace("Enter mouseReleased");
-            }
+            super.mouseReleased(e);
 
             if (isDragging) {
-
 
                 Component c = e.getComponent();
 
@@ -484,7 +484,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         }
 
-
+        @Override
         public void mouseDragged(MouseEvent e) {
 
             Component c = e.getComponent();
@@ -550,14 +550,13 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             setToolTipText(getTooltipTextForLocation(x, y));
         }
 
-
         /**
-         * Mouse was clicked.  Delegateaction to the track(s) clicked on. .
+         * Mouse was clicked.  Delegate action to the track(s) clicked on. .
          *
          * @param e
          */
         @Override
-        public void mouseClicked(final MouseEvent e) {
+        public void igvMouseClicked(final MouseEvent e) {
             for (MouseableRegion mouseRegion : mouseRegions) {
                 if (mouseRegion.containsPoint(e.getX(), e.getY())) {
                     for (Track t : mouseRegion.getTracks()) {

@@ -42,10 +42,7 @@ import org.broad.igv.ui.color.ColorChooserPanel;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.legend.MutationColorMapEditor;
-import org.broad.igv.ui.util.FileDialogUtils;
-import org.broad.igv.ui.util.FontChooser;
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.ui.util.*;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
 import org.broad.igv.util.collections.CollUtils;
@@ -621,9 +618,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 {
                                     backgroundColorPanel.setPreferredSize(new Dimension(20, 20));
                                     backgroundColorPanel.setBorder(new BevelBorder(BevelBorder.RAISED));
-                                    backgroundColorPanel.addMouseListener(new MouseAdapter() {
+                                    backgroundColorPanel.addMouseListener(new IGVMouseInputAdapter() {
                                         @Override
-                                        public void mouseClicked(MouseEvent e) {
+                                        public void igvMouseClicked(MouseEvent e) {
                                             backgroundColorPanelMouseClicked(e);
                                         }
                                     });

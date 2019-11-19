@@ -32,6 +32,7 @@
 package org.broad.igv.ui.commandbar;
 
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
@@ -257,9 +258,9 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
                     //---- genomeList ----
                     genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                    genomeList.addMouseListener(new MouseAdapter() {
+                    genomeList.addMouseListener(new IGVMouseInputAdapter() {
                         @Override
-                        public void mouseClicked(MouseEvent e) {
+                        public void igvMouseClicked(MouseEvent e) {
                             genomeListMouseClicked(e);
                         }
                     });

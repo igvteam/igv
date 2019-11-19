@@ -27,6 +27,7 @@ package org.broad.igv.ui.color;
 
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,9 +55,9 @@ public class ColorPanel extends JPanel implements Serializable {
 
         setBackground(Color.white); //IGVPreferences.getInstance().getAsColor(IGVPreferences.BACKGROUND_COLOR));
 
-        addMouseListener(new MouseAdapter() {
+        addMouseListener(new IGVMouseInputAdapter() {
             @Override
-            public void mouseClicked(MouseEvent mouseEvent) {
+            public void igvMouseClicked(MouseEvent mouseEvent) {
                 for (Palette p : paletteList) {
                     if (p.bounds.contains(mouseEvent.getPoint())) {
                         for (Swatch s : p.swatches) {

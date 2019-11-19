@@ -33,6 +33,7 @@
  */
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;
@@ -221,26 +222,13 @@ public class ZoomSliderPanel extends JPanel {
 
     private void init() {
 
-        MouseInputAdapter mouseAdapter = new MouseInputAdapter() {
+        MouseInputAdapter mouseAdapter = new IGVMouseInputAdapter() {
 
             int lastMousePressX = 0;
 
             @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-            }
-
-            @Override
             public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
                 if (!isEnabled()) {
                     return;
                 }
@@ -249,6 +237,7 @@ public class ZoomSliderPanel extends JPanel {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
                 if (!isEnabled()) {
                     return;
                 }

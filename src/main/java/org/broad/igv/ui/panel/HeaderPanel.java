@@ -38,6 +38,7 @@ package org.broad.igv.ui.panel;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.SwitchingLabelUI;
 
 import javax.swing.*;
@@ -109,13 +110,13 @@ public class HeaderPanel extends JPanel implements Transferable {
             cytobandPanel.setRequestFocusEnabled(false);
             cytobandPanel.setLayout(null);
 
-            final MouseAdapter mouseAdapter = new MouseAdapter() {
+            final MouseAdapter mouseAdapter = new IGVMouseInputAdapter() {
 
                 boolean isDragging = false;
                 Point mousePressPoint;
 
                 @Override
-                public void mouseClicked(MouseEvent mouseEvent) {
+                public void igvMouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() > 1) {
                         IGV.getInstance().setDefaultFrame(frame.getName());
                     }
@@ -123,6 +124,7 @@ public class HeaderPanel extends JPanel implements Transferable {
 
 
                 public void mousePressed(MouseEvent evt) {
+                    super.mousePressed(evt);
                     if (evt.isPopupTrigger()) {
                         getPopupMenu(HeaderPanel.this, frame).show(HeaderPanel.this, evt.getX(), evt.getY());
                     }
@@ -130,7 +132,7 @@ public class HeaderPanel extends JPanel implements Transferable {
 
                 @Override
                 public void mouseReleased(MouseEvent evt) {
-
+                    super.mouseReleased(evt);
                     if (evt.isPopupTrigger()) {
                         getPopupMenu(HeaderPanel.this, frame).show(HeaderPanel.this, evt.getX(), evt.getY());
                     }
@@ -169,9 +171,10 @@ public class HeaderPanel extends JPanel implements Transferable {
             geneListPanel.add(label, BorderLayout.SOUTH);
             add(geneListPanel);
 
-            this.setTransferHandler(new DragAndDropTransferHandler());
+            
+            // this.setTransferHandler(new DragAndDropTransferHandler());
             // Create the listener to do the work when dropping on this object!
-            this.setDropTarget(new DropTarget(this, new HeaderDropTargetListener(this)));
+            // this.setDropTarget(new DropTarget(this, new HeaderDropTargetListener(this)));
 
 
         } else {

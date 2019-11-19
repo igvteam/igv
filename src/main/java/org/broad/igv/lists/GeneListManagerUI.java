@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.MessageUtils;
 
 import javax.swing.*;
@@ -45,19 +46,19 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author Jim RObinson
- *         <p/>
- *         public String getToolTipText(MouseEvent evt) {
- *         // Get item index
- *         int index = locationToIndex(evt.getPoint());
- *         // Get item Object i
- *         tem = getModel().getElementAt(index);
- *         // Return the tool tip text
- *         return "tool tip for "+item; }
+ * <p/>
+ * public String getToolTipText(MouseEvent evt) {
+ * // Get item index
+ * int index = locationToIndex(evt.getPoint());
+ * // Get item Object i
+ * tem = getModel().getElementAt(index);
+ * // Return the tool tip text
+ * return "tool tip for "+item; }
  */
 public class GeneListManagerUI extends JDialog {
 
@@ -381,7 +382,6 @@ public class GeneListManagerUI extends JDialog {
     }
 
 
-
     class ListListModel extends AbstractListModel {
 
         boolean sortAscending;
@@ -619,12 +619,18 @@ public class GeneListManagerUI extends JDialog {
                                 //---- groupJList ----
                                 groupJList.setModel(new AbstractListModel<String>() {
                                     String[] values = {
-                                        "All"
+                                            "All"
                                     };
+
                                     @Override
-                                    public int getSize() { return values.length; }
+                                    public int getSize() {
+                                        return values.length;
+                                    }
+
                                     @Override
-                                    public String getElementAt(int i) { return values[i]; }
+                                    public String getElementAt(int i) {
+                                        return values[i];
+                                    }
                                 });
                                 groupJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                                 groupJList.addListSelectionListener(e -> groupsValueChanged(e));
@@ -665,9 +671,9 @@ public class GeneListManagerUI extends JDialog {
 
                             //---- listLabel ----
                             listLabel.setText("List");
-                            listLabel.addMouseListener(new MouseAdapter() {
+                            listLabel.addMouseListener(new IGVMouseInputAdapter() {
                                 @Override
-                                public void mouseClicked(MouseEvent e) {
+                                public void igvMouseClicked(MouseEvent e) {
                                     listLabelMouseClicked(e);
                                 }
                             });
@@ -679,7 +685,7 @@ public class GeneListManagerUI extends JDialog {
                                 //---- glJList ----
                                 glJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                                 glJList.addListSelectionListener(e -> listsValueChanged(e));
-                                glJList.addMouseListener(new MouseAdapter() {
+                                glJList.addMouseListener(new IGVMouseInputAdapter() {
                                     @Override
                                     public void mouseClicked(MouseEvent e) {
                                         glJListMouseClicked(e);

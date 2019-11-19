@@ -27,6 +27,7 @@ package org.broad.igv.charts;
 
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -116,7 +117,7 @@ public class ChartPanel extends JPanel implements Serializable {
 
             setToolTipText("Plot panel");
 
-            final MouseAdapter mouseAdapter = new MouseAdapter() {
+            final MouseAdapter mouseAdapter = new IGVMouseInputAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent mouseEvent) {
                     if (scatterPlot != null) {
@@ -147,6 +148,8 @@ public class ChartPanel extends JPanel implements Serializable {
 
                 @Override
                 public void mouseReleased(MouseEvent mouseEvent) {
+                    super.mouseReleased(mouseEvent);
+
                     if (lassoInProgress) {
                         lassoInProgress = false;
                         if (lassoPath.size() > 2) {
@@ -179,7 +182,7 @@ public class ChartPanel extends JPanel implements Serializable {
                 }
 
                 @Override
-                public void mouseClicked(MouseEvent mouseEvent) {
+                public void igvMouseClicked(MouseEvent mouseEvent) {
 
                     if (lassoInProgress) {
                         lassoPath.addPoint(mouseEvent.getPoint());
