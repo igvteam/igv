@@ -38,6 +38,7 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
@@ -56,19 +57,34 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class CytobandPanel extends JPanel {
+public class CytobandPanel extends JPanel implements IGVEventObserver {
 
     private static int fontHeight = 10;
     private static int bandHeight = 10;
     private static String fontFamilyName = "Lucida Sans";
     private boolean isDragging = false;
 
+    /**
+     * left genomic coordinate of region in view (base pairs)
+     */
     private double viewOrigin;
+
+    /**
+     * right genomic coordinate of region in view (base pairs)
+     */
+
     private double viewEnd;
 
+    /**
+     * Scale in base-pairs per pixel == chromosome length / panel width
+     */
     double cytobandScale;
+
     ReferenceFrame frame;
+
     private Rectangle currentRegionRect;
+
+
     private CytobandRenderer cytobandRenderer;
     private List<Cytoband> currentCytobands;
 
@@ -80,8 +96,8 @@ public class CytobandPanel extends JPanel {
     public CytobandPanel(ReferenceFrame frame, boolean mouseable) {
 
         this.frame = frame;
-        viewOrigin = frame.getOrigin();
-        viewEnd = frame.getEnd();
+        this.viewOrigin = frame.getOrigin();
+        this.viewEnd = frame.getEnd();
 
         FontManager.getFont(fontHeight);
         setFont(new Font(fontFamilyName, Font.BOLD, fontHeight));
@@ -89,6 +105,8 @@ public class CytobandPanel extends JPanel {
             initMouseAdapter();
         }
         cytobandRenderer = (new CytobandRenderer());
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
+
     }
 
 
@@ -125,8 +143,8 @@ public class CytobandPanel extends JPanel {
         // The test is true if we are zoomed in
         if (getReferenceFrame().getZoom() > 0) {
 
-            double origin = isDragging ? viewOrigin : getReferenceFrame().getOrigin();
-            double end = isDragging ? viewEnd : getReferenceFrame().getEnd();
+            double origin = viewOrigin;
+            double end = viewEnd;
 
             int pixelStart = (int) (origin / cytobandScale);
             int pixelEnd = (int) (end / cytobandScale);
@@ -201,31 +219,33 @@ public class CytobandPanel extends JPanel {
                     } finally {
                         WaitCursorManager.removeWaitCursor(token);
                     }
+                    ViewChange result = ViewChange.Result();
+                    result.setRecordHistory(true);
+                    IGVEventBus.getInstance().post(result);
                 }
                 isDragging = false;
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
-
                 if (currentCytobands == null) return;
-
-                if (!isDragging && (currentRegionRect != null && currentRegionRect.contains(e.getPoint()))) {
-                    isDragging = true;
-                    viewOrigin = getReferenceFrame().getOrigin();
-                }
-
-                int w = getWidth();
-                double scale = getReferenceFrame().getScale();
-
-                int x = (int) Math.max(0, Math.min(e.getX(), w * (cytobandScale - scale)));
+                isDragging = true;
+                int x = e.getX();
                 int delta = x - lastMousePressX;
+
                 if ((delta != 0) && (cytobandScale > 0)) {
-                    viewOrigin = Math.max(0, Math.min(viewOrigin + delta * cytobandScale, w * (cytobandScale - scale)));
+                    // Constrain to bounds of chromosome
+                    double chrLength = CytobandPanel.this.frame.getChromosomeLength();
+                    double deltaBP = Math.min( Math.max(-viewOrigin, delta * cytobandScale), chrLength - viewEnd);
+                    viewOrigin += deltaBP;
+                    viewEnd += deltaBP;
+
+                    // Constrain to chromosome bounds
+
+
                     repaint();
                 }
                 lastMousePressX = x;
-
             }
 
             @Override
@@ -244,5 +264,16 @@ public class CytobandPanel extends JPanel {
 
     private ReferenceFrame getReferenceFrame() {
         return frame;
+    }
+
+    @Override
+    public void receiveEvent(Object e) {
+        if (e instanceof ViewChange) {
+            ViewChange event = (ViewChange) e;
+            if (event.type == ViewChange.Type.ChromosomeChange || event.type == ViewChange.Type.LocusChange) {
+                this.viewOrigin = frame.getOrigin();
+                this.viewEnd = frame.getEnd();
+            }
+        }
     }
 }

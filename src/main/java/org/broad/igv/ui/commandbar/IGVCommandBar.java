@@ -101,14 +101,11 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         // Post creation widget setup.
         refreshGenomeListComboBox();
 
-
         String currentChr = FrameManager.getDefaultFrame().getChrName();
         boolean isWholeGenome = currentChr.equals(Globals.CHR_ALL);
 
         chromosomeComboBox.setSelectedItem(currentChr);
-
         roiToggleButton.setEnabled(!isWholeGenome);
-
         zoomControl.setEnabled(!isWholeGenome);
 
         detailsBehaviorButton.addMouseListener(new MouseAdapter() {
