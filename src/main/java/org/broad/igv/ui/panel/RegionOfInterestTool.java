@@ -117,10 +117,8 @@ public class RegionOfInterestTool extends AbstractDataPanelTool {
                         }
                     }
                 }
-
                 IGV.getInstance().doRefresh();
             }
         }
     }
-
 }

@@ -623,7 +623,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         private ClickTaskScheduler clickScheduler = new ClickTaskScheduler();
 
         long lastClickTime = 0;
-        boolean mouseDown = false;
+        MouseEvent mouseDown = null;
 
 
         @Override
@@ -649,7 +649,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         @Override
         public void mousePressed(final MouseEvent e) {
 
-            mouseDown = true;
+            mouseDown = e;
             if (SwingUtilities.getWindowAncestor(DataPanel.this).isActive()) {
                 DataPanel.this.requestFocus();
             }
@@ -671,13 +671,13 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             if (e.isPopupTrigger()) {
                 doPopupMenu(e);
             } else {
-                if(mouseDown) {
+                if(mouseDown != null && distance(mouseDown, e) < 5) {
                     doMouseClick(e);
                 }
                 if (currentTool != null)
                     currentTool.mouseReleased(e);
             }
-            mouseDown = false;
+            mouseDown = null;
         }
 
         private void doPopupMenu(MouseEvent e) {
@@ -685,6 +685,12 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             parent.selectTracks(e);
             TrackClickEvent te = new TrackClickEvent(e, frame);
             parent.openPopupMenu(te);
+        }
+
+        private double distance(MouseEvent e1, MouseEvent e2) {
+            double dx = e1.getX() - e2.getX();
+            double dy = e1.getY() - e2.getY();
+            return Math.sqrt(dx*dx + dy*dy);
         }
 
 
@@ -701,12 +707,12 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            mouseDown = false;
+            mouseDown = null;
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-            mouseDown = false;
+            mouseDown = null;
         }
 
         /**

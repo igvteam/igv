@@ -268,8 +268,9 @@ public class RegionOfInterestPanel extends JPanel {
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            System.out.println("mouse released");
             focusROI = null;
-            //showPopup(e);
+
         }
 
         @Override
