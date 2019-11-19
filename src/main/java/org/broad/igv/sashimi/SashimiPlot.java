@@ -333,6 +333,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             });
 
             CoverageTrack covTrack = getRenderer(this.trackComponent.track).getCoverageTrack();
+            covTrack.setWindowFunction(WindowFunction.max);
             JMenuItem setCoverageDataRange = CoverageTrack.addDataRangeItem(SashimiPlot.this, null, Arrays.asList(covTrack));
             setCoverageDataRange.setText("Set Exon Coverage Max");
 
