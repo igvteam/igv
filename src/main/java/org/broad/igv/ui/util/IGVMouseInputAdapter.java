@@ -23,7 +23,6 @@ public class IGVMouseInputAdapter extends MouseInputAdapter {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        System.out.println(e);
         if (e.isPopupTrigger()) {
             // ignore
         } else {
@@ -39,11 +38,6 @@ public class IGVMouseInputAdapter extends MouseInputAdapter {
                 igvMouseClicked(new IGVMouseEvent(e, clickCount));
             }
         }
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        System.out.println(e);
     }
 
     public void igvMouseClicked(MouseEvent e) {

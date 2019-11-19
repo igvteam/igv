@@ -172,9 +172,9 @@ public class HeaderPanel extends JPanel implements Transferable {
             add(geneListPanel);
 
             
-            // this.setTransferHandler(new DragAndDropTransferHandler());
+            this.setTransferHandler(new DragAndDropTransferHandler());
             // Create the listener to do the work when dropping on this object!
-            // this.setDropTarget(new DropTarget(this, new HeaderDropTargetListener(this)));
+            this.setDropTarget(new DropTarget(this, new HeaderDropTargetListener(this)));
 
 
         } else {
