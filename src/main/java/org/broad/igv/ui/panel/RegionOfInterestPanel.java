@@ -56,7 +56,6 @@ public class RegionOfInterestPanel extends JPanel {
     RegionOfInterest focusROI;
     boolean switchStartOrEnd;
 
-
     // There can only be 1 selected region, irrespective of the number of panels
     private static RegionOfInterest selectedRegion = null;
 
@@ -232,6 +231,8 @@ public class RegionOfInterestPanel extends JPanel {
 
     class ROIMouseAdapater extends MouseInputAdapter {
 
+        boolean dragging = false;
+
         @Override
         public void mousePressed(MouseEvent e) {
             if ((e.getModifiers() & MouseEvent.CTRL_MASK) != 0) {
@@ -253,24 +254,26 @@ public class RegionOfInterestPanel extends JPanel {
 
         @Override
         public void mouseDragged(MouseEvent e) {
+            dragging = true;
             if (focusROI != null) {
-
                 if (switchStartOrEnd) {
                     focusROI.setStart((int) frame.getChromosomePosition(e.getX()));
                 } else {
                     focusROI.setEnd((int) frame.getChromosomePosition(e.getX()));
                 }
                 IGV.getInstance().repaint();
-               // RegionOfInterestPanel.this.repaint();
 
             }
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            System.out.println("mouse released");
+            if(dragging  && selectedRegion != null) {
+                selectedRegion = null;
+                IGV.getInstance().revalidateTrackPanels();
+            }
             focusROI = null;
-
+            dragging = false;
         }
 
         @Override
@@ -296,7 +299,7 @@ public class RegionOfInterestPanel extends JPanel {
 
         @Override
         public void mouseExited(MouseEvent mouseEvent) {
-            if (selectedRegion != null) {
+            if (!dragging && selectedRegion != null) {
                 selectedRegion = null;
                 IGV.getInstance().revalidateTrackPanels();
             }
