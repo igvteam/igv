@@ -39,9 +39,9 @@ public class BlatTrack extends FeatureTrack {
 
     List<PSLRecord> features;
 
-    public BlatTrack(String species, String sequence, String db, Genome genome) {
+    public BlatTrack(String species, String sequence, String db, Genome genome, String trackLabel) {
 
-        super(sequence, "Blat");
+        super(sequence, trackLabel);
 
         this.sequence = sequence;
         this.db = db;
