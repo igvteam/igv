@@ -110,16 +110,16 @@ public class UIConstants {
 
     public static int getDoubleClickInterval() {
 
-        if (doubleClickInterval < 0) {
-
-            Number obj = (Number) Toolkit.getDefaultToolkit().getDesktopProperty("awt.multiClickInterval");
-            if (obj != null) {
-                doubleClickInterval = obj.intValue();
-            } else {
+//        if (doubleClickInterval < 0) {
+//
+//            Number obj = (Number) Toolkit.getDefaultToolkit().getDesktopProperty("awt.multiClickInterval");
+//            if (obj != null) {
+//                doubleClickInterval = obj.intValue();
+//            } else {
                 doubleClickInterval = DEFAULT_DOUBLE_CLICK_INTERVAL;
-            }
-
-        }
+//            }
+//
+//        }
         return doubleClickInterval;
     }
 

@@ -274,9 +274,9 @@ public class IGV implements IGVEventObserver {
 
     private void consumeEvents(Component glassPane) {
 
-        glassPane.addMouseListener(new MouseAdapter() {
+        glassPane.addMouseListener(new IGVMouseInputAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void igvMouseClicked(MouseEvent e) {
 
                 Point glassPanePoint = e.getPoint();
                 Container container = IGV.this.contentPane;
@@ -295,6 +295,7 @@ public class IGV implements IGVEventObserver {
 
             @Override
             public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
                 e.consume();
 
             }

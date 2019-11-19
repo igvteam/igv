@@ -25,27 +25,27 @@
 
 
 /*
-* LocationPanel.java
-*
-* Created on September 11, 2007, 2:29 PM
-*
-* To change this template, choose Tools | Template Manager
-* and open the template in the editor.
-*/
+ * LocationPanel.java
+ *
+ * Created on September 11, 2007, 2:29 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.CytobandRenderer;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.ViewChange;
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -153,11 +153,11 @@ public class CytobandPanel extends JPanel {
                 "<html>Click anywhere on the chromosome<br/>to center view at that location.");
 
 
-        MouseInputAdapter mouseAdapter = new MouseInputAdapter() {
+        MouseInputAdapter mouseAdapter = new IGVMouseInputAdapter() {
 
             int lastMousePressX;
 
-            public void mouseClicked(MouseEvent e) {
+            public void igvMouseClicked(MouseEvent e) {
                 if (currentCytobands == null) return;
 
                 final int mouseX = e.getX();
@@ -173,7 +173,7 @@ public class CytobandPanel extends JPanel {
                         getReferenceFrame().centerOnLocation(newLocation);
                     }
 
-                    ViewChange result =  ViewChange.Result();
+                    ViewChange result = ViewChange.Result();
                     result.setRecordHistory(true);
                     IGVEventBus.getInstance().post(result);
 
@@ -184,11 +184,13 @@ public class CytobandPanel extends JPanel {
 
             @Override
             public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
                 lastMousePressX = e.getX();
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
                 if (currentCytobands == null) return;
 
                 if (isDragging) {

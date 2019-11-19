@@ -36,6 +36,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.ViewChange;
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.util.StringUtils;
 
 import javax.swing.*;
@@ -566,9 +567,9 @@ public class RegionNavigatorDialog extends JDialog implements Observer, IGVEvent
                         cm.getColumn(3).setPreferredWidth(200);
                     }
                     regionTable.setAutoCreateRowSorter(true);
-                    regionTable.addMouseListener(new MouseAdapter() {
+                    regionTable.addMouseListener(new IGVMouseInputAdapter() {
                         @Override
-                        public void mouseClicked(MouseEvent e) {
+                        public void igvMouseClicked(MouseEvent e) {
                             regionTableMouseClicked(e);
                         }
                     });

@@ -40,6 +40,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 
@@ -299,9 +300,9 @@ public class SearchCommand {
         dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
 
         //On double click, show that option
-        ls.addMouseListener(new MouseAdapter() {
+        ls.addMouseListener(new IGVMouseInputAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void igvMouseClicked(MouseEvent e) {
                 if (e.getClickCount() >= 2) {
                     dialog.setVisible(false);
                     pane.setValue(JOptionPane.OK_OPTION);

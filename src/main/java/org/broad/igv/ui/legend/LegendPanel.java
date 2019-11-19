@@ -38,6 +38,7 @@ import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
@@ -60,11 +61,10 @@ abstract public class LegendPanel extends JPanel {
      */
     public LegendPanel() {
 
-        mouseListener = new MouseInputAdapter() {
+        mouseListener = new IGVMouseInputAdapter() {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-
                 LegendPanel.this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             }
 
@@ -73,18 +73,13 @@ abstract public class LegendPanel extends JPanel {
             }
 
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void igvMouseClicked(MouseEvent e) {
                 edit();
             }
         };
         addMouseListener(mouseListener);
 
-        UIUtilities.invokeOnEventThread(new Runnable() {
-
-            public void run() {
-                LegendPanel.this.setToolTipText(UIConstants.CLICK_ITEM_TO_EDIT_TOOLTIP);
-            }
-        });
+        UIUtilities.invokeOnEventThread(() -> LegendPanel.this.setToolTipText(UIConstants.CLICK_ITEM_TO_EDIT_TOOLTIP));
     }
 
     abstract protected void resetPreferencesToDefault();

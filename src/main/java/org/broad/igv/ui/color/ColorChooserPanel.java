@@ -29,12 +29,13 @@
 
 package org.broad.igv.ui.color;
 
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
+
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -124,9 +125,9 @@ public class ColorChooserPanel extends JPanel implements Serializable {
             colorPanel.setBorder(LineBorder.createBlackLineBorder());
             colorPanel.setBackground(new Color(204, 204, 255));
             colorPanel.setLayout(null);
-            colorPanel.addMouseListener(new MouseAdapter() {
+            colorPanel.addMouseListener(new IGVMouseInputAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent mouseEvent) {
+                public void igvMouseClicked(MouseEvent mouseEvent) {
                     colorPanelMouseClicked(mouseEvent);
                 }
             });

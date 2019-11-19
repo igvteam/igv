@@ -25,23 +25,23 @@
 
 
 /*
-* TrackPanel.java
-*
-* Created on Sep 5, 2007, 4:09:39 PM
-*
-* To change this template, choose Tools | Templates
-* and open the template in the editor.
-*/
+ * TrackPanel.java
+ *
+ * Created on Sep 5, 2007, 4:09:39 PM
+ *
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 
 package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.IGVMouseInputAdapter;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -56,7 +56,7 @@ import java.util.Map;
  * @author jrobinso
  */
 public class AttributeHeaderPanel extends JPanel implements Paintable {
-    
+
     final static int MAXIMUM_FONT_SIZE = 10;
     public final static int ATTRIBUTE_COLUMN_WIDTH = 10;
     public final static int COLUMN_BORDER_WIDTH = 1;
@@ -110,7 +110,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
                 fontSize = MAXIMUM_FONT_SIZE;
             }
             Font font = FontManager.getFont(fontSize);
-            
+
             FontMetrics fm = graphics2.getFontMetrics();
             int fontAscent = fm.getHeight();
 
@@ -140,10 +140,10 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
 
         setToolTipText("Click attribute heading to sort");
 
-        MouseInputAdapter listener = new MouseInputAdapter() {
+        MouseInputAdapter listener = new IGVMouseInputAdapter() {
 
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void igvMouseClicked(MouseEvent e) {
 
                 String attKey = getAttributeHeading(e.getX());
                 if (attKey != null) {
