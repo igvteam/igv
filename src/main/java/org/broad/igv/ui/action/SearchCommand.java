@@ -46,7 +46,6 @@ import org.broad.igv.util.HttpUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URL;
@@ -58,10 +57,6 @@ import java.util.*;
  * search string as parameters.   The search string can be either
  * (a) a feature (e.g. gene),  or
  * (b) a locus string in the UCSC form,  e.g. chr1:100,000-200,000
- * <p/>
- * Note:  Currently the only recognized features are genes
- * <p/>
- * Custom searchers can be registered, see {@link #registerNamedFeatureSearcher(org.broad.igv.dev.api.NamedFeatureSearcher)}
  *
  * @author jrobinso
  */
@@ -127,26 +122,10 @@ public class SearchCommand {
 
     public void execute() {
 
-        if (log.isDebugEnabled()) {
-            log.debug("Run search: " + searchString);
-        }
-
         List<SearchResult> results = runSearch(searchString);
-        if (askUser) {
-            results = askUserFeature(results);
-            if (results == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Multiple results, show cancelled: " + searchString);
-                }
-                return;
-            }
-        }
 
         showSearchResult(results);
 
-        if (log.isDebugEnabled()) {
-            log.debug("End search: " + searchString);
-        }
     }
 
     /**
@@ -278,54 +257,6 @@ public class SearchCommand {
         return options.toArray();
     }
 
-    /**
-     * Display a dialog asking user which search result they want
-     * to display. Number of results are limited to SEARCH_LIMIT.
-     * The user can select multiple options, in which case all
-     * are displayed.
-     *
-     * @param results
-     * @return SearchResults which the user has selected.
-     * Will be null if cancelled
-     */
-    private List<SearchResult> askUserFeature(List<SearchResult> results) {
-
-        Object[] list = getSelectionList(results, true);
-        JList ls = new JList(list);
-        ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        //ls.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-        final JOptionPane pane = new JOptionPane(ls, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-        final Dialog dialog = pane.createDialog("Features");
-        dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-
-        //On double click, show that option
-        ls.addMouseListener(new IGVMouseInputAdapter() {
-            @Override
-            public void igvMouseClicked(MouseEvent e) {
-                if (e.getClickCount() >= 2) {
-                    dialog.setVisible(false);
-                    pane.setValue(JOptionPane.OK_OPTION);
-                    dialog.dispose();
-                }
-            }
-        });
-
-        dialog.setVisible(true);
-
-        int resp = (Integer) pane.getValue();
-
-        List<SearchResult> val = null;
-        if (resp == JOptionPane.OK_OPTION) {
-            int[] selected = ls.getSelectedIndices();
-            val = new ArrayList<SearchResult>(selected.length);
-            for (int ii = 0; ii < selected.length; ii++) {
-                val.add(ii, results.get(selected[ii]));
-            }
-        }
-        return val;
-
-    }
 
     /**
      * Check token type using regex.
@@ -336,15 +267,12 @@ public class SearchCommand {
      */
     Set<ResultType> checkTokenType(String token) {
         token = token.trim();
-
-
-        Set<ResultType> possibles = new HashSet<ResultType>();
+        Set<ResultType> possibles = new HashSet<>();
         for (ResultType type : tokenMatchers.keySet()) {
             if (token.matches(tokenMatchers.get(type))) { //note: entire string must match
                 possibles.add(type);
             }
         }
-
         return possibles;
     }
 
@@ -416,35 +344,39 @@ public class SearchCommand {
             }
         } else if (types.contains(ResultType.FEATURE)) {
             //Check if we have an exact name for the feature name
-            NamedFeature feat = FeatureDB.getFeature(token.toUpperCase().trim());
+            NamedFeature feat = searchFeatureDBs(token);
             if (feat != null) {
                 results.add(new SearchResult(feat));
             }
         }
 
-        // If results are empty try the webservice
-        if(results.isEmpty()) {
+        return results;
+    }
+
+    private NamedFeature searchFeatureDBs(String str) {
+        NamedFeature feat = FeatureDB.getFeature(str.toUpperCase().trim());
+        if (feat != null) {
+            return feat;
+        } else {
             try {
                 String tmp = "https://igv.org/genomes/locus.php?genome=$GENOME$&name=$FEATURE$";
                 String genomeID = GenomeManager.getInstance().getGenomeId();
                 if (genomeID != null) {
-                    URL url = new URL(tmp.replace("$GENOME$", genomeID).replace("$FEATURE$", token));
+                    URL url = new URL(tmp.replace("$GENOME$", genomeID).replace("$FEATURE$", str));
                     String r = HttpUtils.getInstance().getContentsAsString(url);
                     String[] t = Globals.whitespacePattern.split(r);
-                    if(t.length > 2) {
+                    if (t.length > 2) {
                         Locus l = Locus.fromString(t[1]);
-                        SearchResult sr = new SearchResult(ResultType.FEATURE, l.getChr(), l.getStart(), l.getEnd());
-                        sr.locus = t[0];
-                        results.add(sr);
+                        String chr = genome == null ? l.getChr() : genome.getCanonicalChrName(l.getChr());
+                        feat = new BasicFeature(chr, l.getStart(), l.getEnd());
+                        return feat;
                     }
                 }
             } catch (IOException e) {
                 log.error("Search webservice error", e);
             }
         }
-
-
-        return results;
+        return null;
     }
 
 
@@ -702,5 +634,53 @@ public class SearchCommand {
         return results;
     }
 
+    /**
+     * Display a dialog asking user which search result they want
+     * to display. Number of results are limited to SEARCH_LIMIT.
+     * The user can select multiple options, in which case all
+     * are displayed.
+     *
+     * @param results
+     * @return SearchResults which the user has selected.
+     * Will be null if cancelled
+     */
+    private List<SearchResult> askUserFeature(List<SearchResult> results) {
 
+        Object[] list = getSelectionList(results, true);
+        JList ls = new JList(list);
+        ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //ls.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
+        final JOptionPane pane = new JOptionPane(ls, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+        final Dialog dialog = pane.createDialog("Features");
+        dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+
+        //On double click, show that option
+        ls.addMouseListener(new IGVMouseInputAdapter() {
+            @Override
+            public void igvMouseClicked(MouseEvent e) {
+                if (e.getClickCount() >= 2) {
+                    dialog.setVisible(false);
+                    pane.setValue(JOptionPane.OK_OPTION);
+                    dialog.dispose();
+                }
+            }
+        });
+
+        dialog.setVisible(true);
+
+        int resp = (Integer) pane.getValue();
+
+        List<SearchResult> val = null;
+        if (resp == JOptionPane.OK_OPTION) {
+            int[] selected = ls.getSelectedIndices();
+            val = new ArrayList<SearchResult>(selected.length);
+            for (int ii = 0; ii < selected.length; ii++) {
+                val.add(ii, results.get(selected[ii]));
+            }
+        }
+        return val;
+
+    }
+    
 }
