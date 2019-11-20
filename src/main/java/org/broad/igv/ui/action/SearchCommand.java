@@ -39,6 +39,7 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.MessageUtils;
@@ -183,7 +184,12 @@ public class SearchCommand {
         boolean success = true;
         String message = "Invalid search string: " + searchString;
 
+        boolean isGeneListMode = FrameManager.isGeneListMode();
+        boolean resetFrames = false;
+
         if (results.size() == 1) {
+            resetFrames = isGeneListMode;  // From gene list -> single locus
+
             SearchResult result = results.get(0);
             if (result.type != ResultType.ERROR) {//FrameManager.isGeneListMode()) {
                 IGV.getInstance().getSession().setCurrentGeneList(null);
@@ -207,7 +213,8 @@ public class SearchCommand {
                 }
             }
         } else {
-            List<String> loci = new ArrayList<String>(results.size());
+            resetFrames = true;  // New set of loci
+            List<String> loci = new ArrayList<>(results.size());
             message = "";
             for (SearchResult res : results) {
                 if (res.type != ResultType.ERROR) {
@@ -221,8 +228,12 @@ public class SearchCommand {
             IGV.getInstance().getSession().setCurrentGeneList(geneList);
         }
 
-        IGV.getInstance().resetFrames();
-
+        if(resetFrames) {
+            IGV.getInstance().resetFrames();
+        }
+        else {
+            IGV.getInstance().doRefresh();
+        }
 
         if (success && recordHistory) {
             IGV.getInstance().getSession().getHistory().push(searchString, origZoom);
@@ -682,5 +693,5 @@ public class SearchCommand {
         return val;
 
     }
-    
+
 }
