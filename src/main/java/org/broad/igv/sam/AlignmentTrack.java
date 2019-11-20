@@ -2132,7 +2132,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             final JMenuItem item = new JMenuItem("Copy read sequence");
             add(item);
 
-            final Alignment alignment = getAlignment(te);
+            final Alignment alignment = getSpecficAlignment(te);
             if (alignment == null) {
                 item.setEnabled(false);
                 return;
