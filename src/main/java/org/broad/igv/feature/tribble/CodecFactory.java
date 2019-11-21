@@ -32,6 +32,7 @@ import htsjdk.variant.bcf2.BCF2Codec;
 import htsjdk.variant.vcf.VCF3Codec;
 import htsjdk.variant.vcf.VCFCodec;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
 import org.broad.igv.feature.FeatureType;
 import org.broad.igv.feature.dsi.DSICodec;
@@ -49,6 +50,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * A factory class for Tribble codecs.  implements a single, static, public method to return a codec given a
@@ -59,6 +61,8 @@ public class CodecFactory {
     private static Logger log = Logger.getLogger(CodecFactory.class);
 
     public static final List<String> validExtensions = new ArrayList<String>(15);
+
+    public static String ucscSNP = "snp[0-9][0-9][0-9]";
 
     static {
         validExtensions.addAll(Arrays.asList("vcf4", "vcf", "bed", "refflat", "genepred", "ensgene", "refgene", "ucscgene", "repmask", "gff3", "gvf", "gff", "gtf", "psl", "mut", "maf"));
@@ -117,7 +121,7 @@ public class CodecFactory {
             return new PSLCodec(genome);
         }  else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak") || fn.endsWith(".regionpeak")) {
             return new EncodePeakCodec(genome);
-        } else if (fn.endsWith(".snp") || fn.endsWith(".ucscsnp")) {
+        } else if (fn.endsWith(".snp") || fn.endsWith(".ucscsnp") || fn.matches(ucscSNP)) {
             return new UCSCSnpCodec(genome);
         } else if (fn.endsWith(".eqtl")) {
             return new EQTLCodec(genome);
