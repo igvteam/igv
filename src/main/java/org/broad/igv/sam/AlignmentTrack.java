@@ -2183,7 +2183,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 return;
             }
 
-            int clippingThreshold = Math.max(20, getPreferences().getAsInt(SAM_CLIPPING_THRESHOLD));
+            int clippingThreshold = BlatClient.MINIMUM_BLAT_LENGTH;
 
             int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
             /* Add a "BLAT left clipped sequence" item if there is significant left clipping. */

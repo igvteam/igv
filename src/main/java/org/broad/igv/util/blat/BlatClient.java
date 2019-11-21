@@ -61,6 +61,7 @@ import java.util.Map;
  */
 public class BlatClient {
 
+    public static final int MINIMUM_BLAT_LENGTH = 20;
     static int sleepTime = 15 * 1000;  //	#	milli seconds to wait between requests
 
     static String hgsid;  // cached, not sure what this is for but apparently its best to reuse it.
