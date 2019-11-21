@@ -1442,6 +1442,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             addCopySequenceItem(e);
 
             addBlatItem(e);
+            addBlatClippingItems(e);
             addConsensusSequence(e);
 
             AlignmentBlock insertion = getInsertion(clickedAlignment, e.getMouseEvent().getX());
@@ -2174,6 +2175,45 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 BlatClient.doBlatQuery(blatSeq);
             });
 
+        }
+
+        public void addBlatClippingItems(final TrackClickEvent te) {
+            final Alignment alignment = getSpecficAlignment(te);
+            if (alignment == null) {
+                return;
+            }
+
+            int clippingThreshold = getPreferences().getAsInt(SAM_CLIPPING_THRESHOLD);
+            int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
+            /* Add a "BLAT left clipped sequence" item if there is significant left clipping. */
+            if (clipping[1] > clippingThreshold) {
+                final JMenuItem lcItem = new JMenuItem("Blat left-clipped sequence");
+                add(lcItem);
+
+                lcItem.addActionListener(aEvt -> {
+                    String lcSeq = alignment.getReadSequence().substring(0,clipping[1]);
+                    if (alignment.getReadStrand() == Strand.NEGATIVE) {
+                        lcSeq = SequenceTrack.getReverseComplement(lcSeq);
+                    }
+                    BlatClient.doBlatQuery(lcSeq, alignment.getReadName());
+                });
+            }
+            /* Add a "BLAT right clipped sequence" item if there is significant right clipping. */
+            if (clipping[3] > clippingThreshold) {
+                final JMenuItem lcItem = new JMenuItem("Blat right-clipped sequence");
+                add(lcItem);
+
+                lcItem.addActionListener(aEvt -> {
+                    String seq = alignment.getReadSequence();
+                    int seqLength =  seq.length();
+
+                    String rcSeq = seq.substring(seqLength-clipping[3],seqLength);
+                    if (alignment.getReadStrand() == Strand.NEGATIVE) {
+                        rcSeq = SequenceTrack.getReverseComplement(rcSeq);
+                    }
+                    BlatClient.doBlatQuery(rcSeq, alignment.getReadName());
+                });
+            }
         }
 
         public void addExtViewItem(final TrackClickEvent te) {

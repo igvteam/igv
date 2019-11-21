@@ -221,6 +221,10 @@ public class BlatClient {
     }
 
     public static void doBlatQuery(final String chr, final int start, final int end, Strand strand) {
+        doBlatQuery(chr, start, end, strand, "Blat");
+    }
+
+    public static void doBlatQuery(final String chr, final int start, final int end, Strand strand, final String trackLabel) {
 
         if((end - start) > 8000) {
             MessageUtils.showMessage("BLAT searches are limited to 8kb.  Please try a shorter sequence.");
@@ -239,7 +243,10 @@ public class BlatClient {
     }
 
     public static void doBlatQuery(final String userSeq) {
+        doBlatQuery(userSeq, "Blat");
+    }
 
+    public static void doBlatQuery(final String userSeq, final String trackLabel) {
         LongRunningTask.submit(new NamedRunnable() {
             public String getName() {
                 return "Blat sequence";
@@ -257,7 +264,7 @@ public class BlatClient {
                         return;
                     }
 
-                    BlatTrack newTrack = new BlatTrack(species, userSeq, db, genome);
+                    BlatTrack newTrack = new BlatTrack(species, userSeq, db, genome, trackLabel);
 
 
                     if (newTrack.getFeatures().isEmpty()) {
