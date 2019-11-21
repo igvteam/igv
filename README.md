@@ -1,5 +1,8 @@
 # igv
 [![Build Status](https://travis-ci.org/igvteam/igv.svg?branch=master)](https://travis-ci.org/igvteam/igv)
+![GitHub issues](https://img.shields.io/github/issues/igvteam/igv)
+![GitHub closed issues](https://img.shields.io/github/issues-closed/igvteam/igv)
+![](https://img.shields.io/npm/l/igv.svg)
 
 Integrative Genomics Viewer - desktop genome visualization tool for Mac, Windows, and Linux.
 
