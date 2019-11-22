@@ -471,8 +471,10 @@ public abstract class SAMAlignment implements Alignment {
         int basePosition = (int) position;
         StringBuffer buf = new StringBuffer();
 
-        buf.append("Hap name: " + getHaplotypeName() + "<br>");
-        buf.append("Dist: " + getHapDistance() + "<br>");
+        if(getHaplotypeName() != null) {
+            buf.append("Hap name: " + getHaplotypeName() + "<br>");
+            buf.append("Dist: " + getHapDistance() + "<br>");
+        }
 
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
