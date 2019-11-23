@@ -1409,6 +1409,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             addGroupMenuItem(e);
             addSortMenuItem();
             addColorByMenuItem();
+            addFilterMenuItem();
             addPackMenuItem();
 
             addSeparator();
@@ -1797,6 +1798,32 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             add(sortMenu);
         }
+
+        public void addFilterMenuItem() {
+
+            JMenu filterMenu = new JMenu("Filter alignments by");
+
+            JMenuItem mi = new JMenuItem("mapping quality");
+            mi.addActionListener(aEvt ->  {
+                // TODO -- use current value for default
+                String defString = PreferencesManager.getPreferences().get(SAM_QUALITY_THRESHOLD);
+                if(defString == null) defString = "";
+                String mqString = MessageUtils.showInputDialog("Minimum mapping quality: ",defString);
+                try {
+                    int mq = Integer.parseInt(mqString);
+                    // TODO do something with this
+                    System.out.println(mq);
+                } catch (NumberFormatException e) {
+                    MessageUtils.showMessage("Mapping quality must be an integer");
+                }
+            });
+            filterMenu.add(mi);
+
+
+
+            add(filterMenu);
+        }
+
 
         private void setBisulfiteContext(BisulfiteContext option) {
             renderOptions.bisulfiteContext = option;
