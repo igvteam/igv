@@ -98,8 +98,8 @@ public abstract class AbstractTrack implements Track {
 
     protected String id;
 
+    private String attributeKey;
     private String name;
-
     private String url;
     private boolean itemRGB = true;
 
@@ -157,24 +157,12 @@ public abstract class AbstractTrack implements Track {
         this.resourceLocator = dataResourceLocator;
         this.id = id;
         this.name = name;
+        this.attributeKey = this.name;
         init();
-    }
-
-    public AbstractTrack(ResourceLocator dataResourceLocator, String id) {
-        this(dataResourceLocator, id, dataResourceLocator.getTrackName());
     }
 
     public AbstractTrack(ResourceLocator locator) {
         this(locator, locator != null ? locator.getPath() : null, locator != null ? locator.getTrackName() : null);
-    }
-
-    public AbstractTrack(String id) {
-        this(null, id, id);
-    }
-
-
-    public AbstractTrack(String id, String name) {
-        this(null, id, name);
     }
 
     private void init() {
@@ -366,7 +354,7 @@ public abstract class AbstractTrack implements Track {
      * <p/>
      * (1) the track attribute table
      * (2) by sampleId, as set in the Resource element of a session or load-from-server menu
-     * (3) by track name, the visible display name
+     * (3) by attributeKey, set from the original track name
      * (4) by full path to the file associated with this track
      *
      * @param attributeName
@@ -398,7 +386,7 @@ public abstract class AbstractTrack implements Track {
             value = attributeManager.getAttribute(getSample(), key);
         }
         if (value == null) {
-            value = attributeManager.getAttribute(getName(), key);
+            value = attributeManager.getAttribute(this.attributeKey, key);
         }
         if (value == null && getResourceLocator() != null && getResourceLocator().getPath() != null) {
             value = attributeManager.getAttribute(getResourceLocator().getPath(), key);
@@ -1010,6 +998,7 @@ public abstract class AbstractTrack implements Track {
     public void marshalXML(Document document, Element element) {
 
         element.setAttribute("name", name);
+        element.setAttribute("attributeKey", attributeKey);
         element.setAttribute("id", id);
         element.setAttribute("fontSize", String.valueOf(fontSize));
         element.setAttribute("visible", String.valueOf(visible));
@@ -1073,6 +1062,12 @@ public abstract class AbstractTrack implements Track {
 
         this.name = element.getAttribute("name");
         this.id = element.getAttribute("id");
+
+        if(element.hasAttribute("attributeKey")) {
+            this.attributeKey = element.getAttribute("attributeKey");
+        } else {
+            this.attributeKey = this.name;
+        }
 
         if (element.hasAttribute("displayMode")) {
             try {

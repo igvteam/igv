@@ -88,15 +88,12 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     private Rectangle arrowRect;
 
     public SequenceTrack(String name) {
-        super(name);
+        super(null, name, name);
         setSortable(false);
         shouldShowTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
         sequenceVisible = Collections.synchronizedMap(new HashMap<>());
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
-    }
-
-    public SequenceTrack() {
     }
 
     public static String getReverseComplement(String sequence) {

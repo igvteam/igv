@@ -133,7 +133,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @param name
      */
     public FeatureTrack(String id, String name) {
-        super(id, name);
+        super(null, id, name);
         setSortable(false);
     }
 
@@ -152,7 +152,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @api
      */
     public FeatureTrack(String id, String name, FeatureSource source) {
-        super(id, name);
+        super(null, id, name);
         init(source, null);
         setSortable(false);
     }
@@ -181,7 +181,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
 
     public FeatureTrack(ResourceLocator locator, String id, FeatureSource source) {
-        super(locator, id);
+        super(locator, id, locator.getTrackName());
         init(source, locator.getPath());
     }
 
