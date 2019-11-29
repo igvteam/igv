@@ -424,9 +424,12 @@ public class SequenceRenderer {
          *                                 for the beginning and end of aminoacid boxes
          */
         protected void drawOneTranslation(RenderContext context,
-                                          Rectangle bandRectangle, int readingFrame,
-                                          boolean shouldDrawLetters, int fontSize,
-                                          Set<Integer> nucleotideLineXPositions, AminoAcidSequence aaSequence,
+                                          Rectangle bandRectangle,
+                                          int readingFrame,
+                                          boolean shouldDrawLetters,
+                                          int fontSize,
+                                          Set<Integer> nucleotideLineXPositions,
+                                          AminoAcidSequence aaSequence,
                                           Strand strand) {
 
             double locScale = context.getScale();

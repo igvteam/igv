@@ -35,9 +35,7 @@ package org.broad.igv.feature;
 public class AminoAcid {
 
     private String fullName;
-
     private String abbrevName;
-
     private char symbol;
 
     public static AminoAcid NULL_AMINO_ACID = new AminoAcid("", "", ' ');

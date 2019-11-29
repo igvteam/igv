@@ -151,6 +151,12 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
+    private void refreshAminoAcids() {
+         for(LoadedDataInterval<SeqCache> i : loadedIntervalCache.values()) {
+             i.getFeatures().refreshAminoAcids();
+         }
+    }
+
     @Override
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
@@ -223,32 +229,20 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         int n2 = normalize3(n1 + 1);
         int n3 = normalize3(n2 + 1);
 
-        AminoAcidSequence[] posAA = {
-                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n1, sequence.substring(n1)),
-                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n2, sequence.substring(n2)),
-                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n3, sequence.substring(n3))
-        };
-
-        final int len = sequence.length();
-        AminoAcidSequence[] negAA = {
-                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n1)),
-                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n2)),
-                AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n3))
-        };
-
         // Now trim sequence to prevent dangling AAs
         int deltaStart = start == 0 ? 0 : 2;
         int deltaEnd = end == chromosomeLength ? 0 : 02;
         start += deltaStart;
         end -= deltaEnd;
-
+        final int len = sequence.length();
         byte[] seq = sequence.substring(deltaStart, len - deltaEnd).getBytes();
 
-        SeqCache cache = new SeqCache(start, seq, posAA, negAA);
+        SeqCache cache = new SeqCache(start, seq);
+        cache.refreshAminoAcids();
         loadedIntervalCache.put(referenceFrame.getName(), new LoadedDataInterval<>(chr, start, end, cache));
     }
 
-    private int normalize3(int n) {
+    private static int normalize3(int n) {
         return n == 3 ? 0 : n;
     }
 
@@ -338,13 +332,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         IGVPopupMenu menu = new IGVPopupMenu();
 
         JMenuItem m1 = new JMenuItem("Flip strand");
-        m1.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                flipStrand();
-
-            }
-        });
+        m1.addActionListener(e -> flipStrand());
 
         final JCheckBoxMenuItem m2 = new JCheckBoxMenuItem("Show translation");
         m2.setSelected(shouldShowTranslation);
@@ -386,6 +374,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 AminoAcidManager.getInstance().setCodonTable(curKey);
+                SequenceTrack.this.refreshAminoAcids();
                 repaint();
             }
         });
@@ -426,12 +415,34 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         public AminoAcidSequence[] negAA;
 
 
-        public SeqCache(int start, byte[] seq, AminoAcidSequence [] posAA, AminoAcidSequence [] negAA) {
+        public SeqCache(int start, byte[] seq) {
             this.start = start;
             this.seq = seq;
             this.posAA = posAA;
             this.negAA = negAA;
         }
-    }
 
+        public void refreshAminoAcids() {
+            int mod = start % 3;
+            int n1 = normalize3(3 - mod);
+            int n2 = normalize3(n1 + 1);
+            int n3 = normalize3(n2 + 1);
+
+            String sequence = new String(seq);
+            AminoAcidSequence[] posAA = {
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n1, sequence.substring(n1)),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n2, sequence.substring(n2)),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n3, sequence.substring(n3))
+            };
+            this.posAA = posAA;
+
+            final int len = sequence.length();
+            AminoAcidSequence[] negAA = {
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n1)),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n2)),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n3))
+            };
+            this.negAA = negAA;
+        }
+    }
 }
