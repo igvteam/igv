@@ -93,8 +93,6 @@ public class CommandExecutor {
 
         String result = "OK";
 
-
-        System.out.println();
         log.debug("Executing: " + command);
         try {
             if (args.size() == 0) {

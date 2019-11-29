@@ -138,13 +138,6 @@ public class ColorUtilities {
         return new Color(r, g, b, (int) (255 * alpha));
     }
 
-    public static void main(String[] args) {
-        for (int i = 200; i < 300; i++) {
-            System.out.println(i % 3);
-        }
-    }
-
-
     public static Color randomDesaturatedColor(float alpha) {
         float hue = (float) Math.random();
         float brightenss = (float) (Math.random() * 0.7);

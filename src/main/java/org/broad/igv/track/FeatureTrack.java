@@ -719,9 +719,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 if (c != null && end < c.getLength()) expandedEnd = Math.min(c.getLength(), expandedEnd);
             }
 
-            if (source == null) {
-                System.out.println();
-            }
             Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
 
             if (iter == null) {

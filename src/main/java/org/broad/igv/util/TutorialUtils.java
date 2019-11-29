@@ -494,10 +494,6 @@ public class TutorialUtils {
                     IntervalTree<List<Feature>> tree = map.get(lastChr);
                     tree.insert(new Interval(currentMin, currentMax, currentFeatureList));
 
-                    if (map.containsKey(f.chr)) {
-                        System.out.println();
-                    }
-
                     tree = new IntervalTree<>();
                     map.put(f.chr, tree);
                     lastChr = f.chr;

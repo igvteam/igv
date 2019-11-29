@@ -28,7 +28,6 @@ public class IGVMouseInputAdapter extends MouseInputAdapter {
         } else {
             if (mouseDown != null && distance(mouseDown, e) < 5) {
                 long time = System.currentTimeMillis();
-                System.out.println(time - lastClickTime);
                 if (time - lastClickTime < UIConstants.getDoubleClickInterval()) {
                     clickCount++;
                 } else {
