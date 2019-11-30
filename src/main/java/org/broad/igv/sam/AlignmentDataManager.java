@@ -26,7 +26,6 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.event.RefreshEvent;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Range;
@@ -43,7 +42,6 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.collections.IntArrayList;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -61,17 +59,19 @@ public class AlignmentDataManager implements IGVEventObserver {
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
 
 
+    private AlignmentTrack alignmentTrack;
+    private CoverageTrack coverageTrack;
+    private Set<Track> subscribedTracks;
+
     private List<AlignmentInterval> intervalCache;
     private ResourceLocator locator;
     private HashMap<String, String> chrMappings = new HashMap();
     private Set<Range> isLoading = new HashSet<>();
     private AlignmentTileLoader reader;
-    private CoverageTrack coverageTrack;
     private Map<String, PEStats> peStats;
     private SpliceJunctionHelper.LoadOptions loadOptions;
     private Object loadLock = new Object();
-    AlignmentTrack.ExperimentType inferredExperimentType;
-    private Set<Track> subscribedTracks;
+
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
@@ -206,12 +206,8 @@ public class AlignmentDataManager implements IGVEventObserver {
         return checkReader().hasIndex();
     }
 
-    public void setInferredExperimentType(AlignmentTrack.ExperimentType inferredExperimentType) {
-        if (inferredExperimentType != this.inferredExperimentType) {
-            ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, inferredExperimentType);
-            this.inferredExperimentType = inferredExperimentType;
-            IGVEventBus.getInstance().post(event);
-        }
+    public void setAlignmentTrack(AlignmentTrack alignmentTrack) {
+        this.alignmentTrack = alignmentTrack;
     }
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
@@ -223,7 +219,15 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public double getMinVisibleScale() {
-        IGVPreferences prefs = PreferencesManager.getPreferences();
+
+        String category =  NULL_CATEGORY;
+        AlignmentTrack.ExperimentType experimentType = alignmentTrack.getExperimentType();
+        if(experimentType == AlignmentTrack.ExperimentType.RNA) {
+            category = RNA;
+        } else if(experimentType == AlignmentTrack.ExperimentType.THIRD_GEN) {
+            category = THIRD_GEN;
+        }
+        IGVPreferences prefs = PreferencesManager.getPreferences(category);
         float maxRange = prefs.getAsFloat(SAM_MAX_VISIBLE_RANGE);
         return (maxRange * 1000) / 700;
     }
@@ -410,7 +414,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         AlignmentTileLoader.AlignmentTile t = checkReader().loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, readStats, peStats, bisulfiteContext);
 //
-        if (inferredExperimentType == null) {
+        if (alignmentTrack.getExperimentType() == null) {
             readStats.compute();
             inferType(readStats);
         }
@@ -428,11 +432,11 @@ public class AlignmentDataManager implements IGVEventObserver {
     private void inferType(ReadStats readStats) {
 
         if (readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
-            setInferredExperimentType(AlignmentTrack.ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
+            alignmentTrack.setExperimentType(AlignmentTrack.ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
         } else if (readStats.medianRefToReadRatio > 10) {
-            setInferredExperimentType(AlignmentTrack.ExperimentType.RNA);
+            alignmentTrack.setExperimentType(AlignmentTrack.ExperimentType.RNA);
         } else {
-            setInferredExperimentType(AlignmentTrack.ExperimentType.OTHER);
+            alignmentTrack.setExperimentType(AlignmentTrack.ExperimentType.OTHER);
         }
     }
 
