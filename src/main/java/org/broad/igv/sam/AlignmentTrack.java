@@ -187,17 +187,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     static final BisulfiteContext DEFAULT_BISULFITE_CONTEXT = BisulfiteContext.CG;
 
 
-    public static void sortAlignmentTracks(SortOption option, String tag) {
-
-        IGV.getInstance().sortAlignmentTracks(option, tag);
-        Collection<IGVPreferences> allPrefs = PreferencesManager.getAllPreferences();
-        for (IGVPreferences prefs : allPrefs) {
-            prefs.put(SAM_SORT_OPTION, option.toString());
-            prefs.put(SAM_SORT_BY_TAG, tag);
-        }
-        refresh();
-    }
-
     /**
      * Create a new alignment track
      *
@@ -243,7 +232,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         this.insertionIntervalsMap = Collections.synchronizedMap(new HashMap<>());
 
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
-        IGVEventBus.getInstance().subscribe(ExperimentTypeChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(AlignmentTrackEvent.class, this);
     }
 
@@ -261,17 +249,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             insertionIntervalsMap = newMap;
 
-        } else if (event instanceof ExperimentTypeChangeEvent) {
-
-            if (experimentType == null) {
-
-                log.info("Experiment type = " + ((ExperimentTypeChangeEvent) event).type);
-
-                setExperimentType(((ExperimentTypeChangeEvent) event).type);
-
-            }
-
-        } else if (event instanceof AlignmentTrackEvent) {
+        }  else if (event instanceof AlignmentTrackEvent) {
             AlignmentTrackEvent e = (AlignmentTrackEvent) event;
             AlignmentTrackEvent.Type eventType = e.getType();
             switch (eventType) {
@@ -289,10 +267,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
+    void setExperimentType(ExperimentType type) {
 
-    private void setExperimentType(ExperimentType type) {
-
+            if (type == experimentType) {
+                return;
+            }
         if (type != experimentType) {
+
             experimentType = type;
             renderOptions.refreshDefaults(type);
 
@@ -313,10 +294,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 setVisible(showAlignments);
                 IGV.getInstance().revalidateTrackPanels();
             }
+
+            ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, experimentType);
+            IGVEventBus.getInstance().post(event);
+
         }
     }
 
-    private ExperimentType getExperimentType() {
+    ExperimentType getExperimentType() {
         return experimentType;
     }
 
@@ -809,6 +794,17 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
      */
     public boolean sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
         return dataManager.sortRows(option, referenceFrame, location, tag);
+    }
+
+    public static void sortAlignmentTracks(SortOption option, String tag) {
+
+        IGV.getInstance().sortAlignmentTracks(option, tag);
+        Collection<IGVPreferences> allPrefs = PreferencesManager.getAllPreferences();
+        for (IGVPreferences prefs : allPrefs) {
+            prefs.put(SAM_SORT_OPTION, option.toString());
+            prefs.put(SAM_SORT_BY_TAG, tag);
+        }
+        refresh();
     }
 
     /**
@@ -1391,7 +1387,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             addSeparator();
             addExperimentTypeMenuItem();
 
-            if (dataManager.experimentType == ExperimentType.THIRD_GEN) {
+            if (experimentType == ExperimentType.THIRD_GEN) {
                 addHaplotype(e);
             }
 
@@ -1406,7 +1402,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             addGroupMenuItem(e);
             addSortMenuItem();
             addColorByMenuItem();
-            addFilterMenuItem();
+            //addFilterMenuItem();
             addPackMenuItem();
 
             addSeparator();

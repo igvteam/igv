@@ -30,9 +30,7 @@
 package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.AminoAcid;
-import org.broad.igv.feature.AminoAcidSequence;
-import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.*;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.LoadedDataInterval;
@@ -77,7 +75,7 @@ public class SequenceRenderer {
         Color a = ColorUtilities.stringToColor(prefs.get(COLOR_A), new Color(0, 150, 0));
         Color c = ColorUtilities.stringToColor(prefs.get(COLOR_C), Color.blue);
         Color t = ColorUtilities.stringToColor(prefs.get(COLOR_T), Color.red);
-        Color g = ColorUtilities.stringToColor(prefs.get(COLOR_G), new Color(209,113,5));
+        Color g = ColorUtilities.stringToColor(prefs.get(COLOR_G), new Color(209, 113, 5));
         Color n = ColorUtilities.stringToColor(prefs.get(COLOR_N), Color.gray);
 
         nucleotideColors.put('A', a);
@@ -104,7 +102,6 @@ public class SequenceRenderer {
         if (nucleotideColors == null) setNucleotideColors();
         translatedSequenceDrawer = new TranslatedSequenceDrawer();
     }
-
 
 
     public void draw(LoadedDataInterval<SequenceTrack.SeqCache> sequenceInterval,
@@ -156,7 +153,7 @@ public class SequenceRenderer {
             byte[] seqCS = null;
 
             if (seq != null && seq.length > 0) {
-                int yBase =  untranslatedSequenceRect.y + 2;
+                int yBase = untranslatedSequenceRect.y + 2;
                 int yCS = untranslatedSequenceRect.y + 2;
                 int dY = untranslatedSequenceRect.height - 4;
                 int dX = (int) (1.0 / locScale);
@@ -182,8 +179,8 @@ public class SequenceRenderer {
                         lastPx0 = pX0;
 
                         int idx = loc - sequenceStart;
-                        if(idx < 0 ) continue;
-                        if(idx >= seq.length) break;
+                        if (idx < 0) continue;
+                        if (idx >= seq.length) break;
 
                         char c = (char) seq[idx];
                         if (Strand.NEGATIVE.equals(strand)) c = complementChar(c);
@@ -304,10 +301,11 @@ public class SequenceRenderer {
     public void setStrand(Strand strand) {
         this.strand = strand;
     }
+
     /**
      * @author Damon May
-     *         This class draws three amino acid bands representing the 3-frame translation of one strand
-     *         of the associated SequenceTrack
+     * This class draws three amino acid bands representing the 3-frame translation of one strand
+     * of the associated SequenceTrack
      */
     public static class TranslatedSequenceDrawer {
 
@@ -329,6 +327,7 @@ public class SequenceRenderer {
 
         protected static final Color STOP_CODON_COLOR = Color.RED;
         protected static final Color METHIONINE_COLOR = Color.GREEN;
+        protected static final Color ALT_START_COLOR = new Color(255, 231, 95);
 
         protected static final Color NUCLEOTIDE_SEPARATOR_COLOR = new Color(150, 150, 150, 120);
 
@@ -413,20 +412,19 @@ public class SequenceRenderer {
          * Draw the band representing a translation of the sequence in one reading frame
          *
          * @param context
-         * @param start                    the index of the first base in seq.  Should be the first nucleotide that's in a codon
-         *                                 that's even partially visible, in any frame
          * @param bandRectangle
          * @param readingFrame
          * @param shouldDrawLetters
          * @param fontSize
          * @param nucleotideLineXPositions a Set that will accrue all of the x positions that we define here
-         * @param seq                      nucleotide sequence starting at start
-         *                                 for the beginning and end of aminoacid boxes
          */
         protected void drawOneTranslation(RenderContext context,
-                                          Rectangle bandRectangle, int readingFrame,
-                                          boolean shouldDrawLetters, int fontSize,
-                                          Set<Integer> nucleotideLineXPositions, AminoAcidSequence aaSequence,
+                                          Rectangle bandRectangle,
+                                          int readingFrame,
+                                          boolean shouldDrawLetters,
+                                          int fontSize,
+                                          Set<Integer> nucleotideLineXPositions,
+                                          AminoAcidSequence aaSequence,
                                           Strand strand) {
 
             double locScale = context.getScale();
@@ -453,7 +451,7 @@ public class SequenceRenderer {
                     g.setFont(f);
                 }
 
-                for (AminoAcid acid : aaSequence.getSequence()) {
+                for (CodonAA acid : aaSequence.getSequence()) {
                     if (acid != null) {
                         //calculate x pixel boundaries of this AA rectangle
                         int px = getPixelFromChromosomeLocation(context.getChr(), aaSeqStartPosition, origin, locScale);
@@ -468,13 +466,14 @@ public class SequenceRenderer {
                             nucleotideLineXPositions.add(aaRect.x);
                             nucleotideLineXPositions.add(aaRect.x + aaRect.width);
 
+                            char aaSymbol = acid.getAminoAcid().getSymbol();
                             Graphics2D bgGraphics =
-                                    context.getGraphic2DForColor(getColorForAminoAcid(acid.getSymbol(), odd));
+                                    context.getGraphic2DForColor(getColorForAminoAcid(aaSymbol, odd, acid.getCodon()));
 
                             bgGraphics.fill(aaRect);
 
                             if (shouldDrawLetters) {
-                                String acidString = new String(new char[]{acid.getSymbol()});
+                                String acidString = new String(new char[]{aaSymbol});
                                 GraphicUtils.drawCenteredText(acidString, aaRect, fontGraphics);
                             }
                         }
@@ -489,14 +488,20 @@ public class SequenceRenderer {
             }
         }
 
-        protected Color getColorForAminoAcid(char acidSymbol, boolean odd) {
-            switch (acidSymbol) {
-                case 'M':
-                    return METHIONINE_COLOR;
-                case '*':
-                    return STOP_CODON_COLOR;
-                default:
+        protected Color getColorForAminoAcid(char acidSymbol, boolean odd, String codon) {
+
+            if (codon.equals("ATG")) {
+                return METHIONINE_COLOR;
+            } else if (acidSymbol == '*') {
+                return STOP_CODON_COLOR;
+            } else {
+                AminoAcidManager.CodonTable codonTable = AminoAcidManager.getInstance().getCodonTable();
+                Set<String> altStartCodons = codonTable.getAltStartCodons();
+                if (altStartCodons != null && altStartCodons.contains(codon)) {
+                    return ALT_START_COLOR;
+                } else {
                     return odd ? AA_COLOR_1 : AA_COLOR_2;
+                }
             }
         }
 

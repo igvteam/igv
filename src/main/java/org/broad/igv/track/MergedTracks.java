@@ -258,6 +258,28 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         }
     }
 
+    @Override
+    public String getAttributeValue(String attributeName) {
+        if (super.getAttributeValue(attributeName) != null) {
+            return super.getAttributeValue(attributeName);
+        } else if (memberTracks.size() > 0) {
+            String value = null;
+            for (Track track : memberTracks) {
+                String nm = track.getAttributeValue(attributeName);
+                if (nm != null) {
+                    if (value == null) {
+                        value = nm;
+                    } else if (!value.equals(nm)) {
+                        value += " / " + nm;
+                    }
+                }
+            }
+            return value;
+        } else {
+            // Should be impossible
+            return null;
+        }
+    }
 
     @Override
     public ContinuousColorScale getColorScale() {

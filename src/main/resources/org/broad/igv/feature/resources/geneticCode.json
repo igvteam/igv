@@ -15,7 +15,8 @@
             "name":["Vertebrate Mitochondrial", "SGC1"],
             "id":2,
             "ncbieaa":"FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG",
-            "sncbieaa":"--------------------------------MMMM---------------M------------"
+            "sncbieaa":"--------------------------------MMMM---------------M------------",
+            "altStartCodons": ["ATA", "ATT", "ATC"]
         },
         {
             "name":["Yeast Mitochondrial", "SGC2"],

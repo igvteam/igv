@@ -636,7 +636,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             int aaSeqStartPosition = aaSequence.getStart();
             boolean odd =  exon.getAminoAcidNumber(exon.getCdStart()) % 2 == 1;
 
-            for (AminoAcid acid : aaSequence.getSequence()) {
+            for (CodonAA acid : aaSequence.getSequence()) {
                 if (acid != null) {
 
                     int start = Math.max(exon.getStart(), aaSeqStartPosition);
@@ -651,17 +651,18 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
 
                         Graphics2D bgGraphics = context.getGraphic2DForColor(odd ? AA_COLOR_1 : AA_COLOR_2);
-                        if (((acid.getSymbol() == 'M') && (((gene.getStrand() == Strand.POSITIVE) &&
+                        char aaSymbol = acid.getAminoAcid().getSymbol();
+                        if (((aaSymbol == 'M') && (((gene.getStrand() == Strand.POSITIVE) &&
                                 (aaSeqStartPosition == exon.getCdStart())) || ((gene.getStrand() == Strand.NEGATIVE) &&
                                 (aaSeqStartPosition == exon.getCdEnd() - 3))))) {
                             bgGraphics = context.getGraphic2DForColor(Color.green);
-                        } else if (acid.getSymbol() == '*') {
+                        } else if (aaSymbol == '*') {
                             bgGraphics = context.getGraphic2DForColor(Color.RED);
                         }
 
                         bgGraphics.fill(aaRect);
 
-                        String tmp = new String(new char[]{acid.getSymbol()});
+                        String tmp = new String(new char[]{aaSymbol});
                         GraphicUtils.drawCenteredText(tmp, aaRect, fontGraphics);
                     }
                     odd = !odd;

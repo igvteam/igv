@@ -28,6 +28,7 @@ package org.broad.igv.sam;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -117,10 +118,10 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
 
     @Test
     public void testQuery() throws IOException {
-        String testFile = "http://data.broadinstitute.org/igvdata/BodyMap/hg18/50bp/FCA/s_1_1_sequence.bam";
-        String sequence = "chr1";
-        int start = 44680145;
-        int end = 44789983;
+        String testFile = TestUtils.DATA_DIR + "bam/gstt1_sample.bam";
+        String sequence = "chr22";
+        int start = 24376039;
+        int end = 24376625;
         boolean contained = false;
 
         tstQuery(testFile, sequence, start, end, contained, Integer.MAX_VALUE / 1000);
@@ -170,6 +171,10 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         reader.close();
         AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
 
+        // Turn off downsampling
+        IGVPreferences prefs = PreferencesManager.getPreferences();
+        prefs.put(Constants.SAM_DOWNSAMPLE_READS, "false");
+
         AlignmentInterval interval = loadInterval(manager, sequence, start, end);
         List<Alignment> result = new ArrayList();
 
@@ -188,16 +193,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         Collections.sort(result, new StartEndSorter());
         for (int i = 0; i < result.size(); i++) {
             Alignment rec = result.get(i);
-
-//            if (i % 2 == 0 && rec.isPaired()) {
-//                //Check that paired reads are together
-//
-//                System.out.println(rec.getReadName());
-//
-//                System.out.println(result.get(i + 1).getReadName());
-//                //assertEquals(rec.getReadName(), result.get(i+1).getReadName());
-//            }
-
+            
             if (contained) {
                 Assert.assertTrue(rec.getStart() >= start);
             } else {

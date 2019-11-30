@@ -206,14 +206,6 @@ public class AlignmentDataManager implements IGVEventObserver {
         return checkReader().hasIndex();
     }
 
-    public void setExperimentType(AlignmentTrack.ExperimentType experimentType) {
-        if (experimentType != alignmentTrack.experimentType) {
-            ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, experimentType);
-            alignmentTrack.setExperimentType(experimentType);
-            IGVEventBus.getInstance().post(event);
-        }
-    }
-
     public void setAlignmentTrack(AlignmentTrack alignmentTrack) {
         this.alignmentTrack = alignmentTrack;
     }
@@ -228,7 +220,14 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public double getMinVisibleScale() {
 
-        IGVPreferences prefs = PreferencesManager.getPreferences("")
+        String category =  NULL_CATEGORY;
+        AlignmentTrack.ExperimentType experimentType = alignmentTrack.getExperimentType();
+        if(experimentType == AlignmentTrack.ExperimentType.RNA) {
+            category = RNA;
+        } else if(experimentType == AlignmentTrack.ExperimentType.THIRD_GEN) {
+            category = THIRD_GEN;
+        }
+        IGVPreferences prefs = PreferencesManager.getPreferences(category);
         float maxRange = prefs.getAsFloat(SAM_MAX_VISIBLE_RANGE);
         return (maxRange * 1000) / 700;
     }
@@ -415,7 +414,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         AlignmentTileLoader.AlignmentTile t = checkReader().loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, readStats, peStats, bisulfiteContext);
 //
-        if (experimentType == null) {
+        if (alignmentTrack.getExperimentType() == null) {
             readStats.compute();
             inferType(readStats);
         }
@@ -433,11 +432,11 @@ public class AlignmentDataManager implements IGVEventObserver {
     private void inferType(ReadStats readStats) {
 
         if (readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
-            setExperimentType(AlignmentTrack.ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
+            alignmentTrack.setExperimentType(AlignmentTrack.ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
         } else if (readStats.medianRefToReadRatio > 10) {
-            setExperimentType(AlignmentTrack.ExperimentType.RNA);
+            alignmentTrack.setExperimentType(AlignmentTrack.ExperimentType.RNA);
         } else {
-            setExperimentType(AlignmentTrack.ExperimentType.OTHER);
+            alignmentTrack.setExperimentType(AlignmentTrack.ExperimentType.OTHER);
         }
     }
 

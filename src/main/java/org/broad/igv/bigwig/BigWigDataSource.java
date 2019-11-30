@@ -261,9 +261,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     private float getValue(ZoomDataRecord rec) {
 
-        if (rec == null) {
-            System.out.println();
-        }
         float v;
         switch (windowFunction) {
             case min:

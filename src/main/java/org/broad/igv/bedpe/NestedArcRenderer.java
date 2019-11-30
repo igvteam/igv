@@ -168,9 +168,7 @@ public class NestedArcRenderer implements BedPERenderer{
                 double num = 1 - Math.cos(theta);
                 double denom = Math.sin(theta);
                 double coa = num / denom;
-                System.out.println(coa + "\t" + theta);
             }
-
         }
     }
 
