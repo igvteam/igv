@@ -646,15 +646,16 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         @Override
         public void mousePressed(final MouseEvent e) {
 
-            mouseDown = e;
             if (SwingUtilities.getWindowAncestor(DataPanel.this).isActive()) {
                 DataPanel.this.requestFocus();
             }
             if (e.isPopupTrigger()) {
                 doPopupMenu(e);
+                e.consume();
             } else {
                 if (currentTool != null)
                     currentTool.mousePressed(e);
+                mouseDown = e;
             }
         }
 
@@ -664,14 +665,13 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
          */
         @Override
         public void mouseReleased(MouseEvent e) {
-
             if (e.isPopupTrigger()) {
                 doPopupMenu(e);
+                e.consume();
             } else {
-                if(mouseDown != null && distance(mouseDown, e) < 5) {
+                if (mouseDown != null && distance(mouseDown, e) < 5) {
                     doMouseClick(e);
-                }
-                if (currentTool != null)
+                } else if (currentTool != null)
                     currentTool.mouseReleased(e);
             }
             mouseDown = null;
@@ -687,7 +687,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         private double distance(MouseEvent e1, MouseEvent e2) {
             double dx = e1.getX() - e2.getX();
             double dy = e1.getY() - e2.getY();
-            return Math.sqrt(dx*dx + dy*dy);
+            return Math.sqrt(dx * dx + dy * dy);
         }
 
 
@@ -698,7 +698,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
          */
         @Override
         public void mouseDragged(MouseEvent e) {
-            if (currentTool != null)
+            if (mouseDown != null && currentTool != null)
                 currentTool.mouseDragged(e);
         }
 
@@ -742,10 +742,10 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
          * The mouse was clicked. If this is the second click of a double click, cancel the scheduled single click task.
          * The shift and alt keys are alternative  zoom options
          * shift zooms in by 8x,  alt zooms out by 2x
-         *
+         * <p>
          * NOTE: mouseClick is not used because in Java a mouseClick event is emitted only if the mouse has not
          * moved at all between press and release.  This is difficult to do, even when trying.
-         *
+         * <p>
          * <p/>
          * TODO -- the "currentTool" is also a mouselistener, so there are two.  This makes mouse event handling
          * TODO -- needlessly complicated, which handler has preference, etc.  Move this code to the default
