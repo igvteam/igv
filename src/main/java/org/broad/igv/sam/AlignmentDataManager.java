@@ -221,7 +221,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     public double getMinVisibleScale() {
 
         String category =  NULL_CATEGORY;
-        AlignmentTrack.ExperimentType experimentType = alignmentTrack.getExperimentType();
+        AlignmentTrack.ExperimentType experimentType = getExperimentType();
         if(experimentType == AlignmentTrack.ExperimentType.RNA) {
             category = RNA;
         } else if(experimentType == AlignmentTrack.ExperimentType.THIRD_GEN) {
@@ -414,7 +414,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         AlignmentTileLoader.AlignmentTile t = checkReader().loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, readStats, peStats, bisulfiteContext);
 //
-        if (alignmentTrack.getExperimentType() == null) {
+        if (getExperimentType() == null) {
             readStats.compute();
             inferType(readStats);
         }
@@ -432,12 +432,20 @@ public class AlignmentDataManager implements IGVEventObserver {
     private void inferType(ReadStats readStats) {
 
         if (readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
-            alignmentTrack.setExperimentType(AlignmentTrack.ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
+            setExperimentType(AlignmentTrack.ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
         } else if (readStats.medianRefToReadRatio > 10) {
-            alignmentTrack.setExperimentType(AlignmentTrack.ExperimentType.RNA);
+            setExperimentType(AlignmentTrack.ExperimentType.RNA);
         } else {
-            alignmentTrack.setExperimentType(AlignmentTrack.ExperimentType.OTHER);
+            setExperimentType(AlignmentTrack.ExperimentType.OTHER);
         }
+    }
+
+    private AlignmentTrack.ExperimentType getExperimentType() {
+        return alignmentTrack == null ? null : alignmentTrack.getExperimentType();
+    }
+
+    private void setExperimentType(AlignmentTrack.ExperimentType type) {
+        if(alignmentTrack != null) alignmentTrack.setExperimentType(type);
     }
 
 
