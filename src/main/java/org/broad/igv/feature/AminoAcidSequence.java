@@ -40,7 +40,7 @@ public class AminoAcidSequence {
 
     private final Strand strand;
     private final int start;                // Genomic position for start of sequence.
-    private final List<AminoAcid> sequence;
+    private final List<CodonAA> sequence;
 
     private boolean nonNullSequence;
 
@@ -50,7 +50,9 @@ public class AminoAcidSequence {
      */
     private final AminoAcidManager.CodonTableKey codonTableKey;
 
-    public AminoAcidSequence(Strand strand, int startPosition, List<AminoAcid> sequence, AminoAcidManager.CodonTableKey codonTableKey) {
+    public AminoAcidSequence(Strand strand, int startPosition,
+                             List<CodonAA> sequence,
+                             AminoAcidManager.CodonTableKey codonTableKey) {
         this.strand = strand;
         this.start = startPosition;
         this.sequence = sequence;
@@ -59,7 +61,7 @@ public class AminoAcidSequence {
         // Look for a non null sequence.  Sequences are null if the sequence
         // directory is undefined or unreachable.  
         nonNullSequence = false;
-        for (AminoAcid aa : sequence) {
+        for (CodonAA aa : sequence) {
             if (aa != null) {
                 nonNullSequence = true;
                 break;
@@ -76,7 +78,7 @@ public class AminoAcidSequence {
         return start;
     }
 
-    public List<AminoAcid> getSequence() {
+    public List<CodonAA> getSequence() {
         return sequence;
     }
 

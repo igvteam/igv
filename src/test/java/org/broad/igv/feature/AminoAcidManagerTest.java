@@ -71,7 +71,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         int start = aaSeqLen - expectedSeq.length();
         for(int i=start; i<aaSeqLen - 1; i++) {
             char exp = expectedSeq.charAt(i-start);
-            char actual = aaSeq.getSequence().get(i).getSymbol();
+            char actual = aaSeq.getSequence().get(i).getAminoAcid().getSymbol();
             assertEquals("i=" + i, exp, actual);
         }
     }
@@ -88,7 +88,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         AminoAcidSequence aaSeq = egfr.getExons().get(0).getAminoAcidSequence(genome, null, nextExon);
 
         int i = 0;
-        for (AminoAcid acid : aaSeq.getSequence()) {
+        for (CodonAA acid : aaSeq.getSequence()) {
             char exp = expectedSeq.charAt(i);
             char actual = acid.getSymbol();
             assertEquals("i=" + i, exp, actual);
@@ -108,7 +108,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         Exon nextExon = egfr.getExons().get(2);
 
         AminoAcidSequence aaSeq = exon.getAminoAcidSequence(genome, prevExon, nextExon);
-        List<AminoAcid> aaList = aaSeq.getSequence();
+        List<CodonAA> aaList = aaSeq.getSequence();
         for (int i = 0; i < expectedSeq.length(); i++) {
             assertEquals("i=" + i, expectedSeq.charAt(i), aaList.get(i).getSymbol());
         }
@@ -127,7 +127,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         Exon nextExon = egfr.getExons().get(exonIndex+1);
 
         AminoAcidSequence aaSeq = exon.getAminoAcidSequence(genome, prevExon, nextExon);
-        List<AminoAcid> aaList = aaSeq.getSequence();
+        List<CodonAA> aaList = aaSeq.getSequence();
         for (int i = 0; i < expectedSeq.length(); i++) {
             assertEquals("i=" + i, expectedSeq.charAt(i), aaList.get(i).getSymbol());
 
@@ -184,7 +184,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         AminoAcidSequence aaSeq = exon.getAminoAcidSequence(genome, prevExon, nextExon);
 
 
-        List<AminoAcid> tmp = aaSeq.getSequence();
+        List<CodonAA> tmp = aaSeq.getSequence();
         for (int i = 0; i < expectedSeq.length(); i++) {
             assertEquals("# = " + i, expectedSeq.charAt(i), tmp.get(i).getSymbol());
         }
@@ -210,7 +210,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         Exon nextExon = fbxw7.getExons().get(3);
 
         AminoAcidSequence aaSeq = exon.getAminoAcidSequence(genome, prevExon, nextExon);
-        List<AminoAcid> tmp = aaSeq.getSequence();
+        List<CodonAA> tmp = aaSeq.getSequence();
         for (int i = 0; i < expectedSeq.length(); i++) {
             assertEquals("# = " + i, expectedSeq.charAt(i), tmp.get(i).getSymbol());
         }
@@ -228,7 +228,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String seq = "ATGCGACCC";
         char[] aminoSeq = {'M', 'R', 'P'};
 
-        List<AminoAcid> acids = AminoAcidManager.getInstance().getAminoAcids(Strand.POSITIVE, seq);
+        List<CodonAA> acids = AminoAcidManager.getInstance().getAminoAcids(Strand.POSITIVE, seq);
         assertEquals(3, acids.size());
         for (int i = 0; i < 3; i++) {
             assertEquals(aminoSeq[i], acids.get(i).getSymbol());
@@ -241,7 +241,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String seq = "ACGACGCCAT";   // "Extra" A at front (size == 10)
         char[] aminoSeq = {'S', 'A', 'M'};
 
-        List<AminoAcid> acids = AminoAcidManager.getInstance().getAminoAcids(Strand.NEGATIVE, seq);
+        List<CodonAA> acids = AminoAcidManager.getInstance().getAminoAcids(Strand.NEGATIVE, seq);
         assertEquals(3, acids.size());
         for (int i = 0; i < 3; i++) {
             assertEquals(aminoSeq[i], acids.get(i).getSymbol());

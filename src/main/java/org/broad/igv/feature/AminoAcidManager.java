@@ -176,12 +176,12 @@ public class AminoAcidManager {
      * @return
      */
 
-    List<AminoAcid> getAminoAcids(Strand direction, String sequence) {
+    List<CodonAA> getAminoAcids(Strand direction, String sequence) {
 
         // Sequence must be divisible by 3. It is the responsibility of the
         // calling program to send a sequence properly aligned.
         int readLength = sequence.length() / 3;
-        List<AminoAcid> acids = new ArrayList<AminoAcid>(readLength);
+        List<CodonAA> acids = new ArrayList<>(readLength);
 
         if(direction == Strand.NEGATIVE) {
             sequence = SequenceTrack.getReverseComplement(sequence);
@@ -190,7 +190,8 @@ public class AminoAcidManager {
         for (int i = 0; i <= sequence.length() - 3; i += 3) {
             String codon = sequence.substring(i, i + 3).toUpperCase();
             AminoAcid aa = currentCodonTable.getAminoAcid(codon);
-            acids.add(aa);
+            CodonAA cAA = new CodonAA(codon, aa);
+            acids.add(cAA);
         }
 
         if(direction == Strand.NEGATIVE) {
@@ -220,7 +221,7 @@ public class AminoAcidManager {
             int rem = l % 3;
             int aaStart = strand == Strand.POSITIVE ? 0 : 0 + rem;
 
-            List<AminoAcid> acids = getAminoAcids(strand, nucSequence);
+            List<CodonAA> acids = getAminoAcids(strand, nucSequence);
 
             return new AminoAcidSequence(strand, start + aaStart, acids, currentCodonTable.getKey());
         }
@@ -488,9 +489,10 @@ public class AminoAcidManager {
 
         private final CodonTableKey key;
         private final List<String> names;
-
         private final Set<AminoAcid> starts;
         private final Map<String, AminoAcid> codonMap;
+        private  Set<String> altStartCodons;
+
 
         /**
          * Get the amino acid represented by this codon
@@ -530,7 +532,17 @@ public class AminoAcidManager {
             String aas = jsonObject.get("ncbieaa").getAsString();
             String startString = jsonObject.get("sncbieaa").getAsString();
 
-            return build(sourcePath, id, names, aas, startString);
+            CodonTable codonTable =  build(sourcePath, id, names, aas, startString);
+            if(jsonObject.has("altStartCodons")) {
+                JsonArray a = jsonObject.get("altStartCodons").getAsJsonArray();
+                Set<String> altStartCodons = new HashSet<>();
+                for(int i=0; i<a.size(); i++) {
+                    altStartCodons.add(a.get(i).getAsString());
+                }
+                codonTable.altStartCodons = altStartCodons;
+            }
+
+            return codonTable;
         }
 
         private static CodonTable build(String sourcePath, int id, List<String> names, String aas, String startString) {
@@ -585,6 +597,10 @@ public class AminoAcidManager {
 
         Map<String, AminoAcid> getCodonMap() {
             return codonMap;
+        }
+
+        public Set<String> getAltStartCodons() {
+            return altStartCodons;
         }
 
         @Override
