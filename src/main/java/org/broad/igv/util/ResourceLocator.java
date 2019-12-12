@@ -33,10 +33,8 @@ import org.broad.igv.google.GoogleUtils;
 
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -129,18 +127,10 @@ public class ResourceLocator {
     public ResourceLocator(String path) {
         this.setPath(path);
 
-        if(path != null && path.startsWith("https://") && GoogleUtils.isGoogleDrive(path)) {
+        if (path != null && path.startsWith("https://") && GoogleUtils.isGoogleDrive(path)) {
             this.resolveGoogleDrive(path);
-        } else if( path != null && (path.startsWith("https://") || path.startsWith("http://"))) {
+        }
 
-	    String final_path = path;
-	    String redirected = checkForRedirect(final_path);
-	    while( redirected != null ) {
-		final_path = redirected;
-		redirected = checkForRedirect(redirected);
-	    }
-	    this.setPath(final_path);
-	}
     }
 
     private void resolveGoogleDrive(String path) {
@@ -148,34 +138,6 @@ public class ResourceLocator {
         JsonObject fileInfo = GoogleUtils.getDriveFileInfo(path);
         this.name = fileInfo.get("name").getAsString();
         this.type = getTypeString(this.name);
-    }
-
-    /**
-     * use an HTTP HEAD to check for a redirect (301, 302, 307, or 308)
-     * @return a String representing the new location, null otherwise
-     */
-    private String checkForRedirect(String url_string) {
-	URL url;
-	try {
-	    url = new URL(url_string);
-	} catch(MalformedURLException e) {
-	    log.error("Error interpreting url: " + url_string, e);
-	    return null;
-	};
-
-	HttpURLConnection connection;
-	try {
-	    connection = (HttpURLConnection) url.openConnection();
-	    connection.setRequestMethod("HEAD");
-	    connection.setInstanceFollowRedirects(false);
-            connection.getInputStream().close();
-	    int code = connection.getResponseCode();
-	    if( code == HttpURLConnection.HTTP_MOVED_PERM || code == HttpURLConnection.HTTP_MOVED_TEMP || code == 307 || code == 308 ) {
-		return connection.getHeaderField("Location");
-	    }
-	} catch(IOException e) {
-	}
-        return null;
     }
 
     /**

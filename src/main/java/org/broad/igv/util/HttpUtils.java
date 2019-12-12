@@ -84,6 +84,8 @@ public class HttpUtils {
     // static provided to support unit testing
     private static boolean BYTE_RANGE_DISABLED = false;
     private Map<URL, Boolean> headURLCache = new HashMap<URL, Boolean>();
+    // remember HTTP redirects
+    private Map<URL, URL> redirectCache = new HashMap<URL, URL>();
 
     /**
      * @return the single instance
@@ -705,6 +707,12 @@ public class HttpUtils {
 
             URL url, Map<String, String> requestProperties, String method, int redirectCount, int retries) throws IOException {
 
+        // if we're already seen a redirect for this URL, use the updated one
+        if( redirectCache.containsKey(url) ) {
+            log.debug("Found URL in redirection cache: " + url + " ->" + redirectCache.get(url));
+            url = redirectCache.get(url);
+        }
+
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
         // string to dynamically map url - dwm08
         if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
@@ -784,6 +792,8 @@ public class HttpUtils {
         conn.setReadTimeout(Globals.READ_TIMEOUT);
         conn.setRequestMethod(method);
         conn.setRequestProperty("Connection", "Keep-Alive");
+        // we'll handle redirects manually, allowing us to cache the new URL
+        conn.setInstanceFollowRedirects(false);
         if (requestProperties != null) {
             for (Map.Entry<String, String> prop : requestProperties.entrySet()) {
                 conn.setRequestProperty(prop.getKey(), prop.getValue());
@@ -835,6 +845,7 @@ public class HttpUtils {
                     throw new IOException("Too many redirects");
                 }
                 String newLocation = conn.getHeaderField("Location");
+                redirectCache.put(url, new URL(newLocation));
                 log.debug("Redirecting to " + newLocation);
                 return openConnection(HttpUtils.createURL(newLocation), requestProperties, method, ++redirectCount, retries);
             }
