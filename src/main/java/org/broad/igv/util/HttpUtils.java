@@ -47,6 +47,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.swing.*;
+import javax.ws.rs.core.CacheControl;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,6 +55,8 @@ import java.io.*;
 import java.net.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
@@ -84,8 +87,14 @@ public class HttpUtils {
     // static provided to support unit testing
     private static boolean BYTE_RANGE_DISABLED = false;
     private Map<URL, Boolean> headURLCache = new HashMap<URL, Boolean>();
+
+    private class CachedRedirect {
+	private URL url = null;
+	private ZonedDateTime expires = null;
+    }
     // remember HTTP redirects
-    private Map<URL, URL> redirectCache = new HashMap<URL, URL>();
+    private final int DEFAULT_REDIRECT_EXPIRATION_MIN = 15;
+    private Map<URL, CachedRedirect> redirectCache = new HashMap<URL, CachedRedirect>();
 
     /**
      * @return the single instance
@@ -709,8 +718,14 @@ public class HttpUtils {
 
         // if we're already seen a redirect for this URL, use the updated one
         if( redirectCache.containsKey(url) ) {
-            log.debug("Found URL in redirection cache: " + url + " ->" + redirectCache.get(url));
-            url = redirectCache.get(url);
+	    CachedRedirect cr = redirectCache.get(url);
+	    if( ZonedDateTime.now().compareTo( cr.expires ) < 0.0 ) {
+		log.debug("Found URL in redirection cache: " + url + " ->" + redirectCache.get(url));
+		url = cr.url;
+	    } else {
+		log.debug("Removing expired URL from redirection cache: " + url);
+		redirectCache.remove(url);
+	    }
         }
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
@@ -844,12 +859,42 @@ public class HttpUtils {
                 if (redirectCount > MAX_REDIRECTS) {
                     throw new IOException("Too many redirects");
                 }
-                String newLocation = conn.getHeaderField("Location");
-                redirectCache.put(url, new URL(newLocation));
-                log.debug("Redirecting to " + newLocation);
-                return openConnection(HttpUtils.createURL(newLocation), requestProperties, method, ++redirectCount, retries);
-            }
 
+                CachedRedirect cr = new CachedRedirect();
+                cr.url = new URL(conn.getHeaderField("Location"));
+                if( cr.url != null ) {
+                    cr.expires = ZonedDateTime.now().plusMinutes(DEFAULT_REDIRECT_EXPIRATION_MIN);
+                    String s;
+                    if( (s = conn.getHeaderField("Cache-Control")) != null ) {
+                        // cache-control takes priority
+                        CacheControl cc = null;
+                        try {
+                            cc = CacheControl.valueOf(s);
+                        } catch(IllegalArgumentException e) {
+                            // use default
+                        }
+                        if( cc != null ) {
+                            if( cc.isNoCache() ) {
+                                cr.expires = null;
+			    } else if (cc.getMaxAge() > 0) {
+                                cr.expires = ZonedDateTime.now().plusSeconds(cc.getMaxAge());
+                            }
+                        }
+                    } else if( (s = conn.getHeaderField("Expires")) != null ) {
+                        // no cache-control header, so try "expires" next
+                        try {
+                            cr.expires = ZonedDateTime.parse(s);
+                        } catch( DateTimeParseException e ) {
+                            // use default
+                        }
+                    }
+                    if( cr.expires != null ) {
+                        redirectCache.put(url, cr);
+                        log.debug("Redirecting to " + cr.url);
+                        return openConnection(HttpUtils.createURL(cr.url.toString()), requestProperties, method, ++redirectCount, retries);
+		    }
+		}
+	    }
             // TODO -- handle other response codes.
             else if (code >= 400) {
 
