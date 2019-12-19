@@ -17,6 +17,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -48,9 +49,8 @@ public class BlatTrack extends FeatureTrack {
         this.species = species;
         this.genome = genome;
 
-
         setDisplayMode(Track.DisplayMode.SQUISHED);
-
+        setColor(Color.DARK_GRAY);
         init();
     }
 

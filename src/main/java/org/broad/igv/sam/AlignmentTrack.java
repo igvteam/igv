@@ -2206,7 +2206,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             item.addActionListener(aEvt -> {
                 String blatSeq = alignment.getReadStrand() == Strand.NEGATIVE ?
                         SequenceTrack.getReverseComplement(seq) : seq;
-                BlatClient.doBlatQuery(blatSeq);
+                BlatClient.doBlatQuery(blatSeq, alignment.getReadName());
             });
 
         }
@@ -2230,7 +2230,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     if (alignment.getReadStrand() == Strand.NEGATIVE) {
                         lcSeq = SequenceTrack.getReverseComplement(lcSeq);
                     }
-                    BlatClient.doBlatQuery(lcSeq, alignment.getReadName());
+                    BlatClient.doBlatQuery(lcSeq, alignment.getReadName() + " - left clip");
                 });
             }
             /* Add a "BLAT right clipped sequence" item if there is significant right clipping. */
@@ -2246,7 +2246,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     if (alignment.getReadStrand() == Strand.NEGATIVE) {
                         rcSeq = SequenceTrack.getReverseComplement(rcSeq);
                     }
-                    BlatClient.doBlatQuery(rcSeq, alignment.getReadName());
+                    BlatClient.doBlatQuery(rcSeq, alignment.getReadName() + " - right clip");
                 });
             }
         }
