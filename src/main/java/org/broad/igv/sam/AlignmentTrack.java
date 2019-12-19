@@ -295,8 +295,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 IGV.getInstance().revalidateTrackPanels();
             }
 
-            ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, experimentType);
-            IGVEventBus.getInstance().post(event);
+            //ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, experimentType);
+            //IGVEventBus.getInstance().post(event);
 
         }
     }
@@ -1649,11 +1649,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         public void addExperimentTypeMenuItem() {
             Map<String, ExperimentType> mappings = new LinkedHashMap<>();
-            mappings.put("Unknown", null);
             mappings.put("Other", ExperimentType.OTHER);
             mappings.put("RNA", ExperimentType.RNA);
             mappings.put("3rd Gen", ExperimentType.THIRD_GEN);
-            mappings.put("Bisulfite", ExperimentType.BISULFITE);
+            //mappings.put("Bisulfite", ExperimentType.BISULFITE);
             JMenu groupMenu = new JMenu("Experiment Type");
             ButtonGroup group = new ButtonGroup();
             for (Map.Entry<String, ExperimentType> el : mappings.entrySet()) {

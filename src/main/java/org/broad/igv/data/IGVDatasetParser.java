@@ -120,41 +120,6 @@ public class IGVDatasetParser {
         }
     }
 
-    /*
-     */
-
-    public static boolean parsableMAGE_TAB(ResourceLocator file) throws IOException {
-        AsciiLineReader reader = null;
-        try {
-            reader = ParsingUtils.openAsciiReader(file);
-            String nextLine = null;
-
-            //skip first row
-            reader.readLine();
-
-            //check second row for MAGE_TAB identifiers
-            if ((nextLine = reader.readLine()) != null && (nextLine.contains("Reporter REF") || nextLine.contains("Composite Element REF") || nextLine.contains("Term Source REF") || nextLine.contains("CompositeElement REF") || nextLine.contains("TermSource REF") || nextLine.contains("Coordinates REF"))) {
-                int count = 0;
-                // check if this mage_tab data matrix can be parsed by this class
-                while ((nextLine = reader.readLine()) != null && count < 5) {
-                    nextLine = nextLine.trim();
-                    if (nextLine.startsWith("SNP_A") || nextLine.startsWith("CN_")) {
-                        return true;
-                    }
-
-                    count++;
-                }
-                return false;
-            }
-        } finally {
-            if (reader != null) {
-                reader.close();
-            }
-        }
-
-        return false;
-    }
-
     /**
      * Scan the datafile for chromosome breaks.
      *
@@ -689,10 +654,6 @@ public class IGVDatasetParser {
             for (String h : headings) {
                 data.put(h, new FloatArrayList(50000));
             }
-        }
-
-        int size() {
-            return locations.size();
         }
     }
 
