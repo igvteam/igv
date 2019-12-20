@@ -87,7 +87,11 @@ public class Main {
 
         htsjdk.tribble.util.ParsingUtils.setURLHelperFactory(IGVUrlHelperFactory.getInstance());
 
-        OAuthUtils.getInstance();  // Initialize oauth
+        try {
+            OAuthUtils.getInstance();  // Initialize oauth
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         final Main.IGVArgs igvArgs = new Main.IGVArgs(args);
 
