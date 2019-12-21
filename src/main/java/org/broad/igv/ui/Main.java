@@ -90,7 +90,7 @@ public class Main {
         try {
             OAuthUtils.getInstance();  // Initialize oauth
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Warning: Error fetching oAuth properties: " + e.getMessage());
         }
 
         final Main.IGVArgs igvArgs = new Main.IGVArgs(args);
