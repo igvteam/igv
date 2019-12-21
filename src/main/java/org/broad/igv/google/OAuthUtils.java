@@ -91,8 +91,8 @@ public class OAuthUtils {
         providers = new HashMap<>();
         try {
             fetchOauthProperties();
-        } catch (IOException e) {
-            log.error(e);
+        } catch (Exception e) {
+            log.error("Error fetching oAuth properties", e);
         }
     }
 
