@@ -307,6 +307,7 @@ public class HttpUtils {
     public InputStream openConnectionStream(URL url, Map<String, String> requestProperties) throws IOException {
 
         HttpURLConnection conn = openConnection(url, requestProperties);
+
         if (conn == null) {
             return null;
         }
@@ -720,7 +721,8 @@ public class HttpUtils {
         if( redirectCache.containsKey(url) ) {
 	    CachedRedirect cr = redirectCache.get(url);
 	    if( ZonedDateTime.now().compareTo( cr.expires ) < 0.0 ) {
-		log.debug("Found URL in redirection cache: " + url + " ->" + redirectCache.get(url));
+		// now() is before our expiration
+		log.debug("Found URL in redirection cache: " + url + " ->" + redirectCache.get(url).url);
 		url = cr.url;
 	    } else {
 		log.debug("Removing expired URL from redirection cache: " + url);
@@ -802,13 +804,13 @@ public class HttpUtils {
                 conn.setRequestProperty("Accept", "text/plain");
             }
 
-
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
         conn.setReadTimeout(Globals.READ_TIMEOUT);
         conn.setRequestMethod(method);
         conn.setRequestProperty("Connection", "Keep-Alive");
         // we'll handle redirects manually, allowing us to cache the new URL
         conn.setInstanceFollowRedirects(false);
+
         if (requestProperties != null) {
             for (Map.Entry<String, String> prop : requestProperties.entrySet()) {
                 conn.setRequestProperty(prop.getKey(), prop.getValue());
@@ -875,6 +877,7 @@ public class HttpUtils {
                         }
                         if( cc != null ) {
                             if( cc.isNoCache() ) {
+				// set expires to null, preventing caching
                                 cr.expires = null;
 			    } else if (cc.getMaxAge() > 0) {
                                 cr.expires = ZonedDateTime.now().plusSeconds(cc.getMaxAge());

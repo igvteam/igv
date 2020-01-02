@@ -37,6 +37,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.lang.Thread;
+import java.lang.Exception;
+import static spark.Spark.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -123,4 +126,93 @@ public class HttpUtilsTest extends AbstractHeadlessTest{
 
     }
 
+
+    public class RunnableSparkHttp implements Runnable {
+
+	/// counters incremented on each request:
+
+	// permanent redirect src
+	public int permSrcCt = 0;
+	// permanent redirect dest
+	public int permDestCt = 0;
+	// temporary redirect src
+	public int tempSrcCt = 0;
+	// temporary redirect dest
+	public int tempDestCt = 0;
+
+	public void run() {
+	    System.out.println("run thing");
+
+	    get("/perm_redir_src", (req, res) ->
+		{
+		    // increment a counter for tests to inspect
+		    this.permSrcCt += 1;
+		    res.status(301); // permanent redirect
+		    res.header("Location", "http://localhost:4567/perm_redir_dest");
+		    return "redirecting";
+		});
+
+	    get("/perm_redir_dest", (req, res) -> {
+		    this.permDestCt += 1;
+		    return "done";
+		});
+
+	    get("/temp_redir_src", (req, res) ->
+		{
+		    this.tempSrcCt += 1;
+		    res.status(302); // temporary redirect
+		    res.header("Location", "http://localhost:4567/temp_redir_dest");
+		    res.header("Cache-Control", "max-age=1"); // expire in 1 second
+		    return "redirecting";
+		});
+
+	    get("/temp_redir_dest", (req, res) -> {
+		    this.tempDestCt += 1;
+		    return "done";
+		});
+
+	}
+    }
+
+    @Test
+    public void testRedirectCache() throws Exception {
+
+	RunnableSparkHttp server = new RunnableSparkHttp();
+	Thread thread = new Thread(server);
+	thread.run();
+
+	// give the test server a moment to start up
+	Thread.sleep(500);
+
+	HttpURLConnection conn = null;
+
+	// test a URL that redirects permanently
+	assertEquals( server.permSrcCt, 0 );
+	assertEquals( server.permDestCt, 0 );
+	conn = HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/perm_redir_src"), null);
+	assertEquals( conn.getResponseCode(), 200);
+	assertEquals( server.permSrcCt, 1 );
+	assertEquals( server.permDestCt, 1 );
+	assertEquals( HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/perm_redir_src"), null)
+		      .getResponseCode(), 200);
+	// because redirect was cached, the source wasn't requested again, but the destination was
+	assertEquals( server.permSrcCt, 1 );
+	assertEquals( server.permDestCt, 2 );
+
+
+	// now test a URL that redirects but quickly expires
+	assertEquals( server.tempSrcCt, 0 );
+	assertEquals( server.tempDestCt, 0 );
+	conn = HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/temp_redir_src"), null);
+	assertEquals( conn.getResponseCode(), 200);
+	assertEquals( server.tempSrcCt, 1 );
+	assertEquals( server.tempDestCt, 1 );
+	// sleep for 2s to ensure that cache has expired
+	Thread.sleep(2_000);
+	assertEquals( HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/temp_redir_src"), null)
+		      .getResponseCode(), 200);
+	// because redirect was cached, the source wasn't requested again, but the destination was
+	assertEquals( server.tempSrcCt, 2 );
+	assertEquals( server.tempDestCt, 2 );
+    }
 }
