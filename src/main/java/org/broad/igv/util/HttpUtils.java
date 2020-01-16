@@ -47,7 +47,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.swing.*;
-import javax.ws.rs.core.CacheControl;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -89,9 +88,10 @@ public class HttpUtils {
     private Map<URL, Boolean> headURLCache = new HashMap<URL, Boolean>();
 
     private class CachedRedirect {
-	private URL url = null;
-	private ZonedDateTime expires = null;
+        private URL url = null;
+        private ZonedDateTime expires = null;
     }
+
     // remember HTTP redirects
     private final int DEFAULT_REDIRECT_EXPIRATION_MIN = 15;
     private Map<URL, CachedRedirect> redirectCache = new HashMap<URL, CachedRedirect>();
@@ -718,16 +718,16 @@ public class HttpUtils {
             URL url, Map<String, String> requestProperties, String method, int redirectCount, int retries) throws IOException {
 
         // if we're already seen a redirect for this URL, use the updated one
-        if( redirectCache.containsKey(url) ) {
-	    CachedRedirect cr = redirectCache.get(url);
-	    if( ZonedDateTime.now().compareTo( cr.expires ) < 0.0 ) {
-		// now() is before our expiration
-		log.debug("Found URL in redirection cache: " + url + " ->" + redirectCache.get(url).url);
-		url = cr.url;
-	    } else {
-		log.debug("Removing expired URL from redirection cache: " + url);
-		redirectCache.remove(url);
-	    }
+        if (redirectCache.containsKey(url)) {
+            CachedRedirect cr = redirectCache.get(url);
+            if (ZonedDateTime.now().compareTo(cr.expires) < 0.0) {
+                // now() is before our expiration
+                log.debug("Found URL in redirection cache: " + url + " ->" + redirectCache.get(url).url);
+                url = cr.url;
+            } else {
+                log.debug("Removing expired URL from redirection cache: " + url);
+                redirectCache.remove(url);
+            }
         }
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
@@ -800,9 +800,9 @@ public class HttpUtils {
             conn = (HttpURLConnection) url.openConnection();
         }
 
-            if (!"HEAD".equals(method)) {
-                conn.setRequestProperty("Accept", "text/plain");
-            }
+        if (!"HEAD".equals(method)) {
+            conn.setRequestProperty("Accept", "text/plain");
+        }
 
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
         conn.setReadTimeout(Globals.READ_TIMEOUT);
@@ -864,40 +864,40 @@ public class HttpUtils {
 
                 CachedRedirect cr = new CachedRedirect();
                 cr.url = new URL(conn.getHeaderField("Location"));
-                if( cr.url != null ) {
+                if (cr.url != null) {
                     cr.expires = ZonedDateTime.now().plusMinutes(DEFAULT_REDIRECT_EXPIRATION_MIN);
                     String s;
-                    if( (s = conn.getHeaderField("Cache-Control")) != null ) {
+                    if ((s = conn.getHeaderField("Cache-Control")) != null) {
                         // cache-control takes priority
                         CacheControl cc = null;
                         try {
                             cc = CacheControl.valueOf(s);
-                        } catch(IllegalArgumentException e) {
+                        } catch (IllegalArgumentException e) {
                             // use default
                         }
-                        if( cc != null ) {
-                            if( cc.isNoCache() ) {
-				// set expires to null, preventing caching
+                        if (cc != null) {
+                            if (cc.isNoCache()) {
+                                // set expires to null, preventing caching
                                 cr.expires = null;
-			    } else if (cc.getMaxAge() > 0) {
+                            } else if (cc.getMaxAge() > 0) {
                                 cr.expires = ZonedDateTime.now().plusSeconds(cc.getMaxAge());
                             }
                         }
-                    } else if( (s = conn.getHeaderField("Expires")) != null ) {
+                    } else if ((s = conn.getHeaderField("Expires")) != null) {
                         // no cache-control header, so try "expires" next
                         try {
                             cr.expires = ZonedDateTime.parse(s);
-                        } catch( DateTimeParseException e ) {
+                        } catch (DateTimeParseException e) {
                             // use default
                         }
                     }
-                    if( cr.expires != null ) {
+                    if (cr.expires != null) {
                         redirectCache.put(url, cr);
                         log.debug("Redirecting to " + cr.url);
                         return openConnection(HttpUtils.createURL(cr.url.toString()), requestProperties, method, ++redirectCount, retries);
-		    }
-		}
-	    }
+                    }
+                }
+            }
             // TODO -- handle other response codes.
             else if (code >= 400) {
 
@@ -1183,6 +1183,38 @@ public class HttpUtils {
         public UnsatisfiableRangeException(String message) {
             super(message);
             this.message = message;
+        }
+    }
+
+    static class CacheControl {
+
+        boolean noCache = false;
+        long maxAge = 0;
+
+        static CacheControl valueOf(String s) {
+            CacheControl cc = new CacheControl();
+            String[] tokens = Globals.commaPattern.split(s);
+            for (String t : tokens) {
+                t = t.trim().toLowerCase();
+                if (t.startsWith("no-cache")) {
+                    cc.noCache = true;
+                } else if (t.startsWith("max-age")) {
+                    String[] ma = Globals.equalPattern.split(t);
+                    cc.maxAge = Long.parseLong(ma[1].trim());
+                }
+            }
+            return cc;
+        }
+
+        private CacheControl() {
+        }
+
+        public boolean isNoCache() {
+            return noCache;
+        }
+
+        public long getMaxAge() {
+            return maxAge;
         }
     }
 }
