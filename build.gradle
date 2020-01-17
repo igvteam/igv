@@ -139,11 +139,15 @@ dependencies {
         [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.8.5'],
         [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.8.5'],
         [group: 'software.amazon.awssdk', name: 'sts', version: '2.8.5'],
-        [group: 'software.amazon.awssdk', name: 's3', version: '2.8.5']
+        [group: 'software.amazon.awssdk', name: 's3', version: '2.8.5'],
+
+        [group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0'],
     )
 
     testImplementation(
-        fileTree(dir: 'test/lib', include: '*.jar')
+        fileTree(dir: 'test/lib', include: '*.jar'), // first search on disk (old behavior), then maven repos
+        [group: 'com.sparkjava', name: 'spark-core', version: '2.2'],
+        [group: 'org.glassfish.jersey.core', name: 'jersey-common', version: '2.22.4']
     )
 }
 
@@ -206,6 +210,7 @@ compileTestJava {
 
 test {
     inputs.property("moduleName", moduleName)
+
     doFirst {
         jvmArgs = [
             '-Dcom.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize',
