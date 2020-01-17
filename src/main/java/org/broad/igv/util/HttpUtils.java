@@ -47,6 +47,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.swing.*;
+import javax.ws.rs.core.CacheControl;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -728,6 +729,7 @@ public class HttpUtils {
                 log.debug("Removing expired URL from redirection cache: " + url);
                 redirectCache.remove(url);
             }
+
         }
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
@@ -800,6 +802,7 @@ public class HttpUtils {
             conn = (HttpURLConnection) url.openConnection();
         }
 
+
         if (!"HEAD".equals(method)) {
             conn.setRequestProperty("Accept", "text/plain");
         }
@@ -868,6 +871,7 @@ public class HttpUtils {
                     cr.expires = ZonedDateTime.now().plusMinutes(DEFAULT_REDIRECT_EXPIRATION_MIN);
                     String s;
                     if ((s = conn.getHeaderField("Cache-Control")) != null) {
+
                         // cache-control takes priority
                         CacheControl cc = null;
                         try {
@@ -898,6 +902,7 @@ public class HttpUtils {
                     }
                 }
             }
+
             // TODO -- handle other response codes.
             else if (code >= 400) {
 

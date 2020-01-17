@@ -175,6 +175,7 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
             });
 
         }
+
     }
 
     @Test
@@ -217,5 +218,6 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
         // because redirect was cached, the source wasn't requested again, but the destination was
         assertEquals(server.tempSrcCt, 2);
         assertEquals(server.tempDestCt, 2);
+
     }
 }
