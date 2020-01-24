@@ -20,9 +20,9 @@ section
      SetShellVarContext all
      setOutPath "$INSTDIR"
      File /a /r IGV_@VERSION@\*.*
-     createShortCut "$DESKTOP\IGV_@VERSION@.lnk" "$INSTDIR\igv.bat" "" "$INSTDIR\IGV_64.ico"
+     createShortCut "$DESKTOP\IGV_@VERSION@.lnk" "$INSTDIR\igv-launcher.bat" "" "$INSTDIR\IGV_64.ico"
      createDirectory "$SMPROGRAMS\IGV_@VERSION@"
-     createShortCut "$SMPROGRAMS\IGV_@VERSION@\IGV.lnk" "$INSTDIR\igv.bat" "" "$INSTDIR\IGV_64.ico"
+     createShortCut "$SMPROGRAMS\IGV_@VERSION@\IGV.lnk" "$INSTDIR\igv-launcher.bat" "" "$INSTDIR\IGV_64.ico"
      #createShortCut "$SMPROGRAMS\IGV_@VERSION@\IGVTools.lnk" "$INSTDIR\igvtools_gui.bat"
      
      WriteUninstaller $INSTDIR\uninstaller.exe

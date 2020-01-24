@@ -22,10 +22,11 @@ recommended.  Some of these may not be present depending on the distribution you
 downloaded.  You might have to make the script executable (chmod a+x igv.sh).  
 
 
-igv.bat       (for Windows)
-igv.sh        (for Linux and macOS)
-igv_hidpi.sh  (for Linux with HiDPI displays)
-igv.command   (for macOS, double-click to start)
+igv-launcher.bat  (for Windows)
+igv.bat           (for Windows batch jobs)
+igv.sh            (for Linux and macOS)
+igv_hidpi.sh      (for Linux with HiDPI displays)
+igv.command       (for macOS, double-click to start)
 
 The bat and shell scripts are configured to start IGV with 4GB of
 memory.  This is a reasonable default for most machines.  If you are
