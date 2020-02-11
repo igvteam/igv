@@ -98,10 +98,6 @@ configurations {
         // Amazon deps exclusions
         exclude group: 'software.amazon', module: 'flow'
         exclude group: 'software.amazon.awssdk', module: 'annotations'
-
-        // Exclude very old htsjdk from Goby while we wait for https://github.com/igvteam/igv/issues/646
-        // ... then we can comment the htsjdk below when a Maven artifact is published
-        exclude group: 'com.github.samtools', module: 'htsjdk'
     }
 }
 
@@ -117,8 +113,7 @@ dependencies {
         [group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.7.3'], 
         [group: 'org.apache.commons', name: 'commons-jexl', version: '2.1.1'],
         [group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'],
-        //[group: 'com.github.samtools', name: 'htsjdk', version: '2.19.0'],
-        // holding upstream htsjdk back from Maven for this @igvteam jar hack: https://github.com/igvteam/igv/issues/646
+        [group: 'com.github.samtools', name: 'htsjdk', version: '2.21.1'],
         [group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.11.0'],
         [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'],
         [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'],
