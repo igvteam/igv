@@ -431,6 +431,11 @@ public class SearchCommand {
             }
         }
 
+        // Show the "All chromosomes" view if the search string is "*"
+        if (chr.equals("*")) {
+            return new SearchResult(ResultType.CHROMOSOME, Globals.CHR_ALL, 0, 1);
+        }
+
         //startEnd will have coordinates if found.
         chr = genome.getCanonicalChrName(chr);
         Chromosome chromosome = genome.getChromosome(chr);
