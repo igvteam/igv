@@ -27,6 +27,7 @@ package org.broad.igv.tools;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.ui.util.FileDialogUtils;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -43,8 +44,6 @@ import java.util.Collection;
 public class IgvToolsGui extends JDialog {
 
     private static Logger log = Logger.getLogger(IgvToolsGui.class);
-
-    static JFileChooser fileDialog;
 
     public enum Tool {
         COUNT("Count"),
@@ -80,71 +79,51 @@ public class IgvToolsGui extends JDialog {
         initUI();
         updateUI();
 
-        closeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                close();
-                setVisible(false);
-            }
+        closeButton.addActionListener(e -> {
+            close();
+            setVisible(false);
         });
-        inputButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    File chosenFile = chooseFile();
-                    inputField.setText(chosenFile.getAbsolutePath());
-                    updateUI();
-                } catch (NullPointerException npe) {
-                }
-            }
-        });
-        outputButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    File chosenFile = chooseFile();
-                    outputField.setText(chosenFile.getAbsolutePath());
-                    updateUI();
-                } catch (NullPointerException npe) {
-                }
-            }
-        });
-        genomeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    File chosenFile = chooseFile();
-                    genomeField.setText(chosenFile.getAbsolutePath());
-                    updateUI();
-                } catch (NullPointerException npe) {
-                }
-            }
-        });
-        probeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    File chosenFile = chooseFile();
-                    probeField.setText(chosenFile.getAbsolutePath());
-                    updateUI();
-                } catch (NullPointerException npe) {
-                }
-            }
-        });
-        toolCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        inputButton.addActionListener(e -> {
+            try {
+                File chosenFile = chooseFile();
+                inputField.setText(chosenFile.getAbsolutePath());
                 updateUI();
+            } catch (NullPointerException npe) {
             }
         });
-        runButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                run();
+        outputButton.addActionListener(e -> {
+            try {
+                File chosenFile = chooseFile();
+                outputField.setText(chosenFile.getAbsolutePath());
+                updateUI();
+            } catch (NullPointerException npe) {
             }
         });
+        genomeButton.addActionListener(e -> {
+            try {
+                File chosenFile = chooseFile();
+                genomeField.setText(chosenFile.getAbsolutePath());
+                updateUI();
+            } catch (NullPointerException npe) {
+            }
+        });
+        probeButton.addActionListener(e -> {
+            try {
+                File chosenFile = chooseFile();
+                probeField.setText(chosenFile.getAbsolutePath());
+                updateUI();
+            } catch (NullPointerException npe) {
+            }
+        });
+        toolCombo.addActionListener(e -> updateUI());
+        runButton.addActionListener(e -> run());
 
-        tempButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    File chosenFile = chooseFile();
-                    tmpDirectoryField.setText(chosenFile.getAbsolutePath());
-                    updateUI();
-                } catch (NullPointerException npe) {
-                }
+        tempButton.addActionListener(e -> {
+            try {
+                File chosenFile = FileDialogUtils.chooseDirectory("Choose Directory:", lastDirectory);
+                tmpDirectoryField.setText(chosenFile.getAbsolutePath());
+                updateUI();
+            } catch (NullPointerException npe) {
             }
         });
     }
@@ -582,29 +561,7 @@ public class IgvToolsGui extends JDialog {
      * @return
      */
     private File chooseFile() {
-
-        //TODO Override so you can specify the file type with a string array ex: {".wig", ".tdf"}
-
-        // if (fileDialog == null) {
-        fileDialog = new JFileChooser();
-        // }
-
-        if (lastDirectory != null) {
-            fileDialog.setCurrentDirectory(lastDirectory);
-        }
-
-        fileDialog.setMultiSelectionEnabled(false);
-
-        fileDialog.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-
-        int returnVal = fileDialog.showDialog(this, "Select File");
-        if (returnVal == JFileChooser.CANCEL_OPTION) {
-            return null;
-        } else {
-            File selected = fileDialog.getSelectedFile();
-            lastDirectory = selected.isDirectory() ? selected : selected.getParentFile();
-            return selected;
-        }
+       return FileDialogUtils.chooseFile("Select File: ", lastDirectory, FileDialogUtils.LOAD);
     }
 
     public static void main(String[] args) {
