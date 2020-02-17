@@ -2,6 +2,7 @@ package org.broad.igv.util;
 
 import com.google.gson.JsonObject;
 import htsjdk.samtools.util.Tuple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.aws.IGVS3Object;
@@ -201,6 +202,18 @@ public class AmazonUtils {
         }
 
         return bucketsFinalList;
+    }
+
+    public static HeadObjectResponse getObjectMetadata(Triple S3Obj) {
+        String S3ObjectBucket = S3Obj.getLeft().toString();
+        String S3ObjectKey = S3Obj.getMiddle().toString();
+
+        HeadObjectRequest HeadObjReq = HeadObjectRequest.builder()
+                                                        .bucket(S3ObjectBucket)
+                                                        .key(S3ObjectKey).build();
+        HeadObjectResponse HeadObjRes = s3Client.headObject(HeadObjReq);
+        log.debug("getObjectMetadata(): "+HeadObjRes.toString());
+        return HeadObjRes;
     }
 
     private static List<String> getReadableBuckets(List<String> buckets) {
