@@ -210,7 +210,7 @@ public class S3LoadDialog extends JDialog {
 
         HeadObjectResponse S3Meta;
         boolean ObjAvailable;
-        String objCurrentState = "";
+        String objCurrentState;
 
         if (S3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
                 S3ObjectStorageClass.contains("GLACIER")) {
@@ -225,7 +225,8 @@ public class S3LoadDialog extends JDialog {
 
                 //https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/model/HeadObjectResponse.html#restore--
                 S3Meta = AmazonUtils.getObjectMetadata(S3Obj);
-                objCurrentState = S3Meta.restore();
+                //objCurrentState = S3Meta.restore();
+                objCurrentState = S3Meta.sdkHttpResponse().headers().get("x-amz-restore").toString();
 
                 if(objCurrentState == null) {
                     ObjAvailable = false;
