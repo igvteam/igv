@@ -274,9 +274,7 @@ public class AmazonUtils {
         if (S3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
             S3ObjectStorageClass.contains("GLACIER")) {
             try {
-                // XXX: .restore() incorrectly returning null, using sdkHttpResponse directly as a workaround for aws-java-sdk-v2 bug
-                //objCurrentState = S3Meta.restore();
-                S3ObjectStorageStatus = S3Meta.sdkHttpResponse().headers().get("x-amz-restore").toString();
+                S3ObjectStorageStatus = S3Meta.restore();
             } catch(NullPointerException npe) {
                 res.setObjAvailable(false);
                 res.setErrorReason(archived);
