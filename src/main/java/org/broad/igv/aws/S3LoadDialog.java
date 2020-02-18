@@ -51,6 +51,8 @@ import java.util.List;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
+import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
+
 
 public class S3LoadDialog extends JDialog {
 
@@ -102,7 +104,8 @@ public class S3LoadDialog extends JDialog {
                 if (isFilePath(path)) {
                     Triple<String, String, String> bucketKeyTier = getBucketKeyTierFromTreePath(path);
 
-                    if(!isObjectAccessible(bucketKeyTier)) return;
+                    AmazonUtils.S3ObjectAccessResult res = isObjectAccessible(bucketKeyTier);
+                    if(!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
 
                     preLocatorPaths.add(bucketKeyTier);
                 }
@@ -200,60 +203,6 @@ public class S3LoadDialog extends JDialog {
         }
     }
 
-    // Determines whether the object is immediately available.
-    // On AWS this means present in STANDARD, STANDARD_IA, INTELLIGENT_TIERING object access tiers.
-    // Tiers GLACIER and DEEP_ARCHIVE are not immediately retrievable without action.
-    private boolean isObjectAccessible(Triple S3Obj) {
-        String S3ObjectBucket = S3Obj.getLeft().toString();
-        String S3ObjectKey = S3Obj.getMiddle().toString();
-        String S3ObjectStorageClass = S3Obj.getRight().toString();
-
-        HeadObjectResponse S3Meta;
-        boolean ObjAvailable;
-        String objCurrentState;
-
-        if (S3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
-                S3ObjectStorageClass.contains("GLACIER")) {
-                // Determine in which state this object really is:
-                // 1. Archived.
-                // 2. In the process of being restored.
-                // 3. Restored
-                //
-                // This is important because after restoration the object mantains the Tier (DEEP_ARCHIVE) instead of
-                // transitioning that attribute to STANDARD, we must look at head_object response for the "Restore"
-                // attribute.
-
-                //https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/model/HeadObjectResponse.html#restore--
-                S3Meta = AmazonUtils.getObjectMetadata(S3Obj);
-                //objCurrentState = S3Meta.restore();
-                objCurrentState = S3Meta.sdkHttpResponse().headers().get("x-amz-restore").toString();
-
-                if(objCurrentState == null) {
-                    ObjAvailable = false;
-                    log.info("Object is archived and is not being restored");
-                } else if(objCurrentState.contains("ongoing-request=\"true\"")) {
-                    MessageUtils.showErrorMessage("Amazon S3 object is in " + S3ObjectStorageClass + " and being restored right now, please be patient, this can take up to 48h. " +
-                            "For further enquiries about this dataset, please use the following path when communicating with your system administrator: s3://" + S3ObjectBucket + "/" + S3ObjectKey, null);
-                    ObjAvailable = false;
-                    log.info("isObjectAccessible(): The object "+ S3ObjectKey +" is being restored, bailing out.");
-                // "If an archive copy is already restored, the header value indicates when Amazon S3 is scheduled to delete the object copy"
-                } else if(objCurrentState.contains("ongoing-request=\"false\"") && objCurrentState.contains("expiry-date=")) {
-                    ObjAvailable = true;
-                    log.info("isObjectAccessible(): The object "+ S3ObjectKey +" has been restored, will be loaded next.");
-                } else {
-                    MessageUtils.showErrorMessage("Amazon S3 object is in " + S3ObjectStorageClass + " storage tier, not accessible at this moment. " +
-                            "Please contact your local system administrator about object: s3://" + S3ObjectBucket + "/" + S3ObjectKey, null);
-                    ObjAvailable = false;
-                    log.info("isObjectAccessible(): The object"+ S3ObjectKey +" is not available.");
-                }
-        } else {
-            // The object must be either in STANDARD, INFREQUENT_ACCESS, INTELLIGENT_TIERING or
-            // any other "immediately available" tier...
-            ObjAvailable = true;
-        }
-
-        return ObjAvailable;
-    }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -293,7 +242,8 @@ public class S3LoadDialog extends JDialog {
                         if (isFilePath(selPath)) {
                             Triple<String, String, String> bucketKeyTier = getBucketKeyTierFromTreePath(selPath);
 
-                            if(!isObjectAccessible(bucketKeyTier)) return;
+                            AmazonUtils.S3ObjectAccessResult res = isObjectAccessible(bucketKeyTier);
+                            if(!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return;}
 
                             ResourceLocator loc = getResourceLocatorFromBucketKey(bucketKeyTier);
                             IGV.getInstance().loadTracks(Collections.singletonList(loc));

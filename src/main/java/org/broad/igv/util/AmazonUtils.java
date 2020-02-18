@@ -216,6 +216,95 @@ public class AmazonUtils {
         return HeadObjRes;
     }
 
+
+    // Holds whether a S3 object is accessible or not and reason/error msg in case it's not.
+    public static class S3ObjectAccessResult {
+        private boolean objAvailable;
+        private String errorReason;
+
+        public boolean getObjAvailable() {
+            return objAvailable;
+        }
+
+        public void setObjAvailable(boolean objAvailable) {
+            this.objAvailable = objAvailable;
+        }
+
+        public String getErrorReason() {
+            return errorReason;
+        }
+
+        public void setErrorReason(String errorReason) {
+            this.errorReason = errorReason;
+        }
+    }
+
+    // Determines whether the object is immediately available.
+    // On AWS this means present in STANDARD, STANDARD_IA, INTELLIGENT_TIERING object access tiers.
+    // Tiers GLACIER and DEEP_ARCHIVE are not immediately retrievable without action.
+    public static S3ObjectAccessResult isObjectAccessible(Triple S3Obj) {
+        String S3ObjectBucket = S3Obj.getLeft().toString();
+        String S3ObjectKey = S3Obj.getMiddle().toString();
+        S3ObjectAccessResult res = new S3ObjectAccessResult();
+
+        HeadObjectResponse S3Meta;
+
+        String S3ObjectStorageStatus = null;
+        String S3ObjectStorageClass;
+
+        S3Meta = AmazonUtils.getObjectMetadata(S3Obj);
+        S3ObjectStorageClass = S3Meta.storageClass().toString();
+
+        // Determine in which state this object really is:
+        // 1. Archived.
+        // 2. In the process of being restored.
+        // 3. Restored
+        //
+        // This is important because after restoration the object mantains the Tier (DEEP_ARCHIVE) instead of
+        // transitioning that attribute to STANDARD, we must look at head_object response for the "Restore"
+        // attribute.
+        //
+        // Possible error reason messages for the users are:
+
+        String archived = "Amazon S3 object is in " + S3ObjectStorageClass + " storage tier, not accessible at this moment. " +
+                "Please contact your local system administrator about object: s3://" + S3ObjectBucket + "/" + S3ObjectKey;
+        String restoreInProgress = "Amazon S3 object is in " + S3ObjectStorageClass + " and being restored right now, please be patient, this can take up to 48h. " +
+                "For further enquiries about this dataset, please use the following path when communicating with your system administrator: s3://" + S3ObjectBucket + "/" + S3ObjectKey;
+
+        if (S3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
+            S3ObjectStorageClass.contains("GLACIER")) {
+            try {
+                // XXX: .restore() incorrectly returning null, using sdkHttpResponse directly as a workaround for aws-java-sdk-v2 bug
+                //objCurrentState = S3Meta.restore();
+                S3ObjectStorageStatus = S3Meta.sdkHttpResponse().headers().get("x-amz-restore").toString();
+            } catch(NullPointerException npe) {
+                res.setObjAvailable(false);
+                res.setErrorReason(archived);
+                return res;
+            }
+
+            if(S3ObjectStorageStatus.contains("ongoing-request=\"true\"")) {
+                res.setObjAvailable(false);
+                res.setErrorReason(restoreInProgress);
+
+            // "If an archive copy is already restored, the header value indicates when Amazon S3 is scheduled to delete the object copy"
+            } else if(S3ObjectStorageStatus.contains("ongoing-request=\"false\"") && S3ObjectStorageStatus.contains("expiry-date=")) {
+                res.setObjAvailable(true);
+            } else {
+            // The object has never been restored?
+                res.setObjAvailable(false);
+                res.setErrorReason(archived);
+            }
+        } else {
+            // The object must be either in STANDARD, INFREQUENT_ACCESS, INTELLIGENT_TIERING or
+            // any other "immediately available" tier...
+            res.setErrorReason("Object is in an accessible tier, no errors are expected");
+            res.setObjAvailable(true);
+        }
+
+        return res;
+    }
+
     private static List<String> getReadableBuckets(List<String> buckets) {
         List<CompletableFuture<String>> futures =
                 buckets.stream()
