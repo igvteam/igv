@@ -29,14 +29,10 @@
  */
 package org.broad.igv.ui.action;
 
-import htsjdk.samtools.util.Tuple;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
-import org.broad.igv.aws.S3Object;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.google.GoogleUtils;
-import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -105,14 +101,11 @@ public class LoadFromURLMenuAction extends MenuAction {
                         try {
                             // If AWS support is active, check if objects are in accessible tiers via Load URL menu...
                             if (AmazonUtils.isAwsS3Path(url)) {
-                                Tuple S3ObjTuple = AmazonUtils.bucketAndKey(url);
-                                Triple bucketKeyTier = Triple.of(S3ObjTuple.a, S3ObjTuple.b, "");
+                                String bucket = AmazonUtils.getBucketFromS3URL(url);
+                                String key = AmazonUtils.getKeyFromS3URL(url);
 
-                                AmazonUtils.S3ObjectAccessResult res = isObjectAccessible(bucketKeyTier);
-                                if (!res.getObjAvailable()) {
-                                    MessageUtils.showMessage(res.getErrorReason());
-                                    return;
-                                }
+                                AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucket, key);
+                                if (!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
                             }
                         } catch (NullPointerException npe) {
                             // User has not yet done Amazon->Login sequence

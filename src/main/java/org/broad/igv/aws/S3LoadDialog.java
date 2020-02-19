@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
@@ -104,7 +103,7 @@ public class S3LoadDialog extends JDialog {
                 if (isFilePath(path)) {
                     Triple<String, String, String> bucketKeyTier = getBucketKeyTierFromTreePath(path);
 
-                    AmazonUtils.S3ObjectAccessResult res = isObjectAccessible(bucketKeyTier);
+                    AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucketKeyTier.getLeft(), bucketKeyTier.getMiddle());
                     if(!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
 
                     preLocatorPaths.add(bucketKeyTier);
@@ -242,7 +241,7 @@ public class S3LoadDialog extends JDialog {
                         if (isFilePath(selPath)) {
                             Triple<String, String, String> bucketKeyTier = getBucketKeyTierFromTreePath(selPath);
 
-                            AmazonUtils.S3ObjectAccessResult res = isObjectAccessible(bucketKeyTier);
+                            AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucketKeyTier.getLeft(), bucketKeyTier.getMiddle());
                             if(!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return;}
 
                             ResourceLocator loc = getResourceLocatorFromBucketKey(bucketKeyTier);
