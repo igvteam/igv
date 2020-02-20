@@ -2,6 +2,7 @@ package org.broad.igv.util;
 
 import com.google.gson.JsonObject;
 import htsjdk.samtools.util.Tuple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.aws.IGVS3Object;
@@ -203,6 +204,100 @@ public class AmazonUtils {
         return bucketsFinalList;
     }
 
+    public static HeadObjectResponse getObjectMetadata(String bucket, String key) {
+        HeadObjectRequest HeadObjReq = HeadObjectRequest.builder()
+                                                        .bucket(bucket)
+                                                        .key(key).build();
+        HeadObjectResponse HeadObjRes = s3Client.headObject(HeadObjReq);
+        log.debug("getObjectMetadata(): "+HeadObjRes.toString());
+        return HeadObjRes;
+    }
+
+
+    // Holds whether a S3 object is accessible or not and reason/error msg in case it's not.
+    public static class s3ObjectAccessResult {
+        private boolean objAvailable;
+        private String errorReason;
+
+        public boolean getObjAvailable() {
+            return objAvailable;
+        }
+
+        public void setObjAvailable(boolean objAvailable) {
+            this.objAvailable = objAvailable;
+        }
+
+        public String getErrorReason() {
+            return errorReason;
+        }
+
+        public void setErrorReason(String errorReason) {
+            this.errorReason = errorReason;
+        }
+    }
+
+    // Determines whether the object is immediately available.
+    // On AWS this means present in STANDARD, STANDARD_IA, INTELLIGENT_TIERING object access tiers.
+    // Tiers GLACIER and DEEP_ARCHIVE are not immediately retrievable without action.
+    public static s3ObjectAccessResult isObjectAccessible(String bucket, String key) {
+        s3ObjectAccessResult res = new s3ObjectAccessResult();
+        HeadObjectResponse s3Meta;
+
+        String s3ObjectStorageStatus = null;
+        String s3ObjectStorageClass;
+
+        s3Meta = AmazonUtils.getObjectMetadata(bucket, key);
+        s3ObjectStorageClass = s3Meta.storageClass().toString();
+
+        // Determine in which state this object really is:
+        // 1. Archived.
+        // 2. In the process of being restored.
+        // 3. Restored
+        //
+        // This is important because after restoration the object mantains the Tier (DEEP_ARCHIVE) instead of
+        // transitioning that attribute to STANDARD, we must look at head_object response for the "Restore"
+        // attribute.
+        //
+        // Possible error reason messages for the users are:
+
+        String archived = "Amazon S3 object is in " + s3ObjectStorageClass + " storage tier, not accessible at this moment. " +
+                "Please contact your local system administrator about object: s3://" + bucket + "/" + key;
+        String restoreInProgress = "Amazon S3 object is in " + s3ObjectStorageClass + " and being restored right now, please be patient, this can take up to 48h. " +
+                "For further enquiries about this dataset, please use the following path when communicating with your system administrator: s3://" + bucket + "/" + key;
+
+        if (s3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
+            s3ObjectStorageClass.contains("GLACIER")) {
+            try {
+                s3ObjectStorageStatus = s3Meta.sdkHttpResponse().headers().get("x-amz-restore").toString();
+                //S3ObjectStorageStatus = S3Meta.restore();
+            } catch(NullPointerException npe) {
+                res.setObjAvailable(false);
+                res.setErrorReason(archived);
+                return res;
+            }
+
+            if(s3ObjectStorageStatus.contains("ongoing-request=\"true\"")) {
+                res.setObjAvailable(false);
+                res.setErrorReason(restoreInProgress);
+
+            // "If an archive copy is already restored, the header value indicates when Amazon S3 is scheduled to delete the object copy"
+            } else if(s3ObjectStorageStatus.contains("ongoing-request=\"false\"") && s3ObjectStorageStatus.contains("expiry-date=")) {
+                res.setObjAvailable(true);
+            } else {
+            // The object has never been restored?
+                res.setObjAvailable(false);
+                res.setErrorReason(archived);
+            }
+        } else {
+            // The object must be either in STANDARD, INFREQUENT_ACCESS, INTELLIGENT_TIERING or
+            // any other "immediately available" tier...
+            res.setErrorReason("Object is in an accessible tier, no errors are expected");
+            res.setObjAvailable(true);
+        }
+
+        return res;
+    }
+
     private static List<String> getReadableBuckets(List<String> buckets) {
         List<CompletableFuture<String>> futures =
                 buckets.stream()
@@ -289,18 +384,19 @@ public class AmazonUtils {
         return objects;
     }
 
-    public static Tuple<String, String> bucketAndKey(String S3urlString) {
-        AmazonS3URI s3URI = new AmazonS3URI(S3urlString);
-        String bucket = s3URI.getBucket();
-        String key = s3URI.getKey();
+    public static String getBucketFromS3URL(String s3URL) {
+        AmazonS3URI s3URI = new AmazonS3URI(s3URL);
+        return s3URI.getBucket();
 
-        log.debug("bucketAndKey(): " + bucket + " , " + key);
-        return new Tuple(bucket, key);
+    }
+
+    public static String getKeyFromS3URL(String s3URL) {
+        AmazonS3URI s3URI = new AmazonS3URI(s3URL);
+        return s3URI.getKey();
     }
 
     // Amazon S3 Presign URLs
     // Also keeps an internal mapping between ResourceLocator and active/valid signed URLs.
-
     private static String createPresignedURL(String s3Path) throws IOException {
         // Make sure access token are valid (refreshes token internally)
         OAuthProvider provider = OAuthUtils.getInstance().getProvider("Amazon");
@@ -318,11 +414,10 @@ public class AmazonUtils {
                 .region(getAWSREGION())
                 .build();
 
-        Tuple<String, String> bandk = bucketAndKey(s3Path);
-        String bucket = bandk.a;
-        String filename = bandk.b;
+        String bucket = getBucketFromS3URL(s3Path);
+        String key = getKeyFromS3URL(s3Path);
 
-        URI presigned = s3Presigner.presignS3DownloadLink(bucket, filename);
+        URI presigned = s3Presigner.presignS3DownloadLink(bucket, key);
         log.debug("AWS presigned URL from translateAmazonCloudURL is: " + presigned);
         return presigned.toString();
     }

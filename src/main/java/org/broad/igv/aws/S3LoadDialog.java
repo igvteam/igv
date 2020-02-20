@@ -48,8 +48,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import software.amazon.awssdk.services.s3.model.S3Error;
 import software.amazon.awssdk.services.s3.model.S3Exception;
+
+import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
 
 
 public class S3LoadDialog extends JDialog {
@@ -102,7 +103,8 @@ public class S3LoadDialog extends JDialog {
                 if (isFilePath(path)) {
                     Triple<String, String, String> bucketKeyTier = getBucketKeyTierFromTreePath(path);
 
-                    if(!isObjectAccessible(bucketKeyTier)) return;
+                    AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucketKeyTier.getLeft(), bucketKeyTier.getMiddle());
+                    if(!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
 
                     preLocatorPaths.add(bucketKeyTier);
                 }
@@ -200,23 +202,6 @@ public class S3LoadDialog extends JDialog {
         }
     }
 
-    // Determines whether the object is immediately available.
-    // On AWS this means present in STANDARD, STANDARD_IA, INTELLIGENT_TIERING object access tiers.
-    // Tiers GLACIER and DEEP_ARCHIVE are not immediately retrievable without action.
-    private boolean isObjectAccessible(Triple S3Obj) {
-        String S3ObjectBucket = S3Obj.getLeft().toString();
-        String S3ObjectKey = S3Obj.getMiddle().toString();
-        String S3ObjectStorageClass = S3Obj.getRight().toString();
-
-        if (S3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
-                S3ObjectStorageClass.contains("GLACIER")) {
-            MessageUtils.showErrorMessage("Amazon S3 object is in " + S3ObjectStorageClass + " storage tier, not accessible at this moment. " +
-                    "Please contact your local system administrator about object: s3://" + S3ObjectBucket +  "/" + S3ObjectKey, null);
-            return false;
-        }
-
-        return true;
-    }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -256,7 +241,8 @@ public class S3LoadDialog extends JDialog {
                         if (isFilePath(selPath)) {
                             Triple<String, String, String> bucketKeyTier = getBucketKeyTierFromTreePath(selPath);
 
-                            if(!isObjectAccessible(bucketKeyTier)) return;
+                            AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucketKeyTier.getLeft(), bucketKeyTier.getMiddle());
+                            if(!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return;}
 
                             ResourceLocator loc = getResourceLocatorFromBucketKey(bucketKeyTier);
                             IGV.getInstance().loadTracks(Collections.singletonList(loc));

@@ -33,13 +33,13 @@ import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.google.GoogleUtils;
-import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -51,6 +51,8 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
 
 /**
  * @author jrobinso
@@ -96,6 +98,20 @@ public class LoadFromURLMenuAction extends MenuAction {
                             MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                         }
                     } else {
+                        try {
+                            // If AWS support is active, check if objects are in accessible tiers via Load URL menu...
+                            if (AmazonUtils.isAwsS3Path(url)) {
+                                String bucket = AmazonUtils.getBucketFromS3URL(url);
+                                String key = AmazonUtils.getKeyFromS3URL(url);
+
+                                AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucket, key);
+                                if (!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
+                            }
+                        } catch (NullPointerException npe) {
+                            // User has not yet done Amazon->Login sequence
+                            AmazonUtils.checkLogin();
+                        }
+
                         ResourceLocator rl = new ResourceLocator(url.trim());
 
                         if (dlg.getIndexURL() != null) {
