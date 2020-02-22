@@ -432,7 +432,7 @@ public class SearchCommand {
         }
 
         // Show the "All chromosomes" view if the search string is "*"
-        if (chr.equals("*")) {
+        if (chr.equals("*") || chr.toLowerCase().equals("all")) {
             return new SearchResult(ResultType.CHROMOSOME, Globals.CHR_ALL, 0, 1);
         }
 
