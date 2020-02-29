@@ -80,7 +80,6 @@ public class GWASTrack extends AbstractTrack {
     private double trackMinY;
     private double maxY;
     private double scale;
-    private String displayName = null;
     private boolean drawYAxis = true;
     private boolean showAxis = true;
 
@@ -128,10 +127,6 @@ public class GWASTrack extends AbstractTrack {
     }
 
     public GWASTrack() {
-    }
-
-    public String getDisplayName() {
-        return displayName;
     }
 
     @Override
@@ -789,7 +784,6 @@ public class GWASTrack extends AbstractTrack {
         element.setAttribute("useChrColors", String.valueOf(useChrColors));
         element.setAttribute("singleColor", String.valueOf(singleColor));
         element.setAttribute("drawYAxis", String.valueOf(drawYAxis));
-        element.setAttribute("displayName", String.valueOf(displayName));
         element.setAttribute("alternatingColors", String.valueOf(alternatingColors));
         if (primaryColor != null) {
             element.setAttribute("primaryColor", ColorUtilities.colorToString(primaryColor));
@@ -814,7 +808,6 @@ public class GWASTrack extends AbstractTrack {
         useChrColors = Boolean.parseBoolean(element.getAttribute("useChrColors"));
         singleColor = Boolean.parseBoolean(element.getAttribute("singleColor"));
         drawYAxis = Boolean.parseBoolean(element.getAttribute("drawYAxis"));
-        displayName = element.getAttribute("displayName");
         alternatingColors = Boolean.parseBoolean(element.getAttribute("alternatingColors"));
         if (element.hasAttribute("primaryColor")) {
             primaryColor = ColorUtilities.stringToColor(element.getAttribute("primaryColor"));
