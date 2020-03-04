@@ -985,7 +985,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
-
+        super.unmarshalXML(element, version);
         if (element.hasAttribute("snpThreshold")) {
             snpThreshold = Float.parseFloat(element.getAttribute("snpThreshold"));
         }

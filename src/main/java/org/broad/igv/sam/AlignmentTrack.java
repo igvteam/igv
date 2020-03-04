@@ -78,8 +78,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -249,7 +249,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             insertionIntervalsMap = newMap;
 
-        }  else if (event instanceof AlignmentTrackEvent) {
+        } else if (event instanceof AlignmentTrackEvent) {
             AlignmentTrackEvent e = (AlignmentTrackEvent) event;
             AlignmentTrackEvent.Type eventType = e.getType();
             switch (eventType) {
@@ -269,9 +269,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     void setExperimentType(ExperimentType type) {
 
-            if (type == experimentType) {
-                return;
-            }
+        if (type == experimentType) {
+            return;
+        }
         if (type != experimentType) {
 
             experimentType = type;
