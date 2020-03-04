@@ -112,6 +112,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenu googleMenu;
     private JMenu AWSMenu;
     private JMenuItem encodeMenuItem;
+    private JMenuItem reloadSessionItem;
 
     public void notifyGenomeServerReachable(boolean reachable) {
         if (loadFromServerMenuItem != null) {
@@ -302,6 +303,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
         encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(genomeId));
 
+
+        menuItems.add(new JSeparator());
+        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
+        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
         menuItems.add(new JSeparator());
 
         // Session menu items
@@ -320,7 +327,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         menuAction = new ReloadSessionMenuAction("Reload Session", -1, igv);
         menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
-        JMenuItem reloadSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        reloadSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         menuItems.add(reloadSessionItem);
 
         menuItems.add(new JSeparator());

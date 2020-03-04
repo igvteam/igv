@@ -32,24 +32,38 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.Session;
+import org.broad.igv.session.SessionWriter;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.util.FileDialogUtils;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author jrobinso
  */
-public class ReloadSessionMenuAction extends MenuAction {
+public class ReloadTracksMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(SaveSessionMenuAction.class);
     IGV igv;
 
     /**
+     *
+     *
      * @param label
      * @param mnemonic
      * @param igv
      */
-    public ReloadSessionMenuAction(String label, int mnemonic, IGV igv) {
+    public ReloadTracksMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
         this.igv = igv;
     }
@@ -61,9 +75,19 @@ public class ReloadSessionMenuAction extends MenuAction {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
+
         String currentSessionFilePath = igv.getSession().getPath();
-        if (currentSessionFilePath != null) {
-            this.igv.restoreSessionSynchronous(currentSessionFilePath, null, false);
+        Session currentSession = igv.getSession();
+        currentSession.setPath(currentSessionFilePath);
+        String xml = (new SessionWriter()).createXmlFromSession(currentSession, null);
+
+        igv.resetSession(currentSessionFilePath);
+        IGVSessionReader sessionReader = new IGVSessionReader(this.igv);
+        InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
+        try {
+            igv.restoreSessionFromStream(currentSessionFilePath, null, inputStream);
+        } catch (IOException ex) {
+            log.error("Error reloading tracks", ex);
         }
     }
 

@@ -46,6 +46,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.ShowDetailsBehavior;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
+import org.broad.igv.ui.action.ReloadTracksMenuAction;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -264,10 +265,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {
 
         IGVEventBus.getInstance().post(new org.broad.igv.event.RefreshEvent());
-        if (IGV.hasInstance()) {
-            IGV.getInstance().doRefresh();
-        }
-        System.gc();
+        (new ReloadTracksMenuAction("",-1, IGV.getInstance())).actionPerformed(evt);
 
     }
 
@@ -499,7 +497,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         refreshButton.setMaximumSize(new java.awt.Dimension(32, 32));
         refreshButton.setMinimumSize(new java.awt.Dimension(32, 32));
         refreshButton.setPreferredSize(new java.awt.Dimension(32, 32));
-        refreshButton.setToolTipText("Refresh the screen");
+        refreshButton.setToolTipText("Reload tracks and refresh the screen");
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButtonActionPerformed(evt);
