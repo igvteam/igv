@@ -392,6 +392,11 @@ public class ReducedMemoryAlignment implements Alignment {
             return offset >= 0 && offset < getLength();
         }
 
+        @Override
+        public int getBasesLength() {
+            return length;
+        }
+
 
         @Override
         public int getLength() {

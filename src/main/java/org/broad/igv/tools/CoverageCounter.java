@@ -388,16 +388,18 @@ public class CoverageCounter {
                                 }
 
                                 byte[] bases = block.getBases();
-                                for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
-                                    byte base = 0;
-                                    int baseIdx = pos - blockStart;
-                                    if (bases != null && baseIdx >= 0 && baseIdx < bases.length) {
-                                        base = bases[baseIdx];
+                                if(bases != null) {
+                                    for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
+                                        byte base = 0;
+                                        int baseIdx = pos - blockStart;
+                                        if (bases != null && baseIdx >= 0 && baseIdx < bases.length) {
+                                            base = bases[baseIdx];
+                                        }
+                                        //int idx = pos - blockStart;
+                                        //byte quality = (idx >= 0 && idx < block.qualities.length) ?
+                                        //block.qualities[pos - blockStart] : (byte) 0;
+                                        counter.incrementCount(pos, base, strand);
                                     }
-                                    //int idx = pos - blockStart;
-                                    //byte quality = (idx >= 0 && idx < block.qualities.length) ?
-                                    //block.qualities[pos - blockStart] : (byte) 0;
-                                    counter.incrementCount(pos, base, strand);
                                 }
                             }
                         }

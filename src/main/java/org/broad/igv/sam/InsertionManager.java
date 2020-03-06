@@ -125,9 +125,7 @@ public class InsertionManager {
             AlignmentBlock[] blocks = a.getInsertions();
             if (blocks != null) {
                 for (AlignmentBlock block : blocks) {
-
-                    if (block.getBases().length < minLength) continue;
-
+                    if (block.getBases() == null || block.getBases().length < minLength) continue;
                     Integer key = block.getStart();
                     InsertionMarker insertionMarker = insertionMap.get(key);
                     if (insertionMarker == null) {
@@ -140,7 +138,6 @@ public class InsertionManager {
                 }
             }
         }
-
 
         positions.addAll(insertionMap.keySet());
         positions.sort((o1, o2) -> o1 - o2);
