@@ -997,7 +997,6 @@ public class TrackLoader {
             SegmentFileParser parser = new SegmentFileParser(locator);
             ds = parser.loadSegments(locator, genome);
         }
-
         loadSegTrack(locator, newTracks, genome, ds);
     }
 

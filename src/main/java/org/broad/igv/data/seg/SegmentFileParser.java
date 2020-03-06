@@ -52,8 +52,6 @@ public class SegmentFileParser implements SegFileParser {
         SEG, BIRDSUITE, NEXUS
     }
 
-    ;
-
     private static Logger log = Logger.getLogger(SegmentFileParser.class);
 
     boolean birdsuite = false;
