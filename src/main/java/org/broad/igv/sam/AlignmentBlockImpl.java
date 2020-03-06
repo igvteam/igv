@@ -31,7 +31,9 @@ package org.broad.igv.sam;
 
 public class AlignmentBlockImpl implements AlignmentBlock {
 
+    private static byte [] EMPTY_ARRAY = new byte[0];
     private int start;
+    private int length;
     private byte[] bases;
     private int basesLength = -1;
     public byte[] qualities;
@@ -42,14 +44,14 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     private char cigarOperator;
 
     public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities) {
-        this(start, bases, qualities, (char) 0);
+        this(start, bases, qualities, bases.length, (char) 0);
     }
 
-    public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities, char cigarOperator) {
+    public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities, int nBases, char cigarOperator) {
 
         this.start = start;
         this.bases = bases;
-        this.basesLength = bases.length;
+        this.basesLength = nBases;
         this.qualities = qualities;
         this.cigarOperator = cigarOperator;
     }
@@ -82,6 +84,11 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     }
 
     @Override
+    public int getBasesLength() {
+        return basesLength;
+    }
+
+    @Override
     public int getLength() {
         return basesLength + padding;
     }
@@ -98,7 +105,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
      */
     @Override
     public byte[] getBases() {
-        return bases;
+        return bases == null ? EMPTY_ARRAY : bases;
     }
 
     @Override
@@ -114,7 +121,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
 
     @Override
     public byte[] getQualities() {
-        return qualities;
+        return qualities == null ? EMPTY_ARRAY : qualities;
     }
 
     @Override
@@ -141,8 +148,10 @@ public class AlignmentBlockImpl implements AlignmentBlock {
         sb.append("-");
         sb.append(getEnd());
         sb.append(" ");
-        for (int i = 0; i < bases.length; i++) {
-            sb.append((char) bases[i]);
+        if(bases != null) {
+            for (int i = 0; i < bases.length; i++) {
+                sb.append((char) bases[i]);
+            }
         }
         sb.append("]");
         return sb.toString();
@@ -156,7 +165,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
      */
     @Override
     public boolean hasBases() {
-        return this.bases != null;
+        return this.bases != null && this.bases.length > 0;
     }
 
 

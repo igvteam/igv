@@ -296,7 +296,7 @@ public class GobyAlignment implements Alignment {
             bases[i] = (byte) softClippedBasesLeft.charAt(i);
             scores[i] = hasSoftClippedQuality ? softClippedQuality[i] : readQualScores[j++];
         }
-        final AlignmentBlockImpl alignmentBlock = new AlignmentBlockImpl( position, bases, scores, 'S');
+        final AlignmentBlockImpl alignmentBlock = new AlignmentBlockImpl( position, bases, scores, bases.length,  'S');
         alignmentBlock.setSoftClipped(true);
         blocks.add(alignmentBlock);
 

@@ -394,13 +394,12 @@ public class AlignmentRenderer {
                         continue;
                     }
 
-                    int bpWidth = aBlock.getBases().length;
+                    int bpWidth = aBlock.getBasesLength();
                     double pxWidthExact = ((double) bpWidth) / locScale;
                     int h = (int) Math.max(1, rect.getHeight() - 2);
                     int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - 1;
 
-
-                    if (aBlock.getBases() == null) {
+                    if (!aBlock.hasBases()) {
                         g.setColor(purple);
                         g.fillRect(x, y, (int) pxWidthExact, h);
 
@@ -609,7 +608,7 @@ public class AlignmentRenderer {
         Graphics2D gMismatch = context.getGraphics2D("MISMATCH");
         gAlignment.setColor(alignmentColor);
         gSoftClipped.setColor(Color.RED);
-        gMismatch.setColor(Color.BLUE);
+        gMismatch.setColor(Color.BLACK);
 
         // No blocks.  Note: SAM/BAM alignments always have at least 1 block
         if (blocks == null || blocks.length == 0) {
@@ -739,13 +738,7 @@ public class AlignmentRenderer {
 
             int blockPxStart = (int) ((block.getStart() - bpStart) / locScale);
             int blockPxWidth = (int) Math.max(1, (block.getLength() / locScale));
-
-            if (blockPxWidth == 0) {
-                return;
-            } // skip blocks too small to render
-
             int blockPxEnd = blockPxStart + blockPxWidth + 1;
-
             boolean leftmost = block == blocks[0];
             boolean rightmost = block == blocks[blocks.length - 1];
             boolean tallEnoughForArrow = h > 6;
@@ -779,9 +772,14 @@ public class AlignmentRenderer {
                 blockShape = new Polygon(xPoly, yPoly, xPoly.length);
 
                 Graphics2D g = gAlignment;
+                if(block.getCigarOperator() == 'X') {
+                    System.out.println();
+                }
                 boolean haveBases = (block.hasBases() && block.getLength() > 0);
-                if(block.isSoftClipped()) g = gSoftClipped;
-                else if(block.getCigarOperator() == 'X') g =  gMismatch ;
+                if(!haveBases) {
+                    if (block.isSoftClipped()) g = gSoftClipped;
+                    else if (block.getCigarOperator() == 'X') g = gMismatch;
+                }
 
                 g.fill(blockShape);
                 if (outlineGraphics != null) {
@@ -809,7 +807,7 @@ public class AlignmentRenderer {
                 if (aBlock.getStart() == expandedPosition) continue;   // Skip, will be drawn expanded
 
                 int x = (int) ((aBlock.getStart() - bpStart) / locScale);
-                int bpWidth = aBlock.getBases().length;
+                int bpWidth = aBlock.getBasesLength();
                 double pxWidthExact = ((double) bpWidth) / locScale;
                 h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
                 y = (int) (rowRect.getY() + (rowRect.getHeight() - h) / 2) - (leaveMargin ? 1 : 0);
@@ -1085,7 +1083,7 @@ public class AlignmentRenderer {
                 if (aBlock.getStart() == expandedPosition) continue;   // Skip, will be drawn expanded
 
                 int x = (int) ((aBlock.getStart() - origin) / locScale);
-                int bpWidth = aBlock.getBases().length;
+                int bpWidth = aBlock.getBasesLength();
                 double pxWidthExact = ((double) bpWidth) / locScale;
                 int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
                 int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - (leaveMargin ? 1 : 0);

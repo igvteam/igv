@@ -200,7 +200,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         this.dataManager = dataManager;
         this.genome = genome;
         renderer = new AlignmentRenderer(this);
-        renderOptions =new RenderOptions();
+        renderOptions = new RenderOptions();
         dataManager.setAlignmentTrack(this);
         dataManager.subscribe(this);
 
@@ -2306,7 +2306,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             add(item);
             item.addActionListener(aEvt -> StringUtils.copyTextToClipboard(new String(insertion.getBases())));
 
-            if (insertion.getBases() != null && insertion.getBases().length > 10) {
+            if (insertion.getBases() != null && insertion.getBases().length >= 10) {
                 final JMenuItem blatItem = new JMenuItem("Blat insert sequence");
                 add(blatItem);
                 blatItem.addActionListener(aEvt -> {
@@ -2359,12 +2359,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             // Change track height by attribute
             final JMenuItem item = new JMenuItem("Blat insert sequence");
             add(item);
-
-
             item.addActionListener(aEvt -> {
                 String blatSeq = new String(insertion.getBases());
                 BlatClient.doBlatQuery(blatSeq);
             });
+            item.setEnabled(insertion.getBases() != null && insertion.getBases().length >= 10);
         }
 
         @Override
