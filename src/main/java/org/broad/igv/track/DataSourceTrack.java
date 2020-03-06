@@ -53,16 +53,6 @@ public class DataSourceTrack extends DataTrack {
 
     public DataSource dataSource;
 
-    /**
-     * We often don't have data when the track is constructed,
-     * need to rescale when data is first loaded
-     */
-    private boolean firstDataLoaded = false;
-
-    private boolean rescaleOnFirst = false;
-
-    private static final String COMBINED_DATA_SOURCE = "COMBINED_DATA_SOURCE";
-
 
     public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource) {
         super(locator, id, name);
@@ -73,9 +63,9 @@ public class DataSourceTrack extends DataTrack {
             setTrackType(dataSource.getTrackType());
             List<LocusScore> scores = this.dataSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, 0);
 
-            if (scores.size() == 0) rescaleOnFirst = true;
-
-            initScale(dataSource, scores);
+            if (scores.size() > 0) {
+                initScale(dataSource, scores);
+            }
         }
     }
 
@@ -104,14 +94,10 @@ public class DataSourceTrack extends DataTrack {
     public LoadedDataInterval<List<LocusScore>> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
 
         List<LocusScore> tmp = dataSource.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
-
         if (tmp == null) tmp = Collections.EMPTY_LIST;
-        if (!firstDataLoaded && rescaleOnFirst) {
+        if (dataRange == null) {
             initScale(dataSource, tmp);
-            firstDataLoaded = true;
         }
-
-
         return new LoadedDataInterval<>(chr, startLocation, endLocation, zoom, tmp);
     }
 
