@@ -131,7 +131,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     // Dynamic fields
     // The "DataPanel" containing the track.  This field might be null at any given time.  It is updated each repaint.
     private JComponent dataPanel;
-    private HashMap<String, Color> selectedReadNames = new HashMap();
+    protected HashMap<String, Color> selectedReadNames = new HashMap();
     private HashMap<Rectangle, String> groupNames = new HashMap<>();
 
     public enum ShadeBasesOption {
@@ -530,8 +530,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         Rectangle visibleRect = context.getVisibleRect();
-        final boolean leaveMargin = (getDisplayMode() != DisplayMode.SQUISHED);
-
 
         maximumHeight = Integer.MAX_VALUE;
 
@@ -576,8 +574,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
                     AlignmentCounts alignmentCounts = dataManager.getLoadedInterval(context.getReferenceFrame()).getCounts();
 
-                    renderer.renderAlignments(row.alignments, context, rowRectangle,
-                            inputRect, renderOptions, leaveMargin, alignmentCounts, getPreferences());
+                    renderer.renderAlignments(row.alignments, alignmentCounts, context, rowRectangle, renderOptions);
                     row.y = y;
                     row.h = h;
                 }
