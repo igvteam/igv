@@ -198,27 +198,21 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         super(locator);
 
         this.dataManager = dataManager;
-        this.dataManager.setAlignmentTrack(this);
-        this.dataManager.subscribe(this);
         this.genome = genome;
-
-        setRenderOptions(new RenderOptions());
-
-        minimumHeight = 50;
-        maximumHeight = Integer.MAX_VALUE;
+        renderer = new AlignmentRenderer(this);
+        renderOptions =new RenderOptions();
+        dataManager.setAlignmentTrack(this);
+        dataManager.subscribe(this);
 
         IGVPreferences prefs = getPreferences();
-
-        renderer = new AlignmentRenderer(this);
-
-        showGroupLine = getPreferences().getAsBoolean(SAM_SHOW_GROUP_SEPARATOR);
-
+        minimumHeight = 50;
+        maximumHeight = Integer.MAX_VALUE;
+        showGroupLine = prefs.getAsBoolean(SAM_SHOW_GROUP_SEPARATOR);
         try {
             setDisplayMode(DisplayMode.valueOf(prefs.get(SAM_DISPLAY_MODE).toUpperCase()));
         } catch (Exception e) {
             setDisplayMode(DisplayMode.EXPANDED);
         }
-
         if (prefs.getAsBoolean(SAM_SHOW_REF_SEQ)) {
             sequenceTrack = new SequenceTrack("Reference sequence");
             sequenceTrack.setHeight(14);
@@ -226,10 +220,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (renderOptions.colorOption == ColorOption.BISULFITE) {
             setExperimentType(ExperimentType.BISULFITE);
         }
-
         readNamePalette = new PaletteColorTable(ColorUtilities.getDefaultPalette());
-
-        this.insertionIntervalsMap = Collections.synchronizedMap(new HashMap<>());
+        insertionIntervalsMap = Collections.synchronizedMap(new HashMap<>());
 
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(AlignmentTrackEvent.class, this);
@@ -294,10 +286,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 setVisible(showAlignments);
                 IGV.getInstance().revalidateTrackPanels();
             }
-
             //ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, experimentType);
             //IGVEventBus.getInstance().post(event);
-
         }
     }
 
@@ -305,22 +295,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return experimentType;
     }
 
-
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        if (visible != this.isVisible()) {
-            super.setVisible(visible);
-
-            if (IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
-        }
-    }
-
-    private void setRenderOptions(RenderOptions renderOptions) {
-        this.renderOptions = renderOptions;
     }
 
     public CoverageTrack getCoverageTrack() {
@@ -330,7 +306,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     public void setSpliceJunctionTrack(SpliceJunctionTrack spliceJunctionTrack) {
         this.spliceJunctionTrack = spliceJunctionTrack;
     }
-
 
     public SpliceJunctionTrack getSpliceJunctionTrack() {
         return spliceJunctionTrack;
@@ -348,8 +323,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 //                }
 //            }
 //        }
-
-
         return new PopupMenu(te);
     }
 
@@ -368,14 +341,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         int nGroups = dataManager.getMaxGroupCount();
-
         int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN
                 + DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2);
-
         //if (insertionRect != null) {   // TODO - replace with expand insertions preference
         h += INSERTION_ROW_HEIGHT + DS_MARGIN_0;
         //}
-
 
         h = Math.min(maximumHeight, h);
         return h;
@@ -607,7 +577,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     AlignmentCounts alignmentCounts = dataManager.getLoadedInterval(context.getReferenceFrame()).getCounts();
 
                     renderer.renderAlignments(row.alignments, context, rowRectangle,
-                            inputRect, renderOptions, leaveMargin, selectedReadNames, alignmentCounts, getPreferences());
+                            inputRect, renderOptions, leaveMargin, alignmentCounts, getPreferences());
                     row.y = y;
                     row.h = h;
                 }

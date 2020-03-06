@@ -207,7 +207,6 @@ public class AlignmentRenderer {
         typeToColorMap.put(null, DEFAULT_ALIGNMENT_COLOR);
     }
 
-
     private static void setNucleotideColors() {
 
         IGVPreferences prefs = PreferencesManager.getPreferences();
@@ -249,32 +248,28 @@ public class AlignmentRenderer {
     private void initializeGraphics(RenderContext context) {
 
         Font font = FontManager.getFont(10);
-        Graphics2D g = context.getGraphics2D("ALIGNMENT");
 
+        Graphics2D g1 = context.getGraphics2D("ALIGNMENT");
         float alpha = 0.75f;
         int type = AlphaComposite.SRC_OVER;
         Composite alignmentAlphaComposite = AlphaComposite.getInstance(type, alpha);
-        g.setComposite(alignmentAlphaComposite);
-        g.setFont(font);
+        g1.setComposite(alignmentAlphaComposite);
+        g1.setFont(font);
 
-        g = context.getGraphics2D("LINK_LINE");
+        Graphics2D g2 = context.getGraphics2D("LINK_LINE");
         alpha = 0.3f;
         type = AlphaComposite.SRC_OVER;
         alignmentAlphaComposite = AlphaComposite.getInstance(type, alpha);
-        g.setComposite(alignmentAlphaComposite);
+        g2.setComposite(alignmentAlphaComposite);
 
+        Graphics2D g3 = context.getGraphics2D("THICK_STROKE");
+        g3.setStroke(new BasicStroke(2.0f));
 
-        g = context.getGraphics2D("THICK_STROKE");
-        g.setStroke(new BasicStroke(2.0f));
+        Graphics2D g4 = context.getGraphics2D("STRAND");
+        g4.setColor(Color.DARK_GRAY);
 
-        g = context.getGraphics2D("OUTLINE");
-
-        g = context.getGraphics2D("INDEL_LABEL");
-
-        g = context.getGraphics2D("BASE");
-
-        g = context.getGraphics2D("STRAND");
-        g.setColor(Color.DARK_GRAY);
+        Graphics2D g5 = context.getGraphics2D("SOFT_CLIP");
+        g5.setColor(Color.DARK_GRAY);
     }
 
     /**
@@ -316,14 +311,14 @@ public class AlignmentRenderer {
 
                 Color alignmentColor = getAlignmentColor(alignment, renderOptions);
 
-                if ((pixelWidth < 2) && !(AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) && (pixelWidth >= 1))) {
-
+                if ((pixelWidth < 2) &&
+                        !(AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) &&
+                                (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
                     if (pixelEnd <= lastPixelDrawn && alignmentColor == DEFAULT_ALIGNMENT_COLOR) {
                         continue;
                     }
-
                     Graphics2D g = context.getGraphics2D("ALIGNMENT");
                     g.setColor(alignmentColor);
                     int w = Math.max(1, (int) (pixelWidth));
@@ -570,7 +565,6 @@ public class AlignmentRenderer {
         //If the paired alignment is in memory, we draw it.
         //However, we get the coordinates from the first alignment
         if (pair.secondAlignment != null) {
-
             if (alignmentColor2 == null) {
                 alignmentColor2 = getAlignmentColor(pair.secondAlignment, renderOptions);
             }
@@ -582,7 +576,6 @@ public class AlignmentRenderer {
         }
 
         Color lineColor = DEFAULT_ALIGNMENT_COLOR;
-
         if (alignmentColor1.equals(alignmentColor2) || pair.secondAlignment == null) {
             lineColor = alignmentColor1;
         }
@@ -591,26 +584,33 @@ public class AlignmentRenderer {
         double origin = context.getOrigin();
         int startX = (int) ((pair.firstAlignment.getEnd() - origin) / locScale);
         int endX = (int) ((pair.firstAlignment.getMate().getStart() - origin) / locScale);
-
         int h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
         int y = (int) (rowRect.getY());
-
         startX = Math.max(rowRect.x, startX);
         endX = Math.min(rowRect.x + rowRect.width, endX);
         g.drawLine(startX, y + h / 2, endX, y + h / 2);
-
-
     }
 
     /**
      * Draw a single ungapped block in an alignment.
      */
-    private void drawAlignmentBlock(Graphics2D blockGraphics, Graphics2D outlineGraphics,
-                                    Graphics2D clippedGraphics, Graphics2D strandGraphics,
-                                    boolean isNegativeStrand, int alignmentChromStart,
-                                    int alignmentChromEnd, double blockChromStart, int blockChromEnd,
-                                    int blockPxStart, int blockPxWidth, int y, int h, double locSale,
-                                    boolean overlapped, boolean leftClipped, boolean rightClipped) {
+    private void drawAlignmentBlock(Graphics2D blockGraphics,
+                                    Graphics2D outlineGraphics,
+                                    Graphics2D clippedGraphics,
+                                    Graphics2D strandGraphics,
+                                    boolean isNegativeStrand,
+                                    int alignmentChromStart,
+                                    int alignmentChromEnd,
+                                    double blockChromStart,
+                                    int blockChromEnd,
+                                    int blockPxStart,
+                                    int blockPxWidth,
+                                    int y,
+                                    int h,
+                                    double locSale,
+                                    boolean overlapped,
+                                    boolean leftClipped,
+                                    boolean rightClipped) {
 
         if (blockPxWidth == 0) {
             return;
@@ -618,9 +618,9 @@ public class AlignmentRenderer {
 
         int blockPxEnd = blockPxStart + blockPxWidth;
 
-        boolean leftmost = (blockChromStart == alignmentChromStart),
-                rightmost = (blockChromEnd == alignmentChromEnd),
-                tallEnoughForArrow = h > 6;
+        boolean leftmost = (blockChromStart == alignmentChromStart);
+        boolean rightmost = (blockChromEnd == alignmentChromEnd);
+        boolean tallEnoughForArrow = h > 6;
 
         if (h == 1) {
             blockGraphics.drawLine(blockPxStart, y, blockPxEnd, y);
@@ -663,7 +663,6 @@ public class AlignmentRenderer {
                 clippedGraphics.drawLine(xPoly[3], yPoly[3], xPoly[4], yPoly[4] - 1);
             }
         }
-
     }
 
     /**
@@ -694,6 +693,8 @@ public class AlignmentRenderer {
 
         Graphics2D g = context.getGraphics2D("ALIGNMENT");
         g.setColor(alignmentColor);
+
+        Graphics2D gSoftClipped = context.getGraphics2D("SOFT_CLIPPED");
 
         // No blocks.  Note: SAM/BAM alignments always have at least 1 block
         if (blocks == null || blocks.length == 0) {

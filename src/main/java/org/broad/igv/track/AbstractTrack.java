@@ -493,8 +493,11 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    public void setVisible(boolean isVisible) {
-        this.visible = isVisible;
+    public void setVisible(boolean visible) {
+        if (this.visible != visible) {
+            this.visible = visible;
+            if (IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
+        }
     }
 
 

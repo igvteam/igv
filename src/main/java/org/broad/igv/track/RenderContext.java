@@ -70,7 +70,7 @@ public class RenderContext {
     }
 
     public RenderContext(RenderContext context) {
-        this.graphics = context.getGraphics();
+        this.graphics = context.graphics;
         this.graphicCache = new HashMap<>();
         this.referenceFrame = new ReferenceFrame(context.referenceFrame);
         this.panel = context.panel;
@@ -85,11 +85,13 @@ public class RenderContext {
     }
 
     public void clearGraphicsCache() {
+        for(Graphics2D g: graphicCache.values()) {
+            g.dispose();
+        }
         graphicCache.clear();
     }
 
     public Graphics2D getGraphics2D(Object key) {
-
         Graphics2D g = graphicCache.get(key);
         if (g == null) {
             g = (Graphics2D) graphics.create();
@@ -102,12 +104,10 @@ public class RenderContext {
     }
 
     public Graphics2D getGraphic2DForColor(Color color) {
-
         Graphics2D g = getGraphics2D(color);
         g.setColor(color);
         return g;
     }
-
 
     public Color getBackgroundColor() {
         return panel.getBackground();
@@ -137,7 +137,6 @@ public class RenderContext {
         return panel;
     }
 
-
     public int getZoom() {
         return referenceFrame.getZoom();
     }
@@ -146,19 +145,8 @@ public class RenderContext {
         return referenceFrame;
     }
 
-    /**
-     * Release graphics objects
-     *
-     * @throws java.lang.Throwable
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        dispose();
-    }
-
     public void dispose() {
-        // Note: don't dispose of "this.graphics", its used later to paint the border
+        // Note: don't dispose of "this.graphics", it is managed by the framwork.
         for (Graphics2D g : graphicCache.values()) {
             g.dispose();
         }
