@@ -60,4 +60,6 @@ public interface AlignmentBlock {
         return 0;
     }
 
+    char getCigarOperator();
+
 }

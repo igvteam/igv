@@ -242,7 +242,7 @@ public abstract class SAMAlignment implements Alignment {
 
         if (cigarString.equals("*")) {
             alignmentBlocks = new AlignmentBlockImpl[1];
-            alignmentBlocks[0] = new AlignmentBlockImpl(getStart(), readBases, readBaseQualities);
+            alignmentBlocks[0] = new AlignmentBlockImpl(getStart(), readBases, readBaseQualities, '*');
             return;
         }
 
@@ -321,7 +321,7 @@ public abstract class SAMAlignment implements Alignment {
                 }
                 if (operatorIsMatch(showSoftClipped, op.operator)) {
 
-                    AlignmentBlockImpl block = buildAlignmentBlock(readBases, readBaseQualities,
+                    AlignmentBlockImpl block = buildAlignmentBlock(op.operator, readBases, readBaseQualities,
                             blockStart, fromIdx, op.nBases, true);
 
                     if (op.operator == SOFT_CLIP) {
@@ -359,7 +359,7 @@ public abstract class SAMAlignment implements Alignment {
                     // This gap is between blocks split by insertion.   It is a zero
                     // length gap but must be accounted for.
                     gapTypes[gapIdx++] = ZERO_GAP;
-                    AlignmentBlockImpl block = buildAlignmentBlock(readBases, readBaseQualities,
+                    AlignmentBlockImpl block = buildAlignmentBlock(op.operator, readBases, readBaseQualities,
                             blockStart, fromIdx, op.nBases, false);
                     block.setPadding(padding);
                     insertions[insertionIdx++] = block;
@@ -423,7 +423,7 @@ public abstract class SAMAlignment implements Alignment {
 
 
 
-    private static AlignmentBlockImpl buildAlignmentBlock(byte[] readBases, byte[] readBaseQualities, int blockStart,
+    private static AlignmentBlockImpl buildAlignmentBlock(char operator, byte[] readBases, byte[] readBaseQualities, int blockStart,
                                                           int fromIdx, int nBases, boolean checkNBasesAvailable) {
 
         byte[] blockBases = new byte[nBases];
@@ -452,7 +452,7 @@ public abstract class SAMAlignment implements Alignment {
             System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, nBases);
         }
 
-        AlignmentBlockImpl block = new AlignmentBlockImpl(blockStart, blockBases, blockQualities);
+        AlignmentBlockImpl block = new AlignmentBlockImpl(blockStart, blockBases, blockQualities, operator);
 
         return block;
     }

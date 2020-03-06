@@ -39,14 +39,19 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     private int pixelStart;
     private int pixelEnd;
     private int padding = 0;
-
+    private char cigarOperator;
 
     public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities) {
+        this(start, bases, qualities, (char) 0);
+    }
+
+    public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities, char cigarOperator) {
 
         this.start = start;
         this.bases = bases;
         this.basesLength = bases.length;
         this.qualities = qualities;
+        this.cigarOperator = cigarOperator;
     }
 
     @Override
@@ -63,6 +68,11 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     @Override
     public int getPadding() {
         return padding;
+    }
+
+    @Override
+    public char getCigarOperator() {
+        return cigarOperator;
     }
 
     @Override

@@ -604,14 +604,16 @@ public class AlignmentRenderer {
 
         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
 
-        Graphics2D g = context.getGraphics2D("ALIGNMENT");
-        g.setColor(alignmentColor);
-
-        Graphics2D gSoftClipped = context.getGraphics2D("SOFT_CLIPPED");
+        Graphics2D gAlignment = context.getGraphics2D("ALIGNMENT");
+        Graphics2D gSoftClipped = context.getGraphics2D("SOFT_CLIP");
+        Graphics2D gMismatch = context.getGraphics2D("MISMATCH");
+        gAlignment.setColor(alignmentColor);
+        gSoftClipped.setColor(Color.RED);
+        gMismatch.setColor(Color.BLUE);
 
         // No blocks.  Note: SAM/BAM alignments always have at least 1 block
         if (blocks == null || blocks.length == 0) {
-            drawSimpleAlignment(alignment, rowRect, g, context, renderOptions.isFlagUnmappedPairs());
+            drawSimpleAlignment(alignment, rowRect, gAlignment, context, renderOptions.isFlagUnmappedPairs());
             return;
         }
         IGVPreferences prefs = this.track.getPreferences();
@@ -658,7 +660,6 @@ public class AlignmentRenderer {
 
         double bpStart = context.getOrigin();
         double bpEnd = Math.ceil(context.getEndLocation());
-
 
         // Draw gaps (deletions and junctions)
         java.util.List<Gap> gaps = alignment.getGaps();
@@ -726,7 +727,7 @@ public class AlignmentRenderer {
             Color c = selectedReadNames.get(alignment.getReadName());
             c = (c == null) ? Color.blue : c;
             outlineGraphics = context.getGraphics2D("THICK_STROKE");
-            g.setColor(c);
+            gAlignment.setColor(c);
         } else if (renderOptions.isFlagUnmappedPairs() && alignment.isPaired() && !alignment.getMate().isMapped()) {
             outlineGraphics = context.getGraphics2D("OUTLINE");
             outlineGraphics.setColor(Color.red);
@@ -750,7 +751,7 @@ public class AlignmentRenderer {
             boolean tallEnoughForArrow = h > 6;
 
             if (h == 1) {
-                g.drawLine(blockPxStart, y, blockPxEnd, y);
+                gAlignment.drawLine(blockPxStart, y, blockPxEnd, y);
             } else {
                 Shape blockShape;
                 int arrowPxWidth = Math.min(Math.min(5, h / 2), blockPxWidth / 6);
@@ -777,6 +778,11 @@ public class AlignmentRenderer {
                                 y + h};
                 blockShape = new Polygon(xPoly, yPoly, xPoly.length);
 
+                Graphics2D g = gAlignment;
+                boolean haveBases = (block.hasBases() && block.getLength() > 0);
+                if(block.isSoftClipped()) g = gSoftClipped;
+                else if(block.getCigarOperator() == 'X') g =  gMismatch ;
+
                 g.fill(blockShape);
                 if (outlineGraphics != null) {
                     outlineGraphics.draw(blockShape);
@@ -790,7 +796,6 @@ public class AlignmentRenderer {
                     clippedGraphics.drawLine(xPoly[3], yPoly[3], xPoly[4], yPoly[4] - 1);
                 }
             }
-
         }
 
 
@@ -843,17 +848,24 @@ public class AlignmentRenderer {
             }
         }
 
-        // Draw basepairs / mismatches.
 
-        /**
-         * Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
-         * that is proportional to the base quality score, or flow signal deviation, whichever is selected.
-         */
+        // Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
+        // that is proportional to the base quality score, or flow signal deviation, whichever is selected.
+
         if (locScale < 100) {
+            ColorOption colorOption = renderOptions.getColorOption();
+            boolean showAllBases = renderOptions.isShowAllBases() &&
+                    !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ); // Disable showAllBases in bisulfite mode
 
-            if (renderOptions.isShowMismatches() || renderOptions.isShowAllBases()) {
+            if (renderOptions.isShowMismatches() || showAllBases) {
+
                 for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
+
                     boolean haveBases = (block.hasBases() && block.getLength() > 0);
+                    if(!haveBases) {
+                        continue;   // nothing to draw
+                    }
+
                     String chr = context.getChr();
                     final int start = block.getStart();
                     final int end = block.getEnd();
@@ -869,24 +881,8 @@ public class AlignmentRenderer {
                     Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     final byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
 
-
-                    ShadeBasesOption shadeBasesOption = renderOptions.getShadeBasesOption();
-                    ColorOption colorOption = renderOptions.getColorOption();
-
-
-                    // Disable showAllBases in bisulfite mode
-                    boolean showAllBases = renderOptions.isShowAllBases() &&
-                            !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ);
-
-                    if (!showAllBases && (!haveBases || reference == null)) {
-                        return;
-                    }
-
-                    byte[] read;
-                    if (haveBases) {
-                        read = block.getBases();
-                    } else {
-                        read = reference;
+                    if(reference == null && !showAllBases) {
+                        continue;   // No reference to compare to.
                     }
 
                     // Compute bounds
@@ -903,10 +899,11 @@ public class AlignmentRenderer {
                         bisinfo = new BisulfiteBaseInfo(reference, alignment, block, renderOptions.bisulfiteContext);
                     }
 
+                    byte[] read = block.getBases();
                     for (int loc = start; loc < end; loc++) {
-                        int idx = loc - start;
 
-                        boolean misMatch = haveBases && AlignmentUtils.isMisMatch(reference, read, isSoftClipped, idx);
+                        int idx = loc - start;
+                        boolean misMatch =  AlignmentUtils.isMisMatch(reference, read, isSoftClipped, idx);
 
                         if (showAllBases || (!bisulfiteMode && misMatch) ||
                                 (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
@@ -922,7 +919,7 @@ public class AlignmentRenderer {
                                 color = Color.black;
                             }
 
-                            if (ShadeBasesOption.QUALITY == shadeBasesOption) {
+                            if (ShadeBasesOption.QUALITY == renderOptions.getShadeBasesOption()) {
                                 byte qual = block.getQuality(loc - start);
                                 color = getShadedColor(qual, color, alignmentColor, prefs);
                             }
@@ -948,7 +945,7 @@ public class AlignmentRenderer {
                                             // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
                                             (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
                             if (showBase) {
-                                drawBase(g, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), bisulfiteMode, bisstatus);
+                                drawBase(gAlignment, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), bisulfiteMode, bisstatus);
                             }
                         }
                     }
