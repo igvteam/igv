@@ -271,7 +271,10 @@ public class AlignmentRenderer {
         g4.setColor(Color.DARK_GRAY);
 
         Graphics2D g5 = context.getGraphics2D("SOFT_CLIP");
-        g5.setColor(Color.DARK_GRAY);
+        g5.setColor(Color.BLACK);
+
+        Graphics2D g6 = context.getGraphics2D("MISMATCH");
+        g6.setColor(Color.RED);
     }
 
     /**
@@ -354,85 +357,18 @@ public class AlignmentRenderer {
         }
     }
 
-
-    public void renderExpandedInsertion(InsertionMarker i,
-                                        List<Alignment> alignments,
-                                        RenderContext context,
-                                        Rectangle rect,
-                                        boolean leaveMargin) {
-
-        double origin = context.getOrigin();
-        double locScale = context.getScale();
-
-        if ((alignments != null) && (alignments.size() > 0)) {
-
-            Graphics2D g = context.getGraphics2D("INSERTIONS");
-            //dhmay adding check for adequate track height
-            double dX = 1 / context.getScale();
-            int fontSize = (int) Math.min(dX, 12);
-            if (fontSize >= 8) {
-                Font f = FontManager.getFont(Font.BOLD, fontSize);
-                g.setFont(f);
-            }
-
-            for (Alignment alignment : alignments) {
-
-                if (alignment.getEnd() < i.position) continue;
-                if (alignment.getStart() > i.position) break;
-
-                AlignmentBlock aBlock = alignment.getInsertionAt(i.position);
-
-                if (aBlock != null) {
-
-                    // Compute the start and dend of the alignment in pixels
-                    double pixelStart = (aBlock.getStart() - origin) / locScale;
-                    double pixelEnd = (aBlock.getEnd() - origin) / locScale;
-                    int x = (int) pixelStart;
-
-                    // If any any part of the feature fits in the track rectangle draw  it
-                    if (pixelEnd < rect.x || pixelStart > rect.getMaxX()) {
-                        continue;
-                    }
-
-                    int bpWidth = aBlock.getBasesLength();
-                    double pxWidthExact = ((double) bpWidth) / locScale;
-                    int h = (int) Math.max(1, rect.getHeight() - 2);
-                    int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - 1;
-
-                    if (!aBlock.hasBases()) {
-                        g.setColor(purple);
-                        g.fillRect(x, y, (int) pxWidthExact, h);
-
-                    } else {
-                        drawExpandedInsertionBases(x, context, rect, aBlock, leaveMargin);
-                    }
-                }
-
-
-            }
-        }
-    }
-
-
     private void drawLinkedAlignment(LinkedAlignment alignment, Rectangle rowRect, RenderContext context,
                                      AlignmentTrack.RenderOptions renderOptions, boolean leaveMargin,
                                      AlignmentCounts alignmentCounts) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
-
         Color alignmentColor = getAlignmentColor(alignment, renderOptions);
-        //   Graphics2D g = context.getGraphics2D("ALIGNMENT");
-        //   g.setColor(alignmentColor);
-
-
         List<Alignment> barcodedAlignments = alignment.alignments;
 
         if (barcodedAlignments.size() > 0) {
-
             boolean mixedStrand = (alignment instanceof LinkedAlignment && alignment.getStrand() == Strand.NONE);
             Alignment firstAlignment = barcodedAlignments.get(0);
-
             if (barcodedAlignments.size() > 1) {
                 Graphics2D gline = context.getGraphics2D("LINK_LINE");
                 gline.setColor(alignmentColor);
@@ -519,13 +455,6 @@ public class AlignmentRenderer {
 
     /**
      * Draw a pair of alignments as a single "template".
-     *
-     * @param pair
-     * @param rowRect
-     * @param context
-     * @param renderOptions
-     * @param leaveMargin
-     * @param alignmentCounts
      */
     private void drawPairedAlignment(
             PairedAlignment pair,
@@ -582,14 +511,6 @@ public class AlignmentRenderer {
      * Draw a (possibly gapped) alignment
      * <p>
      * NOTE: This is a large method, but every attempt to break it up results in methods with very long argument lists.
-     *
-     * @param alignment
-     * @param rowRect
-     * @param context
-     * @param alignmentColor
-     * @param renderOptions
-     * @param leaveMargin
-     * @param alignmentCounts
      */
     private void drawAlignment(
             Alignment alignment,
@@ -604,11 +525,8 @@ public class AlignmentRenderer {
         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
 
         Graphics2D gAlignment = context.getGraphics2D("ALIGNMENT");
-        Graphics2D gSoftClipped = context.getGraphics2D("SOFT_CLIP");
-        Graphics2D gMismatch = context.getGraphics2D("MISMATCH");
         gAlignment.setColor(alignmentColor);
-        gSoftClipped.setColor(Color.RED);
-        gMismatch.setColor(Color.BLACK);
+
 
         // No blocks.  Note: SAM/BAM alignments always have at least 1 block
         if (blocks == null || blocks.length == 0) {
@@ -772,13 +690,9 @@ public class AlignmentRenderer {
                 blockShape = new Polygon(xPoly, yPoly, xPoly.length);
 
                 Graphics2D g = gAlignment;
-                if(block.getCigarOperator() == 'X') {
-                    System.out.println();
-                }
-                boolean haveBases = (block.hasBases() && block.getLength() > 0);
-                if(!haveBases) {
-                    if (block.isSoftClipped()) g = gSoftClipped;
-                    else if (block.getCigarOperator() == 'X') g = gMismatch;
+                if(!block.hasBases()) {
+                    if (block.isSoftClipped()) g = context.getGraphics2D("SOFT_CLIP");
+                    else if (block.getCigarOperator() == 'X') g = context.getGraphics2D("MISMATCH");
                 }
 
                 g.fill(blockShape);
@@ -1124,12 +1038,62 @@ public class AlignmentRenderer {
     }
 
 
+    public void renderExpandedInsertion(InsertionMarker i,
+                                        List<Alignment> alignments,
+                                        RenderContext context,
+                                        Rectangle rect,
+                                        boolean leaveMargin) {
+        double origin = context.getOrigin();
+        double locScale = context.getScale();
+        if ((alignments != null) && (alignments.size() > 0)) {
+
+            Graphics2D g = context.getGraphics2D("INSERTIONS");
+            double dX = 1 / context.getScale();
+            int fontSize = (int) Math.min(dX, 12);
+            if (fontSize >= 8) {
+                Font f = FontManager.getFont(Font.BOLD, fontSize);
+                g.setFont(f);
+            }
+
+            for (Alignment alignment : alignments) {
+                if (alignment.getEnd() < i.position) continue;
+                if (alignment.getStart() > i.position) break;
+                AlignmentBlock insertion = alignment.getInsertionAt(i.position);
+                if (insertion != null) {
+
+                    // Compute the start and dend of the alignment in pixels
+                    double pixelStart = (insertion.getStart() - origin) / locScale;
+                    double pixelEnd = (insertion.getEnd() - origin) / locScale;
+                    int x = (int) pixelStart;
+
+                    // If any any part of the feature fits in the track rectangle draw  it
+                    if (pixelEnd < rect.x || pixelStart > rect.getMaxX()) {
+                        continue;
+                    }
+
+                    int bpWidth = insertion.getBasesLength();
+                    double pxWidthExact = ((double) bpWidth) / locScale;
+                    int h = (int) Math.max(1, rect.getHeight() - 2);
+                    int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - 1;
+
+                    if (!insertion.hasBases()) {
+                        g.setColor(purple);
+                        g.fillRect(x, y, (int) pxWidthExact, h);
+
+                    } else {
+                        drawExpandedInsertionBases(x, context, rect, insertion, leaveMargin);
+                    }
+                }
+            }
+        }
+    }
+
+
     private void drawExpandedInsertionBases(int pixelPosition,
                                             RenderContext context,
                                             Rectangle rect,
                                             AlignmentBlock block,
                                             boolean leaveMargin) {
-
         Graphics2D g = context.getGraphics2D("INSERTIONS");
         byte[] bases = block.getBases();
         int padding = block.getPadding();
@@ -1162,7 +1126,6 @@ public class AlignmentRenderer {
             } else if (pX + dX < rect.getX()) {
                 continue;
             }
-
             drawBase(g, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), false, null);
         }
 
@@ -1419,7 +1382,6 @@ public class AlignmentRenderer {
         }
 
         int dist = Math.abs(alignment.getInferredInsertSize());
-
         if (dist < minThreshold) return -1;
         if (dist > maxThreshold) return +1;
         return 0;
@@ -1436,7 +1398,6 @@ public class AlignmentRenderer {
         if (pair.secondAlignment == null) {
             return DEFAULT_ALIGNMENT_COLOR;
         }
-
         int dist = Math.abs(pair.getInferredInsertSize());
         double logDist = Math.log(dist);
         Color minColor = smallISizeColor;
@@ -1458,7 +1419,6 @@ public class AlignmentRenderer {
         AlignmentTrack.OrientationType type = getOrientationType(alignment, peStats);
         Color c = typeToColorMap.get(type);
         return c == null ? DEFAULT_ALIGNMENT_COLOR : c;
-
     }
 
     static AlignmentTrack.OrientationType getOrientationType(Alignment alignment, PEStats peStats) {
@@ -1484,7 +1444,6 @@ public class AlignmentRenderer {
                         type = f2f1OrientationTypes.get(pairOrientation);
                         break;
                 }
-
             } else {
                 // No peStats for this library, just guess
                 if (alignment.getAttribute("CS") != null) {
