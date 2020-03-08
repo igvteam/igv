@@ -1438,16 +1438,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
 
-        /**
-         * Item for exporting "consensus" sequence of region, based
-         * on loaded alignments.
-         *
-         * @param e
-         */
-        private void addHaplotype(TrackClickEvent e) {
-            //Export consensus sequence
-            JMenuItem item = new JMenuItem("Cluster (phase) alignments");
 
+        private void addHaplotype(TrackClickEvent e) {
+
+            JMenuItem item = new JMenuItem("Cluster (phase) alignments");
 
             final ReferenceFrame frame;
             if (e.getFrame() == null && FrameManager.getFrames().size() == 1) {
@@ -1482,10 +1476,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
                 AlignmentInterval interval = dataManager.getLoadedInterval(frame);
                 HaplotypeUtils haplotypeUtils = new HaplotypeUtils(interval, AlignmentTrack.this.genome);
-                haplotypeUtils.clusterAlignments(frame.getChrName(), start, end, AlignmentTrack.nClusters);
+                boolean success = haplotypeUtils.clusterAlignments(frame.getChrName(), start, end, AlignmentTrack.nClusters);
 
-                AlignmentTrack.this.groupAlignments(GroupOption.HAPLOTYPE, null, null);
-                AlignmentTrack.refresh();
+                if(success) {
+                    AlignmentTrack.this.groupAlignments(GroupOption.HAPLOTYPE, null, null);
+                    AlignmentTrack.refresh();
+                }
 
                 //dataManager.sortRows(SortOption.HAPLOTYPE, frame, (end + start) / 2, null);
                 //AlignmentTrack.refresh();

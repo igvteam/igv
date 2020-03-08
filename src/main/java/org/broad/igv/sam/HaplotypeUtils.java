@@ -1,9 +1,9 @@
 package org.broad.igv.sam;
 
 
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.Pair;
 
 import java.util.*;
 
@@ -16,6 +16,7 @@ import java.util.*;
 
 public class HaplotypeUtils {
 
+    private static Logger log = Logger.getLogger(HaplotypeUtils.class);
 
     private final AlignmentInterval alignmentInterval;
     Genome genome;
@@ -25,104 +26,111 @@ public class HaplotypeUtils {
         this.genome = genome;
     }
 
-    public void clusterAlignments(String chr, int start, int end, int nClasses) {
+    public boolean clusterAlignments(String chr, int start, int end, int nClasses) {
 
 
-        AlignmentCounts counts = this.alignmentInterval.getCounts();
+        try {
+            AlignmentCounts counts = this.alignmentInterval.getCounts();
 
-        final byte[] reference = genome.getSequence(chr, start, end);
+            final byte[] reference = genome.getSequence(chr, start, end);
 
-        // Find snp positions
-        List<Integer> snpPos = findVariantPositions(start, end, counts, reference);
+            // Find snp positions
+            List<Integer> snpPos = findVariantPositions(start, end, counts, reference);
 
-        if(snpPos.size() == 0) {
-            MessageUtils.showMessage("No variants in selected range.");
-            return;
-        }
+            if (snpPos.size() == 0) {
+                MessageUtils.showMessage("No variants in selected range.");
+                return false;
+            }
 
-        if(snpPos.size() < nClasses - 1) {
-            nClasses = snpPos.size() + 1;
-            MessageUtils.showMessage("Not enough variants, reducing # of clusters: " + nClasses);
-        }
+            if (snpPos.size() < nClasses - 1) {
+                nClasses = snpPos.size() + 1;
+                MessageUtils.showMessage("Not enough variants, reducing # of clusters: " + nClasses);
+            }
 
 
-        // Adjust start and end to min and max snp positions, there is no information outside these bounds
-        start = snpPos.get(0) - 1;
-        end = snpPos.get(snpPos.size() - 1) + 1;
+            // Adjust start and end to min and max snp positions, there is no information outside these bounds
+            start = snpPos.get(0) - 1;
+            end = snpPos.get(snpPos.size() - 1) + 1;
 
-        // Label alignments
-        Map<String, List<Alignment>> labelAlignmentMap = labelAlignments(start, end, snpPos, reference, this.alignmentInterval.getAlignmentIterator());
+            // Label alignments
+            Map<String, List<Alignment>> labelAlignmentMap = labelAlignments(start, end, snpPos, reference, this.alignmentInterval.getAlignmentIterator());
+            List<String> labels = new ArrayList(labelAlignmentMap.keySet());
+            if (labels.size() < nClasses) {
+                MessageUtils.showMessage("Not enough features to create " + nClasses + " classes. Max # of classes = " + labels.size());
+                return false;
+            }
 
-        // Sort labels (entries) by # of associated alignments
-        List<String> labels = new ArrayList(labelAlignmentMap.keySet());
-        labels.sort((o1, o2) -> {
-            return labelAlignmentMap.get(o2).size() - labelAlignmentMap.get(o1).size();
-        });
+            // Sort labels (entries) by # of associated alignments
+            labels.sort((o1, o2) -> {
+                return labelAlignmentMap.get(o2).size() - labelAlignmentMap.get(o1).size();
+            });
 
-        // Create initial cluster centroids
-        List<V> clusters = new ArrayList<>();
-        for (int i = 0; i < nClasses; i++) {
-            String label = labels.get(i);
-            V v = new V(i + 1, label);
-            clusters.add(v);
-        }
+            // Create initial cluster centroids
+            List<V> clusters = new ArrayList<>();
+            for (int i = 0; i < nClasses; i++) {
+                String label = labels.get(i);
+                V v = new V(i + 1, label);
+                clusters.add(v);
+            }
 
-        // Now assign all labels to a cluster
+            // Now assign all labels to a cluster
 
-        int n = 0;
-        int max = 50;
-        while (true) {
-            for (String label : labels) {
+            int n = 0;
+            int max = 50;
+            while (true) {
+                for (String label : labels) {
 
-                double min = Double.MAX_VALUE;
-                V centroid = null;
+                    double min = Double.MAX_VALUE;
+                    V centroid = null;
 
-                for (V c : clusters) {
-                    double dist = c.distance(label);
-                    if (dist < min) {
-                        centroid = c;
-                        min = dist;
+                    for (V c : clusters) {
+                        double dist = c.distance(label);
+                        if (dist < min) {
+                            centroid = c;
+                            min = dist;
+                        }
+                    }
+
+                    if (centroid != null) {
+                        centroid.add(label);
                     }
                 }
 
-                if (centroid != null) {
-                    centroid.add(label);
+                boolean movement = false;
+                for (V c : clusters) {
+                    if (c.movement()) {
+                        movement = true;
+                        break;
+                    }
                 }
-            }
 
-            boolean movement = false;
-            for (V c : clusters) {
-                if (c.movement()) {
-                    movement = true;
+                if (movement && n++ < max) {
+                    for (V c : clusters) {
+                        c.reset();
+                    }
+                } else {
                     break;
                 }
             }
 
-            if (movement && n++ < max) {
-                for (V c : clusters) {
-                    c.reset();
-                }
-            } else {
-                break;
-            }
-        }
+            // Now label alignments by cluster
+            for (int i = 0; i < clusters.size(); i++) {
+                V c = clusters.get(i);
+                String label = "" + c.id;
+                for (String l : c.allLabels) {
 
-        System.out.println("Converged in: " + n);
-
-        // Now label alignments
-        for (int i = 0; i < clusters.size(); i++) {
-
-            V c = clusters.get(i);
-            String label = "" + c.id;
-            for (String l : c.allLabels) {
-
-                List<Alignment> alignments = labelAlignmentMap.get(l);
-                for (Alignment a : alignments) {
-                    a.setHaplotypeName(label);
+                    List<Alignment> alignments = labelAlignmentMap.get(l);
+                    for (Alignment a : alignments) {
+                        a.setHaplotypeName(label);
+                    }
                 }
             }
+            return true;
+        } catch (Exception e) {
+            log.error("Error clustering alignments", e);
+            MessageUtils.showMessage("Error clustering alignments: " + e.getMessage());
+            return false;
         }
-
     }
 
     private List<Integer> findVariantPositions(int start, int end, AlignmentCounts counts, byte[] reference) {
@@ -142,35 +150,31 @@ public class HaplotypeUtils {
         return snpPos;
     }
 
+    /**
+     * Label the alignments by the base value at each snp position over the region defined by [start, end].
+     *
+     * @param start
+     * @param end
+     * @param positions
+     * @param reference
+     * @param iter
+     * @return a map of label -> alignment.
+     */
     public Map<String, List<Alignment>> labelAlignments(int start, int end, List<Integer> positions, byte[] reference, Iterator<Alignment> iter) {
 
         Map<String, List<Alignment>> alignmentMap = new HashMap<>();
-
         while (iter.hasNext()) {
-
             Alignment alignment = iter.next();
-
             if (start >= alignment.getStart() && end <= alignment.getEnd()) {
-
                 String hapName = "";
-                int dist = 0;
-
                 for (Integer pos : positions) {
-
-                    byte ref = reference[pos - start];
                     boolean found = false;
                     for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-
                         if (block.isSoftClipped()) continue;
                         if (block.contains(pos)) {
                             int blockOffset = pos - block.getStart();
                             hapName += (char) block.getBase(blockOffset);
                             found = true;
-
-                            if (ref != block.getBase(blockOffset)) {
-                                dist++;
-                            }
-
                             break;
                         }
                     }
@@ -190,7 +194,6 @@ public class HaplotypeUtils {
 
             }
         }
-
         return alignmentMap;
     }
 
