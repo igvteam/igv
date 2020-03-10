@@ -36,7 +36,6 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
-import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
@@ -831,7 +830,7 @@ public class AlignmentRenderer {
                                 color = Color.black;
                             }
 
-                            if (ShadeBasesOption.QUALITY == renderOptions.getShadeBasesOption()) {
+                            if (renderOptions.getShadeBasesOption()) {
                                 byte qual = block.getQuality(loc - start);
                                 color = getShadedColor(qual, color, alignmentColor, prefs);
                             }
