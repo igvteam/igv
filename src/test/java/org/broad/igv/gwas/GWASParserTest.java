@@ -31,12 +31,10 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.igv.util.collections.DoubleArrayList;
-import org.broad.igv.util.collections.IntArrayList;
 import org.junit.Test;
 
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.*;
 
@@ -49,12 +47,10 @@ public class GWASParserTest extends AbstractHeadlessTest {
     @Test
     public void testParse_underflows() throws Exception {
         GWASParser parser = new GWASParser(new ResourceLocator(TestUtils.DATA_DIR + "gwas/smallp.gwas"), genome);
-        GWASData data = parser.parse();
-        LinkedHashMap<String, DoubleArrayList> values = data.getValues();
-        for (String chr : values.keySet()) {
-            DoubleArrayList floats = values.get(chr);
-            for (int ff = 0; ff < floats.size(); ff++) {
-                double val = floats.get(ff);
+        Map<String, List<GWASFeature>> data = parser.parse();
+        for (List<GWASFeature> features : data.values()) {
+            for (GWASFeature f : features) {
+                double val = f.value;
                 assertFalse("Value is infinite", Double.isInfinite(val));
                 assertFalse("Value isNan", Double.isNaN(val));
                 assertFalse("Value is 0", val == 0.0f);
@@ -65,14 +61,13 @@ public class GWASParserTest extends AbstractHeadlessTest {
     @Test
     public void testParseStarts() throws Exception {
         GWASParser parser = new GWASParser(new ResourceLocator(TestUtils.DATA_DIR + "gwas/smallp.gwas"), genome);
-        GWASData data = parser.parse();
-        IntArrayList startLocs = data.getLocations().get("chr6");
+        Map<String, List<GWASFeature>> data = parser.parse();
+        List<GWASFeature> features = data.get("chr6");
 
-        int[] expStarts = {29622220,29623739,29623739};
-        for(int ii=0; ii < expStarts.length; ii++){
-            assertEquals(expStarts[ii], startLocs.get(ii));
+        int[] expStarts = {29622220, 29623739, 29623739};
+        for (int ii = 0; ii < expStarts.length; ii++) {
+            assertEquals(expStarts[ii], features.get(ii).position);
         }
-
     }
 
     @Test
@@ -83,17 +78,11 @@ public class GWASParserTest extends AbstractHeadlessTest {
         }
     }
 
-    @Test
-    public void testUnsorted() throws Exception{
-        String path = "random.gwas";
-        tstParseBad(path);
-    }
-
     public void tstParseBad(String finame) throws Exception {
         GWASParser parser = new GWASParser(new ResourceLocator(TestUtils.DATA_DIR + "gwas/" + finame), genome);
         boolean excepted = false;
         try {
-            GWASData data = parser.parse();
+            Map<String, List<GWASFeature>> data = parser.parse();
         } catch (ParserException e) {
             excepted = true;
         }
@@ -102,7 +91,7 @@ public class GWASParserTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testLoadGWAS() throws Exception{
+    public void testLoadGWAS() throws Exception {
         ResourceLocator locator = new ResourceLocator(TestUtils.DATA_DIR + "gwas/smallp.gwas");
         List<Track> tracks = (new TrackLoader()).load(locator, genome);
         GWASTrack track = (GWASTrack) tracks.get(0);
@@ -111,8 +100,8 @@ public class GWASParserTest extends AbstractHeadlessTest {
         String[] lines = desc.split("<br>");
         String[] expTokens = new String[]{"rs29228", "6", "29623739", "0.931148124684"};
         int offset = 3;
-        for(int tn=0; tn < expTokens.length; tn++){
-            String token = lines[tn+offset];
+        for (int tn = 0; tn < expTokens.length; tn++) {
+            String token = lines[tn + offset];
             String[] areas = token.split("\\s");
             String value = areas[1];
             assertEquals("Value for field " + areas[0] + " not equal", expTokens[tn], value);

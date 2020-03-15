@@ -26,7 +26,7 @@
 package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.ChromosomeCoordinate;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
@@ -34,8 +34,6 @@ import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.session.IGVSessionReader;
-
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -45,8 +43,6 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ChromosomeColors;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.collections.DoubleArrayList;
-import org.broad.igv.util.collections.IntArrayList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -54,10 +50,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author jussi
@@ -68,7 +64,6 @@ public class GWASTrack extends AbstractTrack {
     private static final Logger log = Logger.getLogger(GWASTrack.class);
     private static final int AXIS_AREA_WIDTH = 60;
     private static final DecimalFormat formatter = new DecimalFormat();
-
 
     private int minPointSize;
     private int maxPointSize;
@@ -82,9 +77,11 @@ public class GWASTrack extends AbstractTrack {
     private double scale;
     private boolean drawYAxis = true;
     private boolean showAxis = true;
+    double maxValue = -1;
 
-    private GWASParser parser;
-    private GWASData gData;
+    private Map<String, List<GWASFeature>> gData;
+    Genome genome;
+    private String[] columns;
 
     /**
      * Constructor for a new GWAS track
@@ -93,40 +90,47 @@ public class GWASTrack extends AbstractTrack {
      * @param id
      * @param name
      * @param gData
-     * @param parser
      */
-    public GWASTrack(ResourceLocator locator, String id, String name, GWASData gData, GWASParser parser) {
-
-
+    public GWASTrack(ResourceLocator locator,
+                     String id,
+                     String name,
+                     Map<String, List<GWASFeature>> gData,
+                     String[] columns,
+                     Genome genome) {
         super(locator, id, name);
+
+        this.genome = genome;
 
         IGVPreferences prefs = PreferencesManager.getPreferences();
 
         // Set range from 0 to highest value rounded to greater integer
-        int maxValue = (int) Math.ceil(gData.getMaxValue());
-        super.setDataRange(new DataRange(0, (maxValue / 2), maxValue));
-
+        setMaxValue(gData);
+        int mv = (int) Math.ceil(maxValue);
+        super.setDataRange(new DataRange(0, (mv / 2), mv));
 
         // Get default values
         super.setHeight(prefs.getAsInt(Constants.GWAS_TRACK_HEIGHT));
-
         this.minPointSize = prefs.getAsInt(Constants.GWAS_MIN_POINT_SIZE);
         this.maxPointSize = prefs.getAsInt(Constants.GWAS_MAX_POINT_SIZE);
-
         this.primaryColor = ColorUtilities.stringToColor(prefs.get(Constants.GWAS_PRIMARY_COLOR));
         this.secondaryColor = ColorUtilities.stringToColor(prefs.get(Constants.GWAS_SECONDARY_COLOR));
         this.singleColor = prefs.getAsBoolean(Constants.GWAS_SINGLE_COLOR);
         this.alternatingColors = prefs.getAsBoolean(Constants.GWAS_ALTERNATING_COLORS);
         this.useChrColors = prefs.getAsBoolean(Constants.GWAS_USE_CHR_COLORS);
         this.showAxis = prefs.getAsBoolean(Constants.GWAS_SHOW_AXIS);
-
         this.gData = gData;
-        this.parser = parser;
-
-
+        this.columns = columns;
     }
 
     public GWASTrack() {
+    }
+
+    private void setMaxValue(Map<String, List<GWASFeature>> gData) {
+        for (List<GWASFeature> features : gData.values()) {
+            for (GWASFeature f : features) {
+                if (f.value > maxValue) maxValue = f.value;
+            }
+        }
     }
 
     @Override
@@ -172,65 +176,53 @@ public class GWASTrack extends AbstractTrack {
 
         //int lastPx = 0;
         String chrName = context.getChr();
-        ArrayList<String> chrList = new ArrayList();
+        List<String> chrList;
         if (chrName.equals("All")) {
-            for (String key : gData.getLocations().keySet()) {
-                chrList.add(key);
-            }
-
+            chrList = genome.getLongChromosomeNames();
         } else {
-            chrList.add(chrName);
-
+            chrList = Arrays.asList(chrName);
         }
         double dx = Math.ceil(1 / locScale) + 1;
-        double rangeMaxValue = Math.ceil(gData.getMaxValue());
+        double rangeMaxValue = Math.ceil(maxValue);
 
         double pointSizeScale = rangeMaxValue / maxPointSize;
 
         Color drawColor = this.primaryColor;
-        Object[] chrs = this.gData.getLocations().keySet().toArray();
 
         int xMinPointSize = (int) (1 / locScale);
 
         // Loop through data points, chromosome by chromosome
 
+        int chrCounter = 0;
         for (String chr : chrList) {
-            if (this.gData.getLocations().containsKey(chr) && this.gData.getValues().containsKey(chr)) {
 
+            List<GWASFeature> featureList = gData.get(chr);
+
+            if (featureList != null) {
 
                 // Choose a color for the chromosome
-
                 // Use specific color for each chromosome
                 if (this.useChrColors)
                     drawColor = ChromosomeColors.getColor(chr);
 
                     // Use two alternating colors for chromosomes
                 else if (this.alternatingColors) {
-                    int chrCounter = 0;
-                    while (chrCounter < chrs.length && !chrs[chrCounter].toString().equals(chr))
-                        chrCounter++;
-
                     if (chrCounter % 2 == 0)
                         drawColor = this.secondaryColor;
                     else
                         drawColor = this.primaryColor;
-
                 }
 
-                IntArrayList locations = this.gData.getLocations().get(chr);
-                DoubleArrayList values = this.gData.getValues().get(chr);
-
-                int size = locations.size();
-
                 // Loop through data points in a chromosome
-                for (int j = 0; j < size; j++) {
+                Graphics2D g = context.getGraphics();
+                for (GWASFeature feature : featureList) {
 
                     // Get location, e.g. start for the data point
                     int start;
-                    if (chrName.equals("All"))
-                        start = genome.getGenomeCoordinate(chr, locations.get(j));
+                    if (chrName.equalsIgnoreCase("all"))
+                        start = genome.getGenomeCoordinate(feature.chr, feature.position);
                     else
-                        start = locations.get(j);
+                        start = feature.position;
 
                     // Based on location, calculate X-coordinate, or break if outside of the view
                     double pX = ((start - origin) / locScale);
@@ -240,7 +232,7 @@ public class GWASTrack extends AbstractTrack {
                         break;
 
                     // Based on value of the data point, calculate Y-coordinate
-                    double dataY = values.get(j);
+                    double dataY = feature.value;
 
                     if (!Double.isNaN(dataY)) {
 
@@ -274,32 +266,15 @@ public class GWASTrack extends AbstractTrack {
                         if (maxDrawY > adjustedRectMaxY)
                             maxDrawY = (int) adjustedRectMaxY;
 
-                        // Loop through all the pixels of the data point and fill in drawing buffer
-                        for (int drawX = x; drawX < maxDrawX; drawX++)
-                            for (int drawY = y; drawY < maxDrawY; drawY++)
-                                drawBuffer[drawX][drawY] = drawColor;
+                        g.setColor(drawColor);
+                        g.fillRect(x, y, maxDrawX - x, maxDrawY - y);
+                        feature.pixelX = (x + maxDrawX) / 2;
+                        feature.pixelY = (y + maxDrawY) / 2;
                     }
                 }
             }
+            chrCounter++;
         }
-
-        // Draw the pixels from the drawing buffer to the canvas
-
-        Graphics2D g = context.getGraphics();
-        Color color;
-        Color prevColor = null;
-
-        for (int x = 0; x < bufferX; x++)
-            for (int y = 0; y < bufferY; y++) {
-                color = drawBuffer[x][y];
-                if (color != null) {
-                    if (!color.equals(prevColor)) {
-                        g.setColor(color);
-                        prevColor = color;
-                    }
-                    g.fillRect(x, y, 1, 1);
-                }
-            }
 
         // Draw the legend axis
         if (showAxis) {
@@ -378,10 +353,8 @@ public class GWASTrack extends AbstractTrack {
     }
 
     int computeYPixelValue(Rectangle drawingRect, DataRange axisDefinition, double dataY) {
-
         double maxValue = axisDefinition.getMaximum();
         double minValue = axisDefinition.getMinimum();
-
         double yScaleFactor = drawingRect.getHeight() / (maxValue - minValue);
 
         // Compute the pixel y location.  Clip to bounds of rectangle.
@@ -394,122 +367,85 @@ public class GWASTrack extends AbstractTrack {
 
 
     Rectangle calculateDrawingRect(Rectangle arect) {
-
         double buffer = Math.min(arect.getHeight() * 0.2, 10);
         Rectangle adjustedRect = new Rectangle(arect);
         adjustedRect.y = (int) (arect.getY() + buffer);
         adjustedRect.height = (int) (arect.height - (adjustedRect.y - arect.getY()));
-
-
         return adjustedRect;
     }
 
-
     /**
      * Find index of data point closest to given chromosomal location and y-coordinate
-     *
-     * @param chr
-     * @param y
-     * @param location
-     * @param maxDistance
-     * @return
      */
-    int findIndex(String chr, int y, int location, int maxDistance) {
-
-
-        // Calculate offset from track location by other tracks
-        y = y - (int) this.trackMinY;
-        double tmpMaxY = this.maxY - this.trackMinY;
-
-        // Estimate values near y coordinate
-        double valueEstimate = (1 - y / tmpMaxY) * this.getDataRange().getMaximum();
-        // Percentage threshold for searching values on y-axis
-        double threshold = 0.1;
-
-        // Based on threshold, set max and min y values to search for values
-        double topValue = valueEstimate + threshold * this.getDataRange().getMaximum();
-        double bottomValue = valueEstimate - threshold * this.getDataRange().getMaximum();
-
-        if (bottomValue < 0)
-            bottomValue = 0;
-
-
-        // Find data point based on the given coordinates and search parameters
-        return this.gData.getNearestIndexByLocation(chr, location, bottomValue, topValue, maxDistance);
-
+    GWASFeature findFeature(String chr, int mouseX, int mouseY) {
+        final int pixelThreshold = 3;
+        List<GWASFeature> featureList;
+        if ("all".equalsIgnoreCase(chr)) {
+            featureList = new ArrayList<>();
+            for (List<GWASFeature> chrFeatures : this.gData.values()) {
+                for (GWASFeature f : chrFeatures) {
+                    if (Math.abs(mouseX - f.pixelX) <= pixelThreshold && Math.abs(mouseY - f.pixelY) <= pixelThreshold) {
+                        featureList.add(f);
+                    }
+                }
+            }
+        } else {
+            featureList = this.gData.get(chr);
+        }
+        if (featureList == null) {
+            return null;
+        } else {
+            List<GWASFeature> closeFeatures = featureList.stream()
+                    .filter(f -> Math.abs(mouseX - f.pixelX) <= pixelThreshold && Math.abs(mouseY - f.pixelY) <= pixelThreshold)
+                    .collect(Collectors.toList());
+            if (closeFeatures.isEmpty()) {
+                return null;
+            } else {
+                closeFeatures.sort((o1, o2) -> {
+                    double d1 = Math.sqrt((mouseX - o1.pixelX) * (mouseX - o1.pixelX) + (mouseY - o1.pixelY) * (mouseY - o1.pixelY));
+                    double d2 = Math.sqrt((mouseX - o2.pixelX) * (mouseX - o2.pixelX) + (mouseY - o2.pixelY) * (mouseY - o2.pixelY));
+                    if (d1 == d2) return 0;
+                    else if (d1 > d2) return 1;
+                    else return -1;
+                });
+                return closeFeatures.get(0);
+            }
+        }
     }
 
     /**
      * Get description for a data point at given chromosome and index. If description is not cached, re-populate cache.
-     *
-     * @param chr
-     * @param index
-     * @return
      */
 
-    String getDescription(String chr, int index) {
+    public String getDescriptionString(GWASFeature feature) {
 
-        String textValue = "";
+        String description = feature.line;
+        String descriptionString = null;
 
-        double value = this.gData.getValues().get(chr).get(index);
-        int hitLocation = this.gData.getLocations().get(chr).get(index);
-        int rowIndex = gData.getCumulativeChrLocation(chr) + index;
+        if (description != null) {
+            descriptionString = "";
+            int headersSize = this.columns.length;
+            String[] tokens = Globals.singleTabMultiSpacePattern.split(description);
 
-        textValue += chr + ": " + hitLocation + "<br>";
-        textValue += "Value: " + value + "<br>";
-        textValue += "-----<br>";
-
-        try {
-
-            // Look for data point description from cache
-            //String tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation);
-            String tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation, value);
-
-
-            // If no description found, populate cache with the description
-            if (tmpDescription == null) {
-                // Calculate starting row based on the cache size, i.e. cache descriptions before and after estimated hit location
-                int tmpRow = rowIndex - (gData.getDescriptionCache().getMaxSize() / 2);
-                if (tmpRow < 0)
-                    tmpRow = 0;
-
-                this.gData = parser.parseDescriptions(gData, chr, hitLocation, tmpRow);
-                tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation, value);
-
+            for (int i = 0; i < headersSize; i++) {
+                String tmpHeaderToken = this.columns[i];
+                if (tmpHeaderToken != null)
+                    descriptionString += tmpHeaderToken + ": " + tokens[i] + "<br>";
             }
 
-            // Add fetched description
-            textValue += tmpDescription;
-
-
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
         }
-        return textValue;
+        return descriptionString;
 
     }
 
 
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
-        int location = (int) position;
 
-        // Set maximum search distance to be the amount of nucleotides corresponding to 2 pixels on the screen
-        int maxDistance = (int) (this.scale) * 2;
-
-        // Convert from All view chr coordinates
-        if (chr.equals("All")) {
-
-            ChromosomeCoordinate chrCoordinate = GenomeManager.getInstance().getCurrentGenome().getChromosomeCoordinate(location);
-            chr = chrCoordinate.getChr();
-            location = chrCoordinate.getCoordinate();
-            maxDistance = maxDistance * 1000;
-        }
-
-        int index = findIndex(chr, mouseY, location, maxDistance);
+        GWASFeature feature = findFeature(chr, mouseX, mouseY);
 
         // If there is a data point at the given location, fetch description
-        return index >= 0 ? getDescription(chr, index) : null;
+        return feature != null ? getDescriptionString(feature) : null;
 
     }
 
