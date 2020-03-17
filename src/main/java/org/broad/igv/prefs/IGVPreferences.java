@@ -531,7 +531,6 @@ public class IGVPreferences {
 
 
     public String getRecentSessions() {
-
         return get(RECENT_SESSIONS, null);
     }
 
