@@ -1166,9 +1166,7 @@ public class IGV implements IGVEventObserver {
         }
 
 
-        mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
         System.gc();
-
 
         double[] dividerFractions = session.getDividerFractions();
         if (dividerFractions != null) {
@@ -1180,9 +1178,14 @@ public class IGV implements IGVEventObserver {
         //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
         RegionNavigatorDialog.destroyInstance();
 
-        if (!getRecentSessionList().contains(sessionPath)) {
-            getRecentSessionList().addFirst(sessionPath);
+        if(sessionPath != null) {
+            mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+            if (!getRecentSessionList().contains(sessionPath)) {
+                getRecentSessionList().addFirst(sessionPath);
+            }
+            this.menuBar.enableReloadSession();
         }
+        
         doRefresh();
         return true;
     }
