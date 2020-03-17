@@ -89,22 +89,4 @@ public class GWASParserTest extends AbstractHeadlessTest {
         assertTrue(excepted);
 
     }
-
-    @Test
-    public void testLoadGWAS() throws Exception {
-        ResourceLocator locator = new ResourceLocator(TestUtils.DATA_DIR + "gwas/smallp.gwas");
-        List<Track> tracks = (new TrackLoader()).load(locator, genome);
-        GWASTrack track = (GWASTrack) tracks.get(0);
-        String desc = track.getDescription("chr6", 1);
-
-        String[] lines = desc.split("<br>");
-        String[] expTokens = new String[]{"rs29228", "6", "29623739", "0.931148124684"};
-        int offset = 3;
-        for (int tn = 0; tn < expTokens.length; tn++) {
-            String token = lines[tn + offset];
-            String[] areas = token.split("\\s");
-            String value = areas[1];
-            assertEquals("Value for field " + areas[0] + " not equal", expTokens[tn], value);
-        }
-    }
 }
