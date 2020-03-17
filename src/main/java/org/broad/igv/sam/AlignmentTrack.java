@@ -2820,12 +2820,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             DefaultValues(IGVPreferences prefs) {
 
                 String shadeOptionString = prefs.get(SAM_SHADE_BASES);
-                if (shadeOptionString.equals("false")) {
+                if (shadeOptionString.toLowerCase().equals("false")) {
                     shadeBasesOption = AlignmentTrack.ShadeBasesOption.NONE;
-                } else if (shadeOptionString.equals("true")) {
-                    shadeBasesOption = AlignmentTrack.ShadeBasesOption.QUALITY;
                 } else {
-                    shadeBasesOption = AlignmentTrack.ShadeBasesOption.valueOf(shadeOptionString);
+                    shadeBasesOption = AlignmentTrack.ShadeBasesOption.QUALITY;
                 }
                 shadeCenters = prefs.getAsBoolean(SAM_SHADE_CENTER);
                 flagUnmappedPairs = prefs.getAsBoolean(SAM_FLAG_UNMAPPED_PAIR);
