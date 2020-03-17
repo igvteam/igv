@@ -191,15 +191,10 @@ public class PreferencesManager implements IGVEventObserver {
                         prefs = Collections.synchronizedMap(new HashMap<>());
                         prefMap.put(category, prefs);
                     }
-
                     int idx = nextLine.indexOf('=');
                     if (idx > 0) {
-                        String key = nextLine.substring(0, idx);
-                        if (aliasTable.containsKey(key)) {
-                            key = aliasTable.get(key);
-                        }
-                        String value = nextLine.substring(idx + 1);
-                        prefs.put(key, value);
+                        KeyValue kv = translate(nextLine.substring(0, idx), nextLine.substring(idx + 1));
+                        prefs.put(kv.key, kv.value);
                     }
                 }
             }
@@ -217,6 +212,27 @@ public class PreferencesManager implements IGVEventObserver {
         return prefMap;
     }
 
+
+
+    /**
+     * Update legacy preference key/value
+     * @param key
+     * @param value
+     * @return
+     */
+    private static KeyValue translate(String key, String value) {
+        if (aliasTable.containsKey(key)) {
+            key = aliasTable.get(key);
+        }
+        else if (key.equals(SAM_SHADE_BASES)) {
+            boolean b = value.equalsIgnoreCase("quality") || value.equalsIgnoreCase("true");
+            value = String.valueOf(b);
+        }
+        return new KeyValue(key, value);
+    }
+
+
+
     public static List<PreferenceGroup> loadPreferenceList() throws IOException {
 
         List<PreferenceGroup> groupList = new ArrayList<>();
@@ -228,7 +244,7 @@ public class PreferencesManager implements IGVEventObserver {
         String group = null;
 
         try {
-            reader = new BufferedReader(new InputStreamReader(PreferenceEditorNew.class.getResourceAsStream("/org/broad/igv/prefs/preferences.tab")));
+            reader = new BufferedReader(new InputStreamReader(PreferencesEditor.class.getResourceAsStream("/org/broad/igv/prefs/preferences.tab")));
             while ((nextLine = reader.readLine()) != null) {
                 nextLine = nextLine.trim();
 
@@ -303,7 +319,7 @@ public class PreferencesManager implements IGVEventObserver {
         BufferedReader reader = null;
         String nextLine;
         try {
-            reader = new BufferedReader(new InputStreamReader(PreferenceEditorNew.class.getResourceAsStream("/org/broad/igv/prefs/defaults_2.3.tab")));
+            reader = new BufferedReader(new InputStreamReader(PreferencesEditor.class.getResourceAsStream("/org/broad/igv/prefs/defaults_2.3.tab")));
             while ((nextLine = reader.readLine()) != null) {
                 String[] tokens = Globals.tabPattern.split(nextLine);
                 if (tokens.length == 2) {
@@ -375,6 +391,15 @@ public class PreferencesManager implements IGVEventObserver {
         }
     }
 
+    static class KeyValue {
+        String key;
+        String value;
+
+        public KeyValue(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
 
     static class Preference {
 

@@ -51,7 +51,7 @@ import org.broad.igv.feature.genome.*;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.IGVPreferences;
-import org.broad.igv.prefs.PreferenceEditorNew;
+import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionSelectionEvent;
@@ -598,7 +598,7 @@ public class IGV implements IGVEventObserver {
 
     final public void doViewPreferences() {
         try {
-            PreferenceEditorNew.open(this.mainFrame);
+            PreferencesEditor.open(this.mainFrame);
         } catch (Exception e) {
             log.error("Error openining preference dialog", e);
         }
@@ -1149,8 +1149,8 @@ public class IGV implements IGVEventObserver {
     }
 
     public boolean restoreSessionFromStream(String sessionPath, String locus, InputStream inputStream) throws IOException {
-        boolean isUCSC = sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt");
-        boolean isIndexAware = sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt");
+        boolean isUCSC = sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"));
+        boolean isIndexAware = sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"));
         final SessionReader sessionReader = isUCSC ?
                 new UCSCSessionReader(this) :
                 (isIndexAware ? new IndexAwareSessionReader(this) : new IGVSessionReader(this));
