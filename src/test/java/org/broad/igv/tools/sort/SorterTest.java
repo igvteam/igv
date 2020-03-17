@@ -82,12 +82,6 @@ public class SorterTest extends AbstractHeadlessTest {
         testSort(path, 1, 2, 10, 1000, 1);
     }
 
-    @Test
-    public void testSortGWAS() throws Exception{
-        String path = TestUtils.DATA_DIR + "gwas/random.gwas";
-        testSort(path, 0, 1, 10, 100, 1);
-    }
-
     public void testSort(String infile, int chrCol, int startCol) throws IOException {
         testSort(infile, chrCol, startCol, 10, null, 0);
     }
