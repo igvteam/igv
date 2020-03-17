@@ -105,9 +105,12 @@ SAM.FILTER_FAILED_READS	Filter vendor failed reads	boolean	TRUE
 SAM.FILTER_SECONDARY_ALIGNMENTS	Filter secondary alignments	boolean	FALSE
 SAM.FILTER_SUPPLEMENTARY_ALIGNMENTS	Filter supplementary alignments	boolean	FALSE
 SAM.FLAG_UNMAPPED_PAIR	Flag unmapped pairs	boolean	FALSE
-SAM.SHOW_SOFT_CLIPPED	Show soft-clipped bases	boolean	FALSE
+
 SAM.SHOW_CENTER_LINE	Show center line	boolean	FALSE
 SAM.HIDDEN_TAGS	Hidden SAM tags	string	SA,MD,XA,RG
+---
+SAM.SHOW_SOFT_CLIPPED	Show soft-clipped bases	boolean	FALSE
+SAM.MAX_SOFT_CLIP	Maximum soft clip size (reference sequence is extended by this amount)	integer	1000
 ---
 SAM.FILTER_ALIGNMENTS	Filter alignments by read group	boolean	FALSE
 SAM.FILTER_URL	URL or path to read group filter file	string	null
