@@ -89,55 +89,6 @@ import static org.broad.igv.prefs.Constants.*;
 
 public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(AlignmentTrack.class);
-
-    private static final int GROUP_LABEL_HEIGHT = 10;
-
-    private static final int GROUP_MARGIN = 5;
-    private static final int TOP_MARGIN = 20;
-    private static final int DS_MARGIN_0 = 2;
-    private static final int DOWNAMPLED_ROW_HEIGHT = 3;
-    private static final int INSERTION_ROW_HEIGHT = 9;
-    private static final int DS_MARGIN_2 = 5;
-    private final Genome genome;
-
-    private ExperimentType experimentType;
-
-    private final AlignmentRenderer renderer;
-
-    private boolean removed = false;
-    private RenderRollback renderRollback;
-    private boolean showGroupLine;
-    private Map<ReferenceFrame, List<InsertionInterval>> insertionIntervalsMap;
-
-    private SequenceTrack sequenceTrack;
-    private CoverageTrack coverageTrack;
-    private SpliceJunctionTrack spliceJunctionTrack;
-
-    RenderOptions renderOptions;
-
-    private int expandedHeight = 14;
-    private final int collapsedHeight = 9;
-    private final int maxSquishedHeight = 5;
-    private int squishedHeight = maxSquishedHeight;
-
-    private final int minHeight = 50;
-    private AlignmentDataManager dataManager;
-    private Rectangle alignmentsRect;
-    private Rectangle downsampleRect;
-    private Rectangle insertionRect;
-    private ColorTable readNamePalette;
-
-    // Dynamic fields
-    // The "DataPanel" containing the track.  This field might be null at any given time.  It is updated each repaint.
-    private JComponent dataPanel;
-    protected final HashMap<String, Color> selectedReadNames = new HashMap<>();
-    private final HashMap<Rectangle, String> groupNames = new HashMap<>();
-
-    public enum ShadeBasesOption {
-        NONE, QUALITY
-    }
-
     enum ColorOption {
         INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, LIBRARY, MOVIE, ZMW,
         BISULFITE, NOMESEQ, TAG, NONE, UNEXPECTED_PAIR, MAPPED_SIZE, LINK_STRAND, YC_TAG
@@ -160,6 +111,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     enum OrientationType {
         RR, LL, RL, LR, UNKNOWN
     }
+
+    private static Logger log = Logger.getLogger(AlignmentTrack.class);
+    private static final int GROUP_LABEL_HEIGHT = 10;
+    private static final int GROUP_MARGIN = 5;
+    private static final int TOP_MARGIN = 20;
+    private static final int DS_MARGIN_0 = 2;
+    private static final int DOWNAMPLED_ROW_HEIGHT = 3;
+    private static final int INSERTION_ROW_HEIGHT = 9;
+    private static final int DS_MARGIN_2 = 5;
+    private static int nClusters = 2;
 
     private static final Map<BisulfiteContext, String> bisulfiteContextToPubString = new HashMap<>();
 
@@ -184,7 +145,60 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<>(new byte[]{'W'}, new byte[]{'G'}));
     }
 
-    static final BisulfiteContext DEFAULT_BISULFITE_CONTEXT = BisulfiteContext.CG;
+    private static void refresh() {
+        IGV.getInstance().getContentPane().getMainPanel().invalidate();
+        IGV.getInstance().revalidateTrackPanels();
+    }
+
+    public static boolean isBisulfiteColorType(ColorOption o) {
+        return (o.equals(ColorOption.BISULFITE) || o.equals(ColorOption.NOMESEQ));
+    }
+
+    private static String getBisulfiteContextPubStr(BisulfiteContext item) {
+        return bisulfiteContextToPubString.get(item);
+    }
+
+    public static byte[] getBisulfiteContextPreContext(BisulfiteContext item) {
+        Pair<byte[], byte[]> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
+        return pair.getFirst();
+    }
+
+    public static byte[] getBisulfiteContextPostContext(BisulfiteContext item) {
+        Pair<byte[], byte[]> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
+        return pair.getSecond();
+    }
+
+
+    private AlignmentDataManager dataManager;
+    private SequenceTrack sequenceTrack;
+    private CoverageTrack coverageTrack;
+    private SpliceJunctionTrack spliceJunctionTrack;
+
+    private final Genome genome;
+    private ExperimentType experimentType;
+    private final AlignmentRenderer renderer;
+    RenderOptions renderOptions;
+
+    private boolean removed = false;
+    private RenderRollback renderRollback;
+    private boolean showGroupLine;
+    private Map<ReferenceFrame, List<InsertionInterval>> insertionIntervalsMap;
+    private int expandedHeight = 14;
+    private final int collapsedHeight = 9;
+    private final int maxSquishedHeight = 5;
+    private int squishedHeight = maxSquishedHeight;
+    private final int minHeight = 50;
+
+    private Rectangle alignmentsRect;
+    private Rectangle downsampleRect;
+    private Rectangle insertionRect;
+    private ColorTable readNamePalette;
+
+    // Dynamic fields
+    // The "DataPanel" containing the track.  This field might be null at any given time.  It is updated each repaint.
+    private JComponent dataPanel;
+    protected final HashMap<String, Color> selectedReadNames = new HashMap<>();
+    private final HashMap<Rectangle, String> groupNames = new HashMap<>();
 
 
     /**
@@ -292,6 +306,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return experimentType;
     }
 
+    public AlignmentDataManager getDataManager() {
+        return dataManager;
+    }
+
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
     }
@@ -307,7 +325,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     public SpliceJunctionTrack getSpliceJunctionTrack() {
         return spliceJunctionTrack;
     }
-
 
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
@@ -450,51 +467,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    private List<InsertionInterval> getInsertionIntervals(ReferenceFrame frame) {
-        List<InsertionInterval> insertionIntervals = insertionIntervalsMap.computeIfAbsent(frame, k -> new ArrayList<>());
-        return insertionIntervals;
-    }
-
-    private void renderInsertionIntervals(RenderContext context, Rectangle rect) {
-
-        // Might be offscreen
-        if (!context.getVisibleRect().intersects(rect)) return;
-
-        List<InsertionMarker> intervals = context.getInsertionMarkers();
-        if (intervals == null) return;
-
-        InsertionMarker selected = InsertionManager.getInstance().getSelectedInsertion(context.getChr());
-
-        int w = (int) ((1.41 * rect.height) / 2);
-
-
-        boolean hideSmallIndex = getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL);
-        int smallIndelThreshold = getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
-
-        List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
-        insertionIntervals.clear();
-        for (InsertionMarker insertionMarker : intervals) {
-            if (hideSmallIndex && insertionMarker.size < smallIndelThreshold) continue;
-
-            final double scale = context.getScale();
-            final double origin = context.getOrigin();
-            int midpoint = (int) ((insertionMarker.position - origin) / scale);
-            int x0 = midpoint - w;
-            int x1 = midpoint + w;
-
-            Rectangle iRect = new Rectangle(x0 + context.translateX, rect.y, 2 * w, rect.height);
-
-            insertionIntervals.add(new InsertionInterval(iRect, insertionMarker));
-
-            Color c = (selected != null && selected.position == insertionMarker.position) ? new Color(200, 0, 0, 80) : AlignmentRenderer.purple;
-            Graphics2D g = context.getGraphic2DForColor(c);
-
-
-            g.fillPolygon(new Polygon(new int[]{x0, x1, midpoint},
-                    new int[]{rect.y, rect.y, rect.y + rect.height}, 3));
-        }
-    }
-
 
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
 
@@ -608,6 +580,50 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         groupBorderGraphics.drawLine(inputRect.x, bottom, inputRect.width, bottom);
     }
 
+    private List<InsertionInterval> getInsertionIntervals(ReferenceFrame frame) {
+        List<InsertionInterval> insertionIntervals = insertionIntervalsMap.computeIfAbsent(frame, k -> new ArrayList<>());
+        return insertionIntervals;
+    }
+
+    private void renderInsertionIntervals(RenderContext context, Rectangle rect) {
+
+        // Might be offscreen
+        if (!context.getVisibleRect().intersects(rect)) return;
+
+        List<InsertionMarker> intervals = context.getInsertionMarkers();
+        if (intervals == null) return;
+
+        InsertionMarker selected = InsertionManager.getInstance().getSelectedInsertion(context.getChr());
+
+        int w = (int) ((1.41 * rect.height) / 2);
+
+
+        boolean hideSmallIndex = getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL);
+        int smallIndelThreshold = getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+
+        List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
+        insertionIntervals.clear();
+        for (InsertionMarker insertionMarker : intervals) {
+            if (hideSmallIndex && insertionMarker.size < smallIndelThreshold) continue;
+
+            final double scale = context.getScale();
+            final double origin = context.getOrigin();
+            int midpoint = (int) ((insertionMarker.position - origin) / scale);
+            int x0 = midpoint - w;
+            int x1 = midpoint + w;
+
+            Rectangle iRect = new Rectangle(x0 + context.translateX, rect.y, 2 * w, rect.height);
+
+            insertionIntervals.add(new InsertionInterval(iRect, insertionMarker));
+
+            Color c = (selected != null && selected.position == insertionMarker.position) ? new Color(200, 0, 0, 80) : AlignmentRenderer.purple;
+            Graphics2D g = context.getGraphic2DForColor(c);
+
+
+            g.fillPolygon(new Polygon(new int[]{x0, x1, midpoint},
+                    new int[]{rect.y, rect.y, rect.y + rect.height}, 3));
+        }
+    }
 
     public void renderExpandedInsertion(InsertionMarker insertionMarker, RenderContext context, Rectangle inputRect) {
 
@@ -685,69 +701,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     }
 
-//
-//    public void renderExpandedInsertions(RenderContext context, Rectangle inputRect) {
-//
-//
-//        boolean leaveMargin = getDisplayMode() != DisplayMode.COLLAPSED.SQUISHED;
-//
-//        inputRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2;
-//
-//        //log.debug("Render features");
-//        PackedAlignments groups = dataManager.getGroups(context, renderOptions);
-//        if (groups == null) {
-//            //Assume we are still loading.
-//            //This might not always be true
-//            return;
-//        }
-//
-//        Rectangle visibleRect = context.getVisibleRect();
-//
-//
-//        maximumHeight = Integer.MAX_VALUE;
-//
-//        // Divide rectangle into equal height levels
-//        double y = inputRect.getY();
-//        double h;
-//        if (getDisplayMode() == DisplayMode.EXPANDED) {
-//            h = expandedHeight;
-//        } else {
-//
-//            int visHeight = visibleRect.height;
-//            int depth = dataManager.getNLevels();
-//            if (depth == 0) {
-//                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, expandedHeight));
-//            } else {
-//                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
-//            }
-//            h = squishedHeight;
-//        }
-//
-//
-//        for (Map.Entry<String, List<Row>> entry : groups.entrySet()) {
-//
-//
-//            // Loop through the alignment rows for this group
-//            List<Row> rows = entry.getValue();
-//            for (Row row : rows) {
-//                if ((visibleRect != null && y > visibleRect.getMaxY())) {
-//                    return;
-//                }
-//
-//                if (y + h > visibleRect.getY()) {
-//                    Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
-//                    renderer.renderExpandedInsertions(row.alignments, context, rowRectangle, leaveMargin);
-//                    row.y = y;
-//                    row.h = h;
-//                }
-//                y += h;
-//            }
-//
-//            y += GROUP_MARGIN;
-//
-//
-//        }
-//    }
+    private InsertionInterval getInsertionInterval(ReferenceFrame frame, int x, int y) {
+        List<InsertionInterval> insertionIntervals = getInsertionIntervals(frame);
+        for (InsertionInterval i : insertionIntervals) {
+            if (i.rect.contains(x, y)) return i;
+        }
+
+        return null;
+    }
 
     /**
      * Sort alignment rows based on alignments that intersect location
@@ -923,9 +884,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return 0.0f;
     }
 
-    public AlignmentDataManager getDataManager() {
-        return dataManager;
-    }
 
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
@@ -1096,15 +1054,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    private InsertionInterval getInsertionInterval(ReferenceFrame frame, int x, int y) {
-        List<InsertionInterval> insertionIntervals = getInsertionIntervals(frame);
-        for (InsertionInterval i : insertionIntervals) {
-            if (i.rect.contains(x, y)) return i;
-        }
-
-        return null;
-    }
-
     private void setSelected(Alignment alignment) {
         Color c = readNamePalette.get(alignment.getReadName());
         selectedReadNames.put(alignment.getReadName(), c);
@@ -1113,29 +1062,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private void clearCaches() {
         if (dataManager != null) dataManager.clear();
         if (spliceJunctionTrack != null) spliceJunctionTrack.clear();
-    }
-
-    private static void refresh() {
-        IGV.getInstance().getContentPane().getMainPanel().invalidate();
-        IGV.getInstance().revalidateTrackPanels();
-    }
-
-    public static boolean isBisulfiteColorType(ColorOption o) {
-        return (o.equals(ColorOption.BISULFITE) || o.equals(ColorOption.NOMESEQ));
-    }
-
-    private static String getBisulfiteContextPubStr(BisulfiteContext item) {
-        return bisulfiteContextToPubString.get(item);
-    }
-
-    public static byte[] getBisulfiteContextPreContext(BisulfiteContext item) {
-        Pair<byte[], byte[]> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
-        return pair.getFirst();
-    }
-
-    public static byte[] getBisulfiteContextPostContext(BisulfiteContext item) {
-        Pair<byte[], byte[]> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
-        return pair.getSecond();
     }
 
 
@@ -1309,8 +1235,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    private static int nClusters = 2;
-
     class PopupMenu extends IGVPopupMenu {
 
 
@@ -1349,11 +1273,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
 
-            if (dataManager.isTenX()) {
-                addTenXItems();
-            } else {
-                addSupplItems();     // Are SA tags mutually exlcusive with 10X?
-            }
+            addTenXItems();
+
+            addSupplItems();     // Are SA tags mutually exlcusive with 10X?
+
 
             addSeparator();
             addGroupMenuItem(e);
@@ -2254,6 +2177,39 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return null;
     }
 
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        if (element.hasAttribute("experimentType")) {
+            experimentType = ExperimentType.valueOf(element.getAttribute("experimentType"));
+        }
+
+        NodeList tmp = element.getElementsByTagName("RenderOptions");
+        if (tmp.getLength() > 0) {
+            Element renderElement = (Element) tmp.item(0);
+            renderOptions = new RenderOptions();
+            renderOptions.unmarshalXML(renderElement, version);
+        }
+    }
+
+
+    @Override
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        if (experimentType != null) {
+            element.setAttribute("experimentType", experimentType.toString());
+        }
+
+        Element sourceElement = document.createElement("RenderOptions");
+        renderOptions.marshalXML(document, sourceElement);
+        element.appendChild(sourceElement);
+
+    }
+
     static class InsertionMenu extends IGVPopupMenu {
 
         final AlignmentBlock insertion;
@@ -2294,7 +2250,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return false;
         }
     }
-
 
     public static class RenderOptions implements Cloneable, Persistable {
 
@@ -2710,38 +2665,5 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    @Override
-    public void unmarshalXML(Element element, Integer version) {
-
-        super.unmarshalXML(element, version);
-
-        if (element.hasAttribute("experimentType")) {
-            experimentType = ExperimentType.valueOf(element.getAttribute("experimentType"));
-        }
-
-        NodeList tmp = element.getElementsByTagName("RenderOptions");
-        if (tmp.getLength() > 0) {
-            Element renderElement = (Element) tmp.item(0);
-            renderOptions = new RenderOptions();
-            renderOptions.unmarshalXML(renderElement, version);
-        }
-    }
-
-
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        if (experimentType != null) {
-            element.setAttribute("experimentType", experimentType.toString());
-        }
-
-        Element sourceElement = document.createElement("RenderOptions");
-        renderOptions.marshalXML(document, sourceElement);
-        element.appendChild(sourceElement);
-
-
-    }
 
 }
