@@ -1273,7 +1273,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
 
-            addTenXItems();
+            addLinkedReadItems();
 
             addSupplItems();     // Are SA tags mutually exlcusive with 10X?
 
@@ -2096,37 +2096,23 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         }
 
-        void addTenXItems() {
-
+        void addLinkedReadItems() {
             addSeparator();
+            add(linkedReadItem("BX"));
+            add(linkedReadItem("MI"));
+        }
 
-            final JMenuItem bxItem = new JCheckBoxMenuItem("View linked reads (BX)");
-            final JMenuItem miItem = new JCheckBoxMenuItem("View linked reads (MI)");
-
-            if (isLinkedReads()) {
-                bxItem.setSelected("BX".equals(renderOptions.getLinkByTag()));
-                miItem.setSelected("MI".equals(renderOptions.getLinkByTag()));
-            } else {
-                bxItem.setSelected(false);
-                miItem.setSelected(false);
-            }
-
-            bxItem.addActionListener(aEvt -> {
-                boolean linkedReads = bxItem.isSelected();
-                setLinkedReads(linkedReads, "BX");
+        private JCheckBoxMenuItem linkedReadItem(String tag) {
+            final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Linked read view (" + tag + ")");
+            item.setSelected(renderOptions.linkedReads && renderOptions.linkByTag.equals(tag));
+            item.addActionListener(aEvt -> {
+                boolean linkedReads = item.isSelected();
+                setLinkedReads(linkedReads, tag);
             });
-            add(bxItem);
-
-            miItem.addActionListener(aEvt -> {
-                boolean linkedReads = miItem.isSelected();
-                setLinkedReads(linkedReads, "MI");
-            });
-            add(miItem);
-
+            return item;
         }
 
         void addSupplItems() {
-
 
             addSeparator();
 
@@ -2485,7 +2471,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         public boolean isLinkedReads() {
-            return linkedReads == null ? prefs.getAsBoolean(SAM_LINK_READS) : linkedReads;
+            return linkedReads;
         }
 
         public boolean isQuickConsensusMode() {

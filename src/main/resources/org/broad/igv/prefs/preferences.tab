@@ -97,9 +97,6 @@ SAM.CLIPPING_THRESHOLD	Flag clipping threshold (bases)	integer	0
 SAM.QUICK_CONSENSUS_MODE	Quick consensus mode	boolean	FALSE
 SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
 ---
-SAM.LINK_READS	Link alignments by tag	boolean	FALSE
-SAM.LINK_TAG	Linking tag	string	READNAME
----
 SAM.FILTER_DUPLICATES	Filter duplicate reads	boolean	TRUE
 SAM.FILTER_FAILED_READS	Filter vendor failed reads	boolean	TRUE
 SAM.FILTER_SECONDARY_ALIGNMENTS	Filter secondary alignments	boolean	FALSE

@@ -152,7 +152,6 @@ final public class Constants {
     public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
     public static final String SAM_HIDE_SMALL_INDEL = "SAM.HIDE_SMALL_INDEL";
     public static final String SAM_SMALL_INDEL_BP_THRESHOLD = "SAM.SMALL_INDEL_BP_THRESHOLD";
-    public static final String SAM_LINK_READS = "SAM.LINK_READS";
     public static final String SAM_LINK_TAG = "SAM.LINK_TAG";
     public static final String SAM_SHOW_ALIGNMENT_TRACK = "SAM.SHOW_ALIGNMENT_TRACK";
     public static final String SAM_COLOR_A = "SAM.COLOR.A";
