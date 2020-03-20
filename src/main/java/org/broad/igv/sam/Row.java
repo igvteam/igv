@@ -97,7 +97,6 @@ public class Row implements Comparable<Row> {
                     else {
                         score = 0;
                     }
-
                     return score;
                 case NUCLEOTIDE:
                     byte base = centerAlignment.getBase(adjustedCenter);
@@ -172,6 +171,10 @@ public class Row implements Comparable<Row> {
                     //String hapname = centerAlignment.getHaplotypeName();
                     //return hapname == null ? 0 : hapname.hashCode();
                     return centerAlignment.getHapDistance();
+                case READ_NAME:
+                    String readName = centerAlignment.getReadName();
+                    score = readName == null ? 0 : readName.hashCode();
+                    return score;
                 default:
                     return Integer.MAX_VALUE;
 

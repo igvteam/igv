@@ -145,7 +145,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     public enum SortOption {
         START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG,
-        SUPPLEMENTARY, NONE, HAPLOTYPE, READ_ORDER;
+        SUPPLEMENTARY, NONE, HAPLOTYPE, READ_ORDER, READ_NAME;
     }
 
     public enum GroupOption {
@@ -1782,6 +1782,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("sample", SortOption.SAMPLE);
             mappings.put("read group", SortOption.READ_GROUP);
             mappings.put("read order", SortOption.READ_ORDER);
+            mappings.put("read name", SortOption.READ_NAME);
 
             if (dataManager.isPairedEnd()) {
                 mappings.put("insert size", SortOption.INSERT_SIZE);
