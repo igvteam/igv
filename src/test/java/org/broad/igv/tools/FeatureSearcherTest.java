@@ -154,31 +154,4 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
         return TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), genome);
     }
 
-    /**
-     * Test that stopping actually stops the search.
-     * We start searching a window which will never complete
-     * @throws Exception
-     */
-    @Test
-    public void testCancel() throws Exception{
-        FeatureSearcher searcher = new FeatureSearcher(getTestBedSource(), genome, "chr3", 0);
-        searcher.setSearchIncrement(100);
-
-        // Be careful monkeying around here.
-        // The test will exit and shut down the threadExecutor if there is nothing blocking on this thread
-        // This can make it seem like the search aborted prematurely
-        LongRunningTask.getThreadExecutor().execute(searcher);
-        Thread.sleep(500);
-        assertFalse(searcher.isDone());
-        searcher.cancel();
-
-        //Stopping is not instantaneous
-        int counter = 0;
-        while(!searcher.isDone()){
-            Thread.sleep(100);
-            counter++;
-        }
-        assertNull(searcher.getResult());
-        assertTrue(counter < 5);
-    }
 }
