@@ -1147,9 +1147,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         try {
             IGV.getInstance().saveStateForExit();
-
             Frame mainFrame = IGV.getMainFrame();
-
             PreferencesManager.getPreferences().setApplicationFrameBounds(mainFrame.getBounds());
 
             // Hide and close the application
@@ -1159,7 +1157,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         } finally {
             System.exit(0);
         }
-
     }
 
     @ForTesting
@@ -1183,5 +1180,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     public void enableReloadSession() {
         this.reloadSessionItem.setEnabled(true);
+    }
+
+    public void disableReloadSession() {
+        this.reloadSessionItem.setEnabled(false);
     }
 }

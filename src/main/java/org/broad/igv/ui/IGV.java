@@ -945,6 +945,7 @@ public class IGV implements IGVEventObserver {
     public void newSession() {
         resetSession(null);
         setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
+        this.menuBar.disableReloadSession();
     }
 
     /**
@@ -1119,15 +1120,24 @@ public class IGV implements IGVEventObserver {
      * @return true if successful
      */
     public boolean restoreSessionSynchronous(String sessionPath, String locus, boolean merge) {
+
         InputStream inputStream = null;
         try {
+            try {
+                inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
+            } catch (IOException e) {
+                log.error("Error loading session", e);
+                MessageUtils.showMessage("Error loading session: " + sessionPath);
+                return false;
+            }
+
             if (!merge) {
                 // Do this first, it closes all open SeekableFileStreams.
                 resetSession(sessionPath);
             }
 
             setStatusBarMessage("Opening session...");
-            inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
+
 
             return restoreSessionFromStream(sessionPath, locus, inputStream);
 
@@ -1178,14 +1188,14 @@ public class IGV implements IGVEventObserver {
         //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
         RegionNavigatorDialog.destroyInstance();
 
-        if(sessionPath != null) {
+        if (sessionPath != null) {
             mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
             if (!getRecentSessionList().contains(sessionPath)) {
                 getRecentSessionList().addFirst(sessionPath);
             }
             this.menuBar.enableReloadSession();
         }
-        
+
         doRefresh();
         return true;
     }
