@@ -1165,43 +1165,73 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     private boolean isLinkedReads() {
-        return renderOptions.isLinkedReads();
+        return renderOptions != null && renderOptions.isLinkedReads();
     }
 
-    private void setLinkedReads(boolean linkedReads, String tag) {
-
+    /**
+     * Set the view to a 10X style "linked-read view".  This option tries to achieve a view similar to the
+     * 10X Loupe view described here: https://support.10xgenomics.com/genome-exome/software/visualization/latest/linked-reads
+     *
+     * @param linkedReads
+     * @param tag
+     */
+    private void setLinkedReadView(boolean linkedReads, String tag) {
+        if (!linkedReads || isLinkedReadView()) {
+            undoLinkedReadView();
+        }
         renderOptions.setLinkedReads(linkedReads);
         if (linkedReads) {
-
-            if (renderRollback == null) renderRollback = new RenderRollback(renderOptions, getDisplayMode());
-
             renderOptions.setLinkByTag(tag);
-
-            if ("READNAME".equals(tag)) {
-                renderOptions.setColorOption(ColorOption.LINK_STRAND);
-            } else {
-                // TenX -- ditto
-                renderOptions.setColorOption(ColorOption.TAG);
-                renderOptions.setColorByTag(tag);
-
-                if (dataManager.isPhased()) {
-                    renderOptions.setGroupByOption(GroupOption.TAG);
-                    renderOptions.setGroupByTag("HP");
-                }
-                expandedHeight = 10;
-                showGroupLine = false;
-                setDisplayMode(DisplayMode.SQUISHED);
+            renderOptions.setColorOption(ColorOption.TAG);
+            renderOptions.setColorByTag(tag);
+            if (dataManager.isPhased()) {
+                renderOptions.setGroupByOption(GroupOption.TAG);
+                renderOptions.setGroupByTag("HP");
             }
-        } else {
-            if (this.renderRollback != null) {
-                this.renderRollback.restore(renderOptions);
-                this.renderRollback = null;
-            }
+            showGroupLine = false;
+            setDisplayMode(DisplayMode.SQUISHED);
         }
-
         dataManager.packAlignments(renderOptions);
         refresh();
     }
+
+    /**
+     * Detect if we are in linked-read view
+     */
+    private boolean isLinkedReadView() {
+        return renderOptions != null &&
+                renderOptions.isLinkedReads() &&
+                renderOptions.getLinkByTag() != null &&
+                renderOptions.getColorOption() == ColorOption.TAG &&
+                renderOptions.getColorByTag() != null;
+    }
+
+    /**
+     * Link alignments by arbitrary tag, without the extra settings applied to link-read-view
+     *
+     * @param linkReads
+     * @param tag
+     */
+    private void setLinkByTag(boolean linkReads, String tag) {
+        if (isLinkedReadView()) {
+            undoLinkedReadView();
+        }
+        renderOptions.setLinkedReads(linkReads);
+        renderOptions.setLinkByTag(tag);
+        dataManager.packAlignments(renderOptions);
+        refresh();
+    }
+
+    private void undoLinkedReadView() {
+        renderOptions.setLinkByTag(null);
+        renderOptions.setColorOption(ColorOption.NONE);
+        renderOptions.setColorByTag(null);
+        renderOptions.setGroupByOption(GroupOption.NONE);
+        renderOptions.setGroupByTag(null);
+        showGroupLine = true;
+        setDisplayMode(DisplayMode.EXPANDED);
+    }
+
 
     /**
      * Listener for deselecting one component when another is selected
@@ -1274,9 +1304,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
 
             addLinkedReadItems();
-
-            addSupplItems();     // Are SA tags mutually exlcusive with 10X?
-
 
             addSeparator();
             addGroupMenuItem(e);
@@ -1564,9 +1591,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             JCheckBoxMenuItem tagOption = new JCheckBoxMenuItem("tag");
             tagOption.addActionListener(aEvt -> {
                 String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
-                if (tag != null && tag.trim().length() > 0) {
-                    IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag, null);
-                    refresh();
+                if (tag != null) {
+                    if (tag.trim().length() > 0) {
+                        IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag, null);
+                        refresh();
+                    } else {
+                        IGV.getInstance().groupAlignmentTracks(GroupOption.NONE, null, null);
+                    }
                 }
 
             });
@@ -2097,39 +2128,68 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         }
 
+        /**
+         * Add all menu items that link alignments by tag or readname.  These are mutually exclusive.  The
+         * list includes 2 items for 10X "Loupe link-read" style views, a supplementary alignment option,
+         * and linking by arbitrary tag.
+         */
         void addLinkedReadItems() {
             addSeparator();
-            add(linkedReadItem("BX"));
-            add(linkedReadItem("MI"));
+            add(linkedReadViewItem("BX"));
+            add(linkedReadViewItem("MI"));
+
+            final JCheckBoxMenuItem supplementalItem = new JCheckBoxMenuItem("Link supplementary alignments");
+            supplementalItem.setSelected(isLinkedReads() && "READMANE".equals(renderOptions.getLinkByTag()));
+            supplementalItem.addActionListener(aEvt -> {
+                boolean linkedReads = supplementalItem.isSelected();
+                setLinkByTag(linkedReads, "READNAME");
+            });
+            add(supplementalItem);
+
+            String linkedTagsString = PreferencesManager.getPreferences().get(SAM_LINK_BY_TAGS);
+            if(linkedTagsString != null) {
+                String [] t =  Globals.commaPattern.split(linkedTagsString);
+                for(String tag : t) {
+                    if(tag.length() > 0) {
+                        add(linkedReadItem(tag));
+                    }
+                }
+            }
+
+            final JMenuItem linkByTagItem = new JMenuItem("Link by tag...");
+            linkByTagItem.addActionListener(aEvt -> {
+                String tag = MessageUtils.showInputDialog("Link by tag:");
+                if(tag != null) {
+                    setLinkByTag(true, tag);
+                    String linkedTags = PreferencesManager.getPreferences().get(SAM_LINK_BY_TAGS);
+                    if(linkedTags == null) {
+                        linkedTags = tag;
+                    } else {
+                        linkedTags += "," + tag;
+                    }
+                    PreferencesManager.getPreferences().put(SAM_LINK_BY_TAGS, linkedTags);
+                }
+            });
+            add(linkByTagItem);
         }
 
-        private JCheckBoxMenuItem linkedReadItem(String tag) {
+        private JCheckBoxMenuItem linkedReadViewItem(String tag) {
             final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Linked read view (" + tag + ")");
-            item.setSelected(renderOptions.linkedReads && renderOptions.linkByTag.equals(tag));
+            item.setSelected(isLinkedReads() && tag.equals(renderOptions.linkByTag));
             item.addActionListener(aEvt -> {
                 boolean linkedReads = item.isSelected();
-                setLinkedReads(linkedReads, tag);
+                setLinkedReadView(linkedReads, tag);
             });
             return item;
         }
-
-        void addSupplItems() {
-
-            addSeparator();
-
-            final JMenuItem bxItem = new JCheckBoxMenuItem("Link supplementary alignments");
-
-            if (isLinkedReads()) {
-                bxItem.setSelected("READNAME".equals(renderOptions.getLinkByTag()));
-            } else {
-                bxItem.setSelected(false);
-            }
-
-            bxItem.addActionListener(aEvt -> {
-                boolean linkedReads = bxItem.isSelected();
-                setLinkedReads(linkedReads, "READNAME");
+        private JCheckBoxMenuItem linkedReadItem(String tag) {
+            final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Link by " + tag);
+            item.setSelected(isLinkedReads() && tag.equals(renderOptions.linkByTag));
+            item.addActionListener(aEvt -> {
+                boolean linkedReads = item.isSelected();
+                setLinkByTag(linkedReads, tag);
             });
-            add(bxItem);
+            return item;
         }
 
 
@@ -2248,8 +2308,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean showAllBases;
         private Integer minInsertSize;
         private Integer maxInsertSize;
-        private AlignmentTrack.ColorOption colorOption;
-        private AlignmentTrack.GroupOption groupByOption;
+        private ColorOption colorOption;
+        private GroupOption groupByOption;
         private Boolean viewPairs;
         private String colorByTag;
         private String groupByTag;
@@ -2267,7 +2327,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean drawInsertionIntervals;
 
 
-        AlignmentTrack.BisulfiteContext bisulfiteContext = BisulfiteContext.CG;
+        BisulfiteContext bisulfiteContext = BisulfiteContext.CG;
         Map<String, PEStats> peStats;
 
         DefaultValues defaultValues;
@@ -2339,7 +2399,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.colorByTag = colorByTag;
         }
 
-        void setColorOption(AlignmentTrack.ColorOption colorOption) {
+        void setColorOption(ColorOption colorOption) {
             this.colorOption = colorOption;
         }
 
@@ -2363,8 +2423,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.quickConsensusMode = quickConsensusMode;
         }
 
-        public void setGroupByOption(AlignmentTrack.GroupOption groupByOption) {
-            this.groupByOption = (groupByOption == null) ? AlignmentTrack.GroupOption.NONE : groupByOption;
+        public void setGroupByOption(GroupOption groupByOption) {
+            this.groupByOption = (groupByOption == null) ? GroupOption.NONE : groupByOption;
         }
 
         void setShadeBasesOption(boolean shadeBasesOption) {
@@ -2433,9 +2493,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return maxInsertSizePercentile == null ? prefs.getAsFloat(SAM_MAX_INSERT_SIZE_PERCENTILE) : maxInsertSizePercentile;
         }
 
-        public AlignmentTrack.ColorOption getColorOption() {
+        public ColorOption getColorOption() {
             return colorOption == null ?
-                    CollUtils.valueOf(AlignmentTrack.ColorOption.class, prefs.get(SAM_COLOR_BY), AlignmentTrack.ColorOption.NONE) :
+                    CollUtils.valueOf(ColorOption.class, prefs.get(SAM_COLOR_BY), ColorOption.NONE) :
                     colorOption;
         }
 
@@ -2456,23 +2516,23 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         public String getLinkByTag() {
-            return linkByTag == null ? prefs.get(SAM_LINK_TAG) : linkByTag;
+            return linkByTag;
         }
 
-        public AlignmentTrack.GroupOption getGroupByOption() {
-            AlignmentTrack.GroupOption gbo = groupByOption;
+        public GroupOption getGroupByOption() {
+            GroupOption gbo = groupByOption;
             // Interpret null as the default option.
             gbo = (gbo == null) ?
-                    CollUtils.valueOf(AlignmentTrack.GroupOption.class, prefs.get(SAM_GROUP_OPTION), AlignmentTrack.GroupOption.NONE) :
+                    CollUtils.valueOf(GroupOption.class, prefs.get(SAM_GROUP_OPTION), GroupOption.NONE) :
                     gbo;
             // Add a second check for null in case defaultValues.groupByOption == null
-            gbo = (gbo == null) ? AlignmentTrack.GroupOption.NONE : gbo;
+            gbo = (gbo == null) ? GroupOption.NONE : gbo;
 
             return gbo;
         }
 
         public boolean isLinkedReads() {
-            return linkedReads;
+            return linkedReads != null && linkedReads;
         }
 
         public boolean isQuickConsensusMode() {

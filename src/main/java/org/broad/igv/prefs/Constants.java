@@ -133,6 +133,7 @@ final public class Constants {
     public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
     public static final String SAM_SORT_BY_TAG = "SAM.SORT_BY_TAG";
     public static final String SAM_GROUP_BY_TAG = "SAM.GROUP_BY_TAG";
+    public static final String SAM_LINK_BY_TAGS = "SAM.LINK_BY_TAGS";
     public static final String SAM_GROUP_BY_POS = "SAM.GROUP_BY_POS";
     public static final String SAM_BISULFITE_CONTEXT = "SAM.BISULFITE_CONTEXT";
     public static final String SAM_FILTER_FAILED_READS = "SAM.FILTER_FAILED_READS";
@@ -152,7 +153,6 @@ final public class Constants {
     public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
     public static final String SAM_HIDE_SMALL_INDEL = "SAM.HIDE_SMALL_INDEL";
     public static final String SAM_SMALL_INDEL_BP_THRESHOLD = "SAM.SMALL_INDEL_BP_THRESHOLD";
-    public static final String SAM_LINK_TAG = "SAM.LINK_TAG";
     public static final String SAM_SHOW_ALIGNMENT_TRACK = "SAM.SHOW_ALIGNMENT_TRACK";
     public static final String SAM_COLOR_A = "SAM.COLOR.A";
     public static final String SAM_COLOR_C = "SAM.COLOR.C";
