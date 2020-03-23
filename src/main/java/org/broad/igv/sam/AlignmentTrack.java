@@ -399,6 +399,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     public void render(RenderContext context, Rectangle rect) {
 
+        int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
+        if (viewWindowSize > dataManager.getVisibilityWindow()) {
+            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
+            Graphics2D g2 = context.getGraphic2DForColor(Color.gray);
+            GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g2);
+            return;
+        }
+
         Graphics2D g = context.getGraphics2D("LABEL");
         g.setFont(FontManager.getFont(GROUP_LABEL_HEIGHT));
 
@@ -414,13 +422,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         // Top gap.
         rect.y += DS_MARGIN_0;
-
-        if (context.getScale() > dataManager.getMinVisibleScale()) {
-            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
-            Graphics2D g2 = context.getGraphic2DForColor(Color.gray);
-            GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g2);
-            return;
-        }
 
         downsampleRect = new Rectangle(rect);
         downsampleRect.height = DOWNAMPLED_ROW_HEIGHT;
