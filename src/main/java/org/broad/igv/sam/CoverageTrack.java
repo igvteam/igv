@@ -297,8 +297,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     public Range getInViewRange(ReferenceFrame frame) {
 
         int viewWindowSize = frame.getCurrentRange().getLength();
-        if (dataManager == null || viewWindowSize < dataManager.getVisibilityWindow()) {
-
+        if (dataManager == null || viewWindowSize > dataManager.getVisibilityWindow()) {
             List<LocusScore> scores = getInViewScores(frame);
             if (scores != null && scores.size() > 0) {
                 float min = scores.get(0).getScore();
@@ -316,17 +315,16 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
         } else {
 
+            dataManager.load(frame, alignmentTrack.renderOptions, true);
             AlignmentInterval interval = dataManager.getLoadedInterval(frame);
             if (interval == null) return null;
 
             int origin = (int) frame.getOrigin();
             int end = (int) frame.getEnd() + 1;
-
             int intervalMax = interval.getMaxCount(origin, end);
 
             return new Range(0, Math.max(10, intervalMax));
         }
-
     }
 
 
