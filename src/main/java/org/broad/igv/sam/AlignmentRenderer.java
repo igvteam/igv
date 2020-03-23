@@ -580,7 +580,6 @@ public class AlignmentRenderer {
         // Draw gaps (deletions and junctions)
         java.util.List<Gap> gaps = alignment.getGaps();
         if (gaps != null) {
-
             for (Gap gap : gaps) {
                 int gapStart = gap.getStart();
                 int gapWidth = gap.getnBases();
@@ -631,7 +630,6 @@ public class AlignmentRenderer {
                             context.translateX,
                             null);
                 }
-
             }
         }
 
@@ -651,6 +649,10 @@ public class AlignmentRenderer {
             outlineGraphics = context.getGraphic2DForColor(OUTLINE_COLOR);
         }
 
+        // Compute arrow width from total length of alignment on reference
+        double pixelLengthOnReference = alignment.getLengthOnReference() / locScale;
+        int arrowPxWidth = pixelLengthOnReference == 0 ? 0 : (int) Math.min(Math.min(5, h / 2), pixelLengthOnReference / 6);
+
         for (AlignmentBlock block : blocks) {
 
             int blockPxStart = (int) ((block.getStart() - bpStart) / locScale);
@@ -664,7 +666,7 @@ public class AlignmentRenderer {
                 gAlignment.drawLine(blockPxStart, y, blockPxEnd, y);
             } else {
                 Shape blockShape;
-                int arrowPxWidth = Math.min(Math.min(5, h / 2), blockPxWidth / 6);
+
 
                 if (!overlapped) {
                     int pixelGap = (int) (AlignmentPacker.MIN_ALIGNMENT_SPACING / locScale);
