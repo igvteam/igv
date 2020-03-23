@@ -401,6 +401,8 @@ public class AlignmentPacker {
                 return al.getReadGroup();
             case LINKED:
                 return (al instanceof LinkedAlignment) ? "Linked" : "";
+            case PHASE:
+                return al.getAttribute("HP");
             case TAG:
                 Object tagValue = al.getAttribute(tag);
                 if (tagValue == null) {

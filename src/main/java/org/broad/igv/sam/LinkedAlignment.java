@@ -5,8 +5,8 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Class for experimenting with 10X linked reads.
@@ -71,7 +71,9 @@ public class LinkedAlignment implements Alignment {
 
             Object hp = alignment.getAttribute("HP");
             if (hp != null) {
-                if (!hp.toString().equals(this.haplotype)) {
+                if (this.haplotype == null) {
+                    this.haplotype = hp.toString();
+                } else if (!hp.toString().equals(this.haplotype)) {
                     this.haplotype = "MIXED";
                 }
             }
@@ -99,11 +101,12 @@ public class LinkedAlignment implements Alignment {
 
     /**
      * Return the strand of the linked alignment at the genomic position
+     *
      * @param position
      * @return
      */
     public Strand getStrandAtPosition(double position) {
-        if(strand == Strand.NONE) {
+        if (strand == Strand.NONE) {
             for (Alignment a : alignments) {
                 if (a.contains(position)) {
                     return a.getReadStrand();
@@ -157,9 +160,9 @@ public class LinkedAlignment implements Alignment {
         } else {
 
             // First check to see if we are over an insertion.   Insertions take precedence.
-            for(Alignment a : alignments) {
-                for(AlignmentBlock block : a.getInsertions()) {
-                    if(block.containsPixel(mouseX)) {
+            for (Alignment a : alignments) {
+                for (AlignmentBlock block : a.getInsertions()) {
+                    if (block.containsPixel(mouseX)) {
                         return a.getValueString(position, mouseX, windowFunction);
                     }
                 }

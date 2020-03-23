@@ -101,7 +101,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     public enum GroupOption {
         STRAND, SAMPLE, READ_GROUP, LIBRARY, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE,
-        SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW, HAPLOTYPE, READ_ORDER, LINKED
+        SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW, HAPLOTYPE, READ_ORDER, LINKED, PHASE
     }
 
     public enum BisulfiteContext {
@@ -1592,6 +1592,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("ZMW", GroupOption.ZMW);
             mappings.put("read order", GroupOption.READ_ORDER);
             mappings.put("linked", GroupOption.LINKED);
+            mappings.put("phase", GroupOption.PHASE);
 
 
             for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {
@@ -2188,7 +2189,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         private JCheckBoxMenuItem linkedReadViewItem(String tag) {
             final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Linked read view (" + tag + ")");
-            item.setSelected(isLinkedReads() && tag.equals(renderOptions.linkByTag));
+            item.setSelected(isLinkedReadView() && tag != null && tag.equals(renderOptions.getLinkByTag()));
             item.addActionListener(aEvt -> {
                 boolean linkedReads = item.isSelected();
                 setLinkedReadView(linkedReads, tag);
@@ -2197,7 +2198,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
         private JCheckBoxMenuItem linkedReadItem(String tag) {
             final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Link by " + tag);
-            item.setSelected(isLinkedReads() && tag.equals(renderOptions.linkByTag));
+            item.setSelected(!isLinkedReadView() && isLinkedReads() && tag.equals(renderOptions.getLinkByTag()));
             item.addActionListener(aEvt -> {
                 boolean linkedReads = item.isSelected();
                 setLinkByTag(linkedReads, tag);
