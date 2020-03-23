@@ -2138,6 +2138,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             add(linkedReadViewItem("BX"));
             add(linkedReadViewItem("MI"));
 
+            addSeparator();
             final JCheckBoxMenuItem supplementalItem = new JCheckBoxMenuItem("Link supplementary alignments");
             supplementalItem.setSelected(isLinkedReads() && "READMANE".equals(renderOptions.getLinkByTag()));
             supplementalItem.addActionListener(aEvt -> {

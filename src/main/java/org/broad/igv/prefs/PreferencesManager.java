@@ -279,14 +279,8 @@ public class PreferencesManager implements IGVEventObserver {
 
                     continue;
                 } else {
-
                     String[] tokens = Globals.tabPattern.split(nextLine);
-
-                    if (tokens[0].equals("SAM.SHOW_JUNCTION_FLANKINGREGIONS")) {
-
-                    }
-
-                    if (tokens.length < 4) {
+                    if (tokens.length < 3) {
                         if (tokens.length == 2) {
                             // Hidden preference (not shown in editor)
                             tokens = new String[]{tokens[0], "", "", tokens[1]};
@@ -297,7 +291,6 @@ public class PreferencesManager implements IGVEventObserver {
                         prefList.add(new Preference(tokens, group));
                     }
                 }
-
             }
         } finally {
             if (reader != null) reader.close();
@@ -329,7 +322,6 @@ public class PreferencesManager implements IGVEventObserver {
         } finally {
             if (reader != null) reader.close();
         }
-
         return defs;
     }
 
@@ -357,14 +349,11 @@ public class PreferencesManager implements IGVEventObserver {
             PrintWriter pw = new PrintWriter(new BufferedWriter(fileWriter));
 
             for (Map.Entry<String, IGVPreferences> entry : preferencesMap.entrySet()) {
-
                 if (!entry.getKey().equals(NULL_CATEGORY)) {
                     pw.println();
                     pw.println("##" + entry.getKey());
                 }
-
                 entry.getValue().print(pw);
-
             }
 
             pw.flush();
@@ -372,7 +361,6 @@ public class PreferencesManager implements IGVEventObserver {
         } catch (IOException e) {
             log.error("Error loading preferences", e);
         } finally {
-
             if (fileWriter != null) {
                 try {
                     fileWriter.close();
@@ -419,7 +407,6 @@ public class PreferencesManager implements IGVEventObserver {
             this(new String[]{key, label, null, null}, group);
         }
 
-
         String getKey() {
             return tokens[0];
         }
@@ -433,7 +420,7 @@ public class PreferencesManager implements IGVEventObserver {
         }
 
         String getDefaultValue() {
-            return tokens[3] == null || tokens[3].equals("null") ? null : tokens[3];
+            return tokens.length < 4 || tokens[3] == null || tokens[3].equals("null") ? null : tokens[3];
         }
 
         String getComment() {
@@ -449,7 +436,6 @@ public class PreferencesManager implements IGVEventObserver {
             if (getComment() != null) str += "\t" + getComment();
             return str;
         }
-
     }
 
     static class PreferenceGroup {
