@@ -101,7 +101,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     public enum GroupOption {
         STRAND, SAMPLE, READ_GROUP, LIBRARY, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE,
-        SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW, HAPLOTYPE, READ_ORDER
+        SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW, HAPLOTYPE, READ_ORDER, LINKED
     }
 
     public enum BisulfiteContext {
@@ -1216,8 +1216,18 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (isLinkedReadView()) {
             undoLinkedReadView();
         }
+        if(linkReads) {
+            renderOptions.setLinkByTag(tag);
+            if(renderOptions.getGroupByOption() == GroupOption.NONE) {
+                renderOptions.setGroupByOption(GroupOption.LINKED);
+            }
+        } else {
+            renderOptions.setLinkByTag(null);
+            if(renderOptions.getGroupByOption() == GroupOption.LINKED) {
+                renderOptions.setGroupByOption(GroupOption.NONE);
+            }
+        }
         renderOptions.setLinkedReads(linkReads);
-        renderOptions.setLinkByTag(tag);
         dataManager.packAlignments(renderOptions);
         refresh();
     }
@@ -1580,6 +1590,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("movie", GroupOption.MOVIE);
             mappings.put("ZMW", GroupOption.ZMW);
             mappings.put("read order", GroupOption.READ_ORDER);
+            mappings.put("linked", GroupOption.LINKED);
 
 
             for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {
@@ -2140,7 +2151,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             addSeparator();
             final JCheckBoxMenuItem supplementalItem = new JCheckBoxMenuItem("Link supplementary alignments");
-            supplementalItem.setSelected(isLinkedReads() && "READMANE".equals(renderOptions.getLinkByTag()));
+            supplementalItem.setSelected(isLinkedReads() && "READNAME".equals(renderOptions.getLinkByTag()));
             supplementalItem.addActionListener(aEvt -> {
                 boolean linkedReads = supplementalItem.isSelected();
                 setLinkByTag(linkedReads, "READNAME");

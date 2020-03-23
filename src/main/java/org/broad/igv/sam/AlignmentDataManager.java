@@ -219,7 +219,14 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public double getMinVisibleScale() {
+        return getVisibilityWindow() / 700;
+    }
 
+    public double getVisibilityWindow() {
+        return getPreferences().getAsFloat(SAM_MAX_VISIBLE_RANGE) * 1000;
+    }
+
+    private IGVPreferences getPreferences() {
         String category =  NULL_CATEGORY;
         AlignmentTrack.ExperimentType experimentType = getExperimentType();
         if(experimentType == AlignmentTrack.ExperimentType.RNA) {
@@ -227,9 +234,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         } else if(experimentType == AlignmentTrack.ExperimentType.THIRD_GEN) {
             category = THIRD_GEN;
         }
-        IGVPreferences prefs = PreferencesManager.getPreferences(category);
-        float maxRange = prefs.getAsFloat(SAM_MAX_VISIBLE_RANGE);
-        return (maxRange * 1000) / 700;
+        return PreferencesManager.getPreferences(category);
     }
 
 

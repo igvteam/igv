@@ -166,8 +166,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-
-        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > dataManager.getMinVisibleScale()) {
+        int viewWindowSize = frame.getCurrentRange().getLength();
+        if (frame.getChrName().equals(Globals.CHR_ALL) || viewWindowSize < dataManager.getVisibilityWindow()) {
             return true;   // Nothing to paint
         } else {
             return dataManager.isLoaded(frame);
@@ -207,7 +207,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public void render(RenderContext context, Rectangle rect) {
 
-        if (context.getScale() > dataManager.getMinVisibleScale() && dataSource == null) {
+        int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
+        if (viewWindowSize > dataManager.getVisibilityWindow() && dataSource == null) {
             Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             GraphicUtils.drawCenteredText("Zoom in to see coverage.", visibleRect, g);
@@ -230,10 +231,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public void drawData(RenderContext context, Rectangle rect) {
 
-        float maxRange = PreferencesManager.getPreferences().getAsFloat(SAM_MAX_VISIBLE_RANGE);
-        float minVisibleScale = (maxRange * 1000) / 700;
-
-        if (context.getScale() < minVisibleScale && !context.getChr().equals(Globals.CHR_ALL)) {
+        int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
+        if (viewWindowSize < dataManager.getVisibilityWindow() && !context.getChr().equals(Globals.CHR_ALL)) {
             //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
@@ -297,7 +296,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     @Override
     public Range getInViewRange(ReferenceFrame frame) {
 
-        if (dataManager == null || frame.getScale() > dataManager.getMinVisibleScale()) {
+        int viewWindowSize = frame.getCurrentRange().getLength();
+        if (dataManager == null || viewWindowSize < dataManager.getVisibilityWindow()) {
 
             List<LocusScore> scores = getInViewScores(frame);
             if (scores != null && scores.size() > 0) {

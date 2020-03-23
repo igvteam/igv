@@ -270,9 +270,6 @@ public class AlignmentPacker {
                 Object bc;
                 if("READNAME".equals(tag)) {
                     bc = a.getReadName();
-                    if(a.isPaired()) {
-                        bc += a.isFirstOfPair() ? "/1" : "/2";
-                    }
                 }
                 else {
                     bc = a.getAttribute(tag);
@@ -291,7 +288,7 @@ public class AlignmentPacker {
                 }
             }
             else {
-                // Don't link secondary reads
+                // Don't link secondary (i.e alternative) alignments
                 bcList.add(a);
             }
         }
@@ -402,6 +399,8 @@ public class AlignmentPacker {
                 return al.getLibrary();
             case READ_GROUP:
                 return al.getReadGroup();
+            case LINKED:
+                return (al instanceof LinkedAlignment) ? "Linked" : "";
             case TAG:
                 Object tagValue = al.getAttribute(tag);
                 if (tagValue == null) {
