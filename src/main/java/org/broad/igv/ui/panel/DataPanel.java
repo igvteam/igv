@@ -36,6 +36,8 @@ package org.broad.igv.ui.panel;
 import com.google.common.base.Objects;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -47,8 +49,6 @@ import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.event.DataLoadedEvent;
-import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.util.DataPanelTool;
 
 import javax.swing.*;
@@ -59,8 +59,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -109,10 +109,9 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
     @Override
     public void receiveEvent(Object event) {
-
         if (event instanceof DataLoadedEvent) {
             if (((DataLoadedEvent) event).referenceFrame == frame) {
-                log.info("Data loaded repaint " + frame);
+                log.debug("Data loaded repaint " + frame);
                 repaint();
             }
         }
@@ -670,10 +669,11 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                 e.consume();
             } else {
                 if (mouseDown != null && distance(mouseDown, e) < 5) {
-                    doMouseClick(e);
+                doMouseClick(e);
                 } else if (currentTool != null)
                     currentTool.mouseReleased(e);
             }
+            setCurrentTool(null);
             mouseDown = null;
         }
 
