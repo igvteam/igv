@@ -19,7 +19,7 @@ NOTE: If on a Windows platform use ```./gradlew.bat'``` in the instructions belo
 
 #### Folder structure and build targets
 
-IGV has been tested with [AdoptOpenJDK](https://adoptopenjdk.net), [OpenJDK](https://openjdk.java.net/) and [Amazon's Correto Java 11](https://aws.amazon.com/corretto/) distributions have been tested with IGV.  The IGV bundles ship with embedded JREs from AdoptOpenJDK.
+The IGV bundles ship with embedded JREs from AdoptOpenJDK.
 
 * Install Gradle for your platform.  See https://gradle.org/ for details.
 
