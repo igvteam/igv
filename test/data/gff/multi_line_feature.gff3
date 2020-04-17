@@ -1,0 +1,10 @@
+chr1	assembler-sample_mydb_pasa.sqlite	cDNA_match	505890	505946	.	-	.	ID=align_1291321;Target=asmbl_202767 5112 5168 +
+chr1	assembler-sample_mydb_pasa.sqlite	cDNA_match	516354	516357	.	-	.	ID=align_1291321;Target=asmbl_202767 5108 5111 +
+chr1	assembler-sample_mydb_pasa.sqlite	cDNA_match	536017	537251	.	-	.	ID=align_1291321;Target=asmbl_202767 3873 5107 +
+chr1	assembler-sample_mydb_pasa.sqlite	cDNA_match	537699	537970	.	-	.	ID=align_1291321;Target=asmbl_202767 3601 3872 +
+chr1	assembler-sample_mydb_pasa.sqlite	cDNA_match	539362	539429	.	-	.	ID=align_1291321;Target=asmbl_202767 3533 3600 +
+chr2	assembler-sample_mydb_pasa.sqlite	cDNA_match	505890	505946	.	-	.	ID=align_1291321;Target=asmbl_202767 5112 5168 +
+chr2	assembler-sample_mydb_pasa.sqlite	cDNA_match	516354	516357	.	-	.	ID=align_1291321;Target=asmbl_202767 5108 5111 +
+chr2	assembler-sample_mydb_pasa.sqlite	cDNA_match	536017	537251	.	-	.	ID=align_1291321;Target=asmbl_202767 3873 5107 +
+chr2	assembler-sample_mydb_pasa.sqlite	cDNA_match	537699	537970	.	-	.	ID=align_1291321;Target=asmbl_202767 3601 3872 +
+chr2	assembler-sample_mydb_pasa.sqlite	cDNA_match	539362	539429	.	-	.	ID=align_1291321;Target=asmbl_202767 3533 3600 +

@@ -57,7 +57,7 @@ public class GFFParser implements FeatureParser {
     public List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome, GFFCodec codec) {
         String line = null;
         int lineNumber = 0;
-        GFFFeatureSource.GFFCombiner combiner = new GFFFeatureSource.GFFCombiner();
+        GFFCombiner combiner = new GFFCombiner();
         try {
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
