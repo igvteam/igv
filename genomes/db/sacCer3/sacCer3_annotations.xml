@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Global name="Annotations (sacCer3)" version="1">
+    <Resource name="UCSC ensGenes"
+            path="http://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/database/ensGene.txt.gz">
+    </Resource>
+</Global>
