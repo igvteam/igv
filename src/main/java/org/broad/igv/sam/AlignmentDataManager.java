@@ -66,7 +66,6 @@ public class AlignmentDataManager implements IGVEventObserver {
     private List<AlignmentInterval> intervalCache;
     private ResourceLocator locator;
     private HashMap<String, String> chrMappings = new HashMap();
-    private Set<Range> isLoading = new HashSet<>();
     private AlignmentTileLoader reader;
     private Map<String, PEStats> peStats;
     private SpliceJunctionHelper.LoadOptions loadOptions;
@@ -335,10 +334,8 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         if (isLoading(referenceFrame)) return;   // Already oading
 
-        synchronized (loadLock) {
+       // synchronized (loadLock) {
             Range range = referenceFrame.getCurrentRange();
-
-            isLoading.add(range);
 
             final String chr = referenceFrame.getChrName();
 
@@ -368,11 +365,10 @@ public class AlignmentDataManager implements IGVEventObserver {
             intervalCache.add(loadedInterval);
 
             packAlignments(renderOptions);
-            isLoading.remove(range);
 
             //  IGVEventBus.getInstance().post(new DataLoadedEvent(referenceFrame));
 
-        }
+       // }
     }
 
 

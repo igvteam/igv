@@ -239,10 +239,7 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
                     double deltaBP = Math.min( Math.max(-viewOrigin, delta * cytobandScale), chrLength - viewEnd);
                     viewOrigin += deltaBP;
                     viewEnd += deltaBP;
-
-                    // Constrain to chromosome bounds
-
-
+                    // TODO Constrain to chromosome bounds?
                     repaint();
                 }
                 lastMousePressX = x;

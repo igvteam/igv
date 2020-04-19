@@ -394,6 +394,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public void load(ReferenceFrame referenceFrame) {
+        if (log.isDebugEnabled()) {
+            log.debug("Reading - thread: " + Thread.currentThread().getName());
+        }
         dataManager.load(referenceFrame, renderOptions, true);
     }
 
@@ -472,7 +475,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
 
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
-        if(loadedInterval == null) {
+        if (loadedInterval == null) {
             log.info("No alignment interval for " + context.getReferenceFrame().getFormattedLocusString());
             return;
         }
@@ -520,7 +523,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             h = squishedHeight;
         }
-
 
 
         // Loop through groups
@@ -1216,14 +1218,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (isLinkedReadView()) {
             undoLinkedReadView();
         }
-        if(linkReads) {
+        if (linkReads) {
             renderOptions.setLinkByTag(tag);
-            if(renderOptions.getGroupByOption() == GroupOption.NONE) {
+            if (renderOptions.getGroupByOption() == GroupOption.NONE) {
                 renderOptions.setGroupByOption(GroupOption.LINKED);
             }
         } else {
             renderOptions.setLinkByTag(null);
-            if(renderOptions.getGroupByOption() == GroupOption.LINKED) {
+            if (renderOptions.getGroupByOption() == GroupOption.LINKED) {
                 renderOptions.setGroupByOption(GroupOption.NONE);
             }
         }
@@ -2156,10 +2158,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             add(supplementalItem);
 
             String linkedTagsString = PreferencesManager.getPreferences().get(SAM_LINK_BY_TAGS);
-            if(linkedTagsString != null) {
-                String [] t =  Globals.commaPattern.split(linkedTagsString);
-                for(String tag : t) {
-                    if(tag.length() > 0) {
+            if (linkedTagsString != null) {
+                String[] t = Globals.commaPattern.split(linkedTagsString);
+                for (String tag : t) {
+                    if (tag.length() > 0) {
                         add(linkedReadItem(tag));
                     }
                 }
@@ -2168,10 +2170,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             final JMenuItem linkByTagItem = new JMenuItem("Link by tag...");
             linkByTagItem.addActionListener(aEvt -> {
                 String tag = MessageUtils.showInputDialog("Link by tag:");
-                if(tag != null) {
+                if (tag != null) {
                     setLinkByTag(true, tag);
                     String linkedTags = PreferencesManager.getPreferences().get(SAM_LINK_BY_TAGS);
-                    if(linkedTags == null) {
+                    if (linkedTags == null) {
                         linkedTags = tag;
                     } else {
                         linkedTags += "," + tag;
@@ -2191,6 +2193,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             });
             return item;
         }
+
         private JCheckBoxMenuItem linkedReadItem(String tag) {
             final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Link by " + tag);
             item.setSelected(!isLinkedReadView() && isLinkedReads() && tag.equals(renderOptions.getLinkByTag()));

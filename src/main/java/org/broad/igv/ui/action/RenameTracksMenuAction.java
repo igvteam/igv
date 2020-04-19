@@ -67,7 +67,7 @@ public class RenameTracksMenuAction extends MenuAction {
                 } else {
                     currentSession.setPreference(Constants.TRACK_ATTRIBUTE_NAME_KEY, selectedAttribute);
                 }
-                mainFrame.doRefresh();
+                mainFrame.repaint();
             }
         });
     }

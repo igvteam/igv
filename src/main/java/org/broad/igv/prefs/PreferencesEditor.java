@@ -341,7 +341,7 @@ public class PreferencesEditor {
         }
 
         if (IGV.hasInstance()) {
-            IGV.getInstance().doRefresh();
+            IGV.getInstance().repaint();
         }
     }
 

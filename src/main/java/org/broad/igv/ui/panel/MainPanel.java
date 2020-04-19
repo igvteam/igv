@@ -264,6 +264,8 @@ public class MainPanel extends JPanel implements Paintable {
     public void resetPanels() {
         for (TrackPanel tp : getTrackPanels()) {
             tp.clearTracks();
+        }
+        for (TrackPanel tp : getTrackPanels()) {
             final TrackPanelScrollPane tsp = tp.getScrollPane();
             if (tsp == dataTrackScrollPane || tsp == featureTrackScrollPane) {
                 continue;
@@ -271,7 +273,6 @@ public class MainPanel extends JPanel implements Paintable {
             centerSplitPane.remove(tsp);
             TrackNamePanel.removeDropListenerFor(tsp.getNamePanel());
         }
-
         igv.reset();
     }
 

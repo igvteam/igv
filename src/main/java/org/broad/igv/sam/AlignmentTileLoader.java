@@ -115,7 +115,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
         return ycTags;
     }
 
-    AlignmentTile loadTile(String chr,
+    synchronized AlignmentTile loadTile(String chr,
                            int start,
                            int end,
                            SpliceJunctionHelper spliceJunctionHelper,
@@ -136,12 +136,10 @@ public class AlignmentTileLoader implements IGVEventObserver {
 
         AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext, reducedMemory);
 
-
         //assert (tiles.size() > 0);
         if (corruptIndex) {
             return t;
         }
-
 
         CloseableIterator<Alignment> iter = null;
 

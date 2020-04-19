@@ -65,7 +65,7 @@ public class LongRunningTask implements Callable {
         this.runnable = runnable;
     }
 
-    public Object call() throws Exception {
+    public Object call() {
 
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {

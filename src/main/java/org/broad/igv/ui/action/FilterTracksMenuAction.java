@@ -135,7 +135,7 @@ public class FilterTracksMenuAction extends MenuAction {
         } else if (response.intValue() == JOptionPane.OK_OPTION) {
 
             filterTracks(trackFilterPane);
-            mainFrame.doRefresh();
+            mainFrame.repaint();
         }
 
     }

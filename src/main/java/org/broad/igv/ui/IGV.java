@@ -77,7 +77,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
@@ -343,7 +343,7 @@ public class IGV implements IGVEventObserver {
     public void addRegionOfInterest(RegionOfInterest roi) {
         session.addRegionOfInterestWithNoListeners(roi);
         RegionOfInterestPanel.setSelectedRegion(roi);
-        doRefresh();
+        repaint();
     }
 
     public void beginROI(JButton button) {
@@ -465,20 +465,15 @@ public class IGV implements IGVEventObserver {
 
         Future toRet = null;
         if (locators != null && !locators.isEmpty()) {
-
             NamedRunnable runnable = new NamedRunnable() {
                 public void run() {
-
                     //Collect size statistics before loading
                     List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = getTrackPanelAttrs();
-
                     loadResources(locators);
-
                     resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
-
                     showLoadedTrackCount();
+                    IGV.this.repaintContentPane();
                 }
-
                 public String getName() {
                     return "Load Tracks";
                 }
@@ -638,7 +633,7 @@ public class IGV implements IGVEventObserver {
         // First store the newly requested state
         if (oldState != enableAttributeView) {
             PreferencesManager.getPreferences().setShowAttributeView(enableAttributeView);
-            doRefresh();
+            repaint();
         }
 
 
@@ -665,7 +660,7 @@ public class IGV implements IGVEventObserver {
                 }
             }
             IGV.getInstance().getSession().setHiddenAttributes(dlg.getNonSelections());
-            doRefresh();
+            repaint();
         }
     }
 
@@ -898,25 +893,18 @@ public class IGV implements IGVEventObserver {
      */
     public void resetSession(String sessionPath) {
 
-        System.gc();
-
         List<Track> oldTracks = getAllTracks();
-
+        clearAllTracks();
         AttributeManager.getInstance().clearAllAttributes();
-
         String tile = sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath;
         mainFrame.setTitle(tile);
-
         menuBar.resetSessionActions();
-
         AttributeManager.getInstance().clearAllAttributes();
-
         if (session == null) {
             session = new Session(sessionPath);
         } else {
             session.reset(sessionPath);
         }
-
         contentPane.getMainPanel().resetPanels();
 
         //TODO -- this is a very blunt and dangerous way to clean up -- change to close files associated with this session
@@ -926,9 +914,7 @@ public class IGV implements IGVEventObserver {
         for (Track t : oldTracks) {
 
         }
-
-        doRefresh();
-        System.gc();
+       // repaint();
     }
 
     private void subscribeToEvents() {
@@ -987,7 +973,7 @@ public class IGV implements IGVEventObserver {
             doShowAttributeDisplay(isShow);
             Preferences prefs = Preferences.userNodeForPackage(Globals.class);
             prefs.remove(DirectoryManager.IGV_DIR_USERPREF);
-            doRefresh();
+            repaint();
 
         } catch (Exception e) {
             String message = "Failure while resetting preferences!";
@@ -1181,7 +1167,7 @@ public class IGV implements IGVEventObserver {
             this.menuBar.enableReloadSession();
         }
 
-        doRefresh();
+        repaint();
         return true;
     }
 
@@ -1379,7 +1365,7 @@ public class IGV implements IGVEventObserver {
     public void addTracks(List<Track> tracks, PanelName panelName) {
         TrackPanel panel = getTrackPanel(panelName.getName());
         panel.addTracks(tracks);
-        doRefresh();
+        repaint();
     }
 
     /**
@@ -1456,7 +1442,7 @@ public class IGV implements IGVEventObserver {
             Runnable runnable = () -> {
                 List<Track> tracks = load(locator);
                 panel.addTracks(tracks);
-                doRefresh();
+                repaint();
             };
             LongRunningTask.submit(runnable);
         }
@@ -1707,6 +1693,12 @@ public class IGV implements IGVEventObserver {
             allTracks.addAll(tp.getTracks());
         }
         return allTracks;
+    }
+
+    public void clearAllTracks() {
+        for (TrackPanel tp : getTrackPanels()) {
+            tp.clearTracks();
+        }
     }
 
     public List<FeatureTrack> getFeatureTracks() {
@@ -2303,21 +2295,6 @@ public class IGV implements IGVEventObserver {
         return completed;
     }
 
-    public void receiveEvent(Object event) {
-        if (event instanceof RepaintEvent) {
-            // TODO -- use track information to reduce the number of panels that need repainted
-            repaintContentPane();
-        } else if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
-            revalidateTrackPanels();   // TODO -- this seems extreme
-        } else if (event instanceof ShiftEvent) {
-            revalidateTrackPanels();
-        } else if (event instanceof GenomeChangeEvent) {
-            doRefresh();
-        } else {
-            log.info("Unknown event type: " + event.getClass());
-        }
-    }
-
     /**
      * Post an event to this instance's event bus
      * // TODO -- replace the reference to the global event bus with a local one (member if IGV)
@@ -2328,43 +2305,41 @@ public class IGV implements IGVEventObserver {
         IGVEventBus.getInstance().post(event);
     }
 
-    public void resetFrames() {
 
-        contentPane.getMainPanel().headerPanelContainer.createHeaderPanels();
-        for (TrackPanel tp : getTrackPanels()) {
-            tp.createDataPanels();
+    public void receiveEvent(Object event) {
+        if (event instanceof RepaintEvent) {
+            // TODO -- use track information to reduce the number of panels that need repainted
+            repaintContentPane();
+        } else if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
+            revalidateTrackPanels();   // TODO -- this seems extreme
+        } else if (event instanceof ShiftEvent) {
+            revalidateTrackPanels();
+        } else if (event instanceof GenomeChangeEvent) {
+            repaint();
+        } else {
+            log.info("Unknown event type: " + event.getClass());
         }
-
-        contentPane.getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
-        contentPane.getMainPanel().applicationHeaderPanel.revalidate();
-        contentPane.getMainPanel().validate();
-        contentPane.getMainPanel().repaint();
     }
 
-    final public void doRefresh() {
-        (new Autoscaler()).autoscale(this);
-        contentPane.getMainPanel().revalidate();
-        mainFrame.repaint();
-        getContentPane().repaint();
+
+    public void resetFrames() {
+        UIUtilities.invokeOnEventThread(() -> {
+                    contentPane.getMainPanel().headerPanelContainer.createHeaderPanels();
+                    for (TrackPanel tp : getTrackPanels()) {
+                        tp.createDataPanels();
+                    }
+                    contentPane.getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
+                    contentPane.getMainPanel().applicationHeaderPanel.revalidate();
+                    contentPane.getMainPanel().validate();
+                    repaint(contentPane.getMainPanel());
+                }
+        );
     }
 
-    /**
-     * Repaint the header and data panels.
-     * <p/>
-     * Note:  If running in Batch mode we force synchronous painting.  This is necessary as the
-     * paint() command triggers loading of data.  If allowed to proceed asynchronously the "snapshot" batch command
-     * might execute before the data from a previous command has loaded.
-     */
     public void revalidateTrackPanels() {
         UIUtilities.invokeOnEventThread(() -> {
-            if (Globals.isBatch()) {
-                contentPane.revalidateTrackPanels();
-                rootPane.paintImmediately(rootPane.getBounds());
-            } else {
-                contentPane.revalidateTrackPanels();
-                rootPane.repaint();
-
-            }
+            contentPane.revalidateTrackPanels();
+            repaint(rootPane);
         });
     }
 
@@ -2384,6 +2359,7 @@ public class IGV implements IGVEventObserver {
     }
 
     private void repaint(JComponent component) {
+        loadAllTracks();
         UIUtilities.invokeOnEventThread(() -> {
             if (Globals.isBatch()) {
                 component.paintImmediately(component.getBounds());
@@ -2393,4 +2369,52 @@ public class IGV implements IGVEventObserver {
             }
         });
     }
+
+
+    public synchronized void loadAllTracks() {
+        List<CompletableFuture> futures = new ArrayList();
+        for (TrackPanel tp : getTrackPanels()) {
+            for (ReferenceFrame frame : FrameManager.getFrames()) {
+                Collection<Track> trackList = visibleTracks(tp.getDataPanelContainer());
+                for (Track track : trackList) {
+                    if (track.isReadyToPaint(frame) == false) {
+                        if (Globals.isBatch()) {
+                            track.load(frame);
+                        } else {
+                            futures.add(CompletableFuture.runAsync(() -> {
+                                track.load(frame);
+                            }, threadExecutor));
+                        }
+                    }
+                }
+            }
+        }
+
+        if (futures.size() > 0) {
+            final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
+            WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+            try {
+                CompletableFuture.allOf(futureArray).get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } finally {
+                WaitCursorManager.removeWaitCursor(token);
+            }
+        }
+
+        Autoscaler.autoscale(getAllTracks());
+    }
+
+
+    public List<Track> visibleTracks(DataPanelContainer dataPanelContainer) {
+        return dataPanelContainer.getTrackGroups().stream().
+                filter(TrackGroup::isVisible).
+                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
+                collect(Collectors.toList());
+    }
+
+    // Thread pool for loading data
+    private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
 }

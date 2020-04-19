@@ -172,20 +172,17 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     }
 
     public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
-
         if (sequenceDictionary != null && !sequenceDictionary.containsKey(sequence)) {
             return EMPTY_ITERATOR;
         } else {
             CloseableIterator<SAMRecord> iter = null;
             try {
-                synchronized (reader) {
-                    iter = reader.query(sequence, start + 1, end, contained);
-                }
+                iter = reader.query(sequence, start + 1, end, contained);
             } catch (IllegalArgumentException e) {
                 log.error("Error querying for sequence: " + sequence, e);
                 return new EmptyAlignmentIterator();
             }
-            return new WrappedIterator(iter);
+            return new ListIterator(iter);
         }
     }
 
@@ -369,6 +366,39 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
             return null;
         }
     };
+
+    static class ListIterator implements CloseableIterator<PicardAlignment> {
+
+        Iterator<PicardAlignment> iterator;
+
+        public ListIterator(CloseableIterator<SAMRecord> iter) {
+            List<PicardAlignment> alignments = new ArrayList<>(1000);
+            while (iter.hasNext()) {
+                alignments.add(new PicardAlignment(iter.next()));
+            }
+            iter.close();
+            iterator = alignments.iterator();
+
+        }
+
+        public void close() {
+            iterator = null;
+        }
+
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        public PicardAlignment next() {
+            return iterator.next();
+        }
+
+        public void remove() {
+            iterator = null;
+        }
+
+
+    }
 
 
 }

@@ -234,7 +234,6 @@ public class IGVSessionReader implements SessionReader {
         }
 
         if (genomeId != null && genomeId.length() > 0) {
-
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
                 // We don't have to reload the genome, but the gene track for the current genome should be restored.
                 if (hasGeneTrack || hasSeqTrack) {
@@ -243,11 +242,9 @@ public class IGVSessionReader implements SessionReader {
                     IGV.getInstance().setGenomeTracks(geneTrack);
                 }
             } else {
-
-                // Selecting a genome will actually "reset" the session so we have to
+                // Selecting a genome will "reset" the session so we have to
                 // save the path and restore it.
                 String sessionPath = session.getPath();
-
                 try {
                     GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
                     if (item != null) {
@@ -268,8 +265,6 @@ public class IGVSessionReader implements SessionReader {
                     MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
                     log.error("Error loading genome: " + genomeId, e);
                 }
-
-
                 session.setPath(sessionPath);
             }
         }
@@ -326,7 +321,6 @@ public class IGVSessionReader implements SessionReader {
         }
 
         session.setVersion(version);
-
         NodeList elements = element.getChildNodes();
         process(session, elements, additionalInformation, rootPath);
 
@@ -364,7 +358,6 @@ public class IGVSessionReader implements SessionReader {
                 IGV.getInstance().resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
             }
         }
-
     }
 
 
@@ -461,15 +454,11 @@ public class IGVSessionReader implements SessionReader {
             List<Runnable> synchronousLoads = new ArrayList<Runnable>();
 
             for (final ResourceLocator locator : dataFiles) {
-
                 Runnable runnable = () -> {
-
                     List<Track> tracks = null;
-
                     try {
 
                         tracks = igv.load(locator);
-
                         for (Track track : tracks) {
 
                             if (track == null) {
@@ -498,12 +487,8 @@ public class IGVSessionReader implements SessionReader {
                     }
                 };
 
-                String path = locator.getPath();
-                boolean isAlignment = path != null && (path.endsWith(".bam") || path.endsWith(".entries") || path.endsWith(".sam"));
-                boolean isGoogle = GoogleUtils.isGoogleURL(path);
-
-                // Run synchronously if in batch mode or if there are no "track" elments, or if this is an alignment file
-                if (isAlignment || isGoogle || Globals.isBatch() || !hasTrackElments) {
+                // Run synchronously if in batch mode or if there are no "track"  elements
+                if (Globals.isBatch() || !hasTrackElments) {
                     synchronousLoads.add(runnable);
                 } else {
                     Thread t = new Thread(runnable);
@@ -516,9 +501,9 @@ public class IGVSessionReader implements SessionReader {
                 try {
                     t.join();
                 } catch (InterruptedException ignore) {
+                    log.error(ignore);
                 }
             }
-
 
             // Now load data that must be loaded synchronously
             for (Runnable runnable : synchronousLoads) {
@@ -852,7 +837,6 @@ public class IGVSessionReader implements SessionReader {
 
         //We make a second pass through, resolving references to tracks which may have been processed afterwards.
         //For instance if Track 2 referenced Track 4
-        //TODO Make this less hacky
         for (Track track : panelTracks) {
             if (track instanceof FeatureTrack) {
                 FeatureTrack featureTrack = (FeatureTrack) track;
@@ -921,34 +905,24 @@ public class IGVSessionReader implements SessionReader {
 
         if (matchedTracks != null) {
 
-
             for (final Track track : matchedTracks) {
-
                 // Special case for sequence & gene tracks, they need to be removed before being placed.
                 if (igv != null && version >= 4 && (track == geneTrack || track == seqTrack)) {
                     igv.removeTracks(Arrays.asList(track), false);
                 }
                 track.unmarshalXML(element, version);
             }
-
             leftoverTrackDictionary.remove(id);
-
 
         } else {
 
             String className = getAttribute(element, "clazz");
-
             if (className != null) {
-
                 try {
                     Track track = null;
-
                     Class clazz = SessionElement.getClass(className);
-
                     track = (Track) clazz.getConstructor().newInstance();
-
                     track.unmarshalXML(element, version);
-
                     matchedTracks = Arrays.asList(track);
 
 
@@ -958,10 +932,8 @@ public class IGVSessionReader implements SessionReader {
                     }
 
                     if (className.contains("MergedTracks")) {
-
                         List<DataTrack> memberTracks = new ArrayList(processChildTracks(session, element,
                                 additionalInformation, rootPath));
-
                         ((MergedTracks) track).setMemberTracks(memberTracks);
 
                     }

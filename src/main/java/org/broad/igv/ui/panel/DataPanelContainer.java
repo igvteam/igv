@@ -26,25 +26,24 @@
 package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.MessageCollection;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.ui.FontManager;
-import org.broad.igv.Globals;
-import java.text.DecimalFormat;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.io.File;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -143,8 +142,6 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
     @Override
     protected void paintChildren(Graphics g) {
-
-        autoscale();
 
         super.paintChildren(g);
         if (IGV.getInstance().isRulerEnabled()) {
@@ -262,119 +259,4 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
             return (event.getDropAction() & DnDConstants.ACTION_COPY_OR_MOVE) != 0;
         }
     }
-
-
-    private void autoscale() {
-
-
-        final Collection<Track> trackList = IGV.getInstance().getAllTracks();
-
-        Map<String, List<Track>> autoscaleGroups = new HashMap<String, List<Track>>();
-
-        for (Track track : trackList) {
-
-            if (!track.isVisible()) continue;
-
-            String asGroup = track.getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
-            if (asGroup != null) {
-                if (!autoscaleGroups.containsKey(asGroup)) {
-                    autoscaleGroups.put(asGroup, new ArrayList<Track>());
-                }
-
-                if (track instanceof MergedTracks) {
-                    for (Track mt : ((MergedTracks) track).getMemberTracks()) {
-                        autoscaleGroups.get(asGroup).add(track);
-                    }
-                } else {
-                    autoscaleGroups.get(asGroup).add(track);
-                }
-            } else if (track.getAutoScale()) {
-
-                if (track instanceof MergedTracks) {
-                    List<Track> memberTracks = new ArrayList(((MergedTracks) track).getMemberTracks());
-                    autoscaleGroup(memberTracks);
-
-                } else {
-                    autoscaleGroup(Arrays.asList(track));
-                }
-            }
-
-        }
-
-        if (autoscaleGroups.size() > 0) {
-            for (List<Track> tracks : autoscaleGroups.values()) {
-                autoscaleGroup(tracks);
-            }
-        }
-    }
-
-    private void autoscaleGroup(List<Track> trackList) {
-
-
-        List<ReferenceFrame> frames =
-                FrameManager.isGeneListMode() ? FrameManager.getFrames() :
-                        Arrays.asList(FrameManager.getDefaultFrame());
-
-
-        List<Range> inViewRanges = new ArrayList<Range>();
-
-        synchronized (trackList) {
-            for (Track track : trackList) {
-                if (track instanceof ScalableTrack) {
-                    for (ReferenceFrame frame : frames) {
-                        Range range = ((ScalableTrack) track).getInViewRange(frame);
-                        if (range != null) {
-                            inViewRanges.add(range);
-                        }
-                    }
-                }
-            }
-
-            if (inViewRanges.size() > 0) {
-
-                Range inter = computeScale(inViewRanges);
-
-                for (Track track : trackList) {
-
-                    DataRange dr = track.getDataRange();
-                    float min = Math.min(0, inter.min);
-                    float base = Math.max(min, dr.getBaseline());
-                    float max = inter.max;
-                    // Pathological case where min ~= max  (no data in view)
-                    if (max - min <= (2 * Float.MIN_VALUE)) {
-                        max = min + 1;
-                    }
-
-                    DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
-                    newDR.setType(dr.getType());
-                    track.setDataRange(newDR);
-
-                }
-            }
-        }
-    }
-
-
-    public static Range computeScale(List<Range> ranges) {
-
-        float min = 0;
-        float max = 0;
-
-        if (ranges.size() > 0) {
-            max = ranges.get(0).max;
-            min = ranges.get(0).min;
-
-            for (int i = 1; i < ranges.size(); i++) {
-
-                Range r = ranges.get(i);
-                max = Math.max(r.max, max);
-                min = Math.min(r.min, min);
-
-            }
-        }
-
-        return new Range(min, max);
-    }
-
-
 }

@@ -32,7 +32,6 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.util.FileUtils;
 
@@ -51,20 +50,20 @@ import java.io.File;
 public class OpenSessionMenuAction extends MenuAction {
 
     private static Logger log = Logger.getLogger(OpenSessionMenuAction.class);
-    private IGV mainFrame;
+    private IGV igv;
     private String sessionFile = null;
     private boolean autoload = false;
 
-    public OpenSessionMenuAction(String label, String sessionFile, IGV mainFrame) {
+    public OpenSessionMenuAction(String label, String sessionFile, IGV igv) {
         super(label);
         this.sessionFile = sessionFile;
-        this.mainFrame = mainFrame;
+        this.igv = igv;
         autoload = true;
     }
 
-    public OpenSessionMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public OpenSessionMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
     }
 
     @Override
@@ -89,10 +88,10 @@ public class OpenSessionMenuAction extends MenuAction {
         if (sessionFile != null) {
             if (FileUtils.isRemote(sessionFile)) {
                 boolean merge = false;
-                mainFrame.doRestoreSession(sessionFile, null, merge);
+                igv.doRestoreSession(sessionFile, null, merge);
             } else {
                 File f = new File(sessionFile);
-                mainFrame.doRestoreSession(f, null);
+                igv.doRestoreSession(f, null);
             }
         }
     }

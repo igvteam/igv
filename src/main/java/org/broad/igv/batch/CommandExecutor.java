@@ -186,7 +186,7 @@ public class CommandExecutor {
                 return result;
             }
 
-            igv.doRefresh();
+            igv.repaint();
 
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.5) {
                 log.debug("Running garbage collection");

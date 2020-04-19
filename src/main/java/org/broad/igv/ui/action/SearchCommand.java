@@ -232,7 +232,7 @@ public class SearchCommand {
             IGV.getInstance().resetFrames();
         }
         else {
-            IGV.getInstance().doRefresh();
+            IGV.getInstance().repaint();
         }
 
         if (success && recordHistory) {

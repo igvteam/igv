@@ -84,7 +84,7 @@ public class OverlayTracksMenuAction extends MenuAction {
                         String name = entry.getKey();
                         merge(entry.getValue(), name);
                     }
-                    igv.doRefresh();
+                    igv.repaint();
                 }
 
             }
@@ -111,7 +111,7 @@ public class OverlayTracksMenuAction extends MenuAction {
                 IGV.getInstance().removeTracks(Arrays.asList(mergedTracks));
             }
         }
-        IGV.getInstance().doRefresh();
+        IGV.getInstance().repaint();
     }
 
 }

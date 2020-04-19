@@ -298,7 +298,7 @@ public class VariantMenu extends IGVPopupMenu {
         m1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.COLLAPSED);
-                IGV.getInstance().doRefresh();
+                IGV.getInstance().repaint();
             }
         });
 
@@ -307,7 +307,7 @@ public class VariantMenu extends IGVPopupMenu {
         m2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.SQUISHED);
-                IGV.getInstance().doRefresh();
+                IGV.getInstance().repaint();
             }
         });
 
@@ -316,7 +316,7 @@ public class VariantMenu extends IGVPopupMenu {
         m3.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.EXPANDED);
-                IGV.getInstance().doRefresh();
+                IGV.getInstance().repaint();
             }
         });
 

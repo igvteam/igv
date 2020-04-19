@@ -82,7 +82,7 @@ public class GroupTracksMenuAction extends MenuAction {
                 if (!dlg.isCanceled()) {
                     String selectedAttribute = dlg.getSelected();
                     IGV.getInstance().setGroupByAttribute(selectedAttribute);
-                    mainFrame.doRefresh();
+                    mainFrame.repaint();
 
                 }
 

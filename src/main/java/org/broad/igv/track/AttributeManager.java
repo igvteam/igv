@@ -331,7 +331,7 @@ public class AttributeManager {
 
             if (!Globals.isHeadless()) {
                 IGV.getInstance().resetOverlayTracks();
-                IGV.getInstance().doRefresh();
+                IGV.getInstance().repaint();
             }
 
         } catch (IOException ex) {

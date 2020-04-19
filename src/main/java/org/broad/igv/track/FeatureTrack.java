@@ -600,7 +600,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                             //select the appropriate row
                             setSelectedFeatureRowIndex(i);
                         }
-                        IGV.getInstance().doRefresh();
+                        IGV.getInstance().repaint();
                         break;
                     }
                 }
@@ -864,7 +864,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 if (unload) {
                     Collection<Track> tmp = Arrays.asList((Track) this);
                     IGV.getInstance().removeTracks(tmp);
-                    IGV.getInstance().doRefresh();
+                    IGV.getInstance().repaint();
                 } else {
                     fatalLoadError = false;
                 }

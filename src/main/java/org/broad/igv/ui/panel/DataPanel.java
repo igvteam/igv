@@ -77,9 +77,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
     private static Logger log = Logger.getLogger(DataPanel.class);
 
-    // Thread pool for loading data
-    private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
-
     private DataPanelTool defaultTool;
     private DataPanelTool currentTool;
     private ReferenceFrame frame;
@@ -136,23 +133,31 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
     }
 
+    public boolean allTracksLoaded() {
+        return parent.getTrackGroups().stream().
+                filter(TrackGroup::isVisible).
+                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
+                allMatch(track -> track.isReadyToPaint(frame));
+    }
 
     @Override
     public void paintComponent(final Graphics g) {
+
+        if(!allTracksLoaded()) {
+            if(log.isDebugEnabled()) {
+                log.debug("Attempt to paint before data is loaded");
+                for (Track t : parent.getAllTracks()) {
+                    log.debug(t.getName());
+                }
+            }
+            return;
+        }
 
         super.paintComponent(g);
         RenderContext context = null;
         try {
 
             long t0 = System.currentTimeMillis();
-
-            if (!allTracksLoaded()) {
-                if (!loadInProgress) {
-                    loadInProgress = true;
-                    load();
-                }
-                if (!Globals.isBatch()) return;
-            }
 
             Rectangle clipBounds = g.getClipBounds();
             final Rectangle visibleRect = getVisibleRect();
@@ -193,63 +198,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
     }
 
-
-    public boolean allTracksLoaded() {
-        return parent.getTrackGroups().stream().
-                filter(TrackGroup::isVisible).
-                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
-                allMatch(track -> track.isReadyToPaint(frame));
-    }
-
-
-    public List<Track> visibleTracks() {
-        return parent.getTrackGroups().stream().
-                filter(TrackGroup::isVisible).
-                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
-                collect(Collectors.toList());
-    }
-
-    private void load() {
-        ReferenceFrame frame = getFrame();
-        Collection<Track> trackList = visibleTracks();
-        List<CompletableFuture> futures = new ArrayList(trackList.size());
-        boolean batchLoaded = false;
-        for (Track track : trackList) {
-            if (track.isReadyToPaint(frame) == false) {
-                final Runnable runnable = () -> {
-                    track.load(frame);
-                    this.revalidate();
-                };
-
-                if (Globals.isBatch()) {
-                    runnable.run();
-                    batchLoaded = true;
-                } else {
-                    futures.add(CompletableFuture.runAsync(runnable, threadExecutor));
-                }
-            }
-        }
-
-        if (futures.size() > 0 || batchLoaded) {
-            final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
-            WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-            CompletableFuture.allOf(futureArray)
-                    .thenRun(() -> {
-                        //log.info("Call repaint " + dataPanel.hashCode() + " " + dataPanel.allTracksLoaded());
-                        loadInProgress = false;
-                        WaitCursorManager.removeWaitCursor(token);
-                        repaint();
-
-                    })
-                    .exceptionally(e -> {
-                        log.error("Error: ", e);
-                        loadInProgress = false;
-                        WaitCursorManager.removeWaitCursor(token);
-                        return null;
-                    });
-
-        }
-    }
 
     /**
      * TODO -- move this to a "layout" command, to layout tracks and assign positions

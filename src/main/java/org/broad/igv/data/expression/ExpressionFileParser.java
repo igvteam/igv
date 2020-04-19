@@ -264,16 +264,6 @@ public class ExpressionFileParser {
                 }
                 addRow(probeId, description, values);
                 lineCount++;
-
-                // This method is designed to be interruptable (canceled by
-                // user.  Check every 1000 lines for an interrupt.
-                if (lineCount == 1000) {
-                    checkForInterrupt();
-                    lineCount = 0;
-                    if (statusMonitor != null) {
-                        statusMonitor.incrementPercentComplete(1);
-                    }
-                }
             }    // End loop through lines
 
 
@@ -296,9 +286,7 @@ public class ExpressionFileParser {
 
         } catch (FileNotFoundException ex) {
             throw new RuntimeException(ex);
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Operation cancelled");
-        } catch (Exception e) {
+        }  catch (Exception e) {
             e.printStackTrace();
             if (nextLine != null && lineCount != 0) {
                 throw new ParserException(e.getMessage(), e, lineCount, nextLine);
@@ -449,10 +437,6 @@ public class ExpressionFileParser {
                 }
             }
         }
-    }
-
-    private void checkForInterrupt() throws InterruptedException {
-        Thread.sleep(1);    // <- check for interrupted thread
     }
 
     public static FormatDescriptor parseHeader(BufferedReader reader, FileType type, ExpressionDataset dataset) throws IOException {

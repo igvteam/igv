@@ -82,7 +82,7 @@ public class SetTrackHeightMenuAction extends MenuAction {
      */
     final public void doSetTrackHeight() {
 
-        boolean doRefresh = false;
+        boolean repaint = false;
         try {
             JPanel container = new JPanel();
             JLabel trackHeightLabel = new JLabel("Track Height (pixels)");
@@ -106,7 +106,7 @@ public class SetTrackHeightMenuAction extends MenuAction {
                 int newTrackHeight = Integer.parseInt(trackHeightField.getText().trim());
                 IGV.getInstance().setAllTrackHeights(newTrackHeight);
                 lastTrackHeight = newTrackHeight;
-                doRefresh = true;
+                repaint = true;
             }
             catch (NumberFormatException numberFormatException) {
                 JOptionPane.showMessageDialog(mainFrame.getMainFrame(), "Track height must be an integer number.");
@@ -116,11 +116,11 @@ public class SetTrackHeightMenuAction extends MenuAction {
         finally {
 
             // Refresh view
-            if (doRefresh) {
+            if (repaint) {
 
                 // Update the state of the current tracks for drawing purposes
 
-                mainFrame.doRefresh();
+                mainFrame.repaint();
             }
             mainFrame.resetStatusMessage();
         }

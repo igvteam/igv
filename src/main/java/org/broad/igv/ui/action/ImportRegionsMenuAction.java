@@ -131,7 +131,7 @@ public class ImportRegionsMenuAction extends MenuAction {
                 if (reader != null) {
                     reader.close();
                 }
-                mainFrame.doRefresh();
+                mainFrame.repaint();
             }
         } catch (Exception e) {
             log.error("Failed to write Region of Interest export file!", e);

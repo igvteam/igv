@@ -950,7 +950,7 @@ public class TrackMenuUtils {
 
             PreferencesManager.getPreferences().setShowAttributeView(true);
             IGV.getInstance().getMainPanel().invalidate();
-            IGV.getInstance().doRefresh();
+            IGV.getInstance().repaint();
 
 
         });
@@ -1077,7 +1077,7 @@ public class TrackMenuUtils {
             return;
         }
         IGV.getInstance().removeTracks(selectedTracks);
-        IGV.getInstance().doRefresh();
+        IGV.getInstance().repaint();
     }
 
 
@@ -1446,7 +1446,7 @@ public class TrackMenuUtils {
     public static void refresh() {
         if (IGV.hasInstance()) {
             IGV.getInstance().showLoadedTrackCount();
-            IGV.getInstance().doRefresh();
+            IGV.getInstance().repaint();
         }
     }
 

@@ -1255,7 +1255,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
         selectedVariant = getSelectedVariant(te);
         if (selectedVariant != null) {
-            IGV.getInstance().doRefresh();
+            IGV.getInstance().repaint();
         }
         return new VariantMenu(this, selectedVariant);
     }
@@ -1370,7 +1370,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                     }
                 }
             }
-            IGV.getInstance().doRefresh();
+            IGV.getInstance().repaint();
         }
 
         if (IGV.getInstance().isShowDetailsOnClick()) {
