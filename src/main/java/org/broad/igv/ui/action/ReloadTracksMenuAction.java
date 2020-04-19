@@ -32,19 +32,13 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionWriter;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.util.LongRunningTask;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -57,8 +51,6 @@ public class ReloadTracksMenuAction extends MenuAction {
     IGV igv;
 
     /**
-     *
-     *
      * @param label
      * @param mnemonic
      * @param igv
@@ -82,14 +74,15 @@ public class ReloadTracksMenuAction extends MenuAction {
         String xml = (new SessionWriter()).createXmlFromSession(currentSession, null);
 
         igv.resetSession(currentSessionFilePath);
-        IGVSessionReader sessionReader = new IGVSessionReader(this.igv);
-        InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
-        try {
-            igv.restoreSessionFromStream(currentSessionFilePath, null, inputStream);
-        } catch (IOException ex) {
-            log.error("Error reloading tracks", ex);
-        }
+        final InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
+
+        Runnable runnable = () -> {
+            try {
+                igv.restoreSessionFromStream(currentSessionFilePath, null, inputStream);
+            } catch (IOException ex) {
+                log.error("Error reloading tracks", ex);
+            }
+        };
+        LongRunningTask.submit(runnable);
     }
-
-
 }

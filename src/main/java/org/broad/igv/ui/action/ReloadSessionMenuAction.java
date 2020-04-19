@@ -33,6 +33,7 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.util.LongRunningTask;
 
 import java.awt.event.ActionEvent;
 
@@ -63,9 +64,8 @@ public class ReloadSessionMenuAction extends MenuAction {
     public void actionPerformed(ActionEvent e) {
         String currentSessionFilePath = igv.getSession().getPath();
         if (currentSessionFilePath != null) {
-            this.igv.restoreSessionSynchronous(currentSessionFilePath, null, false);
+            Runnable runnable = () -> this.igv.restoreSessionSynchronous(currentSessionFilePath, null, false);
+            LongRunningTask.submit(runnable);
         }
     }
-
-
 }
