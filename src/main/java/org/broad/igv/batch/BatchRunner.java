@@ -28,6 +28,7 @@ package org.broad.igv.batch;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ParsingUtils;
@@ -39,11 +40,11 @@ public class BatchRunner implements NamedRunnable {
     private static Logger log = Logger.getLogger(BatchRunner.class);
 
     String inputFile;
+    IGV igv;
 
-    public BatchRunner(final String inputFile) {
-
+    public BatchRunner(final String inputFile, IGV igv) {
         this.inputFile = inputFile;
-
+        this.igv = igv;
     }
 
     public String getName() {
@@ -59,7 +60,7 @@ public class BatchRunner implements NamedRunnable {
         String inLine;
         setIsBatchMode(true);
 
-        CommandExecutor cmdExe = new CommandExecutor();
+        CommandExecutor cmdExe = new CommandExecutor(igv);
 
         WaitCursorManager.CursorToken cursorToken = null;
         BufferedReader reader = null;

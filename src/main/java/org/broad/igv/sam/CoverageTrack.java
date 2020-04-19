@@ -32,10 +32,12 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CoverageDataSource;
+import org.broad.igv.event.RepaintEvent;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
+import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -88,7 +90,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     public static final boolean DEFAULT_SHOW_REFERENCE = false;
 
     private float snpThreshold;
-
     private AlignmentTrack alignmentTrack;
     private AlignmentDataManager dataManager;
     private CoverageDataSource dataSource;
@@ -98,6 +99,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     private JMenuItem dataRangeItem;
     private Genome genome;
     private boolean removed = false;
+    IGV igv;
 
     /**
      * Whether to autoscale across all ReferenceFrames
@@ -117,6 +119,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         if (track.dataSource != null) this.setDataSource(track.dataSource);
         this.snpThreshold = track.snpThreshold;
         this.prefs = track.prefs;
+        this.igv = IGV.getInstance();
     }
 
     public CoverageTrack(ResourceLocator locator, String name, AlignmentTrack alignmentTrack, Genome genome) {
@@ -126,17 +129,11 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         this.genome = genome;
         intervalRenderer = new IntervalRenderer();
         setMaximumHeight(40);
-
         setColor(coverageGrey);
-
         prefs = PreferencesManager.getPreferences();
         snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
         autoScale = DEFAULT_AUTOSCALE;
-
-    }
-
-    public CoverageTrack() {
-
+        this.igv = IGV.getInstance();
     }
 
     @Override
@@ -859,27 +856,20 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public JMenuItem addSnpTresholdItem(JPopupMenu menu) {
         JMenuItem maxValItem = new JMenuItem("Set allele frequency threshold...");
-
-        maxValItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-
-                String value = JOptionPane.showInputDialog("Allele frequency threshold: ", Float.valueOf(snpThreshold));
-                if (value == null) {
-                    return;
-                }
-                try {
-                    float tmp = Float.parseFloat(value);
-                    snpThreshold = tmp;
-                    IGV.getInstance().revalidateTrackPanels();
-                } catch (Exception exc) {
-                    //log
-                }
-
+        maxValItem.addActionListener(e -> {
+            String value = JOptionPane.showInputDialog("Allele frequency threshold: ", Float.valueOf(snpThreshold));
+            if (value == null) {
+                return;
+            }
+            try {
+                float tmp = Float.parseFloat(value);
+                snpThreshold = tmp;
+                igv.postEvent(new RepaintEvent(CoverageTrack.this));
+            } catch (Exception exc) {
+                //log
             }
         });
         menu.add(maxValItem);
-
         return maxValItem;
     }
 
@@ -918,7 +908,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     UIUtilities.invokeOnEventThread(new Runnable() {
-
                         public void run() {
                             setVisible(false);
                             if (IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
@@ -935,28 +924,24 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     public void addLoadCoverageDataItem(JPopupMenu menu) {
         // Change track height by attribute
         final JMenuItem item = new JCheckBoxMenuItem("Load pre-computed coverage data...");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-
-                final IGVPreferences prefs = PreferencesManager.getPreferences();
-                File initDirectory = prefs.getLastTrackDirectory();
-                File file = FileDialogUtils.chooseFile("Select coverage file", initDirectory, FileDialog.LOAD);
-                if (file != null) {
-                    prefs.setLastTrackDirectory(file.getParentFile());
-                    String path = file.getAbsolutePath();
-                    if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
-                        TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
-                        TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
-                        setDataSource(ds);
-                        IGV.getInstance().revalidateTrackPanels();
-                    } else if (path.endsWith(".counts")) {
-                        CoverageDataSource ds = new GobyCountArchiveDataSource(file);
-                        setDataSource(ds);
-                        IGV.getInstance().revalidateTrackPanels();
-                    } else {
-                        MessageUtils.showMessage("Coverage data must be in .tdf format");
-                    }
+        item.addActionListener(e -> {
+            final IGVPreferences prefs = PreferencesManager.getPreferences();
+            File initDirectory = prefs.getLastTrackDirectory();
+            File file = FileDialogUtils.chooseFile("Select coverage file", initDirectory, FileDialog.LOAD);
+            if (file != null) {
+                prefs.setLastTrackDirectory(file.getParentFile());
+                String path = file.getAbsolutePath();
+                if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
+                    TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
+                    TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
+                    setDataSource(ds);
+                    igv.postEvent(new RepaintEvent(CoverageTrack.this));
+                } else if (path.endsWith(".counts")) {
+                    CoverageDataSource ds = new GobyCountArchiveDataSource(file);
+                    setDataSource(ds);
+                    igv.postEvent(new RepaintEvent(CoverageTrack.this));
+                } else {
+                    MessageUtils.showMessage("Coverage data must be in .tdf format");
                 }
             }
         });

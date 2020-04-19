@@ -841,7 +841,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         JMenuItem memTest = new JMenuItem("Memory test");
         memTest.addActionListener(e -> {
-            CommandExecutor exe = new CommandExecutor();
+            CommandExecutor exe = new CommandExecutor(this.igv);
             int count = 1;
             int start = 0;
             exe.execute("snapshotDirectory /Users/jrobinso/Downloads/tmp");

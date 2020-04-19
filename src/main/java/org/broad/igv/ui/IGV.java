@@ -79,6 +79,7 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -1066,23 +1067,19 @@ public class IGV implements IGVEventObserver {
     }
 
     /**
-     * Restore a session file, and optionally go to a locus.  Called upon startup and from user action.
+     * Restore a session from a local file, and optionally go to a locus.  Called upon startup and from user action.
      *
      * @param sessionFile
      * @param locus
      */
     final public void doRestoreSession(final File sessionFile, final String locus) {
-
         if (sessionFile.exists()) {
-
             doRestoreSession(sessionFile.getAbsolutePath(), locus, false);
-
         } else {
             String message = "Session file does not exist! : " + sessionFile.getAbsolutePath();
             log.error(message);
             MessageUtils.showMessage(message);
         }
-
     }
 
     /**
@@ -1097,17 +1094,10 @@ public class IGV implements IGVEventObserver {
                                  final boolean merge) {
 
         // check to see if any files in session file are on protected (oauth) server. If
-        // so, make sure user is logged into
-        // server before -proceeding
+        // so, make sure user is logged into server before -proceeding
 
         OAuthUtils.getInstance().getProvider().checkServerLogin(sessionPath);
-
-
-        Runnable runnable = new Runnable() {
-            public void run() {
-                restoreSessionSynchronous(sessionPath, locus, merge);
-            }
-        };
+        Runnable runnable = () -> restoreSessionSynchronous(sessionPath, locus, merge);
         LongRunningTask.submit(runnable);
     }
 
@@ -1137,8 +1127,6 @@ public class IGV implements IGVEventObserver {
             }
 
             setStatusBarMessage("Opening session...");
-
-
             return restoreSessionFromStream(sessionPath, locus, inputStream);
 
         } catch (Exception e) {
@@ -1174,9 +1162,6 @@ public class IGV implements IGVEventObserver {
                 !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
             goToLocus(searchText);
         }
-
-
-        System.gc();
 
         double[] dividerFractions = session.getDividerFractions();
         if (dividerFractions != null) {
@@ -1569,22 +1554,22 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    public boolean sortAlignmentTracks(AlignmentTrack.SortOption option, String tag) {
-        return sortAlignmentTracks(option, null, tag);
+    public void sortAlignmentTracks(AlignmentTrack.SortOption option, String tag) {
+        sortAlignmentTracks(option, null, tag);
     }
 
-    public boolean sortAlignmentTracks(AlignmentTrack.SortOption option, Double location, String tag) {
+    public void sortAlignmentTracks(AlignmentTrack.SortOption option, Double location, String tag) {
         double actloc;
-        boolean toRet = true;
-        for (Track t : getAllTracks()) {
-            if (t instanceof AlignmentTrack) {
-                for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    actloc = location != null ? location : frame.getCenter();
-                    toRet &= ((AlignmentTrack) t).sortRows(option, frame, actloc, tag);
-                }
+        List<Track> alignmentTracks = getAllTracks().stream()
+                .filter(track -> track instanceof AlignmentTrack)
+                .collect(Collectors.toList());
+        for (Track t : alignmentTracks) {
+            for (ReferenceFrame frame : FrameManager.getFrames()) {
+                actloc = location != null ? location : frame.getCenter();
+                ((AlignmentTrack) t).sortRows(option, frame, actloc, tag);
             }
         }
-        return toRet;
+        this.postEvent(new RepaintEvent(alignmentTracks));
     }
 
     /**
@@ -1602,11 +1587,13 @@ public class IGV implements IGVEventObserver {
         if (option == AlignmentTrack.GroupOption.BASE_AT_POS && pos != null) {
             prefMgr.put(SAM_GROUP_BY_POS, pos.getChr() + " " + String.valueOf(pos.getStart()));
         }
-        for (Track t : getAllTracks()) {
-            if (t instanceof AlignmentTrack) {
-                ((AlignmentTrack) t).groupAlignments(option, tag, pos);
-            }
+        List<Track> alignmentTracks = getAllTracks().stream()
+                .filter(track -> track instanceof AlignmentTrack)
+                .collect(Collectors.toList());
+        for (Track t : alignmentTracks) {
+            ((AlignmentTrack) t).groupAlignments(option, tag, pos);
         }
+        this.postEvent(new RepaintEvent(alignmentTracks));
     }
 
     public void packAlignmentTracks() {
@@ -1926,11 +1913,10 @@ public class IGV implements IGVEventObserver {
 
         // Create a rank order of samples.  This is done globally so sorting is consistent across groups and panels.
         final List<String> sortedSamples = sortSamplesByRegionScore(r, type, frame);
-
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.sortByRegionsScore(r, type, frame, sortedSamples);
         }
-        revalidateTrackPanels();
+        repaintContentPane();
     }
 
 
@@ -2242,7 +2228,7 @@ public class IGV implements IGVEventObserver {
                     }
                     if (runningBatch) {
                         Globals.setBatch(false);   // Set to false for startup execution -- otherwise we block the event thread
-                        LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
+                        LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile(), IGV.this));
                     }
                 }
             });
@@ -2318,8 +2304,10 @@ public class IGV implements IGVEventObserver {
     }
 
     public void receiveEvent(Object event) {
-
-        if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
+        if (event instanceof RepaintEvent) {
+            // TODO -- use track information to reduce the number of panels that need repainted
+            repaintContentPane();
+        } else if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
             revalidateTrackPanels();   // TODO -- this seems extreme
         } else if (event instanceof ShiftEvent) {
             revalidateTrackPanels();
@@ -2328,12 +2316,16 @@ public class IGV implements IGVEventObserver {
         } else {
             log.info("Unknown event type: " + event.getClass());
         }
-
     }
 
-
-    public void repaint() {
-        mainFrame.repaint();
+    /**
+     * Post an event to this instance's event bus
+     * // TODO -- replace the reference to the global event bus with a local one (member if IGV)
+     *
+     * @param event
+     */
+    public void postEvent(Object event) {
+        IGVEventBus.getInstance().post(event);
     }
 
     public void resetFrames() {
@@ -2350,6 +2342,7 @@ public class IGV implements IGVEventObserver {
     }
 
     final public void doRefresh() {
+        (new Autoscaler()).autoscale(this);
         contentPane.getMainPanel().revalidate();
         mainFrame.repaint();
         getContentPane().repaint();
@@ -2363,9 +2356,7 @@ public class IGV implements IGVEventObserver {
      * might execute before the data from a previous command has loaded.
      */
     public void revalidateTrackPanels() {
-
         UIUtilities.invokeOnEventThread(() -> {
-
             if (Globals.isBatch()) {
                 contentPane.revalidateTrackPanels();
                 rootPane.paintImmediately(rootPane.getBounds());
@@ -2377,9 +2368,29 @@ public class IGV implements IGVEventObserver {
         });
     }
 
+
+    public void repaint() {
+        repaint(rootPane);
+    }
+
     public void repaintNamePanels() {
         for (TrackPanel tp : getTrackPanels()) {
-            tp.getScrollPane().getNamePanel().repaint();
+            repaint(tp.getScrollPane().getNamePanel());
         }
+    }
+
+    public void repaintContentPane() {
+        repaint(contentPane);
+    }
+
+    private void repaint(JComponent component) {
+        UIUtilities.invokeOnEventThread(() -> {
+            if (Globals.isBatch()) {
+                component.paintImmediately(component.getBounds());
+            } else {
+                component.repaint();
+
+            }
+        });
     }
 }

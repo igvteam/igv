@@ -210,7 +210,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     }
 
     private void load() {
-
         ReferenceFrame frame = getFrame();
         Collection<Track> trackList = visibleTracks();
         List<CompletableFuture> futures = new ArrayList(trackList.size());
@@ -232,11 +231,8 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
 
         if (futures.size() > 0 || batchLoaded) {
-
             final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
-
             WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-
             CompletableFuture.allOf(futureArray)
                     .thenRun(() -> {
                         //log.info("Call repaint " + dataPanel.hashCode() + " " + dataPanel.allTracksLoaded());
@@ -633,7 +629,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             updateTooltipText(e.getX(), e.getY());
 
             if (IGV.getInstance().isRulerEnabled()) {
-                IGV.getInstance().revalidateTrackPanels();
+                IGV.getInstance().repaintContentPane();
             }
 
         }

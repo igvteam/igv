@@ -227,9 +227,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                     try {
                         AlignmentTrack.SortOption option = AlignmentTrack.SortOption.valueOf(sortOptionString);
                         String lastSortTag = prefMgr.get(SAM_SORT_BY_TAG);
-
                         igv.sortAlignmentTracks(option, lastSortTag);
-                        igv.revalidateTrackPanels();
                     } catch (IllegalArgumentException e1) {
                         log.error("Unrecognized sort option: " + sortOptionString);
                     }

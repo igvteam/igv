@@ -565,11 +565,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         rulerLineButton.setMaximumSize(new java.awt.Dimension(32, 32));
         rulerLineButton.setMinimumSize(new java.awt.Dimension(32, 32));
         rulerLineButton.setPreferredSize(new java.awt.Dimension(32, 32));
-        rulerLineButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                IGV.getInstance().setRulerEnabled(rulerLineButton.isSelected());
-                IGV.getInstance().revalidateTrackPanels();
-            }
+        rulerLineButton.addActionListener(evt -> {
+            IGV.getInstance().setRulerEnabled(rulerLineButton.isSelected());
+            IGV.getInstance().repaintContentPane();
         });
         toolPanel.add(rulerLineButton, JideBoxLayout.FIX);
 

@@ -76,7 +76,7 @@ public class HeatmapLegendPanel extends LegendPanel {
     protected void resetPreferencesToDefault() {
         // TODO -- temporary hack.  We need some specific knowledge fo the implementation
         // in order to edit it,  but do it without a cast
-        colorScale = (ContinuousColorScale) PreferencesManager.getPreferences().getDefaultColorScale(type);
+        colorScale = PreferencesManager.getPreferences().getDefaultColorScale(type);
         persistResetPreferences();
         showResetDisplay();
     }
@@ -113,7 +113,7 @@ public class HeatmapLegendPanel extends LegendPanel {
 
                 colorScale = dialog.getColorScheme();
                 PreferencesManager.getPreferences().setColorScale(type, colorScale);
-                IGV.getInstance().revalidateTrackPanels();
+                IGV.getInstance().repaintContentPane();
                 try {
 
                     reloadPreferences();

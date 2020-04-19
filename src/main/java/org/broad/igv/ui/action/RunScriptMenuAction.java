@@ -40,11 +40,11 @@ import java.io.File;
 public class RunScriptMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(LoadFilesMenuAction.class);
-    IGV mainFrame;
+    IGV igv;
 
-    public RunScriptMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public RunScriptMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -52,7 +52,7 @@ public class RunScriptMenuAction extends MenuAction {
         if (e.getActionCommand().equalsIgnoreCase("run batch script...")) {
             File script = chooseScriptFile();
             if (script != null && script.isFile()) {
-                final BatchRunner bRun = new BatchRunner(script.getPath());
+                final BatchRunner bRun = new BatchRunner(script.getPath(), igv);
 
                 SwingWorker worker = new SwingWorker() {
 
@@ -80,7 +80,7 @@ public class RunScriptMenuAction extends MenuAction {
             PreferencesManager.getPreferences().setLastTrackDirectory(scriptFile.getParentFile());
         }
 
-        mainFrame.resetStatusMessage();
+        igv.resetStatusMessage();
         return scriptFile;
     }
 }

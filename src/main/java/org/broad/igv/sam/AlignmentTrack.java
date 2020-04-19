@@ -471,9 +471,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
 
+        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
+        if(loadedInterval == null) {
+            log.info("No alignment interval for " + context.getReferenceFrame().getFormattedLocusString());
+            return;
+        }
+        final AlignmentCounts alignmentCounts = loadedInterval.getCounts();
+
         groupNames.clear();
-
-
         RenderOptions renderOptions = PreferencesManager.forceDefaults ? new RenderOptions() : this.renderOptions;
 
         //log.debug("Render features");
@@ -489,14 +494,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             renderOptions.colorOption = ColorOption.YC_TAG;
         }
 
-
         Map<String, PEStats> peStats = dataManager.getPEStats();
         if (peStats != null) {
             renderOptions.peStats = peStats;
         }
 
         Rectangle visibleRect = context.getVisibleRect();
-
         maximumHeight = Integer.MAX_VALUE;
 
         // Divide rectangle into equal height levels
@@ -518,12 +521,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             h = squishedHeight;
         }
 
+
+
         // Loop through groups
         Graphics2D groupBorderGraphics = context.getGraphic2DForColor(AlignmentRenderer.GROUP_DIVIDER_COLOR);
         int nGroups = groups.size();
         int groupNumber = 0;
         GroupOption groupOption = renderOptions.getGroupByOption();
-
         for (Map.Entry<String, List<Row>> entry : groups.entrySet()) {
 
             groupNumber++;
@@ -539,7 +543,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 assert visibleRect != null;
                 if (y + h > visibleRect.getY()) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
-                    AlignmentCounts alignmentCounts = dataManager.getLoadedInterval(context.getReferenceFrame()).getCounts();
 
                     renderer.renderAlignments(row.alignments, alignmentCounts, context, rowRectangle, renderOptions);
                     row.y = y;
@@ -573,8 +576,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             }
             y += GROUP_MARGIN;
-
-
         }
 
         final int bottom = inputRect.y + inputRect.height;
@@ -721,14 +722,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     private static void sortAlignmentTracks(SortOption option, String tag) {
-
         IGV.getInstance().sortAlignmentTracks(option, tag);
         Collection<IGVPreferences> allPrefs = PreferencesManager.getAllPreferences();
         for (IGVPreferences prefs : allPrefs) {
             prefs.put(SAM_SORT_OPTION, option.toString());
             prefs.put(SAM_SORT_BY_TAG, tag);
         }
-        refresh();
     }
 
     /**
@@ -1607,7 +1606,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 if (tag != null) {
                     if (tag.trim().length() > 0) {
                         IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag, null);
-                        refresh();
                     } else {
                         IGV.getInstance().groupAlignmentTracks(GroupOption.NONE, null, null);
                     }
@@ -1633,7 +1631,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 newGroupByPosOption.addActionListener(aEvt -> {
                     Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
                     IGV.getInstance().groupAlignmentTracks(GroupOption.BASE_AT_POS, null, groupByPos);
-                    refresh();
                 });
                 groupMenu.add(newGroupByPosOption);
                 group.add(newGroupByPosOption);
@@ -1647,8 +1644,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mi.setSelected(renderOptions.getGroupByOption() == option);
             mi.addActionListener(aEvt -> {
                 IGV.getInstance().groupAlignmentTracks(option, null, null);
-                refresh();
-
             });
             return mi;
         }

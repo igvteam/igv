@@ -27,6 +27,7 @@ package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.event.RepaintEvent;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
@@ -78,10 +79,10 @@ public class GWASTrack extends AbstractTrack {
     private boolean drawYAxis = true;
     private boolean showAxis = true;
     double maxValue = -1;
-
     private Map<String, List<GWASFeature>> gData;
     Genome genome;
     private String[] columns;
+    IGV igv;
 
     /**
      * Constructor for a new GWAS track
@@ -100,6 +101,7 @@ public class GWASTrack extends AbstractTrack {
         super(locator, id, name);
 
         this.genome = genome;
+        this.igv = IGV.getInstance(); // TODO replace with parameter
 
         IGVPreferences prefs = PreferencesManager.getPreferences();
 
@@ -507,13 +509,10 @@ public class GWASTrack extends AbstractTrack {
     public JMenuItem addShowAxisItem(JPopupMenu menu) {
         final JCheckBoxMenuItem axisItem = new JCheckBoxMenuItem("Show axis");
         axisItem.setSelected(showAxis);
-        axisItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                showAxis = axisItem.isSelected();
-                PreferencesManager.getPreferences().put(Constants.GWAS_SHOW_AXIS, String.valueOf(showAxis));
-                IGV.getInstance().revalidateTrackPanels();
-
-            }
+        axisItem.addActionListener(e -> {
+            showAxis = axisItem.isSelected();
+            PreferencesManager.getPreferences().put(Constants.GWAS_SHOW_AXIS, String.valueOf(showAxis));
+            igv.postEvent(new RepaintEvent(GWASTrack.this));
         });
         menu.add(axisItem);
         return axisItem;
@@ -521,15 +520,12 @@ public class GWASTrack extends AbstractTrack {
 
     public JMenuItem addChrColorItem(JPopupMenu menu) {
         JMenuItem colorItem = new JCheckBoxMenuItem("Chromosome color", useChrColors);
-        colorItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                singleColor = false;
-                useChrColors = true;
-                alternatingColors = false;
-                updateColorPreferences();
-                IGV.getInstance().revalidateTrackPanels();
-
-            }
+        colorItem.addActionListener(e -> {
+            singleColor = false;
+            useChrColors = true;
+            alternatingColors = false;
+            updateColorPreferences();
+            igv.postEvent(new RepaintEvent(GWASTrack.this));
         });
         menu.add(colorItem);
 
@@ -544,7 +540,7 @@ public class GWASTrack extends AbstractTrack {
                 useChrColors = false;
                 alternatingColors = true;
                 updateColorPreferences();
-                IGV.getInstance().revalidateTrackPanels();
+                igv.postEvent(new RepaintEvent(GWASTrack.this));
             }
         });
         menu.add(colorItem);
@@ -554,23 +550,16 @@ public class GWASTrack extends AbstractTrack {
 
     public JMenuItem addSingleColorItem(JPopupMenu menu) {
         JMenuItem colorItem = new JCheckBoxMenuItem("Single color", singleColor);
-
-        colorItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                singleColor = true;
-                useChrColors = false;
-                alternatingColors = false;
-                updateColorPreferences();
-                IGV.getInstance().revalidateTrackPanels();
-
-            }
+        colorItem.addActionListener(e -> {
+            singleColor = true;
+            useChrColors = false;
+            alternatingColors = false;
+            updateColorPreferences();
+            igv.postEvent(new RepaintEvent(GWASTrack.this));
         });
         menu.add(colorItem);
-
         return colorItem;
     }
-
 
     private void updateColorPreferences() {
         PreferencesManager.getPreferences().put(Constants.GWAS_SINGLE_COLOR, String.valueOf(singleColor));
@@ -578,24 +567,20 @@ public class GWASTrack extends AbstractTrack {
         PreferencesManager.getPreferences().put(Constants.GWAS_ALTERNATING_COLORS, String.valueOf(alternatingColors));
     }
 
-
     public JMenuItem addPrimaryColorItem(JPopupMenu menu) {
         JMenuItem colorItem = new JMenuItem("Set primary color...");
-        colorItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Color color = UIUtilities.showColorChooserDialog("Set primary color", primaryColor);
-                if (color != null) {
-                    primaryColor = color;
-                    String colorString = ColorUtilities.colorToString(primaryColor);
-                    PreferencesManager.getPreferences().put(Constants.GWAS_PRIMARY_COLOR, colorString);
-                    IGV.getInstance().revalidateTrackPanels();
-                }
+        colorItem.addActionListener(e -> {
+            Color color = UIUtilities.showColorChooserDialog("Set primary color", primaryColor);
+            if (color != null) {
+                primaryColor = color;
+                String colorString = ColorUtilities.colorToString(primaryColor);
+                PreferencesManager.getPreferences().put(Constants.GWAS_PRIMARY_COLOR, colorString);
+                igv.postEvent(new RepaintEvent(GWASTrack.this));
             }
         });
         menu.add(colorItem);
         return colorItem;
     }
-
 
     public JMenuItem addSecondaryColorItem(JPopupMenu menu) {
         JMenuItem colorItem = new JMenuItem("Set alternating color...");
@@ -606,13 +591,12 @@ public class GWASTrack extends AbstractTrack {
                     secondaryColor = color;
                     String colorString = ColorUtilities.colorToString(secondaryColor);
                     PreferencesManager.getPreferences().put(Constants.GWAS_SECONDARY_COLOR, colorString);
-                    IGV.getInstance().revalidateTrackPanels();
+                    igv.postEvent(new RepaintEvent(GWASTrack.this));
                 }
 
             }
         });
         menu.add(colorItem);
-
         return colorItem;
     }
 
@@ -657,9 +641,8 @@ public class GWASTrack extends AbstractTrack {
                     }
                     this.minPointSize = value;
                     updatePointSizePreferences();
-                    IGV.getInstance().revalidateTrackPanels();
+                    igv.postEvent(new RepaintEvent(GWASTrack.this));
                 }
-
             } catch (NumberFormatException numberFormatException) {
                 JOptionPane.showMessageDialog(IGV.getMainFrame(),
                         "Point size must be an integer number.");
@@ -687,7 +670,7 @@ public class GWASTrack extends AbstractTrack {
                     }
                     this.maxPointSize = value;
                     updatePointSizePreferences();
-                    IGV.getInstance().revalidateTrackPanels();
+                    igv.postEvent(new RepaintEvent(GWASTrack.this));
                 }
 
             } catch (NumberFormatException numberFormatException) {

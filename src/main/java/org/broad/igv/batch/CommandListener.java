@@ -113,7 +113,7 @@ public class CommandListener implements Runnable {
      */
     public void run() {
 
-        CommandExecutor cmdExe = new CommandExecutor();
+        CommandExecutor cmdExe = new CommandExecutor(IGV.getInstance());
 
         try {
             serverSocket = new ServerSocket(port);

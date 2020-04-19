@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.CombinedDataSource;
+import org.broad.igv.event.RepaintEvent;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.basepair.BasePairTrack;
@@ -53,7 +54,6 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
@@ -884,23 +884,6 @@ public class TrackMenuUtils {
         return item;
     }
 
-    private static JMenuItem getDrawBorderItem() {
-        // Change track height by attribute
-
-
-        final JCheckBoxMenuItem drawBorderItem = new JCheckBoxMenuItem("Draw borders");
-        drawBorderItem.setSelected(FeatureTrack.isDrawBorder());
-        drawBorderItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                FeatureTrack.setDrawBorder(drawBorderItem.isSelected());
-                IGV.getInstance().revalidateTrackPanels();
-            }
-        });
-
-        return drawBorderItem;
-    }
-
 
     public static JMenuItem getLogScaleItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
@@ -918,7 +901,7 @@ public class TrackMenuUtils {
                 for (Track t : selectedTracks) {
                     t.getDataRange().setType(scaleType);
                 }
-                IGV.getInstance().revalidateTrackPanels();
+                IGV.getInstance().postEvent(new RepaintEvent(selectedTracks));
             }
         });
 
@@ -1002,18 +985,14 @@ public class TrackMenuUtils {
             }
 
             item.setSelected(showDataRange);
-            item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent evt) {
-
-                    boolean showDataRange = item.isSelected();
-                    for (Track t : selectedTracks) {
-                        if (t instanceof DataTrack) {
-                            ((DataTrack) t).setShowDataRange(showDataRange);
-                        }
+            item.addActionListener(evt -> {
+                boolean showDataRange1 = item.isSelected();
+                for (Track t : selectedTracks) {
+                    if (t instanceof DataTrack) {
+                        ((DataTrack) t).setShowDataRange(showDataRange1);
                     }
-                    IGV.getInstance().revalidateTrackPanels();
                 }
+                IGV.getInstance().postEvent(new RepaintEvent(selectedTracks));
             });
         }
         return item;

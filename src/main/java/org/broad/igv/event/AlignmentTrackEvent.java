@@ -42,17 +42,7 @@ public class AlignmentTrackEvent {
         this.type = type;
     }
 
-    public AlignmentTrackEvent(Object source, Type type, boolean booleanValue) {
-        this.source = source;
-        this.type = type;
-        this.booleanValue = booleanValue;
-    }
-
     public Type getType() {
         return type;
-    }
-
-    public boolean getBooleanValue() {
-        return booleanValue;
     }
 }

@@ -35,6 +35,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.event.RepaintEvent;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -72,8 +73,8 @@ public class CommandExecutor {
     private int sleepInterval = 0; //2000;
 
 
-    public CommandExecutor() {
-        igv = IGV.getInstance();
+    public CommandExecutor(IGV igv) {
+        this.igv = igv;
     }
 
     private List<String> getArgs(String[] tokens) {
@@ -114,7 +115,7 @@ public class CommandExecutor {
             } else if (cmd.equalsIgnoreCase("goto")) {
                 result = goto1(args);
             } else if (cmd.equalsIgnoreCase("gototrack")) {
-                boolean res = IGV.getInstance().scrollToTrack(param1);
+                boolean res = this.igv.scrollToTrack(param1);
                 result = res ? "OK" : String.format("Error: Track %s not found", param1);
             } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
                 result = setSnapshotDirectory(param1);
@@ -274,12 +275,15 @@ public class CommandExecutor {
         DataRange.Type scaleType = logScale == true ?
                 DataRange.Type.LOG :
                 DataRange.Type.LINEAR;
+        List<Track> affectedTracks = new ArrayList<>();
         for (Track track : tracks) {
             if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
                 track.getDataRange().setType(scaleType);
+                affectedTracks.add(track);
             }
         }
-        IGV.getInstance().revalidateTrackPanels();
+        // this.igv.revalidateTrackPanels();
+        igv.postEvent(new RepaintEvent(affectedTracks));
         return "OK";
     }
 
@@ -583,59 +587,28 @@ public class CommandExecutor {
             igv.restoreSessionSynchronous(sessionPath, locus, merge);
         }
 
-        final Future loadTask = igv.loadTracks(fileLocators);
+        igv.loadTracks(fileLocators);
 
         if (locus != null && !locus.equals("null")) {
             igv.goToLocus(locus);
             //If locus is a single base, we sort by base
             String[] tokens = locus.split(":", 2);
             if (tokens.length == 2) {
-                String chr = tokens[0];
                 try {
                     int pos = Integer.parseInt(tokens[1].replace(",", ""));
                     if (pos >= 0 && sort == null) sort = "base";
-
                 } catch (Exception e) {
                     //pass
                 }
             }
-
         }
 
         if (sort != null) {
-            submitPerformSort(loadTask, sort, sortTag);
+            final AlignmentTrack.SortOption sortOption = getAlignmentSortOption(sort);
+            igv.sortAlignmentTracks(sortOption, sortTag);
         }
 
         return CommandListener.OK;
-    }
-
-    private void submitPerformSort(final Future loadTask, final String sort, final String sortTag) {
-        final AlignmentTrack.SortOption sortOption = getAlignmentSortOption(sort);
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    //We need to wait until the track is loaded. If loadTask is null,
-                    //it was loaded synchronously
-                    if (loadTask != null) {
-                        Object res = loadTask.get();
-                    }
-                    //Thought we were done waiting, huh? Guess again
-                    //Alignment tracks load alignment data asynchronously from the track
-
-                    //Since sorting applies to all tracks, we only need to have 1 handler
-                    //TODO -- the use of the bus here is, essentially, an attempt to simulate a promise,  do().then()
-                    IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, new SortAlignmentsHandler(igv, sortOption, sortTag));
-
-                } catch (InterruptedException e) {
-                    log.error(e.getMessage(), e);
-                } catch (ExecutionException e) {
-                    log.error(e.getMessage(), e);
-                }
-
-            }
-        };
-        LongRunningTask.submit(runnable);
     }
 
     /**
@@ -804,7 +777,7 @@ public class CommandExecutor {
             Double location = null;
             if (param3 != null && param3.trim().length() > 0) {
                 try {
-                    location = new Double(param3.replace(",", ""));
+                    location = Double.valueOf(param3.replace(",", ""));
                     tag = param4;
                 } catch (NumberFormatException e) {
                     tag = param3;
@@ -824,12 +797,10 @@ public class CommandExecutor {
             igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
 
         }
-        igv.revalidateTrackPanels();
     }
 
     private void group(String groupArg, String tagArg) {
         igv.groupAlignmentTracks(getAlignmentGroupOption(groupArg), tagArg, null);
-        UIUtilities.invokeAndWaitOnEventThread(() -> igv.revalidateTrackPanels());
     }
 
 
@@ -861,9 +832,9 @@ public class CommandExecutor {
 
         Component target = null;
         if (region == null || region.trim().length() == 0) {
-            target = IGV.getInstance().getContentPane().getMainPanel();
+            target = this.igv.getContentPane().getMainPanel();
         } else if ("trackpanels".equalsIgnoreCase(region)) {
-            target = IGV.getInstance().getMainPanel().getCenterSplitPane();
+            target = this.igv.getMainPanel().getCenterSplitPane();
         }
 
         if (target == null) {
@@ -873,7 +844,7 @@ public class CommandExecutor {
         }
 
         try {
-            return IGV.getInstance().createSnapshotNonInteractive(target, file, true);
+            return this.igv.createSnapshotNonInteractive(target, file, true);
         } catch (Exception e) {
             log.error(e);
             return e.getMessage();
@@ -959,27 +930,4 @@ public class CommandExecutor {
 
     }
 
-    private static class SortAlignmentsHandler implements IGVEventObserver {
-
-        private IGV igv = null;
-        private AlignmentTrack.SortOption sortOption;
-        private String sortTag;
-
-        SortAlignmentsHandler(IGV igv, AlignmentTrack.SortOption sortOption, String sortTag) {
-            this.igv = igv;
-            this.sortOption = sortOption;
-            this.sortTag = sortTag;
-
-            IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
-        }
-
-
-        @Override
-        public void receiveEvent(Object event) {
-            boolean sorted = igv.sortAlignmentTracks(sortOption, sortTag);
-            if (sorted) {
-                IGVEventBus.getInstance().unsubscribe(this);
-            }
-        }
-    }
 }

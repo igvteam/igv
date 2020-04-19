@@ -299,7 +299,6 @@ public class TrackPanel extends IGVPanel {
                                    final ReferenceFrame frame, List<String> sortedSamples) {
 
         sortGroupsByRegionScore(trackGroups, region, type, frame.getZoom(), frame.getName());
-
         for (TrackGroup group : trackGroups) {
             // If there is a non-null linking attribute
             // Segregate tracks into 2 sub-groups, those matching the score type and those that do not
@@ -326,22 +325,14 @@ public class TrackPanel extends IGVPanel {
             final String chr = region.getChr();
             final int start = region.getStart();
             final int end = region.getEnd();
-            Comparator<TrackGroup> c = new Comparator<TrackGroup>() {
-
-                public int compare(TrackGroup group1, TrackGroup group2) {
-                    float s1 = group1.getRegionScore(chr, start, end, zoom, type, frameName);
-                    float s2 = group2.getRegionScore(chr, start, end, zoom, type, frameName);
-
-                    // Use the Float comparator as it handles NaN.  Need to flip the order to make it descending
-                    return Float.compare(s2, s1);
-
-
-                }
+            Comparator<TrackGroup> c = (group1, group2) -> {
+                float s1 = group1.getRegionScore(chr, start, end, zoom, type, frameName);
+                float s2 = group2.getRegionScore(chr, start, end, zoom, type, frameName);
+                // Use the Float comparator as it handles NaN.  Need to flip the order to make it descending
+                return Float.compare(s2, s1);
             };
-
             Collections.sort(groups, c);
         }
-
     }
 
 
