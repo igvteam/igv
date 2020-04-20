@@ -23,17 +23,16 @@ public class GFFCombiner {
     Map<String, GFFCdsCltn> gffCdss;
     List<BasicFeature> gffUtrs;
     List<BasicFeature> gffMrnaParts;
-    Map<String, Map<String, BasicFeature>> multiLineFeaturesMap;
 
     public GFFCombiner() {
         int numElements = 10000;
-        igvFeatures = new ArrayList<>(numElements);
-        gffFeatures = new HashMap<>(numElements);
-        gffExons = new ArrayList<>(numElements);
-        gffCdss = new LinkedHashMap<>(numElements);
-        gffUtrs = new ArrayList<>(numElements);
+        igvFeatures = new ArrayList<Feature>(numElements);
+        gffFeatures = new HashMap<String, GFFFeature>(numElements);
+        gffExons = new ArrayList<BasicFeature>(numElements);
+        gffCdss = new LinkedHashMap<String, GFFCdsCltn>(numElements);
+        gffUtrs = new ArrayList<BasicFeature>(numElements);
         gffMrnaParts = new ArrayList<>(numElements);
-        multiLineFeaturesMap = new HashMap<>(numElements);
+
     }
 
     /**
@@ -49,6 +48,7 @@ public class GFFCombiner {
         }
         return this;
     }
+
 
     public void addFeature(BasicFeature bf) {
 
@@ -72,37 +72,12 @@ public class GFFCombiner {
                 }
             }
         } else if (id != null) {
-            Map<String, BasicFeature> mlFeatures = multiLineFeaturesMap.get(bf.getChr());
-            if (mlFeatures == null) {
-                mlFeatures = new HashMap<>();
-                multiLineFeaturesMap.put(bf.getChr(), mlFeatures);
-            }
-            if (mlFeatures.containsKey(id)) {
-                BasicFeature sf = mlFeatures.get(id);
-                sf.setStart(Math.min(sf.getStart(), bf.getStart()));
-                sf.setEnd(Math.max(sf.getEnd(), bf.getEnd()));
-                sf.addExon(new Exon(bf));
-                sf.sortExons();
-            } else if (gffFeatures.containsKey(id)) {
-                // Split feature
-                BasicFeature f1 = new BasicFeature(gffFeatures.get(id));
-                int start = Math.min(f1.getStart(), bf.getStart());
-                int end = Math.max(f1.getEnd(), bf.getEnd());
-                BasicFeature sf = new BasicFeature(f1.getChr(), start, end, f1.getStrand());
-                sf.setIdentifier(id);
-                sf.addExon(new Exon(bf));
-                sf.addExon(new Exon(f1));
-                sf.sortExons();
-                mlFeatures.put(id, sf);
-                igvFeatures.add(sf);
-                gffFeatures.remove(id);
-            } else {
-                gffFeatures.put(id, new GFFFeature(bf));
-            }
+            gffFeatures.put(id, new GFFFeature(bf));
         } else {
             igvFeatures.add(bf); // Just use this feature  as is.
         }
     }
+
 
     public List<Feature> combineFeatures() {
 
@@ -221,9 +196,10 @@ public class GFFCombiner {
 
     }
 
-
     private GFFFeature createParent(BasicFeature gffExon) {
+
         return new GFFFeature(gffExon.getChr(), gffExon.getStart(), gffExon.getEnd(), gffExon.getStrand());
+
     }
 
 
