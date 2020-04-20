@@ -62,7 +62,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class CommandExecutorTest extends AbstractHeadedTest {
 
-    CommandExecutor exec = new CommandExecutor();
+    CommandExecutor exec = new CommandExecutor(IGV.getInstance());
     private final String snapshotDir = TestUtils.TMP_OUTPUT_DIR;
 
     @Rule
