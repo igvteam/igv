@@ -62,7 +62,7 @@ public class MotifFinderPluginHeadedTest extends AbstractHeadedTest {
 
     @Test
     public void testBatchCommand_Error() throws Exception{
-        CommandExecutor cmdexec = new CommandExecutor();
+        CommandExecutor cmdexec = new CommandExecutor(IGV.getInstance());
         String cmd = "org.broad.igv.tools.motiffinder.MotifFinderPlugin blarg " + EGFR_begseq;
         String resp = cmdexec.execute(cmd);
         assertTrue("Expected ERROR, was " + resp, resp.contains("ERROR"));
@@ -72,7 +72,7 @@ public class MotifFinderPluginHeadedTest extends AbstractHeadedTest {
 
     @Test
     public void testBatchCommand() throws Exception{
-        CommandExecutor cmdexec = new CommandExecutor();
+        CommandExecutor cmdexec = new CommandExecutor(IGV.getInstance());
         String cmd = "org.broad.igv.tools.motiffinder.MotifFinderPlugin find " + EGFR_begseq;
         String resp = cmdexec.execute(cmd);
         assertTrue("Expected OK, was " + resp, resp.contains("OK"));
