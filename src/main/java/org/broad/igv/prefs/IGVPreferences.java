@@ -371,6 +371,14 @@ public class IGVPreferences {
         return get(GENOMES_SERVER_URL);
     }
 
+    public String getProvisioningURL() {
+        return get(PROVISIONING_URL);
+    }
+
+    public String getPortNumber() {
+        return get(PORT_NUMBER);
+    }
+
     public void overrideGenomeServerURL(String url) {
         userPreferences.put(GENOMES_SERVER_URL, url);
         overrideKeys.add(GENOMES_SERVER_URL);

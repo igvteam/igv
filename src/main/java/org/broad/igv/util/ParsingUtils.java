@@ -43,6 +43,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -117,6 +118,8 @@ public class ParsingUtils {
         }
 
         if (locator.getPath().endsWith("gz")) {
+//            String contents = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+//            log.debug("The raw contents of the GZipped files are: "+contents);
             return new GZIPInputStream(inputStream);
         } else {
             return inputStream;

@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.HttpUtils;
@@ -39,7 +40,8 @@ public class OAuthProvider {
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
 
     private String state = UUID.randomUUID().toString(); // "RFC6749: An opaque value used by the client to maintain state"
-    private String redirectURI = "http%3A%2F%2Flocalhost%3A60151%2FoauthCallback";
+    private String portNumber = PreferencesManager.getPreferences().getPortNumber();
+    private String redirectURI = "http%3A%2F%2Flocalhost%3A"+portNumber+"%2FoauthCallback";
     private String oobURI = "urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob";
     private String clientId;
     private String clientSecret;
