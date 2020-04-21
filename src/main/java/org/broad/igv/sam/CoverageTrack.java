@@ -119,7 +119,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         if (track.dataSource != null) this.setDataSource(track.dataSource);
         this.snpThreshold = track.snpThreshold;
         this.prefs = track.prefs;
-        this.igv = IGV.getInstance();
+        this.igv = IGV.hasInstance() ? IGV.getInstance() : null;
     }
 
     public CoverageTrack(ResourceLocator locator, String name, AlignmentTrack alignmentTrack, Genome genome) {
@@ -133,7 +133,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         prefs = PreferencesManager.getPreferences();
         snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
         autoScale = DEFAULT_AUTOSCALE;
-        this.igv = IGV.getInstance();
+        this.igv = IGV.hasInstance() ? IGV.getInstance(): null;
     }
 
     @Override
@@ -864,7 +864,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             try {
                 float tmp = Float.parseFloat(value);
                 snpThreshold = tmp;
-                igv.postEvent(new RepaintEvent(CoverageTrack.this));
+                if(igv != null) igv.postEvent(new RepaintEvent(CoverageTrack.this));
             } catch (Exception exc) {
                 //log
             }
@@ -935,13 +935,13 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                     TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
                     TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
                     setDataSource(ds);
-                    igv.postEvent(new RepaintEvent(CoverageTrack.this));
+                    if(igv != null) igv.postEvent(new RepaintEvent(CoverageTrack.this));
                 } else if (path.endsWith(".counts")) {
                     CoverageDataSource ds = new GobyCountArchiveDataSource(file);
                     setDataSource(ds);
                     igv.postEvent(new RepaintEvent(CoverageTrack.this));
                 } else {
-                    MessageUtils.showMessage("Coverage data must be in .tdf format");
+                    if(igv != null) MessageUtils.showMessage("Coverage data must be in .tdf format");
                 }
             }
         });

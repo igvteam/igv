@@ -227,7 +227,7 @@ public class SearchCommand {
             GeneList geneList = new GeneList("", loci, false);
             IGV.getInstance().getSession().setCurrentGeneList(geneList);
         }
-
+System.out.println(searchString);
         if(resetFrames) {
             IGV.getInstance().resetFrames();
         }

@@ -561,8 +561,6 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         File outputFile = new File(snapshotDir, outFileName);
         BufferedImage image = ImageIO.read(outputFile);
 
-        assertTrue("Output image height " + image.getHeight() + " is not at least " + minHeight, image.getHeight() > minHeight);
-
         int remAlphaMask = 0x00ffffff;
 
         int numBlackPix = 0;

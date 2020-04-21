@@ -255,7 +255,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
     @Test
     public void testFilesHeadlessTryIndex() throws Exception {
-        tstFilesHeadless(filenamesTryIndex, true);
+          tstFilesHeadless(filenamesTryIndex, true);
     }
 
     @Test

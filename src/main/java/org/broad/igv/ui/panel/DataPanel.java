@@ -152,7 +152,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             }
             return;
         }
-
+System.out.println("Paint " + frame.getFormattedLocusString());
         super.paintComponent(g);
         RenderContext context = null;
         try {

@@ -780,8 +780,8 @@ public class AlignmentRenderer {
                     }
 
                     String chr = context.getChr();
-                    final int start = block.getStart();
-                    final int end = block.getEnd();
+                    final int start = (int) Math.max(Math.floor(bpStart), block.getStart());
+                    final int end = (int) Math.min(Math.ceil(bpEnd), block.getEnd());
                     if (end <= bpStart) { // block ends before the visible context
                         continue; // move to next block
                     } else if (start >= bpEnd) { // block starts after the visible context

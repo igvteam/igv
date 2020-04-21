@@ -729,6 +729,7 @@ public class CommandExecutor {
         for (int i = 2; i < args.size(); i++) {
             locus += (" " + args.get(i));
         }
+System.out.println("CE goto " + locus);
         igv.goToLocus(locus);
         return "OK";
     }

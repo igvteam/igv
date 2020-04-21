@@ -68,8 +68,8 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -103,10 +103,10 @@ public class GenomeManager {
     private static Logger log = Logger.getLogger(GenomeManager.class);
 
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
-    
+
     // Tacking on a timestamp & random number to avoid file collisions with parallel testing JVMs.  Not guaranteed unique
     // but highly unlikely to be repeated.
-    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes_" + 
+    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes_" +
             System.currentTimeMillis() + "_" + Math.random() + ".txt";
 
     public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem("Human hg19", "http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg19.genome", "hg19");
@@ -118,7 +118,6 @@ public class GenomeManager {
     private Genome currentGenome;
 
     private Map<String, File> localSequenceMap;
-
 
 
     /**
@@ -147,8 +146,8 @@ public class GenomeManager {
             if (IGV.hasInstance()) {
                 IGV.getInstance().getSession().clearHistory();
                 FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
+                IGVEventBus.getInstance().post(new GenomeChangeEvent(genome));
             }
-            IGVEventBus.getInstance().post(new GenomeChangeEvent(genome));
         }
     }
 
@@ -173,7 +172,7 @@ public class GenomeManager {
 
             try {
                 GenomeListItem item = genomeListManager.getGenomeListItem(genomeId);
-                if(item == null) {
+                if (item == null) {
                     MessageUtils.showMessage("Could not locate genome with ID: " + genomeId);
                 } else {
                     loadGenome(item.getPath(), monitor[0]);
@@ -270,7 +269,7 @@ public class GenomeManager {
 
             if (IGV.hasInstance()) {
                 FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();   // Can be null
-                if(IGV.hasInstance()) {
+                if (IGV.hasInstance()) {
                     IGV.getInstance().setGenomeTracks(geneFeatureTrack);
                 }
 
@@ -413,7 +412,7 @@ public class GenomeManager {
         String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
 
         fastaPath = FileUtils.getAbsolutePath(fastaPath, genomePath);
-        if(indexPath != null) {
+        if (indexPath != null) {
             indexPath = FileUtils.getAbsolutePath(indexPath, genomePath);
         }
 
@@ -434,10 +433,10 @@ public class GenomeManager {
                 JsonElement aliasURL = obj.get("aliasURL");
                 String trackIndexPath = null;
 
-                if(trackPath != null) {
+                if (trackPath != null) {
                     trackPath = FileUtils.getAbsolutePath(trackPath, genomePath);
                 }
-                if(trackIndex != null) {
+                if (trackIndex != null) {
                     trackIndexPath = FileUtils.getAbsolutePath(trackIndex.getAsString(), genomePath);
                 }
 
@@ -458,7 +457,6 @@ public class GenomeManager {
 
         return newGenome;
     }
-
 
 
     private Collection<Collection<String>> loadChrAliases(String path) {

@@ -267,8 +267,10 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
     public int getQuality(int pos, byte b) {
         int offset = pos - start;
         if (offset < 0 || offset >= posA.length) {
-            log.error("Position out of range: " + pos + " (valid range - " + start + "-" + end);
-            return 0;
+            if (log.isDebugEnabled()) {
+                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
+            }
+            return 32;
         } else {
             switch (b) {
                 case 'a':
