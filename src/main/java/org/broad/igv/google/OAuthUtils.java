@@ -104,32 +104,26 @@ public class OAuthUtils {
             loadProvisioningURL(provisioningURL);
         }
 
-        String propString = HttpUtils.getInstance().getContentsAsGzippedString(HttpUtils.createURL(provisioningURL));
-        JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(propString).getAsJsonObject();
-        defaultProvider = new OAuthProvider(obj);
-
         // Local config takes precendence, overriding URL provisioned and Broad's default oauth-config.json.gz
-//        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
-//        if ((new File(oauthConfig)).exists()) {
-//            try {
-//                log.debug("Loading Oauth properties from: " + oauthConfig);
-//                String json = FileUtils.getContents(oauthConfig);
-//                parseProviderJson(json, oauthConfig);
-//            } catch (IOException e) {
-//                log.error(e);
-//            }
-//        }
+        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
+        if ((new File(oauthConfig)).exists()) {
+            try {
+                log.debug("Loading Oauth properties from: " + oauthConfig);
+                String json = FileUtils.getContents(oauthConfig);
+                parseProviderJson(json, oauthConfig);
+            } catch (IOException e) {
+                log.error(e);
+            }
+        }
 
-
-//        if (defaultProvider == null || urlProvisioned == false) {
-//            // IGV default
-//            log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from Broad's IGV properties endpoint: " + PROPERTIES_URL);
-//            String propString = HttpUtils.getInstance().getContentsAsGzippedString(HttpUtils.createURL(PROPERTIES_URL));
-//            JsonParser parser = new JsonParser();
-//            JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
-//            defaultProvider = new OAuthProvider(obj);
-//        }
+        if (defaultProvider == null) {
+            // IGV default
+            log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from Broad's IGV properties endpoint: " + PROPERTIES_URL);
+            String propString = HttpUtils.getInstance().getContentsAsGzippedString(HttpUtils.createURL(PROPERTIES_URL));
+            JsonParser parser = new JsonParser();
+            JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
+            defaultProvider = new OAuthProvider(obj);
+        }
     }
 
     public void loadProvisioningURL(String provisioningURL) throws IOException {
