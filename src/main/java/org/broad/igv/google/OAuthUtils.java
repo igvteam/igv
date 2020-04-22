@@ -97,14 +97,14 @@ public class OAuthUtils {
     }
 
     public void fetchOauthProperties() throws IOException {
-
         // Load a provider config specified in preferences
-        String provisioningURL = PreferencesManager.getPreferences().get(Constants.PROVISIONING_URL);
+        String provisioningURL = PreferencesManager.getPreferences().getProvisioningURL();
+        log.debug("The provisioning URL from prefs.properties is: "+provisioningURL);
         if (provisioningURL != null && provisioningURL.length() > 0) {
             loadProvisioningURL(provisioningURL);
         }
 
-        // Local config takes precendence
+        // Local config takes precendence, overriding URL provisioned and Broad's default oauth-config.json.gz
         String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
         if ((new File(oauthConfig)).exists()) {
             try {
@@ -118,7 +118,7 @@ public class OAuthUtils {
 
         if (defaultProvider == null) {
             // IGV default
-            log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from: " + PROPERTIES_URL);
+            log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from Broad's IGV properties endpoint: " + PROPERTIES_URL);
             String propString = HttpUtils.getInstance().getContentsAsGzippedString(HttpUtils.createURL(PROPERTIES_URL));
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
