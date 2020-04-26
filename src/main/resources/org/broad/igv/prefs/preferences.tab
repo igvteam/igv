@@ -103,6 +103,7 @@ SAM.CLIPPING_THRESHOLD	Flag clipping threshold (bases)	integer	0
 ---
 SAM.QUICK_CONSENSUS_MODE	Quick consensus mode	boolean	FALSE
 SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
+SAM.CONSENSUS_MULTIPLIER	Consensus calculation multiplier	integer	2
 ---
 SAM.HIDDEN_TAGS	Hide tags in popup text (comma delimited list)	string	SA,MD,XA,RG
 ---
