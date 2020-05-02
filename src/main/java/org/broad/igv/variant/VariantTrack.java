@@ -1066,15 +1066,15 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         
         String[] VCFLimittags = PreferencesManager.getPreferences().get(Constants.VARIANT_INFO_TAGS).split(",");
 		Set<String> keys = new HashSet<>();
-        if(VCFLimittags == null || VCFLimittags[1].equalsIgnoreCase("NONE"))
+        if(VCFLimittags == null || VCFLimittags[0].equalsIgnoreCase("NONE"))
         {
-            keys = variant.getAttributes().keySet();
-		}
-		else
-		{
-			for(String s : VCFLimittags)
-				keys.add(s);
-		}
+        	keys = variant.getAttributes().keySet();
+	}
+	else
+	{
+		for(String s : VCFLimittags)
+			keys.add(s);
+	}
 
         if (keys.size() > 0) {
             String toolTip = "<br><br><b>Variant Attributes</b>";
