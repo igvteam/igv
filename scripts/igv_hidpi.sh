@@ -16,7 +16,7 @@ else
     echo "Using system JDK."
 fi
 
-exec java -showversion --module-path="${prefix}/lib" -Xmx4g \
+exec java -showversion --module-path="${prefix}/lib" -Xmx8g \
     @"${prefix}/igv.args" \
     -Dsun.java2d.uiScale=2 \
     -Dapple.laf.useScreenMenuBar=true \

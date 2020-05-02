@@ -161,6 +161,7 @@ final public class Constants {
     public static final String SAM_COLOR_N = "SAM.COLOR.N";
     public static final String SAM_DISPLAY_MODE = "SAM.DISPLAY_MODE";
     public static final String KNOWN_SNPS = "KNOWN_SNPS_FILE";
+    public static final String SAM_CONSENSUS_MULTIPLIER = "SAM.CONSENSUS_MULTIPLIER";
 
     // Sequence track settings
     public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
@@ -179,6 +180,7 @@ final public class Constants {
     public static final String NOCALL_COLOR = "NOCALL.COLOR";
     public static final String AF_REF_COLOR = "AF_REF.COLOR";
     public static final String AF_VAR_COLOR = "AF_VAR.COLOR";
+    public static final String VARIANT_INFO_TAGS = "RESTRICT_VARIANT_INFO_TAGS";
 
     // "Mut" and "MAF" mutation track settings
     public static final String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";

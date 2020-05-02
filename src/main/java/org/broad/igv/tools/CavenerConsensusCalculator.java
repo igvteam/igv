@@ -25,6 +25,8 @@
 
 package org.broad.igv.tools;
 
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import java.util.List;
 
 /**

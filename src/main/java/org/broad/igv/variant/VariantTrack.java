@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
 
@@ -1062,7 +1063,19 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     protected String getVariantInfo(Variant variant) {
-        Set<String> keys = variant.getAttributes().keySet();
+        
+        String[] VCFLimittags = PreferencesManager.getPreferences().get(Constants.VARIANT_INFO_TAGS).split(",");
+		Set<String> keys = new HashSet<>();
+        if(VCFLimittags == null || VCFLimittags[1].equalsIgnoreCase("NONE"))
+        {
+            keys = variant.getAttributes().keySet();
+		}
+		else
+		{
+			for(String s : VCFLimittags)
+				keys.add(s);
+		}
+
         if (keys.size() > 0) {
             String toolTip = "<br><br><b>Variant Attributes</b>";
             int count = 0;

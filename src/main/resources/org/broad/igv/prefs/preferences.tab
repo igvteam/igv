@@ -30,6 +30,7 @@ NOCALL.COLOR	No call	color	255,255,255
 AF_REF.COLOR	Allele freq - reference	color	0,0,220
 AF_VAR.COLOR	Allel freq - variant	color	255,0,0
 VARIANT_COLOR_BY_ALLELE_FREQ	Color by allele frequency (uncheck to color by allele fraction)	boolean	TRUE
+RESTRICT_VARIANT_INFO_TAGS	Restrict Variant Info Panel to tags (comma delimited)	string	NONE
 
 #Mutations
 

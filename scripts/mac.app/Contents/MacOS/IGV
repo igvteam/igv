@@ -19,7 +19,7 @@ else
     java -version
 fi
 
-exec java -showversion --module-path="${prefix}/../Java/lib" -Xmx4g \
+exec java -showversion --module-path="${prefix}/../Java/lib" -Xmx8g \
     @"${prefix}/../Java/igv.args" \
     -Xdock:name="IGV" \
     -Xdock:icon="${prefix}/../Resources/IGV_64.png" \
