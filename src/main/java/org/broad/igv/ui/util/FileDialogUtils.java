@@ -77,27 +77,27 @@ public class FileDialogUtils {
 
         // Strip off parent directory
         if (initialFile != null) initialFile = new File(initialFile.getName());
-
-        if (Globals.IS_MAC && !Globals.IS_JWS && directoriesMode != JFileChooser.FILES_AND_DIRECTORIES) {
+        //Commenting out the old swing code calls so all OS's will use native file dialogs.
+        //if (Globals.IS_MAC && !Globals.IS_JWS && directoriesMode != JFileChooser.FILES_AND_DIRECTORIES) {
             return chooseNative(title, initialDirectory, initialFile, filter, directoriesMode, mode);
-        } else {
-            return chooseSwing(title, initialDirectory, initialFile, filter, directoriesMode, mode);
-        }
+        //} else {
+        //    return chooseSwing(title, initialDirectory, initialFile, filter, directoriesMode, mode);
+        //}
     }
 
     public static File chooseDirectory(String title, File initialDirectory) {
-        if (Globals.IS_MAC && !Globals.IS_JWS) {
+        //if (Globals.IS_MAC && !Globals.IS_JWS) {
             return chooseNative(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
-        } else {
-            return chooseSwing(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
-        }
+        //} else {
+        //    return chooseSwing(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
+        //}
     }
 
     public static File[] chooseMultiple(String title, File initialDirectory, final FilenameFilter filter) {
 
         File[] files = null;
 
-        if (Globals.IS_MAC && !Globals.IS_JWS) {
+        //if (Globals.IS_MAC && !Globals.IS_JWS) {
 
             FileDialog fd = getNativeChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD);
             if (fd.isMultipleMode()) {
@@ -105,13 +105,13 @@ public class FileDialogUtils {
                 files = fd.getFiles();
             }
 
-        }
+        //}
 
         //Files will be an empty array if user cancelled dialog,
         //null if there was a problem with the native dialog
-        if (files == null) {
-            files = chooseMultipleSwing(title, initialDirectory, filter);
-        }
+        //if (files == null) {
+        //    files = chooseMultipleSwing(title, initialDirectory, filter);
+        //}
 
         return files;
     }

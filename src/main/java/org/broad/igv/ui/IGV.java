@@ -764,10 +764,9 @@ public class IGV implements IGVEventObserver {
 
         File snapshotDirectory = PreferencesManager.getPreferences().getLastSnapshotDirectory();
 
-        JFileChooser fc = new SnapshotFileChooser(snapshotDirectory, defaultFile);
-        fc.showSaveDialog(mainFrame);
-        File file = fc.getSelectedFile();
-
+        //JFileChooser fc = new SnapshotFileChooser(snapshotDirectory, defaultFile);
+        //fc.showSaveDialog(mainFrame);
+        File file = FileDialogUtils.chooseFile("Save Snapshot File...", snapshotDirectory, defaultFile, FileDialogUtils.SAVE);
         // If a file selection was made
         if (file != null) {
             File directory = file.getParentFile();
