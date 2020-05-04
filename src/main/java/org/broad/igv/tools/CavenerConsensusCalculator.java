@@ -53,7 +53,7 @@ public class CavenerConsensusCalculator extends AbstractConsensusCalculator{
         BaseFraction secondMost = baseFractions.get(1);
         float highestFrac = most.fraction;
         
-        int multiplier = PreferencesManager.getPreferences().getAsInt(Constants.SAM_CONSENSUS_MULTIPLIER);
+        double multiplier = PreferencesManager.getPreferences().getAsFloat(Constants.SAM_CONSENSUS_MULTIPLIER);
 
         if (highestFrac >= 0.5f && highestFrac >= multiplier * secondMost.fraction) {
             return most.base;
