@@ -96,7 +96,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
 
         if (keys != null && keys.size() > 0) {
 
-            final Graphics2D graphics2 = (Graphics2D) graphics;
+            final Graphics2D graphics2 = (Graphics2D) graphics.create();
             if (PreferencesManager.getPreferences().getAntiAliasing()) {
                 graphics2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             }
@@ -132,6 +132,8 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
                 int stringOffset = 2;
                 graphics2.drawString(toDraw, stringOffset, x);
             }
+
+            graphics2.dispose();
         }
     }
 
