@@ -33,6 +33,7 @@ VARIANT_COLOR_BY_ALLELE_FREQ	Color by allele frequency (uncheck to color by alle
 
 #Mutations
 
+OVERLAY_ATTRIBUTE_KEY	LINKING_ID
 ##Color Options
 COVER_OVERLAY_KEY	Color Mutations	boolean	TRUE
 MUTATION_INDEL_COLOR_KEY	Indel	color	0,200,0
