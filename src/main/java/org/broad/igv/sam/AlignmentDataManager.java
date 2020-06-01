@@ -26,6 +26,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.event.RefreshEvent;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Range;
@@ -322,20 +323,22 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
 
-    public void load(ReferenceFrame referenceFrame,
+    public void load(ReferenceFrame frame,
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
 
-        if (isLoaded(referenceFrame)) return;  // Already loaded
+        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale()) return; // should not happen
 
-        if (isLoading(referenceFrame)) return;   // Already oading
+        if (isLoaded(frame)) return;  // Already loaded
+
+        if (isLoading(frame)) return;   // Already oading
 
         synchronized (loadLock) {
-            Range range = referenceFrame.getCurrentRange();
+            Range range = frame.getCurrentRange();
 
             isLoading.add(range);
 
-            final String chr = referenceFrame.getChrName();
+            final String chr = frame.getChrName();
 
             final int start = (int) range.getStart();
             final int end = (int) range.getEnd();
