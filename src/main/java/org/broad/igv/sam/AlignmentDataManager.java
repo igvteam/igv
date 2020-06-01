@@ -26,6 +26,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.event.RefreshEvent;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Range;
@@ -326,18 +327,20 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
 
-    public void load(ReferenceFrame referenceFrame,
+    public void load(ReferenceFrame frame,
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
 
-        if (isLoaded(referenceFrame)) return;  // Already loaded
+        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale()) return; // should not happen
 
-        if (isLoading(referenceFrame)) return;   // Already oading
+        if (isLoaded(frame)) return;  // Already loaded
+
+        if (isLoading(frame)) return;   // Already oading
 
        // synchronized (loadLock) {
-            Range range = referenceFrame.getCurrentRange();
+            Range range = frame.getCurrentRange();
 
-            final String chr = referenceFrame.getChrName();
+            final String chr = frame.getChrName();
 
             final int start = (int) range.getStart();
             final int end = (int) range.getEnd();
@@ -366,7 +369,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
             packAlignments(renderOptions);
 
-            //  IGVEventBus.getInstance().post(new DataLoadedEvent(referenceFrame));
+            //  IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
 
        // }
     }
@@ -400,7 +403,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
-
+System.out.println("Load interval");
         String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
         DownsampleOptions downsampleOptions = new DownsampleOptions();
@@ -477,15 +480,15 @@ public class AlignmentDataManager implements IGVEventObserver {
      * return the grouped alignments
      *
      * @param position
-     * @param referenceFrame
+     * @param frame
      * @return alignmentRows, grouped and ordered by key
      */
-    public PackedAlignments getGroupedAlignmentsContaining(double position, ReferenceFrame referenceFrame) {
-        String chr = referenceFrame.getChrName();
+    public PackedAlignments getGroupedAlignmentsContaining(double position, ReferenceFrame frame) {
+        String chr = frame.getChrName();
         int start = (int) position;
         int end = start + 1;
 
-        AlignmentInterval interval = getLoadedInterval(referenceFrame);
+        AlignmentInterval interval = getLoadedInterval(frame);
         if (interval == null) {
             return null;
         } else {
