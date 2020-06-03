@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Global name="Platinum Genomes" hyperlink="https://cloud.google.com/genomics/docs/public-datasets/illumina-platinum-genomes" version="1">
+    <Resource name="NA12877"
+              path="gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam"/>
+    <Resource name="NA12878"
+              path="gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam"/>
+    <Resource name="NA12889"
+              path="gs://genomics-public-data/platinum-genomes/bam/NA12889_S1.bam"/>
+    <Resource name="NA12890"
+              path="gs://genomics-public-data/platinum-genomes/bam/NA12890_S1.bam"/>
+    <Resource name="NA12891"
+              path="gs://genomics-public-data/platinum-genomes/bam/NA12891_S1.bam"/>
+    <Resource name="NA12892"
+              path="gs://genomics-public-data/platinum-genomes/bam/NA12892_S1.bam"/>
+</Global>
