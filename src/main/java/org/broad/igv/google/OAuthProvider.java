@@ -91,7 +91,7 @@ public class OAuthProvider {
                 String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
                 String driveScope = "https://www.googleapis.com/auth/drive.readonly";
                 String emailScope = "https://www.googleapis.com/auth/userinfo.email";
-                scope = driveScope + "%20" + gsScope + "%20" + emailScope;
+                scope = gsScope + "%20" + emailScope;
 
             }
             if (authProvider == null) {
