@@ -63,18 +63,18 @@ public class GFFTest {//} extends AbstractHeadlessTest{
      *
      * @throws Exception
      */
-//    @Test
-//    public void testMultiLineFeature() throws Exception {
-//        String file = TestUtils.DATA_DIR + "gff/multi_line_feature.gff3";
-//        List<Feature> features = getFeatures(file, "chr1");
-//        assertEquals(1, features.size());
-//        BasicFeature f = (BasicFeature) features.get(0);
-//        assertEquals(5, f.getExonCount());
-//        features = getFeatures(file, "chr2");
-//        assertEquals(1, features.size());
-//        f = (BasicFeature) features.get(0);
-//        assertEquals(5, f.getExonCount());
-//    }
+    @Test
+    public void testMultiLineFeature() throws Exception {
+        String file = TestUtils.DATA_DIR + "gff/multi_line_feature.gff3";
+        List<Feature> features = getFeatures(file, "chr1");
+        assertEquals(1, features.size());
+        BasicFeature f = (BasicFeature) features.get(0);
+        assertEquals(5, f.getExonCount());
+        features = getFeatures(file, "chr2");
+        assertEquals(1, features.size());
+        f = (BasicFeature) features.get(0);
+        assertEquals(5, f.getExonCount());
+    }
 
     /**
      * This test verifies that the attributes from column 9 are retained for a CDS feature that does not have a parent.
