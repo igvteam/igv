@@ -29,10 +29,6 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.util.collections.SortingCollection;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
-import org.broad.igv.feature.tribble.MUTCodec;
-import org.broad.igv.gwas.GWASParser;
-import org.broad.igv.track.GFFFeatureSource;
-import org.broad.igv.util.ResourceLocator;
 import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.*;

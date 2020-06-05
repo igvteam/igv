@@ -29,7 +29,7 @@ package org.broad.igv.tools.sort;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.tribble.MUTCodec;
 import org.broad.igv.gwas.GWASParser;
-import org.broad.igv.track.GFFFeatureSource;
+import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.File;

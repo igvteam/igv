@@ -29,6 +29,9 @@ import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.gff.GFFCombiner;
+import org.broad.igv.feature.gff.GFF3Combiner;
+import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.track.*;
 
@@ -39,7 +42,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @deprecated use org.broad.igv.track.GFFFeatureSource
+ * @deprecated use org.broad.igv.feature.gff.GFFFeatureSource
  * User: jrobinso
  */
 
@@ -57,7 +60,7 @@ public class GFFParser implements FeatureParser {
     public List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome, GFFCodec codec) {
         String line = null;
         int lineNumber = 0;
-        GFFCombiner combiner = new GFFCombiner();
+        GFFCombiner combiner = GFFFeatureSource.getCombiner(((GFFCodec) codec).getVersion());
         try {
             while ((line = reader.readLine()) != null) {
                 lineNumber++;

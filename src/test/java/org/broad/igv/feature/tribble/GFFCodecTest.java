@@ -28,7 +28,7 @@ package org.broad.igv.feature.tribble;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.track.FeatureSource;
-import org.broad.igv.track.GFFFeatureSource;
+import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
@@ -56,7 +56,7 @@ public class GFFCodecTest extends AbstractHeadlessTest {
         String path = TestUtils.DATA_DIR + "gtf/transcript_id.gtf";
         String expName = "YAL069W";
 
-        GFFFeatureSource src = new GFFFeatureSource(TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), null));
+        GFFFeatureSource src = new GFFFeatureSource(TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), null), GFFCodec.Version.GTF);
 
         Iterator<Feature> iter = src.getFeatures("I", 0, Integer.MAX_VALUE);
         while (iter.hasNext()) {
@@ -78,7 +78,7 @@ public class GFFCodecTest extends AbstractHeadlessTest {
         final ResourceLocator locator = new ResourceLocator(path);
 
         TribbleFeatureSource tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
-        FeatureSource source = new GFFFeatureSource(tribbleFeatureSource);
+        FeatureSource source = new GFFFeatureSource(tribbleFeatureSource, GFFCodec.Version.GFF3);
 
         int featureCount = 0;
         Iterator<Feature> iter = source.getFeatures("chr7", 0, Integer.MAX_VALUE);

@@ -49,6 +49,7 @@ import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaDirectorySequence;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.feature.genome.fasta.FastaUtils;
+import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.*;

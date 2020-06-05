@@ -1,7 +1,8 @@
-package org.broad.igv.track;
+package org.broad.igv.feature.gff;
 
 import htsjdk.tribble.Feature;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.tribble.GFFCodec;
 
 import java.util.*;
 
@@ -15,7 +16,7 @@ import java.util.*;
  * defined by parent-child relations.  GFF3 formalizes the feature types and their relationships to some
  * degree in the Sequence Ontology,
  */
-public class GFFCombiner {
+public class GFF3Combiner implements GFFCombiner {
 
     List<Feature> igvFeatures;
     Map<String, GFFFeature> gffFeatures;
@@ -25,7 +26,7 @@ public class GFFCombiner {
     List<BasicFeature> gffMrnaParts;
     Map<String, Map<String, BasicFeature>> multiLineFeaturesMap;
 
-    public GFFCombiner() {
+    public GFF3Combiner() {
         int numElements = 10000;
         igvFeatures = new ArrayList<>(numElements);
         gffFeatures = new HashMap<>(numElements);
@@ -43,6 +44,7 @@ public class GFFCombiner {
      * @param rawIter
      * @return this, for chaining
      */
+    @Override
     public GFFCombiner addFeatures(Iterator<Feature> rawIter) {
         while (rawIter.hasNext()) {
             addFeature((BasicFeature) rawIter.next());
@@ -50,6 +52,7 @@ public class GFFCombiner {
         return this;
     }
 
+    @Override
     public void addFeature(BasicFeature bf) {
 
         String featureType = bf.getType();
@@ -71,7 +74,7 @@ public class GFFCombiner {
                     cds.addPart(bf);
                 }
             }
-        } else if (id != null) {
+        } else if (id != null) {   // Multi-line features in GFF2 not supported
             Map<String, BasicFeature> mlFeatures = multiLineFeaturesMap.get(bf.getChr());
             if (mlFeatures == null) {
                 mlFeatures = new HashMap<>();
@@ -99,11 +102,13 @@ public class GFFCombiner {
             } else {
                 gffFeatures.put(id, new GFFFeature(bf));
             }
+
         } else {
             igvFeatures.add(bf); // Just use this feature  as is.
         }
     }
 
+    @Override
     public List<Feature> combineFeatures() {
 
         // Exons
@@ -226,7 +231,6 @@ public class GFFCombiner {
         return new GFFFeature(gffExon.getChr(), gffExon.getStart(), gffExon.getEnd(), gffExon.getStrand());
     }
 
-
     private static BasicFeature copyForCDS(BasicFeature bf) {
 
         BasicFeature copy = new BasicFeature(bf.getChr(), bf.getStart(), bf.getEnd(), bf.getStrand());
@@ -248,7 +252,7 @@ public class GFFCombiner {
     /**
      * Container to hold all the cds records for a given parent (usually an mRNA).
      */
-    public static class GFFCdsCltn {
+    private static class GFFCdsCltn {
         String parentId;
         List<BasicFeature> cdsParts;
         String chr;
