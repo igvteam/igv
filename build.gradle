@@ -96,8 +96,8 @@ configurations {
         exclude group: 'xalan', module: 'xalan'
 
         // Amazon deps exclusions
-        exclude group: 'software.amazon', module: 'flow'
-        exclude group: 'software.amazon.awssdk', module: 'annotations'
+        //exclude group: 'software.amazon', module: 'flow'
+        //exclude group: 'software.amazon.awssdk', module: 'annotations'
     }
 }
 
@@ -131,10 +131,10 @@ dependencies {
         [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
 
         // Amazon deps
-        [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.13.23'],
-        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.13.23'],
-        [group: 'software.amazon.awssdk', name: 'sts', version: '2.13.23'],
-        [group: 'software.amazon.awssdk', name: 's3', version: '2.13.23'],
+        [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.13.24'],
+        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.13.24'],
+        [group: 'software.amazon.awssdk', name: 'sts', version: '2.13.24'],
+        [group: 'software.amazon.awssdk', name: 's3', version: '2.13.24']
     )
 
     testImplementation(

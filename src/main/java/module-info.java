@@ -40,4 +40,5 @@ module org.igv {
     requires software.amazon.awssdk.services.sts;
     requires software.amazon.awssdk.http;
     requires software.amazon.awssdk.utils;
+    requires com.fasterxml.jackson.core;
 }
