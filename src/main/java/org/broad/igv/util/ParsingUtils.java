@@ -68,7 +68,8 @@ public class ParsingUtils {
 
 
     /**
-     * Open a BufferedReader on the path, which might be a local file or URL, and might be gzipped or not.
+     * Open a BufferedReader on the path, which might be
+     * a local file or URL, and might be gzipped or not.
      *
      * @param pathOrUrl
      * @return

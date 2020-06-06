@@ -472,7 +472,7 @@ public class IGV implements IGVEventObserver {
                     loadResources(locators);
                     resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
                     showLoadedTrackCount();
-                    IGV.this.repaintContentPane();
+                    IGV.this.repaint();
                 }
                 public String getName() {
                     return "Load Tracks";
@@ -2378,13 +2378,13 @@ public class IGV implements IGVEventObserver {
                 Collection<Track> trackList = visibleTracks(tp.getDataPanelContainer());
                 for (Track track : trackList) {
                     if (track.isReadyToPaint(frame) == false) {
-                        if (Globals.isBatch()) {
+                     //   if (Globals.isBatch()) {
                             track.load(frame);
-                        } else {
-                            futures.add(CompletableFuture.runAsync(() -> {
-                                track.load(frame);
-                            }, threadExecutor));
-                        }
+//                        } else {
+//                            futures.add(CompletableFuture.runAsync(() -> {
+//                                track.load(frame);
+//                            }, threadExecutor));
+//                        }
                     }
                 }
             }

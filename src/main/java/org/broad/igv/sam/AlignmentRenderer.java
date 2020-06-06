@@ -813,7 +813,9 @@ public class AlignmentRenderer {
                     }
 
                     byte[] read = block.getBases();
-                    for (int loc = start; loc < end; loc++) {
+                    final int s = (int) Math.max(Math.floor(bpStart), start);
+                    final int e = (int) Math.min(Math.ceil(bpEnd), end);
+                    for (int loc = s; loc < e; loc++) {
 
                         int idx = loc - start;
                         boolean misMatch =  AlignmentUtils.isMisMatch(reference, read, isSoftClipped, idx);

@@ -30,6 +30,7 @@ module org.igv {
     requires batik.svggen;
     requires batik.dom;
     requires dsiutils;
+    requires AbsoluteLayout.RELEASE110;
 
     // AWS
     requires software.amazon.awssdk.core;

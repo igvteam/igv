@@ -26,7 +26,8 @@
 package org.broad.igv.feature;
 
 import htsjdk.tribble.Feature;
-import org.broad.igv.track.GFFFeatureSource;
+import org.broad.igv.feature.tribble.GFFCodec;
+import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
@@ -46,12 +47,12 @@ import static junit.framework.Assert.*;
 public class GFFTest {//} extends AbstractHeadlessTest{
 
 
-    private List<Feature> getFeatures(String filePath) throws Exception {
-        return getFeatures(filePath, "chr1");
+    private List<Feature> getFeatures(String filePath, GFFCodec.Version version) throws Exception {
+        return getFeatures(filePath, "chr1", version);
     }
 
-    private List<Feature> getFeatures(String filePath, String chr) throws Exception {
-        GFFFeatureSource src = new GFFFeatureSource(TribbleFeatureSource.getFeatureSource(new ResourceLocator(filePath), null));
+    private List<Feature> getFeatures(String filePath, String chr, GFFCodec.Version version) throws Exception {
+        GFFFeatureSource src = new GFFFeatureSource(TribbleFeatureSource.getFeatureSource(new ResourceLocator(filePath), null), version);
         List<Feature> features = new ArrayList<Feature>();
         Iterator<Feature> iter = src.getFeatures(chr, 0, Integer.MAX_VALUE);
         while (iter.hasNext()) features.add(iter.next());
@@ -63,18 +64,18 @@ public class GFFTest {//} extends AbstractHeadlessTest{
      *
      * @throws Exception
      */
-//    @Test
-//    public void testMultiLineFeature() throws Exception {
-//        String file = TestUtils.DATA_DIR + "gff/multi_line_feature.gff3";
-//        List<Feature> features = getFeatures(file, "chr1");
-//        assertEquals(1, features.size());
-//        BasicFeature f = (BasicFeature) features.get(0);
-//        assertEquals(5, f.getExonCount());
-//        features = getFeatures(file, "chr2");
-//        assertEquals(1, features.size());
-//        f = (BasicFeature) features.get(0);
-//        assertEquals(5, f.getExonCount());
-//    }
+    @Test
+    public void testMultiLineFeature() throws Exception {
+        String file = TestUtils.DATA_DIR + "gff/multi_line_feature.gff3";
+        List<Feature> features = getFeatures(file, "chr1", GFFCodec.Version.GFF3);
+        assertEquals(1, features.size());
+        BasicFeature f = (BasicFeature) features.get(0);
+        assertEquals(5, f.getExonCount());
+        features = getFeatures(file, "chr2", GFFCodec.Version.GFF3);
+        assertEquals(1, features.size());
+        f = (BasicFeature) features.get(0);
+        assertEquals(5, f.getExonCount());
+    }
 
     /**
      * This test verifies that the attributes from column 9 are retained for a CDS feature that does not have a parent.
@@ -86,7 +87,7 @@ public class GFFTest {//} extends AbstractHeadlessTest{
     public void testLoadSingleCDS() throws Exception {
 
         String gtfFile = TestUtils.DATA_DIR + "gtf/single_cds.gtf";
-        List<Feature> features = getFeatures(gtfFile);
+        List<Feature> features = getFeatures(gtfFile, GFFCodec.Version.GTF);
 
         assertEquals(1, features.size());
         BasicFeature bf = (BasicFeature) features.get(0);
@@ -105,7 +106,7 @@ public class GFFTest {//} extends AbstractHeadlessTest{
     @Test
     public void testGFFColorSpellings() throws Exception {
         String gffFile = TestUtils.DATA_DIR + "gff/color_sps.gff";
-        List<Feature> features = getFeatures(gffFile);
+        List<Feature> features = getFeatures(gffFile, GFFCodec.Version.GFF2);
 
         assertEquals("Error parsing certain features", 6, features.size());
 
@@ -124,7 +125,7 @@ public class GFFTest {//} extends AbstractHeadlessTest{
     @Test
     public void testGFF2_parentIds() throws Exception {
         String path = TestUtils.DATA_DIR + "gff/parentIds.gff";
-        List<Feature> features = getFeatures(path);
+        List<Feature> features = getFeatures(path, GFFCodec.Version.GFF2);
 
         assertEquals(1, features.size());
         BasicFeature bf = (BasicFeature) features.get(0);

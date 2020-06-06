@@ -163,8 +163,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-        int viewWindowSize = frame.getCurrentRange().getLength();
-        if (frame.getChrName().equals(Globals.CHR_ALL) || viewWindowSize < dataManager.getVisibilityWindow()) {
+        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > dataManager.getMinVisibleScale()) {
             return true;   // Nothing to paint
         } else {
             return dataManager.isLoaded(frame);
@@ -173,7 +172,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public void load(ReferenceFrame referenceFrame) {
-        dataManager.load(referenceFrame, alignmentTrack.renderOptions, true);
+         dataManager.load(referenceFrame, alignmentTrack.renderOptions, true);
     }
 
 

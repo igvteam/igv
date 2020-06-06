@@ -85,7 +85,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         GFF2, GFF3, GTF;
     }
 
-
     public GFFCodec(Genome genome) {
         super(Feature.class);
         // Assume GFF2 until shown otherwise
@@ -102,6 +101,10 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         } else {
             helper = new GFF2Helper();
         }
+    }
+
+    public Version getVersion() {
+        return version;
     }
 
     public void readHeaderLine(String line) {

@@ -60,9 +60,7 @@ public class IGVReferenceSource implements CRAMReferenceSource {
     static GenomeChangeListener genomeChangeListener;
 
     @Override
-
-    public synchronized byte[] getReferenceBases(SAMSequenceRecord record, boolean tryNameVariants) {
-
+    public  byte[] getReferenceBases(SAMSequenceRecord record, boolean tryNameVariants) {
 
         final String name = record.getSequenceName();
 
@@ -75,35 +73,13 @@ public class IGVReferenceSource implements CRAMReferenceSource {
         if (bases == null) {
 
             try {
-
-                final boolean cacheOnDisk = currentGenome.sequenceIsRemote() &&
-                        PreferencesManager.getPreferences().getAsBoolean(Constants.CRAM_CACHE_SEQUENCES);
-
-                if (cacheOnDisk) {
-                    bases = readBasesFromCache(currentGenome, chrName);
-                    if (bases != null) {
-                        if (bases.length != chromosome.getLength()) {
-                            log.error("CRAM reference cache mismatch");
-                            ReferenceDiskCache.deleteCache(currentGenome.getId(), chrName);
-                            bases = null;
-                        }
-                    }
-                }
-
                 if (bases == null) {
-
                     if (IGV.hasInstance()) IGV.getInstance().setStatusBarMessage("Loading sequence");
-
-
                     bases = currentGenome.getSequence(chrName, 0, chromosome.getLength(), false);
 
                     // CRAM spec requires upper case
                     for (int i = 0; i < bases.length; i++) {
                         if (bases[i] >= 97) bases[i] -= 32;
-                    }
-
-                    if (cacheOnDisk) {
-                        saveBasesToCache(currentGenome, chrName, bases);
                     }
                 }
 
@@ -114,26 +90,6 @@ public class IGVReferenceSource implements CRAMReferenceSource {
         }
 
         return bases;
-
-    }
-
-    private void saveBasesToCache(Genome currentGenome, String chrName, byte[] bases) {
-        try {
-            ReferenceDiskCache.saveSequence(currentGenome.getId(), chrName, bases);
-        } catch (IOException e) {
-            log.error("Error saving cached sequence ", e);
-        }
-    }
-
-    private byte[] readBasesFromCache(Genome currentGenome, String chrName) {
-
-
-        try {
-            return ReferenceDiskCache.readSequence(currentGenome.getId(), chrName);
-        } catch (IOException e) {
-            log.error("Error reading cached sequence ", e);
-            return null;
-        }
     }
 
     public static class GenomeChangeListener implements IGVEventObserver {
@@ -147,7 +103,6 @@ public class IGVReferenceSource implements CRAMReferenceSource {
     static {
 
         genomeChangeListener = new GenomeChangeListener();
-
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, genomeChangeListener);
     }
 

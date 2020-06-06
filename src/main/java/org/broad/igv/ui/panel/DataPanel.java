@@ -84,8 +84,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     private DataPanelPainter painter;
     private String tooltipText = "";
 
-    private boolean loadInProgress = false;
-
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
         init();
         this.defaultTool = new PanTool(this);
@@ -97,11 +95,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         setToolTipText("");
         painter = new DataPanelPainter();
         setBackground(PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR));
-
         ToolTipManager.sharedInstance().registerComponent(this);
-
-
-        //    IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
     }
 
     @Override
@@ -140,6 +134,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                 allMatch(track -> track.isReadyToPaint(frame));
     }
 
+    long lastPaintTime = 0;
     @Override
     public void paintComponent(final Graphics g) {
 
@@ -152,12 +147,12 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             }
             return;
         }
-System.out.println("Paint " + frame.getFormattedLocusString());
+
         super.paintComponent(g);
         RenderContext context = null;
         try {
 
-            long t0 = System.currentTimeMillis();
+            lastPaintTime = System.currentTimeMillis();
 
             Rectangle clipBounds = g.getClipBounds();
             final Rectangle visibleRect = getVisibleRect();
@@ -187,7 +182,7 @@ System.out.println("Paint " + frame.getFormattedLocusString());
             drawAllRegions(g);
 
 
-            long dt = System.currentTimeMillis() - t0;
+            long dt = System.currentTimeMillis() - lastPaintTime;
             PanTool.repaintTime(dt);
 
         } finally {

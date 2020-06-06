@@ -33,6 +33,7 @@ VARIANT_COLOR_BY_ALLELE_FREQ	Color by allele frequency (uncheck to color by alle
 
 #Mutations
 
+OVERLAY_ATTRIBUTE_KEY	LINKING_ID
 ##Color Options
 COVER_OVERLAY_KEY	Color Mutations	boolean	TRUE
 MUTATION_INDEL_COLOR_KEY	Indel	color	0,200,0
@@ -162,10 +163,6 @@ SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	TRUE
 ---
 SAM.LINK_READS	Link alignments by tag	boolean	FALSE
 SAM.LINK_TAG	Linking tag	string	READNAME
-
-#Cram
-CRAM.CACHE_SEQUENCES	Cache reference sequences	boolean	TRUE
-CRAM.CACHE_SIZE	Cache size (MB)	integer	500
 
 #Proxy
 PROXY.DISABLE_CHECK	Disable check for system proxy	boolean	FALSE

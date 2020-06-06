@@ -54,10 +54,12 @@ import org.broad.igv.feature.dsi.DSITrack;
 import org.broad.igv.feature.genome.GenbankParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.feature.sprite.ClusterParser;
 import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
+import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
@@ -393,8 +395,13 @@ public class TrackLoader {
 
             TribbleFeatureSource tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
 
-            FeatureSource src = GFFFeatureSource.isGFF(locator.getPath()) ?
-                    new GFFFeatureSource(tribbleFeatureSource) : tribbleFeatureSource;
+            FeatureSource src;
+            if(GFFFeatureSource.isGFF(locator.getPath())) {
+                GFFCodec codec =  (GFFCodec) CodecFactory.getCodec(locator, genome);
+                 src = new GFFFeatureSource(tribbleFeatureSource, codec.getVersion()) ;
+            } else {
+                src = tribbleFeatureSource;
+            }
 
             // Create feature source and track
             FeatureTrack t = new FeatureTrack(locator, src);

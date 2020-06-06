@@ -23,11 +23,13 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.track;
+package org.broad.igv.feature.gff;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import htsjdk.tribble.Feature;
+import org.broad.igv.feature.tribble.GFFCodec;
+import org.broad.igv.track.FeatureSource;
 
 import java.io.IOException;
 import java.util.*;
@@ -39,6 +41,7 @@ import java.util.*;
 public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
 
     private static Logger log = Logger.getLogger(GFFFeatureSource.class);
+    private  GFFCodec.Version gffVersion;
 
     private FeatureSource wrappedSource;
 
@@ -55,7 +58,12 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
         return lowpath.endsWith("gff3") || lowpath.endsWith("gvf") || lowpath.endsWith("gff") || lowpath.endsWith("gtf");
     }
 
-    public GFFFeatureSource(FeatureSource wrappedSource) throws IOException {
+    public static GFFCombiner getCombiner(GFFCodec.Version version) {
+        return version == GFFCodec.Version.GFF3 ? new GFF3Combiner() : new GFF2Combiner();
+    }
+
+    public GFFFeatureSource(FeatureSource wrappedSource, GFFCodec.Version gffVersion) throws IOException {
+        this.gffVersion = gffVersion;
         this.wrappedSource = wrappedSource;
     }
 
@@ -73,7 +81,7 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
         int expandedEnd = (int) Math.min(Integer.MAX_VALUE, longEnd);
 
         Iterator<Feature> rawIter = wrappedSource.getFeatures(chr, expandedStart, expandedEnd);
-        GFFCombiner combiner = (new GFFCombiner()).addFeatures(rawIter);
+        GFFCombiner combiner = (getCombiner(gffVersion)).addFeatures(rawIter);
 
         // Now trim features not requested
         List<Feature> requestedFeatures = new ArrayList<>();
