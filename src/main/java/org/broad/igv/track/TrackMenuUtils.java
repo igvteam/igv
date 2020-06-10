@@ -98,7 +98,7 @@ public class TrackMenuUtils {
         IGVPopupMenu menu = new IGVPopupMenu();
 
         JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
-        popupTitle.setFont(UIConstants.boldFont);
+        popupTitle.setFont(FontManager.getFont(Font.BOLD, 12));
         if (popupTitle != null) {
             menu.add(popupTitle);
             menu.addSeparator();
@@ -240,7 +240,7 @@ public class TrackMenuUtils {
             };
 
             JLabel rendererHeading = new JLabel(LEADING_HEADING_SPACER + "Type of Graph", JLabel.LEFT);
-            rendererHeading.setFont(UIConstants.boldFont);
+            rendererHeading.setFont(FontManager.getFont(Font.BOLD, 12));
 
             menu.add(rendererHeading);
 
@@ -293,7 +293,7 @@ public class TrackMenuUtils {
 
             if (avaibleWindowFunctions.size() > 0) {
                 JLabel statisticsHeading = new JLabel(LEADING_HEADING_SPACER + "Windowing Function", JLabel.LEFT);
-                statisticsHeading.setFont(UIConstants.boldFont);
+                statisticsHeading.setFont(FontManager.getFont(Font.BOLD, 12));
 
                 menu.add(statisticsHeading);
 
@@ -517,7 +517,7 @@ public class TrackMenuUtils {
         }
 
         JLabel arcColorHeading = new JLabel(LEADING_HEADING_SPACER + "Arc colors (click to change)", JLabel.LEFT);
-        arcColorHeading.setFont(UIConstants.boldFont);
+        arcColorHeading.setFont(FontManager.getFont(Font.BOLD, 12));
 
         menu.add(arcColorHeading);
 
@@ -542,7 +542,7 @@ public class TrackMenuUtils {
             final String label = pair.getSecond();
 
             JLabel colorBox = new JLabel(LEADING_HEADING_SPACER);
-            colorBox.setFont(UIConstants.boldFont);
+            colorBox.setFont(FontManager.getFont(Font.BOLD, 12));
             colorBox.setForeground(color);
 
             JPanel p = new JPanel();
@@ -573,7 +573,7 @@ public class TrackMenuUtils {
         menu.addSeparator();
 
         JLabel arcDirectionHeading = new JLabel(LEADING_HEADING_SPACER + "Arc direction", JLabel.LEFT);
-        arcDirectionHeading.setFont(UIConstants.boldFont);
+        arcDirectionHeading.setFont(FontManager.getFont(Font.BOLD, 12));
 
         menu.add(arcDirectionHeading);
 
