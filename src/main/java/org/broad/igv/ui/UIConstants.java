@@ -87,9 +87,6 @@ public class UIConstants {
     static final public String PREFERENCE_TOOLTIP = "Set user specific preferences";
     static final public String SHOW_HEATMAP_LEGEND_TOOLTIP = "Edit color legends and scales";
 
-    public static Font boldFont = FontManager.getFont(Font.BOLD, 12);
-
-
     final public static String OVERWRITE_SESSION_MESSAGE =
             "<html>Opening a session will unload all current data. " + "<br>Are you sure you wish to continue?";
     final public static String CANNOT_ACCESS_SERVER_GENOME_LIST = "The Genome server is currently inaccessible.";
