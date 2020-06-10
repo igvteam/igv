@@ -111,7 +111,6 @@ public class S3LoadDialog extends JDialog {
             }
 
             for (Triple<String, String, String> preLocator: preLocatorPaths) {
-
                 ResourceLocator locator = getResourceLocatorFromBucketKey(preLocator);
                 finalLocators.add(locator);
             }

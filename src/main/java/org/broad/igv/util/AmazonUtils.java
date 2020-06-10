@@ -247,53 +247,60 @@ public class AmazonUtils {
         String s3ObjectStorageClass;
 
         s3Meta = AmazonUtils.getObjectMetadata(bucket, key);
-        s3ObjectStorageClass = s3Meta.storageClass().toString();
-
-        // Determine in which state this object really is:
-        // 1. Archived.
-        // 2. In the process of being restored.
-        // 3. Restored
-        //
-        // This is important because after restoration the object mantains the Tier (DEEP_ARCHIVE) instead of
-        // transitioning that attribute to STANDARD, we must look at head_object response for the "Restore"
-        // attribute.
-        //
-        // Possible error reason messages for the users are:
-
-        String archived = "Amazon S3 object is in " + s3ObjectStorageClass + " storage tier, not accessible at this moment. " +
-                "Please contact your local system administrator about object: s3://" + bucket + "/" + key;
-        String restoreInProgress = "Amazon S3 object is in " + s3ObjectStorageClass + " and being restored right now, please be patient, this can take up to 48h. " +
-                "For further enquiries about this dataset, please use the following path when communicating with your system administrator: s3://" + bucket + "/" + key;
-
-        if (s3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
-            s3ObjectStorageClass.contains("GLACIER")) {
-            try {
-                s3ObjectStorageStatus = s3Meta.sdkHttpResponse().headers().get("x-amz-restore").toString();
-                //S3ObjectStorageStatus = S3Meta.restore();
-            } catch(NullPointerException npe) {
-                res.setObjAvailable(false);
-                res.setErrorReason(archived);
-                return res;
-            }
-
-            if(s3ObjectStorageStatus.contains("ongoing-request=\"true\"")) {
-                res.setObjAvailable(false);
-                res.setErrorReason(restoreInProgress);
-
-            // "If an archive copy is already restored, the header value indicates when Amazon S3 is scheduled to delete the object copy"
-            } else if(s3ObjectStorageStatus.contains("ongoing-request=\"false\"") && s3ObjectStorageStatus.contains("expiry-date=")) {
-                res.setObjAvailable(true);
-            } else {
-            // The object has never been restored?
-                res.setObjAvailable(false);
-                res.setErrorReason(archived);
-            }
-        } else {
-            // The object must be either in STANDARD, INFREQUENT_ACCESS, INTELLIGENT_TIERING or
-            // any other "immediately available" tier...
+        try {
+            s3ObjectStorageClass = s3Meta.storageClass().toString();
+        } catch(NullPointerException npe) {
+            log.error("S3Meta StorageClass: Must be STANDARD since there is no Storage Class metadata");
             res.setErrorReason("Object is in an accessible tier, no errors are expected");
             res.setObjAvailable(true);
+            return res;
         }
+
+            // Determine in which state this object really is:
+            // 1. Archived.
+            // 2. In the process of being restored.
+            // 3. Restored
+            //
+            // This is important because after restoration the object maintains the Tier (DEEP_ARCHIVE) instead of
+            // transitioning that attribute to STANDARD, we must look at head_object response for the "Restore"
+            // attribute.
+            //
+            // Possible error reason messages for the users are:
+
+            String archived = "Amazon S3 object is in " + s3ObjectStorageClass + " storage tier, not accessible at this moment. " +
+                    "Please contact your local system administrator about object: s3://" + bucket + "/" + key;
+            String restoreInProgress = "Amazon S3 object is in " + s3ObjectStorageClass + " and being restored right now, please be patient, this can take up to 48h. " +
+                    "For further enquiries about this dataset, please use the following path when communicating with your system administrator: s3://" + bucket + "/" + key;
+
+            if (s3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
+                s3ObjectStorageClass.contains("GLACIER")) {
+                try {
+                    s3ObjectStorageStatus = s3Meta.sdkHttpResponse().headers().get("x-amz-restore").toString();
+                    //S3ObjectStorageStatus = S3Meta.restore();
+                } catch(NullPointerException npe) {
+                    res.setObjAvailable(false);
+                    res.setErrorReason(archived);
+                    return res;
+                }
+
+                if(s3ObjectStorageStatus.contains("ongoing-request=\"true\"")) {
+                    res.setObjAvailable(false);
+                    res.setErrorReason(restoreInProgress);
+
+                // "If an archive copy is already restored, the header value indicates when Amazon S3 is scheduled to delete the object copy"
+                } else if(s3ObjectStorageStatus.contains("ongoing-request=\"false\"") && s3ObjectStorageStatus.contains("expiry-date=")) {
+                    res.setObjAvailable(true);
+                } else {
+                // The object has never been restored?
+                    res.setObjAvailable(false);
+                    res.setErrorReason(archived);
+                }
+            } else {
+                // The object must be either in INFREQUENT_ACCESS, INTELLIGENT_TIERING or
+                // any other "immediately available" tier...
+                res.setErrorReason("Object is in an accessible tier, no errors are expected");
+                res.setObjAvailable(true);
+            }
 
         return res;
     }
