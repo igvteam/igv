@@ -157,4 +157,5 @@ public class ColorChooserPanel extends JPanel implements Serializable {
     private JPanel colorPanel;
     private AbstractButton changeButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
+
 }
