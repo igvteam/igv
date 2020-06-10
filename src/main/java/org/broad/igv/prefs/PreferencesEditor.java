@@ -5,6 +5,7 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorSwatch;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -184,7 +185,28 @@ public class PreferencesEditor {
                             label.setToolTipText(pref.getComment());
                             comboBox.setToolTipText(pref.getComment());
                         }
-                    } else {
+                    } else if(pref.getType().startsWith("color")) {
+                        String colorString = preferences.get(pref.getKey());
+                        Color c;
+                        if(colorString == null) {
+                            c = Color.WHITE;
+                        } else {
+                            c = ColorUtilities.stringToColor(colorString);
+                        }
+                        JLabel label = new JLabel(pref.getLabel());
+                        ColorSwatch colorSwatch = new ColorSwatch(c);
+                        colorSwatch.addColorChangeListener(c1 -> {
+                            String s = ColorUtilities.colorToString(c1);
+                            updatedPrefs.put(pref.getKey(), s);
+                        });
+                        grid.addLayoutComponent(label, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(3, 5, 2, 3), 2, 2));
+                        grid.addLayoutComponent(colorSwatch, new GridBagConstraints(1, row, 3, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 2, 2, 5), 2, 2));
+                        group.add(label);
+                        group.add(colorSwatch);
+
+                    }
+
+                    else {
                         JLabel label = new JLabel(pref.getLabel());
                         JTextField field = new JTextField(preferences.get(pref.getKey()));
                         Dimension d = field.getPreferredSize();
