@@ -2048,7 +2048,7 @@ public class IGV implements IGVEventObserver {
 
         @Override
         public void run() {
-
+log.info("Start");
             final boolean runningBatch = igvArgs.getBatchFile() != null;
             BatchRunner.setIsBatchMode(runningBatch);
 
@@ -2071,7 +2071,6 @@ public class IGV implements IGVEventObserver {
                     log.error("Error loading genome: " + genomeId, e);
                 }
             }
-
 
             if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
                 String genomeId = preferenceManager.getDefaultGenome();
@@ -2132,6 +2131,12 @@ public class IGV implements IGVEventObserver {
                     // Not an xml file, assume its a list of data files
                     List<String> dataFiles = igvArgs.getDataFileStrings();
 
+                    String h = igvArgs.getHttpHeader();
+                    log.info("h= " + igvArgs.getHttpHeader());
+                    if(h != null) {
+                        HttpUtils.getInstance().addHeader(h, dataFiles);
+                    }
+
                     String[] names = null;
                     if (igvArgs.getName() != null) {
                         names = igvArgs.getName().split(",");
@@ -2145,15 +2150,12 @@ public class IGV implements IGVEventObserver {
                         coverageFiles = igvArgs.getCoverageFile().split(",");
                     }
 
-
                     List<ResourceLocator> locators = new ArrayList();
-
-
                     for (int i = 0; i < dataFiles.size(); i++) {
 
                         String p = dataFiles.get(i).trim();
 
-                        // Decode local file paths
+                        // Decode local file urls??? I don't understand this extra decoding
                         if (URLUtils.isURL(p) && !FileUtils.isRemote(p)) {
                             p = StringUtils.decodeURL(p);
                         }
@@ -2169,7 +2171,7 @@ public class IGV implements IGVEventObserver {
                         if (indexFiles != null && i < indexFiles.length) {
                             String idxP = indexFiles[i];
                             if (URLUtils.isURL(idxP) && !FileUtils.isRemote(idxP)) {
-                                idxP = StringUtils.decodeURL(idxP);
+                                idxP = StringUtils.decodeURL(idxP);       // ???
                             }
                             if (idxP.length() > 0) {
                                 rl.setIndexPath(idxP);
@@ -2180,7 +2182,7 @@ public class IGV implements IGVEventObserver {
                         if (coverageFiles != null && i < coverageFiles.length) {
                             String covP = coverageFiles[i];
                             if (URLUtils.isURL(covP) && !FileUtils.isRemote(covP)) {
-                                covP = StringUtils.decodeURL(covP);
+                                covP = StringUtils.decodeURL(covP);       // ???
                             }
                             if (covP.length() > 0) {
                                 rl.setCoverage(covP);
