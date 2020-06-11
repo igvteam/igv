@@ -83,6 +83,8 @@ public class HttpUtils {
     private String defaultUserName = null;
     private char[] defaultPassword = null;
 
+    private Map<String, String> headerMap = new HashMap<>();
+
     // static provided to support unit testing
     private static boolean BYTE_RANGE_DISABLED = false;
     private Map<URL, Boolean> headURLCache = new HashMap<URL, Boolean>();
@@ -818,6 +820,14 @@ public class HttpUtils {
                 conn.setRequestProperty(prop.getKey(), prop.getValue());
             }
         }
+        String h = headerMap.get(url.getHost());
+        if(h != null) {
+            String [] kv = h.split(":");
+            if(kv.length == 2) {
+                conn.setRequestProperty(kv[0], kv[1]);
+            }
+        }
+
         conn.setRequestProperty("User-Agent", Globals.applicationString());
 
         // If this is a Google URL and we have an access token use it.
@@ -1034,6 +1044,37 @@ public class HttpUtils {
         boolean byteRangeTestSuccess = (statusCode == 206);
         readFully(conn.getInputStream(), new byte[10]);
         return byteRangeTestSuccess;
+    }
+
+    /**
+     * Add an http header string to be applied the the specified URLs.  Used to support command line specification
+     * of authentication headers
+     *
+     * @param header
+     * @param urls
+     */
+    public void addHeader(String header, List<String> urls) {
+        for (String u : urls) {
+            if (isRemoteURL(u)) {
+                try {
+                    URL url = new URL(mapURL(u));
+                    headerMap.put(url.getHost(), header);
+                    System.out.println("Added " + url.getHost() + " -> " + header);
+                } catch (MalformedURLException e) {
+                    log.error("Error parsing URL " + u, e);
+                }
+            }
+        }
+    }
+
+
+    private String stripParameters(String url) {
+        int idx = url.indexOf("?");
+        if (idx > 0) {
+            return url.substring(0, idx);
+        } else {
+            return url;
+        }
     }
 
     public void shutdown() {

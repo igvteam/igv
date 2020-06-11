@@ -413,7 +413,7 @@ public class Main {
         private String coverageFile = null;
         private String name = null;
         public String igvDirectory = null;
-        public String forceVersion = null;
+        public String httpHeader = null;
 
         IGVArgs(String[] args) {
             if (args != null) {
@@ -438,9 +438,10 @@ public class Main {
             CmdLineParser.Option nameOption = parser.addStringOption('n', "name");
             CmdLineParser.Option locusOption = parser.addStringOption('l', "locus");
             CmdLineParser.Option igvDirectoryOption = parser.addStringOption("igvDirectory");
-            CmdLineParser.Option forceVersionOption = parser.addStringOption("forceVersion");
             CmdLineParser.Option versionOption = parser.addBooleanOption("version");
             CmdLineParser.Option helpOption = parser.addBooleanOption("help");
+            CmdLineParser.Option headerOption = parser.addStringOption('H', "header");
+
 
             try {
                 parser.parse(args);
@@ -458,6 +459,7 @@ public class Main {
             genomeServerURL = getDecodedValue(parser, genomeServerOption);
             name = (String) parser.getOptionValue(nameOption);
             locusString = (String) parser.getOptionValue(locusOption);
+            httpHeader = (String) parser.getOptionValue(headerOption);
 
             String indexFilePath = (String) parser.getOptionValue(indexFileOption);
             if (indexFilePath != null) {
@@ -473,11 +475,6 @@ public class Main {
             String igvDirectoryPath = (String) parser.getOptionValue(igvDirectoryOption);
             if (igvDirectoryPath != null) {
                 igvDirectory = maybeDecodePath(igvDirectoryPath);
-            }
-
-            String forceVersion = (String) parser.getOptionValue(forceVersionOption);
-            if (forceVersion != null) {
-                Globals.VERSION = forceVersion;
             }
 
             String[] nonOptionArgs = parser.getRemainingArgs();
@@ -559,7 +556,7 @@ public class Main {
 
         private String maybeDecodePath(String path) {
 
-            if (FileUtils.resourceExists(path)) {
+            if ((new File(path)).exists()) {
                 return path;
             } else if (FileUtils.isRemote(path)) {
                 return URLDecoder.decode(path);
@@ -632,6 +629,10 @@ public class Main {
             return name;
         }
 
+        public String getHttpHeader() {
+            return httpHeader;
+        }
+
         private void printHelp() {
             System.out.println("Command line options:");
             System.out.println("Space delimited list of data files to load");
@@ -645,6 +646,7 @@ public class Main {
             System.out.println("--coverageFile, -c  Coverage file or comma delimited list of coverage files corresponding to data files");
             System.out.println("--name, -n  Name or comma-delimited list of names for tracks corresponding to data files");
             System.out.println("--locus, -l  Initial locus");
+            System.out.println("--header, -H http header to include with all requests for list of data files");
             System.out.println("--igvDirectory Path to the local igv directory.  Defaults to <user home>/igv");
             System.out.println("--version  Print the IGV version and exit");
             System.out.println("--help Print this output and exit");
