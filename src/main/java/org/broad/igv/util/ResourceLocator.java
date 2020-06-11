@@ -111,11 +111,7 @@ public class ResourceLocator {
     Color color;
 
     String sampleId;
-
-    String username;
-
-    String password;
-
+    
     private HashMap attributes = new HashMap();
     private boolean indexed;
 
@@ -403,22 +399,6 @@ public class ResourceLocator {
             log.debug("S3 index object filetype could not be determined from S3 url");
         }
         return indexPath;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     @Override
