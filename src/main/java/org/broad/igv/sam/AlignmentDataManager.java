@@ -390,7 +390,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
-System.out.println("Load interval");
+
         String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
         DownsampleOptions downsampleOptions = new DownsampleOptions();

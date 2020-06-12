@@ -2053,7 +2053,7 @@ public class IGV implements IGVEventObserver {
         public void run() {
             final boolean runningBatch = igvArgs.getBatchFile() != null;
             BatchRunner.setIsBatchMode(runningBatch);
-            
+
             UIUtilities.invokeOnEventThread(() -> mainFrame.setIconImage(getIconImage()));
             if (Globals.IS_MAC) {
                 setAppleDockIcon();
