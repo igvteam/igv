@@ -146,13 +146,13 @@ public class AlignmentDataManager implements IGVEventObserver {
 
                 for (Chromosome chromosome : genome.getChromosomes()) {
 
-                    Long size = new Long(chromosome.getLength());
+                    Long size = (long) chromosome.getLength();
                     if (!nonUnique.contains(size)) {
                         if (inverseDict.containsKey(size)) {
                             inverseDict.remove(size);
                             nonUnique.add(size);
                         } else {
-                            inverseDict.put(new Long(size), chromosome.getName());
+                            inverseDict.put(size, chromosome.getName());
                         }
                     }
                 }
@@ -317,33 +317,20 @@ public class AlignmentDataManager implements IGVEventObserver {
         return getLoadedInterval(frame) != null;
     }
 
-    public boolean isLoading(ReferenceFrame frame) {
-
-//        Range range = frame.getCurrentRange();
-//        for (Range r : isLoading) {
-//            if (r.contains(range)) return true;
-//        }
-        return false;
-    }
-
-
     public void load(ReferenceFrame frame,
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
 
         if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale()) return; // should not happen
 
-        if (isLoaded(frame)) return;  // Already loaded
+        synchronized (loadLock) {
 
-        if (isLoading(frame)) return;   // Already oading
+            if (isLoaded(frame)) return;  // Already loaded
 
-       // synchronized (loadLock) {
             Range range = frame.getCurrentRange();
-
             final String chr = frame.getChrName();
-
-            final int start = (int) range.getStart();
-            final int end = (int) range.getEnd();
+            final int start = range.getStart();
+            final int end = range.getEnd();
             int adjustedStart = start;
             int adjustedEnd = end;
 
@@ -371,7 +358,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
             //  IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
 
-       // }
+        }
     }
 
 
