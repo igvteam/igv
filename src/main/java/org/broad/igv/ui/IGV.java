@@ -77,7 +77,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
@@ -914,7 +917,7 @@ public class IGV implements IGVEventObserver {
         for (Track t : oldTracks) {
 
         }
-       // repaint();
+        // repaint();
     }
 
     private void subscribeToEvents() {
@@ -2048,11 +2051,9 @@ public class IGV implements IGVEventObserver {
 
         @Override
         public void run() {
-log.info("Start");
             final boolean runningBatch = igvArgs.getBatchFile() != null;
             BatchRunner.setIsBatchMode(runningBatch);
-
-
+            
             UIUtilities.invokeOnEventThread(() -> mainFrame.setIconImage(getIconImage()));
             if (Globals.IS_MAC) {
                 setAppleDockIcon();
@@ -2133,7 +2134,7 @@ log.info("Start");
 
                     String h = igvArgs.getHttpHeader();
                     log.info("h= " + igvArgs.getHttpHeader());
-                    if(h != null) {
+                    if (h != null) {
                         HttpUtils.getInstance().addHeader(h, dataFiles);
                     }
 
@@ -2360,33 +2361,22 @@ log.info("Start");
         repaint(contentPane);
     }
 
-    private void repaint(JComponent component) {
-        loadAllTracks();
-        UIUtilities.invokeOnEventThread(() -> {
-            if (Globals.isBatch()) {
-                component.paintImmediately(component.getBounds());
-            } else {
-                component.repaint();
+    private synchronized void repaint(final JComponent component) {
 
-            }
-        });
-    }
-
-
-    public synchronized void loadAllTracks() {
         List<CompletableFuture> futures = new ArrayList();
         for (TrackPanel tp : getTrackPanels()) {
             for (ReferenceFrame frame : FrameManager.getFrames()) {
                 Collection<Track> trackList = visibleTracks(tp.getDataPanelContainer());
                 for (Track track : trackList) {
                     if (track.isReadyToPaint(frame) == false) {
-                     //   if (Globals.isBatch()) {
+                        if (Globals.isBatch()) {
                             track.load(frame);
-//                        } else {
-//                            futures.add(CompletableFuture.runAsync(() -> {
-//                                track.load(frame);
-//                            }, threadExecutor));
-//                        }
+                            component.paintImmediately(component.getBounds());
+                        } else {
+                            futures.add(CompletableFuture.runAsync(() -> {
+                                track.load(frame);
+                            }, threadExecutor));
+                        }
                     }
                 }
             }
@@ -2395,18 +2385,21 @@ log.info("Start");
         if (futures.size() > 0) {
             final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
             WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-            try {
-                CompletableFuture.allOf(futureArray).get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } finally {
+            CompletableFuture.allOf(futureArray).thenApplyAsync(future -> {
+                Autoscaler.autoscale(getAllTracks());
                 WaitCursorManager.removeWaitCursor(token);
-            }
-        }
+                UIUtilities.invokeOnEventThread(() -> {
+                    revalidateTrackPanels();   // <- neccessary for scrollbars
+                    //component.repaint();
+                });
+                return null;
+            });
+        } else {
+            UIUtilities.invokeOnEventThread(() -> {
+                component.repaint();
 
-        Autoscaler.autoscale(getAllTracks());
+            });
+        }
     }
 
 
