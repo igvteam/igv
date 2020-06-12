@@ -608,11 +608,10 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                 e.consume();
             } else {
                 if (mouseDown != null && distance(mouseDown, e) < 5) {
-                doMouseClick(e);
+                    doMouseClick(e);
                 } else if (currentTool != null)
                     currentTool.mouseReleased(e);
             }
-            setCurrentTool(null);
             mouseDown = null;
         }
 

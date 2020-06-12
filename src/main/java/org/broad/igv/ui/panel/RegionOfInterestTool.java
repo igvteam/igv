@@ -32,6 +32,7 @@ package org.broad.igv.ui.panel;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,8 +72,7 @@ public class RegionOfInterestTool extends AbstractDataPanelTool {
 
         ReferenceFrame referenceFrame = this.getReferenceFame();
 
-        if (e.getButton() == MouseEvent.BUTTON1 &&
-                e.getClickCount() == 1) {
+        if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 1) {
 
             Object chromosome = referenceFrame.getChromosome();
 
@@ -88,7 +88,8 @@ public class RegionOfInterestTool extends AbstractDataPanelTool {
                     // Create a user Region of Interest
                     if (roiStart == null) {
                         roiStart = (int) referenceFrame.getChromosomePosition(x);
-                        getOwner().paintImmediately(getOwner().getBounds());
+                        UIUtilities.invokeOnEventThread(() -> getOwner().paintImmediately(getOwner().getBounds()));
+
                     } else {
 
                         try {
@@ -111,13 +112,13 @@ public class RegionOfInterestTool extends AbstractDataPanelTool {
 
                             IGV.getInstance().endROI();
                             IGV.getInstance().addRegionOfInterest(regionOfInterest);
-
+                            IGV.getInstance().repaint();
                         } finally {
                             roiButton.setSelected(false);
                         }
                     }
                 }
-                IGV.getInstance().repaint();
+
             }
         }
     }
