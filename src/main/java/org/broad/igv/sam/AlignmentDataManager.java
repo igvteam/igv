@@ -329,17 +329,15 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale()) return; // should not happen
 
-        if (isLoaded(frame)) return;  // Already loaded
-
         if (isLoading(frame)) return;   // Already oading
 
         synchronized (loadLock) {
+
+            if (isLoaded(frame)) return;  // Already loaded
+
             Range range = frame.getCurrentRange();
-
             isLoading.add(range);
-
             final String chr = frame.getChrName();
-
             final int start = (int) range.getStart();
             final int end = (int) range.getEnd();
             int adjustedStart = start;
