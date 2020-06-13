@@ -1565,13 +1565,22 @@ public class IGV implements IGVEventObserver {
      */
     public void groupAlignmentTracks(AlignmentTrack.GroupOption option, String tag, Range pos) {
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
+
         prefMgr.put(SAM_GROUP_OPTION, option.toString());
-        if (option == AlignmentTrack.GroupOption.TAG && tag != null) {
-            prefMgr.put(SAM_GROUP_BY_TAG, tag);
+
+        // Don't persist "group by position"
+        if (option != AlignmentTrack.GroupOption.BASE_AT_POS) {
+            if (option == AlignmentTrack.GroupOption.NONE) {
+                prefMgr.remove(SAM_GROUP_OPTION);
+                prefMgr.remove(SAM_GROUP_BY_POS);
+            } else {
+                prefMgr.put(SAM_GROUP_OPTION, option.toString());
+                if (option == AlignmentTrack.GroupOption.TAG && tag != null) {
+                    prefMgr.put(SAM_GROUP_BY_TAG, tag);
+                }
+            }
         }
-        if (option == AlignmentTrack.GroupOption.BASE_AT_POS && pos != null) {
-            prefMgr.put(SAM_GROUP_BY_POS, pos.getChr() + " " + String.valueOf(pos.getStart()));
-        }
+
         List<Track> alignmentTracks = getAllTracks().stream()
                 .filter(track -> track instanceof AlignmentTrack)
                 .collect(Collectors.toList());
