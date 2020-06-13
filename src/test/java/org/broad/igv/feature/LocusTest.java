@@ -57,7 +57,7 @@ public class LocusTest {
      */
     @Test
     public void testValid() {
-        String locusString = "chr1:15,000,000-20,000,000";
+        String locusString = "chr1:15,000,001-20,000,000";
         Locus locus = Locus.fromString(locusString);
         assertNotNull(locus);
         assertTrue(locus.isValid());
