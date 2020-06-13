@@ -416,7 +416,7 @@ public class OAuthProvider {
     /**
      * Try to login to secure server. dwm08
      */
-    public void doSecureLogin() {
+    public synchronized void doSecureLogin() {
         // if user is not currently logged in, attempt to
         // log in user if not logged in dwm08
         if (!isLoggedIn()) {
@@ -437,61 +437,6 @@ public class OAuthProvider {
                 Thread.sleep(100);
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Generate a set of all urls in the session file
-     *
-     * @param sessionPath
-     * @return list of urls
-     */
-    public static Set<String> findUrlsInSessionFile(String sessionPath) {
-        BufferedReader br = null;
-        HashSet<String> urlSet = new HashSet<>();
-        try {
-            br = new BufferedReader(new FileReader(new File(sessionPath)));
-            String line;
-            while ((line = br.readLine()) != null) {
-                int start = line.indexOf("http");
-                if (start != -1) {
-                    int mid = line.indexOf("://", start);
-                    int end = line.indexOf("/", mid + 3);
-                    String url = line.substring(start, end);
-                    urlSet.add(url);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                }
-            }
-        }
-        return urlSet;
-    }
-
-    /**
-     * Check if any reference in the session file refers to a server protected
-     * by the oauth protocol. If so, check to see if the user is logged in. If
-     * user is not logged in, put up login prompt.
-     *
-     * @param sessionPath
-     */
-    public void checkServerLogin(String sessionPath) {
-        Set<String> urlSet = findUrlsInSessionFile(sessionPath);
-        if (urlSet.size() > 0) {
-            for (String url : urlSet) {
-                if (GoogleUtils.isGoogleCloud(url)) {
-                    doSecureLogin();
-                    // user is logged in. Can proceed with the load
-                    return;
-                }
             }
         }
     }
