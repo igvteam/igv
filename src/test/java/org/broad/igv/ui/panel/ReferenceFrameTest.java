@@ -141,7 +141,7 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
 
         int paneSize = 300;
 
-        List<String> loci = Arrays.asList("chr1:10000-20000", "chr2:30000-40000");
+        List<String> loci = Arrays.asList("chr1:10001-20000", "chr2:30001-40000");
         GeneList geneList = new GeneList("", loci, false);
         FrameManager.resetFrames(geneList);
         List<ReferenceFrame> frameList = FrameManager.getFrames();
@@ -172,7 +172,7 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
             Locus locus = Locus.fromString(loci.get(ii));
 
             assertEquals(locus.getChr(), frame.getChrName());
-            assertEquals(locus.getStart() - 1, frame.getOrigin(), 0.5);
+            assertEquals(locus.getStart(), frame.getOrigin(), 0.5);
             assertEquals(locus.getEnd(), frame.getEnd(), 0.5);
         }
     }
