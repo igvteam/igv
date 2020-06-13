@@ -105,6 +105,12 @@ public class IGVContentPane extends JPanel {
         }
     }
 
+    public void validateTrackPanels() {
+        for (TrackPanel tp : mainPanel.getTrackPanels()) {
+            tp.getScrollPane().getDataPanel().validate();
+        }
+    }
+
     /**
      * Reset the default status message, which is the number of tracks loaded.
      */

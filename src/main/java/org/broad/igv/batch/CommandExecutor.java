@@ -36,6 +36,7 @@ import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.google.Ga4ghAPIHelper;
@@ -132,7 +133,7 @@ public class CommandExecutor {
             } else if (cmd.equalsIgnoreCase("sort")) {
                 sort(param1, param2, param3, param4);
             } else if (cmd.equalsIgnoreCase("group")) {
-                group(param1, param2);
+                result = group(param1, param2);
             } else if (cmd.equalsIgnoreCase("collapse")) {
                 String trackName = parseTrackName(param1);
                 igv.setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
@@ -828,9 +829,25 @@ public class CommandExecutor {
         igv.revalidateTrackPanels();
     }
 
-    private void group(String groupArg, String tagArg) {
-        igv.groupAlignmentTracks(getAlignmentGroupOption(groupArg), tagArg, null);
-        UIUtilities.invokeAndWaitOnEventThread(() -> igv.revalidateTrackPanels());
+    private String group(String groupArg, String tagArg) {
+        final AlignmentTrack.GroupOption groupOption = getAlignmentGroupOption(groupArg);
+        Range r = null;
+        if (groupOption == AlignmentTrack.GroupOption.BASE_AT_POS) {
+            if (tagArg == null) {
+                return "Error: position is required";
+            } else {
+                try {
+                    Locus locus = Locus.fromString(tagArg);
+                    r = new Range(locus.getChr(), locus.getStart(), locus.getEnd());
+                } catch (Exception e) {
+                    return "Error: invalid position: " + tagArg;
+                }
+            }
+        }
+
+        igv.groupAlignmentTracks(groupOption, tagArg, r);
+        igv.doRefresh();
+        return "OK";
     }
 
 

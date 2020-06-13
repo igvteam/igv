@@ -78,7 +78,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
@@ -1598,13 +1597,20 @@ public class IGV implements IGVEventObserver {
      */
     public void groupAlignmentTracks(AlignmentTrack.GroupOption option, String tag, Range pos) {
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
-        prefMgr.put(SAM_GROUP_OPTION, option.toString());
-        if (option == AlignmentTrack.GroupOption.TAG && tag != null) {
-            prefMgr.put(SAM_GROUP_BY_TAG, tag);
+
+        // Don't persist "group by position"
+        if (option != AlignmentTrack.GroupOption.BASE_AT_POS) {
+            if (option == AlignmentTrack.GroupOption.NONE) {
+                prefMgr.remove(SAM_GROUP_OPTION);
+                prefMgr.remove(SAM_GROUP_BY_POS);
+            } else {
+                prefMgr.put(SAM_GROUP_OPTION, option.toString());
+                if (option == AlignmentTrack.GroupOption.TAG && tag != null) {
+                    prefMgr.put(SAM_GROUP_BY_TAG, tag);
+                }
+            }
         }
-        if (option == AlignmentTrack.GroupOption.BASE_AT_POS && pos != null) {
-            prefMgr.put(SAM_GROUP_BY_POS, pos.getChr() + " " + String.valueOf(pos.getStart()));
-        }
+
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
                 ((AlignmentTrack) t).groupAlignments(option, tag, pos);
@@ -1627,7 +1633,6 @@ public class IGV implements IGVEventObserver {
                 t.setDisplayMode(mode);
             }
         }
-
     }
 
 
@@ -2073,7 +2078,6 @@ public class IGV implements IGVEventObserver {
 
         @Override
         public void run() {
-log.info("Start");
             final boolean runningBatch = igvArgs.getBatchFile() != null;
             BatchRunner.setIsBatchMode(runningBatch);
 
@@ -2158,7 +2162,7 @@ log.info("Start");
 
                     String h = igvArgs.getHttpHeader();
                     log.info("h= " + igvArgs.getHttpHeader());
-                    if(h != null) {
+                    if (h != null) {
                         HttpUtils.getInstance().addHeader(h, dataFiles);
                     }
 
@@ -2355,7 +2359,7 @@ log.info("Start");
     }
 
     final public void doRefresh() {
-        if(Globals.isBatch()) {
+        if (Globals.isBatch()) {
             try {
                 SwingUtilities.invokeAndWait(() -> {
                     contentPane.getMainPanel().validate();
@@ -2384,7 +2388,7 @@ log.info("Start");
         UIUtilities.invokeOnEventThread(() -> {
 
             if (Globals.isBatch()) {
-                contentPane.revalidateTrackPanels();
+                contentPane.validateTrackPanels();
                 rootPane.paintImmediately(rootPane.getBounds());
             } else {
                 contentPane.revalidateTrackPanels();
@@ -2399,14 +2403,14 @@ log.info("Start");
             tp.getScrollPane().getNamePanel().repaint();
         }
     }
-    
+
     public void preloadAllTracks() {
         for (TrackPanel tp : getTrackPanels()) {
             for (ReferenceFrame frame : FrameManager.getFrames()) {
                 Collection<Track> trackList = visibleTracks(tp.getDataPanelContainer());
                 for (Track track : trackList) {
                     if (track.isReadyToPaint(frame) == false) {
-                            track.load(frame);
+                        track.load(frame);
                     }
                 }
             }

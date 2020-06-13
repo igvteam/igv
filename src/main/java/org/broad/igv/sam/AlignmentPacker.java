@@ -32,7 +32,6 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.sam.AlignmentTrack.GroupOption;
 
 import java.util.*;
 
@@ -451,19 +450,19 @@ public class AlignmentPacker {
                 //    2: alignments with a gap at the position
                 //    3: alignment that do not overlap the position (or are on a different chromosome)
 
-                if (al.getChr().equals(pos.getChr()) &&
-                    al.getAlignmentStart() <= pos.getStart() &&
-                    al.getAlignmentEnd() > pos.getStart()) {
+                if (pos != null &&
+                        al.getChr().equals(pos.getChr()) &&
+                        al.getAlignmentStart() <= pos.getStart() &&
+                        al.getAlignmentEnd() > pos.getStart()) {
 
-                    byte[] baseAtPos = new byte[] {al.getBase(pos.getStart())};
+                    byte[] baseAtPos = new byte[]{al.getBase(pos.getStart())};
                     if (baseAtPos[0] == 0) { // gap at position
                         return "2:";
                     }
                     else { // base at position
                         return "1:" + new String(baseAtPos);
                     }
-                }
-                else { // does not overlap position
+                } else { // does not overlap position
                     return "3:";
                 }
             case MOVIE: // group PacBio reads by movie
