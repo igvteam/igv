@@ -70,7 +70,7 @@ public class Locus extends Range implements NamedFeature {
     private void parseLocusString(String locusString) {
         int colonIndex = locusString.indexOf(":");
         int dashIndex = locusString.indexOf("-");
-        if (colonIndex > 0 && dashIndex > 0) {
+        if (colonIndex > 0) {
             chr = locusString.substring(0, colonIndex);
             String posString = locusString.substring(colonIndex).replace(":", "");
             setStartEnd(posString);
@@ -79,16 +79,16 @@ public class Locus extends Range implements NamedFeature {
 
     private void setStartEnd(String posString) {
         String[] posTokens = posString.split("-");
+        String startString = posTokens[0].replaceAll(",", "");
+        start = Math.max(0, Integer.parseInt(startString) - 1);
+        end = start + 1;
         if (posTokens.length >= 2) {
             try {
-                String startString = posTokens[0].replaceAll(",", "");
                 String endString = posTokens[1].replaceAll(",", "");
-                start = Math.max(0, Integer.parseInt(startString));
                 end = Integer.parseInt(endString);
             } catch (NumberFormatException numberFormatException) {
                 // This can happen, indicates an invalid or incomplete locus string
-                // For now nothing to do here, 
-
+                // For now nothing to do here,
             }
         }
     }
@@ -103,7 +103,7 @@ public class Locus extends Range implements NamedFeature {
     }
 
     public static String getFormattedLocusString(String chr, int start, int end) {
-        String startStr = NUMBER_FORMAT.format(start);
+        String startStr = NUMBER_FORMAT.format(start) + 1;
         String endStr = NUMBER_FORMAT.format(end);
         String position = chr + ":" + startStr + "-" + endStr;
 
