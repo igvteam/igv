@@ -60,7 +60,6 @@ public class PanTool extends AbstractDataPanelTool {
     //private JViewport viewport;
     private JScrollBar verticalScrollBar;
     private boolean isDragging = false;
-    private Cursor dragCursor;
     private long lastDragEventTime = 0;
 
 
@@ -69,7 +68,6 @@ public class PanTool extends AbstractDataPanelTool {
 
     public PanTool(DataPanel owner) {
         super(owner, Cursor.getDefaultCursor());
-        this.dragCursor = IGV.fistCursor;
         setName("Pan");
         if (owner != null) {
             verticalScrollBar = owner.getVerticalScrollbar();
@@ -86,7 +84,7 @@ public class PanTool extends AbstractDataPanelTool {
 
     @Override
     public Cursor getCursor() {
-        return isDragging ? dragCursor : Cursor.getDefaultCursor();
+        return Cursor.getDefaultCursor();
     }
 
     public Point getLastMousePoint() {
@@ -145,7 +143,6 @@ public class PanTool extends AbstractDataPanelTool {
 
         try {
             Component panel = (Component) e.getSource();
-            panel.setCursor(dragCursor);
             if (lastMousePoint == null) {
                 lastMousePoint = e.getPoint();
                 return;
