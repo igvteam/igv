@@ -74,11 +74,14 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -2352,9 +2355,21 @@ log.info("Start");
     }
 
     final public void doRefresh() {
-        contentPane.getMainPanel().revalidate();
-        mainFrame.repaint();
-        getContentPane().repaint();
+        if(Globals.isBatch()) {
+            try {
+                SwingUtilities.invokeAndWait(() -> {
+                    contentPane.getMainPanel().validate();
+                    contentPane.paintImmediately(contentPane.getBounds());
+                });
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        } else {
+            contentPane.getMainPanel().revalidate();
+            mainFrame.repaint();
+        }
     }
 
     /**
@@ -2384,4 +2399,26 @@ log.info("Start");
             tp.getScrollPane().getNamePanel().repaint();
         }
     }
+    
+    public void preloadAllTracks() {
+        for (TrackPanel tp : getTrackPanels()) {
+            for (ReferenceFrame frame : FrameManager.getFrames()) {
+                Collection<Track> trackList = visibleTracks(tp.getDataPanelContainer());
+                for (Track track : trackList) {
+                    if (track.isReadyToPaint(frame) == false) {
+                            track.load(frame);
+                    }
+                }
+            }
+        }
+    }
+
+
+    public List<Track> visibleTracks(DataPanelContainer dataPanelContainer) {
+        return dataPanelContainer.getTrackGroups().stream().
+                filter(TrackGroup::isVisible).
+                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
+                collect(Collectors.toList());
+    }
+
 }
