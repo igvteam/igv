@@ -69,7 +69,7 @@ public class CommandExecutor {
 
     private File snapshotDirectory;
     private IGV igv;
-    private int sleepInterval = 0; //2000;
+    private int sleepInterval = 2000; //2000;
 
 
     public CommandExecutor() {
