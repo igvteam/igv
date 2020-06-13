@@ -48,7 +48,6 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.*;
-import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesEditor;
@@ -477,6 +476,7 @@ public class IGV implements IGVEventObserver {
                     showLoadedTrackCount();
                     IGV.this.repaint();
                 }
+
                 public String getName() {
                     return "Load Tracks";
                 }
@@ -1082,10 +1082,6 @@ public class IGV implements IGVEventObserver {
                                  final String locus,
                                  final boolean merge) {
 
-        // check to see if any files in session file are on protected (oauth) server. If
-        // so, make sure user is logged into server before -proceeding
-
-        OAuthUtils.getInstance().getProvider().checkServerLogin(sessionPath);
         Runnable runnable = () -> restoreSessionSynchronous(sessionPath, locus, merge);
         LongRunningTask.submit(runnable);
     }
@@ -2371,7 +2367,6 @@ public class IGV implements IGVEventObserver {
                     if (track.isReadyToPaint(frame) == false) {
                         if (Globals.isBatch()) {
                             track.load(frame);
-                            component.paintImmediately(component.getBounds());
                         } else {
                             futures.add(CompletableFuture.runAsync(() -> {
                                 track.load(frame);
@@ -2382,7 +2377,14 @@ public class IGV implements IGVEventObserver {
             }
         }
 
-        if (futures.size() > 0) {
+        if (Globals.isBatch()) {
+            component.paintImmediately(component.getBounds());
+        } else if (futures.size() == 0) {
+            UIUtilities.invokeOnEventThread(() -> {
+                component.repaint();
+
+            });
+        } else {
             final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
             WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
             CompletableFuture.allOf(futureArray).thenApplyAsync(future -> {
@@ -2393,11 +2395,6 @@ public class IGV implements IGVEventObserver {
                     //component.repaint();
                 });
                 return null;
-            });
-        } else {
-            UIUtilities.invokeOnEventThread(() -> {
-                component.repaint();
-
             });
         }
     }
