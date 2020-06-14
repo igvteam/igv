@@ -74,7 +74,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -2359,21 +2358,15 @@ public class IGV implements IGVEventObserver {
     }
 
     final public void doRefresh() {
-        if (Globals.isBatch()) {
-            try {
-                SwingUtilities.invokeAndWait(() -> {
-                    contentPane.getMainPanel().validate();
-                    contentPane.paintImmediately(contentPane.getBounds());
-                });
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
+        UIUtilities.invokeOnEventThread(() -> {
+            if (Globals.isBatch()) {
+                contentPane.getMainPanel().validate();
+                contentPane.paintImmediately(contentPane.getBounds());
+            } else {
+                contentPane.getMainPanel().revalidate();
+                mainFrame.repaint();
             }
-        } else {
-            contentPane.getMainPanel().revalidate();
-            mainFrame.repaint();
-        }
+        });
     }
 
     /**

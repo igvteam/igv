@@ -47,24 +47,16 @@ public class RunScriptMenuAction extends MenuAction {
         this.mainFrame = mainFrame;
     }
 
+    /**
+     * Run the batch script.  This is PURPOSELY run on the event dispatch thread to maintain absolute synchronization
+     * @param e
+     */
     public void actionPerformed(ActionEvent e) {
-
         if (e.getActionCommand().equalsIgnoreCase("run batch script...")) {
             File script = chooseScriptFile();
             if (script != null && script.isFile()) {
                 final BatchRunner bRun = new BatchRunner(script.getPath());
-
-                SwingWorker worker = new SwingWorker() {
-
-                    @Override
-                    protected Object doInBackground() throws Exception {
-                        bRun.run();
-                        return null;
-                    }
-                };
-
-                worker.execute();
-
+                bRun.run();
             }
         }
     }
