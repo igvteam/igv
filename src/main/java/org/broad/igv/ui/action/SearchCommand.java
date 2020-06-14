@@ -510,7 +510,7 @@ public class SearchCommand {
                 end = center + widen;
             }
 
-            return new int[]{Math.min(start, end) - 1, Math.max(start, end)};
+            return new int[]{Math.min(start, end), Math.max(start, end)};
         } catch (NumberFormatException numberFormatException) {
             return null;
         }
@@ -550,7 +550,7 @@ public class SearchCommand {
             this.chr = chr;
             this.start = start;
             this.end = end;
-            this.coords = Locus.getFormattedLocusString(chr, start + 1, end);
+            this.coords = Locus.getFormattedLocusString(chr, start, end);
             this.locus = this.coords;
         }
 
