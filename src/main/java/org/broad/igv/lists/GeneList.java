@@ -73,7 +73,6 @@ public class GeneList {
         return name;
     }
 
-
     public String getDisplayName() {
         return showName ? name : "";
     }
