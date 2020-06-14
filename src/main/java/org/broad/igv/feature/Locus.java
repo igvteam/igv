@@ -103,7 +103,7 @@ public class Locus extends Range implements NamedFeature {
     }
 
     public static String getFormattedLocusString(String chr, int start, int end) {
-        String startStr = NUMBER_FORMAT.format(start) + 1;
+        String startStr = NUMBER_FORMAT.format(start + 1);
         String endStr = NUMBER_FORMAT.format(end);
         String position = chr + ":" + startStr + "-" + endStr;
 

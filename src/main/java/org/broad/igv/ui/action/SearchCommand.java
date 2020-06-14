@@ -493,7 +493,7 @@ System.out.println(searchString);
         try {
             String[] posTokens = posString.split("-");
             String startString = posTokens[0].replaceAll(",", "");
-            int start = Math.max(0, Integer.parseInt(startString));
+            int start = Math.max(0, Integer.parseInt(startString) - 1);
 
             // Default value for end
             int end = start + 1;
