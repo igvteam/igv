@@ -98,10 +98,10 @@ public class FeatureDatasetTest extends AbstractHeadlessTest {
         int[] locations = dataset.getStartLocations("chr1");
         assertEquals(expectedSize, locations.length);
 
-        int firstLoc = 19883202;
+        int firstLoc = 19883201;
         assertEquals(firstLoc, locations[0]);
 
-        int lastLoc = 241359291;
+        int lastLoc = 241359290;
         assertEquals(lastLoc, locations[expectedSize - 1]);
 
     }
