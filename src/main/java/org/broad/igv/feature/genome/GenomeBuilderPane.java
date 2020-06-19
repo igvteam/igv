@@ -441,7 +441,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
 
     private void fastaFileButtonActionPerformed(java.awt.event.ActionEvent evt) {
         File directory = PreferencesManager.getPreferences().getDefineGenomeInputDirectory();
-        File file = FileDialogUtils.chooseFileOrDirectory("Select Fasta File", directory, null, FileDialogUtils.LOAD);
+        File file = FileDialogUtils.chooseFile("Select Fasta File", directory, null, FileDialogUtils.LOAD);
         if (file != null) {
             fastaFileTextField.setText(file.getAbsolutePath());
             PreferencesManager.getPreferences().setDefineGenomeInputDirectory(file.getParentFile());
