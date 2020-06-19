@@ -654,12 +654,20 @@ public class AlignmentRenderer {
         double pixelLengthOnReference = alignment.getLengthOnReference() / locScale;
         int arrowPxWidth = pixelLengthOnReference == 0 ? 0 : (int) Math.min(Math.min(5, h / 2), pixelLengthOnReference / 6);
 
+        int prevBlockChromEnd = 0;
         boolean tallEnoughForArrow = h > 6;
         for (AlignmentBlock block : blocks) {
+            int blockChromStart = block.getStart();
+            if (hideSmallIndelsBP && (blockChromStart - prevBlockChromEnd < indelThresholdBP)) {
+                blockChromStart = prevBlockChromEnd;
+            }
+            int blockChromEnd = block.getStart() + block.getLength();
+            int blockPxStart = (int) ((blockChromStart - bpStart) / locScale);
+            int blockPxEnd = (int) ((blockChromEnd - bpStart) / locScale);
+            prevBlockChromEnd = blockChromEnd;
 
-            int blockPxStart = (int) ((block.getStart() - bpStart) / locScale);
-            int blockPxWidth = (int) Math.max(1, (block.getLength() / locScale));
-            int blockPxEnd = blockPxStart + blockPxWidth + 1;
+            if (blockPxEnd == blockPxStart) { continue; }
+
             boolean leftmost = block == blocks[0];
             boolean rightmost = block == blocks[blocks.length - 1];
 
