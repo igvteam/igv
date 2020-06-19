@@ -655,6 +655,8 @@ public class AlignmentRenderer {
         int arrowPxWidth = pixelLengthOnReference == 0 ? 0 : (int) Math.min(Math.min(5, h / 2), pixelLengthOnReference / 6);
 
         int prevBlockChromEnd = 0;
+        int outlineChromStart = blocks[0].getStart(),
+            outlineChromEnd = blocks[0].getStart();
         boolean tallEnoughForArrow = h > 6;
         for (AlignmentBlock block : blocks) {
             int blockChromStart = block.getStart();
@@ -664,7 +666,6 @@ public class AlignmentRenderer {
             int blockChromEnd = block.getStart() + block.getLength();
             int blockPxStart = (int) ((blockChromStart - bpStart) / locScale);
             int blockPxEnd = (int) ((blockChromEnd - bpStart) / locScale);
-            prevBlockChromEnd = blockChromEnd;
 
             if (blockPxEnd == blockPxStart) { continue; }
 
@@ -675,7 +676,6 @@ public class AlignmentRenderer {
                 gAlignment.drawLine(blockPxStart, y, blockPxEnd, y);
             } else {
                 Shape blockShape;
-
 
                 if (!overlapped) {
                     int pixelGap = (int) (AlignmentPacker.MIN_ALIGNMENT_SPACING / locScale);
@@ -699,6 +699,28 @@ public class AlignmentRenderer {
                                 y + h};
                 blockShape = new Polygon(xPoly, yPoly, xPoly.length);
 
+                if (rightmost) { outlineChromEnd = blockChromEnd; }
+
+                if ((int) ((blockChromStart - prevBlockChromEnd) / locScale) > 0 || rightmost) {
+                    if (outlineGraphics != null) {
+                        int alPxStart = (int) ((outlineChromStart - bpStart) / locScale),
+                            alPxEnd = (int) ((outlineChromEnd - bpStart) / locScale);
+
+                        int[] alXPoly = {alPxStart - (alignment.isNegativeStrand() && tallEnoughForArrow && outlineChromStart == blocks[0].getStart() ? arrowPxWidth : 0),
+                                    alPxStart,
+                                    alPxEnd,
+                                    alPxEnd + (!alignment.isNegativeStrand() && tallEnoughForArrow && rightmost ? arrowPxWidth : 0),
+                                    alPxEnd,
+                                    alPxStart},
+                                alYPoly = {y + h / 2, y, y, y + h / 2, y + h, y + h};
+                        Shape alShape = new Polygon(alXPoly, alYPoly, alXPoly.length);
+                        outlineGraphics.draw(alShape);
+                    }
+
+                    outlineChromStart = blockChromStart;
+                }
+                outlineChromEnd = blockChromEnd;
+
                 Graphics2D g = gAlignment;
                 if(!block.hasBases()) {
                     if (block.isSoftClipped()) g = context.getGraphics2D("SOFT_CLIP");
@@ -715,22 +737,8 @@ public class AlignmentRenderer {
                     clippedGraphics.drawLine(xPoly[3], yPoly[3], xPoly[4], yPoly[4] - 1);
                 }
             }
-        }
-        if (outlineGraphics != null) {
-            int chromStart = blocks[0].getStart(),
-                chromEnd = blocks[blocks.length - 1].getStart() + blocks[blocks.length - 1].getLength();
-            int blockPxStart = (int) ((chromStart - bpStart) / locScale),
-                blockPxEnd = (int) ((chromEnd - bpStart) / locScale);
 
-            int[] xPoly = {blockPxStart - (alignment.isNegativeStrand() && tallEnoughForArrow ? arrowPxWidth : 0),
-                        blockPxStart,
-                        blockPxEnd,
-                        blockPxEnd + (!alignment.isNegativeStrand() && tallEnoughForArrow ? arrowPxWidth : 0),
-                        blockPxEnd,
-                        blockPxStart},
-                    yPoly = {y + h / 2, y, y, y + h / 2, y + h, y + h};
-            Shape alShape = new Polygon(xPoly, yPoly, xPoly.length);
-            outlineGraphics.draw(alShape);
+            prevBlockChromEnd = blockChromEnd;
         }
 
 
