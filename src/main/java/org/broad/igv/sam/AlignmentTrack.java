@@ -1720,7 +1720,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             group.add(tagOption);
 
             Range oldGroupByPos = renderOptions.getGroupByPos();
-            if (renderOptions.getGroupByOption() == GroupOption.BASE_AT_POS) { // already sorted by the base at a position
+            if (oldGroupByPos != null && renderOptions.getGroupByOption() == GroupOption.BASE_AT_POS) { // already sorted by the base at a position
                 JCheckBoxMenuItem oldGroupByPosOption = new JCheckBoxMenuItem("base at " + oldGroupByPos.getChr() +
                         ":" + Globals.DECIMAL_FORMAT.format(1 + oldGroupByPos.getStart()));
                 groupMenu.add(oldGroupByPosOption);
