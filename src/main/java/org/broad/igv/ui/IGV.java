@@ -720,7 +720,7 @@ public class IGV implements IGVEventObserver {
      *                       the {@link Paintable} interface for this to work
      * @throws IOException
      * @api
-     * @see SnapshotFileChooser.SnapshotFileType
+     * @see ImageFileTypes.Type
      */
     public String createSnapshotNonInteractive(Component target, File file, boolean paintOffscreen) throws Exception {
 
@@ -733,16 +733,16 @@ public class IGV implements IGVEventObserver {
             file = new File(file.getAbsolutePath() + extension);
         }
 
-        SnapshotFileChooser.SnapshotFileType type = SnapshotFileChooser.getSnapshotFileType(extension);
+        ImageFileTypes.Type type = ImageFileTypes.getImageFileType(extension);
 
         String message;
         Exception exc = null;
 
-        if (type == SnapshotFileChooser.SnapshotFileType.NULL) {
+        if (type == ImageFileTypes.Type.NULL) {
             message = "ERROR: Unknown file extension " + extension;
             log.error(message);
             return message;
-        } else if (type == SnapshotFileChooser.SnapshotFileType.EPS && !SnapshotUtilities.canExportScreenshotEps()) {
+        } else if (type == ImageFileTypes.Type.EPS && !SnapshotUtilities.canExportScreenshotEps()) {
             message = "ERROR: EPS output requires EPSGraphics library. See https://www.broadinstitute.org/software/igv/third_party_tools#epsgraphics";
             log.error(message);
             return message;
@@ -769,20 +769,26 @@ public class IGV implements IGVEventObserver {
 
         File snapshotDirectory = PreferencesManager.getPreferences().getLastSnapshotDirectory();
 
-        JFileChooser fc = new SnapshotFileChooser(snapshotDirectory, defaultFile);
-        fc.showSaveDialog(mainFrame);
-        File file = fc.getSelectedFile();
-
+        // JFileChooser fc = new SnapshotFileChooser(snapshotDirectory, defaultFile);
+        FileDialog fc = new FileDialog(mainFrame, "Save image", FileDialog.SAVE);
+        if (snapshotDirectory != null) {
+            fc.setDirectory(snapshotDirectory.getAbsolutePath());
+        }
+        fc.setFile(defaultFile.getName());
+        fc.setFilenameFilter((dir, name) ->
+                name.endsWith(".jpeg") || name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".svg"));
+        fc.setVisible(true);
+        String file = fc.getFile();
         // If a file selection was made
         if (file != null) {
-            File directory = file.getParentFile();
+            String directory = fc.getDirectory();
             if (directory != null) {
                 PreferencesManager.getPreferences().setLastSnapshotDirectory(directory);
             }
-
+            return new File(directory, file);
+        } else {
+            return null;
         }
-
-        return file;
     }
 
 
@@ -947,6 +953,7 @@ public class IGV implements IGVEventObserver {
         resetSession(null);
         setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
         this.menuBar.disableReloadSession();
+        this.doRefresh();
     }
 
     /**

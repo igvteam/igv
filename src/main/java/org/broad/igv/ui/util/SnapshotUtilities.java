@@ -86,7 +86,7 @@ public class SnapshotUtilities {
     }
 
 
-    public static String doComponentSnapshot(Component component, File file, SnapshotFileChooser.SnapshotFileType type, boolean paintOffscreen) throws IOException {
+    public static String doComponentSnapshot(Component component, File file, ImageFileTypes.Type type, boolean paintOffscreen) throws IOException {
 
         //TODO Should really make this work for more components
         if (paintOffscreen && !(component instanceof Paintable)) {
