@@ -348,8 +348,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         setLayout(layout);
 
-        detailsBehavior = ShowDetailsBehavior.valueOf((PreferencesManager.getPreferences().get(Constants.DETAILS_BEHAVIOR_KEY,
-                ShowDetailsBehavior.HOVER.name()).toUpperCase()));
+        final String detailsPreference = PreferencesManager.getPreferences().get(Constants.DETAILS_BEHAVIOR_KEY);
+        detailsBehavior = ShowDetailsBehavior.valueOf((detailsPreference.toUpperCase()));
 
         // This controls the vertical height of the command bar
 
