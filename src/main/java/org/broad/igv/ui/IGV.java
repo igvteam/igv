@@ -942,7 +942,7 @@ public class IGV implements IGVEventObserver {
         resetSession(null);
         setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
         this.menuBar.disableReloadSession();
-        this.doRefresh();
+        this.repaint();
     }
 
     /**
