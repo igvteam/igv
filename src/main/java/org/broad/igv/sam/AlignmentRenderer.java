@@ -587,6 +587,7 @@ public class AlignmentRenderer {
 
                 int gapPxStart = (int) ((Math.max(bpStart, gapStart) - bpStart) / locScale);
                 int gapPxEnd = (int) ((Math.min(bpEnd, gapEnd) - bpStart) / locScale);
+                if (gapPxEnd == gapPxStart) { continue; }
 
                 if (gapEnd <= bpStart) { // gap ends before the visible context
                     continue; // move to next gap
