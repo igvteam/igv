@@ -414,9 +414,9 @@ public class IGVPreferences {
     /**
      * @param directory
      */
-    public void setLastSnapshotDirectory(File directory) {
+    public void setLastSnapshotDirectory(String directory) {
 
-        put(LAST_SNAPSHOT_DIRECTORY, directory.getAbsolutePath());
+        put(LAST_SNAPSHOT_DIRECTORY, directory);
     }
 
     /**
