@@ -654,6 +654,7 @@ public class AlignmentRenderer {
         double pixelLengthOnReference = alignment.getLengthOnReference() / locScale;
         int arrowPxWidth = pixelLengthOnReference == 0 ? 0 : (int) Math.min(Math.min(5, h / 2), pixelLengthOnReference / 6);
 
+        boolean tallEnoughForArrow = h > 6;
         for (AlignmentBlock block : blocks) {
 
             int blockPxStart = (int) ((block.getStart() - bpStart) / locScale);
@@ -661,7 +662,6 @@ public class AlignmentRenderer {
             int blockPxEnd = blockPxStart + blockPxWidth + 1;
             boolean leftmost = block == blocks[0];
             boolean rightmost = block == blocks[blocks.length - 1];
-            boolean tallEnoughForArrow = h > 6;
 
             if (h == 1) {
                 gAlignment.drawLine(blockPxStart, y, blockPxEnd, y);
@@ -698,9 +698,6 @@ public class AlignmentRenderer {
                 }
 
                 g.fill(blockShape);
-                if (outlineGraphics != null) {
-                    outlineGraphics.draw(blockShape);
-                }
                 if (leftmost && leftClipped) {
                     clippedGraphics.drawLine(xPoly[0], yPoly[0], xPoly[1], yPoly[1]);
                     clippedGraphics.drawLine(xPoly[5], yPoly[5] - 1, xPoly[0], yPoly[0]);
@@ -710,6 +707,22 @@ public class AlignmentRenderer {
                     clippedGraphics.drawLine(xPoly[3], yPoly[3], xPoly[4], yPoly[4] - 1);
                 }
             }
+        }
+        if (outlineGraphics != null) {
+            int chromStart = blocks[0].getStart(),
+                chromEnd = blocks[blocks.length - 1].getStart() + blocks[blocks.length - 1].getLength();
+            int blockPxStart = (int) ((chromStart - bpStart) / locScale),
+                blockPxEnd = (int) ((chromEnd - bpStart) / locScale);
+
+            int[] xPoly = {blockPxStart - (alignment.isNegativeStrand() && tallEnoughForArrow ? arrowPxWidth : 0),
+                        blockPxStart,
+                        blockPxEnd,
+                        blockPxEnd + (!alignment.isNegativeStrand() && tallEnoughForArrow ? arrowPxWidth : 0),
+                        blockPxEnd,
+                        blockPxStart},
+                    yPoly = {y + h / 2, y, y, y + h / 2, y + h, y + h};
+            Shape alShape = new Polygon(xPoly, yPoly, xPoly.length);
+            outlineGraphics.draw(alShape);
         }
 
 
