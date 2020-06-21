@@ -50,6 +50,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -413,7 +414,7 @@ public class Main {
         private String coverageFile = null;
         private String name = null;
         public String igvDirectory = null;
-        public String httpHeader = null;
+        public Collection<String> httpHeader = null;
 
         IGVArgs(String[] args) {
             if (args != null) {
@@ -459,7 +460,7 @@ public class Main {
             genomeServerURL = getDecodedValue(parser, genomeServerOption);
             name = (String) parser.getOptionValue(nameOption);
             locusString = (String) parser.getOptionValue(locusOption);
-            httpHeader = (String) parser.getOptionValue(headerOption);
+            httpHeader = parser.getOptionValues(headerOption);
 
             String indexFilePath = (String) parser.getOptionValue(indexFileOption);
             if (indexFilePath != null) {
@@ -629,7 +630,7 @@ public class Main {
             return name;
         }
 
-        public String getHttpHeader() {
+        public Collection<String> getHttpHeader() {
             return httpHeader;
         }
 
