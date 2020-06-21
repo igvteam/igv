@@ -2166,10 +2166,10 @@ public class IGV implements IGVEventObserver {
                     // Not an xml file, assume its a list of data files
                     List<String> dataFiles = igvArgs.getDataFileStrings();
 
-                    String h = igvArgs.getHttpHeader();
+                    Collection<String> h = igvArgs.getHttpHeader();
                     log.info("h= " + igvArgs.getHttpHeader());
-                    if (h != null) {
-                        HttpUtils.getInstance().addHeader(h, dataFiles);
+                    if (h != null && !h.isEmpty()) {
+                        HttpUtils.getInstance().addHeaders(h, dataFiles);
                     }
 
                     String[] names = null;

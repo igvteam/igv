@@ -83,7 +83,7 @@ public class HttpUtils {
     private String defaultUserName = null;
     private char[] defaultPassword = null;
 
-    private Map<String, String> headerMap = new HashMap<>();
+    private Map<String, Collection<String>> headerMap = new HashMap<>();
 
     // static provided to support unit testing
     private static boolean BYTE_RANGE_DISABLED = false;
@@ -820,11 +820,14 @@ public class HttpUtils {
                 conn.setRequestProperty(prop.getKey(), prop.getValue());
             }
         }
-        String h = headerMap.get(url.getHost());
-        if(h != null) {
-            String [] kv = h.split(":");
-            if(kv.length == 2) {
-                conn.setRequestProperty(kv[0], kv[1]);
+
+        Collection<String> headers = headerMap.get(url.getHost());
+        if (headers != null) {
+            for (String h : headers) {
+                String[] kv = h.split(":");
+                if (kv.length == 2) {
+                    conn.setRequestProperty(kv[0], kv[1]);
+                }
             }
         }
 
@@ -1050,16 +1053,17 @@ public class HttpUtils {
      * Add an http header string to be applied the the specified URLs.  Used to support command line specification
      * of authentication headers
      *
-     * @param header
+     * @param headers
      * @param urls
      */
-    public void addHeader(String header, List<String> urls) {
+    public void addHeaders(Collection<String> headers, List<String> urls) {
         for (String u : urls) {
             if (isRemoteURL(u)) {
                 try {
                     URL url = new URL(mapURL(u));
-                    headerMap.put(url.getHost(), header);
-                    System.out.println("Added " + url.getHost() + " -> " + header);
+                    headerMap.put(url.getHost(), headers);
+                    System.out.println("Added " + url.getHost() + " -> " + headers);
+
                 } catch (MalformedURLException e) {
                     log.error("Error parsing URL " + u, e);
                 }
