@@ -58,14 +58,9 @@ public class IGVSeekableStreamFactory implements ISeekableStreamFactory {
 
         if (path.endsWith(".list")) {
             return new SeekableSplitStream(path);
-
         } else {
+            path = mapPath(path);
             SeekableStream is = null;
-
-//            if(path.startsWith("gs://")) {
-//                path = GoogleUtils.translateGoogleCloudURL(path);
-//            }
-
             if (path.toLowerCase().startsWith("http://") || path.toLowerCase().startsWith("https://") ||
                     path.toLowerCase().startsWith("gs://")) {
 
@@ -92,6 +87,14 @@ public class IGVSeekableStreamFactory implements ISeekableStreamFactory {
 
     public SeekableStream getBufferedStream(SeekableStream stream, int bufferSize){
         return new IGVSeekableBufferedStream(stream, bufferSize);
+    }
+
+    private String mapPath(String path) {
+        if(path.startsWith("ftp://ftp.ncbi.nlm.nih.gov/geo")) {
+            return path.replace("ftp://ftp.ncbi.nlm.nih.gov/geo", "https://ftp.ncbi.nlm.nih.gov/geo");
+        } else {
+            return path;
+        }
     }
 
 }
