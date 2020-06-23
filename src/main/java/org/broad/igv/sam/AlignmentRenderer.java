@@ -653,14 +653,25 @@ public class AlignmentRenderer {
         double pixelLengthOnReference = alignment.getLengthOnReference() / locScale;
         int arrowPxWidth = pixelLengthOnReference == 0 ? 0 : (int) Math.min(Math.min(5, h / 2), pixelLengthOnReference / 6);
 
-        for (AlignmentBlock block : blocks) {
+        int blockChromStart = blocks[0].getStart();
+        boolean leftmost = true;
+        for (int blockIx = 0; blockIx < blocks.length; blockIx++) {
+            AlignmentBlock block = blocks[blockIx];
 
-            int blockPxStart = (int) ((block.getStart() - bpStart) / locScale);
-            int blockPxWidth = (int) Math.max(1, (block.getLength() / locScale));
-            int blockPxEnd = blockPxStart + blockPxWidth + 1;
-            boolean leftmost = block == blocks[0];
-            boolean rightmost = block == blocks[blocks.length - 1];
+            int blockChromEnd = block.getStart() + block.getLength();
+            int blockPxStart = (int) ((blockChromStart - bpStart) / locScale);
+            int blockPxEnd = (int) ((blockChromEnd - bpStart) / locScale);
+            boolean rightmost = blockIx + 1 == blocks.length;
             boolean tallEnoughForArrow = h > 6;
+
+            if (!rightmost) { // consider waiting to draw the block unless it is rightmost
+                if (hideSmallIndelsBP && (blocks[blockIx+1].getStart() - blockChromEnd) < indelThresholdBP) {
+                    continue; // small indel between this block and the next; wait to draw
+                }
+                else {
+                    blockChromStart = blocks[blockIx+1].getStart(); // start position for the next block
+                }
+            }
 
             if (h == 1) {
                 gAlignment.drawLine(blockPxStart, y, blockPxEnd, y);
@@ -709,6 +720,7 @@ public class AlignmentRenderer {
                     clippedGraphics.drawLine(xPoly[3], yPoly[3], xPoly[4], yPoly[4] - 1);
                 }
             }
+            leftmost = false;
         }
 
 
