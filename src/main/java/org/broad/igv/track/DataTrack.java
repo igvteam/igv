@@ -57,8 +57,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Represents a track of numeric data
@@ -75,13 +75,10 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     private Map<String, LoadedDataInterval<List<LocusScore>>> loadedIntervalCache = new HashMap(200);
 
     public DataTrack(ResourceLocator locator, String id, String name) {
-        super(locator, id, name);
+        super(id, name, locator);
         autoScale = PreferencesManager.getPreferences().getAsBoolean(Constants.CHART_AUTOSCALE);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
-    }
-
-    public DataTrack() {
     }
 
     public void receiveEvent(Object event) {

@@ -25,26 +25,19 @@
 
 package org.broad.igv.track;
 
-import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Mutation;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.TooltipTextFrame;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.URL;
 
 /**
  * @author Jim Robinson
@@ -55,11 +48,8 @@ public class MutationTrack extends FeatureTrack {
     private static Logger log = Logger.getLogger(MutationTrack.class);
 
     public MutationTrack(ResourceLocator locator, String id, FeatureSource source) {
-        super(locator, id, source);
+        super(id, locator, source);
         setSortable(true);
-    }
-
-    public MutationTrack() {
     }
 
     @Override

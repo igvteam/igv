@@ -62,9 +62,6 @@ public class InteractionTrack extends AbstractTrack {
     private Map<GraphType, BedPERenderer> renderers;
     private FeatureCache<BedPE> featureCache;
 
-    public InteractionTrack() {
-    }
-
     public InteractionTrack(ResourceLocator locator, BedPEParser.Dataset dataset, Genome genome) {
 
         super(locator);

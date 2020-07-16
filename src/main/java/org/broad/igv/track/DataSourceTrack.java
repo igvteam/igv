@@ -69,11 +69,6 @@ public class DataSourceTrack extends DataTrack {
         }
     }
 
-    public DataSourceTrack() {
-
-    }
-
-
     void initScale(DataSource dataSource, List<LocusScore> scores) {
 
         float min = (float) dataSource.getDataMin();

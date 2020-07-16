@@ -185,10 +185,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         this.renderer = renderer;
     }
 
-
-    public VariantTrack() {
-    }
-
     public VariantTrack(String name, FeatureSource source) {
         this(null, source, Collections.<String>emptyList(), false);
         this.setName(name);

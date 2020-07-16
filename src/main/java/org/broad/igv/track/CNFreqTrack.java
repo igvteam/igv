@@ -59,17 +59,11 @@ public class CNFreqTrack extends AbstractTrack {
 
     FreqData data;
     BarChartRenderer renderer;
-
-
     float ampThreshold;
-
     float delThreshold;
 
-    public CNFreqTrack() {
-    }
-
     public CNFreqTrack(ResourceLocator rl, String id, String name, FreqData fd) {
-        super(rl, id, name);
+        super(id, name, rl);
         data = fd;
         this.ampThreshold = PreferencesManager.getPreferences().getAsFloat(Constants.CN_FREQ_AMP_THRESHOLD);
         this.delThreshold = PreferencesManager.getPreferences().getAsFloat(Constants.CN_FREQ_DEL_THRESHOLD);

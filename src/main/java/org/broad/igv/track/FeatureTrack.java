@@ -53,8 +53,8 @@ import org.w3c.dom.NodeList;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Track which displays features, typically showing regions of the genome
@@ -114,75 +114,48 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     private boolean alternateExonColor = false;
 
-    private static final String PLUGIN_SOURCE = "PluginSource";
-    private static final String SEQUENCE_MATCH_SOURCE = "SequenceMatchSource";
-
-
     String trackLine = null;
 
-    public FeatureTrack() {
-
-    }
-
-    // TODO -- there are WAY too many constructors for this class
 
     /**
-     * Construct with no feature source.  Currently this is only used for the SpliceJunctionTrack subclass.
-     *
+     * The "real" constructor, all other constructors call this one.
      * @param id
      * @param name
+     * @param locator
+     * @param source
      */
-    public FeatureTrack(String id, String name) {
-        super(null, id, name);
+    public FeatureTrack(String id, String name, ResourceLocator locator, FeatureSource source) {
+        super(id, name, locator);
+        init(source, locator);
         setSortable(false);
     }
 
-    public FeatureTrack(ResourceLocator locator, String id, String name) {
-        super(locator, id, name);
-        setSortable(false);
+    /**
+     * Construct with no feature source.  Currently this is only used for the BlatTrack subclass.
+     */
+    public FeatureTrack(String id, String name) {
+        this(id, name, null, null);
+    }
+
+    public FeatureTrack(String id, String name, ResourceLocator locator) {
+        this(id, name, locator, null);
     }
 
     /**
      * Constructor with no ResourceLocator.  Note:  tracks using this constructor will not be recorded in the
-     * "Resources" section of session files.
-     *
-     * @param id
-     * @param name
-     * @param source
-     * @api
+     * "Resources" section of session files.  Used for the default gene track and computed tracks.
      */
     public FeatureTrack(String id, String name, FeatureSource source) {
-        super(null, id, name);
-        init(source, null);
-        setSortable(false);
+        this(id, name, null, source);
     }
-
-
-    /**
-     * Constructor specifically for BigWig data source
-     *
-     * @param locator
-     * @param id
-     * @param name
-     * @param source
-     */
-    public FeatureTrack(ResourceLocator locator, String id, String name, FeatureSource source) {
-        super(locator, id, name);
-        init(source, locator.getPath());
-        setSortable(false);
-    }
-
 
     public FeatureTrack(ResourceLocator locator, FeatureSource source) {
-        super(locator);
-        init(source, locator != null ? locator.getPath() : null);
-        setSortable(false);
+        this(locator.getPath(), locator.getTrackName(), locator, source);
     }
 
 
-    public FeatureTrack(ResourceLocator locator, String id, FeatureSource source) {
-        super(locator, id, locator.getTrackName());
-        init(source, locator.getPath());
+    public FeatureTrack(String id, ResourceLocator locator, FeatureSource source) {
+        this(id, locator.getTrackName(), locator, source);
     }
 
     /**
@@ -191,29 +164,33 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @param featureTrack
      */
     public FeatureTrack(FeatureTrack featureTrack) {
-        this(featureTrack.getId(), featureTrack.getName(), featureTrack.source);
+        this(featureTrack.getId(), featureTrack.getName(), featureTrack.getResourceLocator(), featureTrack.source);
     }
 
-    protected void init(FeatureSource source, String path) {
+    protected void init(FeatureSource source, ResourceLocator locator) {
 
-        this.source = source;
         setMinimumHeight(10);
         setColor(Color.blue.darker());
 
-        coverageRenderer = new BarChartRenderer();
+        if(source != null) {
+            this.source = source;
+            coverageRenderer = new BarChartRenderer();
 
-        int sourceFeatureWindowSize = source.getFeatureWindowSize();
-        if (sourceFeatureWindowSize > 0) {  // Only apply a default if the feature source supports visibility window.
-            int defVisibilityWindow = PreferencesManager.getPreferences().getAsInt(Constants.DEFAULT_VISIBILITY_WINDOW);
-            if (defVisibilityWindow > 0) {
-                setVisibilityWindow(defVisibilityWindow * 1000);
-            } else {
-                visibilityWindow = sourceFeatureWindowSize;
+            int sourceFeatureWindowSize = source.getFeatureWindowSize();
+            if (sourceFeatureWindowSize > 0) {  // Only apply a default if the feature source supports visibility window.
+                int defVisibilityWindow = PreferencesManager.getPreferences().getAsInt(Constants.DEFAULT_VISIBILITY_WINDOW);
+                if (defVisibilityWindow > 0) {
+                    setVisibilityWindow(defVisibilityWindow * 1000);
+                } else {
+                    visibilityWindow = sourceFeatureWindowSize;
+                }
             }
         }
-
-        this.renderer = path != null && path.endsWith("junctions.bed") ?
-                new SpliceJunctionRenderer() : new IGVFeatureRenderer();
+        if(locator != null) {
+            String path = locator.getPath();
+            this.renderer = path != null && path.endsWith("junctions.bed") ?
+                    new SpliceJunctionRenderer() : new IGVFeatureRenderer();
+        }
 
         IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
 

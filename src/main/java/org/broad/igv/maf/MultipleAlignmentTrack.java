@@ -81,9 +81,6 @@ public class MultipleAlignmentTrack extends AbstractTrack {
      */
     private HashMap<String, String> chrMappings;
 
-    public MultipleAlignmentTrack() {
-    }
-
     public MultipleAlignmentTrack(final ResourceLocator locator, Genome genome) throws IOException {
         super(locator);
         this.genome = genome;

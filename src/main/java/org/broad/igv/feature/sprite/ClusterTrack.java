@@ -32,9 +32,6 @@ public class ClusterTrack extends AbstractTrack {
     int rowHeight = 2;
     Genome genome;
 
-    public ClusterTrack() {
-    }
-
     public ClusterTrack(ResourceLocator locator, ClusterParser.ClusterSet clusterSet, Genome genome) {
         super(locator);
         this.clusterSet = clusterSet;

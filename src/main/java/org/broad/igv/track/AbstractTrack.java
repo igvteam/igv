@@ -151,9 +151,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     public AbstractTrack(
-            ResourceLocator dataResourceLocator,
-            String id,
-            String name) {
+            String id, String name, ResourceLocator dataResourceLocator) {
         this.resourceLocator = dataResourceLocator;
         this.id = id;
         this.name = name;
@@ -162,7 +160,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     public AbstractTrack(ResourceLocator locator) {
-        this(locator, locator != null ? locator.getPath() : null, locator != null ? locator.getTrackName() : null);
+        this(locator != null ? locator.getPath() : null, locator != null ? locator.getTrackName() : null, locator);
     }
 
     private void init() {
