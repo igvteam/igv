@@ -41,6 +41,7 @@ import org.broad.igv.renderer.*;
 import org.broad.igv.tools.motiffinder.MotifFinderSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.BrowserLauncher;
@@ -83,7 +84,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     private int expandedRowHeight = DEFAULT_EXPANDED_HEIGHT;
     private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
     private int margin = DEFAULT_MARGIN;
-    
+
     private boolean fatalLoadError = false;
 
     private Track.DisplayMode lastFeatureMode = null;  // Keeps track of the feature display mode before an auto-switch to COLLAPSE
@@ -92,9 +93,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     private boolean showFeatures = true;    // true == features,  false =  coverage
     protected Renderer renderer;
     private DataRenderer coverageRenderer;
-
-
-    // TODO -- this is a memory leak, this cache needs cleared when the reference frame collection (gene list) changes
+    
     /**
      * Map of reference frame name -> packed features
      */
@@ -110,6 +109,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     /**
      * The "real" constructor, all other constructors call this one.
+     *
      * @param id
      * @param name
      * @param locator
@@ -163,7 +163,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         setMinimumHeight(10);
         setColor(Color.blue.darker());
 
-        if(source != null) {
+        if (source != null) {
             this.source = source;
             coverageRenderer = new BarChartRenderer();
 
@@ -177,13 +177,13 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 }
             }
         }
-        if(locator != null) {
+        if (locator != null) {
             String path = locator.getPath();
             this.renderer = path != null && path.endsWith("junctions.bed") ?
                     new SpliceJunctionRenderer() : new IGVFeatureRenderer();
         }
 
-        IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
+        IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
 
     }
 
@@ -200,15 +200,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * Called after features are finished loading, which can be asynchronous
      */
     public void receiveEvent(Object e) {
-        if (e instanceof DataLoadedEvent) {
-//            DataLoadedEvent event = (DataLoadedEvent) e;
-//            if (IGV.hasInstance()) {
-//                // TODO -- WHY IS THIS HERE????
-//                //TODO Assuming this is necessary, there can be many data loaded events in succession,
-//                //don't want to layout for each one
-//                IGV.getInstance().layoutMainPanel();
-//            }
-        } else {
+        if (e instanceof FrameManager.ChangeEvent) {
+            clearPackedFeatures();
+        }  else {
             log.info("Unknown event type: " + e.getClass());
         }
     }
