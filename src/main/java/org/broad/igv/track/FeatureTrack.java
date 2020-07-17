@@ -69,53 +69,44 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(FeatureTrack.class);
 
-
     public static final int MINIMUM_FEATURE_SPACING = 5;
     public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
-    protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(100, 100, 100, 30);
+    private static final Color SELECTED_FEATURE_ROW_COLOR = new Color(100, 100, 100, 30);
     private static final int DEFAULT_EXPANDED_HEIGHT = 35;
     private static final int DEFAULT_SQUISHED_HEIGHT = 12;
 
+    public FeatureSource source;
+    private String trackLine = null;
+
+    private static boolean drawBorder = true;
     private int expandedRowHeight = DEFAULT_EXPANDED_HEIGHT;
     private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
+    private int margin = DEFAULT_MARGIN;
+    
+    private boolean fatalLoadError = false;
 
-    boolean fatalLoadError = false;
+    private Track.DisplayMode lastFeatureMode = null;  // Keeps track of the feature display mode before an auto-switch to COLLAPSE
+    private boolean alternateExonColor = false;
 
-    Track.DisplayMode lastFeatureMode = null;  // Keeps track of the feature display mode before an auto-switch to COLLAPSE
+    private boolean showFeatures = true;    // true == features,  false =  coverage
+    protected Renderer renderer;
+    private DataRenderer coverageRenderer;
 
-
-    protected List<Rectangle> levelRects = new ArrayList();
 
     // TODO -- this is a memory leak, this cache needs cleared when the reference frame collection (gene list) changes
     /**
      * Map of reference frame name -> packed features
      */
-    protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<String, PackedFeatures<IGVFeature>>());
+    protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<>());
+    private List<Rectangle> levelRects = new ArrayList<>();
 
-    protected Renderer renderer;
-
-    private DataRenderer coverageRenderer;
-
-    // true == features,  false =  coverage
-    private boolean showFeatures = true;
-
-    public FeatureSource source;
 
     //track which row of the expanded track is selected by the user. Selection goes away if tracks are collpased
-    protected int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
+    private int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
 
     //Feature selected by the user.  This is repopulated on each handleDataClick() call.
     protected IGVFeature selectedFeature = null;
-
-    int margin = DEFAULT_MARGIN;
-
-    private static boolean drawBorder = true;
-
-    private boolean alternateExonColor = false;
-
-    String trackLine = null;
-
 
     /**
      * The "real" constructor, all other constructors call this one.
@@ -969,8 +960,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     /**
      * Features are packed upon loading, effectively a cache.
      * This clears that cache. Used to force a refresh
-     *
-     * @api
      */
     public void clearPackedFeatures() {
         this.packedFeaturesMap.clear();
@@ -1002,10 +991,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     public String getExportTrackLine() {
         return trackLine;
     }
-
-
-    //        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="255,0,0" displayMode="SQUISHED" featureVisibilityWindow="10000000" fontSize="10" id="tataaa Negative" name="tataaa Negative" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
-
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
