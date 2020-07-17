@@ -45,7 +45,7 @@ D. melanogaster (dm6)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/dm
 D. melanogaster (r5.22)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/dmel_r5.22.genome	dmel_r5.22
 D. melanogaster (r5.33)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/dmel_r5.33.genome	dmel_r5.33
 Dog (canFam2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/canFam2.genome	canFam2
-Dog (canFam3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/canFam3.genome	canFam3
+Dog (canFam3)	https://s3.amazonaws.com/igv.org.genomes/canFam3/canFam3.genome	canFam3
 E. coli K-12 MG1655 (NC_000913.2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.2.genome	NC_000913.2
 E. coli K-12 MG1655 (U00096.2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/U00096.2.genome	U00096.2
 E. coli K-12 (NC_000913.3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.3.gbk	NC_000913.3
@@ -79,6 +79,7 @@ L. major Friedlin	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/lmjr.g
 L. major Friedlin (v4.0)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/lmjr_4.0.genome	lmjr_4.0
 M. oryzae (mg8)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/mg8.genome	mg8
 Macaca fascicularis (CE_1.0)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/CE_1.0.genome	CE_1.0
+Macaca fascicularis (5.0)	https://s3.amazonaws.com/igv.org.genomes/Macaca_fascicularis_5.0/Macaca_fascicularis_5.0.genome	GCF_000364345.1
 Maize (B73 4a.53)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/B73.genome	B73
 Maize (ZmB73 5a)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ZmB73_5a.genome	ZmB73_5a
 Mouse (129S1/SvImJ)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/SvImJ.genome	129S1/SvImJ
