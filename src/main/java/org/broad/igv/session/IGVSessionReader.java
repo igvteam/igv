@@ -57,6 +57,7 @@ import org.broad.igv.util.collections.CollUtils;
 import org.w3c.dom.*;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
@@ -252,7 +253,7 @@ public class IGVSessionReader implements SessionReader {
                     } else {
                         String genomePath = genomeId;
                         if (!ParsingUtils.fileExists(genomePath)) {
-                            genomePath = FileUtils.getAbsolutePath(genomeId, rootPath);
+                            genomePath = getCanonicalPath(genomeId, rootPath);
                         }
                         if (ParsingUtils.fileExists(genomePath)) {
                             GenomeManager.getInstance().loadGenome(genomePath, null);
@@ -565,7 +566,7 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        String absolutePath = (rootPath == null || "ga4gh".equals(type)) ? path : FileUtils.getAbsolutePath(path, rootPath);
+        String absolutePath = (rootPath == null || "ga4gh".equals(type)) ? path : getCanonicalPath(path, rootPath);
 
         fullToRelPathMap.put(absolutePath, path);
 
@@ -574,12 +575,12 @@ public class IGVSessionReader implements SessionReader {
         if (index != null) resourceLocator.setIndexPath(index);
 
         if (coverage != null) {
-            String absoluteCoveragePath = coverage.equals(".") ? coverage : FileUtils.getAbsolutePath(coverage, rootPath);
+            String absoluteCoveragePath = coverage.equals(".") ? coverage : getCanonicalPath(coverage, rootPath);
             resourceLocator.setCoverage(absoluteCoveragePath);
         }
 
         if (mapping != null) {
-            String absoluteMappingPath = mapping.equals(".") ? mapping : FileUtils.getAbsolutePath(mapping, rootPath);
+            String absoluteMappingPath = mapping.equals(".") ? mapping : getCanonicalPath(mapping, rootPath);
             resourceLocator.setMappingPath(absoluteMappingPath);
         }
 
@@ -899,7 +900,7 @@ public class IGVSessionReader implements SessionReader {
         if (matchedTracks == null) {
             //Try creating an "absolute" path for the id
             if (id != null) {
-                matchedTracks = allTracks.get(FileUtils.getAbsolutePath(id, rootPath));
+                matchedTracks = allTracks.get(getCanonicalPath(id, rootPath));
             }
         }
 
@@ -1124,6 +1125,16 @@ public class IGVSessionReader implements SessionReader {
             log.debug("Found multiple tracks with id  " + trackId + ", using the first");
         }
         return matchingTracks.get(0);
+    }
+
+    private static String getCanonicalPath(String path, String rootPath) {
+        String absolutePath = FileUtils.getAbsolutePath(path, rootPath);
+        try {
+            File f = new File(absolutePath);
+            return f.getCanonicalPath();
+        } catch (IOException e) {
+            return absolutePath;
+        }
     }
 
 }
