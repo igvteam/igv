@@ -238,7 +238,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
 
                 // Draw name , if there is room
-                if (displayMode != Track.DisplayMode.SQUISHED) {
+                if (displayMode != Track.DisplayMode.SQUISHED && track.isShowFeatureNames()) {
                     String name = feature.getName();
                     if (name != null) {
                         // Limit name display length

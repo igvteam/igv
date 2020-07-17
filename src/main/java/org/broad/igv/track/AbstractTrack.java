@@ -52,8 +52,8 @@ import org.w3c.dom.NodeList;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -67,6 +67,7 @@ public abstract class AbstractTrack implements Track {
     public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.COLLAPSED;
     public static final int DEFAULT_HEIGHT = -1;
     public static final int VISIBILITY_WINDOW = -1;
+    public static final boolean DEFAULT_SHOW_FEATURE_NAMES = true;
     private static Logger log = Logger.getLogger(AbstractTrack.class);
 
     /**
@@ -146,6 +147,7 @@ public abstract class AbstractTrack implements Track {
     protected Integer height = DEFAULT_HEIGHT;
 
     protected DataRange dataRange;
+    private boolean showFeatureNames = DEFAULT_SHOW_FEATURE_NAMES;
 
     public AbstractTrack() {
     }
@@ -1004,6 +1006,9 @@ public abstract class AbstractTrack implements Track {
         element.setAttribute("fontSize", String.valueOf(fontSize));
         element.setAttribute("visible", String.valueOf(visible));
 
+        if (showFeatureNames != DEFAULT_SHOW_FEATURE_NAMES) {
+            element.setAttribute("showFeatureNames", Boolean.toString(showFeatureNames));
+        }
         if (posColor != DEFAULT_COLOR) {
             element.setAttribute(SessionAttribute.COLOR, ColorUtilities.colorToString(posColor));
         }
@@ -1032,7 +1037,7 @@ public abstract class AbstractTrack implements Track {
             element.setAttribute("height", String.valueOf(this.height));
         }
 
-        if(showDataRange == false) {
+        if (showDataRange == false) {
             element.setAttribute("showDataRange", Boolean.toString(showDataRange));
         }
 
@@ -1043,13 +1048,22 @@ public abstract class AbstractTrack implements Track {
 
             element.setAttribute("autoScale", String.valueOf(this.autoScale));
 
-            if(this.getWindowFunction() != null) {
+            if (this.getWindowFunction() != null) {
                 element.setAttribute("windowFunction", String.valueOf(this.getWindowFunction()));
             }
         }
 
     }
 
+
+    public void setShowFeatureNames(boolean b) {
+        this.showFeatureNames = b;
+    }
+
+    @Override
+    public boolean isShowFeatureNames() {
+        return showFeatureNames;
+    }
 
     /**
      * Restore track from XML serialization -- work in progress
@@ -1064,7 +1078,7 @@ public abstract class AbstractTrack implements Track {
         this.name = element.getAttribute("name");
         this.id = element.getAttribute("id");
 
-        if(element.hasAttribute("attributeKey")) {
+        if (element.hasAttribute("attributeKey")) {
             this.attributeKey = element.getAttribute("attributeKey");
         } else {
             this.attributeKey = this.name;
@@ -1141,6 +1155,15 @@ public abstract class AbstractTrack implements Track {
             } catch (NumberFormatException e) {
                 log.error("Unrecognized featureVisibilityWindow: " + element.getAttribute("featureVisibilityWindow"));
             }
+        }
+
+        if (element.hasAttribute("showFeatureNames")) {
+            try {
+                this.showFeatureNames = Boolean.valueOf(element.getAttribute("showFeatureNames"));
+            } catch (Exception e) {
+                log.error("Unrecognized showDataRange: " + element.getAttribute("showFeatureNames"));
+            }
+
         }
 
         if (element.hasAttribute("fontSize")) {

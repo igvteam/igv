@@ -264,4 +264,8 @@ public interface Track extends Persistable {
 
     void setAutoScale(boolean autoScale);
 
+    default boolean isShowFeatureNames() {return true;}
+
+    default void setShowFeatureNames(boolean b) {}
+
 }

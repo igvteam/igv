@@ -486,10 +486,7 @@ public class TrackMenuUtils {
 
                 featurePopupMenu.add(getBlatItem(sequenceFeature));
             }
-            if (Globals.isDevelopment()) {
-                featurePopupMenu.addSeparator();
-                featurePopupMenu.add(getFeatureToGeneListItem(t));
-            }
+
             if (Globals.isDevelopment() && FrameManager.isGeneListMode() && tracks.size() == 1) {
                 featurePopupMenu.addSeparator();
                 featurePopupMenu.add(getShowSortFramesItem(tracks.iterator().next()));
@@ -499,6 +496,9 @@ public class TrackMenuUtils {
 
         featurePopupMenu.addSeparator();
         featurePopupMenu.add(getChangeFeatureWindow(tracks));
+
+        featurePopupMenu.addSeparator();
+        featurePopupMenu.add(getShowFeatureNames(tracks));
 
     }
 
@@ -610,21 +610,6 @@ public class TrackMenuUtils {
             menu.add(mm);
         }
         menu.addSeparator();
-    }
-
-    private static JMenuItem getFeatureToGeneListItem(final Track t) {
-        JMenuItem mi = new JMenuItem("Use as loci list");
-
-        mi.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Current chromosome only for now
-
-
-            }
-        });
-
-        return mi;
     }
 
     /**
@@ -1466,12 +1451,15 @@ public class TrackMenuUtils {
     public static JMenuItem getChangeFeatureWindow(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Set Feature Visibility Window...");
-        item.addActionListener(new ActionListener() {
+        item.addActionListener(evt -> changeFeatureVisibilityWindow(selectedTracks));
+        return item;
+    }
 
-            public void actionPerformed(ActionEvent evt) {
-                changeFeatureVisibilityWindow(selectedTracks);
-            }
-        });
+    public static JMenuItem getShowFeatureNames(final Collection<Track> selectedTracks) {
+        boolean currentValue = selectedTracks.stream().allMatch(t -> t.isShowFeatureNames());
+        String label = currentValue ? "Hide Feature Names" : "Show Feature Names";
+        JMenuItem item = new JMenuItem(label);
+        item.addActionListener(evt -> selectedTracks.stream().forEach(t -> t.setShowFeatureNames(!currentValue)));
         return item;
     }
 

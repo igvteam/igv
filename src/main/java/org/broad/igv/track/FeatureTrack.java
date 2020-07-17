@@ -93,7 +93,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     private boolean showFeatures = true;    // true == features,  false =  coverage
     protected Renderer renderer;
     private DataRenderer coverageRenderer;
-    
+
     /**
      * Map of reference frame name -> packed features
      */
@@ -926,14 +926,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     public IGVFeature getSelectedFeature() {
         return selectedFeature;
-    }
-
-    public static boolean isDrawBorder() {
-        return drawBorder;
-    }
-
-    public static void setDrawBorder(boolean drawBorder) {
-        FeatureTrack.drawBorder = drawBorder;
     }
 
     public boolean isAlternateExonColor() {
