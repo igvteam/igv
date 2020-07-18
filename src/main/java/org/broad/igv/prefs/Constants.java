@@ -180,6 +180,10 @@ final public class Constants {
     public static final String AF_REF_COLOR = "AF_REF.COLOR";
     public static final String AF_VAR_COLOR = "AF_VAR.COLOR";
 
+    // Heatmap settings
+    public static final String NO_DATA_COLOR = "NO_DATA.COLOR";
+    public static final String NO_CALL_COLOR = "NO_CALL.COLOR";
+
     // "Mut" and "MAF" mutation track settings
     public static final String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";
     public static final String MUTATION_INDEL_COLOR_KEY = "MUTATION_INDEL_COLOR_KEY";

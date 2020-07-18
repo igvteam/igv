@@ -25,16 +25,16 @@
 
 package org.broad.igv.renderer;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 
 import java.awt.*;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 
 import static org.broad.igv.prefs.Constants.CHART_SHOW_ALL_HEATMAP;
 
@@ -43,6 +43,7 @@ import static org.broad.igv.prefs.Constants.CHART_SHOW_ALL_HEATMAP;
  */
 public class HeatmapRenderer extends DataRenderer {
 
+    private static Logger log = Logger.getLogger(HeatmapRenderer.class);
 
     public String getDisplayName() {
         return "Heatmap";
@@ -62,10 +63,16 @@ public class HeatmapRenderer extends DataRenderer {
     public void renderScores(Track track, List<LocusScore> scores, RenderContext context, Rectangle rect) {
 
         ContinuousColorScale colorScale = track.getColorScale();
-
-
         double origin = context.getOrigin();
         double locScale = context.getScale();
+
+        Color noCallColor;
+        try {
+            noCallColor = PreferencesManager.getPreferences().getAsColor(Constants.NO_CALL_COLOR);
+        } catch (Exception e) {
+            log.error("Error parsing color string: " + PreferencesManager.getPreferences().get(Constants.NO_DATA_COLOR));
+            noCallColor = Color.DARK_GRAY;
+        }
 
         Color bgColor = colorScale.getNoDataColor();
         context.getGraphic2DForColor(bgColor).fill(rect);
@@ -92,7 +99,7 @@ public class HeatmapRenderer extends DataRenderer {
             int pEnd = (int) fEnd;
 
             int min;
-            if(showAllFeatures) {
+            if (showAllFeatures) {
                 min = 1;
             } else {
                 min = Math.min(pStart - lastPEnd, 1);
@@ -100,14 +107,19 @@ public class HeatmapRenderer extends DataRenderer {
 
             int w = Math.max(min, pEnd - pStart);
 
-            float dataY = track.logScaleData(score.getScore());
-            Color graphColor = colorScale.getColor(dataY);
+            Color graphColor;
+            float scoreValue = score.getScore();
+            if (Float.isNaN(scoreValue)) {
+                graphColor = noCallColor;
+            } else {
+                graphColor = colorScale.getColor(track.logScaleData(score.getScore()));
+            }
 
             if ((pStart + w) >= 0 && (lastPStart <= maxX)) {
 
                 // Minimum width for DNA methylation
-                if(track.getTrackType() == TrackType.DNA_METHYLATION) {
-                    if(w < 6) {
+                if (track.getTrackType() == TrackType.DNA_METHYLATION) {
+                    if (w < 6) {
                         int pMid = (pStart + pEnd) / 2;
                         pStart = pMid - 3;
                         w = 6;
@@ -121,49 +133,18 @@ public class HeatmapRenderer extends DataRenderer {
                     w--;
                 }
 
-                // TODo The instanceof test is very very ugly.   Special RNAi treatment
-                // Refactor  to generalize "confidence" for all datasets
-                if (!Float.isNaN(dataY)) {
-
-                    Graphics2D g2D = context.getGraphic2DForColor(graphColor);
-                    if (pStart < maxX) {
-                        // Clip at edges
-                        int pLeft = Math.max(rect.x, pStart);
-                        int pRight = Math.min(rect.x + rect.width, pStart + w);
-                        int adjustedW = pRight - pLeft;
-                        g2D.fillRect(pLeft, minY, adjustedW, height);
-                    }
-                } // End special RNAi treagment
+                Graphics2D g2D = context.getGraphic2DForColor(graphColor);
+                if (pStart < maxX) {
+                    // Clip at edges
+                    int pLeft = Math.max(rect.x, pStart);
+                    int pRight = Math.min(rect.x + rect.width, pStart + w);
+                    int adjustedW = pRight - pLeft;
+                    g2D.fillRect(pLeft, minY, adjustedW, height);
+                }
             }
             lastPStart = pStart;
             lastPEnd = pStart + w;
             lastW = w;
         }
     }
-
-
-    /**
-     * Return the color indicating a low confdence score as a function of zoom level.  Currently
-     * this is only used with RNAi data.
-     *
-     * @param zoom
-     * @return
-     */
-    private static Color getLowConfColor(int zoom) {
-        Color lowConfColor = lowConfColorCache.get(zoom);
-        if (lowConfColor == null) {
-
-            int value = 225 - Math.min(70, zoom * 10);
-            lowConfColor = new Color(value, value, value);
-            lowConfColorCache.put(zoom, lowConfColor);
-        }
-        return lowConfColor;
-    }
-
-    /**
-     * A cache for "low confidence color", which is a function of zoom level.
-     */
-    static Map<Integer, Color> lowConfColorCache = new Hashtable();
-
-
 }

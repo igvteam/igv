@@ -234,4 +234,6 @@ public class SegmentFileParser implements SegFileParser {
 
         }
     }
+
 }
+

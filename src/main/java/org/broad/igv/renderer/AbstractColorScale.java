@@ -30,6 +30,8 @@
 
 package org.broad.igv.renderer;
 
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.UIConstants;
 
 import java.awt.*;
@@ -40,7 +42,7 @@ import java.awt.*;
 public abstract class AbstractColorScale implements ColorScale {
 
     final protected static Color defaultColor = Color.BLACK;
-    protected Color noDataColor = UIConstants.NO_DATA_COLOR;
+    protected Color noDataColor = PreferencesManager.getPreferences().getAsColor(Constants.NO_DATA_COLOR);
 
     public Color getColor(String symbol) {
         return defaultColor;

@@ -32,6 +32,8 @@ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 
@@ -283,7 +285,7 @@ public class ContinuousColorScale extends AbstractColorScale {
         }
 
         if(Float.isNaN(val)) {
-            return UIConstants.NO_DATA_COLOR;
+            return PreferencesManager.getPreferences().getAsColor(Constants.NO_DATA_COLOR);
         }
 
         // See if we are in the midrange.  TO deal with floating point roundoffissues expand the range

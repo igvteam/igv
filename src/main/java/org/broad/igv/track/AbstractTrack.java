@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.SessionAttribute;
@@ -768,7 +769,7 @@ public abstract class AbstractTrack implements Track {
             } else {
                 colorScale = new ContinuousColorScale(min, max, minColor, c);
             }
-            colorScale.setNoDataColor(UIConstants.NO_DATA_COLOR);
+            colorScale.setNoDataColor(PreferencesManager.getPreferences().getAsColor(Constants.NO_DATA_COLOR));
         }
         return colorScale;
     }
@@ -826,22 +827,12 @@ public abstract class AbstractTrack implements Track {
         return null;
     }
 
-    /**
-     * Special normalization function for linear (non logged) copy number data
-     *
-     * @param value
-     * @param norm
-     * @return
-     */
-    public static float getLogNormalizedValue(float value, double norm) {
-        if (norm == 0) {
-            return Float.NaN;
-        } else {
-            return (float) (Math.log(Math.max(Float.MIN_VALUE, value) / norm) / Globals.log2);
-        }
-    }
 
     public float logScaleData(float dataY) {
+
+        if(Float.isNaN(dataY)) {
+            return dataY;
+        }
 
         // Special case for copy # -- centers data around 2 copies (1 for allele
         // specific) and log normalizes
@@ -852,11 +843,11 @@ public abstract class AbstractTrack implements Track {
             double centerValue = (getTrackType() == TrackType.ALLELE_SPECIFIC_COPY_NUMBER)
                     ? 1.0 : 2.0;
 
-            dataY = getLogNormalizedValue(dataY, centerValue);
+            return (float) (Math.log(Math.max(Float.MIN_VALUE, dataY) / centerValue) / Globals.log2);
         }
-
-
-        return dataY;
+        else {
+            return dataY;
+        }
     }
 
     public boolean isRegionScoreType(RegionScoreType type) {
