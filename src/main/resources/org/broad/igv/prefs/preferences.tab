@@ -21,7 +21,7 @@ EXPAND_FEATURE_TRACKS	Expand feature tracks	boolean	FALSE
 NORMALIZE_COVERAGE	Normalize coverage data (.tdf files only)	boolean	FALSE
 ##Heatmaps
 NO_DATA.COLOR	 No data	color	216,216,216
-NO_CALL.COLOR	 No data	color	150,150,150
+NO_CALL.COLOR	 No call	color	150,150,150
 
 #Variants
 
