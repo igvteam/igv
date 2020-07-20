@@ -246,7 +246,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             if (defVisibilityWindow > 0) {
                 setVisibilityWindow(defVisibilityWindow * 1000);
             } else {
-                int vw = Math.max(10000, 2000000 - 2000 * allSamples.size());
+                int vw = Math.max(10000, (100000 -  100 * (allSamples.size() - 1)));
                 setVisibilityWindow(vw);
             }
         }
