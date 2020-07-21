@@ -740,8 +740,8 @@ public class IGV implements IGVEventObserver {
             message = "ERROR: Unknown file extension " + extension;
             log.error(message);
             return message;
-        } else if (type == ImageFileTypes.Type.EPS && !SnapshotUtilities.canExportScreenshotEps()) {
-            message = "ERROR: EPS output requires EPSGraphics library. See https://www.broadinstitute.org/software/igv/third_party_tools#epsgraphics";
+        } else if (type == ImageFileTypes.Type.EPS) {
+            message = "ERROR: EPS output is not supported";
             log.error(message);
             return message;
         }

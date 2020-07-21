@@ -293,8 +293,6 @@ public class Main {
 
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
-        RuntimeUtils.loadPluginJars();
-
         IGV.createInstance(frame).startUp(igvArgs);
 
         // TODO Should this be done here?  Will this step on other key dispatchers?

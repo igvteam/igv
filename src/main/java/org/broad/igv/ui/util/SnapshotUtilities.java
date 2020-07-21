@@ -135,10 +135,10 @@ public class SnapshotUtilities {
                 format = "png";
                 exts = new String[]{"." + format};
                 break;
-            case EPS:
-                exportScreenshotEpsGraphics(component, file, width, height, paintOffscreen);
-                //exportScreenshotEpsGraphicsNoRef(component, file, paintOffscreen);
-                break;
+//            case EPS:
+//                exportScreenshotEpsGraphics(component, file, width, height, paintOffscreen);
+//                //exportScreenshotEpsGraphicsNoRef(component, file, paintOffscreen);
+//                break;
         }
         if (format != null && exts != null) {
             exportScreenShotBufferedImage(component, file, width, height, exts, format, paintOffscreen);
@@ -168,74 +168,6 @@ public class SnapshotUtilities {
 //
 //    }
 
-    private static void exportScreenshotEpsGraphics(Component target, File selectedFile, int width, int height, boolean paintOffscreen) throws IOException {
-
-        if (!SnapshotUtilities.canExportScreenshotEps()) {
-            String msg = "ERROR: EPS output requires EPSGraphics library. See https://www.broadinstitute.org/software/igv/third_party_tools#epsgraphics";
-            log.error(msg);
-            return;
-        }
-
-        Graphics2D g = null;
-        FileOutputStream fos = null;
-        try {
-            Class colorModeClass = RuntimeUtils.loadClassForName(EPSColorModeClassName, null);
-            Class graphicsClass = RuntimeUtils.loadClassForName(EPSClassName, null);
-
-            Constructor constructor = graphicsClass.getConstructor(String.class, OutputStream.class,
-                    int.class, int.class, int.class, int.class, colorModeClass);
-
-            Object colorModeValue = Enum.valueOf(colorModeClass, "COLOR_RGB");
-
-            // EpsGraphics stores directly in a file
-            fos = new FileOutputStream(selectedFile);
-            g = (Graphics2D) constructor.newInstance("eps", fos, 0, 0, target.getWidth(), target.getHeight(), colorModeValue);
-
-            paintImage(target, (SVGGraphics2D) g, width, height, paintOffscreen);
-
-            graphicsClass.getMethod("close").invoke(g);
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            if (fos != null) {
-                fos.flush();
-                fos.close();
-            }
-        }
-
-    }
-
-    public static boolean canExportScreenshotEps() {
-        Constructor constr = null;
-        try {
-            Class colorModeClass = RuntimeUtils.loadClassForName(EPSColorModeClassName, null);
-            Class graphicsClass = RuntimeUtils.loadClassForName(EPSClassName, null);
-            constr = graphicsClass.getConstructor(String.class, OutputStream.class,
-                    int.class, int.class, int.class, int.class, colorModeClass);
-        } catch (Exception e) {
-            //pass
-        }
-        return constr != null;
-    }
-
-//    private static void exportScreenshotEpsGraphicsNoRef(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
-//
-//        FileOutputStream fos = null;
-//        try {
-//            // EpsGraphics stores directly in a file
-//            fos = new FileOutputStream(selectedFile);
-//            Graphics2D g = new EpsGraphics("eps", fos, 0, 0, target.getWidth(), target.getHeight(), ColorMode.COLOR_RGB);
-//            paintImage(target, g, paintOffscreen);
-//
-//        } finally {
-//            if(fos != null){
-//                fos.flush();
-//                fos.close();
-//            }
-//        }
-//
-//    }
 
     private static void exportScreenshotSVG(Component target, File selectedFile, int width, int height, boolean paintOffscreen) throws IOException {
 
