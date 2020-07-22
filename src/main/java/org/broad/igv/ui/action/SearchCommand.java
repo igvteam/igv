@@ -122,18 +122,15 @@ public class SearchCommand {
 
 
     public void execute() {
-
         List<SearchResult> results = runSearch(searchString);
-
         showSearchResult(results);
-
     }
 
     /**
-     * Given a string, search for the appropriate data to show the user.
+     * Given a string, search for the appropriate locus or loci.
      * Different syntaxes are accepted.
      * <p/>
-     * In general, whitespace delimited tokens are treated separately and each are shown.
+     * In general, space delimited tokens are treated separately and each are shown.
      * There is 1 exception to this. A locus of form chr1   1   10000 will be treated the same
      * as chr1:1-10000. Only one entry of this form can be entered, chr1    1   10000 chr2:1-1000 will
      * not be recognized.
@@ -147,7 +144,7 @@ public class SearchCommand {
      */
     public List<SearchResult> runSearch(String searchString) {
 
-        List<SearchResult> results = new ArrayList<SearchResult>();
+        List<SearchResult> results = new ArrayList<>();
 
         searchString = searchString.replace("\"", "");
 
@@ -160,7 +157,14 @@ public class SearchCommand {
         // Space delimited?
         String[] tokens = searchString.split("\\s+");
         for (String s : tokens) {
-            results.addAll(parseToken(s));
+            SearchResult result = parseToken(s);
+            if(result != null) {
+                results.add(result);
+            } else {
+                SearchResult unknownResult = new SearchResult();
+                unknownResult.setMessage("Unknown search term: " + s);
+                results.add(unknownResult);
+            }
         }
 
         if (results.size() == 0) {
@@ -175,8 +179,7 @@ public class SearchCommand {
     public void showSearchResult(List<SearchResult> results) {
         int origZoom = referenceFrame.getZoom();
         if (results == null || results.size() == 0) {
-            results = new ArrayList<SearchResult>();
-
+            results = new ArrayList<>();
             results.add(new SearchResult());
         }
 
@@ -215,19 +218,18 @@ public class SearchCommand {
         } else {
             resetFrames = true;  // New set of loci
             List<String> loci = new ArrayList<>(results.size());
-            message = "";
+            message = "<html>";
             for (SearchResult res : results) {
                 if (res.type != ResultType.ERROR) {
                     loci.add(res.getLocus());
                 } else {
-                    message = message + res.getMessage() + "\n";
+                    message = message + res.getMessage() + "<br>";
                     showMessage = true;
                 }
             }
             GeneList geneList = new GeneList("", loci, false);
             IGV.getInstance().getSession().setCurrentGeneList(geneList);
         }
-System.out.println(searchString);
         if(resetFrames) {
             IGV.getInstance().resetFrames();
         }
@@ -288,14 +290,13 @@ System.out.println(searchString);
     }
 
     /**
-     * Determine searchResult for white-space delimited search query.
+     * Determine searchResult for string token.
      *
      * @param token
      * @return searchResult
      */
-    private List<SearchResult> parseToken(String token) {
+    private SearchResult parseToken(String token) {
 
-        List<SearchResult> results = new ArrayList<SearchResult>();
         List<NamedFeature> features;
 
         //Guess at token type via regex.
@@ -306,7 +307,7 @@ System.out.println(searchString);
             //Check if a full or partial locus string
             result = calcChromoLocus(token);
             if (result.type != ResultType.ERROR) {
-                results.add(result);
+                return result;
             }
         }
 
@@ -349,19 +350,16 @@ System.out.println(searchString);
                 //The +2 accounts for centering on the center of the amino acid, not beginning
                 //and converting from 0-based to 1-based (which getStartEnd expects)
                 int[] locs = getStartEnd("" + (genomePos + 2));
-                result = new SearchResult(ResultType.LOCUS, feat.getChr(), locs[0], locs[1]);
-                results.add(result);
-
+                return new SearchResult(ResultType.LOCUS, feat.getChr(), locs[0], locs[1]);
             }
         } else if (types.contains(ResultType.FEATURE)) {
             //Check if we have an exact name for the feature name
             NamedFeature feat = searchFeatureDBs(token);
             if (feat != null) {
-                results.add(new SearchResult(feat));
+                return new SearchResult(feat);
             }
         }
-
-        return results;
+        return null;
     }
 
     private NamedFeature searchFeatureDBs(String str) {
@@ -383,7 +381,7 @@ System.out.println(searchString);
                         return feat;
                     }
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error("Search webservice error", e);
             }
         }
