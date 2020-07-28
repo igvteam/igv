@@ -138,7 +138,6 @@ public class Globals {
         if(development){
             log.warn("Development mode is enabled");
         }
-
     }
 
     public static void setHeadless(boolean bool) {

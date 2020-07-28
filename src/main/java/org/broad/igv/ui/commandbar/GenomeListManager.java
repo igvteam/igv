@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeLoader;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -130,28 +131,6 @@ public class GenomeListManager {
     }
 
 
-    /**
-     * Build a GenomeListItem from a path to a fasta file
-     *
-     * @param path
-     * @return GenomeListItem representing this path, or null if file does not exist
-     */
-    public static GenomeListItem buildItemFromPath(String path) {
-
-        String id = path;
-        String name;
-        if (HttpUtils.isRemoteURL(path)) {
-            name = Utilities.getFileNameFromURL(path);
-        } else {
-            File file = new File(path);
-            if (!file.exists()) {
-                return null;
-            }
-            name = file.getName();
-        }
-
-        return new GenomeListItem(name, path, id);
-    }
 
     /**
      * Return genome list item from currently selectable set. To search through
@@ -177,7 +156,7 @@ public class GenomeListManager {
 
         GenomeListItem matchingItem = genomeItemMap.get(genomeId);
 
-        if (matchingItem == null || (System.currentTimeMillis() - matchingItem.getLastModified() >  GenomeManager.ONE_WEEK)) {
+        if (matchingItem == null || (System.currentTimeMillis() - matchingItem.getLastModified() >  GenomeLoader.ONE_WEEK)) {
 
             // If genome archive was not found, or is more than 1 week old, check things not currently loaded
             matchingItem = getServerGenomeMap().get(genomeId);

@@ -67,15 +67,8 @@ public class Genome {
     private FeatureTrack geneTrack;
     private String species;
     private String ucscID;
-    private GenomeDescriptor descriptor;   // Can be null
     private ArrayList<ResourceLocator> annotationResources;
 
-
-    public Genome(String id, String displayName, Sequence sequence, boolean chromosOrdered, GenomeDescriptor descriptor) {
-        this(id, displayName, sequence, chromosOrdered);
-        this.descriptor = descriptor;
-
-    }
 
     /**
      * @param id
@@ -154,15 +147,6 @@ public class Genome {
         return chrAliasTable.containsKey(str);
     }
 
-    public GenomeDescriptor getDescriptor() {
-        return descriptor;
-    }
-
-    public Map<String, String> getChrAliasTable() {
-        return chrAliasTable;
-    }
-
-
     /**
      * Populate the chr alias table.  The input is a collection of chromosome synonym lists.  The
      * directionality is determined by the "true" chromosome names.
@@ -171,7 +155,8 @@ public class Genome {
      */
     public void addChrAliases(Collection<Collection<String>> synonymsList) {
 
-        if (chrAliasTable == null) chrAliasTable = new HashMap<String, String>();
+        if(synonymsList == null) return;
+        if (chrAliasTable == null) chrAliasTable = new HashMap<>();
 
         // Convert names to a set for fast "contains" testing.
         Set<String> chrNameSet = new HashSet<String>(chromosomeNames);

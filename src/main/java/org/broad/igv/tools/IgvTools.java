@@ -53,9 +53,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureFileUtils;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.Mutation;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeDescriptor;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.*;
 import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.GFFCodec;
@@ -1183,7 +1181,7 @@ public class IgvTools {
         //TODO Prevents loading genome again if loading from path.
         //May or may not want this, for now we just use it for testing
         if (Globals.isTesting() && genomeFile.getAbsolutePath().endsWith(".genome")) {
-            GenomeDescriptor genomeDescriptor = GenomeManager.parseGenomeArchiveFile(genomeFile);
+            GenomeDescriptor genomeDescriptor = GenomeDescriptor.parseGenomeArchiveFile(genomeFile);
             if (genome != null && genomeDescriptor.getId().equals(genome.getId())) {
                 return genome;
             }

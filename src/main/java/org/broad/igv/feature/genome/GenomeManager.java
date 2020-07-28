@@ -34,25 +34,16 @@
 package org.broad.igv.feature.genome;
 
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
-import org.broad.igv.feature.genome.fasta.FastaDirectorySequence;
-import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
-import org.broad.igv.feature.genome.fasta.FastaUtils;
-import org.broad.igv.feature.gff.GFFFeatureSource;
+import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.track.*;
+import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
@@ -61,7 +52,10 @@ import org.broad.igv.ui.util.ProgressBar;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.ui.util.download.Downloader;
-import org.broad.igv.util.*;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.Utilities;
 
 import java.awt.*;
 import java.io.*;
@@ -69,11 +63,10 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Collection;
 import java.util.List;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jrobinso
@@ -96,10 +89,8 @@ public class GenomeManager {
      * Whether the sequenceLocation has been modified from the version of the .genome
      * file on the server
      */
-    public static final String GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY = "customSequenceLocation";
     public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
     public static final String SEQUENCE_MAP_FILE = "sequenceMap.txt";
-    public static final long ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
 
     private static Logger log = Logger.getLogger(GenomeManager.class);
 
@@ -112,13 +103,11 @@ public class GenomeManager {
 
     public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem("Human hg19", "http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg19.genome", "hg19");
 
-    private GenomeListManager genomeListManager;
+    private static GenomeListManager genomeListManager;
 
     private static GenomeManager theInstance;
 
     private Genome currentGenome;
-
-    private Map<String, File> localSequenceMap;
 
 
     /**
@@ -135,7 +124,78 @@ public class GenomeManager {
 
     private GenomeManager() {
         genomeListManager = GenomeListManager.getInstance();
-        localSequenceMap = loadSequenceMap();
+        GenomeLoader.localSequenceMap = GenomeLoader.loadSequenceMap();
+    }
+
+    /**
+     * Returns a File of the provided genomePath. If the genomePath is a URL, it will be downloaded
+     * and saved in the genome cache directory.
+     *
+     * @param genomePath
+     * @return
+     * @throws MalformedURLException
+     * @throws UnsupportedEncodingException
+     */
+    static File getArchiveFile(String genomePath) throws MalformedURLException, UnsupportedEncodingException {
+
+        File archiveFile;
+
+        if (HttpUtils.isRemoteURL(genomePath.toLowerCase())) {
+            // We need a local copy, as there is no http zip file reader
+
+            URL genomeArchiveURL = HttpUtils.createURL(genomePath);
+            final String tmp = URLDecoder.decode(HttpUtils.createURL(genomePath).getFile(), "UTF-8");
+            String cachedFilename = Utilities.getFileNameFromURL(tmp);
+
+            if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
+                DirectoryManager.getGenomeCacheDirectory().mkdir();
+            }
+
+            archiveFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedFilename);
+            refreshCache(archiveFile, genomeArchiveURL);
+        } else {
+            archiveFile = new File(genomePath);
+        }
+        return archiveFile;
+    }
+
+    /**
+     * Refresh a locally cached genome if appropriate (newer one on server, user set preference to enable it)
+     * If it doesn't have a local cache, just downloaded
+     * If the cached version has a custom sequence location, that is copied over to the downloaded version
+     *
+     * @param cachedFile
+     * @param genomeArchiveURL
+     * @throws IOException
+     */
+    public static void refreshCache(File cachedFile, URL genomeArchiveURL) {
+
+        // Look in cache first
+        try {
+            if (cachedFile.exists()) {
+
+                //File sizes won't be the same if the local version has a different sequence location
+                boolean remoteModfied = HttpUtils.getInstance().remoteIsNewer(cachedFile, genomeArchiveURL);
+
+                boolean isStale = System.currentTimeMillis() - cachedFile.lastModified() > GenomeLoader.ONE_WEEK;
+
+                // Force an update of cached genome if file length does not equal remote content length
+                boolean forceUpdate = remoteModfied &&
+                        PreferencesManager.getPreferences().getAsBoolean(Constants.AUTO_UPDATE_GENOMES);
+
+                if (forceUpdate || isStale) {
+                    log.info("Refreshing genome: " + genomeArchiveURL.toString());
+                    Downloader.download(genomeArchiveURL, cachedFile, IGV.getMainFrame());
+                }
+            } else {
+                // Copy file directly from the server to local cache.
+                Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+                Downloader.download(genomeArchiveURL, cachedFile, parent);
+            }
+        } catch (Exception e) {
+            MessageUtils.showErrorMessage("An error was encountered refreshing the genome cache: " + e.getMessage(), e);
+        }
+
     }
 
     public void setCurrentGenome(Genome genome) {
@@ -202,24 +262,24 @@ public class GenomeManager {
 
             String altGenomePath;
             if (genomePath.endsWith(".genome")) {
-
                 File archiveFile = getArchiveFile(genomePath);
-
                 if (!archiveFile.exists()) {
                     return null;    // Happens if genome download was canceled.
                 }
-
                 altGenomePath = archiveFile.getAbsolutePath();
-                newGenome = loadDotGenomeFile(archiveFile);
+                newGenome = GenomeLoader.loadDotGenomeFile(archiveFile);
             } else if (genomePath.endsWith(".gbk") || genomePath.endsWith(".gb")) {
                 altGenomePath = genomePath;
-                newGenome = loadGenbankFile(genomePath);
+                newGenome = GenomeLoader.loadGenbankFile(genomePath);
+                setCurrentGenome(newGenome);
             } else if (genomePath.endsWith(".chrom.sizes")) {
                 altGenomePath = genomePath;
-                newGenome = loadChromSizes(genomePath);
+                newGenome = GenomeLoader.loadChromSizes(genomePath);
+                setCurrentGenome(newGenome);
             } else if (genomePath.endsWith(".json")) {
                 altGenomePath = genomePath;
-                newGenome = loadJsonFile(genomePath);
+                newGenome = GenomeLoader.loadJsonFile(genomePath);
+                setCurrentGenome(newGenome);
             } else {
 
                 // Assume a fasta file
@@ -230,7 +290,6 @@ public class GenomeManager {
                     String faiPath = genomePath + ".fai";
                     if (!(FileUtils.resourceExists(gziPath) && FileUtils.resourceExists(faiPath))) {
                         throw new GenomeException("IGV cannot readed gzipped fasta files.");
-
                     }
                 }
                 if (!FileUtils.isRemote(genomePath)) {
@@ -238,19 +297,13 @@ public class GenomeManager {
                         throw new GenomeException("Cannot locate genome: " + genomePath);
                     }
                 }
-                newGenome = loadFastaFile(genomePath);
+                newGenome = GenomeLoader.loadFastaFile(genomePath);
+                setCurrentGenome(newGenome);
             }
 
-            // Load alias files from genome source directory, if any
-            String aliasPath = FileUtils.getParent(genomePath) + "/" + newGenome.getId() + "_alias.tab";
-            Collection<Collection<String>> aliases = loadChrAliases(aliasPath);
-            if (aliases != null) newGenome.addChrAliases(aliases);
-
-
             // Load user-defined chr aliases, if any.  This is done last so they have priority
-            aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
-            aliases = loadChrAliases(aliasPath);
-            if (aliases != null) newGenome.addChrAliases(aliases);
+            String aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
+            newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
 
             if (monitor != null) {
                 monitor.fireProgress(25);
@@ -288,566 +341,6 @@ public class GenomeManager {
         } catch (SocketException e) {
             throw new RuntimeException("Server connection error", e);
         }
-    }
-
-    /**
-     * Define a minimal genome from a chrom.sizes file.  It is assumed (required) that the file follow the
-     * UCSC naming convention  =>  [id].chrom.sizes
-     *
-     * @param genomePath
-     * @return
-     * @throws IOException
-     */
-    private Genome loadChromSizes(String genomePath) throws IOException {
-
-        int firstPeriodIdx = genomePath.indexOf('.');
-        String genomeId = genomePath.substring(0, firstPeriodIdx);
-        List<Chromosome> chromosomes = ChromSizesParser.parse(genomePath);
-        Genome newGenome = new Genome(genomeId, chromosomes);
-
-        // Search for chr aliases
-
-        setCurrentGenome(newGenome);
-        return newGenome;
-
-    }
-
-    private Genome loadGenbankFile(String genomePath) throws IOException {
-        Genome newGenome;
-        GenbankParser genbankParser = new GenbankParser(genomePath);
-        genbankParser.readFeatures(true);
-
-        String name = genbankParser.getLocusName();
-        String chr = genbankParser.getChr();
-
-        if (!name.equals(chr)) {
-            name = name + " (" + chr + ")";
-        }
-
-        byte[] seq = genbankParser.getSequence();
-        Sequence sequence = new InMemorySequence(chr, seq);
-        newGenome = new Genome(chr, name, sequence, true);
-
-        String[] aliases = genbankParser.getAliases();
-        if (aliases != null) {
-            List<String> aliasList = new ArrayList<String>();
-            aliasList.add(chr);
-            for (String a : aliases) {
-                aliasList.add(a);
-            }
-            newGenome.addChrAliases(Arrays.<Collection<String>>asList(aliasList));
-        }
-
-
-        setCurrentGenome(newGenome);
-
-        if (IGV.hasInstance() && !Globals.isHeadless()) {
-            FeatureTrack geneFeatureTrack = createGeneTrack(newGenome, genbankParser.getFeatures());
-            newGenome.setGeneTrack(geneFeatureTrack);
-        }
-
-        FeatureDB.addFeatures(genbankParser.getFeatures(), newGenome);
-
-        return newGenome;
-    }
-
-    /**
-     * Create a Genome from a single fasta file.
-     *
-     * @param genomePath
-     * @return
-     * @throws IOException
-     */
-    private Genome loadFastaFile(String genomePath) throws IOException {
-        Genome newGenome;// Assume its a fasta
-        String fastaPath = null;
-        String fastaIndexPath = null;
-        if (genomePath.endsWith(".fai")) {
-            fastaPath = genomePath.substring(0, genomePath.length() - 4);
-            fastaIndexPath = genomePath;
-        } else {
-            fastaPath = genomePath;
-            fastaIndexPath = genomePath + ".fai";
-        }
-
-        if (!FileUtils.resourceExists(fastaIndexPath)) {
-            //Have to make sure we have a local copy of the fasta file
-            //to index it
-            if (!FileUtils.isRemote(fastaPath)) {
-                File archiveFile = getArchiveFile(fastaPath);
-                fastaPath = archiveFile.getAbsolutePath();
-                fastaIndexPath = fastaPath + ".fai";
-
-                FastaUtils.createIndexFile(fastaPath, fastaIndexPath);
-            }
-
-        }
-
-
-        GenomeListItem item = genomeListManager.buildItemFromPath(fastaPath);
-        if (item == null) {
-            throw new IOException(fastaPath + " does not exist, could not load genome");
-        }
-
-        FastaIndexedSequence fastaSequence = fastaPath.endsWith(".gz") ?
-                new FastaBlockCompressedSequence(fastaPath) :
-                new FastaIndexedSequence(fastaPath);
-        Sequence sequence = new SequenceWrapper(fastaSequence);
-        newGenome = new Genome(item.getId(), item.getDisplayableName(), sequence, true);
-        setCurrentGenome(newGenome);
-        return newGenome;
-    }
-
-    private Genome loadJsonFile(String genomePath) throws IOException {
-
-        Genome newGenome = null;
-
-        BufferedReader reader = ParsingUtils.openBufferedReader(genomePath);
-        JsonParser parser = new JsonParser();
-        JsonObject json = parser.parse(reader).getAsJsonObject();
-
-        String id = json.get("id").getAsString();
-        String name = json.get("name").getAsString();
-        String fastaPath = json.get("fastaURL").getAsString();
-        JsonElement indexPathObject = json.get("indexURL");
-        String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
-
-        fastaPath = FileUtils.getAbsolutePath(fastaPath, genomePath);
-        if (indexPath != null) {
-            indexPath = FileUtils.getAbsolutePath(indexPath, genomePath);
-        }
-
-        FastaIndexedSequence sequence = fastaPath.endsWith(".gz") ?
-                new FastaBlockCompressedSequence(fastaPath, indexPath) :
-                new FastaIndexedSequence(fastaPath, indexPath);
-
-
-        ArrayList<ResourceLocator> tracks = new ArrayList<>();
-        JsonArray annotations = json.getAsJsonArray("annotations");
-        if (annotations != null) {
-            annotations.forEach((JsonElement jsonElement) -> {
-                JsonObject obj = jsonElement.getAsJsonObject();
-                String trackPath = obj.get("url").getAsString();
-                JsonElement trackName = obj.get("name");
-                JsonElement trackIndex = obj.get("indexURL");
-                JsonElement indexed = obj.get("indexed");
-                JsonElement aliasURL = obj.get("aliasURL");
-                String trackIndexPath = null;
-
-                if (trackPath != null) {
-                    trackPath = FileUtils.getAbsolutePath(trackPath, genomePath);
-                }
-                if (trackIndex != null) {
-                    trackIndexPath = FileUtils.getAbsolutePath(trackIndex.getAsString(), genomePath);
-                }
-
-                ResourceLocator res = new ResourceLocator(trackPath);
-                if (trackName != null) res.setName(trackName.getAsString());
-                if (trackIndexPath != null) res.setIndexPath(trackIndexPath);
-                if (indexed != null) res.setIndexed(indexed.getAsBoolean());
-                tracks.add(res);
-            });
-        }
-
-
-        newGenome = new Genome(id, name, sequence, true);
-
-        newGenome.setAnnotationResources(tracks);
-
-        // TODO -- set aliases
-
-        return newGenome;
-    }
-
-
-    private Collection<Collection<String>> loadChrAliases(String path) {
-
-        // String id = genome.getId();
-        // File aliasFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + "_alias.tab");
-        File aliasFile = new File(path);
-
-        if (aliasFile.exists()) {
-
-            BufferedReader br = null;
-
-            try {
-                br = new BufferedReader(new FileReader(aliasFile));
-                return loadChrAliases(br);
-            } catch (IOException e) {
-                log.error("Error loading chr alias table", e);
-                if (!Globals.isHeadless())
-                    MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be avaliable<br>" +
-                            e.toString());
-            } finally {
-                if (br != null) {
-                    try {
-                        br.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-
-    /**
-     * Create a genome from a ".genome" file.  In addition to the reference sequence .genome files can optionally
-     * specify cytobands and annotations.
-     */
-    private Genome loadDotGenomeFile(File archiveFile) throws IOException {
-
-        Genome newGenome;
-
-        GenomeDescriptor genomeDescriptor = parseGenomeArchiveFile(archiveFile);
-
-        final String id = genomeDescriptor.getId();
-        final String displayName = genomeDescriptor.getName();
-
-        boolean isFasta = genomeDescriptor.isFasta();
-        String[] fastaFiles = genomeDescriptor.getFastaFileNames();
-
-        LinkedHashMap<String, List<Cytoband>> cytobandMap = null;
-        if (genomeDescriptor.hasCytobands()) {
-            cytobandMap = loadCytobandFile(genomeDescriptor);
-        }
-
-        String sequencePath = localSequenceMap.containsKey(genomeDescriptor.getId()) ?
-                loadSequenceMap().get(genomeDescriptor.getId()).getAbsolutePath() :
-                genomeDescriptor.getSequencePath();
-
-        // Convert legacy "local fasta" .genome file
-        if (genomeDescriptor.hasCustomSequenceLocation()) {
-            String localPath = genomeDescriptor.getSequencePath();
-            addLocalFasta(genomeDescriptor.getId(), new File(localPath));
-        }
-
-        Sequence sequence = null;
-        boolean chromosOrdered = false;
-        if (sequencePath == null) {
-            sequence = null;
-        } else if (!isFasta) {
-            sequencePath = SequenceWrapper.checkSequenceURL(sequencePath);
-            IGVSequence igvSequence = new IGVSequence(sequencePath);
-            if (cytobandMap != null) {
-                chromosOrdered = genomeDescriptor.isChromosomesAreOrdered();
-                igvSequence.generateChromosomes(cytobandMap, chromosOrdered);
-            }
-            sequence = new SequenceWrapper(igvSequence);
-        } else if (fastaFiles != null) {
-            FastaDirectorySequence fastaDirectorySequence = new FastaDirectorySequence(sequencePath, fastaFiles);
-            sequence = new SequenceWrapper(fastaDirectorySequence);
-        } else {
-
-            if (sequencePath.endsWith(".gz")) {
-                FastaBlockCompressedSequence fastaSequence = new FastaBlockCompressedSequence(sequencePath);
-                sequence = new SequenceWrapper(fastaSequence);
-            } else {
-                FastaIndexedSequence fastaSequence = new FastaIndexedSequence(sequencePath);
-                sequence = new SequenceWrapper(fastaSequence);
-            }
-            chromosOrdered = true;
-        }
-
-        newGenome = new Genome(id, displayName, sequence, chromosOrdered, genomeDescriptor);
-
-        if (cytobandMap != null) {
-            newGenome.setCytobands(cytobandMap);
-        }
-
-        Collection<Collection<String>> aliases = loadChrAliases(genomeDescriptor);
-        if (aliases != null) {
-            newGenome.addChrAliases(aliases);
-        }
-
-        InputStream geneStream = null;
-        String geneFileName = genomeDescriptor.getGeneFileName();
-        if (geneFileName != null) {
-            try {
-                geneStream = genomeDescriptor.getGeneStream();
-                if (geneFileName.endsWith(".gbk")) {
-                    GenbankParser genbankParser = new GenbankParser();
-                    genbankParser.readFeatures(geneStream, false);
-                    FeatureTrack geneFeatureTrack = createGeneTrack(newGenome, genbankParser.getFeatures());
-                    newGenome.setGeneTrack(geneFeatureTrack);
-                } else {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(geneStream));
-                    FeatureTrack geneFeatureTrack = createGeneTrack(newGenome, reader,
-                            geneFileName, genomeDescriptor.getGeneTrackName(),
-                            genomeDescriptor.getUrl());
-
-                    newGenome.setGeneTrack(geneFeatureTrack);
-                }
-            } finally {
-                if (geneStream != null) geneStream.close();
-            }
-        }
-
-        genomeDescriptor.close();
-        return newGenome;
-    }
-
-    /**
-     * Returns a File of the provided genomePath. If the genomePath is a URL, it will be downloaded
-     * and saved in the genome cache directory.
-     *
-     * @param genomePath
-     * @return
-     * @throws MalformedURLException
-     * @throws UnsupportedEncodingException
-     */
-    private File getArchiveFile(String genomePath) throws MalformedURLException, UnsupportedEncodingException {
-
-        File archiveFile;
-
-        if (HttpUtils.isRemoteURL(genomePath.toLowerCase())) {
-            // We need a local copy, as there is no http zip file reader
-
-            URL genomeArchiveURL = HttpUtils.createURL(genomePath);
-            final String tmp = URLDecoder.decode(HttpUtils.createURL(genomePath).getFile(), "UTF-8");
-            String cachedFilename = Utilities.getFileNameFromURL(tmp);
-
-            if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
-                DirectoryManager.getGenomeCacheDirectory().mkdir();
-            }
-
-            archiveFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedFilename);
-            refreshCache(archiveFile, genomeArchiveURL);
-        } else {
-            archiveFile = new File(genomePath);
-        }
-        return archiveFile;
-    }
-
-
-    /**
-     * Load the cytoband file specified in the genome descriptor.
-     *
-     * @param genomeDescriptor
-     * @return Cytobands as a map keyed by chromosome
-     */
-    private LinkedHashMap<String, List<Cytoband>> loadCytobandFile(GenomeDescriptor genomeDescriptor) {
-        InputStream is = null;
-        try {
-
-            is = genomeDescriptor.getCytoBandStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            return CytoBandFileParser.loadData(reader);
-
-        } catch (IOException ex) {
-            log.warn("Error loading cytoband file", ex);
-            throw new RuntimeException("Error loading cytoband file" + genomeDescriptor.cytoBandFileName);
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException ex) {
-                log.warn("Error closing zip stream!", ex);
-            }
-        }
-    }
-
-    private static Collection<Collection<String>> loadChrAliases(BufferedReader br) throws IOException {
-        String nextLine = "";
-        Collection<Collection<String>> synonymList = new ArrayList<Collection<String>>();
-        while ((nextLine = br.readLine()) != null) {
-            String[] tokens = nextLine.split("\t");
-            if (tokens.length > 1) {
-                Collection<String> synonyms = new ArrayList<String>();
-                for (String t : tokens) {
-                    String syn = t.trim();
-                    if (t.length() > 0) synonyms.add(syn.trim());
-                }
-                synonymList.add(synonyms);
-            }
-        }
-        return synonymList;
-    }
-
-    /**
-     * Load the chromosome alias file, if any, specified in the genome descriptor.
-     *
-     * @param genomeDescriptor
-     * @return The chromosome alias table, or null if none is defined.
-     */
-    private Collection<Collection<String>> loadChrAliases(GenomeDescriptor genomeDescriptor) {
-        InputStream aliasStream = null;
-        try {
-            aliasStream = genomeDescriptor.getChrAliasStream();
-            if (aliasStream != null) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(aliasStream));
-                return loadChrAliases(reader);
-            } else {
-                return null;
-            }
-        } catch (IOException e) {
-            // We don't want to bomb if the alias load fails.  Just log it and proceed.
-            log.error("Error loading chromosome alias table");
-            return null;
-        } finally {
-            try {
-                if (aliasStream != null) {
-                    aliasStream.close();
-                }
-            } catch (IOException ex) {
-                log.warn("Error closing zip stream!", ex);
-            }
-        }
-    }
-
-
-    /**
-     * Refresh a locally cached genome if appropriate (newer one on server, user set preference to enable it)
-     * If it doesn't have a local cache, just downloaded
-     * If the cached version has a custom sequence location, that is copied over to the downloaded version
-     *
-     * @param cachedFile
-     * @param genomeArchiveURL
-     * @throws IOException
-     */
-    public void refreshCache(File cachedFile, URL genomeArchiveURL) {
-
-        // Look in cache first
-        try {
-            if (cachedFile.exists()) {
-
-                //File sizes won't be the same if the local version has a different sequence location
-                boolean remoteModfied = HttpUtils.getInstance().remoteIsNewer(cachedFile, genomeArchiveURL);
-
-                boolean isStale = System.currentTimeMillis() - cachedFile.lastModified() > ONE_WEEK;
-
-                // Force an update of cached genome if file length does not equal remote content length
-                boolean forceUpdate = remoteModfied &&
-                        PreferencesManager.getPreferences().getAsBoolean(Constants.AUTO_UPDATE_GENOMES);
-
-                if (forceUpdate || isStale) {
-
-                    log.info("Refreshing genome: " + genomeArchiveURL.toString());
-
-                    Downloader.download(genomeArchiveURL, cachedFile, IGV.getMainFrame());
-
-                }
-            } else {
-                // Copy file directly from the server to local cache.
-                Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
-                Downloader.download(genomeArchiveURL, cachedFile, parent);
-            }
-        } catch (Exception e) {
-            MessageUtils.showErrorMessage("An error was encountered refreshing the genome cache: " + e.getMessage(), e);
-        }
-
-    }
-
-
-    /**
-     * Creates a genome descriptor.
-     */
-    public static GenomeDescriptor parseGenomeArchiveFile(File f)
-            throws IOException {
-
-
-        if (!f.exists()) {
-            throw new FileNotFoundException("Genome file: " + f.getAbsolutePath() + " does not exist.");
-        }
-
-        GenomeDescriptor genomeDescriptor = null;
-        Map<String, ZipEntry> zipEntries = new HashMap();
-        ZipFile zipFile = new ZipFile(f);
-
-        FileInputStream fileInputStream = null;
-        try {
-            fileInputStream = new FileInputStream(f);
-            ZipInputStream zipInputStream = new ZipInputStream(fileInputStream);
-            ZipEntry zipEntry = zipInputStream.getNextEntry();
-
-            while (zipEntry != null) {
-                String zipEntryName = zipEntry.getName();
-                zipEntries.put(zipEntryName, zipEntry);
-
-                if (zipEntryName.equalsIgnoreCase(GENOME_ARCHIVE_PROPERTY_FILE_NAME)) {
-                    InputStream inputStream = zipFile.getInputStream(zipEntry);
-                    Properties properties = new Properties();
-                    properties.load(inputStream);
-
-                    String cytobandZipEntryName = properties.getProperty(GENOME_ARCHIVE_CYTOBAND_FILE_KEY);
-                    String geneFileName = properties.getProperty(GENOME_ARCHIVE_GENE_FILE_KEY);
-                    String chrAliasFileName = properties.getProperty(GENOME_CHR_ALIAS_FILE_KEY);
-                    String sequencePath = properties.getProperty(GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
-                    String compressedSequencePath = properties.getProperty(COMPRESSED_SEQUENCE_PATH);
-
-                    if ((sequencePath != null) && !HttpUtils.isRemoteURL(sequencePath)) {
-                        sequencePath = getFullPath(f, sequencePath);
-                    }
-
-                    if ((compressedSequencePath != null) && !HttpUtils.isRemoteURL(compressedSequencePath)) {
-                        compressedSequencePath = getFullPath(f, sequencePath);
-                    }
-
-                    boolean chrNamesAltered = parseBooleanPropertySafe(properties, "filenamesAltered");
-                    boolean fasta = parseBooleanPropertySafe(properties, "fasta");
-                    boolean fastaDirectory = parseBooleanPropertySafe(properties, "fastaDirectory");
-                    boolean chromosomesAreOrdered = parseBooleanPropertySafe(properties, GENOME_ORDERED_KEY);
-                    boolean hasCustomSequenceLocation = parseBooleanPropertySafe(properties, GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY);
-
-
-                    String fastaFileNameString = properties.getProperty("fastaFiles");
-                    String url = properties.getProperty(GENOME_URL_KEY);
-
-
-                    // The new descriptor
-                    genomeDescriptor = new GenomeZipDescriptor(
-                            properties.getProperty(GENOME_ARCHIVE_NAME_KEY),
-                            properties.getProperty(GENOME_ARCHIVE_ID_KEY),
-                            cytobandZipEntryName,
-                            geneFileName,
-                            chrAliasFileName,
-                            properties.getProperty(GENOME_GENETRACK_NAME, "Gene"),
-                            sequencePath,
-                            hasCustomSequenceLocation,
-                            compressedSequencePath,
-                            zipFile,
-                            zipEntries,
-                            chromosomesAreOrdered,
-                            fasta,
-                            fastaFileNameString);
-
-                    if (url != null) {
-                        genomeDescriptor.setUrl(url);
-                    }
-
-                }
-                zipEntry = zipInputStream.getNextEntry();
-            }
-        } finally {
-            try {
-                if (fileInputStream != null) {
-                    fileInputStream.close();
-                }
-            } catch (IOException ex) {
-                log.warn("Error closing imported genome zip stream!", ex);
-            }
-        }
-        return genomeDescriptor;
-    }
-
-    private static String getFullPath(File f, String sequencePath) throws IOException {
-        File sequenceFolder = null;
-        sequenceFolder = new File(sequencePath);
-        boolean isAbsolutePath = sequenceFolder.isAbsolute() ||
-                sequencePath.startsWith("/") || sequencePath.startsWith("\\");
-        if (!isAbsolutePath) {
-            sequenceFolder = new File(f.getParent(), sequencePath);
-        }
-        sequencePath = sequenceFolder.getCanonicalPath();
-        sequencePath.replace('\\', '/');
-        return sequencePath;
-    }
-
-    private static boolean parseBooleanPropertySafe(Properties properties, String key) {
-        String propertyString = properties.getProperty(key);
-        return Boolean.parseBoolean(propertyString);
     }
 
 
@@ -989,7 +482,7 @@ public class GenomeManager {
         for (File f : genomeFiles) {
             String curLine = "";
             try {
-                descriptor = parseGenomeArchiveFile(f);
+                descriptor = GenomeDescriptor.parseGenomeArchiveFile(f);
                 curLine += descriptor.getName();
                 curLine += "\t" + rootPath + "/" + f.getName();
                 curLine += "\t" + descriptor.getId();
@@ -1005,73 +498,6 @@ public class GenomeManager {
 
     }
 
-    /**
-     * @param reader        a reader for the gene (annotation) file.
-     * @param genome
-     * @param geneFileName
-     * @param geneTrackName
-     */
-    public FeatureTrack createGeneTrack(Genome genome, BufferedReader reader, String geneFileName, String geneTrackName,
-                                        String annotationURL) {
-
-        FeatureDB.clearFeatures();
-        FeatureTrack geneFeatureTrack = null;
-
-        if (reader != null) {
-            FeatureParser parser;
-            if (geneFileName.endsWith(".embl")) {
-                parser = new EmblFeatureTableParser();
-            } else if (GFFFeatureSource.isGFF(geneFileName)) {
-                parser = new GFFParser();
-            } else {
-                parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFileName), genome);
-            }
-            if (parser == null) {
-                MessageUtils.showMessage("ERROR: Unrecognized annotation file format: " + geneFileName +
-                        "<br>Annotations for genome: " + genome.getId() + " will not be loaded.");
-            } else {
-                List<htsjdk.tribble.Feature> genes = parser.loadFeatures(reader, genome);
-                String name = geneTrackName;
-                if (name == null) name = "Genes";
-
-                String id = genome.getId() + "_genes";
-                geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes, genome));
-                geneFeatureTrack.setMinimumHeight(5);
-                geneFeatureTrack.setHeight(35);
-                geneFeatureTrack.setTrackType(TrackType.GENE);
-                geneFeatureTrack.setColor(Color.BLUE.darker());
-                TrackProperties props = parser.getTrackProperties();
-                if (props != null) {
-                    geneFeatureTrack.setProperties(parser.getTrackProperties());
-                }
-                geneFeatureTrack.setUrl(annotationURL);
-            }
-        }
-        return geneFeatureTrack;
-    }
-
-    /**
-     * Create an annotation track for the genome from a supplied list of features
-     *
-     * @param genome
-     * @param features
-     */
-    public FeatureTrack createGeneTrack(Genome genome, List<htsjdk.tribble.Feature> features) {
-
-        FeatureDB.clearFeatures();
-        FeatureTrack geneFeatureTrack = null;
-        String name = "Annotations";
-
-        String id = genome.getId() + "_genes";
-        geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(features, genome));
-        geneFeatureTrack.setMinimumHeight(5);
-        geneFeatureTrack.setHeight(35);
-        //geneFeatureTrack.setRendererClass(GeneRenderer.class);
-        geneFeatureTrack.setColor(Color.BLUE.darker());
-
-        return geneFeatureTrack;
-    }
-
 
     public boolean downloadGenomes(GenomeListItem item, boolean downloadSequence) {
 
@@ -1082,16 +508,11 @@ public class GenomeManager {
             File archiveFile = getArchiveFile(item.getPath());                  // Has side affect of downloading .genome file
 
             if (downloadSequence && item.getPath().endsWith(".genome")) {
-
-                GenomeDescriptor genomeDescriptor = parseGenomeArchiveFile(archiveFile);
-                if (genomeDescriptor.isFasta()) {
-                    String fastaPath = genomeDescriptor.getSequencePath();
-                    File localFile = downloadFasta(fastaPath);
-                    if (localFile != null) {
-                        addLocalFasta(item.getId(), localFile);
-                    }
-                } else {
-                    MessageUtils.showMessage("Fasta file is not availble for: " + genomeDescriptor.getName());
+                GenomeDescriptor genomeDescriptor = GenomeDescriptor.parseGenomeArchiveFile(archiveFile);
+                String fastaPath = genomeDescriptor.getSequencePath();
+                File localFile = downloadFasta(fastaPath);
+                if (localFile != null) {
+                    addLocalFasta(item.getId(), localFile);
                 }
             }
 
@@ -1152,61 +573,23 @@ public class GenomeManager {
     }
 
 
-    private Map<String, File> loadSequenceMap() {
-
-        File sequenceFile = new File(DirectoryManager.getGenomeCacheDirectory(), SEQUENCE_MAP_FILE);
-
-        localSequenceMap = new HashMap<>();
-
-        if (sequenceFile.exists()) {
-            BufferedReader br = null;
-
-            try {
-                br = new BufferedReader(new FileReader(sequenceFile));
-                String nextLine;
-                while ((nextLine = br.readLine()) != null) {
-                    String[] tokens = nextLine.split("\t");
-                    if (tokens.length > 1) {
-                        File file = new File(tokens[1]);
-                        if (file.exists()) {
-                            localSequenceMap.put(tokens[0], file);
-                        } else {
-                            log.info("Sequence file not found: " + file.getAbsolutePath());
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                log.error("Error loading sequence map file", e);
-            } finally {
-                if (br != null) try {
-                    br.close();
-                } catch (IOException e) {
-                    log.error("Error closing sequenceMap file", e);
-                }
-            }
-        }
-
-        return localSequenceMap;
+    public static File getLocalFasta(String id) {
+        return GenomeLoader.localSequenceMap.get(id);
     }
 
-
-    public File getLocalFasta(String id) {
-        return localSequenceMap.get(id);
-    }
-
-    public void removeLocalFasta(String id) {
-        localSequenceMap.remove(id);
+    public static void removeLocalFasta(String id) {
+        GenomeLoader.localSequenceMap.remove(id);
         updateSequenceMapFile();
     }
 
-    private void addLocalFasta(String id, File localFile) {
-        localSequenceMap.put(id, localFile);
+    private static void addLocalFasta(String id, File localFile) {
+        GenomeLoader.localSequenceMap.put(id, localFile);
         updateSequenceMapFile();
 
     }
 
 
-    private void updateSequenceMapFile() {
+    private static void updateSequenceMapFile() {
 
         PrintWriter pw = null;
 
@@ -1214,7 +597,7 @@ public class GenomeManager {
             File sequenceFile = new File(DirectoryManager.getGenomeCacheDirectory(), SEQUENCE_MAP_FILE);
             pw = new PrintWriter(new BufferedWriter(new FileWriter(sequenceFile)));
 
-            for (Map.Entry<String, File> entry : localSequenceMap.entrySet()) {
+            for (Map.Entry<String, File> entry : GenomeLoader.localSequenceMap.entrySet()) {
                 pw.println(entry.getKey() + "\t" + entry.getValue());
             }
         } catch (IOException e) {

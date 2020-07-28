@@ -44,13 +44,13 @@ public class GenomeUtils {
 
     public static void main(String[] args) throws IOException {
 
-        String genomeListFile = args.length > 0 ? args[0] : "genomes/genomes.txt";
-        //String outputDirectory = args.length > 1 ? args[1] : "genomes/sizes";
-        String outputFile = args.length > 1 ? args[1] : "nonFastas.txt";
+        String genomeListFile =  "genomes/genomes.txt";
+        String outputDirectory = "genomes/sizes";
+        String outputFile = "nonFastas.txt";
 
-        // updateChromSizes(genomeListFile, new File(outputDirectory));
+        updateChromSizes(genomeListFile, new File(outputDirectory));
 
-        findNonFastas(genomeListFile, new File(outputFile));
+        //findNonFastas(genomeListFile, new File(outputFile));
 
 //        mergeINCDCNames(
 //                new File("genomes/alias/hg38_alias.tab"),
