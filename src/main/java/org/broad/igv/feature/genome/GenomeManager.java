@@ -786,7 +786,9 @@ public class GenomeManager {
                     }
 
                     boolean chrNamesAltered = parseBooleanPropertySafe(properties, "filenamesAltered");
-                    boolean fasta = true; // By definition.  Directory scheme is not supported.  parseBooleanPropertySafe(properties, "fasta");
+                    boolean fasta = properties.containsKey("fasta") ?
+                            parseBooleanPropertySafe(properties, "fasta") :
+                            true;
                     boolean fastaDirectory = parseBooleanPropertySafe(properties, "fastaDirectory");
                     boolean chromosomesAreOrdered = parseBooleanPropertySafe(properties, GENOME_ORDERED_KEY);
                     boolean hasCustomSequenceLocation = parseBooleanPropertySafe(properties, GENOME_ARCHIVE_CUSTOM_SEQUENCE_LOCATION_KEY);
