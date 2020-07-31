@@ -338,7 +338,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
     }
 
 
-    private static synchronized boolean memoryTooLow() {
+    private static boolean memoryTooLow() {
         if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
             System.gc();
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {

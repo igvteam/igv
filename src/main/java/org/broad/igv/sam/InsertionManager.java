@@ -48,7 +48,7 @@ public class InsertionManager {
     private Map<String, List<Integer>> positionsMap;
     private Map<String, Integer> selectedInsertions;
 
-    public static synchronized InsertionManager getInstance() {
+    public static InsertionManager getInstance() {
         return theInstance;
     }
 
@@ -64,7 +64,7 @@ public class InsertionManager {
         this.selectedInsertions.clear();;
     }
 
-    public synchronized List<InsertionMarker> getInsertions(String chrName, double start, double end) {
+    public List<InsertionMarker> getInsertions(String chrName, double start, double end) {
 
 
         Map<Integer, InsertionMarker> insertionMap = insertionMaps.get(chrName);
@@ -100,7 +100,6 @@ public class InsertionManager {
 
     
     public synchronized void processAlignments(String chr, List<Alignment> alignments) {
-
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         chr = genome == null ? chr : genome.getCanonicalChrName(chr);

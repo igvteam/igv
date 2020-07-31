@@ -93,9 +93,4 @@ class PositionCache<V> {
         this.intervals.clear();
     }
 
-    public synchronized void setMaxEntries(int inMaxEntries){
-        int newMax = Math.max(MIN_MAX_ENTRIES, inMaxEntries);
-        intervals.setMaxEntries(newMax);
-    }
-
 }
