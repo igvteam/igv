@@ -90,7 +90,6 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public void receiveEvent(Object event) {
-
         if (event instanceof FrameManager.ChangeEvent) {
             trimCache();
         } else if (event instanceof RefreshEvent) {
@@ -321,60 +320,52 @@ public class AlignmentDataManager implements IGVEventObserver {
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
 
-        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale()) return; // should not happen
+        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale())
+            return; // should not happen
 
-        synchronized (loadLock) {
+        if (isLoaded(frame)) return;  // Already loaded
 
-            if (isLoaded(frame)) return;  // Already loaded
+        Range range = frame.getCurrentRange();
+        final String chr = frame.getChrName();
+        final int start = range.getStart();
+        final int end = range.getEnd();
+        int adjustedStart = start;
+        int adjustedEnd = end;
 
-            Range range = frame.getCurrentRange();
-            final String chr = frame.getChrName();
-            final int start = range.getStart();
-            final int end = range.getEnd();
-            int adjustedStart = start;
-            int adjustedEnd = end;
+        // Expand the interval by the lesser of  +/- a 2 screens, or max visible range
+        int windowSize = Math.min(4 * (end - start), PreferencesManager.getPreferences().getAsInt(SAM_MAX_VISIBLE_RANGE) * 1000);
+        int center = (end + start) / 2;
+        int expand = Math.max(end - start, windowSize / 2);
 
-            // Expand the interval by the lesser of  +/- a 2 screens, or max visible range
-            int windowSize = Math.min(4 * (end - start), PreferencesManager.getPreferences().getAsInt(SAM_MAX_VISIBLE_RANGE) * 1000);
-            int center = (end + start) / 2;
-            int expand = Math.max(end - start, windowSize / 2);
-
-            if (expandEnds) {
-                adjustedStart = Math.max(0, Math.min(start, center - expand));
-                adjustedEnd = Math.max(end, center + expand);
-            }
-
-
-            log.debug("Loading alignments: " + chr + ":" + adjustedStart + "-" + adjustedEnd + " for " + AlignmentDataManager.this);
-
-
-            AlignmentInterval loadedInterval = loadInterval(chr, adjustedStart, adjustedEnd, renderOptions);
-
-            trimCache();
-
-            intervalCache.add(loadedInterval);
-
-            packAlignments(renderOptions);
-
-            //  IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
-
+        if (expandEnds) {
+            adjustedStart = Math.max(0, Math.min(start, center - expand));
+            adjustedEnd = Math.max(end, center + expand);
         }
-    }
 
+        AlignmentInterval loadedInterval = loadInterval(chr, adjustedStart, adjustedEnd, renderOptions);
+
+        trimCache();
+
+        intervalCache.add(loadedInterval);
+
+        packAlignments(renderOptions);
+
+        //  IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
+
+    }
 
     /**
      * Remove out-of-view intervals from the cache.  This is O(N) where N = #frames X #intervals.   It is assumed
      * that N is small
      */
-    private synchronized void trimCache() {
-
-        Iterator<AlignmentInterval> iter = intervalCache.iterator();
-        while (iter.hasNext()) {
-            AlignmentInterval interval = iter.next();
-            if (!intervalInView(interval)) {
-                iter.remove();
+    private void trimCache() {
+        List<AlignmentInterval> trimmedIntervals = new ArrayList<>();
+        for(AlignmentInterval interval: intervalCache) {
+            if (intervalInView(interval)) {
+                trimmedIntervals.add(interval);
             }
         }
+        intervalCache = trimmedIntervals;
     }
 
 
@@ -436,14 +427,11 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     private void setExperimentType(AlignmentTrack.ExperimentType type) {
-        if(alignmentTrack != null) alignmentTrack.setExperimentType(type);
+        if (alignmentTrack != null) alignmentTrack.setExperimentType(type);
     }
 
 
-    public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
-        //   load(context.getReferenceFrame(), renderOptions, false);
-        //   Range range = context.getReferenceFrame().getCurrentRange();
-
+    public  PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
         AlignmentInterval interval = getLoadedInterval(context.getReferenceFrame());
         if (interval != null) {
             return interval.getPackedAlignments();
@@ -577,7 +565,7 @@ public class AlignmentDataManager implements IGVEventObserver {
             if (AmazonUtils.isAwsS3Path(aPath) && !AmazonUtils.isS3PresignedValid(aPath)) {
                 reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
             }
-        } catch(MalformedURLException e){
+        } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
