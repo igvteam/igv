@@ -316,7 +316,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         return getLoadedInterval(frame) != null;
     }
 
-    public void load(ReferenceFrame frame,
+    public synchronized void  load(ReferenceFrame frame,
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
 

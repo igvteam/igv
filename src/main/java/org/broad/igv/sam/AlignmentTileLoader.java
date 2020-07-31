@@ -115,7 +115,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
         return ycTags;
     }
 
-    synchronized AlignmentTile loadTile(String chr,
+    AlignmentTile loadTile(String chr,
                            int start,
                            int end,
                            SpliceJunctionHelper spliceJunctionHelper,
