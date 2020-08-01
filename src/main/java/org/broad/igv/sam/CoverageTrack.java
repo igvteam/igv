@@ -237,8 +237,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
-                dataManager.load(context.getReferenceFrame(), alignmentTrack.renderOptions, true);
-                interval = dataManager.getLoadedInterval(context.getReferenceFrame());
+                  interval = dataManager.getLoadedInterval(context.getReferenceFrame());
             }
             if (interval != null) {
                 if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
