@@ -178,10 +178,14 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         } else {
             CloseableIterator<SAMRecord> iter = null;
             try {
-                synchronized (reader) {
-                    iter = reader.query(sequence, start + 1, end, contained);
+                //synchronized (reader) {
+                reader = getSamReader(locator, true);
+                if (header == null) {
+                    header = reader.getFileHeader();
                 }
-            } catch (IllegalArgumentException e) {
+                iter = reader.query(sequence, start + 1, end, contained);
+                //}
+            } catch (IllegalArgumentException | IOException e) {
                 log.error("Error querying for sequence: " + sequence, e);
                 return new EmptyAlignmentIterator();
             }

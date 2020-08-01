@@ -315,10 +315,10 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public boolean isLoading(ReferenceFrame frame) {
 
-//        Range range = frame.getCurrentRange();
-//        for (Range r : isLoading) {
-//            if (r.contains(range)) return true;
-//        }
+        Range range = frame.getCurrentRange();
+        for (Range r : isLoading) {
+            if (r.contains(range)) return true;
+        }
         return false;
     }
 
@@ -331,7 +331,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         if (isLoading(frame)) return;   // Already oading
 
-        synchronized (loadLock) {
+        //synchronized (loadLock) {
 
             if (isLoaded(frame)) return;  // Already loaded
 
@@ -368,7 +368,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
             //  IGVEventBus.getInstance().post(new DataLoadedEvent(referenceFrame));
 
-        }
+       //}
     }
 
 
