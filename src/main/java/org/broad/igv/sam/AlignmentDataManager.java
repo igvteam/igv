@@ -316,39 +316,48 @@ public class AlignmentDataManager implements IGVEventObserver {
         return getLoadedInterval(frame) != null;
     }
 
-    public synchronized void  load(ReferenceFrame frame,
+    public  void  load(ReferenceFrame frame,
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
 
         if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale())
             return; // should not happen
 
-        if (isLoaded(frame)) return;  // Already loaded
-
-        Range range = frame.getCurrentRange();
-        final String chr = frame.getChrName();
-        final int start = range.getStart();
-        final int end = range.getEnd();
-        int adjustedStart = start;
-        int adjustedEnd = end;
-
-        // Expand the interval by the lesser of  +/- a 2 screens, or max visible range
-        int windowSize = Math.min(4 * (end - start), PreferencesManager.getPreferences().getAsInt(SAM_MAX_VISIBLE_RANGE) * 1000);
-        int center = (end + start) / 2;
-        int expand = Math.max(end - start, windowSize / 2);
-
-        if (expandEnds) {
-            adjustedStart = Math.max(0, Math.min(start, center - expand));
-            adjustedEnd = Math.max(end, center + expand);
+        if (isLoaded(frame)) {
+            return;  // Already loaded
         }
+        
+        synchronized (loadLock) {
 
-        AlignmentInterval loadedInterval = loadInterval(chr, adjustedStart, adjustedEnd, renderOptions);
+            if (isLoaded(frame)) {
+                return;  // Already loaded
+            }
 
-        trimCache();
+            Range range = frame.getCurrentRange();
+            final String chr = frame.getChrName();
+            final int start = range.getStart();
+            final int end = range.getEnd();
+            int adjustedStart = start;
+            int adjustedEnd = end;
 
-        intervalCache.add(loadedInterval);
+            // Expand the interval by the lesser of  +/- a 2 screens, or max visible range
+            int windowSize = Math.min(4 * (end - start), PreferencesManager.getPreferences().getAsInt(SAM_MAX_VISIBLE_RANGE) * 1000);
+            int center = (end + start) / 2;
+            int expand = Math.max(end - start, windowSize / 2);
 
-        packAlignments(renderOptions);
+            if (expandEnds) {
+                adjustedStart = Math.max(0, Math.min(start, center - expand));
+                adjustedEnd = Math.max(end, center + expand);
+            }
+
+            AlignmentInterval loadedInterval = loadInterval(chr, adjustedStart, adjustedEnd, renderOptions);
+
+            trimCache();
+
+            intervalCache.add(loadedInterval);
+
+            packAlignments(renderOptions);
+        }
 
         //  IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
 
