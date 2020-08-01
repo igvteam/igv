@@ -330,13 +330,14 @@ public class AlignmentDataManager implements IGVEventObserver {
         if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale())
             return; // should not happen
 
-        if (isLoading(frame)) return;   // Already loading
-
         if (isLoaded(frame)) return;  // Already loaded
 
-        Range range = frame.getCurrentRange();
-        try {
-            isLoading.add(range);
+        synchronized (loadLock) {
+
+            if (isLoaded(frame)) return;
+
+            Range range = frame.getCurrentRange();
+
             final String chr = frame.getChrName();
             final int start = (int) range.getStart();
             final int end = (int) range.getEnd();
@@ -361,8 +362,6 @@ public class AlignmentDataManager implements IGVEventObserver {
             intervalCache.add(loadedInterval);
 
             packAlignments(renderOptions);
-        } finally {
-            isLoading.remove(range);
         }
         //  IGVEventBus.getInstance().post(new DataLoadedEvent(referenceFrame));
     }
@@ -402,7 +401,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         DownsampleOptions downsampleOptions = new DownsampleOptions();
 
         final AlignmentTrack.BisulfiteContext bisulfiteContext =
-                renderOptions == null ?  null : renderOptions.bisulfiteContext;
+                renderOptions == null ? null : renderOptions.bisulfiteContext;
 
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
 
