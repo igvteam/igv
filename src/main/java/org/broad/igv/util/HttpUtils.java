@@ -839,7 +839,9 @@ public class HttpUtils {
             if (token != null) {
                 conn.setRequestProperty("Authorization", "Bearer " + token);
             }
-            if (GoogleUtils.getProjectID() != null && GoogleUtils.getProjectID().length() > 0) {
+            if (GoogleUtils.getProjectID() != null &&
+                    GoogleUtils.getProjectID().length() > 0 &&
+                    !hasQueryParameter(url, "userProject")) {
                 url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
             }
         }
@@ -964,6 +966,16 @@ public class HttpUtils {
         } catch (MalformedURLException e) {
             log.error("Error adding query parameter", e);
             return url;
+        }
+    }
+
+    private boolean hasQueryParameter(URL url, String parameter) {
+        String urlstring = url.toExternalForm();
+        if (urlstring.contains("?")) {
+            int idx = urlstring.indexOf('?');
+            return urlstring.substring(idx).contains("parameter" + "=");
+        } else {
+            return false;
         }
     }
 

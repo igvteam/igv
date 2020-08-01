@@ -1104,18 +1104,7 @@ public class IGV implements IGVEventObserver {
                                  final String locus,
                                  final boolean merge) {
 
-        // check to see if any files in session file are on protected (oauth) server. If
-        // so, make sure user is logged into
-        // server before -proceeding
-
-        OAuthUtils.getInstance().getProvider().checkServerLogin(sessionPath);
-
-
-        Runnable runnable = new Runnable() {
-            public void run() {
-                restoreSessionSynchronous(sessionPath, locus, merge);
-            }
-        };
+        Runnable runnable = () -> restoreSessionSynchronous(sessionPath, locus, merge);
         LongRunningTask.submit(runnable);
     }
 
