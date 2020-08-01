@@ -48,7 +48,7 @@ public class InsertionManager {
     private Map<String, List<Integer>> positionsMap;
     private Map<String, Integer> selectedInsertions;
 
-    public static synchronized InsertionManager getInstance() {
+    public static InsertionManager getInstance() {
         return theInstance;
     }
 

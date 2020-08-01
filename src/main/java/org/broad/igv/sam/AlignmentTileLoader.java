@@ -83,10 +83,8 @@ public class AlignmentTileLoader implements IGVEventObserver {
         activeLoaders.clear();
     }
 
-
     public AlignmentTileLoader(AlignmentReader reader) {
         this.reader = reader;
-
         Set<String> platforms = this.reader.getPlatforms();
         moleculo = platforms != null && platforms.contains("MOLECULO");
     }
@@ -131,21 +129,14 @@ public class AlignmentTileLoader implements IGVEventObserver {
         boolean showDuplicates = prefMgr.getAsBoolean(SAM_SHOW_DUPLICATES) || !prefMgr.getAsBoolean(SAM_FILTER_DUPLICATES);
         int qualityThreshold = prefMgr.getAsInt(SAM_QUALITY_THRESHOLD);
         int alignmentScoreTheshold = prefMgr.getAsInt(SAM_ALIGNMENT_SCORE_THRESHOLD);
-
         boolean reducedMemory = prefMgr.getAsBoolean(SAM_REDUCED_MEMORY_MODE);
 
         AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext, reducedMemory);
-
-
-        //assert (tiles.size() > 0);
         if (corruptIndex) {
             return t;
         }
-
-
         CloseableIterator<Alignment> iter = null;
 
-        //log.debug("Loading : " + start + " - " + end);
         int alignmentCount = 0;
         WeakReference<AlignmentTileLoader> ref = new WeakReference(this);
         try {
@@ -162,17 +153,13 @@ public class AlignmentTileLoader implements IGVEventObserver {
             iter = reader.query(chr, start, end, false);
 
             while (iter != null && iter.hasNext()) {
-
                 if (cancel) {
                     break;
                 }
-
                 Alignment record = iter.next();
-
                 if (readStats != null) {
                     readStats.addAlignment(record);
                 }
-                ;
 
                 // Set mate sequence of unmapped mates
                 // Put a limit on the total size of this collection.
@@ -217,7 +204,6 @@ public class AlignmentTileLoader implements IGVEventObserver {
                     phased = true;
                 }
 
-
                 if (!record.isMapped() || (!showDuplicates && record.isDuplicate()) ||
                         (filterFailedReads && record.isVendorFailedRead()) ||
                         (filterSecondaryAlignments && !record.isPrimary()) ||
@@ -229,16 +215,13 @@ public class AlignmentTileLoader implements IGVEventObserver {
 
                 // Alignment score (optional tag)
                 if(alignmentScoreTheshold > 0) {
-
                     Object alignmentScoreObj = record.getAttribute("AS");
-
                     if(alignmentScoreObj != null) {
                         int as = ((Number) alignmentScoreObj).intValue();
                         if(as < alignmentScoreTheshold) {
                             continue;
                         }
                     }
-
                 }
 
                 t.addRecord(record, reducedMemory);
@@ -285,7 +268,6 @@ public class AlignmentTileLoader implements IGVEventObserver {
                 readStats.compute();
             }
 
-
             // Clean up any remaining unmapped mate sequences
             for (String mappedMateName : mappedMates.getKeys()) {
                 Alignment mappedMate = mappedMates.get(mappedMateName);
@@ -301,13 +283,11 @@ public class AlignmentTileLoader implements IGVEventObserver {
             // TODO -- make this optional (on a preference)
             InsertionManager.getInstance().processAlignments(chr, t.alignments);
 
-
         } catch (java.nio.BufferUnderflowException e) {
             // This almost always indicates a corrupt BAM index, or less frequently a corrupt bam file
             corruptIndex = true;
             MessageUtils.showMessage("<html>Error encountered querying alignments: " + e.toString() +
                     "<br>This is often caused by a corrupt index file.");
-
         } catch (htsjdk.samtools.cram.CRAMException e) {
             log.error("Error loading alignment data", e);
             MessageUtils.showMessage("<html>Error - possible sequence mismatch (wrong reference for this file): " + e.toString());
@@ -318,15 +298,11 @@ public class AlignmentTileLoader implements IGVEventObserver {
             // reset cancel flag.  It doesn't matter how we got here,  the read is complete and this flag is reset
             // for the next time
             cancel = false;
-
             activeLoaders.remove(ref);
-
             IGVEventBus.getInstance().unsubscribe(this);
-
             if (activeLoaders.isEmpty() && IGV.hasInstance()) {
                 IGV.getInstance().enableStopButton(false);
             }
-
             if (iter != null) {
                 iter.close();
             }
@@ -334,13 +310,11 @@ public class AlignmentTileLoader implements IGVEventObserver {
                 IGV.getInstance().resetStatusMessage();
             }
         }
-
         return t;
-
     }
 
 
-    private static synchronized boolean memoryTooLow() {
+    private static boolean memoryTooLow() {
         if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
             System.gc();
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
