@@ -505,7 +505,7 @@ public class AlignmentRenderer {
         g.drawLine(startX, y + h / 2, endX, y + h / 2);
     }
 
-
+static int printCount = 0;
     /**
      * Draw a (possibly gapped) alignment
      * <p>
@@ -659,11 +659,14 @@ public class AlignmentRenderer {
             AlignmentBlock block = blocks[blockIx];
 
             int blockChromEnd = block.getStart() + block.getLength();
-            int blockPxStart = (int) ((blockChromStart - bpStart) / locScale);
-            int blockPxEnd = (int) ((blockChromEnd - bpStart) / locScale);
+            int blockPxStart = (int) Math.round((blockChromStart - bpStart) / locScale);
+            int blockPxEnd = (int) Math.round((blockChromEnd - bpStart) / locScale);
             boolean rightmost = blockIx + 1 == blocks.length;
             boolean tallEnoughForArrow = h > 6;
-
+            if(printCount < 5) {
+                System.out.println(alignment.getReadName() + "\t" + blockPxStart + "\t" + blockPxEnd + "\t" + (blockPxEnd - blockPxStart));
+                printCount++;
+            }
             if (!rightmost) { // consider waiting to draw the block unless it is rightmost
                 if (hideSmallIndelsBP && (blocks[blockIx+1].getStart() - blockChromEnd) < indelThresholdBP) {
                     continue; // small indel between this block and the next; wait to draw
