@@ -796,10 +796,10 @@ public class AlignmentRenderer {
                 }
 
                 // Draw the preceding alignment block.
-                int blockPxStart = (int) ((blockChromStart - contextChromStart) / locScale),
-                        blockChromEnd = gapChromStart,
-                        blockPxWidth = (int) Math.max(1, (blockChromEnd - blockChromStart) / locScale - 1),
-                        blockPxEnd = blockPxStart + blockPxWidth;
+                int blockPxStart = (int) Math.round((blockChromStart - contextChromStart) / locScale);
+                int blockChromEnd = gapChromStart;
+                int blockPxWidth = (int) Math.max(1, Math.round(blockChromEnd - blockChromStart) / locScale);
+                int blockPxEnd = blockPxStart + blockPxWidth;
 
                 drawAlignmentBlock(g, outlineGraphics, clippedGraphics, strandGraphics, alignment.isNegativeStrand(),
                         alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
@@ -838,9 +838,9 @@ public class AlignmentRenderer {
         }
 
         // Draw the final block after the last gap.
-        int blockPxStart = (int) ((blockChromStart - contextChromStart) / locScale),
-                blockChromEnd = (int) Math.min(contextChromEnd, alignmentChromEnd),
-                blockPxWidth = (int) Math.max(1, (blockChromEnd - blockChromStart) / locScale - 1);
+        int blockPxStart = (int) Math.round((blockChromStart - contextChromStart) / locScale);
+        int blockChromEnd = (int) Math.min(contextChromEnd, alignmentChromEnd);
+        int blockPxWidth = (int) Math.max(1, Math.round(blockChromEnd - blockChromStart) / locScale);
         drawAlignmentBlock(g, outlineGraphics, clippedGraphics, strandGraphics, alignment.isNegativeStrand(),
                 alignmentChromStart, alignmentChromEnd, blockChromStart, blockChromEnd,
                 blockPxStart, blockPxWidth, y, h, locScale, overlapped, leftClipped, rightClipped);
