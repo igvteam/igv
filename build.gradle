@@ -440,7 +440,7 @@ task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
     }
 }
 
-task signWinWithJavaExeDist(type: Exec, dependsOn: createWinWithJavaExeDist) {
+task signWinExeWithJavaDist(type: Exec, dependsOn: createWinWithJavaExeDist) {
     standardInput = new ByteArrayInputStream( keyPassword.getBytes() );
     commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha1",
                 "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
