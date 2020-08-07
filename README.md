@@ -40,6 +40,8 @@ The IGV bundles ship with embedded JREs from AdoptOpenJDK.
   
 * This dashboard describes [project structure and dependencies](https://sourcespy.com/github/igvteamigv/). New contributors can quickly grasp overall structure of the code and technologies involved.  
 
+* See this [README](https://raw.githubusercontent.com/igvteam/igv/master/scripts/readme.txt) for tips about using the IGV launcher scripts.
+
 Note that Gradle creates a number of other subdirectories in 'build'.  These can be safely ignored.
 
 #### Amazon Web Services support

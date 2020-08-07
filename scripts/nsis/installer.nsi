@@ -1,6 +1,6 @@
 Name "IGV"
 
-OutFile "IGV_Win_@VERSION@-installer.exe"
+OutFile "IGV_Win_@VERSION@@JVM_INCL@-installer.exe"
 InstallDir "$PROGRAMFILES64\IGV_@VERSION@"
 
 ShowInstDetails nevershow

@@ -255,9 +255,6 @@ task createDistZip(type: Zip, dependsOn: createDist) {
 
 task createLinuxDistZip(type: Zip, dependsOn: createDist) {
     archiveName = "IGV_Linux_${version}.zip"
-    if (jdkBundleLinux != "") {
-        with copySpec { from jdkBundleLinux into "jdk-11" }
-    }
     from ("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*.command"
@@ -267,11 +264,25 @@ task createLinuxDistZip(type: Zip, dependsOn: createDist) {
     into "IGV_Linux_${version}"
 }
 
+task createLinuxWithJavaDistZip(type: Zip, dependsOn: createDist) {
+    archiveName = "IGV_Linux_${version}_WithJava.zip"
+    with copySpec { from jdkBundleLinux into "jdk-11" }
+    from ("${buildDir}/IGV-dist") {
+        exclude "*.bat"
+        exclude "*.command"
+        exclude 'igvtools*'
+        exclude 'lib/genomes'
+    }
+    into "IGV_Linux_${version}"
+    doLast {
+        if (jdkBundleLinux == "") {
+            throw new GradleException("Required property not set: jdkBundleLinux");
+        }
+    }
+}
+
 task createMacDistZip(type: Zip, dependsOn: createDist) {
     archiveName = "IGV_Mac_${version}.zip"
-    if (jdkBundleMac != "") {
-        with copySpec { from jdkBundleMac into "jdk-11" }
-    }
     from ("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*_hidpi*"
@@ -281,10 +292,24 @@ task createMacDistZip(type: Zip, dependsOn: createDist) {
     into "IGV_Mac_${version}"
 }
 
-task createMacAppDist(type: Copy, dependsOn: createDist) {
-    if (jdkBundleMac != "") {
-        with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-11" }
+task createMacDistWithJavaZip(type: Zip, dependsOn: createDist) {
+    archiveName = "IGV_Mac_${version}_WithJava.zip"
+    with copySpec { from jdkBundleMac into "jdk-11" }
+    from ("${buildDir}/IGV-dist") {
+        exclude "*.bat"
+        exclude "*_hidpi*"
+        exclude "igvtools*"
+        exclude 'lib/genomes'
     }
+    into "IGV_Mac_${version}"
+    doLast {
+        if (jdkBundleMac == "") {
+            throw new GradleException("Required property not set: jdkBundleMac");
+        }
+    }
+}
+
+task createMacAppDist(type: Copy, dependsOn: createDist) {
     with copySpec {
         from ("scripts/mac.app") {
             exclude "Contents/Info.plist.template"
@@ -317,7 +342,7 @@ task createMacAppDist(type: Copy, dependsOn: createDist) {
 }
 
 task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveName = "IGV_${version}.app.zip"
+    archiveName = "IGV_MacApp_${version}.zip"
     from("${buildDir}/IGV-MacApp-dist")
     
     doLast {
@@ -325,10 +350,20 @@ task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
     }
 }
 
-task createWinDist(type: Copy, dependsOn: createDist) {
-    if (jdkBundleWindows != "") {
-        with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-11" }
+task createMacAppWithJavaDistZip(type: Zip, dependsOn: createMacAppDist) {
+    archiveName = "IGV_MacApp_${version}_WithJava.zip"
+    with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-11" }
+    from("${buildDir}/IGV-MacApp-dist")
+    
+    doLast {
+        if (jdkBundleMac == "") {
+            throw new GradleException("Required property not set: jdkBundleMac");
+        }
+        project.exec { commandLine('chmod', '775', createMacAppWithJavaDistZip.archivePath ) }
     }
+}
+
+task createWinDist(type: Copy, dependsOn: createDist) {
     with copySpec {
         from("${buildDir}/IGV-dist") {
             exclude "*.sh"
@@ -341,22 +376,54 @@ task createWinDist(type: Copy, dependsOn: createDist) {
         from ("resources") { include "IGV_64.ico" }
         into "IGV_${version}"
     }
-
     with copySpec {
         // Create a build-specific NSIS installer script.
         from ("scripts/nsis/installer.nsi")
-        filter (ReplaceTokens, tokens: [ VERSION: version ])
+        filter (ReplaceTokens, tokens: [ VERSION: version, JVM_INCL: '' ])
     }
     from ("scripts/nsis") { include "license_win.txt" }
     into "${buildDir}/IGV-WinExe-dist"
 }
 
+task createWinWithJavaDist(type: Copy, dependsOn: createWinDist) {
+    with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-11" }
+    with copySpec {
+        from ("${buildDir}/IGV-WinExe-dist/IGV_${version}") { exclude 'installer.nsi' }
+        into "IGV_${version}"
+    }
+    with copySpec {
+        from ("scripts/nsis/installer.nsi")
+        filter (ReplaceTokens, tokens: [ VERSION: version, JVM_INCL: '-WithJava' ])
+    }
+    from ("scripts/nsis") { include "license_win.txt" }
+    into "${buildDir}/IGV-WinExe-WithJava-dist"
+
+    doLast {
+        if (jdkBundleWindows == "") {
+            throw new GradleException("Required property not set: jdkBundleWindows");
+        }
+    }
+}
+
 task createWinExeDist(type: Exec, dependsOn: createWinDist) {
-    commandLine(makensisCommand, "-O${buildDir}/tmp/nsis-build.log",
+    commandLine(makensisCommand, "-O${buildDir}/tmp/nsis-WithJava-build.log",
                 "${buildDir}/IGV-WinExe-dist/installer.nsi")
     doLast {
         if (makensisCommand == "") {
             throw new GradleException("Required property not set: makensisCommand");
+        }
+    }
+}
+
+task createWinWithJavaExeDist(type: Exec, dependsOn: createWinWithJavaDist) {
+    commandLine(makensisCommand, "-O${buildDir}/tmp/nsis-build.log",
+                "${buildDir}/IGV-WinExe-WithJava-dist/installer.nsi")
+    doLast {
+        if (makensisCommand == "") {
+            throw new GradleException("Required property not set: makensisCommand");
+        }
+        if (jdkBundleWindows == "") {
+            throw new GradleException("Required property not set: jdkBundleWindows");
         }
     }
 }
@@ -366,6 +433,18 @@ task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
     commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha1",
                 "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
                 "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-dist/IGV_Win_${version}-installer.exe")
+    doLast {
+        if (signcodeCommand == "") {
+            throw new GradleException("Required property not set: signcodeCommand");
+        }
+    }
+}
+
+task signWinWithJavaExeDist(type: Exec, dependsOn: createWinWithJavaExeDist) {
+    standardInput = new ByteArrayInputStream( keyPassword.getBytes() );
+    commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha1",
+                "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
+                "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-WithJava-dist/IGV_Win_${version}-WithJava-installer.exe")
     doLast {
         if (signcodeCommand == "") {
             throw new GradleException("Required property not set: signcodeCommand");
