@@ -292,7 +292,7 @@ task createMacDistZip(type: Zip, dependsOn: createDist) {
     into "IGV_Mac_${version}"
 }
 
-task createMacDistWithJavaZip(type: Zip, dependsOn: createDist) {
+task createMacWithJavaDistZip(type: Zip, dependsOn: createDist) {
     archiveName = "IGV_Mac_${version}_WithJava.zip"
     with copySpec { from jdkBundleMac into "jdk-11" }
     from ("${buildDir}/IGV-dist") {
