@@ -158,12 +158,14 @@ public class MainPanel extends JPanel implements Paintable {
 
     @Override
     public void doLayout() {
-        layoutFrames();
+
         super.doLayout();
         applicationHeaderPanel.doLayout();
+        layoutFrames();
         for (TrackPanel tp : getTrackPanels()) {
             tp.getScrollPane().doLayout();
         }
+
     }
 
     @Override
@@ -204,8 +206,6 @@ public class MainPanel extends JPanel implements Paintable {
 
 
         headerPanelContainer = new HeaderPanelContainer();
-
-
         headerScrollPane = new JScrollPane();
         headerScrollPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
         headerScrollPane.setForeground(new java.awt.Color(153, 153, 153));
@@ -230,7 +230,7 @@ public class MainPanel extends JPanel implements Paintable {
             featureTrackScrollPane = new TrackPanelScrollPane();
             featureTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 50));
             featureTrackScrollPane.setViewportView(new TrackPanel(IGV.FEATURE_PANEL_NAME, this));
-            add(featureTrackScrollPane, java.awt.BorderLayout.SOUTH);
+           // add(featureTrackScrollPane, java.awt.BorderLayout.SOUTH);
         }
 
 
@@ -428,43 +428,12 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void layoutFrames() {
         synchronized (getTreeLock()) {
-
             Insets insets = applicationHeaderPanel.getInsets();
             namePanelX = insets.left;
-
             attributePanelX = namePanelX + namePanelWidth + hgap;
             attributePanelWidth = calculateAttributeWidth();
-
             dataPanelX = attributePanelX + attributePanelWidth + hgap;
-
-            java.util.List<ReferenceFrame> frames = FrameManager.getFrames();
             dataPanelWidth = applicationHeaderPanel.getWidth() - insets.right - dataPanelX;
-
-            if (frames.size() == 1) {
-                frames.get(0).setBounds(0, dataPanelWidth);
-            } else {
-
-                float gap = Math.min(1, 20.0f / ((int) (1.5 * frames.size()))) * hgap;
-                int x = 0;
-
-                // Width is in floating point because we need to fill data panel,  going straight to an "int" here
-                // would cause truncation
-                Session.GeneListMode mode = IGV.hasInstance() ?
-                        IGV.getInstance().getSession().getGeneListMode() :
-                        Session.GeneListMode.NORMAL;
-
-                float wc = mode == Session.GeneListMode.NORMAL ?
-                        ((float) dataPanelWidth - (frames.size() - 1) * gap) / frames.size() :
-                        20;
-
-                for (int i = 0; i < frames.size(); i++) {
-                    ReferenceFrame frame = frames.get(i);
-                    int nextX = (int) ((i + 1) * (wc + gap));
-                    int w = nextX - x;
-                    frame.setBounds(x, w);
-                    x = nextX;
-                }
-            }
         }
     }
 

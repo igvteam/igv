@@ -26,25 +26,25 @@
 package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.MessageCollection;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.ui.FontManager;
-import org.broad.igv.Globals;
-import java.text.DecimalFormat;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.io.File;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -52,29 +52,36 @@ import java.util.List;
  */
 public class DataPanelContainer extends TrackPanelComponent implements Paintable {
 
+    static final int default_hgap = 6;
     private static Logger log = Logger.getLogger(DataPanelContainer.class);
 
     TrackPanel parent;
 
-
     public DataPanelContainer(TrackPanel trackPanel) {
         super(trackPanel);
-
         DropTarget target = new DropTarget(this, new FileDropTargetListener(trackPanel));
         setDropTarget(target);
         target.setActive(true);
-        this.setLayout(new DataPanelLayout());
+        this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         this.parent = trackPanel;
         createDataPanels();
-
     }
 
     public void createDataPanels() {
         removeAll();
+        int hgap = default_hgap;
+        if (FrameManager.getFrames().size() > 10) {
+            hgap = 1 + 20 / FrameManager.getFrames().size();
+        }
+        boolean first = true;
         for (ReferenceFrame f : FrameManager.getFrames()) {
             if (f.isVisible()) {
+                if (!first) {
+                    this.add(Box.createRigidArea(new Dimension(hgap, 0)));
+                }
                 DataPanel dp = new DataPanel(f, this);
                 add(dp);
+                first = false;
             }
         }
         invalidate();

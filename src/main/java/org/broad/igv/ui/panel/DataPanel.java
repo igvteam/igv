@@ -100,16 +100,13 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         setToolTipText("");
         painter = new DataPanelPainter();
         setBackground(PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR));
-
         ToolTipManager.sharedInstance().registerComponent(this);
-
 
         //    IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
     }
 
     @Override
     public void receiveEvent(Object event) {
-
         if (event instanceof DataLoadedEvent) {
             if (((DataLoadedEvent) event).referenceFrame == frame) {
                 log.info("Data loaded repaint " + frame);
@@ -129,14 +126,12 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         return sp == null ? null : ((JScrollPane) sp).getVerticalScrollBar();
     }
 
-
     public void setCurrentTool(final AbstractDataPanelTool tool) {
         this.currentTool = (tool == null) ? defaultTool : tool;
         if (currentTool != null) {
             setCursor(currentTool.getCursor());
         }
     }
-
 
     @Override
     public void paintComponent(final Graphics g) {
@@ -194,6 +189,12 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
     }
 
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        super.setBounds(x, y, width, height);
+        Insets insets = this.getInsets();
+        frame.setBounds(x + insets.left, width - insets.left - insets.right);
+    }
 
     public boolean allTracksLoaded() {
         return parent.getTrackGroups().stream().
@@ -535,7 +536,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
 
     private void init() {
-        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
         setRequestFocusEnabled(false);
 
         // Key Events

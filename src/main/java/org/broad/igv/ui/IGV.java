@@ -2346,7 +2346,6 @@ public class IGV implements IGVEventObserver {
         for (TrackPanel tp : getTrackPanels()) {
             tp.createDataPanels();
         }
-
         contentPane.getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
         contentPane.getMainPanel().applicationHeaderPanel.revalidate();
         contentPane.getMainPanel().validate();

@@ -123,7 +123,7 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
             return;
         }
 
-        int dataPanelWidth = frame.getWidthInPixels();
+        int dataPanelWidth = getWidth();
         Rectangle cytoRect = new Rectangle(0, 10, dataPanelWidth, bandHeight);
 
         Chromosome chromosome = getReferenceFrame().getChromosome();
