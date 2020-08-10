@@ -651,15 +651,6 @@ public class ReferenceFrame {
         return name;
     }
 
-    public Locus getInitialLocus() {
-        return initialLocus;
-    }
-
-
-    public int getMinZoom() {
-        return minZoom;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
