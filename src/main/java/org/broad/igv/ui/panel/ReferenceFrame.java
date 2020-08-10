@@ -638,11 +638,8 @@ public class ReferenceFrame {
     }
 
     public Range getCurrentRange() {
-        int start = 0;
-        int end = widthInPixels;
-        int startLoc = (int) getChromosomePosition(start) + 1;
-        int endLoc = (int) getChromosomePosition(end);
-        Range range = new Range(getChrName(), startLoc, endLoc);
+        int endLoc = (int) Math.round(getChromosomePosition(widthInPixels));
+        Range range = new Range(getChrName(), (int) origin, endLoc);
         return range;
     }
 
