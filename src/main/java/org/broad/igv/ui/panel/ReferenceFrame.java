@@ -197,7 +197,7 @@ public class ReferenceFrame {
      * @param pixelX
      * @param widthInPixels
      */
-    public synchronized void setBounds(int pixelX, int widthInPixels) {
+    public void setBounds(int pixelX, int widthInPixels) {
         this.pixelX = pixelX;
 
         if (this.widthInPixels != widthInPixels) {
@@ -429,7 +429,7 @@ public class ReferenceFrame {
 
         end = Math.min(getMaxCoordinate(chr), end);
 
-        synchronized (this) {
+ //       synchronized (this) {
             this.initialLocus = locus;
             this.chrName = chr;
             if (start >= 0 && end >= 0) {
@@ -438,7 +438,7 @@ public class ReferenceFrame {
                 computeLocationScale();
                 computeZoom();
             }
-        }
+   //     }
 
         if (log.isDebugEnabled()) {
             log.debug("Data panel width = " + widthInPixels);
