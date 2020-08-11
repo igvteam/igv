@@ -31,7 +31,7 @@ if [ -e "$HOME/.igv/java_arguments" ]; then
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
         @"$HOME/.igv/java_arguments" \
-        --module=org.igv/org.broad.igv.ui.Main "$@"
+        --module=org.igv/org.broad.igv.ui.Main
 else
     java -showversion --module-path="${prefix}/../Java/lib" -Xmx4g \
         @"${prefix}/../Java/igv.args" \
@@ -39,5 +39,5 @@ else
         -Xdock:icon="${prefix}/../Resources/IGV_64.png" \
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
-        --module=org.igv/org.broad.igv.ui.Main "$@"
+        --module=org.igv/org.broad.igv.ui.Main
 fi
