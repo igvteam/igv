@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeLoader;
+import org.broad.igv.feature.genome.load.GenomeLoader;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -13,7 +13,6 @@ import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.Utilities;
 
 import java.io.*;
 import java.net.URL;
@@ -36,7 +35,12 @@ public class GenomeListManager {
     private static Logger log = Logger.getLogger(GenomeManager.class);
 
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
-    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = GenomeManager.TEST_USER_DEFINED_GENOME_LIST_FILE;
+
+    // Tacking on a timestamp & random number to avoid file collisions with parallel testing JVMs.  Not guaranteed unique
+    // but highly unlikely to be repeated.
+    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes_" +
+            System.currentTimeMillis() + "_" + Math.random() + ".txt";
+
     public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem("Human (hg19)", "http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg19.genome", "hg19");
 
     private static GenomeListManager theInstance;
@@ -346,39 +350,31 @@ public class GenomeListManager {
             String genomeListURLString = "";
             try {
                 genomeListURLString = PreferencesManager.getPreferences().getGenomeListURL();
-                URL serverGenomeURL = HttpUtils.createURL(genomeListURLString);
 
                 if (HttpUtils.isRemoteURL(genomeListURLString)) {
+                    URL serverGenomeURL = HttpUtils.createURL(genomeListURLString);
                     inputStream = HttpUtils.getInstance().openConnectionStream(serverGenomeURL);
                 } else {
-                    File file = new File(genomeListURLString.startsWith("file:") ? serverGenomeURL.getFile() : genomeListURLString);
+                    File file = new File(genomeListURLString.startsWith("file:") ? (new URL(genomeListURLString)).getFile() : genomeListURLString);
                     inputStream = new FileInputStream(file);
                 }
-
 
                 dataReader = new BufferedReader(new InputStreamReader(inputStream));
 
                 String genomeRecord;
-
                 while ((genomeRecord = dataReader.readLine()) != null) {
-
                     if (genomeRecord.startsWith("<") || genomeRecord.startsWith("(#")) {
                         continue;
                     }
-
                     if (genomeRecord != null) {
                         genomeRecord = genomeRecord.trim();
-
                         String[] fields = genomeRecord.split("\t");
                         if ((fields != null) && (fields.length >= 3)) {
-
-
                             String name = fields[0];
                             String url = fields[1];
                             String id = fields[2];
                             GenomeListItem item = new GenomeListItem(name, url, id);
                             serverGenomeMap.put(item.getId(), item);
-
                         } else {
                             log.error("Found invalid server genome list record: " + genomeRecord);
                         }

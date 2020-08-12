@@ -55,6 +55,7 @@ import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.Mutation;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.feature.genome.fasta.FastaUtils;
+import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.IGVBEDCodec;

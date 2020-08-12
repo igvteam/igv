@@ -57,6 +57,7 @@ import org.broad.igv.sam.InsertionSelectionEvent;
 import org.broad.igv.session.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.WaitCursorManager.CursorToken;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.dnd.GhostGlassPane;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
@@ -2097,7 +2098,7 @@ public class IGV implements IGVEventObserver {
             }
 
             if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
-                String genomeId = GenomeManager.DEFAULT_GENOME.getId();
+                String genomeId = GenomeListManager.DEFAULT_GENOME.getId();
                 try {
                     GenomeManager.getInstance().loadGenomeById(genomeId);
                 } catch (IOException e) {

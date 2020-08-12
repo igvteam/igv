@@ -51,7 +51,7 @@ import org.broad.igv.feature.bionano.SMAPRenderer;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.dsi.DSIRenderer;
 import org.broad.igv.feature.dsi.DSITrack;
-import org.broad.igv.feature.genome.GenbankParser;
+import org.broad.igv.feature.genome.load.GenbankParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.gff.GFFFeatureSource;

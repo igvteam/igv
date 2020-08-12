@@ -41,6 +41,8 @@ import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.genome.load.GenomeDescriptor;
+import org.broad.igv.feature.genome.load.GenomeLoader;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.FeatureTrack;
@@ -52,7 +54,6 @@ import org.broad.igv.ui.util.ProgressBar;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.ui.util.download.Downloader;
-import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
@@ -63,7 +64,6 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,39 +73,11 @@ import java.util.Set;
  */
 public class GenomeManager {
 
-    final static String GENOME_ARCHIVE_VERSION_KEY = "version";
-    final static String GENOME_ARCHIVE_PROPERTY_FILE_NAME = "property.txt";
-    final static String GENOME_ARCHIVE_ID_KEY = "id";
-    final static String GENOME_ARCHIVE_NAME_KEY = "name";
-    final static String GENOME_ORDERED_KEY = "ordered";
-    final static String GENOME_GENETRACK_NAME = "geneTrackName";
-    final static String GENOME_URL_KEY = "url";
-    final static String GENOME_ARCHIVE_CYTOBAND_FILE_KEY = "cytobandFile";
-    final static String GENOME_ARCHIVE_GENE_FILE_KEY = "geneFile";
-    final static String GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY = "sequenceLocation";
-    final static String COMPRESSED_SEQUENCE_PATH = "compressedSequencePath";
-
-    /**
-     * Whether the sequenceLocation has been modified from the version of the .genome
-     * file on the server
-     */
-    public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
-    public static final String SEQUENCE_MAP_FILE = "sequenceMap.txt";
-
     private static Logger log = Logger.getLogger(GenomeManager.class);
 
-    private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
-
-    // Tacking on a timestamp & random number to avoid file collisions with parallel testing JVMs.  Not guaranteed unique
-    // but highly unlikely to be repeated.
-    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes_" +
-            System.currentTimeMillis() + "_" + Math.random() + ".txt";
-
-    public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem("Human hg19", "http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg19.genome", "hg19");
+    private static GenomeManager theInstance;
 
     private static GenomeListManager genomeListManager;
-
-    private static GenomeManager theInstance;
 
     private Genome currentGenome;
 
@@ -136,7 +108,7 @@ public class GenomeManager {
      * @throws MalformedURLException
      * @throws UnsupportedEncodingException
      */
-    static File getArchiveFile(String genomePath) throws MalformedURLException, UnsupportedEncodingException {
+    public static File getArchiveFile(String genomePath) throws MalformedURLException, UnsupportedEncodingException {
 
         File archiveFile;
 
@@ -146,11 +118,9 @@ public class GenomeManager {
             URL genomeArchiveURL = HttpUtils.createURL(genomePath);
             final String tmp = URLDecoder.decode(HttpUtils.createURL(genomePath).getFile(), "UTF-8");
             String cachedFilename = Utilities.getFileNameFromURL(tmp);
-
             if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
                 DirectoryManager.getGenomeCacheDirectory().mkdir();
             }
-
             archiveFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedFilename);
             refreshCache(archiveFile, genomeArchiveURL);
         } else {
@@ -260,46 +230,8 @@ public class GenomeManager {
             // Clear Feature DB
             FeatureDB.clearFeatures();
 
-            String altGenomePath;
-            if (genomePath.endsWith(".genome")) {
-                File archiveFile = getArchiveFile(genomePath);
-                if (!archiveFile.exists()) {
-                    return null;    // Happens if genome download was canceled.
-                }
-                altGenomePath = archiveFile.getAbsolutePath();
-                newGenome = GenomeLoader.loadDotGenomeFile(archiveFile);
-            } else if (genomePath.endsWith(".gbk") || genomePath.endsWith(".gb")) {
-                altGenomePath = genomePath;
-                newGenome = GenomeLoader.loadGenbankFile(genomePath);
-                setCurrentGenome(newGenome);
-            } else if (genomePath.endsWith(".chrom.sizes")) {
-                altGenomePath = genomePath;
-                newGenome = GenomeLoader.loadChromSizes(genomePath);
-                setCurrentGenome(newGenome);
-            } else if (genomePath.endsWith(".json")) {
-                altGenomePath = genomePath;
-                newGenome = GenomeLoader.loadJsonFile(genomePath);
-                setCurrentGenome(newGenome);
-            } else {
-
-                // Assume a fasta file
-                altGenomePath = genomePath;
-                if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
-
-                    String gziPath = genomePath + ".gzi";
-                    String faiPath = genomePath + ".fai";
-                    if (!(FileUtils.resourceExists(gziPath) && FileUtils.resourceExists(faiPath))) {
-                        throw new GenomeException("IGV cannot readed gzipped fasta files.");
-                    }
-                }
-                if (!FileUtils.isRemote(genomePath)) {
-                    if (!(new File(genomePath)).exists()) {
-                        throw new GenomeException("Cannot locate genome: " + genomePath);
-                    }
-                }
-                newGenome = GenomeLoader.loadFastaFile(genomePath);
-                setCurrentGenome(newGenome);
-            }
+            newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
+            setCurrentGenome(newGenome);
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             String aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
@@ -312,7 +244,7 @@ public class GenomeManager {
             if (IGV.hasInstance()) IGV.getInstance().resetSession(null);
 
 
-            GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), altGenomePath, newGenome.getId());
+            GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
             final Set<String> serverGenomeIDs = genomeListManager.getServerGenomeIDs();
 
             boolean userDefined = !serverGenomeIDs.contains(newGenome.getId());
@@ -594,7 +526,7 @@ public class GenomeManager {
         PrintWriter pw = null;
 
         try {
-            File sequenceFile = new File(DirectoryManager.getGenomeCacheDirectory(), SEQUENCE_MAP_FILE);
+            File sequenceFile = new File(DirectoryManager.getGenomeCacheDirectory(), GenomeDescriptor.SEQUENCE_MAP_FILE);
             pw = new PrintWriter(new BufferedWriter(new FileWriter(sequenceFile)));
 
             for (Map.Entry<String, File> entry : GenomeLoader.localSequenceMap.entrySet()) {

@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome;
+package org.broad.igv.feature.genome.load;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.util.HttpUtils;
@@ -40,6 +40,23 @@ import java.util.zip.ZipInputStream;
 
 public class GenomeDescriptor {
 
+    public final static String GENOME_ARCHIVE_VERSION_KEY = "version";
+    public final static String GENOME_ARCHIVE_PROPERTY_FILE_NAME = "property.txt";
+    public final static String GENOME_ARCHIVE_ID_KEY = "id";
+    public final static String GENOME_ARCHIVE_NAME_KEY = "name";
+    public final static String GENOME_ORDERED_KEY = "ordered";
+    public final static String GENOME_GENETRACK_NAME = "geneTrackName";
+    public final static String GENOME_URL_KEY = "url";
+    public final static String GENOME_ARCHIVE_CYTOBAND_FILE_KEY = "cytobandFile";
+    public final static String GENOME_ARCHIVE_GENE_FILE_KEY = "geneFile";
+    public final static String GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY = "sequenceLocation";
+    public final static String COMPRESSED_SEQUENCE_PATH = "compressedSequencePath";
+    /**
+     * Whether the sequenceLocation has been modified from the version of the .genome
+     * file on the server
+     */
+    public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
+    public static final String SEQUENCE_MAP_FILE = "sequenceMap.txt";
     private static Logger log = Logger.getLogger(GenomeDescriptor.class);
 
     private Map<String, ZipEntry> zipEntries;
@@ -81,14 +98,14 @@ public class GenomeDescriptor {
                 zipEntry = zipInputStream.getNextEntry();
             }
 
-            zipEntry = zipEntries.get(GenomeManager.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
+            zipEntry = zipEntries.get(GENOME_ARCHIVE_PROPERTY_FILE_NAME);
             if (zipEntry != null) {
                 InputStream inputStream = zipFile.getInputStream(zipEntry);
                 Properties properties = new Properties();
                 properties.load(inputStream);
 
-                String sequencePath = properties.getProperty(GenomeManager.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
-                String compressedSequencePath = properties.getProperty(GenomeManager.COMPRESSED_SEQUENCE_PATH);
+                String sequencePath = properties.getProperty(GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
+                String compressedSequencePath = properties.getProperty(COMPRESSED_SEQUENCE_PATH);
 
                 if ((sequencePath != null) && !HttpUtils.isRemoteURL(sequencePath)) {
                     sequencePath = getFullPath(archiveFile, sequencePath);
@@ -99,17 +116,17 @@ public class GenomeDescriptor {
                 }
                 // The new descriptor
                 genomeDescriptor = new GenomeDescriptor();
-                genomeDescriptor.name = properties.getProperty(GenomeManager.GENOME_ARCHIVE_NAME_KEY);
-                genomeDescriptor.id = properties.getProperty(GenomeManager.GENOME_ARCHIVE_ID_KEY);
-                genomeDescriptor.cytoBandFileName = properties.getProperty(GenomeManager.GENOME_ARCHIVE_CYTOBAND_FILE_KEY);
-                genomeDescriptor.geneFileName = properties.getProperty(GenomeManager.GENOME_ARCHIVE_GENE_FILE_KEY);
-                genomeDescriptor.chrAliasFileName = properties.getProperty(GenomeManager.GENOME_CHR_ALIAS_FILE_KEY);
-                genomeDescriptor.geneTrackName = properties.getProperty(GenomeManager.GENOME_GENETRACK_NAME, "Gene");
+                genomeDescriptor.name = properties.getProperty(GENOME_ARCHIVE_NAME_KEY);
+                genomeDescriptor.id = properties.getProperty(GENOME_ARCHIVE_ID_KEY);
+                genomeDescriptor.cytoBandFileName = properties.getProperty(GENOME_ARCHIVE_CYTOBAND_FILE_KEY);
+                genomeDescriptor.geneFileName = properties.getProperty(GENOME_ARCHIVE_GENE_FILE_KEY);
+                genomeDescriptor.chrAliasFileName = properties.getProperty(GENOME_CHR_ALIAS_FILE_KEY);
+                genomeDescriptor.geneTrackName = properties.getProperty(GENOME_GENETRACK_NAME, "Gene");
                 genomeDescriptor.sequencePath = sequencePath;
                 genomeDescriptor.compressedSequencePath = compressedSequencePath;
                 genomeDescriptor.zipEntries = zipEntries;
                 genomeDescriptor.genomeZipFile = zipFile;
-                genomeDescriptor.url = properties.getProperty(GenomeManager.GENOME_URL_KEY);
+                genomeDescriptor.url = properties.getProperty(GENOME_URL_KEY);
             }
 
         } finally {

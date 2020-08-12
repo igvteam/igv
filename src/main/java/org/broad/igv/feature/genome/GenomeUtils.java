@@ -222,48 +222,4 @@ public class GenomeUtils {
     }
 
 
-
-    public static void findNonFastas(String genomeListPath, File outputFile) throws IOException {
-
-        // http://igv.broadinstitute.org/genomes/genomes.txt
-        // <Server-Side Genome List>
-        // Human hg19	http://igv.broadinstitute.org/genomes/hg19.genome	hg19
-        BufferedReader br = null;
-        PrintWriter pw = null;
-
-        try {
-            pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
-            br = ParsingUtils.openBufferedReader(genomeListPath);
-            String nextLine;
-            while ((nextLine = br.readLine()) != null) {
-                String[] tokens = nextLine.split("\t");
-                if (tokens.length > 2) {
-
-                    String genomeID = tokens[2];
-                    String genomePath = tokens[1];
-                    try {
-                        Genome genome = GenomeManager.getInstance().loadGenome(genomePath, null);
-
-                        if (!genome.sequenceIsFasta()) {
-
-//                            File outputFile = new File(directory, genomeID + ".fa");
-//                            if (outputFile.exists()) {
-//                                continue;
-//                            }
-
-                            pw.println("Updating " + genomeID);
-                        }
-
-                    } catch (Exception e) {
-                        System.err.println(e.toString());
-                    }
-                }
-            }
-        } finally {
-            if (br != null) br.close();
-            if(pw != null) pw.close();
-        }
-
-    }
-
 }

@@ -32,6 +32,7 @@ package org.broad.igv.feature.genome;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.fasta.FastaUtils;
+import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 
@@ -226,25 +227,25 @@ public class GenomeImporter {
 
             propertyFileWriter.println("ordered=" + !fastaDirectory);
             if (genomeId != null) {
-                propertyFileWriter.println(GenomeManager.GENOME_ARCHIVE_ID_KEY + "=" + genomeId);
+                propertyFileWriter.println(GenomeDescriptor.GENOME_ARCHIVE_ID_KEY + "=" + genomeId);
             }
             if (genomeDisplayName != null) {
-                propertyFileWriter.println(GenomeManager.GENOME_ARCHIVE_NAME_KEY + "=" + genomeDisplayName);
+                propertyFileWriter.println(GenomeDescriptor.GENOME_ARCHIVE_NAME_KEY + "=" + genomeDisplayName);
             }
             if (cytobandFile != null) {
-                propertyFileWriter.println(GenomeManager.GENOME_ARCHIVE_CYTOBAND_FILE_KEY + "=" + cytobandFile.getName());
+                propertyFileWriter.println(GenomeDescriptor.GENOME_ARCHIVE_CYTOBAND_FILE_KEY + "=" + cytobandFile.getName());
             }
             if (geneAnnotFile != null) {
-                propertyFileWriter.println(GenomeManager.GENOME_ARCHIVE_GENE_FILE_KEY + "=" + geneAnnotFile.getName());
+                propertyFileWriter.println(GenomeDescriptor.GENOME_ARCHIVE_GENE_FILE_KEY + "=" + geneAnnotFile.getName());
             }
             if (chrAliasFile != null) {
-                propertyFileWriter.println(GenomeManager.GENOME_CHR_ALIAS_FILE_KEY + "=" + chrAliasFile.getName());
+                propertyFileWriter.println(GenomeDescriptor.GENOME_CHR_ALIAS_FILE_KEY + "=" + chrAliasFile.getName());
             }
             if (sequenceLocation != null) {
                 if (!HttpUtils.isRemoteURL(sequenceLocation)) {
                     sequenceLocation = sequenceLocation.replace('\\', '/');
                 }
-                propertyFileWriter.println(GenomeManager.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY + "=" + sequenceLocation);
+                propertyFileWriter.println(GenomeDescriptor.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY + "=" + sequenceLocation);
             }
 
             propertyFileWriter.flush();

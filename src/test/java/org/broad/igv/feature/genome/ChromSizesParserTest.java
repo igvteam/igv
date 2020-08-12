@@ -26,6 +26,7 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.genome.load.ChromSizesParser;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
