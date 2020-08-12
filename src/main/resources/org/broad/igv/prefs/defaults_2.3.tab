@@ -61,7 +61,7 @@ HETVAR.COLOR	0,0,255
 HOMREF.COLOR	235,235,235
 HOMVAR.COLOR	0,245,255
 IGV.chart.track.height	40
-IGV.genome.sequence.dir	http://igv.broadinstitute.org/genomes/genomes.txt
+IGV.genome.sequence.dir	http://igv.broadinstitute.org/genomes/genomes.tab
 IGV.join.adjacent.segments	false
 IGV.single.track.pane	false
 IGV.track.height	15
