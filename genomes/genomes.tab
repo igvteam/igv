@@ -10,17 +10,17 @@ C. elegans (WS241)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ws241
 C. elegans (WS235)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ws235.genome	ws235
 C. elegans (WS245)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/WS245.genome	WS245
 C. elegans (ce10)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce10.genome	ce10
-C. elegans (ce11)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce11.genome	ce11
+C. elegans (ce11)	https://s3.amazonaws.com/igv.org.genomes/json/ce11.json	ce11
 Chicken (galGal4)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal4.genome	galGal4
 Chicken (galGal5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal5.genome	galGal5
 Chimp (panTro3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro3.genome	panTro3
-Chimp (panTro4)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro4.genome	panTro4
+Chimp (panTro4)	https://s3.amazonaws.com/igv.org.genomes/json/panTro4.json	panTro4
 Cat (felCat5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/felCat5.genome	felCat5
 Cow (bosTau7)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau7.genome	bosTau7
 Cow (bosTau8)	https://s3.amazonaws.com/igv.org.genomes/json/bosTau8.json	bosTau8
 Cow (bosTau9)	https://s3.amazonaws.com/igv.org.genomes/json/bosTau9.json	bosTau9
-D. melanogaster (dm6)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/dm6.genome	dm6
-Dog (canFam3)	https://s3.amazonaws.com/igv.org.genomes/canFam3/canFam3.genome	canFam3
+D. melanogaster (dm6)	https://s3.amazonaws.com/igv.org.genomes/json/dm6.json	dm6
+Dog (canFam3)	https://s3.amazonaws.com/igv.org.genomes/json/canFam3.json	canFam3
 E. coli K-12 MG1655 (NC_000913.2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.2.genome	NC_000913.2
 E. coli K-12 (NC_000913.3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.3.gbk	NC_000913.3
 Ferret (MusPutFur1.0)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/MusPutFur1.0.genome	MusPutFur1.0
@@ -35,9 +35,9 @@ Human (b37)	https://s3.amazonaws.com/igv.org.genomes/b37/b37.genome	b37
 Human Adenovirus C	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001405.genome	NC_001405
 Human Herpesvirus 4, Type 1	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/HHV4_Type1.genome	HHV4_Type1
 Human Herpesvirus 4, Type 2	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/HHV4_Type2.genome	HHV4_Type2
-Human hg18	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg18.genome	hg18
-Human hg19	https://s3.amazonaws.com/igv.org.genomes/hg19/hg19.genome	hg19
-Human hg38	https://s3.amazonaws.com/igv.org.genomes/hg38/hg38.genome	hg38
+Human hg18	https://s3.amazonaws.com/igv.org.genomes/json/hg18.json	hg18
+Human hg19	https://s3.amazonaws.com/igv.org.genomes/json/hg19.json	hg19
+Human hg38	https://s3.amazonaws.com/igv.org.genomes/json/hg38.json	hg38
 Human Mito (NC_012920)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_012920.1.gbk	NC_012920
 Human respiratory synctial virus	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/M74568.genome	M74568
 Macaca fascicularis (CE_1.0)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/CE_1.0.genome	CE_1.0
@@ -45,7 +45,8 @@ Macaca fascicularis (5.0)	https://s3.amazonaws.com/igv.org.genomes/Macaca_fascic
 Mouse (129S1/SvImJ)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/SvImJ.genome	129S1/SvImJ
 Mouse mm10	https://s3.amazonaws.com/igv.org.genomes/mm10/mm10.genome	mm10
 Mouse mm8	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm8.genome	mm8
-Mouse mm9	https://s3.amazonaws.com/igv.org.genomes/mm9/mm9.genome	mm9
+Mouse mm9	https://s3.amazonaws.com/igv.org.genomes/json/mm9.json	mm9
+Mouse (mm10)	https://s3.amazonaws.com/igv.org.genomes/json/mm10.json	mm10
 Mycobacterium TB (CD1551)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_002755.genome	NC_002755
 N. Meningitidis (FAM18)	https://s3.amazonaws.com/igv.broadinstitute.org/test/genomes/NC_008767.genome	NC_008767
 N. Meningitidis (MC58)	https://s3.amazonaws.com/igv.broadinstitute.org/test/genomes/NC_003112.genome	NC_003112
@@ -54,11 +55,11 @@ P. falciparum 3D7 (V9.0)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes
 Plasmodium (3D7 V24)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/PlasmoDB_24.genome	Plasmodium_24
 Rabbit (oryCun2.0)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/oryCun2.0.genome	oryCun2.0
 Rat (rn5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rn5.genome	rn5
-Rat (rn6)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rn6.genome	rn6
+Rat (rn6)	https://s3.amazonaws.com/igv.org.genomes/json/rn6.json	rn6
 Rhesus (rheMac3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac3.genome	rheMac3
 Rhesus (rheMac8)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac8.genome	rheMac8
 S. cerevisiae (Y55)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/Y55.genome	Y55
-S. cerevisiae (sacCer3)	https://s3.amazonaws.com/igv.org.genomes/sacCer3/sacCer3.genome	sacCer3
+S. cerevisiae (sacCer3)	https://s3.amazonaws.com/igv.org.genomes/json/sacCer3.json	sacCer3
 S. pombe (ASM294v2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ASM294v2.genome	ASM294v2
 S. sclerotiorum (sclerotiorum)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/sclerotiorum.genome	sclerotiorum
 S.purpuratus (2.1+)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/spur_2.1.genome	spur_2.1
@@ -75,12 +76,16 @@ Trout (CCAF000000000)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/CC
 V. vitifera	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/vvinifera.genome	vvitifera
 X. tropicalis v9.0	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/xenTro9.genome	xenTro9
 X. laevis (7.1)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/laevis_7.1.genome	laevis_7.1
-Zebrafish (GRCz10/danRer10)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/danRer10.genome	danRer10
-Zebrafish (GRCz11/danRer11)	https://s3.amazonaws.com/igv.org.genomes/danRer11/danRer11.genome	danRer11
+Zebrafish (GRCz10/danRer10)	https://s3.amazonaws.com/igv.org.genomes/json/danRer10.json	danRer10
+Zebrafish (GRCz11/danRer11)	https://s3.amazonaws.com/igv.org.genomes/json/danRer11.json	danRer11
 Zea mays (AGPv3.31)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/AGPv3.31.genome	AGPv3.31
 C. reinhardtii (CC-503 v5.5)	https://s3.amazonaws.com/igv.org.genomes/Creinhardtii_CC-503_v5.0/2019-03-21_Creinhardtii_CC-503_v5.5.genome	2019-03-21_Creinhardtii_CC-503_v5.5
 C. reinhardtii (CC-503 v5.6)	https://s3.amazonaws.com/igv.org.genomes/C.reinhardtii_CC-503_v5.6+/2019-03-21_Creinhardtii_CC-503_v5.6.genome	2019-03-21_Creinhardtii_CC-503_v5.6
 C. reinhardtii (CC-503 v5.6 Cp+Mt v4.4)	https://s3.amazonaws.com/igv.org.genomes/Creinhardtii_CC-503_v5.6/2019-03-21_Creinhardtii_CC-503_v5.6_Cp%2BMt_v4.4.genome	2019-03-21_Creinhardtii_CC-503_v5.6_Cp+Mt_v4.4
 Ixodes scapularis JCVI_ISG_i3_1.0 (GCA_000208615.1)	https://s3.amazonaws.com/igv.org.genomes/tick/GCA_000208615.1/GCA_000208615.1.genome	GCA_000208615.1
 Ixodes scapularis ISE6_asm2.2_deduplicated (GCA_002892825.2)	https://s3.amazonaws.com/igv.org.genomes/tick/GCA_000208615.1/GCA_000208615.1.genome	GCA_002892825.2
-SARS-CoV-2	https://s3.amazonaws.com/igv.org.genomes/SARS-CoV-2/ASM985889v3.genome	ASM985889v3
+SARS-CoV-2	https://s3.amazonaws.com/igv.org.genomes/json/ASM985889v3.json	ASM985889v3
+S. pombe (ASM294v2)	https://s3.amazonaws.com/igv.org.genomes/json/ASM294v2.json	ASM294v2
+Gorilla (gorGor4)	https://s3.amazonaws.com/igv.org.genomes/json/gorGor4.json	gorGor4
+Bonobo (MPI-EVA panpan1.1/panPan2)	https://s3.amazonaws.com/igv.org.genomes/json/panPan2.json	panPan2
+Pig (SGSC Sscrofa11.1/susScr11)	https://s3.amazonaws.com/igv.org.genomes/json/susScr11.json	susScr11

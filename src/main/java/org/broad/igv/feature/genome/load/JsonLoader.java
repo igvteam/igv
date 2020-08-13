@@ -33,6 +33,9 @@ public class JsonLoader extends GenomeLoader {
         String id = json.get("id").getAsString();
         String name = json.get("name").getAsString();
         String fastaPath = json.get("fastaURL").getAsString();
+        JsonElement orderedElement = json.get("ordered");
+        boolean ordered = orderedElement != null && orderedElement.getAsBoolean();
+
         JsonElement indexPathObject = json.get("indexURL");
         String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
         JsonElement aliasURL = json.get("aliasURL");
@@ -75,7 +78,7 @@ public class JsonLoader extends GenomeLoader {
             });
         }
 
-        Genome newGenome = new Genome(id, name, sequence, true);
+        Genome newGenome = new Genome(id, name, sequence, ordered);
         newGenome.setAnnotationResources(tracks);
         if (aliasURL != null) {
             newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasURL.getAsString()));
