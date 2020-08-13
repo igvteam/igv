@@ -27,8 +27,6 @@ The IGV bundles ship with embedded JREs from AdoptOpenJDK.
   the igv.jar and its required runtime third-party dependencies as well as helper scripts for launching.
 
     * Launch IGV with `igv.sh` or `igv_hidpi.sh` on Linux, `igv.command` on Mac, and `igv.bat` on Windows.
-     These scripts can be edited to adjust JVM flags like maximum memory, etc.  See the instructions in 
-     readme.txt in that directory.
 
     * To run igvtools from the command line use the script `igvtools` on Linux and Mac, or igvtools.bat
       on Windows.  See the instructions in igvtools_readme.txt in that directory.

@@ -176,6 +176,8 @@ public class Main {
                 try {
                     FileWriter argsFileWriter = new FileWriter(argsFile);
                     try {
+                        argsFileWriter.append("# See https://raw.githubusercontent.com/igvteam/igv/master/scripts/readme.txt for tips on using this file.");
+                        argsFileWriter.append(System.lineSeparator());
                         argsFileWriter.append("# Uncomment the following line for an 8 GB memory spec for IGV.");
                         argsFileWriter.append(System.lineSeparator());
                         argsFileWriter.append("# -Xmx8G");
