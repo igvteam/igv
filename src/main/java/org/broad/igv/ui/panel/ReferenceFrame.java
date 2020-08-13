@@ -197,7 +197,7 @@ public class ReferenceFrame {
      * @param pixelX
      * @param widthInPixels
      */
-    public synchronized void setBounds(int pixelX, int widthInPixels) {
+    public void setBounds(int pixelX, int widthInPixels) {
         this.pixelX = pixelX;
 
         if (this.widthInPixels != widthInPixels) {
@@ -429,7 +429,7 @@ public class ReferenceFrame {
 
         end = Math.min(getMaxCoordinate(chr), end);
 
-        synchronized (this) {
+ //       synchronized (this) {
             this.initialLocus = locus;
             this.chrName = chr;
             if (start >= 0 && end >= 0) {
@@ -438,7 +438,7 @@ public class ReferenceFrame {
                 computeLocationScale();
                 computeZoom();
             }
-        }
+   //     }
 
         if (log.isDebugEnabled()) {
             log.debug("Data panel width = " + widthInPixels);
@@ -638,11 +638,8 @@ public class ReferenceFrame {
     }
 
     public Range getCurrentRange() {
-        int start = 0;
-        int end = widthInPixels;
-        int startLoc = (int) getChromosomePosition(start) + 1;
-        int endLoc = (int) getChromosomePosition(end);
-        Range range = new Range(getChrName(), startLoc, endLoc);
+        int endLoc = (int) Math.round(getChromosomePosition(widthInPixels));
+        Range range = new Range(getChrName(), (int) origin, endLoc);
         return range;
     }
 
@@ -652,15 +649,6 @@ public class ReferenceFrame {
 
     public String getName() {
         return name;
-    }
-
-    public Locus getInitialLocus() {
-        return initialLocus;
-    }
-
-
-    public int getMinZoom() {
-        return minZoom;
     }
 
     public void setName(String name) {

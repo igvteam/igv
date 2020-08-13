@@ -45,25 +45,15 @@ import java.util.*;
  */
 public class HeaderPanelContainer extends JPanel implements Paintable {
 
-    private Collection<ReferenceFrame> frames = new ArrayList();
-
-    JPanel contentPanel;
+    private JPanel contentPanel;
 
     public HeaderPanelContainer() {
-
-        this.setLayout(new BorderLayout()); //new DataPanelLayout());
-        init();
-        createHeaderPanels();
-
-    }
-
-    public void init() {
+        this.setLayout(new BorderLayout());
         this.setTransferHandler(new DragAndDropTransferHandler());
-
-        // Create the listener to do the work when dropping on this object!
         this.setDropTarget(new DropTarget(this, new HeaderDropTargetListener(this)));
-
+        createHeaderPanels();
     }
+
 
     @Override
     public void setBackground(Color color) {
@@ -80,24 +70,38 @@ public class HeaderPanelContainer extends JPanel implements Paintable {
     public void createHeaderPanels() {
 
         removeAll();
-        frames = FrameManager.getFrames();
-
+        Collection<ReferenceFrame> frames = FrameManager.getFrames();
         contentPanel = new JPanel();
-        contentPanel.setLayout(new DataPanelLayout());
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.X_AXIS)); //    new DataPanelLayout());
+        contentPanel.setBackground(new Color(250, 250, 250));
+        int hgap = DataPanelContainer.default_hgap;
+        if(frames.size() > 10) {
+            hgap = 1 + 20 / frames.size();
+        }
+        boolean first = true;
         for (ReferenceFrame f : frames) {
-            HeaderPanel dp = new HeaderPanel(f);
-            dp.setBackground(getBackground());
-            contentPanel.add(dp);
+            if (f.isVisible()) {
+                if (!first) {
+                    contentPanel.add(Box.createRigidArea(new Dimension(hgap, 0)));
+                }
+                HeaderPanel dp = new HeaderPanel(f);
+                dp.setBackground(getBackground());
+                contentPanel.add(dp);
+                first = false;
+            }
         }
         add(contentPanel, BorderLayout.CENTER);
 
+        // Label for the gene list itself.
         if (FrameManager.isGeneListMode()) {
             GeneList gl = IGV.getInstance().getSession().getCurrentGeneList();
             String name = gl.getDisplayName();
-            JLabel label = new JLabel(name, JLabel.CENTER);
-            Border border = BorderFactory.createLineBorder(Color.lightGray);
-            label.setBorder(border);
-            add(label, BorderLayout.NORTH);
+            if(name != null && name.length() > 0) {
+                JLabel label = new JLabel(name, JLabel.CENTER);
+                Border border = BorderFactory.createLineBorder(Color.lightGray);
+                label.setBorder(border);
+                add(label, BorderLayout.NORTH);
+            }
         }
 
         invalidate();

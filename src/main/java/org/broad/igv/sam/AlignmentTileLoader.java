@@ -115,7 +115,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
         return ycTags;
     }
 
-    synchronized AlignmentTile loadTile(String chr,
+    AlignmentTile loadTile(String chr,
                            int start,
                            int end,
                            SpliceJunctionHelper spliceJunctionHelper,
@@ -157,8 +157,10 @@ public class AlignmentTileLoader implements IGVEventObserver {
                 IGV.getInstance().enableStopButton(true);
             }
 
+            MessageUtils.setStatusBarMessage("Reading...");
             iter = reader.query(chr, start, end, false);
-
+            MessageUtils.setStatusBarMessage("Iterating...");
+            
             while (iter != null && iter.hasNext()) {
 
                 if (cancel) {
@@ -245,6 +247,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
                 int interval = Globals.isTesting() ? 100000 : 1000;
                 if (alignmentCount % interval == 0) {
                     String msg = "Reads loaded: " + alignmentCount;
+                    //System.out.println(msg);
                     MessageUtils.setStatusBarMessage(msg);
                     if (memoryTooLow()) {
                         cancelReaders();
@@ -338,7 +341,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
     }
 
 
-    private static synchronized boolean memoryTooLow() {
+    private static boolean memoryTooLow() {
         if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
             System.gc();
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {

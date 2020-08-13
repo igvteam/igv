@@ -261,7 +261,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
      *
      * @param snpFile
      */
-    private static synchronized void loadKnownSnps(String snpFile) {
+    private static void loadKnownSnps(String snpFile) {
 
         // This method might get called many times concurrently, but we only want to load these once.
         if (knownSnps != null) {

@@ -2366,7 +2366,7 @@ public class IGV implements IGVEventObserver {
 
     public void repaintNamePanels() {
         for (TrackPanel tp : getTrackPanels()) {
-            repaint(tp.getScrollPane().getNamePanel());
+            tp.getScrollPane().getNamePanel().repaint();
         }
     }
 

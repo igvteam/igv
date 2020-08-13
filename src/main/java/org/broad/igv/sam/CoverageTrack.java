@@ -140,7 +140,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         if (sampleId != null) {
             return sampleId;    // Explicitly set sample ID (e.g. from server load XML)
         }
-        return alignmentTrack.getSample();
+        return alignmentTrack == null ? null : alignmentTrack.getSample();
     }
 
     @Override
@@ -231,7 +231,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
-                dataManager.load(context.getReferenceFrame(), alignmentTrack.renderOptions, true);
                 interval = dataManager.getLoadedInterval(context.getReferenceFrame());
             }
             if (interval != null) {
@@ -309,8 +308,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             }
 
         } else {
-
-            dataManager.load(frame, alignmentTrack.renderOptions, true);
             AlignmentInterval interval = dataManager.getLoadedInterval(frame);
             if (interval == null) return null;
 

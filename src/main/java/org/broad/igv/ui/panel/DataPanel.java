@@ -119,7 +119,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         return sp == null ? null : ((JScrollPane) sp).getVerticalScrollBar();
     }
 
-
     public void setCurrentTool(final AbstractDataPanelTool tool) {
         this.currentTool = (tool == null) ? defaultTool : tool;
         if (currentTool != null) {
@@ -135,6 +134,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     }
 
     long lastPaintTime = 0;
+
     @Override
     public void paintComponent(final Graphics g) {
 
@@ -193,6 +193,12 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
     }
 
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        super.setBounds(x, y, width, height);
+        Insets insets = this.getInsets();
+        frame.setBounds(x + insets.left, width - insets.left - insets.right);
+    }
 
     /**
      * TODO -- move this to a "layout" command, to layout tracks and assign positions
@@ -473,7 +479,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
 
     private void init() {
-        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
         setRequestFocusEnabled(false);
 
         // Key Events

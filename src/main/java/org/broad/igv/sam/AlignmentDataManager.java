@@ -90,7 +90,6 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public void receiveEvent(Object event) {
-
         if (event instanceof FrameManager.ChangeEvent) {
             trimCache();
         } else if (event instanceof RefreshEvent) {
@@ -317,15 +316,22 @@ public class AlignmentDataManager implements IGVEventObserver {
         return getLoadedInterval(frame) != null;
     }
 
-    public void load(ReferenceFrame frame,
+    public  void  load(ReferenceFrame frame,
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
 
-        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale()) return; // should not happen
+        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale())
+            return; // should not happen
 
+        if (isLoaded(frame)) {
+            return;  // Already loaded
+        }
+        
         synchronized (loadLock) {
 
-            if (isLoaded(frame)) return;  // Already loaded
+            if (isLoaded(frame)) {
+                return;  // Already loaded
+            }
 
             Range range = frame.getCurrentRange();
             final String chr = frame.getChrName();
@@ -344,10 +350,6 @@ public class AlignmentDataManager implements IGVEventObserver {
                 adjustedEnd = Math.max(end, center + expand);
             }
 
-
-            log.debug("Loading alignments: " + chr + ":" + adjustedStart + "-" + adjustedEnd + " for " + AlignmentDataManager.this);
-
-
             AlignmentInterval loadedInterval = loadInterval(chr, adjustedStart, adjustedEnd, renderOptions);
 
             trimCache();
@@ -355,26 +357,24 @@ public class AlignmentDataManager implements IGVEventObserver {
             intervalCache.add(loadedInterval);
 
             packAlignments(renderOptions);
-
-            //  IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
-
         }
-    }
 
+        //  IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
+
+    }
 
     /**
      * Remove out-of-view intervals from the cache.  This is O(N) where N = #frames X #intervals.   It is assumed
      * that N is small
      */
-    private synchronized void trimCache() {
-
-        Iterator<AlignmentInterval> iter = intervalCache.iterator();
-        while (iter.hasNext()) {
-            AlignmentInterval interval = iter.next();
-            if (!intervalInView(interval)) {
-                iter.remove();
+    private void trimCache() {
+        List<AlignmentInterval> trimmedIntervals = new ArrayList<>();
+        for(AlignmentInterval interval: intervalCache) {
+            if (intervalInView(interval)) {
+                trimmedIntervals.add(interval);
             }
         }
+        intervalCache = trimmedIntervals;
     }
 
 
@@ -436,14 +436,11 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     private void setExperimentType(AlignmentTrack.ExperimentType type) {
-        if(alignmentTrack != null) alignmentTrack.setExperimentType(type);
+        if (alignmentTrack != null) alignmentTrack.setExperimentType(type);
     }
 
 
-    public synchronized PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
-        //   load(context.getReferenceFrame(), renderOptions, false);
-        //   Range range = context.getReferenceFrame().getCurrentRange();
-
+    public  PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
         AlignmentInterval interval = getLoadedInterval(context.getReferenceFrame());
         if (interval != null) {
             return interval.getPackedAlignments();
@@ -577,7 +574,7 @@ public class AlignmentDataManager implements IGVEventObserver {
             if (AmazonUtils.isAwsS3Path(aPath) && !AmazonUtils.isS3PresignedValid(aPath)) {
                 reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
             }
-        } catch(MalformedURLException e){
+        } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
