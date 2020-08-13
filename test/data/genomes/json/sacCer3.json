@@ -1,0 +1,23 @@
+{
+  "id": "sacCer3",
+  "name": "S. cerevisiae (sacCer3)",
+  "fastaURL": "https://s3.dualstack.us-east-1.amazonaws.com/igv.org.genomes/sacCer3/sacCer3.fa",
+  "indexURL": "https://s3.dualstack.us-east-1.amazonaws.com/igv.org.genomes/sacCer3/sacCer3.fa.fai",
+  "tracks": [
+    {
+      "name": "Ensembl Genes",
+      "type": "annotation",
+      "format": "ensgene",
+      "displayMode": "EXPANDED",
+      "url": "https://s3.dualstack.us-east-1.amazonaws.com/igv.org.genomes/sacCer3/ensGene.txt.gz",
+      "indexed": false,
+      "supportsWholeGenome": false
+    },
+    {
+      "hidden": true,
+      "name": "Hidden features",
+      "format": "bed",
+      "url": "https://s3.amazonaws.com/igv.org.genomes/test/sacCer3_namedFeatures.bed"
+    }
+  ]
+}
