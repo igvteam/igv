@@ -70,7 +70,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         return getFeatureSource(locator, genome, true);
     }
 
-    public static TribbleFeatureSource getFeatureSource(ResourceLocator locator, Genome genome, boolean useCache) throws IOException, TribbleIndexNotFoundException {
+    public static TribbleFeatureSource getFeatureSource(ResourceLocator locator, Genome genome, boolean useCache) throws IOException {
 
         AbstractFeatureReader.setComponentMethods(IGVComponentMethods.getInstance());
 
@@ -79,7 +79,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         boolean indexExists = false;
         // Explicit index path
         String idxPath = locator.getIndexPath();
-        if (idxPath != null && idxPath.length() >0 )  {
+        if (idxPath != null && idxPath.length() > 0) {
             if (FileUtils.isRemote(idxPath)) {
                 idxPath = HttpUtils.mapURL(idxPath);
             }
@@ -92,13 +92,12 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 if (FileUtils.isRemote(maybeIdxPath)) {
                     maybeIdxPath = HttpUtils.mapURL(maybeIdxPath);
                 }
-                if(FileUtils.resourceExists(maybeIdxPath)) {
+                if (FileUtils.resourceExists(maybeIdxPath)) {
                     indexExists = true;
                     idxPath = maybeIdxPath;
                 }
             }
         }
-
 
         // Optionally let the user create an index.
         final int hundredMB = 100000000;
@@ -121,10 +120,20 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         if (indexExists) { //basicReader.hasIndex()) {
             return new IndexedFeatureSource(basicReader, codec, locator, genome, useCache, true);
         } else {
-            return new NonIndexedFeatureSource(basicReader, codec, locator, genome, indexRequired || indexExists);
+            return new NonIndexedFeatureSource(basicReader, codec, locator, genome);
         }
     }
 
+    public static AbstractFeatureReader getBasicReader(ResourceLocator locator, Genome genome) throws IOException {
+        AbstractFeatureReader.setComponentMethods(IGVComponentMethods.getInstance());
+        FeatureCodec codec = CodecFactory.getCodec(locator, genome);
+
+        String path = locator.getPath();
+        if (FileUtils.isRemote(path)) {
+            path = HttpUtils.mapURL(path);
+        }
+        return AbstractFeatureReader.getFeatureReader(path, null, codec, false);
+    }
 
     /**
      * Present a dialog for the user to create an index.  This method can return null if the user cancels, or there
@@ -165,7 +174,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         try {
             String aPath = locator.getPath();
             if (AmazonUtils.isAwsS3Path(aPath) && !AmazonUtils.isS3PresignedValid(aPath)) {
-                if( this.reader instanceof CachingFeatureReader ) {
+                if (this.reader instanceof CachingFeatureReader) {
                     String path = locator.getPath();
                     if (FileUtils.isRemote(path)) {
                         path = HttpUtils.mapURL(path);
@@ -191,7 +200,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     this.reader = new TribbleReaderWrapper(abstractReader);
                 }
             }
-        } catch(MalformedURLException e){
+        } catch (MalformedURLException e) {
             e.printStackTrace();
         }
 
@@ -355,9 +364,9 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         CoverageDataSource coverageData;
 
-        private NonIndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator, Genome genome, boolean useIndex) throws IOException {
+        private NonIndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator, Genome genome) throws IOException {
 
-            super(locator, basicReader, codec, genome, false, useIndex);
+            super(locator, basicReader, codec, genome, false, false);
 
             featureMap = new HashMap<>(25);
             Iterator<Feature> iter = null;

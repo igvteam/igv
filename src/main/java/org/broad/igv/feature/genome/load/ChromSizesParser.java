@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome;
+package org.broad.igv.feature.genome.load;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;

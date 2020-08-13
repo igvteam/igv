@@ -25,10 +25,14 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
+import java.io.*;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author jrobinso
@@ -41,17 +45,17 @@ public class GenomeDescriptorTest {
      */
 
     @Test
-    public void testSequencePathFix() {
+    public void testParseGenomeDescriptor() throws IOException {
 
-        // Test for a directory that does exist
-        String seqLocation = TestUtils.DATA_DIR;
-        GenomeDescriptor desc = new GenomeZipDescriptor("", "", "", "", "", "", seqLocation, false, null, null, null,
-                false, false, null);
-        assertEquals(TestUtils.DATA_DIR, desc.getSequencePath());
+        String path = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
+        GenomeDescriptor descriptor = GenomeDescriptor.parseGenomeArchiveFile(new File(path));
+        assertNotNull(descriptor);
+        assertEquals("hg18.unittest", descriptor.getId());
+        InputStream is = descriptor.getCytoBandStream();
+        assertNotNull(is);
+        is.close();
+        descriptor.close();
 
-        // Test for a directory that does not exist
-        seqLocation = "/foo/bar";
-        desc = new GenomeZipDescriptor("", "", "", "", "", "", seqLocation, false, null, null, null, false, false, null);
-        assertEquals("/foo/bar", desc.getSequencePath());
+
     }
 }

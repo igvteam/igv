@@ -26,6 +26,7 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.genome.load.GenbankParser;
 import org.broad.igv.util.TestUtils;
 import htsjdk.tribble.Feature;
 import org.junit.Test;

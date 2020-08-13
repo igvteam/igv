@@ -230,8 +230,6 @@ public class HostedDataTest extends AbstractHeadlessTest {
     }
 
     private Collection<GenomeListItem> getServerGenomes() throws IOException {
-        String genomeListPath = Globals.DEFAULT_GENOME_URL;
-        PreferencesManager.getPreferences().overrideGenomeServerURL(genomeListPath);
         Collection<GenomeListItem> serverSideItemList = GenomeListManager.getInstance().getServerGenomeList();
         assertNotNull("Could not retrieve genome list from server", serverSideItemList);
         assertTrue("Genome list empty", serverSideItemList.size() > 0);
