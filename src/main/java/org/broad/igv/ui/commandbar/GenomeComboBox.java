@@ -246,15 +246,10 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
                 GenomeListItem selectedValue = dialog.getSelectedValue();
 
-
                 if (selectedValue != null) {
-
-                    boolean success = GenomeManager.getInstance().downloadGenomes(selectedValue, dialog.downloadSequence());
-
+                    boolean success = GenomeManager.getInstance().downloadGenome(selectedValue, dialog.downloadSequence());
                     if (success) {
                         GenomeListManager.getInstance().addServerGenomeItem(selectedValue);
-
-
                         final GenomeListItem firstItem = selectedValue;
                         try {
                             GenomeManager.getInstance().loadGenome(firstItem.getPath(), null);
@@ -264,7 +259,6 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                             MessageUtils.showErrorMessage("Error loading genome " + firstItem.getDisplayableName(), e);
                             log.error("Error loading genome " + firstItem.getDisplayableName(), e);
                         }
-
                     }
                 }
             }

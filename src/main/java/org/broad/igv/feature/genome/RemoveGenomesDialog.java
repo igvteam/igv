@@ -105,7 +105,6 @@ public class RemoveGenomesDialog extends JDialog {
     private void saveButtonActionPerformed(ActionEvent event) {
 
         Runnable runnable = () -> {
-
             List<GenomeListItem> removedValuesList = getRemovedValuesList();
 
             if (removedValuesList != null && !removedValuesList.isEmpty()) {
@@ -124,7 +123,6 @@ public class RemoveGenomesDialog extends JDialog {
                     }
                 }
             }
-
 
             if (removedValuesList.size() > 0) {
                 IGVEventBus.getInstance().post(new GenomeResetEvent());
@@ -146,7 +144,6 @@ public class RemoveGenomesDialog extends JDialog {
     public void deleteDownloadedGenomes(List<GenomeListItem> removedValuesList) throws IOException {
 
         for (GenomeListItem item : removedValuesList) {
-
             String loc = item.getPath();
             boolean isGenomeFile = loc.toLowerCase().equals(".genome");
             if (isGenomeFile && !HttpUtils.isRemoteURL(loc)) {
@@ -158,7 +155,7 @@ public class RemoveGenomesDialog extends JDialog {
 
             File localFasta = GenomeManager.getInstance().getLocalFasta(item.getId());
             if (localFasta != null) {
-                // If fasta file is in the "igv/genomes" directory delete it after user confirmation
+                // If fasta file is in the "igv/genomes" directory delete it
                 GenomeManager.getInstance().removeLocalFasta(item.getId());
                 if (DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), localFasta)) {
                     if (MessageUtils.confirm("Delete fasta file: " + localFasta.getAbsolutePath() + "?")) {
@@ -171,7 +168,6 @@ public class RemoveGenomesDialog extends JDialog {
                 }
             }
         }
-
         GenomeListManager.getInstance().removeAllItems(removedValuesList);
     }
 

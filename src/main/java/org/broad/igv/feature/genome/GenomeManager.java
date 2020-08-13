@@ -43,6 +43,7 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.feature.genome.load.GenomeLoader;
+import org.broad.igv.feature.genome.load.JsonGenomeLoader;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.FeatureTrack;
@@ -54,6 +55,7 @@ import org.broad.igv.ui.util.ProgressBar;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.ui.util.download.Downloader;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
@@ -108,13 +110,11 @@ public class GenomeManager {
      * @throws MalformedURLException
      * @throws UnsupportedEncodingException
      */
-    public static File getArchiveFile(String genomePath) throws MalformedURLException, UnsupportedEncodingException {
+    public static File getGenomeFile(String genomePath) throws MalformedURLException, UnsupportedEncodingException {
 
         File archiveFile;
-
         if (HttpUtils.isRemoteURL(genomePath.toLowerCase())) {
             // We need a local copy, as there is no http zip file reader
-
             URL genomeArchiveURL = HttpUtils.createURL(genomePath);
             final String tmp = URLDecoder.decode(HttpUtils.createURL(genomePath).getFile(), "UTF-8");
             String cachedFilename = Utilities.getFileNameFromURL(tmp);
@@ -221,8 +221,6 @@ public class GenomeManager {
         try {
             log.info("Loading genome: " + genomePath);
 
-            Genome newGenome = null;
-
             if (monitor != null) {
                 UIUtilities.invokeAndWaitOnEventThread(() -> monitor.fireProgress(25));
             }
@@ -230,7 +228,7 @@ public class GenomeManager {
             // Clear Feature DB
             FeatureDB.clearFeatures();
 
-            newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
+            Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
             setCurrentGenome(newGenome);
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
@@ -243,22 +241,18 @@ public class GenomeManager {
 
             if (IGV.hasInstance()) IGV.getInstance().resetSession(null);
 
-
             GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
             final Set<String> serverGenomeIDs = genomeListManager.getServerGenomeIDs();
 
             boolean userDefined = !serverGenomeIDs.contains(newGenome.getId());
             genomeListManager.addGenomeItem(genomeListItem, userDefined);
 
-
             setCurrentGenome(newGenome);
-
             if (IGV.hasInstance()) {
                 FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();   // Can be null
                 if (IGV.hasInstance()) {
                     IGV.getInstance().setGenomeTracks(geneFeatureTrack);
                 }
-
                 List<ResourceLocator> resources = newGenome.getAnnotationResources();
                 if (resources != null && IGV.hasInstance()) {
                     IGV.getInstance().loadResources(resources);
@@ -267,7 +261,6 @@ public class GenomeManager {
 
 
             log.info("Genome loaded.  id= " + newGenome.getId());
-
             return currentGenome;
 
         } catch (SocketException e) {
@@ -431,20 +424,25 @@ public class GenomeManager {
     }
 
 
-    public boolean downloadGenomes(GenomeListItem item, boolean downloadSequence) {
+    public boolean downloadGenome(GenomeListItem item, boolean downloadSequence) {
 
-        boolean success = false;
-
+        boolean success;
         try {
-
-            File archiveFile = getArchiveFile(item.getPath());                  // Has side affect of downloading .genome file
-
-            if (downloadSequence && item.getPath().endsWith(".genome")) {
-                GenomeDescriptor genomeDescriptor = GenomeDescriptor.parseGenomeArchiveFile(archiveFile);
-                String fastaPath = genomeDescriptor.getSequencePath();
-                File localFile = downloadFasta(fastaPath);
-                if (localFile != null) {
-                    addLocalFasta(item.getId(), localFile);
+            File genomeFile = getGenomeFile(item.getPath());                  // Has side affect of downloading .genome file
+            if (downloadSequence) {
+                String fastaPath = null;
+                if (item.getPath().endsWith(".genome")) {
+                    GenomeDescriptor genomeDescriptor = GenomeDescriptor.parseGenomeArchiveFile(genomeFile);
+                    fastaPath = genomeDescriptor.getSequencePath();
+                } else if (item.getPath().endsWith(".json")) {
+                    JsonGenomeLoader.GenomeDescriptor desc = (new JsonGenomeLoader(item.getPath())).loadDescriptor();
+                    fastaPath = desc.getFastaURL();
+                }
+                if (fastaPath != null && FileUtils.isRemote(fastaPath)) {
+                    File localFile = downloadFasta(fastaPath);
+                    if (localFile != null) {
+                        addLocalFasta(item.getId(), localFile);
+                    }
                 }
             }
 
@@ -517,7 +515,6 @@ public class GenomeManager {
     private static void addLocalFasta(String id, File localFile) {
         GenomeLoader.localSequenceMap.put(id, localFile);
         updateSequenceMapFile();
-
     }
 
 

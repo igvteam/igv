@@ -51,10 +51,6 @@ public class GenomeDescriptor {
     public final static String GENOME_ARCHIVE_GENE_FILE_KEY = "geneFile";
     public final static String GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY = "sequenceLocation";
     public final static String COMPRESSED_SEQUENCE_PATH = "compressedSequencePath";
-    /**
-     * Whether the sequenceLocation has been modified from the version of the .genome
-     * file on the server
-     */
     public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
     public static final String SEQUENCE_MAP_FILE = "sequenceMap.txt";
     private static Logger log = Logger.getLogger(GenomeDescriptor.class);

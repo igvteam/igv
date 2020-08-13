@@ -1,23 +1,12 @@
 package org.broad.igv.feature.genome.load;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.*;
-import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
-import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
-import org.broad.igv.feature.genome.fasta.FastaUtils;
-import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.TrackProperties;
-import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 
@@ -43,7 +32,7 @@ abstract public class GenomeLoader {
 
     public static GenomeLoader getLoader(String genomePath) throws IOException {
         if (genomePath.endsWith(".genome")) {
-            File archiveFile = GenomeManager.getArchiveFile(genomePath);
+            File archiveFile = GenomeManager.getGenomeFile(genomePath);
             if (!archiveFile.exists()) {
                 MessageUtils.showMessage("File not found: " + archiveFile.getAbsolutePath());
                 return null;    // Happens if genome download was canceled.
@@ -54,7 +43,7 @@ abstract public class GenomeLoader {
         } else if (genomePath.endsWith(".chrom.sizes")) {
             return new ChromsizesLoader(genomePath);
         } else if (genomePath.endsWith(".json")) {
-            return new JsonLoader(genomePath);
+            return new JsonGenomeLoader(genomePath);
         } else {
             // Assume a fasta file
             if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {

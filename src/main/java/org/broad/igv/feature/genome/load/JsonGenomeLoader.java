@@ -9,12 +9,10 @@ import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
-import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -23,17 +21,15 @@ import org.broad.igv.util.ResourceLocator;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
-public class JsonLoader extends GenomeLoader {
+public class JsonGenomeLoader extends GenomeLoader {
 
-    private static Logger log = Logger.getLogger(JsonLoader.class);
+    private static Logger log = Logger.getLogger(JsonGenomeLoader.class);
 
     private String genomePath;
 
-    public JsonLoader(String genomePath) {
+    public JsonGenomeLoader(String genomePath) {
         this.genomePath = genomePath;
     }
 
@@ -116,6 +112,17 @@ public class JsonLoader extends GenomeLoader {
         return newGenome;
     }
 
+    public GenomeDescriptor loadDescriptor() throws IOException {
+        BufferedReader reader = ParsingUtils.openBufferedReader(genomePath);
+        JsonParser parser = new JsonParser();
+        JsonObject json = parser.parse(reader).getAsJsonObject();
+        String id = json.get("id").getAsString();
+        String name = json.get("name").getAsString();
+        String fastaPath = json.get("fastaURL").getAsString();
+        return new GenomeDescriptor(id, name, fastaPath);
+    }
+
+
     private void addToFeatureDB(List<ResourceLocator> locators, Genome genome) {
         for(ResourceLocator locator: locators) {
             try {
@@ -130,6 +137,29 @@ public class JsonLoader extends GenomeLoader {
             } catch (IOException e) {
                 log.error("Error loading " + locator.getPath());
             }
+        }
+    }
+
+
+    public static class GenomeDescriptor {
+        String id;
+        String name;
+        String fastaURL;
+
+        public GenomeDescriptor(String id, String name, String fastaURL) {
+            this.id = id;
+            this.name = name;
+            this.fastaURL = fastaURL;
+        }
+
+        public String getId() {
+            return id;
+        }
+        public String getName() {
+            return name;
+        }
+        public String getFastaURL() {
+            return fastaURL;
         }
     }
 
