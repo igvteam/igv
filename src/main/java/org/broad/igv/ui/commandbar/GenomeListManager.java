@@ -358,7 +358,7 @@ public class GenomeListManager {
                 dataReader = new BufferedReader(new InputStreamReader(inputStream));
                 String genomeRecord;
                 while ((genomeRecord = dataReader.readLine()) != null) {
-                    if (genomeRecord.startsWith("<") || genomeRecord.startsWith("(#")) {
+                    if (genomeRecord.startsWith("<") || genomeRecord.startsWith("#")) {
                         continue;
                     }
                     if (genomeRecord != null) {
