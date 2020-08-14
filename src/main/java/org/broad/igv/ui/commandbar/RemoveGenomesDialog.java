@@ -27,17 +27,17 @@
  * Created by JFormDesigner on Fri Sep 07 13:22:05 EDT 2012
  */
 
-package org.broad.igv.feature.genome;
+package org.broad.igv.ui.commandbar;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
 
 import javax.swing.*;
@@ -58,8 +58,6 @@ public class RemoveGenomesDialog extends JDialog {
     private static Logger log = Logger.getLogger(RemoveGenomesDialog.class);
 
     private List<GenomeListItem> allListItems;
-    private List<GenomeListItem> removedValuesList;
-
 
     private boolean haveLocalSequence = false;
     private static final String LOCAL_SEQUENCE_CHAR = "\u002A";
@@ -76,7 +74,6 @@ public class RemoveGenomesDialog extends JDialog {
     private void initData() {
 
         allListItems = new ArrayList<>(GenomeListManager.getInstance().getGenomeListItems());
-        removedValuesList = new ArrayList<>();
 
         for (GenomeListItem item : allListItems) {
             if (GenomeManager.getInstance().getLocalFasta(item.getId()) != null) {
@@ -105,33 +102,30 @@ public class RemoveGenomesDialog extends JDialog {
     private void saveButtonActionPerformed(ActionEvent event) {
 
         Runnable runnable = () -> {
-            List<GenomeListItem> removedValuesList = getRemovedValuesList();
-
-            if (removedValuesList != null && !removedValuesList.isEmpty()) {
+            List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
+            if (selectedValuesList != null && !selectedValuesList.isEmpty()) {
                 try {
-                    deleteDownloadedGenomes(removedValuesList);
+                    deleteDownloadedGenomes(selectedValuesList);
                 } catch (IOException e) {
                     log.error("Error deleting genome files", e);
                     MessageUtils.showErrorMessage("Error deleting genome files", e);
                 }
 
                 String lastGenomeKey = PreferencesManager.getPreferences().get(Constants.DEFAULT_GENOME);
-                for (GenomeListItem item : removedValuesList) {
+                for (GenomeListItem item : selectedValuesList) {
                     if (lastGenomeKey.equals(item.getId())) {
                         PreferencesManager.getPreferences().remove(Constants.DEFAULT_GENOME);
                         break;
                     }
                 }
             }
-
-            if (removedValuesList.size() > 0) {
+            if (selectedValuesList.size() > 0) {
                 IGVEventBus.getInstance().post(new GenomeResetEvent());
             }
 
         };
 
         LongRunningTask.submit(runnable);
-
         setVisible(false);
     }
 
@@ -145,12 +139,9 @@ public class RemoveGenomesDialog extends JDialog {
 
         for (GenomeListItem item : removedValuesList) {
             String loc = item.getPath();
-            boolean isGenomeFile = loc.toLowerCase().equals(".genome");
-            if (isGenomeFile && !HttpUtils.isRemoteURL(loc)) {
-                File genFile = new File(loc);
-                if (DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), genFile)) {
-                    genFile.delete();
-                }
+            File genFile = new File(loc);
+            if (DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), genFile)) {
+                genFile.delete();
             }
 
             File localFasta = GenomeManager.getInstance().getLocalFasta(item.getId());
@@ -173,15 +164,9 @@ public class RemoveGenomesDialog extends JDialog {
 
     private void removeSelected() {
         List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
-        removedValuesList.addAll(selectedValuesList);
         allListItems.removeAll(selectedValuesList);
         buildList();
     }
-
-    public List<GenomeListItem> getRemovedValuesList() {
-        return removedValuesList;
-    }
-
 
     private void genomeListKeyReleased(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_DELETE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
@@ -230,7 +215,6 @@ public class RemoveGenomesDialog extends JDialog {
         label2 = new JLabel();
         panel1 = new JPanel();
         addRemBar = new JPanel();
-        removeButton = new JButton();
         separator1 = new JSeparator();
         buttonBar = new JPanel();
         okButton = new JButton();
@@ -302,11 +286,6 @@ public class RemoveGenomesDialog extends JDialog {
                     addRemBar.setMinimumSize(new Dimension(201, 51));
                     addRemBar.setLayout(new FlowLayout(FlowLayout.TRAILING, 1, 5));
 
-                    //---- removeButton ----
-                    removeButton.setText("Remove");
-                    removeButton.setToolTipText("Remove selected genomes from list");
-                    removeButton.addActionListener(e -> removeButtonActionPerformed(e));
-                    addRemBar.add(removeButton);
                 }
                 panel1.add(addRemBar);
                 panel1.add(separator1);
@@ -318,7 +297,7 @@ public class RemoveGenomesDialog extends JDialog {
                     buttonBar.setLayout(new FlowLayout(FlowLayout.TRAILING));
 
                     //---- okButton ----
-                    okButton.setText("Save");
+                    okButton.setText("Remove");
                     okButton.setMaximumSize(new Dimension(93, 29));
                     okButton.setMinimumSize(new Dimension(93, 29));
                     okButton.setPreferredSize(new Dimension(93, 29));
@@ -353,7 +332,6 @@ public class RemoveGenomesDialog extends JDialog {
     private JLabel label2;
     private JPanel panel1;
     private JPanel addRemBar;
-    private JButton removeButton;
     private JSeparator separator1;
     private JPanel buttonBar;
     private JButton okButton;

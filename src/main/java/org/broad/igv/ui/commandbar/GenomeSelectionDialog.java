@@ -63,7 +63,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     private JButton cancelButton;
     private boolean isCanceled = true;
 
-    private GenomeListItem selectedValue = null;
+    private List<GenomeListItem> selectedValues = null;
     private List<GenomeListItem> allListItems;
     private DefaultListModel genomeListModel;
 
@@ -73,34 +73,12 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     public GenomeSelectionDialog(java.awt.Frame parent, Collection<GenomeListItem> inputListItems) {
         super(parent);
         initComponents();
-        UIUtilities.invokeAndWaitOnEventThread(() -> genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION));
         initData(inputListItems);
         downloadSequenceCB.setVisible(true);
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
-        this.allListItems = new ArrayList<GenomeListItem>(inputListItems);
-        //We don't show those currently in the box
-        //We only check by id, as some local genomes might be the same except for path
-//        for(GenomeListItem gli: GenomeListManager.getInstance().getGenomeListItems()){
-//            removeById(gli.getId());
-//        }
-//        this.allListItems.removeAll(GenomeListManager.getInstance().getGenomeListItems());
-        rebuildGenomeList();
-    }
-
-    private void removeById(String id){
-        int ci = 0;
-        for(; ci < this.allListItems.size(); ci++){
-            GenomeListItem gli = this.allListItems.get(ci);
-            if(gli.getId().equals(id)){
-                break;
-            }
-        }
-        if(ci < this.allListItems.size()) this.allListItems.remove(ci);
-    }
-
-    private void rebuildGenomeList() {
+        this.allListItems = new ArrayList<>(inputListItems);
         String filterText = genomeFilter.getText().trim().toLowerCase();
         rebuildGenomeList(filterText);
     }
@@ -151,8 +129,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         rebuildGenomeList(genomeFilter.getText());
     }
 
-    public GenomeListItem getSelectedValue() {
-        return selectedValue;
+    public List<GenomeListItem> getSelectedValues() {
+        return selectedValues;
     }
 
     public boolean downloadSequence(){
@@ -165,14 +143,14 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         isCanceled = true;
-        selectedValue = null;
+        selectedValues = null;
         setVisible(false);
         dispose();
     }
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         isCanceled = false;
-        selectedValue = genomeList.getSelectedValue();
+        selectedValues = genomeList.getSelectedValuesList();
         setVisible(false);
         dispose();
     }
@@ -209,7 +187,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
                 //---- textArea1 ----
-                textArea1.setText("Selected genome will be added to the genome dropdown list.");
+                textArea1.setText("Selected genomes will be downloaded and to the genome dropdown list.");
                 textArea1.setLineWrap(true);
                 textArea1.setWrapStyleWord(true);
                 textArea1.setBackground(UIManager.getColor("Button.background"));
@@ -257,7 +235,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 {
 
                     //---- genomeList ----
-                    genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                    //genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     genomeList.addMouseListener(new IGVMouseInputAdapter() {
                         @Override
                         public void igvMouseClicked(MouseEvent e) {

@@ -36,7 +36,7 @@ import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.genome.RemoveGenomesDialog;
+import org.broad.igv.ui.commandbar.RemoveGenomesDialog;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.google.OAuthUtils;
@@ -422,16 +422,17 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     }
                 };
 
-        menuAction.setToolTipText("Load a FASTA or .genome file...");
+        menuAction.setToolTipText("Load a FASTA, .json, or .genome file...");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Load genome from URL
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_GENOME_FROM_URL, 0, igv);
-        menuAction.setToolTipText("Load a FASTA or .genome file...");
+        menuAction.setToolTipText("Load a FASTA, .json, or .genome file...");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        // Add genome to combo box from server
-        menuAction = new MenuAction("Load Genome From Server...", null) {
+        menuItems.add(new JSeparator());
+        // Download genome from server
+        menuAction = new MenuAction("Download Genomes...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
                 GenomeComboBox.loadGenomeFromServer();
@@ -441,11 +442,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         loadFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         menuItems.add(loadFromServerMenuItem);
 
-
         menuItems.add(new JSeparator());
 
         // Add genome to combo box from server
-        menuAction = new MenuAction("Remove genomes ...", null) {
+        menuAction = new MenuAction("Remove Genomes...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
                 RemoveGenomesDialog dialog2 = new RemoveGenomesDialog(IGV.getMainFrame());

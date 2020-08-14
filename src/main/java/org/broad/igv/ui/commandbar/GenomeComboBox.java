@@ -8,7 +8,9 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeServerException;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.util.*;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.ProgressBar;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.LongRunningTask;
 
 import javax.swing.*;
@@ -18,6 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by jrobinso on 7/6/17.
@@ -44,8 +47,8 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
     public boolean hasItem(Object item) {
         int c = this.getItemCount();
-        for(int i=0; i<c; i++) {
-            if(item.equals(this.getItemAt(i))) {
+        for (int i = 0; i < c; i++) {
+            if (item.equals(this.getItemAt(i))) {
                 return true;
             }
         }
@@ -68,8 +71,8 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
         }
 
         Vector<GenomeListItem> vector = new Vector<>(genomes);
-        vector.sort((o1, o2) -> o1.getDisplayableName().compareTo(o2.getDisplayableName()));
-        vector.add(GenomeListItem.ITEM_MORE);
+        vector.sort(Comparator.comparing(GenomeListItem::getDisplayableName));
+        vector.add(GenomeListItem.DOWNLOAD_ITEM);
         return new DefaultComboBoxModel(vector);
     }
 
@@ -87,13 +90,10 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
         private void loadGenomeListItem(final GenomeListItem genomeListItem) {
 
-            log.info("Enter genome combo box");
-
             // If we haven't changed genomes do nothing
             if (genomeListItem.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
                 return;
             }
-            log.info("Loading " + genomeListItem.getDisplayableName());
 
             final Runnable runnable = new Runnable() {
 
@@ -107,7 +107,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                         log.info("Loading " + genomeListItem.getId());
 
                         //User selected "more", pull up dialog and revert combo box
-                        if (genomeListItem == GenomeListItem.ITEM_MORE) {
+                        if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {
                             loadGenomeFromServer();
                             return;
                         }
@@ -234,31 +234,31 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 //Could not reach genome server.  Not necessary to display a message, getServerGenomeArchiveList does it already
                 return;
             }
-
             GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), inputListItems);
-
             UIUtilities.invokeAndWaitOnEventThread(() -> dialog.setVisible(true));
 
             if (dialog.isCanceled()) {
                 // Clear the "More..."  selection in pulldown
                 IGVEventBus.getInstance().post(new GenomeResetEvent());
             } else {
-
-                GenomeListItem selectedValue = dialog.getSelectedValue();
-
-                if (selectedValue != null) {
-                    boolean success = GenomeManager.getInstance().downloadGenome(selectedValue, dialog.downloadSequence());
-                    if (success) {
-                        GenomeListManager.getInstance().addServerGenomeItem(selectedValue);
-                        final GenomeListItem firstItem = selectedValue;
-                        try {
-                            GenomeManager.getInstance().loadGenome(firstItem.getPath(), null);
-                        } catch (IOException e) {
-
-                            GenomeListManager.getInstance().removeGenomeListItem(firstItem);
-                            MessageUtils.showErrorMessage("Error loading genome " + firstItem.getDisplayableName(), e);
-                            log.error("Error loading genome " + firstItem.getDisplayableName(), e);
+                List<GenomeListItem> selectedValueList = dialog.getSelectedValues();
+                GenomeListItem firstItem = null;
+                for (GenomeListItem selectedValue : selectedValueList) {
+                    if (selectedValue != null) {
+                        boolean success = GenomeManager.getInstance().downloadGenome(selectedValue, dialog.downloadSequence());
+                        if (success) {
+                            GenomeListManager.getInstance().addServerGenomeItem(selectedValue);
+                            firstItem = selectedValue;
                         }
+                    }
+                }
+                if (firstItem != null) {
+                    try {
+                        GenomeManager.getInstance().loadGenome(firstItem.getPath(), null);
+                    } catch (IOException e) {
+                        GenomeListManager.getInstance().removeGenomeListItem(firstItem);
+                        MessageUtils.showErrorMessage("Error loading genome " + firstItem.getDisplayableName(), e);
+                        log.error("Error loading genome " + firstItem.getDisplayableName(), e);
                     }
                 }
             }

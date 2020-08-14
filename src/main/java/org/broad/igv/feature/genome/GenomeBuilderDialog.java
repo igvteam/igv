@@ -109,7 +109,6 @@ public class GenomeBuilderDialog extends JDialog {
             MessageUtils.showMessage(errors.toString());
             return false;
         }
-
     }
 
     private void initComponents() {

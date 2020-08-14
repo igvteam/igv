@@ -68,33 +68,30 @@ public class GenomeListManager {
      * @throws IOException
      */
     public Map<String, GenomeListItem> getGenomeItemMap() throws IOException {
-
         if (genomeItemMap.isEmpty()) {
-            genomeItemMap.putAll(getUserDefinedGenomeMap());
-            genomeItemMap.putAll(getCachedGenomeList());
-            if (genomeItemMap.isEmpty()) {
-                genomeItemMap.put(DEFAULT_GENOME.getId(), DEFAULT_GENOME);
-            }
+            rebuildGenomeItemMap();
         }
         return genomeItemMap;
     }
-
-
-    public List<GenomeListItem> getGenomeListItems() {
-        List<GenomeListItem> items = new ArrayList<>(genomeItemMap.values());
-        items.sort(sorter);
-        return items;
-    }
-
 
     /**
      * Completely rebuild the genome drop down info.
      */
     public void rebuildGenomeItemMap() throws IOException {
-        genomeItemMap.clear();
         serverGenomeMap = null;
         userDefinedGenomeMap = null;
-        getGenomeItemMap();
+        genomeItemMap.clear();
+        genomeItemMap.putAll(getUserDefinedGenomeMap());
+        genomeItemMap.putAll(getCachedGenomeList());
+        if (genomeItemMap.isEmpty()) {
+            genomeItemMap.put(DEFAULT_GENOME.getId(), DEFAULT_GENOME);
+        }
+    }
+
+    public List<GenomeListItem> getGenomeListItems() {
+        List<GenomeListItem> items = new ArrayList<>(genomeItemMap.values());
+        items.sort(sorter);
+        return items;
     }
 
 
