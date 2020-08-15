@@ -111,7 +111,6 @@ public class GenomeManager {
      * @throws UnsupportedEncodingException
      */
     public static File getGenomeFile(String genomePath) throws MalformedURLException, UnsupportedEncodingException {
-
         File archiveFile;
         if (HttpUtils.isRemoteURL(genomePath.toLowerCase())) {
             // We need a local copy, as there is no http zip file reader
@@ -122,50 +121,12 @@ public class GenomeManager {
                 DirectoryManager.getGenomeCacheDirectory().mkdir();
             }
             archiveFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedFilename);
-            refreshCache(archiveFile, genomeArchiveURL);
+            Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+            Downloader.download(genomeArchiveURL, archiveFile, parent);
         } else {
             archiveFile = new File(genomePath);
         }
         return archiveFile;
-    }
-
-    /**
-     * Refresh a locally cached genome if appropriate (newer one on server, user set preference to enable it)
-     * If it doesn't have a local cache, just downloaded
-     * If the cached version has a custom sequence location, that is copied over to the downloaded version
-     *
-     * @param cachedFile
-     * @param genomeArchiveURL
-     * @throws IOException
-     */
-    public static void refreshCache(File cachedFile, URL genomeArchiveURL) {
-
-        // Look in cache first
-        try {
-            if (cachedFile.exists()) {
-
-                //File sizes won't be the same if the local version has a different sequence location
-                boolean remoteModfied = HttpUtils.getInstance().remoteIsNewer(cachedFile, genomeArchiveURL);
-
-                boolean isStale = System.currentTimeMillis() - cachedFile.lastModified() > GenomeLoader.ONE_WEEK;
-
-                // Force an update of cached genome if file length does not equal remote content length
-                boolean forceUpdate = remoteModfied &&
-                        PreferencesManager.getPreferences().getAsBoolean(Constants.AUTO_UPDATE_GENOMES);
-
-                if (forceUpdate || isStale) {
-                    log.info("Refreshing genome: " + genomeArchiveURL.toString());
-                    Downloader.download(genomeArchiveURL, cachedFile, IGV.getMainFrame());
-                }
-            } else {
-                // Copy file directly from the server to local cache.
-                Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
-                Downloader.download(genomeArchiveURL, cachedFile, parent);
-            }
-        } catch (Exception e) {
-            MessageUtils.showErrorMessage("An error was encountered refreshing the genome cache: " + e.getMessage(), e);
-        }
-
     }
 
     public void setCurrentGenome(Genome genome) {
