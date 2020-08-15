@@ -53,9 +53,33 @@ Memory settings
 The scripts above allocate a fixed amount of memory.  If this amount is not
 available on your platform you will get an obscure error along the lines of
 "Could not start the Virtual Machine".   If this happens you will need to
-edit the scripts to reduce the amount of memory requested,  or use the Java
-startup option.  The memory is set via a "-Xmx" parameter. For example
--Xmx1500m  requests 1500 MB,  -Xmx1g requests 1 gigabyte.
+reduce the amount of memory requested.  The memory is set via a "-Xmx" parameter. 
+For example -Xmx1500m  requests 1500 MB,  -Xmx1g requests 1 gigabyte.
+
+
+---------------------------------------------------------------------------
+Other Java settings
+---------------------------------------------------------------------------
+
+You can override this memory setting (and other Java-related defaults) by editing 
+IGV's java_arguments file, found here (create it if it doesn't exist):
+   $HOME/.igv/java_arguments           (Mac and Linux)
+   %USERPROFILE%/.igv/java_arguments   (Windows)
+
+Specifically set the value of the "-Xmx" parameter, which will be commented-out (with
+a '#' character) by default when this file is created.  For example, to start IGV with 
+8 GB of memory, uncomment this line and set the value to 
+
+   -Xmx8g
+
+This will override the default 4GB memory specification.
+
+Other Java-related command-line options can also be set in this file, though changing anything
+beyond the memory specification is for advanced users only and is not recommended.  See
+   https://docs.oracle.com/en/java/javase/11/tools/java.html
+for more information on the Java 11 command line, and
+   https://docs.oracle.com/en/java/javase/11/tools/java.html#GUID-4856361B-8BFD-4964-AE84-121F5F6CF111
+in particular for specifics of the "java_arguments" file format.
 
 ---------------------------------------------------------------------------
 HiDPI settings
@@ -73,7 +97,10 @@ to
 
    -Dsun.java2d.uiScale=4
 
-Fractional values are *NOT* supported at this time. 
+Fractional values are *NOT* supported at this time.  Note that here again, you can add
+this specification to the java_arguments file instead of editing the launcher scripts.
+Doing so will allow the standard 'igvtools_gui' to work properly on HiDPI screens without
+the need for the 'igvtools_gui_hidpi' script.
 
 ---------------------------------------------------------------------------
 Genome
