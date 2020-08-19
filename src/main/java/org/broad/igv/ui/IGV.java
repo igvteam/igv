@@ -1527,7 +1527,7 @@ public class IGV implements IGVEventObserver {
     private boolean isAnnotationFile(String filename) {
         return filename.contains("refflat") || filename.contains("ucscgene") ||
                 filename.contains("genepred") || filename.contains("ensgene") ||
-                filename.contains("refgene") ||
+                filename.contains("refgene") || filename.contains("ncbirefseq") ||
                 filename.endsWith("gff") || filename.endsWith("gtf") ||
                 filename.endsWith("gff3") || filename.endsWith("embl") ||
                 filename.endsWith("bed") || filename.endsWith("gistic") ||

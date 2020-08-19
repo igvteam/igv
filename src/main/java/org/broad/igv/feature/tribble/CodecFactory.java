@@ -64,10 +64,6 @@ public class CodecFactory {
 
     public static String ucscSNP = "snp[0-9][0-9][0-9]";
 
-    static {
-        validExtensions.addAll(Arrays.asList("vcf4", "vcf", "bed", "refflat", "genepred", "ensgene", "refgene", "ucscgene", "repmask", "gff3", "gvf", "gff", "gtf", "psl", "mut", "maf"));
-    }
-
     /**
      * @param path
      * @param genome
@@ -139,7 +135,7 @@ public class CodecFactory {
             return new MUTCodec(path, genome);
         }else if (fn.contains("refflat")) {
             return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.REFFLAT, genome);
-        } else if (fn.contains("genepred") || fn.contains("ensgene") || fn.contains("refgene")) {
+        } else if (fn.contains("genepred") || fn.contains("ensgene") || fn.contains("refgene") || fn.contains("ncbirefseq")) {
             return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED, genome);
         } else if (fn.contains("ucscgene")) {
             return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);

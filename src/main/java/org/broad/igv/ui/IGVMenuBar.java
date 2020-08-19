@@ -431,7 +431,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
-        // Download genome from server
+        // Download genome from server 
         menuAction = new MenuAction("Download Genomes...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {

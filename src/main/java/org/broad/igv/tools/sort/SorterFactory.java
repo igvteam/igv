@@ -71,7 +71,7 @@ public class SorterFactory {
             return new InteractionSorter(inputFile, outputFile);
         } else if(shortFN.endsWith(".bam")) {
             return new BAMSorter(inputFile, outputFile);
-        } else if(shortFN.contains("refgene")) {
+        } else if(shortFN.contains("refgene") || shortFN.contains("ncbirefseq")) {
             return new RefgeneSorter(inputFile, outputFile);
         }
         else {
