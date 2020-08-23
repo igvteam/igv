@@ -265,8 +265,7 @@ public class TrackLoader {
 
         List<Feature> features = SMAPParser.parseFeatures(locator, genome);
         FeatureCollectionSource src = new FeatureCollectionSource(features, genome);
-        FeatureTrack track = new FeatureTrack(locator.getName(), locator, src);
-        track.setSortable(true);
+        FeatureTrack track = new FeatureTrack(locator, locator.getName(), src);
         track.setRendererClass(SMAPRenderer.class);
         track.setDisplayMode(Track.DisplayMode.EXPANDED);
         newTracks.add(track);
@@ -766,7 +765,7 @@ public class TrackLoader {
                     (reader.getAutoSql() != null && reader.getAutoSql().startsWith("table BisulfiteSeq"))) {
                 loadMethylTrack(locator, reader, newTracks, genome);
             } else {
-                FeatureTrack track = new FeatureTrack(trackId, trackName, locator, bigwigSource);
+                FeatureTrack track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
                 newTracks.add(track);
             }
         } else {

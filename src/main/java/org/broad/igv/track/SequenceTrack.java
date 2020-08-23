@@ -88,7 +88,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     private Rectangle arrowRect;
 
     public SequenceTrack(String name) {
-        super(name, name, null);
+        super(null, name, name);
         setSortable(false);
         shouldShowTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());

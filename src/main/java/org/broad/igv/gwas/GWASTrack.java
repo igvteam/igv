@@ -98,7 +98,7 @@ public class GWASTrack extends AbstractTrack {
                      Map<String, List<GWASFeature>> gData,
                      String[] columns,
                      Genome genome) {
-        super(id, name, locator);
+        super(locator, id, name);
 
         this.genome = genome;
         this.igv = IGV.getInstance(); // TODO replace with parameter
@@ -122,6 +122,9 @@ public class GWASTrack extends AbstractTrack {
         this.showAxis = prefs.getAsBoolean(Constants.GWAS_SHOW_AXIS);
         this.gData = gData;
         this.columns = columns;
+    }
+
+    public GWASTrack() {
     }
 
     private void setMaxValue(Map<String, List<GWASFeature>> gData) {

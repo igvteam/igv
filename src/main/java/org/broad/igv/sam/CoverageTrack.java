@@ -37,6 +37,7 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
+import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -122,7 +123,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     }
 
     public CoverageTrack(ResourceLocator locator, String name, AlignmentTrack alignmentTrack, Genome genome) {
-        super(locator.getPath() + "_coverage", name, locator);
+        super(locator, locator.getPath() + "_coverage", name);
         super.setDataRange(new DataRange(0, 0, 60));
         this.alignmentTrack = alignmentTrack;
         this.genome = genome;

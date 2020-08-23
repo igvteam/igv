@@ -40,10 +40,14 @@ public class BasePairTrack extends AbstractTrack {
     private RenderOptions renderOptions = new RenderOptions();
 
     public BasePairTrack(ResourceLocator locator, String id, String name, Genome genome) {
-        super(id, name, locator);
+        super(locator, id, name);
         BasePairFileParser.loadData(locator, genome,
                 basePairData, renderOptions);
         this.genome = genome;
+    }
+
+    public BasePairTrack() {
+        this.genome = GenomeManager.getInstance().getCurrentGenome();
     }
 
     @Override

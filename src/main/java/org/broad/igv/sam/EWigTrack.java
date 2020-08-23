@@ -80,6 +80,10 @@ public class EWigTrack extends AbstractTrack {
         }
     }
 
+    public EWigTrack() {
+
+    }
+
     @Override
     public boolean isNumeric() {
         return true;

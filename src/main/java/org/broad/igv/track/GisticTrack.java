@@ -88,6 +88,9 @@ public class GisticTrack extends AbstractTrack {
 
     }
 
+    public GisticTrack() {
+    }
+
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
         return hasScores;

@@ -70,6 +70,10 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         setTrackAlphas(DEFAULT_ALPHA);
     }
 
+    public MergedTracks() {
+        this.alpha = DEFAULT_ALPHA;
+    }
+
     public void setMemberTracks(Collection<DataTrack> inputTracks) {
         initTrackList(inputTracks);
     }

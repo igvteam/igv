@@ -54,6 +54,11 @@ public class BlatTrack extends FeatureTrack {
         init();
     }
 
+
+    public BlatTrack() {
+        this.genome = GenomeManager.getInstance().getCurrentGenome();
+    }
+
     private void init() {
 
         setUseScore(true);

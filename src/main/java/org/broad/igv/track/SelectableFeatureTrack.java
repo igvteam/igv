@@ -45,6 +45,9 @@ public class SelectableFeatureTrack extends FeatureTrack {
 
     protected Set<IExon> selectedExons = new HashSet<IExon>();
 
+    public SelectableFeatureTrack() {
+    }
+
     public SelectableFeatureTrack(FeatureTrack geneTrack) {
         super(geneTrack);
         this.setRendererClass(SelectableFeatureRenderer.class);

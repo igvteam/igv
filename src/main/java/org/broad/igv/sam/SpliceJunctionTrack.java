@@ -40,6 +40,7 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.variant.VariantTrack;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -87,7 +88,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
                                AlignmentDataManager dataManager,
                                AlignmentTrack alignmentTrack,
                                StrandOption ignoreStrand) {
-        super(locator.getPath() + "_junctions", name, locator);
+        super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));
         setRendererClass(SpliceJunctionRenderer.class);
@@ -98,6 +99,9 @@ public class SpliceJunctionTrack extends FeatureTrack {
         this.dataManager.subscribe(this);
         this.alignmentTrack = alignmentTrack;
         this.strandOption = ignoreStrand;
+    }
+
+    public SpliceJunctionTrack() {
     }
 
     @Override

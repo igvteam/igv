@@ -41,7 +41,6 @@ import org.broad.igv.renderer.*;
 import org.broad.igv.tools.motiffinder.MotifFinderSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.BrowserLauncher;
@@ -54,8 +53,8 @@ import org.w3c.dom.NodeList;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Track which displays features, typically showing regions of the genome
@@ -70,83 +69,120 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(FeatureTrack.class);
 
+
     public static final int MINIMUM_FEATURE_SPACING = 5;
     public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
-    private static final Color SELECTED_FEATURE_ROW_COLOR = new Color(100, 100, 100, 30);
+    protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(100, 100, 100, 30);
     private static final int DEFAULT_EXPANDED_HEIGHT = 35;
     private static final int DEFAULT_SQUISHED_HEIGHT = 12;
 
-    public FeatureSource source;
-    private String trackLine = null;
-
-    private static boolean drawBorder = true;
     private int expandedRowHeight = DEFAULT_EXPANDED_HEIGHT;
     private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
-    private int margin = DEFAULT_MARGIN;
 
-    private boolean fatalLoadError = false;
+    boolean fatalLoadError = false;
 
-    private Track.DisplayMode lastFeatureMode = null;  // Keeps track of the feature display mode before an auto-switch to COLLAPSE
-    private boolean alternateExonColor = false;
+    Track.DisplayMode lastFeatureMode = null;  // Keeps track of the feature display mode before an auto-switch to COLLAPSE
 
-    private boolean showFeatures = true;    // true == features,  false =  coverage
-    protected Renderer renderer;
-    private DataRenderer coverageRenderer;
 
+    protected List<Rectangle> levelRects = new ArrayList();
+
+    // TODO -- this is a memory leak, this cache needs cleared when the reference frame collection (gene list) changes
     /**
      * Map of reference frame name -> packed features
      */
-    protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<>());
-    private List<Rectangle> levelRects = new ArrayList<>();
+    protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<String, PackedFeatures<IGVFeature>>());
 
+    protected Renderer renderer;
+
+    private DataRenderer coverageRenderer;
+
+    // true == features,  false =  coverage
+    private boolean showFeatures = true;
+
+    public FeatureSource source;
 
     //track which row of the expanded track is selected by the user. Selection goes away if tracks are collpased
-    private int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
+    protected int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
 
     //Feature selected by the user.  This is repopulated on each handleDataClick() call.
     protected IGVFeature selectedFeature = null;
 
+    int margin = DEFAULT_MARGIN;
+
+    private static boolean drawBorder = true;
+
+    private boolean alternateExonColor = false;
+
+    private static final String PLUGIN_SOURCE = "PluginSource";
+    private static final String SEQUENCE_MATCH_SOURCE = "SequenceMatchSource";
+
+
+    String trackLine = null;
+
+    public FeatureTrack() {
+
+    }
+
+    // TODO -- there are WAY too many constructors for this class
+
     /**
-     * The "real" constructor, all other constructors call this one.
+     * Construct with no feature source.  Currently this is only used for the SpliceJunctionTrack subclass.
      *
      * @param id
      * @param name
-     * @param locator
-     * @param source
      */
-    public FeatureTrack(String id, String name, ResourceLocator locator, FeatureSource source) {
-        super(id, name, locator);
-        init(source, locator);
+    public FeatureTrack(String id, String name) {
+        super(null, id, name);
+        setSortable(false);
+    }
+
+    public FeatureTrack(ResourceLocator locator, String id, String name) {
+        super(locator, id, name);
         setSortable(false);
     }
 
     /**
-     * Construct with no feature source.  Currently this is only used for the BlatTrack subclass.
-     */
-    public FeatureTrack(String id, String name) {
-        this(id, name, null, null);
-    }
-
-    public FeatureTrack(String id, String name, ResourceLocator locator) {
-        this(id, name, locator, null);
-    }
-
-    /**
      * Constructor with no ResourceLocator.  Note:  tracks using this constructor will not be recorded in the
-     * "Resources" section of session files.  Used for the default gene track and computed tracks.
+     * "Resources" section of session files.
+     *
+     * @param id
+     * @param name
+     * @param source
+     * @api
      */
     public FeatureTrack(String id, String name, FeatureSource source) {
-        this(id, name, null, source);
+        super(null, id, name);
+        init(source, null);
+        setSortable(false);
     }
+
+
+    /**
+     * Constructor specifically for BigWig data source
+     *
+     * @param locator
+     * @param id
+     * @param name
+     * @param source
+     */
+    public FeatureTrack(ResourceLocator locator, String id, String name, FeatureSource source) {
+        super(locator, id, name);
+        init(source, locator.getPath());
+        setSortable(false);
+    }
+
 
     public FeatureTrack(ResourceLocator locator, FeatureSource source) {
-        this(locator.getPath(), locator.getTrackName(), locator, source);
+        super(locator);
+        init(source, locator != null ? locator.getPath() : null);
+        setSortable(false);
     }
 
 
-    public FeatureTrack(String id, ResourceLocator locator, FeatureSource source) {
-        this(id, locator.getTrackName(), locator, source);
+    public FeatureTrack(ResourceLocator locator, String id, FeatureSource source) {
+        super(locator, id, locator.getTrackName());
+        init(source, locator.getPath());
     }
 
     /**
@@ -155,35 +191,31 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @param featureTrack
      */
     public FeatureTrack(FeatureTrack featureTrack) {
-        this(featureTrack.getId(), featureTrack.getName(), featureTrack.getResourceLocator(), featureTrack.source);
+        this(featureTrack.getId(), featureTrack.getName(), featureTrack.source);
     }
 
-    protected void init(FeatureSource source, ResourceLocator locator) {
+    protected void init(FeatureSource source, String path) {
 
+        this.source = source;
         setMinimumHeight(10);
         setColor(Color.blue.darker());
 
-        if (source != null) {
-            this.source = source;
-            coverageRenderer = new BarChartRenderer();
+        coverageRenderer = new BarChartRenderer();
 
-            int sourceFeatureWindowSize = source.getFeatureWindowSize();
-            if (sourceFeatureWindowSize > 0) {  // Only apply a default if the feature source supports visibility window.
-                int defVisibilityWindow = PreferencesManager.getPreferences().getAsInt(Constants.DEFAULT_VISIBILITY_WINDOW);
-                if (defVisibilityWindow > 0) {
-                    setVisibilityWindow(defVisibilityWindow * 1000);
-                } else {
-                    visibilityWindow = sourceFeatureWindowSize;
-                }
+        int sourceFeatureWindowSize = source.getFeatureWindowSize();
+        if (sourceFeatureWindowSize > 0) {  // Only apply a default if the feature source supports visibility window.
+            int defVisibilityWindow = PreferencesManager.getPreferences().getAsInt(Constants.DEFAULT_VISIBILITY_WINDOW);
+            if (defVisibilityWindow > 0) {
+                setVisibilityWindow(defVisibilityWindow * 1000);
+            } else {
+                visibilityWindow = sourceFeatureWindowSize;
             }
         }
-        if (locator != null) {
-            String path = locator.getPath();
-            this.renderer = path != null && path.endsWith("junctions.bed") ?
-                    new SpliceJunctionRenderer() : new IGVFeatureRenderer();
-        }
 
-        IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
+        this.renderer = path != null && path.endsWith("junctions.bed") ?
+                new SpliceJunctionRenderer() : new IGVFeatureRenderer();
+
+        IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
 
     }
 
@@ -200,9 +232,15 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * Called after features are finished loading, which can be asynchronous
      */
     public void receiveEvent(Object e) {
-        if (e instanceof FrameManager.ChangeEvent) {
-            clearPackedFeatures();
-        }  else {
+        if (e instanceof DataLoadedEvent) {
+//            DataLoadedEvent event = (DataLoadedEvent) e;
+//            if (IGV.hasInstance()) {
+//                // TODO -- WHY IS THIS HERE????
+//                //TODO Assuming this is necessary, there can be many data loaded events in succession,
+//                //don't want to layout for each one
+//                IGV.getInstance().layoutMainPanel();
+//            }
+        } else {
             log.info("Unknown event type: " + e.getClass());
         }
     }
@@ -928,6 +966,14 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         return selectedFeature;
     }
 
+    public static boolean isDrawBorder() {
+        return drawBorder;
+    }
+
+    public static void setDrawBorder(boolean drawBorder) {
+        FeatureTrack.drawBorder = drawBorder;
+    }
+
     public boolean isAlternateExonColor() {
         return alternateExonColor;
     }
@@ -946,6 +992,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     /**
      * Features are packed upon loading, effectively a cache.
      * This clears that cache. Used to force a refresh
+     *
+     * @api
      */
     public void clearPackedFeatures() {
         this.packedFeaturesMap.clear();
@@ -977,6 +1025,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     public String getExportTrackLine() {
         return trackLine;
     }
+
+
+    //        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="255,0,0" displayMode="SQUISHED" featureVisibilityWindow="10000000" fontSize="10" id="tataaa Negative" name="tataaa Negative" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
