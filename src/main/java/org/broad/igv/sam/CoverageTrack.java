@@ -107,6 +107,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
      */
     private boolean globalAutoScale = true;
 
+    public CoverageTrack() {
+    }
 
     /**
      * Copy constructor.  Used for Sashimi plot.

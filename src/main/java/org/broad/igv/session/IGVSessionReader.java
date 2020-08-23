@@ -27,18 +27,25 @@ package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.basepair.BasePairTrack;
+import org.broad.igv.feature.dsi.DSITrack;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.google.GoogleUtils;
+import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
+import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.sam.CoverageTrack;
+import org.broad.igv.sam.EWigTrack;
+import org.broad.igv.sam.SpliceJunctionTrack;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
@@ -54,6 +61,7 @@ import org.broad.igv.util.*;
 import org.broad.igv.util.FilterElement.BooleanOperator;
 import org.broad.igv.util.FilterElement.Operator;
 import org.broad.igv.util.collections.CollUtils;
+import org.broad.igv.variant.VariantTrack;
 import org.w3c.dom.*;
 
 import java.awt.*;
@@ -919,9 +927,7 @@ public class IGVSessionReader implements SessionReader {
             String className = getAttribute(element, "clazz");
             if (className != null) {
                 try {
-                    Track track = null;
-                    Class clazz = SessionElement.getClass(className);
-                    track = (Track) clazz.getConstructor().newInstance();
+                    Track track = createTrack(className);
                     track.unmarshalXML(element, version);
                     matchedTracks = Arrays.asList(track);
 
@@ -1124,6 +1130,62 @@ public class IGVSessionReader implements SessionReader {
             log.debug("Found multiple tracks with id  " + trackId + ", using the first");
         }
         return matchingTracks.get(0);
+    }
+
+    /**
+     * Create a track object for the given class name.  In the past this was done by reflection.   This was a bad
+     * idea.  Among other issues the full class name gets hardcoded into sessions preventing future refactoring
+     * or renaming.  Thus the lookup table approach below, with reflection at the end in case we miss any.
+     *
+     * @param className
+     * @return
+     * @throws ClassNotFoundException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws java.lang.reflect.InvocationTargetException
+     * @throws NoSuchMethodException
+     */
+    private Track createTrack(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
+
+        if (className.contains("BasePairTrack")) {
+            return new BasePairTrack();
+        } else if (className.contains("BlatTrack")) {
+            return new BlatTrack();
+        } else if (className.contains("ClusterTrack")) {
+            return new ClusterTrack();
+        } else if (className.contains("CNFreqTrack")) {
+            return new CNFreqTrack();
+        } else if (className.contains("CoverageTrack")) {
+            return new CoverageTrack();
+        } else if (className.contains("DataSourceTrack")) {
+            return new DataSourceTrack();
+        } else if (className.contains("DSITrack")) {
+            return new DSITrack();
+        } else if (className.contains("EWigTrack")) {
+            return new EWigTrack();
+        } else if (className.contains("FeatureTrack")) {
+            return new FeatureTrack();
+        } else if (className.contains("GisticTrack")) {
+            return new GisticTrack();
+        } else if (className.contains("InteractionTrack")) {
+            return new InteractionTrack();
+        } else if (className.contains("MergedTracks")) {
+            return new MergedTracks();
+        } else if (className.contains("MultipleAlignmentTrack")) {
+            return new MultipleAlignmentTrack();
+        } else if (className.contains("MutationTrack")) {
+            return new MutationTrack();
+        } else if (className.contains("SelectableFeatureTrack")) {
+            return new SelectableFeatureTrack();
+        } else if (className.contains("SpliceJunctionTrack")) {
+            return new SpliceJunctionTrack();
+        } else if (className.contains("VariantTrack")) {
+            return new VariantTrack();
+        } else {
+            log.info("Unrecognized class name: " + className);
+            Class clazz = SessionElement.getClass(className);
+            return (Track) clazz.getConstructor().newInstance();
+        }
     }
 
 }
