@@ -1,6 +1,7 @@
 <Server-Side Genome List>
 A. gambia (Pest AgamP3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/AgamP3.genome	AgamP3
 A. nidulans (4.1)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/anidulans_4.1.genome	anidulans_4.1
+A. thaliana (TAIR 10)	https://s3.amazonaws.com/igv.org.genomes/tair10/tair10.genome	tair10
 Autographa californica MNPV	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001623.genome	NC_001623
 Bacillus Subtilis str. 168	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000964.genome	NC_000964
 Banana (M. Balbisiana PKWv1)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/MusaBalbisianaPKWv1.genome	MusaBalbisianaPKWv1
