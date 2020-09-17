@@ -11,8 +11,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 
-public class htsget {
-    private static Logger log = Logger.getLogger(htsget.class);
+public class Htsget {
+    private static Logger log = Logger.getLogger(Htsget.class);
 
     private static final String endpoint = "https://htsget.ga4gh.org/reads/10X_P4_0_possorted_genome.bam";
 

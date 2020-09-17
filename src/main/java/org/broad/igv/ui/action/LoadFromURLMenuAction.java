@@ -112,6 +112,11 @@ public class LoadFromURLMenuAction extends MenuAction {
                             AmazonUtils.checkLogin();
                         }
 
+                        //TODO
+                        // A tell-tale sign that the URL is aimed at an htsget server is the name of the parameters
+                        // /reads ... or even better, "id" which is required by spec:
+                        // https://samtools.github.io/hts-specs/htsget.html
+
                         ResourceLocator rl = new ResourceLocator(url.trim());
 
                         if (dlg.getIndexURL() != null) {
