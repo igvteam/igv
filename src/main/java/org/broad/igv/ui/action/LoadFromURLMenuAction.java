@@ -112,11 +112,6 @@ public class LoadFromURLMenuAction extends MenuAction {
                             AmazonUtils.checkLogin();
                         }
 
-                        //TODO
-                        // A tell-tale sign that the URL is aimed at an htsget server is the name of the parameters
-                        // /reads ... or even better, "id" which is required by spec:
-                        // https://samtools.github.io/hts-specs/htsget.html
-
                         ResourceLocator rl = new ResourceLocator(url.trim());
 
                         if (dlg.getIndexURL() != null) {
@@ -127,6 +122,9 @@ public class LoadFromURLMenuAction extends MenuAction {
                             }
 
                             rl.setIndexPath(indexUrl);
+                        }
+                        if (isHtsGet(url)) {
+                            rl.setAttribute("htsget", true);
                         }
                         igv.loadTracks(Arrays.asList(rl));
 
@@ -154,6 +152,14 @@ public class LoadFromURLMenuAction extends MenuAction {
                 }
             }
         }
+    }
+//  ToDo: need to figure out how to detect HtsGet resources
+//    Also check : Supported htsget protocol version: vnd.ga4gh.htsget.v1.2.0may not be compatible with received content type: application/vnd.ga4gh.htsget.v0.2.0+json
+    private boolean isHtsGet(String url) {
+        return  url.contains("htsnexus.rnd.dnanex.us/v1/reads") ||
+                url.contains("htsget.wtsi-npg-test.co.uk") ||
+                url.contains("/reads/") ||
+                url.contains("htsget.ga4gh.org");
     }
 
     private String mapURL(String url) {

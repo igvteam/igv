@@ -113,6 +113,7 @@ public class TrackLoader {
     public List<Track> load(ResourceLocator locator, Genome genome) throws DataLoadException {
 
         final String path = locator.getPath().trim();
+        final boolean isHtsGet = locator.getAttribute("htsget") != null && (Boolean) locator.getAttribute("htsget");
 
         // Check if the AWS credentials are still valid. If not, re-login and renew pre-signed urls
         if (AmazonUtils.isAwsS3Path(path)) {
@@ -152,8 +153,7 @@ public class TrackLoader {
                 loadGisticFile(locator, newTracks);
             } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
                 loadBlastMapping(locator, newTracks);
-            } else if (isAlignmentTrack(typeString) ||
-                    (path.startsWith("http") && path.contains("/query.cgi?"))) {
+            } else if (isAlignmentTrack(typeString) || (path.startsWith("http") && path.contains("/query.cgi?")) || isHtsGet) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".shape") || typeString.endsWith(".map")) {
                 convertLoadShapeFile(locator, newTracks, genome);
