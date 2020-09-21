@@ -30,7 +30,7 @@ Glycine max (Wm82.a2.v1)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes
 Helicobacter hepaticus	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_004917.genome	NC_004917
 HIV-1	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001802.genome	NC_001802
 HIV-2	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001722.genome	NC_001722
-Human (1kg, b37+decoy)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/1kg_v37.genome	1kg_v37
+Human (1kg, b37+decoy)	https://s3.amazonaws.com/igv.org.genomes/1kg_v37/1kg_v37.genome	1kg_v37
 Human (b37)	https://s3.amazonaws.com/igv.org.genomes/b37/b37.genome	b37
 Human Adenovirus C	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001405.genome	NC_001405
 Human Herpesvirus 4, Type 1	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/HHV4_Type1.genome	HHV4_Type1
