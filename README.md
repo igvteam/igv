@@ -1,5 +1,5 @@
 # igv
-[![Build Status](https://travis-ci.org/igvteam/igv.svg?branch=master)](https://travis-ci.org/igvteam/igv)
+[![Build Status](https://travis-ci.com/igvteam/igv.svg?branch=master)](https://travis-ci.com/igvteam/igv)
 ![GitHub issues](https://img.shields.io/github/issues/igvteam/igv)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/igvteam/igv)
 ![](https://img.shields.io/npm/l/igv.svg)
