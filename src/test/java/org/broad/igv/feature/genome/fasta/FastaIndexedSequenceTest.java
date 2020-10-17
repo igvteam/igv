@@ -52,39 +52,15 @@ public class FastaIndexedSequenceTest {
 
     @BeforeClass
     public static void setup() throws IOException {
-        String path = "http://data.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
+        String path = "https://s3.amazonaws.com/igv.org.test/data/ci2_test.fa";
         fastaSequence = new FastaIndexedSequence(path);
     }
 
-    /**
-     * Compare a direct read of sequence from a file vs a read from and indexed fasta for the same interval.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testReadSequence() throws Exception {
-
-        String chr02qSeqPath = "http://data.broadinstitute.org/igvdata/test/fasta/";
-
-        String chr = "chr02q";
-        int start = 3531385;
-        int end = 3531425;
-
-
-        // TAATTTTTACGTCTTATTTAAACACATATAATGAATAGGT;
-        Sequence igvSequence = new IGVSequence(chr02qSeqPath);
-        byte[] expectedBytes = igvSequence.getSequence(chr, start, end, true);
-        String expectedSequence = new String(expectedBytes);
-
-        byte[] bytes = fastaSequence.getSequence(chr, start, end, true);
-        String seq = new String(bytes);
-        assertEquals(expectedSequence, seq);
-    }
 
     @Test
     public void testReadEnd() throws Exception {
 
-        String path = "http://data.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
+        String path = "https://s3.amazonaws.com/igv.org.test/data/ci2_test.fa";
 
         String chr = "chr02q";
         int chrLen = 8059593;

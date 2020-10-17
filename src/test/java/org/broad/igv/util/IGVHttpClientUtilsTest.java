@@ -25,15 +25,9 @@
 
 package org.broad.igv.util;
 
-import org.broad.igv.exceptions.HttpResponseException;
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.IGVPreferences;
-import org.broad.igv.prefs.PreferencesManager;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URL;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -46,20 +40,19 @@ import static org.junit.Assert.assertEquals;
 
 public class IGVHttpClientUtilsTest {
 
-    private static String hg18URL = "http://data.broadinstitute.org/igvdata/test/hg18.unittest.genome";
-    private static int hg18bytes = 3617644;
+    String url = "https://s3.amazonaws.com/igv.org.test/csi_test/chr10p.bam.csi";
+    int byteCount = 105063;
 
     @Test
     public void testGetContentLength() throws IOException {
 
-        String url = hg18URL;
-        assertEquals(hg18bytes, HttpUtils.getInstance().getContentLength(HttpUtils.createURL(url)));
+        assertEquals(byteCount, HttpUtils.getInstance().getContentLength(HttpUtils.createURL(url)));
     }
 
     @Test
     public void testExists() throws IOException {
-        String url = hg18URL;
-        assertTrue("Resource unexpectedly does not exist", HttpUtils.getInstance().resourceAvailable(hg18URL));
+
+        assertTrue("Resource unexpectedly does not exist", HttpUtils.getInstance().resourceAvailable(url));
 
         url = "http://nosuchserver/genomes/hg18.genome";
         assertFalse("Resource unexpectedly found", HttpUtils.getInstance().resourceAvailable(url));
@@ -68,46 +61,4 @@ public class IGVHttpClientUtilsTest {
         assertFalse(HttpUtils.getInstance().resourceAvailable(url));
     }
 
-    /**
-     * This test will only work if on the Broad intranet, as that's where the test proxy server is.
-     *
-     * @throws IOException
-     */
-    @Ignore
-    @Test
-    public void testProxy() throws IOException {
-
-        final URL testURL = HttpUtils.createURL(hg18URL);
-
-        IGVPreferences mgr = PreferencesManager.getPreferences();
-        mgr.override(Constants.PROXY_HOST, "igvdev01.broadinstitute.org");
-        mgr.override(Constants.PROXY_PORT, "3128");
-        mgr.override(Constants.PROXY_USER, "proxytest");
-        String enc_pword = Utilities.base64Encode("test@123");
-        mgr.override(Constants.PROXY_PW, enc_pword);
-        mgr.override(Constants.USE_PROXY, "true");
-        mgr.override(Constants.PROXY_AUTHENTICATE, "true");
-        HttpUtils.getInstance().updateProxySettings();
-
-        long contentLength = 0;
-        try {
-            contentLength = HttpUtils.getInstance().getContentLength(testURL);
-            assertEquals(hg18bytes, contentLength);
-        } catch (IOException e) {
-            System.out.println("Proxy unreachable.  Skipping proxy test");
-            return;
-        }
-
-        // Now try to get a file not on the squid "allowed" domains to verify requests are going through the proxy
-        // This should fail and return -1 for the content length
-        try {
-            contentLength = HttpUtils.getInstance().getContentLength(HttpUtils.createURL("http://www.boston.com"));
-            junit.framework.Assert.fail("Proxy test is apparently bypassing proxy");
-        } catch (HttpResponseException e) {
-            // This is expected
-            assertEquals(403, e.getStatusCode());
-        }
-
-
-    }
 }

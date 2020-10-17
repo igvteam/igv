@@ -50,7 +50,7 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
 
     //    private final File BAM_INDEX_FILE = new File("testdata/net/sf/samtools/BAMFileIndexTest/index_test.bam.bai");
     private final File BAM_FILE = new File(TestUtils.DATA_DIR + "/samtools/index_test.bam");
-    private final String BAM_URL_STRING = "http://data.broadinstitute.org/igvdata/test/data/bam/index_test.bam";
+    private final String BAM_URL_STRING = "https://s3.amazonaws.com/igv.org.test/data/index_test.bam";
     private static File megabyteZerosFile = new File(TestUtils.DATA_DIR + "/samtools/megabyteZeros.dat");
 
     static int expectedFileSize = 20000;
