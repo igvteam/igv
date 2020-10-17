@@ -191,7 +191,7 @@ MASTER_RESOURCE_FILE_KEY	Data registry url	string	https://data.broadinstitute.or
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
-BLAT_URL	Blat url	String	http://genome.cse.ucsc.edu/cgi-bin/hgBlat
+BLAT_URL	Blat url	String	https://genome.cse.ucsc.edu/cgi-bin/hgBlat
 ---
 TOOLTIP.INITIAL_DELAY	Tooltip inital delay (ms)	integer	50
 TOOLTIP.RESHOW_DELAY	Tooltip reshow delay (ms)	integer	50
