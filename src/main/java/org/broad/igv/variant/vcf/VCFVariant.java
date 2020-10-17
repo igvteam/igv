@@ -26,6 +26,8 @@
 package org.broad.igv.variant.vcf;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.variant.Allele;
 import org.broad.igv.variant.Genotype;
 import org.broad.igv.variant.Variant;
@@ -308,7 +310,17 @@ public class VCFVariant implements Variant {
 
     @Override
     public int getEnd() {
-        return variantContext.getEnd();
+        String chr2 = variantContext.getAttributeAsString("CHR2", null);
+        if(chr2 != null) {
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            chr2 = genome == null ? chr2 : genome.getCanonicalChrName(chr2);
+        }
+        if(chr2 == null || chr2.equals(getChr())) {
+            return variantContext.getEnd();
+        }
+        else {
+            return this.start + 1;   // An inter-chr variant
+        }
     }
 
     @Override
@@ -321,7 +333,13 @@ public class VCFVariant implements Variant {
         if (variantContext.getStart() == variantContext.getEnd()) {
             return String.valueOf(variantContext.getStart());
         } else {
-            return String.format("%d-%d", variantContext.getStart(), variantContext.getEnd());
+            String chr2 = variantContext.getAttributeAsString("CHR2", null);
+            if(chr2 == null || chr2.equals(getChr())) {
+                return String.format("%d-%d", variantContext.getStart(), variantContext.getEnd());
+            }
+            else {
+                return String.format("%s:%d-%s:%d", getChr(), variantContext.getStart(), chr2, variantContext.getEnd());
+            }
         }
 
     }
