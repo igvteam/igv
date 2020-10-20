@@ -131,10 +131,10 @@ dependencies {
         [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
 
         // Amazon deps
-        [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.13.30'],
-        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.13.30'],
-        [group: 'software.amazon.awssdk', name: 'sts', version: '2.13.30'],
-        [group: 'software.amazon.awssdk', name: 's3', version: '2.13.30']
+        [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.15.9'],
+        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.15.9'],
+        [group: 'software.amazon.awssdk', name: 'sts', version: '2.15.9'],
+        [group: 'software.amazon.awssdk', name: 's3', version: '2.15.9']
     )
 
     testImplementation(
