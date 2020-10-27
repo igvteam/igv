@@ -129,6 +129,7 @@ dependencies {
         [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'],
         [group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.26'],
         [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
+        [group: 'org.sharegov', name: 'mjson', version: '1.4.1'],
 
         // Amazon deps
         [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.13.30'],
