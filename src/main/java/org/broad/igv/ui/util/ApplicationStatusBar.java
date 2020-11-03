@@ -118,6 +118,10 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
     }
 
     public void setMessage(final String message) {
+        if(message.startsWith("It")) {
+            System.err.println(message);
+            Thread.dumpStack();
+        }
         UIUtilities.invokeAndWaitOnEventThread(() -> {
             messageBox.setText(message);
             messageBox.paintImmediately(messageBox.getBounds());
