@@ -118,7 +118,7 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
     }
 
     public void setMessage(final String message) {
-        UIUtilities.invokeOnEventThread(() -> {
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
             messageBox.setText(message);
             messageBox.validate();
             messageBox.paintImmediately(messageBox.getBounds());
@@ -126,7 +126,7 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
     }
 
     public void setMessage2(final String message) {
-        UIUtilities.invokeOnEventThread(() -> {
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
             messageBox2.setText(message);
             messageBox.validate();
             messageBox2.paintImmediately(messageBox2.getBounds());
@@ -134,7 +134,7 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
     }
 
     public void setMessage3(final String message) {
-        UIUtilities.invokeOnEventThread(() -> {
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
             messageBox3.setText(message);
             messageBox.validate();
             messageBox3.paintImmediately(messageBox2.getBounds());
