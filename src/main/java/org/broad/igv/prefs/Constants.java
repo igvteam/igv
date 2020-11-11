@@ -257,7 +257,7 @@ final public class Constants {
 
     // OAuth provisioning
     public static final String PROVISIONING_URL = "PROVISIONING.URL";
-    public static final String USE_AWS_DEFAULT_CREDENTIALS = "PROVISIONING.USE_AWS_DEFAULT_CREDENTIALS";
+    public static final String USE_AWS_CREDENTIALS_CHAIN = "PROVISIONING.USE_AWS_CREDENTIALS_CHAIN";
 
     // Experimental
     public static final String SCORE_VARIANTS = "SCORE_VARIANTS";

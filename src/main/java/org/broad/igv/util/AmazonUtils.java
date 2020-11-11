@@ -216,7 +216,7 @@ public class AmazonUtils {
      */
     public static List<String> ListBucketsForUser() {
         if (bucketsFinalList.isEmpty()) {
-            if (!PreferencesManager.getPreferences().getUseAwsProfile()) {
+            if (!PreferencesManager.getPreferences().getUseAwsCredentialsChain()) {
                 OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
                 updateS3Client(GetCognitoAWSCredentials());
             }
@@ -370,7 +370,7 @@ public class AmazonUtils {
         ArrayList<IGVS3Object> objects = new ArrayList<>();
         log.debug("Listing objects for bucketName: " + bucketName);
 
-        if (!PreferencesManager.getPreferences().getUseAwsProfile()) {
+        if (!PreferencesManager.getPreferences().getUseAwsCredentialsChain()) {
             OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
             updateS3Client(GetCognitoAWSCredentials());
         }
@@ -435,7 +435,7 @@ public class AmazonUtils {
     private static String createPresignedURL(String s3Path) throws IOException {
         String presigned_url_string;
         S3Presigner s3Presigner;
-        if (PreferencesManager.getPreferences().getUseAwsProfile()) {
+        if (PreferencesManager.getPreferences().getUseAwsCredentialsChain()) {
             s3Presigner = S3Presigner.builder()
                     .expiration(Duration.ofDays(7).minus(Duration.ofSeconds(2)))
                     .build();
@@ -488,7 +488,7 @@ public class AmazonUtils {
     }
 
     public static void checkLogin() {
-        if (!PreferencesManager.getPreferences().getUseAwsProfile()) {
+        if (!PreferencesManager.getPreferences().getUseAwsCredentialsChain()) {
             if (!OAuthUtils.getInstance().getProvider("Amazon").isLoggedIn()) {
                 OAuthUtils.getInstance().getProvider("Amazon").doSecureLogin();
             }

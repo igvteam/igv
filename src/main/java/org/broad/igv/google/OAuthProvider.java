@@ -226,7 +226,7 @@ public class OAuthProvider {
 
             if (authProvider.equals("Amazon")) {
                 // Get AWS credentials after getting relevant tokens
-                if (!PreferencesManager.getPreferences().getUseAwsProfile()) {
+                if (!PreferencesManager.getPreferences().getUseAwsCredentialsChain()) {
                     Credentials aws_credentials;
                     aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
 
