@@ -12,6 +12,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.JWTParser;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.services.sts.model.Credentials;
 
 import java.awt.*;
@@ -225,11 +226,13 @@ public class OAuthProvider {
 
             if (authProvider.equals("Amazon")) {
                 // Get AWS credentials after getting relevant tokens
-                Credentials aws_credentials;
-                aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
+                if (!PreferencesManager.getPreferences().getUseAwsProfile()) {
+                    Credentials aws_credentials;
+                    aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
 
-                // Update S3 client with newly acquired token
-                AmazonUtils.updateS3Client(aws_credentials);
+                    // Update S3 client with newly acquired token
+                    AmazonUtils.updateS3Client(aws_credentials);
+                }
             }
 
 

@@ -8,10 +8,13 @@ import org.broad.igv.Globals;
 import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGVMenuBar;
 import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.regions.Region;
@@ -36,6 +39,7 @@ import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -84,6 +88,16 @@ public class AmazonUtils {
             AWSREGION = Region.of(GetCognitoConfig().get("aws_region").getAsString());
         }
         return AWSREGION;
+    }
+
+    /**
+     * Returns the AWS credentials
+     *
+     * @return returns the credentials based on the AWS STS access token returned from the AWS Cognito user pool.
+     */
+    public static AwsCredentials GetProfileAWSCredentials(){
+        ProfileCredentialsProvider profileCredentialsProv = ProfileCredentialsProvider.create();
+        return profileCredentialsProv.resolveCredentials();
     }
 
     /**
@@ -167,7 +181,8 @@ public class AmazonUtils {
 
 
     /**
-     * Makes sure the S3 client is available for bucket operations and/or generation of pre-signed urls
+     * Makes sure the S3 client is available for bucket operations and/or generation of pre-signed urls using
+     * Cognito Credentials
      *
      * @param credentials AWS credentials
      */
@@ -182,14 +197,29 @@ public class AmazonUtils {
 
 
     /**
+     * Makes sure the S3 client is available for bucket operations and/or generation of pre-signed urls using
+     * Profile Credentials
+     *
+     * @param credentials AWS credentials
+     */
+
+//    public static void updateS3Client(AwsCredentials credentials) {
+//        StaticCredentialsProvider s3CredsProvider = StaticCredentialsProvider.create(credentials);
+//        s3Client = S3Client.builder().credentialsProvider(s3CredsProvider).build();
+//    }
+
+
+    /**
      * This method returns the details of the user and bucket lists.
      *
      * @return bucket list
      */
     public static List<String> ListBucketsForUser() {
         if (bucketsFinalList.isEmpty()) {
-            OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
-            updateS3Client(GetCognitoAWSCredentials());
+            if (!PreferencesManager.getPreferences().getUseAwsProfile()) {
+                OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
+                updateS3Client(GetCognitoAWSCredentials());
+            }
 
             List<String> bucketsList = new ArrayList<>();
 
@@ -340,8 +370,10 @@ public class AmazonUtils {
         ArrayList<IGVS3Object> objects = new ArrayList<>();
         log.debug("Listing objects for bucketName: " + bucketName);
 
-        OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
-        updateS3Client(GetCognitoAWSCredentials());
+        if (!PreferencesManager.getPreferences().getUseAwsProfile()) {
+            OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
+            updateS3Client(GetCognitoAWSCredentials());
+        }
 
         try {
             // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
@@ -401,21 +433,29 @@ public class AmazonUtils {
     // Amazon S3 Presign URLs
     // Also keeps an internal mapping between ResourceLocator and active/valid signed URLs.
     private static String createPresignedURL(String s3Path) throws IOException {
-        // Make sure access token are valid (refreshes token internally)
-        OAuthProvider provider = OAuthUtils.getInstance().getProvider("Amazon");
-        provider.getAccessToken();
+        String presigned_url_string;
+        S3Presigner s3Presigner;
+        if (PreferencesManager.getPreferences().getUseAwsProfile()) {
+            s3Presigner = S3Presigner.builder()
+                    .expiration(Duration.ofDays(7).minus(Duration.ofSeconds(2)))
+                    .build();
+        } else {
+            // Make sure access token are valid (refreshes token internally)
+            OAuthProvider provider = OAuthUtils.getInstance().getProvider("Amazon");
+            provider.getAccessToken();
 
-        Credentials credentials = GetCognitoAWSCredentials();
-        AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
-                credentials.secretAccessKey(),
-                credentials.sessionToken());
-        StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
+            Credentials credentials = GetCognitoAWSCredentials();
+            AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
+                    credentials.secretAccessKey(),
+                    credentials.sessionToken());
+            StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
 
-        S3Presigner s3Presigner = S3Presigner.builder()
-                .expiration(provider.getExpirationTime())
-                .awsCredentials(awsCredsProvider)
-                .region(getAWSREGION())
-                .build();
+            s3Presigner = S3Presigner.builder()
+                    .expiration(provider.getExpirationTime())
+                    .awsCredentials(awsCredsProvider)
+                    .region(getAWSREGION())
+                    .build();
+        }
 
         String bucket = getBucketFromS3URL(s3Path);
         String key = getKeyFromS3URL(s3Path);
@@ -448,8 +488,10 @@ public class AmazonUtils {
     }
 
     public static void checkLogin() {
-        if (!OAuthUtils.getInstance().getProvider("Amazon").isLoggedIn()) {
-            OAuthUtils.getInstance().getProvider("Amazon").doSecureLogin();
+        if (!PreferencesManager.getPreferences().getUseAwsProfile()) {
+            if (!OAuthUtils.getInstance().getProvider("Amazon").isLoggedIn()) {
+                OAuthUtils.getInstance().getProvider("Amazon").doSecureLogin();
+            }
         }
     }
 

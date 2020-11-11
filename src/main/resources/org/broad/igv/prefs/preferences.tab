@@ -190,6 +190,7 @@ IGV.genome.sequence.dir	Genome server URL	string	https://s3.amazonaws.com/igv.or
 MASTER_RESOURCE_FILE_KEY	Data registry url	string	https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
+PROVISIONING.USE_AWS_DEFAULT_CREDENTIALS	Use AWS native auth chain to use any supported AWS credential location	boolean	FALSE
 ---
 BLAT_URL	Blat url	String	https://genome.cse.ucsc.edu/cgi-bin/hgBlat
 ---
