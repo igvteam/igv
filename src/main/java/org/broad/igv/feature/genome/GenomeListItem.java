@@ -42,7 +42,7 @@ public class GenomeListItem {
     public static final GenomeListItem DOWNLOAD_ITEM;
 
     static {
-        DOWNLOAD_ITEM = new GenomeListItem("Download...", "", "Download...");
+        DOWNLOAD_ITEM = new GenomeListItem("More...", "", "More...");
     }
 
 

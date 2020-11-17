@@ -20,6 +20,8 @@ Cat (felCat5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/felCat5.ge
 Cow (bosTau7)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau7.genome	bosTau7
 Cow (bosTau8)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau8.genome	bosTau8
 D. melanogaster (dm6)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/dm6.genome	dm6
+D. melanogaster (dm3)	https://s3.amazonaws.com/igv.org.genomes/dm3/dm3.genome	dm3
+D. melanogaster (r5.9)	https://s3.amazonaws.com/igv.org.genomes/dmel_r5.9/dmel_r5.9.genome	dmel_r5.9
 Dog (canFam3)	https://s3.amazonaws.com/igv.org.genomes/canFam3/canFam3.genome	canFam3
 E. coli K-12 MG1655 (NC_000913.2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.2.genome	NC_000913.2
 E. coli K-12 (NC_000913.3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.3.gbk	NC_000913.3

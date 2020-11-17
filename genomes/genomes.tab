@@ -21,6 +21,8 @@ Cow (bosTau7)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau7.ge
 Cow (bosTau8)	https://s3.amazonaws.com/igv.org.genomes/json/bosTau8.json	bosTau8
 Cow (bosTau9)	https://s3.amazonaws.com/igv.org.genomes/json/bosTau9.json	bosTau9
 D. melanogaster (dm6)	https://s3.amazonaws.com/igv.org.genomes/json/dm6.json	dm6
+D. melanogaster (dm3)	https://s3.amazonaws.com/igv.org.genomes/dm3/dm3.genome	dm3
+D. melanogaster (r5.9)	https://s3.amazonaws.com/igv.org.genomes/dmel_r5.9/dmel_r5.9.json	dmel_r5.9
 Dog (canFam3)	https://s3.amazonaws.com/igv.org.genomes/json/canFam3.json	canFam3
 E. coli K-12 MG1655 (NC_000913.2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.2.genome	NC_000913.2
 E. coli K-12 (NC_000913.3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.3.gbk	NC_000913.3
