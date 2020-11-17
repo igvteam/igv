@@ -897,8 +897,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 int length = range.getLength();
                 int s2 = Math.max(0, mateStart - length / 2);
                 int e2 = s2 + length;
-                String startStr = NumberFormat.getInstance().format(s2);
-                String endStr = NumberFormat.getInstance().format(e2);
+                String startStr = String.valueOf(s2);
+                String endStr = String.valueOf(e2);
                 String mateLocus = mateChr + ":" + startStr + "-" + endStr;
 
                 Session currentSession = IGV.getInstance().getSession();
