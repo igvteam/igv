@@ -326,8 +326,8 @@ public class CmdLineParser {
                     throws IllegalOptionValueException {
                 try {
                     NumberFormat format = NumberFormat.getNumberInstance(locale);
-                    Number num = (Number)format.parse(arg);
-                    return new Double(num.doubleValue());
+                    Number num = format.parse(arg);
+                    return num.doubleValue();
                 } catch (ParseException e) {
                     throw new IllegalOptionValueException(this, arg);
                 }
