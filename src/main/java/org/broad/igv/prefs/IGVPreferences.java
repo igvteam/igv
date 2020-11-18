@@ -375,6 +375,10 @@ public class IGVPreferences {
         return get(PROVISIONING_URL);
     }
 
+    public Boolean getUseAwsCredentialsChain() {
+        return getAsBoolean(USE_AWS_CREDENTIALS_CHAIN);
+    }
+
     public String getPortNumber() {
         return get(PORT_NUMBER);
     }
