@@ -1628,9 +1628,7 @@ public class IGV implements IGVEventObserver {
 
     public void setSequenceShowTranslation(boolean shouldShowTranslation) {
         for (Track t : getAllTracks()) {
-            log.error(t.getName());
             if (t.getName().equals("Reference sequence")) {
-                log.error("in IGV.setSequenceShowTranslation.setShouldShowTranslationCommand");
                 t.setShouldShowTranslationCommand(shouldShowTranslation);
             }
         }
