@@ -27,6 +27,8 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.RefreshEvent;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Range;
@@ -36,8 +38,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -70,7 +70,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     private AlignmentTileLoader reader;
     private Map<String, PEStats> peStats;
     private SpliceJunctionHelper.LoadOptions loadOptions;
-    private Object loadLock = new Object();
+    private Range currentlyLoading;
 
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
@@ -133,10 +133,10 @@ public class AlignmentDataManager implements IGVEventObserver {
                 Set<Long> nonUnique = new HashSet<>();
                 Set<Long> seen = new HashSet<>();
                 // First find sequences whose size are not unique,  we'll filter these
-                for(Long size : sequenceDictionary.values()) {
-                    if(seen.contains(size)) {
+                for (Long size : sequenceDictionary.values()) {
+                    if (seen.contains(size)) {
                         nonUnique.add(size);
-                    } else{
+                    } else {
                         seen.add(size);
                     }
                 }
@@ -226,11 +226,11 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     private IGVPreferences getPreferences() {
-        String category =  NULL_CATEGORY;
+        String category = NULL_CATEGORY;
         AlignmentTrack.ExperimentType experimentType = getExperimentType();
-        if(experimentType == AlignmentTrack.ExperimentType.RNA) {
+        if (experimentType == AlignmentTrack.ExperimentType.RNA) {
             category = RNA;
-        } else if(experimentType == AlignmentTrack.ExperimentType.THIRD_GEN) {
+        } else if (experimentType == AlignmentTrack.ExperimentType.THIRD_GEN) {
             category = THIRD_GEN;
         }
         return PreferencesManager.getPreferences(category);
@@ -316,7 +316,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         return getLoadedInterval(frame) != null;
     }
 
-    public  void  load(ReferenceFrame frame,
+    public void load(ReferenceFrame frame,
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
 
@@ -326,19 +326,21 @@ public class AlignmentDataManager implements IGVEventObserver {
         if (isLoaded(frame)) {
             return;  // Already loaded
         }
-        
-        synchronized (loadLock) {
 
-            if (isLoaded(frame)) {
-                return;  // Already loaded
-            }
+        Range range = frame.getCurrentRange();
+        final String chr = frame.getChrName();
+        final int start = range.getStart();
+        final int end = range.getEnd();
+        int adjustedStart = start;
+        int adjustedEnd = end;
+        Range adjustedRange = new Range(chr, start, end);
 
-            Range range = frame.getCurrentRange();
-            final String chr = frame.getChrName();
-            final int start = range.getStart();
-            final int end = range.getEnd();
-            int adjustedStart = start;
-            int adjustedEnd = end;
+        if(currentlyLoading != null && currentlyLoading.contains(adjustedRange)) {
+            log.info("Already loading: " + range.toString());
+            return;  // Already loading
+        }
+        try {
+            currentlyLoading = adjustedRange;
 
             // Expand the interval by the lesser of  +/- a 2 screens, or max visible range
             int windowSize = Math.min(4 * (end - start), PreferencesManager.getPreferences().getAsInt(SAM_MAX_VISIBLE_RANGE) * 1000);
@@ -357,6 +359,9 @@ public class AlignmentDataManager implements IGVEventObserver {
             intervalCache.add(loadedInterval);
 
             packAlignments(renderOptions);
+
+        } finally {
+            currentlyLoading = null;
         }
 
         //  IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
@@ -369,7 +374,7 @@ public class AlignmentDataManager implements IGVEventObserver {
      */
     private void trimCache() {
         List<AlignmentInterval> trimmedIntervals = new ArrayList<>();
-        for(AlignmentInterval interval: intervalCache) {
+        for (AlignmentInterval interval : intervalCache) {
             if (intervalInView(interval)) {
                 trimmedIntervals.add(interval);
             }
@@ -440,7 +445,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
 
-    public  PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
+    public PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
         AlignmentInterval interval = getLoadedInterval(context.getReferenceFrame());
         if (interval != null) {
             return interval.getPackedAlignments();
