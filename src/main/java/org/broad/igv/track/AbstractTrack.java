@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -887,6 +888,10 @@ public abstract class AbstractTrack implements Track {
     public void setDisplayMode(DisplayMode mode) {
         this.displayMode = mode;
     }
+
+    public void setSequenceTranslationStrandValue(Strand strand) {}
+
+    public void setShouldShowTranslationCommand(boolean shouldShowTranslation) {}
 
 
     public String getNameValueString(int y) {
