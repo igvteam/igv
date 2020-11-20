@@ -172,7 +172,6 @@ public class AlignmentTileLoader implements IGVEventObserver {
                 if (readStats != null) {
                     readStats.addAlignment(record);
                 }
-                ;
 
                 // Set mate sequence of unmapped mates
                 // Put a limit on the total size of this collection.
