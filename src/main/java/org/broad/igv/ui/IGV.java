@@ -2408,8 +2408,7 @@ public class IGV implements IGVEventObserver {
                 Autoscaler.autoscale(getAllTracks());
                 WaitCursorManager.removeWaitCursor(token);
                 UIUtilities.invokeOnEventThread(() -> {
-                    revalidateTrackPanels();   // <- neccessary for scrollbars
-                    //component.repaint();
+                    contentPane.revalidateTrackPanels();   // <- neccessary for scrollbars
                 });
                 return null;
             });

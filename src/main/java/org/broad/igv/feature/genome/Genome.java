@@ -79,8 +79,8 @@ public class Genome {
     public Genome(String id, String displayName, Sequence sequence, boolean chromosOrdered) {
         this.id = id;
         this.displayName = displayName;
-        this.chrAliasTable = new HashMap<String, String>();
-        this.sequence = sequence;
+        this.chrAliasTable = new HashMap<>();
+        this.sequence = (sequence instanceof InMemorySequence) ? sequence : new SequenceWrapper(sequence);
         chromosomeNames = sequence.getChromosomeNames();
         this.ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
 
