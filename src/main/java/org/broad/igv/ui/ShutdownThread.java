@@ -28,6 +28,7 @@ package org.broad.igv.ui;
 import org.apache.log4j.Logger;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
 
 import java.io.File;
@@ -47,6 +48,7 @@ public class ShutdownThread extends Thread {
         CommandListener.halt();
         if (IGV.hasInstance()) {
             IGV.getInstance().saveStateForExit();
+            PreferencesManager.getPreferences().setApplicationFrameBounds(IGV.getMainFrame().getBounds());
             for (Track t : IGV.getInstance().getAllTracks()) {
                 t.dispose();
             }
