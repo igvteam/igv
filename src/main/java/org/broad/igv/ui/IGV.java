@@ -2255,7 +2255,9 @@ public class IGV implements IGVEventObserver {
                     }
                     if (runningBatch) {
                         Globals.setBatch(false);   // Set to false for startup execution -- otherwise we block the event thread
-                        LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile(), IGV.this));
+
+                        SwingUtilities.invokeLater(new BatchRunner(igvArgs.getBatchFile(), IGV.this));
+                        //LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile(), IGV.this));
                     }
                 }
             });
