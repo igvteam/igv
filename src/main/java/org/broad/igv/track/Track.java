@@ -31,7 +31,6 @@ package org.broad.igv.track;
 
 
 import htsjdk.tribble.Feature;
-import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
@@ -130,9 +129,6 @@ public interface Track extends Persistable {
     String getSample();
 
     void setUrl(String url);
-
-    void setSequenceTranslationStrandValue(Strand strandValue);
-    void setShouldShowTranslationCommand(boolean shouldShowTranslation);
 
     ResourceLocator getResourceLocator();
 

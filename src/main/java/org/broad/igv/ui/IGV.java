@@ -1619,8 +1619,8 @@ public class IGV implements IGVEventObserver {
 
     public void setSequenceTrackStrand(Strand trackStrand) {
         for (Track t : getAllTracks()) {
-            if (t.getName().equals("Reference sequence")) {
-                t.setSequenceTranslationStrandValue(trackStrand);
+            if (t instanceof SequenceTrack) {
+                ((SequenceTrack) t).setSequenceTranslationStrandValue(trackStrand);
             }
         }
 
@@ -1628,8 +1628,8 @@ public class IGV implements IGVEventObserver {
 
     public void setSequenceShowTranslation(boolean shouldShowTranslation) {
         for (Track t : getAllTracks()) {
-            if (t.getName().equals("Reference sequence")) {
-                t.setShouldShowTranslationCommand(shouldShowTranslation);
+            if (t instanceof SequenceTrack) {
+                ((SequenceTrack) t).setShouldShowTranslationCommand(shouldShowTranslation);
             }
         }
 
