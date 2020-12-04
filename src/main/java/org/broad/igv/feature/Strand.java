@@ -37,6 +37,8 @@ public enum Strand {
     NONE, POSITIVE, NEGATIVE;
 
     public static Strand fromString(String strandString) {
-        return strandString.equals("+") ? POSITIVE : (strandString.equals("-") ? NEGATIVE : NONE);
+        return strandString.equals("+") || strandString.equalsIgnoreCase("POSITIVE")
+                ? POSITIVE : (strandString.equals("-") || strandString.equalsIgnoreCase("NEGATIVE")
+                ? NEGATIVE : NONE);
     }
 }

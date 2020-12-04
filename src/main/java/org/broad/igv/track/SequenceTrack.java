@@ -48,6 +48,8 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
@@ -61,6 +63,7 @@ import java.util.Map;
 
 import static org.broad.igv.prefs.Constants.MAX_SEQUENCE_RESOLUTION;
 import static org.broad.igv.prefs.Constants.SHOW_SEQUENCE_TRANSLATION;
+import static org.broad.igv.prefs.Constants.SEQUENCE_TRANSLATION_STRAND;
 
 
 /**
@@ -91,6 +94,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         super(null, name, name);
         setSortable(false);
         shouldShowTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
+        strand = Strand.fromString(PreferencesManager.getPreferences().get(SEQUENCE_TRANSLATION_STRAND));
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
         sequenceVisible = Collections.synchronizedMap(new HashMap<>());
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
@@ -314,8 +318,25 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     }
 
+    public void setSequenceTranslationStrandValue(Strand strandValue) {
+        strand = strandValue;
+        PreferencesManager.getPreferences().put(SEQUENCE_TRANSLATION_STRAND, strand.toString());
+        IGV.getInstance().clearSelections();
+        repaint();
+    }
+
     public void setShouldShowTranslation(boolean shouldShowTranslation) {
         this.shouldShowTranslation = shouldShowTranslation;
+        // Remember this choice
+        PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
+    }
+
+    public void setShouldShowTranslationCommand(boolean shouldShowTranslation) {
+        this.shouldShowTranslation = shouldShowTranslation;
+        setShouldShowTranslation(shouldShowTranslation);
+        repaint();
+        IGV.getInstance().repaint();
+        IGV.getInstance().clearSelections();
         // Remember this choice
         PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
     }
@@ -445,4 +466,27 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             this.negAA = negAA;
         }
     }
+
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        element.setAttribute("shouldShowTranslation", String.valueOf(shouldShowTranslation));
+        element.setAttribute("sequenceTranslationStrandValue", String.valueOf(strand));
+
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        if (element.hasAttribute("shouldShowTranslation")) {
+            this.shouldShowTranslation = Boolean.valueOf(element.getAttribute("shouldShowTranslation"));
+        }
+        if (element.hasAttribute("sequenceTranslationStrandValue")) {
+            this.strand = Strand.fromString(element.getAttribute("sequenceTranslationStrandValue"));
+        }
+    }
+
 }

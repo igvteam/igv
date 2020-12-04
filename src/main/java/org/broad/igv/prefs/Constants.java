@@ -163,6 +163,7 @@ final public class Constants {
     public static final String KNOWN_SNPS = "KNOWN_SNPS_FILE";
 
     // Sequence track settings
+    public static final String SEQUENCE_TRANSLATION_STRAND = "SEQUENCE_TRANSLATION_STRAND";
     public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
     public static final String MAX_SEQUENCE_RESOLUTION = "MAX_SEQUENCE_RESOLUTION";
     public static final String COLOR_A = "COLOR.A";

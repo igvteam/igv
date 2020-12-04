@@ -36,6 +36,7 @@ import org.broad.igv.event.RepaintEvent;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.google.Ga4ghAPIHelper;
 import org.broad.igv.google.OAuthUtils;
@@ -45,6 +46,7 @@ import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -133,6 +135,20 @@ public class CommandExecutor {
             } else if (cmd.equalsIgnoreCase("collapse")) {
                 String trackName = parseTrackName(param1);
                 igv.setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
+            } else if (cmd.equalsIgnoreCase("setSequenceStrand")) {
+                igv.setSequenceTrackStrand(Strand.fromString(param1));
+            } else if (cmd.equalsIgnoreCase("setSequenceShowTranslation")) {
+                boolean showTranslation;
+                try {
+                    if (param1.equalsIgnoreCase("true") || param1.equalsIgnoreCase("false")) {
+                        showTranslation = Boolean.valueOf(param1);
+                    } else {
+                        return "ERROR: showTranslation value (" + param1 + ")is not 'true' or 'false'.";
+                    }
+                } catch (IllegalArgumentException e) {
+                    return e.getMessage();
+                }
+                igv.setSequenceShowTranslation(showTranslation);
             } else if (cmd.equalsIgnoreCase("expand")) {
                 String trackName = parseTrackName(param1);
                 igv.setTrackDisplayMode(Track.DisplayMode.EXPANDED, trackName);

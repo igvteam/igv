@@ -1617,6 +1617,25 @@ public class IGV implements IGVEventObserver {
     }
 
 
+    public void setSequenceTrackStrand(Strand trackStrand) {
+        for (Track t : getAllTracks()) {
+            if (t.getName().equals("Reference sequence")) {
+                t.setSequenceTranslationStrandValue(trackStrand);
+            }
+        }
+
+    }
+
+    public void setSequenceShowTranslation(boolean shouldShowTranslation) {
+        for (Track t : getAllTracks()) {
+            if (t.getName().equals("Reference sequence")) {
+                t.setShouldShowTranslationCommand(shouldShowTranslation);
+            }
+        }
+
+    }
+
+
     /**
      * Reset the overlay tracks collection.  Currently the only overlayable track
      * type is Mutation.  This method finds all mutation tracks and builds a map
