@@ -2083,182 +2083,197 @@ public class IGV implements IGVEventObserver {
 
         @Override
         public void run() {
-            final boolean runningBatch = igvArgs.getBatchFile() != null;
-            BatchRunner.setIsBatchMode(runningBatch);
 
-            UIUtilities.invokeOnEventThread(() -> mainFrame.setIconImage(getIconImage()));
-            if (Globals.IS_MAC) {
-                setAppleDockIcon();
-            }
+            final IGVPreferences preferences = PreferencesManager.getPreferences();
 
-            final IGVPreferences preferenceManager = PreferencesManager.getPreferences();
-
-            boolean genomeLoaded = false;
-            if (igvArgs.getGenomeId() != null) {
-                String genomeId = igvArgs.getGenomeId();
-                try {
-                    GenomeManager.getInstance().loadGenomeById(genomeId);
-                    genomeLoaded = true;
-                } catch (IOException e) {
-                    MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                    log.error("Error loading genome: " + genomeId, e);
+            UIUtilities.invokeAndWaitOnEventThread(() -> {
+                mainFrame.setIconImage(getIconImage());
+                if (Globals.IS_MAC) {
+                    setAppleDockIcon();
                 }
-            }
-
-            if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
-                String genomeId = preferenceManager.getDefaultGenome();
-                try {
-                    GenomeManager.getInstance().loadGenomeById(genomeId);
-                    genomeLoaded = true;
-                } catch (Exception e) {
-                    MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                    log.error("Error loading genome: " + genomeId, e);
-                }
-            }
-
-            if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
-                String genomeId = GenomeListManager.DEFAULT_GENOME.getId();
-                try {
-                    GenomeManager.getInstance().loadGenomeById(genomeId);
-                } catch (IOException e) {
-                    MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                    log.error("Error loading genome: " + genomeId, e);
-                }
-            }
-
-            //If there is an argument assume it is a session file or url
-            if (igvArgs.getSessionFile() != null || igvArgs.getDataFileStrings() != null) {
-
-                if (log.isDebugEnabled()) {
-                    log.debug("Loading session data");
-                }
-
-                final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor();
-                final ProgressBar.ProgressDialog progressDialog2 = ProgressBar.showProgressDialog(mainFrame, "Loading session data", indefMonitor, false);
-                indefMonitor.start();
-
-
-                if (log.isDebugEnabled()) {
-                    log.debug("Calling restore session");
-                }
-
-
-                if (igvArgs.getSessionFile() != null) {
-                    boolean success = false;
-                    if (HttpUtils.isRemoteURL(igvArgs.getSessionFile())) {
-                        boolean merge = false;
-                        success = restoreSessionSynchronous(igvArgs.getSessionFile(), igvArgs.getLocusString(), merge);
-                    } else {
-                        File sf = new File(igvArgs.getSessionFile());
-                        if (sf.exists()) {
-                            success = restoreSessionSynchronous(sf.getAbsolutePath(), igvArgs.getLocusString(), false);
-                        }
-                    }
-                    if (!success) {
-                        String genomeId = preferenceManager.getDefaultGenome();
-                        contentPane.getCommandBar().selectGenome(genomeId);
-
-                    }
-                } else if (igvArgs.getDataFileStrings() != null) {
-
-                    // Not an xml file, assume its a list of data files
-                    List<String> dataFiles = igvArgs.getDataFileStrings();
-
-                    Collection<String> h = igvArgs.getHttpHeader();
-                    log.info("h= " + igvArgs.getHttpHeader());
-                    if (h != null && !h.isEmpty()) {
-                        HttpUtils.getInstance().addHeaders(h, dataFiles);
-                    }
-
-                    String[] names = null;
-                    if (igvArgs.getName() != null) {
-                        names = igvArgs.getName().split(",");
-                    }
-                    String[] indexFiles = null;
-                    if (igvArgs.getIndexFile() != null) {
-                        indexFiles = igvArgs.getIndexFile().split(",");
-                    }
-                    String[] coverageFiles = null;
-                    if (igvArgs.getCoverageFile() != null) {
-                        coverageFiles = igvArgs.getCoverageFile().split(",");
-                    }
-
-                    List<ResourceLocator> locators = new ArrayList();
-                    for (int i = 0; i < dataFiles.size(); i++) {
-
-                        String p = dataFiles.get(i).trim();
-
-                        // Decode local file urls??? I don't understand this extra decoding
-                        if (URLUtils.isURL(p) && !FileUtils.isRemote(p)) {
-                            p = StringUtils.decodeURL(p);
-                        }
-
-                        ResourceLocator rl = new ResourceLocator(p);
-
-                        if (names != null && i < names.length) {
-                            String name = names[i];
-                            rl.setName(name);
-                        }
-
-                        //Set index file, iff one was passed
-                        if (indexFiles != null && i < indexFiles.length) {
-                            String idxP = indexFiles[i];
-                            if (URLUtils.isURL(idxP) && !FileUtils.isRemote(idxP)) {
-                                idxP = StringUtils.decodeURL(idxP);       // ???
-                            }
-                            if (idxP.length() > 0) {
-                                rl.setIndexPath(idxP);
-                            }
-                        }
-
-                        //Set coverage file, iff one was passed
-                        if (coverageFiles != null && i < coverageFiles.length) {
-                            String covP = coverageFiles[i];
-                            if (URLUtils.isURL(covP) && !FileUtils.isRemote(covP)) {
-                                covP = StringUtils.decodeURL(covP);       // ???
-                            }
-                            if (covP.length() > 0) {
-                                rl.setCoverage(covP);
-                            }
-                        }
-
-                        locators.add(rl);
-                    }
-                    loadTracks(locators);
-                }
-
-
-                indefMonitor.stop();
-                closeWindow(progressDialog2);
-
-            }
-
-            session.recordHistory();
+                mainFrame.setVisible(true);
+            });
 
             // Start up a port listener.  Port # can be overriden with "-p" command line switch
-            boolean portEnabled = preferenceManager.getAsBoolean(PORT_ENABLED);
+            boolean portEnabled = preferences.getAsBoolean(PORT_ENABLED);
             String portString = igvArgs.getPort();
             if (portEnabled || portString != null) {
                 // Command listener thread
-                int port = preferenceManager.getAsInt(PORT_NUMBER);
+                int port = preferences.getAsInt(PORT_NUMBER);
                 if (portString != null) {
                     port = Integer.parseInt(portString);
                 }
                 CommandListener.start(port);
             }
 
-            UIUtilities.invokeOnEventThread(new Runnable() {
-                public void run() {
-                    mainFrame.setVisible(true);
+            // Load the initial genome.
+
+            final boolean runningBatch = igvArgs.getBatchFile() != null;
+
+            if (runningBatch) {
+
+                BatchRunner.setIsBatchMode(true);
+                try {
+                    UIUtilities.invokeAndWaitOnEventThread(() -> {
+                        String genomeId = preferences.getDefaultGenome();
+                        BatchRunner batchRunner = (new BatchRunner(igvArgs.getBatchFile(), IGV.this));
+                        batchRunner.runWithDefaultGenome(genomeId);
+                    });
+                } finally {
+                    BatchRunner.setIsBatchMode(false);
+                }
+
+            } else {
+                boolean genomeLoaded = false;
+
+                if (igvArgs.getGenomeId() != null) {
+                    String genomeId = igvArgs.getGenomeId();
+                    try {
+                        GenomeManager.getInstance().loadGenomeById(genomeId);
+                        genomeLoaded = true;
+                    } catch (IOException e) {
+                        MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                        log.error("Error loading genome: " + genomeId, e);
+                    }
+                }
+
+                if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
+                    String genomeId = preferences.getDefaultGenome();
+                    try {
+                        GenomeManager.getInstance().loadGenomeById(genomeId);
+                        genomeLoaded = true;
+                    } catch (Exception e) {
+                        MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                        log.error("Error loading genome: " + genomeId, e);
+                    }
+                }
+
+                if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
+                    String genomeId = GenomeListManager.DEFAULT_GENOME.getId();
+                    try {
+                        GenomeManager.getInstance().loadGenomeById(genomeId);
+                    } catch (IOException e) {
+                        MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                        log.error("Error loading genome: " + genomeId, e);
+                    }
+                }
+
+                if (igvArgs.getSessionFile() != null || igvArgs.getDataFileStrings() != null) {
+
+                    if (log.isDebugEnabled()) {
+                        log.debug("Loading session data");
+                    }
+
+                    final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor();
+                    final ProgressBar.ProgressDialog progressDialog2 = ProgressBar.showProgressDialog(mainFrame, "Loading session data", indefMonitor, false);
+                    indefMonitor.start();
+
+
+                    if (log.isDebugEnabled()) {
+                        log.debug("Calling restore session");
+                    }
+
+
+                    if (igvArgs.getSessionFile() != null) {
+                        boolean success = false;
+                        if (HttpUtils.isRemoteURL(igvArgs.getSessionFile())) {
+                            boolean merge = false;
+                            success = restoreSessionSynchronous(igvArgs.getSessionFile(), igvArgs.getLocusString(), merge);
+                        } else {
+                            File sf = new File(igvArgs.getSessionFile());
+                            if (sf.exists()) {
+                                success = restoreSessionSynchronous(sf.getAbsolutePath(), igvArgs.getLocusString(), false);
+                            }
+                        }
+                        if (!success) {
+                            String genomeId = preferences.getDefaultGenome();
+                            contentPane.getCommandBar().selectGenome(genomeId);
+
+                        }
+                    } else if (igvArgs.getDataFileStrings() != null) {
+
+                        // Not an xml file, assume its a list of data files
+                        List<String> dataFiles = igvArgs.getDataFileStrings();
+
+                        Collection<String> h = igvArgs.getHttpHeader();
+                        log.info("h= " + igvArgs.getHttpHeader());
+                        if (h != null && !h.isEmpty()) {
+                            HttpUtils.getInstance().addHeaders(h, dataFiles);
+                        }
+
+                        String[] names = null;
+                        if (igvArgs.getName() != null) {
+                            names = igvArgs.getName().split(",");
+                        }
+                        String[] indexFiles = null;
+                        if (igvArgs.getIndexFile() != null) {
+                            indexFiles = igvArgs.getIndexFile().split(",");
+                        }
+                        String[] coverageFiles = null;
+                        if (igvArgs.getCoverageFile() != null) {
+                            coverageFiles = igvArgs.getCoverageFile().split(",");
+                        }
+
+                        List<ResourceLocator> locators = new ArrayList();
+                        for (int i = 0; i < dataFiles.size(); i++) {
+
+                            String p = dataFiles.get(i).trim();
+
+                            // Decode local file urls??? I don't understand this extra decoding
+                            if (URLUtils.isURL(p) && !FileUtils.isRemote(p)) {
+                                p = StringUtils.decodeURL(p);
+                            }
+
+                            ResourceLocator rl = new ResourceLocator(p);
+
+                            if (names != null && i < names.length) {
+                                String name = names[i];
+                                rl.setName(name);
+                            }
+
+                            //Set index file, iff one was passed
+                            if (indexFiles != null && i < indexFiles.length) {
+                                String idxP = indexFiles[i];
+                                if (URLUtils.isURL(idxP) && !FileUtils.isRemote(idxP)) {
+                                    idxP = StringUtils.decodeURL(idxP);       // ???
+                                }
+                                if (idxP.length() > 0) {
+                                    rl.setIndexPath(idxP);
+                                }
+                            }
+
+                            //Set coverage file, iff one was passed
+                            if (coverageFiles != null && i < coverageFiles.length) {
+                                String covP = coverageFiles[i];
+                                if (URLUtils.isURL(covP) && !FileUtils.isRemote(covP)) {
+                                    covP = StringUtils.decodeURL(covP);       // ???
+                                }
+                                if (covP.length() > 0) {
+                                    rl.setCoverage(covP);
+                                }
+                            }
+
+                            locators.add(rl);
+                        }
+                        loadTracks(locators);
+                    }
+
+
+                    indefMonitor.stop();
+                    closeWindow(progressDialog2);
+
+                }
+
+                UIUtilities.invokeAndWaitOnEventThread(() -> {
+
                     if (igvArgs.getLocusString() != null) {
                         goToLocus(igvArgs.getLocusString());
                     }
-                    if (runningBatch) {
-                        Globals.setBatch(false);   // Set to false for startup execution -- otherwise we block the event thread
-                        LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile(), IGV.this));
-                    }
-                }
-            });
+
+                });
+
+                session.recordHistory();
+            }
 
             synchronized (IGV.getInstance()) {
                 IGV.getInstance().notifyAll();

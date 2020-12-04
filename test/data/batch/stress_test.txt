@@ -4,3 +4,10 @@ snapshot
 goto myc
 squish HG01879.mapped.ILLUMINA.bwa.ACB.low_coverage.20120522.bam
 snapshot
+goto muc1
+snapshot
+goto tp53
+zoomin
+zoomin
+zoomin
+snapshot
