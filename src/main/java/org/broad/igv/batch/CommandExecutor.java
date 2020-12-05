@@ -46,7 +46,6 @@ import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
-import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -212,9 +211,7 @@ public class CommandExecutor {
             }
             log.debug("Finished sleeping");
 
-        } catch (
-                IOException e
-        ) {
+        } catch (IOException e) {
             log.error(e);
             result = "Error: " + e.getMessage();
         }

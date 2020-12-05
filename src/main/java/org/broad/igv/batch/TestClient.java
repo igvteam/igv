@@ -27,7 +27,6 @@ package org.broad.igv.batch;
 
 
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -36,13 +35,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TestClient {
-
-    static private String sessionURL = "http://www.broadinstitute.org/mmgp/textReader/IGV/mmrc_session.xml";
-    static private String fileURL = "https://data.broadinstitute.org/igvdata/cshcourse/rwpe.washu.merged.bam";
 
     public static void main(String args[]) throws IOException {
         Socket socket = null;
@@ -52,7 +46,7 @@ public class TestClient {
             socket = new Socket("127.0.0.1", 60151);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            testMultiLocus(out, in);
+            testGOTO(out, in);
         } catch (UnknownHostException e) {
             System.err.println("Unknown host exception: " + e.getMessage());
             System.exit(1);
@@ -98,7 +92,7 @@ public class TestClient {
 
     private static void testMultiLocus(PrintWriter out, BufferedReader in) throws IOException {
 
-        String cmd = "load https://data.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz";
+        String cmd = "load https://s3.amazonaws.com/igv.org.demo/GBM-TP.seg.gz";
         out.println(cmd);
         String response = in.readLine();
         System.out.println(cmd + " " + response);
@@ -110,5 +104,38 @@ public class TestClient {
 
 
     }
+
+
+    private static void testGOTO(PrintWriter out, BufferedReader in) throws IOException {
+
+        out.println("new");
+        String response = in.readLine();
+        System.out.println(response);
+
+        out.println("load https://1000genomes.s3.amazonaws.com/phase3/data/HG01883/alignment/HG01883.mapped.ILLUMINA.bwa.ACB.low_coverage.20130415.bam");
+        response = in.readLine();
+        System.out.println(response);
+
+        out.println("load https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/alignment/HG01879.mapped.ILLUMINA.bwa.ACB.low_coverage.20120522.bam");
+        response = in.readLine();
+        System.out.println(response);
+
+        int cnt = 10;
+        while (cnt-- >= 0) {
+            int pos = 1000000 + (int) (Math.random() * 1000000);
+            String cmd = "goto chr1:" + pos;
+            out.println(cmd);
+            response = in.readLine();
+            System.out.println(cmd + " " + response);
+
+            out.println("snapshot");
+            response = in.readLine();
+            System.out.println("snapshot " + response);
+
+        }
+
+
+    }
+
 
 }
