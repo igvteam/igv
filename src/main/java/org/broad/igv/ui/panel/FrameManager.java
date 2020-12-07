@@ -59,6 +59,18 @@ public class FrameManager implements IGVEventObserver {
         frames.add(getDefaultFrame());
     }
 
+    public static String getCurrentLocusString() {
+        if(isGeneListMode()) {
+            String name = frames.get(0).getName();
+            for(int i=1; i<frames.size(); i++) {
+                name += " | " + frames.get(i).getName();
+            }
+            return name;
+        } else {
+            return defaultFrame.getFormattedLocusString();
+        }
+    }
+
     public synchronized static ReferenceFrame getDefaultFrame() {
         if (defaultFrame == null) {
             defaultFrame = new ReferenceFrame(DEFAULT_FRAME_NAME);

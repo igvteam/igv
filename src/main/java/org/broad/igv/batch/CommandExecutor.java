@@ -107,11 +107,9 @@ public class CommandExecutor {
 
             if (cmd.equalsIgnoreCase("echo")) {
                 result = cmd;
-            } else if (cmd.equalsIgnoreCase("gotoimmediate")) {
-                return gotoImmediate(args);
-            } else if (cmd.equalsIgnoreCase("goto")) {
+            } else if (cmd.equalsIgnoreCase("gotoimmediate") || cmd.equalsIgnoreCase("goto")) {
                 result = goto1(args);
-            } else if (cmd.equalsIgnoreCase("gototrack")) {
+            } else if (cmd.equalsIgnoreCase("scrolltotrack") || cmd.equalsIgnoreCase("gototrack")) {
                 boolean res = this.igv.scrollToTrack(param1);
                 result = res ? "OK" : String.format("Error: Track %s not found", param1);
             } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
@@ -841,7 +839,7 @@ public class CommandExecutor {
     private String createSnapshot(String filename, String region) {
 
         if (filename == null) {
-            String locus = FrameManager.getDefaultFrame().getFormattedLocusString();
+            String locus = FrameManager.getCurrentLocusString();
             filename = locus.replaceAll(":", "_").replace("-", "_") + ".png";
         } else {
             filename = StringUtils.stripQuotes(filename);
