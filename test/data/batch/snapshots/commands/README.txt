@@ -1,0 +1,1 @@
+Snapshots for "test_path_with_spaces.txt" script

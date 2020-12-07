@@ -46,7 +46,8 @@ public class TestClient {
             socket = new Socket("127.0.0.1", 60151);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            testGOTO(out, in);
+            //testGOTO(out, in);
+            runBatchFile(out, in, "test/data/batch/test_commands.txt");
         } catch (UnknownHostException e) {
             System.err.println("Unknown host exception: " + e.getMessage());
             System.exit(1);

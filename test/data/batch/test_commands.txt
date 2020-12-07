@@ -1,0 +1,36 @@
+snapshotDirectory test/data/batch/snapshots/commands
+version
+new
+genome hg19
+load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
+load gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
+snapshot loadBams.png
+goto myc
+snapshot myc.png
+collapse platinum-genomes%2Fbam%2FNA12878_S1.bam
+snapshot collapsed.png
+squish platinum-genomes%2Fbam%2FNA12878_S1.bam
+snapshot squish.png
+expand platinum-genomes%2Fbam%2FNA12878_S1.bam
+snapshot expand.png
+viewAsPairs true platinum-genomes%2Fbam%2FNA12878_S1.bam
+snapshot viewAsPairs.png
+viewAsPairs false platinum-genomes%2Fbam%2FNA12878_S1.bam
+snapshot viewAsPairsOff.png
+squish
+group STRAND
+snapshot groupByStrang.png
+group NONE
+snapshot ungroup.png
+expand
+goto chr17:7,579,801
+sort BASE chr17:7,579,801
+snapshot sortByBase.png
+setSequenceStrand -
+snapshot minusStrang.png
+setSequenceShowTranslation true
+snapshot showTranslation.png
+
+
+
+

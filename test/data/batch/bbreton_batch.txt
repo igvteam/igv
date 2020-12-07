@@ -1,9 +1,0 @@
-#Always works with Tools -> Run Batch Script
-#CLI is unreliable: ./igv.sh -b only_works_first_time.script
-#Frequently though not all the time fails.  In general doing other stuff with igv e.g. loading genomes, other bam files etc. seem to make it more likely to work.  It fails the majority of the time when run twice in a row.
-#Uncommenting the hg38 and making it load hg38 then load hg19 makes it work more often, but not all the time.
-#genome hg38
-genome hg19
-load http://1000genomes.s3.amazonaws.com/phase3/data/HG00268/high_coverage_alignment/HG00268.wgs.ILLUMINA.bwa.FIN.high_cov_pcr_free.20140203.bam
-goto chr9:12054933-12055133
-exit
