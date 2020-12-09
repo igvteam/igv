@@ -778,7 +778,7 @@ public class CommandExecutor {
                     roi = new RegionOfInterest(locus.getChr(), start, locus.getEnd(), "");
                 }
             }
-            igv.sortByRegionScore(roi, regionSortOption, FrameManager.getDefaultFrame());
+            igv.sortByRegionScore(roi, regionSortOption, FrameManager.getFirstFrame());
             return "OK";
         } else {
             // Alignments

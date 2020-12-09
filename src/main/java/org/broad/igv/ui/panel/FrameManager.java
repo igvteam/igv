@@ -78,6 +78,11 @@ public class FrameManager implements IGVEventObserver {
         return defaultFrame;
     }
 
+
+    public static ReferenceFrame getFirstFrame() {
+        return isGeneListMode() ? frames.get(0) : defaultFrame;
+    }
+
     public static List<ReferenceFrame> getFrames() {
         return frames;
     }
@@ -268,6 +273,7 @@ public class FrameManager implements IGVEventObserver {
             getDefaultFrame().doZoomIncrement(zoom);
         }
     }
+
 
     @Override
     public void receiveEvent(Object event) {
