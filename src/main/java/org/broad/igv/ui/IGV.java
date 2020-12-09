@@ -917,7 +917,7 @@ public class IGV implements IGVEventObserver {
         }
         contentPane.getMainPanel().resetPanels();
 
-        //TODO -- this is a very blunt and dangerous way to clean up -- change to close files associated with this session
+        //TODO -- this is a very blunt way to clean up -- change to close files associated with this session
         SeekableFileStream.closeAllInstances();
 
         Set<Track> newTracks = new HashSet<>(getAllTracks());
@@ -941,7 +941,10 @@ public class IGV implements IGVEventObserver {
      */
     public void newSession() {
         resetSession(null);
-        setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
+        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        if(currentGenome != null) {
+            setGenomeTracks(currentGenome.getGeneTrack());
+        }
         this.menuBar.disableReloadSession();
         this.repaint();
     }
@@ -2094,17 +2097,6 @@ public class IGV implements IGVEventObserver {
                 mainFrame.setVisible(true);
             });
 
-            // Start up a port listener.  Port # can be overriden with "-p" command line switch
-            boolean portEnabled = preferences.getAsBoolean(PORT_ENABLED);
-            String portString = igvArgs.getPort();
-            if (portEnabled || portString != null) {
-                // Command listener thread
-                int port = preferences.getAsInt(PORT_NUMBER);
-                if (portString != null) {
-                    port = Integer.parseInt(portString);
-                }
-                CommandListener.start(port);
-            }
 
             // Load the initial genome.
 
@@ -2273,6 +2265,18 @@ public class IGV implements IGVEventObserver {
                 });
 
                 session.recordHistory();
+
+                // Start up a port listener.  Port # can be overriden with "-p" command line switch
+                boolean portEnabled = preferences.getAsBoolean(PORT_ENABLED);
+                String portString = igvArgs.getPort();
+                if (portEnabled || portString != null) {
+                    // Command listener thread
+                    int port = preferences.getAsInt(PORT_NUMBER);
+                    if (portString != null) {
+                        port = Integer.parseInt(portString);
+                    }
+                    CommandListener.start(port);
+                }
             }
 
             synchronized (IGV.getInstance()) {
