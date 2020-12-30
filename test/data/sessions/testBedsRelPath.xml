@@ -1,32 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!--
-  ~ The MIT License (MIT)
-  ~
-  ~ Copyright (c) 2007-2015 Broad Institute
-  ~
-  ~ Permission is hereby granted, free of charge, to any person obtaining a copy
-  ~ of this software and associated documentation files (the "Software"), to deal
-  ~ in the Software without restriction, including without limitation the rights
-  ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  ~ copies of the Software, and to permit persons to whom the Software is
-  ~ furnished to do so, subject to the following conditions:
-  ~
-  ~ The above copyright notice and this permission notice shall be included in
-  ~ all copies or substantial portions of the Software.
-  ~
-  ~
-  ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  ~ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-  ~ THE SOFTWARE.
-  -->
-
-<Session genome="hg18" locus="chr1:1-500" version="4">
+<Session genome="hg18" locus="chr1:1-500" version="8">
     <Resources>
-        <Resource path="../bed/test2.bed"/>
         <Resource path="../bed/test.bed"/>
+        <Resource path="../bed/test2.bed"/>
     </Resources>
+    <Panel height="944" name="FeaturePanel" width="1967">
+        <Track attributeKey="test2.bed" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;3.0;255,255,255;0,0,178" fontSize="10" height="120" id="/Users/jrobinso/igv-team Dropbox/James Robinson/projects/igv/test/data/bed/test2.bed" name="Test Bed 2" visible="true"/>
+        <Track attributeKey="test.bed" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;5.0;255,255,255;0,0,178" fontSize="10" height="120" id="/Users/jrobinso/igv-team Dropbox/James Robinson/projects/igv/test/data/bed/test.bed" name="Test Bed" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.0062827225130890054"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
 </Session>
