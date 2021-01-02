@@ -41,7 +41,7 @@ Human Herpesvirus 4, Type 2	https://s3.amazonaws.com/igv.broadinstitute.org/geno
 Human hg18	https://s3.amazonaws.com/igv.org.genomes/json/hg18.json	hg18
 Human hg19	https://s3.amazonaws.com/igv.org.genomes/json/hg19.json	hg19
 Human hg38	https://s3.amazonaws.com/igv.org.genomes/json/hg38.json	hg38
-Human hg38_1kg	https://s3.amazonaws.com/igv.org.genomes/json/hg38.json	hg38_1kg
+Human hg38 (1kg/GATK)	https://s3.amazonaws.com/igv.org.genomes/json/hg38_1kg.json	hg38_1kg
 Human Mito (NC_012920)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_012920.1.gbk	NC_012920
 Human respiratory synctial virus	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/M74568.genome	M74568
 Macaca fascicularis (CE_1.0)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/CE_1.0.genome	CE_1.0

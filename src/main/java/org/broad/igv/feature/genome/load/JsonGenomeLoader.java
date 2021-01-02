@@ -42,13 +42,20 @@ public class JsonGenomeLoader extends GenomeLoader {
 
         String id = json.get("id").getAsString();
         String name = json.get("name").getAsString();
-        String fastaPath = json.get("fastaURL").getAsString();
-        JsonElement orderedElement = json.get("ordered");
-        boolean ordered = orderedElement != null && orderedElement.getAsBoolean();
 
-        JsonElement indexPathObject = json.get("indexURL");
-        String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
-        JsonElement aliasURL = json.get("aliasURL");
+        String fastaPath;
+        String indexPath = null;
+        if (json.has("compressedFastaURL")) {
+            JsonElement fastaElement = json.has("compressedFastaURL") ?
+                    json.get("compressedFastaURL") :
+                    json.get("fastaURL");
+            fastaPath = fastaElement.getAsString();
+            // index path ignored for bgzipped fasta
+        } else {
+            fastaPath = json.get("fastaURL").getAsString();
+            JsonElement indexPathObject = json.get("indexURL");
+            indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
+        }
 
         fastaPath = FileUtils.getAbsolutePath(fastaPath, genomePath);
         if (indexPath != null) {
@@ -58,6 +65,11 @@ public class JsonGenomeLoader extends GenomeLoader {
         FastaIndexedSequence sequence = fastaPath.endsWith(".gz") ?
                 new FastaBlockCompressedSequence(fastaPath, indexPath) :
                 new FastaIndexedSequence(fastaPath, indexPath);
+
+        JsonElement orderedElement = json.get("ordered");
+        boolean ordered = orderedElement != null && orderedElement.getAsBoolean();
+        JsonElement aliasURL = json.get("aliasURL");
+
 
         ArrayList<ResourceLocator> tracks = new ArrayList<>();
         ArrayList<ResourceLocator> hiddenTracks = new ArrayList<>();
@@ -89,8 +101,8 @@ public class JsonGenomeLoader extends GenomeLoader {
                 if (trackIndexPath != null) res.setIndexPath(trackIndexPath);
                 if (indexedElement != null) res.setIndexed(indexed);
 
-                if(hidden) {
-                    if(indexed || trackIndex != null) {
+                if (hidden) {
+                    if (indexed || trackIndex != null) {
                         log.info("Hidden tracks cannot be indexed.  Ignoring " + trackPath);
                     } else {
                         hiddenTracks.add(res);
@@ -106,7 +118,7 @@ public class JsonGenomeLoader extends GenomeLoader {
         if (aliasURL != null) {
             newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasURL.getAsString()));
         }
-        if(hiddenTracks.size() > 0) {
+        if (hiddenTracks.size() > 0) {
             addToFeatureDB(hiddenTracks, newGenome);
         }
         return newGenome;
@@ -124,7 +136,7 @@ public class JsonGenomeLoader extends GenomeLoader {
 
 
     private void addToFeatureDB(List<ResourceLocator> locators, Genome genome) {
-        for(ResourceLocator locator: locators) {
+        for (ResourceLocator locator : locators) {
             try {
                 FeatureReader featureReader = TribbleFeatureSource.getBasicReader(locator, genome);
                 CloseableTribbleIterator<Feature> iter = featureReader.iterator();
@@ -155,9 +167,11 @@ public class JsonGenomeLoader extends GenomeLoader {
         public String getId() {
             return id;
         }
+
         public String getName() {
             return name;
         }
+
         public String getFastaURL() {
             return fastaURL;
         }
