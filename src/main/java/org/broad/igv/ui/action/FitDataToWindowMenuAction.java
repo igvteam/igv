@@ -47,11 +47,11 @@ import java.util.List;
 public class FitDataToWindowMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(FitDataToWindowMenuAction.class);
-    IGV mainFrame;
+    IGV igv;
 
-    public FitDataToWindowMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public FitDataToWindowMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
     }
 
     @Override
@@ -65,7 +65,7 @@ public class FitDataToWindowMenuAction extends MenuAction {
         for (TrackPanel tp : IGV.getInstance().getTrackPanels()) {
             fitTracksToPanel(tp.getScrollPane().getDataPanel());
         }
-        mainFrame.repaint();
+        igv.repaint();
 
     }
 

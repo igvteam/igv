@@ -32,7 +32,6 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CoverageDataSource;
-import org.broad.igv.event.RepaintEvent;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -862,7 +861,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             try {
                 float tmp = Float.parseFloat(value);
                 snpThreshold = tmp;
-                if(igv != null) igv.postEvent(new RepaintEvent(CoverageTrack.this));
+                repaint();
             } catch (Exception exc) {
                 //log
             }
@@ -933,11 +932,11 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                     TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
                     TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
                     setDataSource(ds);
-                    if(igv != null) igv.postEvent(new RepaintEvent(CoverageTrack.this));
+                    repaint();
                 } else if (path.endsWith(".counts")) {
                     CoverageDataSource ds = new GobyCountArchiveDataSource(file);
                     setDataSource(ds);
-                    igv.postEvent(new RepaintEvent(CoverageTrack.this));
+                    repaint();
                 } else {
                     if(igv != null) MessageUtils.showMessage("Coverage data must be in .tdf format");
                 }

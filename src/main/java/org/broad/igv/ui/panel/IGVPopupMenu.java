@@ -59,9 +59,6 @@ public class IGVPopupMenu extends JPopupMenu {
             }
 
             private void close() {
-                if (IGV.hasInstance()) {
-                    IGV.getInstance().repaint();
-                }
                 instances.remove(IGVPopupMenu.this);
             }
 

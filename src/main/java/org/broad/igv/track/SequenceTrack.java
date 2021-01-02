@@ -80,7 +80,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     private SequenceRenderer sequenceRenderer = new SequenceRenderer();
 
     //should translated aminoacids be shown below the sequence?
-    private boolean shouldShowTranslation = true;
+    private boolean showTranslation = true;
 
     Strand strand = Strand.POSITIVE;
 
@@ -89,8 +89,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public SequenceTrack(String name) {
         super(null, name, name);
         setSortable(false);
-        shouldShowTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
-        strand = Strand.POSITIVE; // Initially positive, formerly Strand.fromString(PreferencesManager.getPreferences().get(SEQUENCE_TRANSLATION_STRAND));
+        showTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
@@ -136,14 +135,13 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public void receiveEvent(Object event) {
 
         if (event instanceof FrameManager.ChangeEvent) {
-
+            // Remove cache for discarded frames.  This seems a rather round-about way to do it.
             Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).getFrames();
             Map<String, LoadedDataInterval<SeqCache>> newCache = Collections.synchronizedMap(new HashMap<>());
             for (ReferenceFrame f : frames) {
                 newCache.put(f.getName(), loadedIntervalCache.get(f.getName()));
             }
             loadedIntervalCache = newCache;
-
 
         } else {
             log.info("Unknown event type: " + event.getClass());
@@ -263,7 +261,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             LoadedDataInterval<SeqCache> sequenceInterval = loadedIntervalCache.get(frameName);
             if (sequenceInterval != null) {
                 sequenceRenderer.setStrand(strand);
-                sequenceRenderer.draw(sequenceInterval, context, rect, shouldShowTranslation, resolutionThreshold);
+                sequenceRenderer.draw(sequenceInterval, context, rect, showTranslation, resolutionThreshold);
             }
         }
     }
@@ -278,14 +276,14 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public int getHeight() {
         return isVisible() ? SEQUENCE_HEIGHT +
-                (shouldShowTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0) :
+                (showTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0) :
                 0;
     }
 
 
     @Override
     public boolean handleDataClick(TrackClickEvent e) {
-        setShouldShowTranslation(!shouldShowTranslation);
+        setShowTranslation(!showTranslation);
         Object source = e.getMouseEvent().getSource();
         if (source instanceof JComponent) {
             UIUtilities.invokeOnEventThread(() -> repaint());
@@ -308,27 +306,17 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     }
 
-    public void setSequenceTranslationStrandValue(Strand strandValue) {
+    public void setStrand(Strand strandValue) {
         strand = strandValue;
         PreferencesManager.getPreferences().put(SEQUENCE_TRANSLATION_STRAND, strand.toString());
         IGV.getInstance().clearSelections();
         repaint();
     }
 
-    public void setShouldShowTranslation(boolean shouldShowTranslation) {
-        this.shouldShowTranslation = shouldShowTranslation;
-        // Remember this choice
-        PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
-    }
-
-    public void setShouldShowTranslationCommand(boolean shouldShowTranslation) {
-        this.shouldShowTranslation = shouldShowTranslation;
-        setShouldShowTranslation(shouldShowTranslation);
+    public void setShowTranslation(boolean showTranslation) {
+        this.showTranslation = showTranslation;
+        PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, showTranslation);
         repaint();
-        IGV.getInstance().repaint();
-        IGV.getInstance().clearSelections();
-        // Remember this choice
-        PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
     }
 
 
@@ -346,14 +334,10 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         m1.addActionListener(e -> flipStrand());
 
         final JCheckBoxMenuItem m2 = new JCheckBoxMenuItem("Show translation");
-        m2.setSelected(shouldShowTranslation);
-        m2.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                setShouldShowTranslation(m2.isSelected());
-                repaint();
-                IGV.getInstance().clearSelections();
-            }
+        m2.setSelected(showTranslation);
+        m2.addActionListener(e -> {
+            setShowTranslation(m2.isSelected());
+            IGV.getInstance().clearSelections();
         });
 
         menu.add(m1);
@@ -390,12 +374,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             }
         });
         return item;
-    }
-
-
-    private void repaint() {
-        // TODO -- what's really needed is a repaint of all panels the sequence track intersects
-        IGV.getMainFrame().repaint();
     }
 
     // SequenceTrack does not expose its renderer
@@ -461,7 +439,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
         super.marshalXML(document, element);
 
-        element.setAttribute("shouldShowTranslation", String.valueOf(shouldShowTranslation));
+        element.setAttribute("shouldShowTranslation", String.valueOf(showTranslation));
         element.setAttribute("sequenceTranslationStrandValue", String.valueOf(strand));
 
     }
@@ -472,7 +450,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         super.unmarshalXML(element, version);
 
         if (element.hasAttribute("shouldShowTranslation")) {
-            this.shouldShowTranslation = Boolean.valueOf(element.getAttribute("shouldShowTranslation"));
+            this.showTranslation = Boolean.valueOf(element.getAttribute("shouldShowTranslation"));
         }
         if (element.hasAttribute("sequenceTranslationStrandValue")) {
             this.strand = Strand.fromString(element.getAttribute("sequenceTranslationStrandValue"));

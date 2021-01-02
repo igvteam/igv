@@ -32,7 +32,6 @@ package org.broad.igv.batch;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.event.RepaintEvent;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
@@ -289,8 +288,7 @@ public class CommandExecutor {
                 affectedTracks.add(track);
             }
         }
-        // this.igv.revalidateTrackPanels();
-        igv.postEvent(new RepaintEvent(affectedTracks));
+        igv.repaint(affectedTracks);
         return "OK";
     }
 
@@ -808,7 +806,6 @@ public class CommandExecutor {
                 }
             }
             igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
-            igv.revalidateTrackPanels();
             return "OK";
         }
     }
@@ -831,7 +828,6 @@ public class CommandExecutor {
         }
 
         igv.groupAlignmentTracks(groupOption, tagArg, r);
-        igv.repaint();
         return "OK";
     }
 

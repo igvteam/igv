@@ -51,7 +51,7 @@ import java.util.List;
 public class FilterTracksMenuAction extends MenuAction {
 
     //static Logger log = Logger.getLogger(FilterTracksMenuAction.class);
-    IGV mainFrame;
+    IGV igv;
 
     private JCheckBox showAllTracksFilterCheckBox = new JCheckBox();
 
@@ -61,9 +61,9 @@ public class FilterTracksMenuAction extends MenuAction {
 
     private TrackFilterPane trackFilterPane;
 
-    public FilterTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public FilterTracksMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
     }
 
     @Override
@@ -92,7 +92,7 @@ public class FilterTracksMenuAction extends MenuAction {
 
         if (trackFilterPane == null) {
             trackFilterPane = new TrackFilterPane(uniqueAttributeKeys, "Show tracks whose attribute",
-                    mainFrame.getSession().getFilter());
+                    igv.getSession().getFilter());
 
         } else {
 
@@ -109,7 +109,7 @@ public class FilterTracksMenuAction extends MenuAction {
         trackFilterPane.clearTracks();
         trackFilterPane.addTracks(IGV.getInstance().getAllTracks());
 
-        Integer response = showFilterTrackDialog(mainFrame.getMainFrame(), trackFilterPane, "Filter Tracks");
+        Integer response = showFilterTrackDialog(igv.getMainFrame(), trackFilterPane, "Filter Tracks");
 
         if (response == null) {
             return;
@@ -135,7 +135,7 @@ public class FilterTracksMenuAction extends MenuAction {
         } else if (response.intValue() == JOptionPane.OK_OPTION) {
 
             filterTracks(trackFilterPane);
-            mainFrame.repaint();
+            igv.repaint();
         }
 
     }

@@ -254,7 +254,6 @@ public class RegionOfInterestPanel extends JPanel {
                     focusROI.setEnd((int) frame.getChromosomePosition(e.getX()));
                 }
                 IGV.getInstance().repaint();
-
             }
         }
 

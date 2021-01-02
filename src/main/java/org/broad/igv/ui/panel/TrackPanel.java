@@ -53,9 +53,10 @@ public class TrackPanel extends IGVPanel {
     private AttributePanel attributePanel;
     private DataPanelContainer dataPanelContainer;
     private String groupAttribute;
-    int trackCountEstimate = 0;  // <= used to size array list, not neccesarily precise
+    private int trackCountEstimate = 0;  // <= used to size array list, not neccesarily precise
+    private List<TrackGroup> trackGroups;
 
-    List<TrackGroup> trackGroups;
+    transient int lastHeight = 0;
 
     /**
      * Constructs ...
@@ -156,6 +157,12 @@ public class TrackPanel extends IGVPanel {
         return count;
     }
 
+    public boolean isHeightChanged() {
+        int height = getPreferredPanelHeight();
+        boolean change = height != lastHeight;
+        lastHeight = height;
+        return change;
+    }
 
     public List<Track> getTracks() {
         ArrayList<Track> tracks = new ArrayList(trackCountEstimate);

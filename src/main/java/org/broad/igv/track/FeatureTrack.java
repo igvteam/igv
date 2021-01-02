@@ -600,7 +600,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                             //select the appropriate row
                             setSelectedFeatureRowIndex(i);
                         }
-                        IGV.getInstance().repaint();
+                        repaint();
                         break;
                     }
                 }
@@ -870,8 +870,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 }
             }
         }
-
-
     }
 
     protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {

@@ -639,8 +639,6 @@ public class IGV implements IGVEventObserver {
             PreferencesManager.getPreferences().setShowAttributeView(enableAttributeView);
             repaint();
         }
-
-
     }
 
 
@@ -924,12 +922,10 @@ public class IGV implements IGVEventObserver {
         for (Track t : oldTracks) {
 
         }
-        // repaint();
     }
 
     private void subscribeToEvents() {
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
-        IGVEventBus.getInstance().subscribe(ShiftEvent.class, this);
         IGVEventBus.getInstance().subscribe(InsertionSelectionEvent.class, this);
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
     }
@@ -942,7 +938,7 @@ public class IGV implements IGVEventObserver {
     public void newSession() {
         resetSession(null);
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        if(currentGenome != null) {
+        if (currentGenome != null) {
             setGenomeTracks(currentGenome.getGeneTrack());
         }
         this.menuBar.disableReloadSession();
@@ -1565,7 +1561,7 @@ public class IGV implements IGVEventObserver {
                 ((AlignmentTrack) t).sortRows(option, frame, actloc, tag);
             }
         }
-        this.postEvent(new RepaintEvent(alignmentTracks));
+        this.repaint(alignmentTracks);
     }
 
     /**
@@ -1598,7 +1594,7 @@ public class IGV implements IGVEventObserver {
         for (Track t : alignmentTracks) {
             ((AlignmentTrack) t).groupAlignments(option, tag, pos);
         }
-        this.postEvent(new RepaintEvent(alignmentTracks));
+        this.repaint(alignmentTracks);
     }
 
     public void packAlignmentTracks() {
@@ -1623,7 +1619,7 @@ public class IGV implements IGVEventObserver {
     public void setSequenceTrackStrand(Strand trackStrand) {
         for (Track t : getAllTracks()) {
             if (t instanceof SequenceTrack) {
-                ((SequenceTrack) t).setSequenceTranslationStrandValue(trackStrand);
+                ((SequenceTrack) t).setStrand(trackStrand);
             }
         }
 
@@ -1632,7 +1628,7 @@ public class IGV implements IGVEventObserver {
     public void setSequenceShowTranslation(boolean shouldShowTranslation) {
         for (Track t : getAllTracks()) {
             if (t instanceof SequenceTrack) {
-                ((SequenceTrack) t).setShouldShowTranslationCommand(shouldShowTranslation);
+                ((SequenceTrack) t).setShowTranslation(shouldShowTranslation);
             }
         }
 
@@ -1755,9 +1751,7 @@ public class IGV implements IGVEventObserver {
         for (Track t : getAllTracks()) {
             if (t != null)
                 t.setSelected(false);
-
         }
-
     }
 
     public void setTrackSelections(Iterable<Track> selectedTracks) {
@@ -1946,7 +1940,7 @@ public class IGV implements IGVEventObserver {
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.sortByRegionsScore(r, type, frame, sortedSamples);
         }
-        repaintContentPane();
+        repaint();
     }
 
 
@@ -2361,13 +2355,8 @@ public class IGV implements IGVEventObserver {
 
 
     public void receiveEvent(Object event) {
-        if (event instanceof RepaintEvent) {
-            // TODO -- use track information to reduce the number of panels that need repainted
-            repaintContentPane();
-        } else if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
-            revalidateTrackPanels();   // TODO -- this seems extreme
-        } else if (event instanceof ShiftEvent) {
-            revalidateTrackPanels();
+        if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
+            repaint();
         } else if (event instanceof GenomeChangeEvent) {
             repaint();
         } else {
@@ -2398,18 +2387,27 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    public void repaint() {
-        repaint(rootPane);
-    }
-
     public void repaintNamePanels() {
         for (TrackPanel tp : getTrackPanels()) {
             tp.getScrollPane().getNamePanel().repaint();
         }
     }
 
+
+    public void repaint() {
+        repaint(rootPane);
+    }
+
     public void repaintContentPane() {
         repaint(contentPane);
+    }
+
+    public void repaint(Track track) {
+        this.repaintContentPane();
+    }
+
+    public void repaint(Collection<? extends Track> tracks) {
+        this.repaintContentPane();
     }
 
     private synchronized void repaint(final JComponent component) {
@@ -2423,9 +2421,7 @@ public class IGV implements IGVEventObserver {
                         if (Globals.isBatch()) {
                             track.load(frame);
                         } else {
-                            futures.add(CompletableFuture.runAsync(() -> {
-                                track.load(frame);
-                            }, threadExecutor));
+                            futures.add(CompletableFuture.runAsync(() -> track.load(frame), threadExecutor));
                         }
                     }
                 }
@@ -2433,11 +2429,14 @@ public class IGV implements IGVEventObserver {
         }
 
         if (Globals.isBatch()) {
+            checkPanelLayouts();
             component.paintImmediately(component.getBounds());
+
         } else if (futures.size() == 0) {
             UIUtilities.invokeOnEventThread(() -> {
+                checkPanelLayouts();
+                component.validate();
                 component.repaint();
-
             });
         } else {
             final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
@@ -2446,10 +2445,20 @@ public class IGV implements IGVEventObserver {
                 Autoscaler.autoscale(getAllTracks());
                 WaitCursorManager.removeWaitCursor(token);
                 UIUtilities.invokeOnEventThread(() -> {
-                    contentPane.revalidateTrackPanels();   // <- neccessary for scrollbars
+                    checkPanelLayouts();
+                    component.repaint();
                 });
                 return null;
             });
+        }
+    }
+
+    private void checkPanelLayouts() {
+        for (TrackPanel tp : getTrackPanels()) {
+            if (tp.isHeightChanged()) {
+                tp.revalidate();
+                tp.repaint();
+            }
         }
     }
 

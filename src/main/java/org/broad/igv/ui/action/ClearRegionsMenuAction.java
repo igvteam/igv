@@ -43,11 +43,11 @@ import java.awt.event.ActionEvent;
 public class ClearRegionsMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(ClearRegionsMenuAction.class);
-    IGV mainFrame;
+    IGV igv;
 
-    public ClearRegionsMenuAction(String label, IGV mainFrame) {
+    public ClearRegionsMenuAction(String label, IGV igv) {
         super(label, null);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
         setToolTipText(UIConstants.EXPORT_REGION_TOOLTIP);
     }
 
@@ -58,13 +58,13 @@ public class ClearRegionsMenuAction extends MenuAction {
 
             public void run() {
                 int choice = JOptionPane.showConfirmDialog(
-                        mainFrame.getMainFrame(),
+                        igv.getMainFrame(),
                         "This action will clear all regions of interest.  Continue?",
                         "Clear Regions",
                         JOptionPane.YES_NO_OPTION);
                 if (choice == JOptionPane.YES_OPTION) {
-                    mainFrame.getSession().clearRegionsOfInterest();
-                    mainFrame.repaint();
+                    igv.getSession().clearRegionsOfInterest();
+                    igv.repaint();
                 }
             }
         });

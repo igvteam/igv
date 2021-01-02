@@ -27,7 +27,6 @@ package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.event.RepaintEvent;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
@@ -512,7 +511,7 @@ public class GWASTrack extends AbstractTrack {
         axisItem.addActionListener(e -> {
             showAxis = axisItem.isSelected();
             PreferencesManager.getPreferences().put(Constants.GWAS_SHOW_AXIS, String.valueOf(showAxis));
-            igv.postEvent(new RepaintEvent(GWASTrack.this));
+            repaint();
         });
         menu.add(axisItem);
         return axisItem;
@@ -525,7 +524,7 @@ public class GWASTrack extends AbstractTrack {
             useChrColors = true;
             alternatingColors = false;
             updateColorPreferences();
-            igv.postEvent(new RepaintEvent(GWASTrack.this));
+            repaint();
         });
         menu.add(colorItem);
 
@@ -540,7 +539,7 @@ public class GWASTrack extends AbstractTrack {
                 useChrColors = false;
                 alternatingColors = true;
                 updateColorPreferences();
-                igv.postEvent(new RepaintEvent(GWASTrack.this));
+                repaint();
             }
         });
         menu.add(colorItem);
@@ -555,7 +554,7 @@ public class GWASTrack extends AbstractTrack {
             useChrColors = false;
             alternatingColors = false;
             updateColorPreferences();
-            igv.postEvent(new RepaintEvent(GWASTrack.this));
+            repaint();
         });
         menu.add(colorItem);
         return colorItem;
@@ -575,7 +574,7 @@ public class GWASTrack extends AbstractTrack {
                 primaryColor = color;
                 String colorString = ColorUtilities.colorToString(primaryColor);
                 PreferencesManager.getPreferences().put(Constants.GWAS_PRIMARY_COLOR, colorString);
-                igv.postEvent(new RepaintEvent(GWASTrack.this));
+                repaint();
             }
         });
         menu.add(colorItem);
@@ -591,7 +590,7 @@ public class GWASTrack extends AbstractTrack {
                     secondaryColor = color;
                     String colorString = ColorUtilities.colorToString(secondaryColor);
                     PreferencesManager.getPreferences().put(Constants.GWAS_SECONDARY_COLOR, colorString);
-                    igv.postEvent(new RepaintEvent(GWASTrack.this));
+                    repaint();
                 }
 
             }
@@ -641,7 +640,7 @@ public class GWASTrack extends AbstractTrack {
                     }
                     this.minPointSize = value;
                     updatePointSizePreferences();
-                    igv.postEvent(new RepaintEvent(GWASTrack.this));
+                    repaint();
                 }
             } catch (NumberFormatException numberFormatException) {
                 JOptionPane.showMessageDialog(IGV.getMainFrame(),
@@ -670,7 +669,7 @@ public class GWASTrack extends AbstractTrack {
                     }
                     this.maxPointSize = value;
                     updatePointSizePreferences();
-                    igv.postEvent(new RepaintEvent(GWASTrack.this));
+                    repaint();
                 }
 
             } catch (NumberFormatException numberFormatException) {

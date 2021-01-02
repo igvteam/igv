@@ -46,11 +46,12 @@ public class NameHeaderPanel extends JPanel implements Paintable {
 
     public NameHeaderPanel() {
 
+        // Clicking on panel will clear all track selections
         this.addMouseListener(new IGVMouseInputAdapter() {
             @Override
             public void igvMouseClicked(MouseEvent mouseEvent) {
                 IGV.getInstance().clearSelections();
-                IGV.getInstance().repaint();
+                IGV.getInstance().repaintNamePanels();
             }
         });
     }

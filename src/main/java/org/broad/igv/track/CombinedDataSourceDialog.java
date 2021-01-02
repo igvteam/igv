@@ -119,10 +119,8 @@ public class CombinedDataSourceDialog extends JDialog {
         newTrack.setDataRange(track0.getDataRange());
         newTrack.setColorScale(track0.getColorScale());
         IGV.getInstance().addTracks(Arrays.<Track>asList(newTrack), PanelName.DATA_PANEL);
-
         this.setVisible(false);
 
-        IGV.getInstance().repaint();
     }
 
     private void helpButtonActionPerformed(ActionEvent e) {

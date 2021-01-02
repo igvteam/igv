@@ -49,7 +49,7 @@ import java.util.List;
  */
 public class SetTrackHeightMenuAction extends MenuAction {
 
-    IGV mainFrame;
+    IGV igv;
     static Logger log = Logger.getLogger(SetTrackHeightMenuAction.class);
 
     static int lastTrackHeight = -1;
@@ -59,11 +59,11 @@ public class SetTrackHeightMenuAction extends MenuAction {
      *
      * @param label
      * @param mnemonic
-     * @param mainFrame
+     * @param igv
      */
-    public SetTrackHeightMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public SetTrackHeightMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
     }
 
     /**
@@ -95,7 +95,7 @@ public class SetTrackHeightMenuAction extends MenuAction {
             int repTrackHeight = getRepresentativeTrackHeight();
             trackHeightField.setText(String.valueOf(repTrackHeight));
 
-            int status = JOptionPane.showConfirmDialog(mainFrame.getMainFrame(), container, "Set Track Height",
+            int status = JOptionPane.showConfirmDialog(igv.getMainFrame(), container, "Set Track Height",
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
             if ((status == JOptionPane.CANCEL_OPTION) || (status == JOptionPane.CLOSED_OPTION)) {
@@ -109,7 +109,7 @@ public class SetTrackHeightMenuAction extends MenuAction {
                 repaint = true;
             }
             catch (NumberFormatException numberFormatException) {
-                JOptionPane.showMessageDialog(mainFrame.getMainFrame(), "Track height must be an integer number.");
+                JOptionPane.showMessageDialog(igv.getMainFrame(), "Track height must be an integer number.");
             }
 
         }
@@ -120,9 +120,9 @@ public class SetTrackHeightMenuAction extends MenuAction {
 
                 // Update the state of the current tracks for drawing purposes
 
-                mainFrame.repaint();
+                igv.repaint();
             }
-            mainFrame.resetStatusMessage();
+            igv.resetStatusMessage();
         }
 
     }
