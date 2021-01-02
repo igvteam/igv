@@ -61,9 +61,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.broad.igv.prefs.Constants.MAX_SEQUENCE_RESOLUTION;
-import static org.broad.igv.prefs.Constants.SHOW_SEQUENCE_TRANSLATION;
-import static org.broad.igv.prefs.Constants.SEQUENCE_TRANSLATION_STRAND;
+import static org.broad.igv.prefs.Constants.*;
 
 
 /**
@@ -79,8 +77,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     private Map<String, LoadedDataInterval<SeqCache>> loadedIntervalCache = new HashMap(200);
 
-    private Map<String, Boolean> sequenceVisible;
-
     private SequenceRenderer sequenceRenderer = new SequenceRenderer();
 
     //should translated aminoacids be shown below the sequence?
@@ -94,9 +90,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         super(null, name, name);
         setSortable(false);
         shouldShowTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
-        strand = Strand.fromString(PreferencesManager.getPreferences().get(SEQUENCE_TRANSLATION_STRAND));
+        strand = Strand.POSITIVE; // Initially positive, formerly Strand.fromString(PreferencesManager.getPreferences().get(SEQUENCE_TRANSLATION_STRAND));
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
-        sequenceVisible = Collections.synchronizedMap(new HashMap<>());
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
 
@@ -156,9 +151,9 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     private void refreshAminoAcids() {
-         for(LoadedDataInterval<SeqCache> i : loadedIntervalCache.values()) {
-             i.getFeatures().refreshAminoAcids();
-         }
+        for (LoadedDataInterval<SeqCache> i : loadedIntervalCache.values()) {
+            i.getFeatures().refreshAminoAcids();
+        }
     }
 
     @Override
@@ -166,7 +161,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
         Font font = FontManager.getFont(fontSize);
 
-        boolean visible = this.sequenceVisible.values().stream().anyMatch(v -> v == true);
+        boolean visible = isVisible();
 
         if (visible) {
             graphics.setFont(font);
@@ -204,7 +199,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             return true; // Nothing to paint
         } else {
             LoadedDataInterval<SeqCache> interval = loadedIntervalCache.get(frame.getName());
-            return interval != null && interval.contains(frame);
+            boolean ready = interval != null && interval.contains(frame);
+            return ready;
         }
     }
 
@@ -259,21 +255,10 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public void render(RenderContext context, Rectangle rect) {
 
         int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);
-
         boolean visible = context.getReferenceFrame().getScale() < resolutionThreshold &&
                 !context.getChr().equals(Globals.CHR_ALL);
         final String frameName = context.getReferenceFrame().getName();
 
-        if (!sequenceVisible.containsKey(frameName)) sequenceVisible.put(frameName, false);  // Default value
-
-        if (visible != sequenceVisible.get(frameName)) {
-            sequenceVisible.put(frameName, visible);
-            UIUtilities.invokeAndWaitOnEventThread(() -> {
-                if (context.getPanel() != null) {
-                    context.getPanel().revalidate();
-                }
-            });
-        }
         if (visible) {
             LoadedDataInterval<SeqCache> sequenceInterval = loadedIntervalCache.get(frameName);
             if (sequenceInterval != null) {
@@ -283,11 +268,16 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
+    @Override
+    public boolean isVisible () {
+        int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);
+        return FrameManager.getFrames().stream().anyMatch(frame -> (frame.getScale() < resolutionThreshold &&
+                !frame.getChrName().equals(Globals.CHR_ALL)));
+    }
 
     @Override
     public int getHeight() {
-        boolean visible = this.sequenceVisible.values().stream().anyMatch(v -> v == true);
-        return visible ? SEQUENCE_HEIGHT +
+        return isVisible() ? SEQUENCE_HEIGHT +
                 (shouldShowTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0) :
                 0;
     }
