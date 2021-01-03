@@ -336,7 +336,6 @@ public class AlignmentDataManager implements IGVEventObserver {
         Range adjustedRange = new Range(chr, start, end);
 
         if(currentlyLoading != null && currentlyLoading.contains(adjustedRange)) {
-            log.info("Already loading: " + range.toString());
             return;  // Already loading
         }
         try {

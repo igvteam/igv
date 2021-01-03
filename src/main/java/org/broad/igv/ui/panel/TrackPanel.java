@@ -220,6 +220,10 @@ public class TrackPanel extends IGVPanel {
         }
     }
 
+    public boolean hasTrack(Track track) {
+        return trackGroups.stream().anyMatch(tg -> (new HashSet(tg.getTracks()).contains(track)));
+    }
+
     public void moveGroup(TrackGroup group, int index) {
 
         if (index > trackGroups.indexOf(group)) {

@@ -172,7 +172,7 @@ public class PreferencesEditor {
                         JLabel label = new JLabel(pref.getLabel());
                         String[] selections = Globals.whitespacePattern.split(pref.getType())[1].split("\\|");
                         final JComboBox<String> comboBox = new JComboBox<String>(selections);
-                        comboBox.setSelectedItem(pref.getDefaultValue().toString());
+                        comboBox.setSelectedItem(preferences.get(pref.getKey()));
                         comboBox.addActionListener(event -> {
                             log.debug("Set " + pref.getLabel() + " " + comboBox.getSelectedItem());
                         });

@@ -2395,34 +2395,41 @@ public class IGV implements IGVEventObserver {
 
 
     public void repaint() {
-        repaint(rootPane);
-    }
-
-    public void repaintContentPane() {
         repaint(contentPane);
     }
 
     public void repaint(Track track) {
-        this.repaintContentPane();
+        this.repaint(contentPane, List.of(track));
     }
 
     public void repaint(Collection<? extends Track> tracks) {
-        this.repaintContentPane();
+        this.repaint(contentPane, tracks);
     }
 
-    private synchronized void repaint(final JComponent component) {
+    private void repaint(final JComponent component) {
+        Collection<Track> trackList = new ArrayList<>();
+        for (TrackPanel tp : getTrackPanels()) {
+            trackList.addAll(visibleTracks(tp.getDataPanelContainer()));
+        }
+        repaint(component, trackList);
+    }
+
+    private boolean isRepainting = false;
+
+    private void repaint(final JComponent component, Collection<? extends Track> trackList) {
+
+        if(isRepainting) return;
+        isRepainting = true;
 
         List<CompletableFuture> futures = new ArrayList();
-        for (TrackPanel tp : getTrackPanels()) {
-            for (ReferenceFrame frame : FrameManager.getFrames()) {
-                Collection<Track> trackList = visibleTracks(tp.getDataPanelContainer());
-                for (Track track : trackList) {
-                    if (track.isReadyToPaint(frame) == false) {
-                        if (Globals.isBatch()) {
-                            track.load(frame);
-                        } else {
-                            futures.add(CompletableFuture.runAsync(() -> track.load(frame), threadExecutor));
-                        }
+
+        for (ReferenceFrame frame : FrameManager.getFrames()) {
+            for (Track track : trackList) {
+                if (track.isReadyToPaint(frame) == false) {
+                    if (Globals.isBatch()) {
+                        track.load(frame);
+                    } else {
+                        futures.add(CompletableFuture.runAsync(() -> track.load(frame), threadExecutor));
                     }
                 }
             }
@@ -2431,12 +2438,13 @@ public class IGV implements IGVEventObserver {
         if (Globals.isBatch()) {
             checkPanelLayouts();
             component.paintImmediately(component.getBounds());
+            isRepainting = false;
 
         } else if (futures.size() == 0) {
             UIUtilities.invokeOnEventThread(() -> {
                 checkPanelLayouts();
-                component.validate();
                 component.repaint();
+                isRepainting = false;
             });
         } else {
             final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
@@ -2447,6 +2455,7 @@ public class IGV implements IGVEventObserver {
                 UIUtilities.invokeOnEventThread(() -> {
                     checkPanelLayouts();
                     component.repaint();
+                    isRepainting = false;
                 });
                 return null;
             });
@@ -2457,7 +2466,6 @@ public class IGV implements IGVEventObserver {
         for (TrackPanel tp : getTrackPanels()) {
             if (tp.isHeightChanged()) {
                 tp.revalidate();
-                tp.repaint();
             }
         }
     }

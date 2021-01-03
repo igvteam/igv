@@ -205,7 +205,7 @@ public class RegionOfInterestPanel extends JPanel {
         item = new JMenuItem("Delete");
         item.addActionListener(e -> {
             IGV.getInstance().getSession().getRegionsOfInterest(frame.getChrName()).remove(roi);
-            IGV.getInstance().repaintContentPane();
+            IGV.getInstance().repaint();
         });
         popupMenu.add(item);
 
@@ -261,7 +261,7 @@ public class RegionOfInterestPanel extends JPanel {
         public void mouseReleased(MouseEvent e) {
             if(dragging  && selectedRegion != null) {
                 selectedRegion = null;
-                IGV.getInstance().repaintContentPane();
+                IGV.getInstance().repaint();
             }
             focusROI = null;
             dragging = false;
@@ -275,13 +275,13 @@ public class RegionOfInterestPanel extends JPanel {
                 setToolTipText("<html>" + roi.getTooltip() + "<br>To resize use ctrl-click-drag.");
                 if (selectedRegion != roi) {
                     selectedRegion = roi;
-                    IGV.getInstance().repaintContentPane();
+                    IGV.getInstance().repaint();
                 }
 
             } else {
                 if (selectedRegion != null) {
                     selectedRegion = null;
-                    IGV.getInstance().repaintContentPane();
+                    IGV.getInstance().repaint();
                 }
                 setToolTipText("");
                 setCursor(Cursor.getDefaultCursor());
@@ -292,7 +292,7 @@ public class RegionOfInterestPanel extends JPanel {
         public void mouseExited(MouseEvent mouseEvent) {
             if (!dragging && selectedRegion != null) {
                 selectedRegion = null;
-                IGV.getInstance().repaintContentPane();
+                IGV.getInstance().repaint();
             }
         }
 
