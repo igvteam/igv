@@ -3,9 +3,8 @@ package org.broad.igv.feature.genome.fasta;
 import org.broad.igv.feature.genome.Sequence;
 import org.junit.Test;
 
-import java.io.IOException;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by jrobinso on 6/23/17.
@@ -26,11 +25,11 @@ public class FastaBlockCompressedSequenceTest {
 
     }
 
-@Test
+    @Test
     public void compareSequences() throws Exception {
 
-        String sequencePath="https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa";
-        String compressedSequencePath="https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.gz";
+        String sequencePath = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa";
+        String compressedSequencePath = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.gz";
 
         Sequence fastaSequence = new FastaIndexedSequence(sequencePath);
         Sequence bgSequence = new FastaBlockCompressedSequence(compressedSequencePath);
@@ -42,7 +41,7 @@ public class FastaBlockCompressedSequenceTest {
         byte[] seq1 = fastaSequence.getSequence("chr12", 50000, 51000, false);
         byte[] seq2 = fastaSequence.getSequence("chr12", 50000, 51000, false);
 
-        for (int i = 0; i < len1; i++) {
+        for (int i = 0; i < seq1.length; i++) {
             byte b1 = seq1[i];
             if (b1 >= 97) b1 -= 32;
 
