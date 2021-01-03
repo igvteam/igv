@@ -2415,10 +2415,15 @@ public class IGV implements IGVEventObserver {
     }
 
     private boolean isRepainting = false;
+    private Collection<? extends Track>  pending = null;
 
     private void repaint(final JComponent component, Collection<? extends Track> trackList) {
 
-        if(isRepainting) return;
+        if(isRepainting) {
+            UIUtilities.invokeOnEventThread(() -> contentPane.repaint());
+            pending = trackList;
+            return;
+        }
         isRepainting = true;
 
         List<CompletableFuture> futures = new ArrayList();
@@ -2436,15 +2441,20 @@ public class IGV implements IGVEventObserver {
         }
 
         if (Globals.isBatch()) {
-            checkPanelLayouts();
-            component.paintImmediately(component.getBounds());
-            isRepainting = false;
-
+            try {
+                checkPanelLayouts();
+                component.paintImmediately(component.getBounds());
+            } finally {
+                isRepainting = false;
+            }
         } else if (futures.size() == 0) {
             UIUtilities.invokeOnEventThread(() -> {
-                checkPanelLayouts();
-                component.repaint();
-                isRepainting = false;
+                try {
+                    checkPanelLayouts();
+                    component.repaint();
+                } finally {
+                    isRepainting = false;
+                }
             });
         } else {
             final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
@@ -2456,7 +2466,16 @@ public class IGV implements IGVEventObserver {
                     checkPanelLayouts();
                     component.repaint();
                     isRepainting = false;
+                    if(pending != null) {
+                        Collection<? extends Track> tmp = pending;
+                        pending = null;
+                        repaint(tmp);
+                    }
                 });
+                return null;
+            }).exceptionally(ex -> {
+                isRepainting = false;
+                pending = null;
                 return null;
             });
         }

@@ -126,28 +126,11 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
     }
 
-    public boolean allTracksLoaded() {
-        return parent.getTrackGroups().stream().
-                filter(TrackGroup::isVisible).
-                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
-                allMatch(track -> track.isReadyToPaint(frame));
-    }
-
     long lastPaintTime = 0;
 
     @Override
     public void paintComponent(final Graphics g) {
-
-        if(!allTracksLoaded()) {
-            if(log.isDebugEnabled()) {
-                log.debug("Attempt to paint before data is loaded");
-                for (Track t : parent.getAllTracks()) {
-                    log.debug(t.getName());
-                }
-            }
-            return;
-        }
-
+        
         super.paintComponent(g);
         RenderContext context = null;
         try {

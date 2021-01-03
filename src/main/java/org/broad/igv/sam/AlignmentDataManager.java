@@ -251,15 +251,24 @@ public class AlignmentDataManager implements IGVEventObserver {
         return checkReader().getSequenceDictionary();
     }
 
-
     public AlignmentInterval getLoadedInterval(ReferenceFrame frame) {
+        return getLoadedInterval(frame, false);
+    }
 
+    public AlignmentInterval getLoadedInterval(ReferenceFrame frame, boolean includeOverlaps) {
         for (AlignmentInterval interval : intervalCache) {
             if (interval.contains(frame.getCurrentRange())) {
                 return interval;
             }
         }
-
+        // No contains, look for overlap
+        if(includeOverlaps) {
+            for (AlignmentInterval interval : intervalCache) {
+                if (interval.overlaps(frame.getCurrentRange())) {
+                    return interval;
+                }
+            }
+        }
         return null;
     }
 
@@ -444,8 +453,8 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
 
-    public PackedAlignments getGroups(RenderContext context, AlignmentTrack.RenderOptions renderOptions) {
-        AlignmentInterval interval = getLoadedInterval(context.getReferenceFrame());
+    public PackedAlignments getGroups(AlignmentInterval interval, AlignmentTrack.RenderOptions renderOptions) {
+       //AlignmentInterval interval = getLoadedInterval(context.getReferenceFrame());
         if (interval != null) {
             return interval.getPackedAlignments();
         } else {

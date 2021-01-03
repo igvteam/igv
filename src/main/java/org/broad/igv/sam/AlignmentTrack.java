@@ -468,7 +468,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
 
-        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
+        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
         if (loadedInterval == null) {
             log.info("No alignment interval for " + context.getReferenceFrame().getFormattedLocusString());
             return;
@@ -479,7 +479,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         RenderOptions renderOptions = PreferencesManager.forceDefaults ? new RenderOptions() : this.renderOptions;
 
         //log.debug("Render features");
-        PackedAlignments groups = dataManager.getGroups(context, renderOptions);
+        PackedAlignments groups = dataManager.getGroups(loadedInterval, renderOptions);
         if (groups == null) {
             //Assume we are still loading.
             //This might not always be true
@@ -641,7 +641,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         inputRect.y += DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0 + INSERTION_ROW_HEIGHT + DS_MARGIN_2;
 
         //log.debug("Render features");
-        PackedAlignments groups = dataManager.getGroups(context, renderOptions);
+        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
+        PackedAlignments groups = dataManager.getGroups(loadedInterval, renderOptions);
         if (groups == null) {
             //Assume we are still loading.
             //This might not always be true

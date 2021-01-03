@@ -36,7 +36,6 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
-import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -134,7 +133,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         prefs = PreferencesManager.getPreferences();
         snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
         autoScale = DEFAULT_AUTOSCALE;
-        this.igv = IGV.hasInstance() ? IGV.getInstance(): null;
+        this.igv = IGV.hasInstance() ? IGV.getInstance() : null;
     }
 
     @Override
@@ -173,7 +172,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public void load(ReferenceFrame referenceFrame) {
-         dataManager.load(referenceFrame, alignmentTrack.renderOptions, true);
+        dataManager.load(referenceFrame, alignmentTrack.renderOptions, true);
     }
 
 
@@ -233,14 +232,11 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
-                interval = dataManager.getLoadedInterval(context.getReferenceFrame());
+                interval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
             }
             if (interval != null) {
-                if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
-                    //if (autoScale) rescale(context.getReferenceFrame());
-                    intervalRenderer.paint(context, rect, interval.getCounts());
-                    return;
-                }
+                intervalRenderer.paint(context, rect, interval.getCounts());
+                return;
             }
         }
 
@@ -938,7 +934,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                     setDataSource(ds);
                     repaint();
                 } else {
-                    if(igv != null) MessageUtils.showMessage("Coverage data must be in .tdf format");
+                    if (igv != null) MessageUtils.showMessage("Coverage data must be in .tdf format");
                 }
             }
         });
