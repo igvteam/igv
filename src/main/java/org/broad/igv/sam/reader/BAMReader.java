@@ -117,7 +117,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         }
     }
 
-    public SAMFileHeader getFileHeader() {
+    public synchronized SAMFileHeader getFileHeader() {
         if (header == null) {
             header = reader.getFileHeader();
         }
@@ -171,7 +171,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         return new WrappedIterator(reader.iterator());
     }
 
-    public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
+    public synchronized  CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
         if (sequenceDictionary != null && !sequenceDictionary.containsKey(sequence)) {
             return EMPTY_ITERATOR;
         } else {
