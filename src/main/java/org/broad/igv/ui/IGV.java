@@ -2414,70 +2414,80 @@ public class IGV implements IGVEventObserver {
         repaint(component, trackList);
     }
 
-    private boolean isRepainting = false;
-    private Collection<? extends Track>  pending = null;
+    private boolean isLoading = false;
+    private Collection<? extends Track> pending = null;
 
     private void repaint(final JComponent component, Collection<? extends Track> trackList) {
 
-        if(isRepainting) {
-            UIUtilities.invokeOnEventThread(() -> contentPane.repaint());
-            pending = trackList;
-            return;
-        }
-        isRepainting = true;
+        if (Globals.isBatch()) {
+            // In batch mode everything is done synchronously on the event thread
+            UIUtilities.invokeAndWaitOnEventThread(() -> {
 
-        List<CompletableFuture> futures = new ArrayList();
+                for (ReferenceFrame frame : FrameManager.getFrames()) {
+                    for (Track track : trackList) {
+                        if (track.isReadyToPaint(frame) == false) {
+                            track.load(frame);
+                        }
+                    }
+                }
+                checkPanelLayouts();
+                component.paintImmediately(component.getBounds());
+            });
 
-        for (ReferenceFrame frame : FrameManager.getFrames()) {
-            for (Track track : trackList) {
-                if (track.isReadyToPaint(frame) == false) {
-                    if (Globals.isBatch()) {
-                        track.load(frame);
-                    } else {
+        } else {
+
+            if (isLoading) {
+                // Track data is being loaded, do a repaint with existing data and mark this request for future execution
+                UIUtilities.invokeOnEventThread(() -> contentPane.repaint());
+                pending = trackList;
+                return;
+            }
+
+            List<CompletableFuture> futures = new ArrayList();
+
+            for (ReferenceFrame frame : FrameManager.getFrames()) {
+                for (Track track : trackList) {
+                    if (track.isReadyToPaint(frame) == false) {
                         futures.add(CompletableFuture.runAsync(() -> track.load(frame), threadExecutor));
                     }
                 }
             }
-        }
 
-        if (Globals.isBatch()) {
-            try {
-                checkPanelLayouts();
-                component.paintImmediately(component.getBounds());
-            } finally {
-                isRepainting = false;
-            }
-        } else if (futures.size() == 0) {
-            UIUtilities.invokeOnEventThread(() -> {
-                try {
-                    checkPanelLayouts();
-                    component.repaint();
-                } finally {
-                    isRepainting = false;
-                }
-            });
-        } else {
-            final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
-            WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-            CompletableFuture.allOf(futureArray).thenApplyAsync(future -> {
-                Autoscaler.autoscale(getAllTracks());
-                WaitCursorManager.removeWaitCursor(token);
+            if (futures.size() == 0) {
                 UIUtilities.invokeOnEventThread(() -> {
                     checkPanelLayouts();
                     component.repaint();
-                    isRepainting = false;
-                    if(pending != null) {
-                        Collection<? extends Track> tmp = pending;
-                        pending = null;
-                        repaint(tmp);
-                    }
                 });
-                return null;
-            }).exceptionally(ex -> {
-                isRepainting = false;
-                pending = null;
-                return null;
-            });
+            } else {
+                // One ore more tracks require loading before repaint.   Load all needed tracks, autscale if needed, then
+                // repaint.  The autoscale step is key, since tracks can be grouped for autoscaling it is neccessary that
+                // all data is loaded before any track is repainted.  Otherwise tracks be loaded an painted independently.
+
+                final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
+                WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+                isLoading = true;
+                CompletableFuture.allOf(futureArray).thenApplyAsync(future -> {
+                    WaitCursorManager.removeWaitCursor(token);
+                    // Autoscale as required, check layouts (for scrollbar changes), and repaint.
+                    Autoscaler.autoscale(getAllTracks());
+                    UIUtilities.invokeOnEventThread(() -> {
+                        checkPanelLayouts();
+                        component.repaint();
+                        isLoading = false;
+                        if (pending != null) {
+                            Collection<? extends Track> tmp = pending;
+                            pending = null;
+                            repaint(tmp);
+                        }
+                    });
+                    return null;
+                }).exceptionally(ex -> {
+                    log.error("Error loading track data", ex);
+                    isLoading = false;
+                    pending = null;
+                    return null;
+                });
+            }
         }
     }
 

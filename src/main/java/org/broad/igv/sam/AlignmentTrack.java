@@ -470,9 +470,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
         if (loadedInterval == null) {
-            log.info("No alignment interval for " + context.getReferenceFrame().getFormattedLocusString());
             return;
         }
+
         final AlignmentCounts alignmentCounts = loadedInterval.getCounts();
 
         groupNames.clear();
