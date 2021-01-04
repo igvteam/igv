@@ -1695,7 +1695,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 try {
                     int mq = Integer.parseInt(mqString);
                     // TODO do something with this
-                    System.out.println(mq);
+                    //System.out.println(mq);
                 } catch (NumberFormatException e) {
                     MessageUtils.showMessage("Mapping quality must be an integer");
                 }
