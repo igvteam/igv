@@ -1122,8 +1122,7 @@ public class IGV implements IGVEventObserver {
             return restoreSessionFromStream(sessionPath, locus, inputStream);
 
         } catch (Exception e) {
-            String message = "Error loading session session : <br>&nbsp;&nbsp;" + sessionPath + "<br>" +
-                    e.getMessage();
+            String message = "Error loading session session : <br>&nbsp;&nbsp;" + sessionPath + "<br>" +  e.getMessage();
             log.error(message, e);
             throw new RuntimeException(e);
         } finally {
@@ -1139,6 +1138,7 @@ public class IGV implements IGVEventObserver {
     }
 
     public boolean restoreSessionFromStream(String sessionPath, String locus, InputStream inputStream) throws IOException {
+
         boolean isUCSC = sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"));
         boolean isIndexAware = sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"));
         final SessionReader sessionReader = isUCSC ?
@@ -1992,27 +1992,23 @@ public class IGV implements IGVEventObserver {
             final int start = region.getStart();
             final int end = region.getEnd();
 
-            Comparator<Track> c = new Comparator<Track>() {
+            Comparator<Track> c = (t1, t2) -> {
+                try {
+                    if (t1 == null && t2 == null) return 0;
+                    if (t1 == null) return 1;
+                    if (t2 == null) return -1;
 
-                public int compare(Track t1, Track t2) {
-                    try {
-                        if (t1 == null && t2 == null) return 0;
-                        if (t1 == null) return 1;
-                        if (t2 == null) return -1;
+                    float s1 = t1.getRegionScore(chr, start, end, zoom, type, frameName);
+                    float s2 = t2.getRegionScore(chr, start, end, zoom, type, frameName);
 
-
-                        float s1 = t1.getRegionScore(chr, start, end, zoom, type, frameName);
-                        float s2 = t2.getRegionScore(chr, start, end, zoom, type, frameName);
-
-                        return Float.compare(s2, s1);
+                    return Float.compare(s2, s1);
 
 
-                    } catch (Exception e) {
-                        log.error("Error sorting tracks. Sort might not be accurate.", e);
-                        return 0;
-                    }
-
+                } catch (Exception e) {
+                    log.error("Error sorting tracks. Sort might not be accurate.", e);
+                    return 0;
                 }
+
             };
             Collections.sort(tracks, c);
 
