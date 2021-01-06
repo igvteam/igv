@@ -67,7 +67,6 @@ public class CNFreqTrack extends AbstractTrack {
 
     public CNFreqTrack() {
     }
-
     public CNFreqTrack(ResourceLocator rl, String id, String name, FreqData fd) {
         super(rl, id, name);
         data = fd;
@@ -87,6 +86,10 @@ public class CNFreqTrack extends AbstractTrack {
 
     }
 
+    @Override
+    public boolean isSortable() {
+        return false;
+    }
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
@@ -155,7 +158,7 @@ public class CNFreqTrack extends AbstractTrack {
 
 
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
-        return Integer.MIN_VALUE;  //To change body of implemented methods use File | Settings | File Templates.
+        return Float.MAX_VALUE;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
