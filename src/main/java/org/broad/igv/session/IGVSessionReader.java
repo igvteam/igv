@@ -33,7 +33,6 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.dsi.DSITrack;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.sprite.ClusterTrack;
@@ -113,9 +112,9 @@ public class IGVSessionReader implements SessionReader {
     /**
      * Map of id -> track, for second pass through when tracks reference each other
      */
-    private final Map<String, List<Track>> allTracks = Collections.synchronizedMap(new LinkedHashMap<String, List<Track>>());
+    private final Map<String, List<Track>> allTracks = Collections.synchronizedMap(new LinkedHashMap<>());
 
-    private String rootPath;
+    private final Map<String, Track> genomeTracks = new HashMap<>();
 
     public List<Track> getTracksById(String trackId) {
         return allTracks.get(trackId);
@@ -130,9 +129,6 @@ public class IGVSessionReader implements SessionReader {
     private Track geneTrack = null;
     private Track seqTrack = null;
     private boolean hasTrackElments;
-
-    //Temporary holder for generating tracks
-    protected static AbstractTrack nextTrack;
 
     static {
         attributeSynonymMap.put("DATA FILE", "DATA SET");
@@ -155,9 +151,7 @@ public class IGVSessionReader implements SessionReader {
 
     public void loadSession(InputStream inputStream, Session session, String sessionPath) {
 
-
         log.debug("Load session");
-
 
         Document document = null;
         try {
@@ -178,8 +172,7 @@ public class IGVSessionReader implements SessionReader {
             nodes = document.getElementsByTagName(SessionElement.GLOBAL);
         }
 
-        this.rootPath = sessionPath;
-
+        // Recursively process all nodes, starting with the root
         processRootNode(session, nodes.item(0), additionalInformation, sessionPath);
 
         processCombinedDataSourceTracks();
@@ -229,26 +222,9 @@ public class IGVSessionReader implements SessionReader {
         // Load the genome, which can be an ID, or a path or URL to a .genome or indexed fasta file.
         String genomeId = getAttribute(element, SessionAttribute.GENOME);
 
-        String hasGeneTrackStr = getAttribute(element, SessionAttribute.HAS_GENE_TRACK);
-
-        boolean hasGeneTrack = true;
-        if (hasGeneTrackStr != null) {
-            hasGeneTrack = Boolean.parseBoolean(hasGeneTrackStr);
-        }
-        boolean hasSeqTrack = hasGeneTrack;
-        String hasSeqTrackStr = getAttribute(element, SessionAttribute.HAS_SEQ_TRACK);
-        if (hasSeqTrackStr != null) {
-            hasSeqTrack = Boolean.parseBoolean(hasSeqTrackStr);
-        }
-
         if (genomeId != null && genomeId.length() > 0) {
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
-                // We don't have to reload the genome, but the gene track for the current genome should be restored.
-                if (hasGeneTrack || hasSeqTrack) {
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                    FeatureTrack geneTrack = hasGeneTrack ? genome.getGeneTrack() : null;
-                    IGV.getInstance().setGenomeTracks(geneTrack);
-                }
+
             } else {
                 // Selecting a genome will "reset" the session so we have to
                 // save the path and restore it.
@@ -275,33 +251,21 @@ public class IGVSessionReader implements SessionReader {
                 }
                 session.setPath(sessionPath);
             }
-        }
 
-        if (!hasGeneTrack && igv.hasGeneTrack()) {
-            //Need to remove gene track if it was loaded because it's not supposed to be in the session
-            igv.removeTracks(Arrays.<Track>asList(GenomeManager.getInstance().getCurrentGenome().getGeneTrack()));
-            geneTrack = null;
-        } else {
-            //For later lookup and to prevent dual adding, we keep a reference to the gene track
-            geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
+            // Add any tracks loaded as a side effect of loading genome
+            FeatureTrack geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
             if (geneTrack != null) {
-                allTracks.put(geneTrack.getId(), Arrays.asList(geneTrack));
+                final String id = geneTrack.getId();
+                final List<Track> trackList = Arrays.asList(geneTrack);
+                genomeTracks.put(geneTrack.getId(), geneTrack);
+                allTracks.put(id, trackList);
             }
-        }
 
-        SequenceTrack tmpSeqTrack = igv.getSequenceTrack();
-        if (hasSeqTrack && !igv.hasSequenceTrack()) {
-            //This will create a sequence track
-            IGV.getInstance().setGenomeTracks(null);
-        } else if (!hasSeqTrack && igv.hasSequenceTrack()) {
-            //Need to remove seq track if it was loaded because it's not supposed to be in the session
-            igv.removeTracks(Arrays.<Track>asList(tmpSeqTrack));
-            seqTrack = null;
-        } else {
-            //For later lookup and to prevent dual adding, we keep a reference to the sequence track
-            seqTrack = tmpSeqTrack;
-            if (seqTrack != null) {
-                allTracks.put(seqTrack.getId(), Arrays.asList(seqTrack));
+            for (Track track : igv.getAllTracks()) {
+                final String id = track.getId();
+                final List<Track> trackList = Arrays.asList(geneTrack);
+                genomeTracks.put(id, track);
+                allTracks.put(id, trackList);
             }
         }
 
@@ -463,10 +427,9 @@ public class IGVSessionReader implements SessionReader {
 
             for (final ResourceLocator locator : dataFiles) {
                 Runnable runnable = () -> {
-                    List<Track> tracks = null;
-                    try {
 
-                        tracks = igv.load(locator);
+                    try {
+                        List<Track> tracks = igv.load(locator);
                         for (Track track : tracks) {
 
                             if (track == null) {
@@ -685,7 +648,6 @@ public class IGVSessionReader implements SessionReader {
      */
     private void processVisibleAttributes(Session session, Element element, HashMap additionalInformation) {
 
-//        session.clearRegionsOfInterest();
         NodeList elements = element.getChildNodes();
         if (elements.getLength() > 0) {
             Set<String> visibleAttributes = new HashSet();
@@ -899,9 +861,16 @@ public class IGVSessionReader implements SessionReader {
 
         String id = getAttribute(element, SessionAttribute.ID);
 
+        if (genomeTracks.containsKey(id)) {
+            // Special case for sequence & gene tracks, they need to be removed before being placed.
+            Track track = genomeTracks.get(id);
+            igv.removeTracks(Arrays.asList(track), false);
+            track.unmarshalXML(element, version);
+        }
+
+
         // Get matching tracks -- these are tracks created when loading the resource.  Most tracks are created this
         // way,  a few don't have a corresponding resource.
-
         List<Track> matchedTracks = allTracks.get(id);
 
         if (matchedTracks == null) {
@@ -912,16 +881,10 @@ public class IGVSessionReader implements SessionReader {
         }
 
         if (matchedTracks != null) {
-
             for (final Track track : matchedTracks) {
-                // Special case for sequence & gene tracks, they need to be removed before being placed.
-                if (igv != null && version >= 4 && (track == geneTrack || track == seqTrack)) {
-                    igv.removeTracks(Arrays.asList(track), false);
-                }
                 track.unmarshalXML(element, version);
             }
             leftoverTrackDictionary.remove(id);
-
         } else {
 
             String className = getAttribute(element, "clazz");
@@ -954,7 +917,6 @@ public class IGVSessionReader implements SessionReader {
                     MessageUtils.showMessage("Error loading track: " + element.toString());
                 }
             }
-
         }
 
         NodeList elements = element.getChildNodes();
@@ -1181,6 +1143,8 @@ public class IGVSessionReader implements SessionReader {
             return new SpliceJunctionTrack();
         } else if (className.contains("VariantTrack")) {
             return new VariantTrack();
+        } else if (className.contains("SequenceTrack")) {
+            return new SequenceTrack("Reference sequence");
         } else {
             log.info("Unrecognized class name: " + className);
             Class clazz = SessionElement.getClass(className);

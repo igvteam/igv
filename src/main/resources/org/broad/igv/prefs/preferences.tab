@@ -50,10 +50,6 @@ MUTATION_Other_AA_changing_COLOR	Other AA Changing	color	0,150,150
 MUTATION_Other_likely_neutral_COLOR	Other Likely Neutral	color	225,180,225
 MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
 
-##Other
-OVERLAY_ATTRIBUTE_KEY	Linking ID	string	LINKING_ID
-
-
 #Charts
 CHART.DRAW_TOP_BORDER	Draw top border	boolean	FALSE
 CHART.DRAW_BOTTOM_BORDER	Draw bottom border	boolean	FALSE
@@ -189,7 +185,7 @@ PROXY.PW	Password	string	null
 PORT_ENABLED	Enable port	boolean	TRUE
 PORT_NUMBER	Port number	integer	60151
 ---
-IGV.genome.sequence.dir	Genome server URL	string	https://s3.amazonaws.com/igv.org.genomes/genomes.tab
+IGV.genome.sequence.dir	Genome server URL	string	https://s3.amazonaws.com/igv.org.genomes/genomes.txt
 MASTER_RESOURCE_FILE_KEY	Data registry url	string	https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
@@ -302,3 +298,7 @@ MUTATION_Non-coding_Transcript_COLOR	Non-coding Transcript	color	0,0,150
 MUTATION_Other_AA_changing_COLOR	Other AA Changing	color	0,150,150
 MUTATION_Other_likely_neutral_COLO	Other Likely NeutralR	color	225,180,225
 MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
+
+OVERLAY_ATTRIBUTE_KEY	Linking ID	string	LINKING_ID
+
+
