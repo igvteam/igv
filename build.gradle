@@ -50,7 +50,7 @@ sourceSets {
     main {
         resources {
             srcDirs = ['src/main/resources', 'src/main/resources-jlfgr-1_0']
-            exclude "**/*LICENSE*", "**/META-INF"
+            exclude "**/*LICENSE*", "**/META-INF, **/log4j2_*.xml"
         }
     }
 }
