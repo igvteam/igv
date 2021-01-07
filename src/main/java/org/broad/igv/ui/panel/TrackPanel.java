@@ -176,7 +176,6 @@ public class TrackPanel extends IGVPanel {
 
         final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         Track geneTrack = currentGenome == null ? null : currentGenome.getGeneTrack();
-
         for (Track t : getTracks()) {
             if (t != geneTrack) {
                 t.dispose();
@@ -378,6 +377,13 @@ public class TrackPanel extends IGVPanel {
         }
     }
 
+    /**
+     * Remove, but do not dispose of, tracks.  Used by session reader
+     */
+    public void removeAllTracks() {
+        trackGroups.clear();
+        trackCountEstimate = 0;
+    }
 
     /**
      * Insert the selectedTracks collection either before or after the target and return true.

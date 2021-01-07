@@ -918,10 +918,6 @@ public class IGV implements IGVEventObserver {
         //TODO -- this is a very blunt way to clean up -- change to close files associated with this session
         SeekableFileStream.closeAllInstances();
 
-        Set<Track> newTracks = new HashSet<>(getAllTracks());
-        for (Track t : oldTracks) {
-
-        }
     }
 
     private void subscribeToEvents() {
@@ -1838,7 +1834,6 @@ public class IGV implements IGVEventObserver {
         List<TrackPanel> panels = getTrackPanels();
         for (TrackPanel trackPanel : panels) {
             trackPanel.removeTracks(tracksToRemove);
-
             if (!trackPanel.hasTracks()) {
                 removeDataPanel(trackPanel.getName());
             }
@@ -1863,7 +1858,7 @@ public class IGV implements IGVEventObserver {
      * @param newGeneTrack
      * @param
      */
-    public void setGenomeTracks(FeatureTrack newGeneTrack) {
+    public void setGenomeTracks(Track newGeneTrack) {
 
         TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
                 getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);

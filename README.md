@@ -36,9 +36,10 @@ The IGV bundles ship with embedded JREs from AdoptOpenJDK.
 * Use ```./gradlew test``` to run the test suite.  See 'src/test/README.txt' for more information about running
   the tests.
   
-* This dashboard describes [project structure and dependencies](https://sourcespy.com/github/igvteamigv/). New contributors can quickly grasp overall structure of the code and technologies involved.  
-
 * See this [README](https://raw.githubusercontent.com/igvteam/igv/master/scripts/readme.txt) for tips about using the IGV launcher scripts.
+
+* This dashboard describes [project structure and dependencies](https://sourcespy.com/github/igvteamigv/). 
+
 
 Note that Gradle creates a number of other subdirectories in 'build'.  These can be safely ignored.
 

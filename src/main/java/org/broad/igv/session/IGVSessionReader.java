@@ -77,25 +77,18 @@ public class IGVSessionReader implements SessionReader {
 
     private static Logger log = Logger.getLogger(IGVSessionReader.class);
     private static String INPUT_FILE_KEY = "INPUT_FILE_KEY";
-    // Temporary values used in processing
+
+    private static Map<String, String> attributeSynonymMap = new HashMap();
+    private static WeakReference<IGVSessionReader> currentReader;
 
     //package-private for unit testing
     Collection<ResourceLocator> dataFiles;
+
     private Collection<ResourceLocator> missingDataFiles;
-    private static Map<String, String> attributeSynonymMap = new HashMap();
-    private boolean panelElementPresent = false;
+    private boolean panelElementPresent = false;    // Until proven otherwise
     private int version;
 
     private IGV igv;
-
-    private static WeakReference<IGVSessionReader> currentReader;
-
-
-    /**
-     * Classes that have been registered for use with JAXB
-     */
-    private static List<Class> registeredClasses = new ArrayList<Class>();
-
 
     /**
      * Map of track id -> track.  It is important to maintain the order in which tracks are added, thus
@@ -113,8 +106,6 @@ public class IGVSessionReader implements SessionReader {
      * Map of id -> track, for second pass through when tracks reference each other
      */
     private final Map<String, List<Track>> allTracks = Collections.synchronizedMap(new LinkedHashMap<>());
-
-    private final Map<String, Track> genomeTracks = new HashMap<>();
 
     public List<Track> getTracksById(String trackId) {
         return allTracks.get(trackId);
@@ -161,40 +152,48 @@ public class IGVSessionReader implements SessionReader {
             throw new RuntimeException(e);
         }
 
-        NodeList tracks = document.getElementsByTagName("Track");
-        hasTrackElments = tracks.getLength() > 0;
+        NodeList trackElements = document.getElementsByTagName("Track");
+        hasTrackElments = trackElements.getLength() > 0;
 
         HashMap additionalInformation = new HashMap();
         additionalInformation.put(INPUT_FILE_KEY, sessionPath);
 
+        //  Find the root node, either "session" or "global
         NodeList nodes = document.getElementsByTagName(SessionElement.SESSION);
         if (nodes == null || nodes.getLength() == 0) {
             nodes = document.getElementsByTagName(SessionElement.GLOBAL);
         }
+        Node rootNode = nodes.item(0);
 
         // Recursively process all nodes, starting with the root
-        processRootNode(session, nodes.item(0), additionalInformation, sessionPath);
+        processRootNode(session, rootNode, additionalInformation, sessionPath);
 
         processCombinedDataSourceTracks();
 
-        // Add tracks not explicitly allocated to panels.  It is legal to define sessions with the Resources
-        // section only (no Panel or Track elements).
+        // Add tracks not explicitly allocated to panels.   This most often happens with hand created sessions lacking a panels section.
         addLeftoverTracks(leftoverTrackDictionary.values());
 
-        if (igv != null) {
-            if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {
-                igv.setGroupByAttribute(session.getGroupTracksBy());
-            }
 
-            if (session.isRemoveEmptyPanels()) {
-                igv.getMainPanel().removeEmptyDataPanels();
-            }
-
-            igv.resetOverlayTracks();
+        if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {
+            igv.setGroupByAttribute(session.getGroupTracksBy());
         }
+
+        if (session.isRemoveEmptyPanels()) {
+            igv.getMainPanel().removeEmptyDataPanels();
+        }
+
+        igv.resetOverlayTracks();
 
     }
 
+    /**
+     * The main entry point
+     *
+     * @param session
+     * @param node
+     * @param additionalInformation
+     * @param rootPath
+     */
 
     private void processRootNode(Session session, Node node, HashMap additionalInformation, String rootPath) {
 
@@ -224,6 +223,12 @@ public class IGVSessionReader implements SessionReader {
 
         if (genomeId != null && genomeId.length() > 0) {
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
+                // We don't have to reload the genome, but we do need to restore the annotation tracks
+                Track geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
+                if(geneTrack != null) {
+                    igv.setGenomeTracks(geneTrack);
+                }
+                // TODO -- json genome annotation tracks
 
             } else {
                 // Selecting a genome will "reset" the session so we have to
@@ -250,22 +255,6 @@ public class IGVSessionReader implements SessionReader {
                     log.error("Error loading genome: " + genomeId, e);
                 }
                 session.setPath(sessionPath);
-            }
-
-            // Add any tracks loaded as a side effect of loading genome
-            FeatureTrack geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-            if (geneTrack != null) {
-                final String id = geneTrack.getId();
-                final List<Track> trackList = Arrays.asList(geneTrack);
-                genomeTracks.put(geneTrack.getId(), geneTrack);
-                allTracks.put(id, trackList);
-            }
-
-            for (Track track : igv.getAllTracks()) {
-                final String id = track.getId();
-                final List<Track> trackList = Arrays.asList(geneTrack);
-                genomeTracks.put(id, track);
-                allTracks.put(id, trackList);
             }
         }
 
@@ -314,8 +303,9 @@ public class IGVSessionReader implements SessionReader {
 
             for (List<Track> tracks : tmp) {
                 for (Track track : tracks) {
-                    if (track != geneTrack && track != seqTrack && track.getResourceLocator() != null) {
-
+                    if (track == geneTrack) {
+                        igv.setGenomeTracks(track);
+                    } else if (track.getResourceLocator() != null){
                         TrackPanel panel = trackPanelCache.get(track.getResourceLocator().getPath());
                         if (panel == null) {
                             panel = IGV.getInstance().getPanelFor(track.getResourceLocator());
@@ -346,7 +336,6 @@ public class IGVSessionReader implements SessionReader {
         }
 
         String nodeName = element.getNodeName();
-
         if (nodeName.equalsIgnoreCase(SessionElement.RESOURCES) ||
                 nodeName.equalsIgnoreCase(SessionElement.FILES)) {
             processResources(session, (Element) element, additionalInformation, rootPath);
@@ -785,6 +774,23 @@ public class IGVSessionReader implements SessionReader {
     }
 
     private void processPanel(Session session, Element element, HashMap additionalInformation, String rootPath) {
+
+        if(panelElementPresent == false) {
+            // First panel to be processed, do this only once.
+
+            // Add any tracks loaded as a side effect of loading genome, these need to be removed and remembered
+            final List<Track> tmp = igv.getAllTracks();
+            for(Track track : tmp) {
+                final String id = track.getId();
+                final List<Track> trackList = Arrays.asList(track);
+                leftoverTrackDictionary.put(id, trackList);
+                this.allTracks.put(id, trackList);
+            }
+
+            // Tracks, if any,  will be placed back as prescribed by panel elements
+            removeAllTracksFromPanels();
+        }
+
         panelElementPresent = true;
         String panelName = element.getAttribute("name");
         if (panelName == null) {
@@ -805,7 +811,7 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        //We make a second pass through, resolving references to tracks which may have been processed afterwards.
+        //We make a second pass through, resolving references to tracks which may have been processed after being referenced.
         //For instance if Track 2 referenced Track 4
         for (Track track : panelTracks) {
             if (track instanceof FeatureTrack) {
@@ -824,7 +830,6 @@ public class IGVSessionReader implements SessionReader {
     private void processPanelLayout(Session session, Element element, HashMap additionalInformation) {
 
         String nodeName = element.getNodeName();
-        String panelName = nodeName;
 
         NamedNodeMap tNodeMap = element.getAttributes();
         for (int i = 0; i < tNodeMap.getLength(); i++) {
@@ -861,20 +866,13 @@ public class IGVSessionReader implements SessionReader {
 
         String id = getAttribute(element, SessionAttribute.ID);
 
-        if (genomeTracks.containsKey(id)) {
-            // Special case for sequence & gene tracks, they need to be removed before being placed.
-            Track track = genomeTracks.get(id);
-            igv.removeTracks(Arrays.asList(track), false);
-            track.unmarshalXML(element, version);
-        }
-
-
-        // Get matching tracks -- these are tracks created when loading the resource.  Most tracks are created this
-        // way,  a few don't have a corresponding resource.
+        // Find track matching element id, created earlier from "Resource or File" elements, or during genome load.
+        // Normally this is a single track, but that can't be assumed as uniqueness
+        // of "id" is not enforce.
         List<Track> matchedTracks = allTracks.get(id);
 
         if (matchedTracks == null) {
-            //Try creating an "absolute" path for the id
+            //Try creating an absolute path for the id
             if (id != null) {
                 matchedTracks = allTracks.get(FileUtils.getAbsolutePath(id, rootPath));
             }
@@ -887,27 +885,29 @@ public class IGVSessionReader implements SessionReader {
             leftoverTrackDictionary.remove(id);
         } else {
 
+            // No match found, element represents a track not created from "Resource" or genome load.  These included
+            // combined and merged tracks.
             String className = getAttribute(element, "clazz");
             if (className != null) {
                 try {
+
                     Track track = createTrack(className);
-                    track.unmarshalXML(element, version);
-                    matchedTracks = Arrays.asList(track);
-
-
-                    // Special tracks
-                    if (element.getElementsByTagName("COMBINED_DATA_SOURCE").getLength() > 0) {
-                        combinedDataSourceTracks.add(new Pair(track, element.getElementsByTagName("COMBINED_DATA_SOURCE").item(0)));
-                    }
-
-                    if (className.contains("MergedTracks")) {
-                        List<DataTrack> memberTracks = new ArrayList(processChildTracks(session, element,
-                                additionalInformation, rootPath));
-                        ((MergedTracks) track).setMemberTracks(memberTracks);
-
-                    }
-
                     if (track != null) {
+
+                        track.unmarshalXML(element, version);
+                        matchedTracks = Arrays.asList(track);
+
+                        // Special tracks
+                        if (element.getElementsByTagName("COMBINED_DATA_SOURCE").getLength() > 0) {
+                            combinedDataSourceTracks.add(new Pair(track, element.getElementsByTagName("COMBINED_DATA_SOURCE").item(0)));
+                        }
+
+                        if (className.contains("MergedTracks")) {
+                            List<DataTrack> memberTracks = processChildTracks(session, element, additionalInformation, rootPath);
+                            ((MergedTracks) track).setMemberTracks(memberTracks);
+
+                        }
+
                         allTracks.put(track.getId(), matchedTracks);
                     } else {
                         log.info("Warning.  No tracks were found with id: " + id + " in session file");
@@ -935,18 +935,23 @@ public class IGVSessionReader implements SessionReader {
      * @param rootPath
      * @return List of processed tracks.
      */
-    private List<Track> processChildTracks(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private List<DataTrack> processChildTracks(Session session, Element element, HashMap additionalInformation, String rootPath) {
 
         NodeList memberTrackNodes = element.getChildNodes();
-        List<Track> memberTracks = new ArrayList<Track>(memberTrackNodes.getLength());
+        List<DataTrack> memberTracks = new ArrayList<>(memberTrackNodes.getLength());
         for (int index = 0; index < memberTrackNodes.getLength(); index++) {
             Node memberNode = memberTrackNodes.item(index);
             if (nodeIsTrack(memberNode)) {
                 List<Track> addedTracks = processTrack(session, (Element) memberNode, additionalInformation, rootPath);
                 if (addedTracks != null) {
-                    memberTracks.addAll(addedTracks);
+                    for (Track t : addedTracks) {
+                        if (t instanceof DataTrack) {
+                            memberTracks.add((DataTrack) t);
+                        } else {
+                            log.error("Unexpected MergedTrack member class: " + t.getClass().getName());
+                        }
+                    }
                 }
-
             }
         }
         return memberTracks;
@@ -957,7 +962,7 @@ public class IGVSessionReader implements SessionReader {
 
         for (Pair<DataSourceTrack, Element> pair : this.combinedDataSourceTracks) {
 
-            //            <COMBINED_DATA_SOURCE operation="ADD" source0="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k27me3StdSig.wig.tdf" source1="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k36me3StdSig.wig.tdf"/>
+            // <COMBINED_DATA_SOURCE operation="ADD" source0="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k27me3StdSig.wig.tdf" source1="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k36me3StdSig.wig.tdf"/>
             Element element = pair.getSecond();
 
             DataSourceTrack combinedTrack = pair.getFirst();
@@ -1147,8 +1152,20 @@ public class IGVSessionReader implements SessionReader {
             return new SequenceTrack("Reference sequence");
         } else {
             log.info("Unrecognized class name: " + className);
-            Class clazz = SessionElement.getClass(className);
-            return (Track) clazz.getConstructor().newInstance();
+            try {
+                Class clazz = SessionElement.getClass(className);
+                return (Track) clazz.getConstructor().newInstance();
+            } catch (Exception e) {
+                log.error("Error attempting Track creation ", e);
+                return null;
+            }
+        }
+    }
+
+    private void removeAllTracksFromPanels() {
+        List<TrackPanel> panels = igv.getTrackPanels();
+        for (TrackPanel trackPanel : panels) {
+            trackPanel.removeAllTracks();
         }
     }
 
