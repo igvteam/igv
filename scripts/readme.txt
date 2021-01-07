@@ -90,4 +90,5 @@ to the java_arguments file:
    -Dlog4j.configurationFile=/Users/igv_user/.igv/log4j2-none.xml
 
 Here, '/Users/igv_user' represents the user's home directory ($HOME or %USERPROFILE%). Adjust 
-this file path according to your own local circumstances. 
+this file path according to your own local circumstances.  We recommend a fully-specified 
+*absolute* path to avoid issues with (for example) tilde or environment variable expansion.
