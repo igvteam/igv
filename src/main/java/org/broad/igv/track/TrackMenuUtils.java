@@ -1052,7 +1052,7 @@ public class TrackMenuUtils {
         if (selectedTracks.isEmpty()) {
             return;
         }
-        IGV.getInstance().removeTracks(selectedTracks);
+        IGV.getInstance().deleteTracks(selectedTracks);
         IGV.getInstance().repaint();
     }
 

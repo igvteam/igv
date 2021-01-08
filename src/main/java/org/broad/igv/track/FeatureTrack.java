@@ -863,7 +863,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                         "<br>Unload track " + getName() + "?");
                 if (unload) {
                     Collection<Track> tmp = Arrays.asList((Track) this);
-                    IGV.getInstance().removeTracks(tmp);
+                    IGV.getInstance().deleteTracks(tmp);
                     IGV.getInstance().repaint();
                 } else {
                     fatalLoadError = false;

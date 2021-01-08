@@ -1824,11 +1824,12 @@ public class IGV implements IGVEventObserver {
 
     }
 
-    public void removeTracks(Collection<? extends Track> tracksToRemove) {
-        removeTracks(tracksToRemove, true);
-    }
-
-    public void removeTracks(Collection<? extends Track> tracksToRemove, boolean dispose) {
+    /**
+     * Remove and dispose of tracks.  Removed tracks will not be usable afterwards.
+     *
+     * @param tracksToRemove
+     */
+    public void deleteTracks(Collection<? extends Track> tracksToRemove) {
 
         // Make copy of list as we will be modifying the original in the loop
         List<TrackPanel> panels = getTrackPanels();
@@ -1843,12 +1844,7 @@ public class IGV implements IGVEventObserver {
             if (t instanceof IGVEventObserver) {
                 IGVEventBus.getInstance().unsubscribe((IGVEventObserver) t);
             }
-        }
-
-        if (dispose) {
-            for (Track t : tracksToRemove) {
-                t.dispose();
-            }
+            t.dispose();
         }
     }
 

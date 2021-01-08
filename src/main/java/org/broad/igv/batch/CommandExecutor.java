@@ -222,7 +222,7 @@ public class CommandExecutor {
         if (trackName == null) return "Error: NULL TRACK NAME";
         for (Track track : igv.getAllTracks()) {
             if (track.getName().equals(trackName)) {
-                igv.removeTracks(Arrays.asList(track));
+                igv.deleteTracks(Arrays.asList(track));
                 return "OK";
             }
         }

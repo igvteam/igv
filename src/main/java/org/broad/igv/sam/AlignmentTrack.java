@@ -1152,7 +1152,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public void dispose() {
         super.dispose();
-        clearCaches();
         if (dataManager != null) {
             dataManager.unsubscribe(this);
         }
