@@ -61,22 +61,33 @@ public class CombinedDataSource implements DataSource {
 
     }
 
-    DataTrack source0;
-
-    DataTrack source1;
+    DataTrack trackl;
+    DataTrack track2;
 
     Operation operation = Operation.ADD;
 
-    public CombinedDataSource(DataTrack source0, DataTrack source1, Operation operation) {
-        this.source0 = source0;
-        this.source1 = source1;
+    public CombinedDataSource(DataTrack trackl, DataTrack track2, Operation operation) {
+        this.trackl = trackl;
+        this.track2 = track2;
         this.operation = operation;
     }
 
     public void updateTrackReferences(List<Track> allTracks) {
         //We filled in sources with placeholder tracks if not found, now find the real ones
-        source0 = updateTrackReference(source0, allTracks);
-        source1 = updateTrackReference(source1, allTracks);
+        trackl = updateTrackReference(trackl, allTracks);
+        track2 = updateTrackReference(track2, allTracks);
+    }
+
+    public DataTrack getTrackl() {
+        return trackl;
+    }
+
+    public DataTrack getTrack2() {
+        return track2;
+    }
+
+    public Operation getOperation() {
+        return operation;
     }
 
     private DataTrack updateTrackReference(DataTrack memberTrack, List<Track> allTracks) {
@@ -94,8 +105,8 @@ public class CombinedDataSource implements DataSource {
 
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
-        List<LocusScore> outerScores = this.source0.getSummaryScores(chr, startLocation, endLocation, zoom).getFeatures();
-        List<LocusScore> innerScores = this.source1.getSummaryScores(chr, startLocation, endLocation, zoom).getFeatures();
+        List<LocusScore> outerScores = this.trackl.getSummaryScores(chr, startLocation, endLocation, zoom).getFeatures();
+        List<LocusScore> innerScores = this.track2.getSummaryScores(chr, startLocation, endLocation, zoom).getFeatures();
 
         int initialSize = outerScores.size() + innerScores.size();
         List<LocusScore> combinedScoresList = new ArrayList<LocusScore>(initialSize);
@@ -250,8 +261,8 @@ public class CombinedDataSource implements DataSource {
 
     @Override
     public void dispose() {
-        if (source0 != null) source0.dispose();
-        if (source1 != null) source1.dispose();
+        if (trackl != null) trackl.dispose();
+        if (track2 != null) track2.dispose();
     }
 
 }

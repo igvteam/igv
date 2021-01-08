@@ -100,7 +100,7 @@ public class IGVSessionReader implements SessionReader {
      * List of combined data source tracks.  Processing of data sources has to be deferred until all tracks
      * are loaded
      */
-    private final List<Pair<DataSourceTrack, Element>> combinedDataSourceTracks = new ArrayList<>();
+    private final List<Pair<CombinedDataTrack, Element>> combinedDataSourceTracks = new ArrayList<>();
 
     /**
      * Map of id -> track, for second pass through when tracks reference each other
@@ -225,7 +225,7 @@ public class IGVSessionReader implements SessionReader {
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
                 // We don't have to reload the genome, but we do need to restore the annotation tracks
                 Track geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-                if(geneTrack != null) {
+                if (geneTrack != null) {
                     igv.setGenomeTracks(geneTrack);
                 }
                 // TODO -- json genome annotation tracks
@@ -305,7 +305,7 @@ public class IGVSessionReader implements SessionReader {
                 for (Track track : tracks) {
                     if (track == geneTrack) {
                         igv.setGenomeTracks(track);
-                    } else if (track.getResourceLocator() != null){
+                    } else if (track.getResourceLocator() != null) {
                         TrackPanel panel = trackPanelCache.get(track.getResourceLocator().getPath());
                         if (panel == null) {
                             panel = IGV.getInstance().getPanelFor(track.getResourceLocator());
@@ -775,12 +775,12 @@ public class IGVSessionReader implements SessionReader {
 
     private void processPanel(Session session, Element element, HashMap additionalInformation, String rootPath) {
 
-        if(panelElementPresent == false) {
+        if (panelElementPresent == false) {
             // First panel to be processed, do this only once.
 
             // Add any tracks loaded as a side effect of loading genome, these need to be removed and remembered
             final List<Track> tmp = igv.getAllTracks();
-            for(Track track : tmp) {
+            for (Track track : tmp) {
                 final String id = track.getId();
                 final List<Track> trackList = Arrays.asList(track);
                 leftoverTrackDictionary.put(id, trackList);
@@ -886,20 +886,21 @@ public class IGVSessionReader implements SessionReader {
         } else {
 
             // No match found, element represents a track not created from "Resource" or genome load.  These included
-            // combined and merged tracks.
+            // reference sequence, combined,  and merged tracks.
             String className = getAttribute(element, "clazz");
             if (className != null) {
                 try {
 
-                    Track track = createTrack(className);
+                    Track track = createTrack(className, element);
                     if (track != null) {
 
                         track.unmarshalXML(element, version);
                         matchedTracks = Arrays.asList(track);
+                        allTracks.put(track.getId(), matchedTracks);
 
                         // Special tracks
-                        if (element.getElementsByTagName("COMBINED_DATA_SOURCE").getLength() > 0) {
-                            combinedDataSourceTracks.add(new Pair(track, element.getElementsByTagName("COMBINED_DATA_SOURCE").item(0)));
+                        if (className.contains("CombinedDataTrack")) {
+                            combinedDataSourceTracks.add(new Pair(track, element));
                         }
 
                         if (className.contains("MergedTracks")) {
@@ -908,7 +909,7 @@ public class IGVSessionReader implements SessionReader {
 
                         }
 
-                        allTracks.put(track.getId(), matchedTracks);
+
                     } else {
                         log.info("Warning.  No tracks were found with id: " + id + " in session file");
                     }
@@ -957,23 +958,26 @@ public class IGVSessionReader implements SessionReader {
         return memberTracks;
     }
 
-
+    /**
+     * Process combined data tracks, these are tracks composed from dependent tracks by simple arithmetic operations.
+     */
     private void processCombinedDataSourceTracks() {
 
-        for (Pair<DataSourceTrack, Element> pair : this.combinedDataSourceTracks) {
+        Map<CombinedDataTrack, CombinedDataSource> sourceMap = new HashMap<>();
 
-            // <COMBINED_DATA_SOURCE operation="ADD" source0="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k27me3StdSig.wig.tdf" source1="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k36me3StdSig.wig.tdf"/>
+        // First pass -- create data sources
+        for (Pair<CombinedDataTrack, Element> pair : this.combinedDataSourceTracks) {
+
             Element element = pair.getSecond();
-
-            DataSourceTrack combinedTrack = pair.getFirst();
+            CombinedDataTrack combinedTrack = pair.getFirst();
 
             DataTrack track1 = null;
             DataTrack track2 = null;
-            List<Track> tmp = allTracks.get(element.getAttribute("source0"));
+            List<Track> tmp = allTracks.get(element.getAttribute("track1"));
             if (tmp != null && tmp.size() > 0) {
                 track1 = (DataTrack) tmp.get(0);
             }
-            tmp = allTracks.get(element.getAttribute("source1"));
+            tmp = allTracks.get(element.getAttribute("track2"));
             if (tmp != null && tmp.size() > 0) {
                 track2 = (DataTrack) tmp.get(0);
             }
@@ -982,13 +986,16 @@ public class IGVSessionReader implements SessionReader {
                 log.error("Missing track for combined track: " + pair.getFirst().getName());
                 return;
             }
-
-            String id2 = element.getAttribute("source1");
-            CombinedDataSource.Operation op = CombinedDataSource.Operation.valueOf(element.getAttribute("operation"));
+            CombinedDataSource.Operation op = CombinedDataSource.Operation.valueOf(element.getAttribute("op"));
 
             CombinedDataSource source = new CombinedDataSource(track1, track2, op);
-            combinedTrack.dataSource = source;
+            sourceMap.put(combinedTrack, source);
+        }
 
+        // Now set datasource on tracks.  This needs to be deferred as combined data sources can reference other
+        // combined sources, we need to instantiate the entire tree before using a datasource
+        for (Map.Entry<CombinedDataTrack, CombinedDataSource> entry : sourceMap.entrySet()) {
+            entry.getKey().setDatasource(entry.getValue());
         }
 
     }
@@ -1112,7 +1119,7 @@ public class IGVSessionReader implements SessionReader {
      * @throws java.lang.reflect.InvocationTargetException
      * @throws NoSuchMethodException
      */
-    private Track createTrack(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
+    private Track createTrack(String className, Element element) throws ClassNotFoundException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
 
         if (className.contains("BasePairTrack")) {
             return new BasePairTrack();
@@ -1138,6 +1145,10 @@ public class IGVSessionReader implements SessionReader {
             return new InteractionTrack();
         } else if (className.contains("MergedTracks")) {
             return new MergedTracks();
+        } else if (className.contains("CombinedDataTrack")) {
+            String id = element.getAttribute("id");
+            String name = element.getAttribute("name");
+            return new CombinedDataTrack(id, name);
         } else if (className.contains("MultipleAlignmentTrack")) {
             return new MultipleAlignmentTrack();
         } else if (className.contains("MutationTrack")) {

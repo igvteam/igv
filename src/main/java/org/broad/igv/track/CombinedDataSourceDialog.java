@@ -65,21 +65,14 @@ public class CombinedDataSourceDialog extends JDialog {
         super(owner, "Combine tracks");
         initComponents();
 
-        ArrayList<CombinedDataSource.Operation> dialogOperations = new ArrayList<CombinedDataSource.Operation>(
-                Arrays.asList(CombinedDataSource.Operation.values()));
+        ArrayList<CombinedDataSource.Operation> dialogOperations = new ArrayList<>(Arrays.asList(CombinedDataSource.Operation.values()));
 
         operation.setModel(new DefaultComboBoxModel(dialogOperations.toArray()));
 
-        List<DataTrack> visibleTracks = CollUtils.filter(IGV.getInstance().getDataTracks(), new Predicate<DataTrack>() {
-            @Override
-            public boolean apply(DataTrack input) {
-                return input.isVisible();
-            }
-        });
+        List<DataTrack> visibleTracks = CollUtils.filter(IGV.getInstance().getDataTracks(), input -> input.isVisible());
 
         trackABox.setModel(new DefaultComboBoxModel(visibleTracks.toArray()));
         trackBBox.setModel(new DefaultComboBoxModel(visibleTracks.toArray()));
-
 
         trackABox.setRenderer(new TrackComboBoxRenderer());
         trackBBox.setRenderer(new TrackComboBoxRenderer());
@@ -89,16 +82,8 @@ public class CombinedDataSourceDialog extends JDialog {
 
         operation.setRenderer(new OperationComboBoxRenderer());
 
-
         setOutputTrackName();
         operation.addItemListener(new SetOutputTrackNameListener());
-    }
-
-    public CombinedDataSourceDialog(Frame owner, Iterator<Track> tracks) {
-        this(owner);
-
-        trackABox.setSelectedItem(tracks.next());
-        trackBBox.setSelectedItem(tracks.next());
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -110,15 +95,16 @@ public class CombinedDataSourceDialog extends JDialog {
         DataTrack track0 = (DataTrack) trackABox.getSelectedItem();
         DataTrack track1 = (DataTrack) trackBBox.getSelectedItem();
         CombinedDataSource.Operation op = (CombinedDataSource.Operation) operation.getSelectedItem();
-        String text = resultName.getText();
+        String name = resultName.getText();
+        final String id = String.valueOf(System.currentTimeMillis());
 
-        CombinedDataSource source = new CombinedDataSource(track0, track1, op);
+        CombinedDataTrack newTrack = new CombinedDataTrack(id, name);
+        newTrack.setDatasource(new CombinedDataSource(track0, track1, op));
 
-        DataSourceTrack newTrack = new DataSourceTrack(null, track0.getId() + track1.getId() + text, text, source);
-        TrackMenuUtils.changeRenderer(Arrays.<Track>asList(newTrack), track0.getRenderer().getClass());
+        TrackMenuUtils.changeRenderer(Arrays.asList(newTrack), track0.getRenderer().getClass());
         newTrack.setDataRange(track0.getDataRange());
         newTrack.setColorScale(track0.getColorScale());
-        IGV.getInstance().addTracks(Arrays.<Track>asList(newTrack), PanelName.DATA_PANEL);
+        IGV.getInstance().addTracks(Arrays.asList(newTrack), PanelName.DATA_PANEL);
         this.setVisible(false);
 
     }

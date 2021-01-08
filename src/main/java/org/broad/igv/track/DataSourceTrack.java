@@ -53,16 +53,18 @@ public class DataSourceTrack extends DataTrack {
 
     public DataSource dataSource;
 
-
     public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource) {
         super(locator, id, name);
+        if(dataSource != null) {
+            setDatasource(dataSource);
+        }
+    }
 
+    public void setDatasource(DataSource dataSource) {
         this.dataSource = dataSource;
-
         if (this.dataSource != null) {
             setTrackType(dataSource.getTrackType());
             List<LocusScore> scores = this.dataSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, 0);
-
             if (scores.size() > 0) {
                 initScale(dataSource, scores);
             }
@@ -131,16 +133,6 @@ public class DataSourceTrack extends DataTrack {
             ((CombinedDataSource) dataSource).updateTrackReferences(allTracks);
         }
     }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        if (dataSource != null) {
-            dataSource.dispose();
-            dataSource = null;
-        }
-    }
-
 
     public void marshalXML(Document document, Element element) {
 
