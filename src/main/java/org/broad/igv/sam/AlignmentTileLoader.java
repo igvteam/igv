@@ -128,7 +128,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
         boolean filterSecondaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SECONDARY_ALIGNMENTS);
         boolean filterSupplementaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS);
         ReadGroupFilter filter = ReadGroupFilter.getFilter();
-        boolean showDuplicates = prefMgr.getAsBoolean(SAM_SHOW_DUPLICATES) || !prefMgr.getAsBoolean(SAM_FILTER_DUPLICATES);
+        boolean filterDuplicates = prefMgr.getAsBoolean(SAM_FILTER_DUPLICATES);
         int qualityThreshold = prefMgr.getAsInt(SAM_QUALITY_THRESHOLD);
         int alignmentScoreTheshold = prefMgr.getAsInt(SAM_ALIGNMENT_SCORE_THRESHOLD);
 
@@ -217,7 +217,8 @@ public class AlignmentTileLoader implements IGVEventObserver {
                 }
 
 
-                if (!record.isMapped() || (!showDuplicates && record.isDuplicate()) ||
+                if (!record.isMapped() ||
+                        (filterDuplicates && record.isDuplicate()) ||
                         (filterFailedReads && record.isVendorFailedRead()) ||
                         (filterSecondaryAlignments && !record.isPrimary()) ||
                         (filterSupplementaryAlignments && record.isSupplementary()) ||

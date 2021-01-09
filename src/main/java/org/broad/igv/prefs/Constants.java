@@ -117,7 +117,6 @@ final public class Constants {
     public static final String SAM_HIDDEN_TAGS = "SAM.HIDDEN_TAGS";
     public static final String SAM_MAX_VISIBLE_RANGE = "SAM.MAX_VISIBLE_RANGE";
     public static final String SAM_FILTER_DUPLICATES = "SAM.FILTER_DUPLICATES";
-    public static final String SAM_SHOW_DUPLICATES = "SAM.SHOW_DUPLICATES";
     public static final String SAM_QUICK_CONSENSUS_MODE = "SAM.QUICK_CONSENSUS_MODE";
     public static final String SAM_SHOW_SOFT_CLIPPED = "SAM.SHOW_SOFT_CLIPPED";
     public static final String SAM_MAX_SOFT_CLIP = "SAM.MAX_SOFT_CLIP";
@@ -275,7 +274,7 @@ final public class Constants {
             SAM_FILTER_ALIGNMENTS,
             SAM_FILTER_URL,
             SAM_MAX_VISIBLE_RANGE,
-            SAM_SHOW_DUPLICATES,
+            SAM_FILTER_DUPLICATES,
             SAM_SHOW_SOFT_CLIPPED,
             SAM_SAMPLING_COUNT,
             SAM_SAMPLING_WINDOW,
