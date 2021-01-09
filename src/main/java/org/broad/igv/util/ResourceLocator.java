@@ -329,28 +329,24 @@ public class ResourceLocator {
     }
 
     public void setPath(String path) {
+
+        // Set UI human-readable short name for the file
+        String objFname = "";
+        if (path.contains("/")) {
+            objFname = path.substring(path.lastIndexOf('/')).replace("/", "");
+        } else {
+            objFname = path;
+        }
+        this.setName(objFname);
+
         if (path != null && path.startsWith("file://")) {
             this.path = path.substring("file://".length());
         } else if (path != null && path.startsWith("gs://")) {
             this.path = GoogleUtils.translateGoogleCloudURL(path);
         } else if (path != null && path.startsWith("s3://")) {
             this.path = path;
-
-            // Set UI human-readable short name for the file
-            String objFname = "";
-            if (path.contains("/")) {
-                objFname = path.substring(path.lastIndexOf('/')).replace("/", "");
-            } else {
-                objFname = path;
-            }
-
-            log.debug("S3 object filename visible in IGV UI is: " + objFname);
-            this.setName(objFname);
-
             String s3UrlIndexPath = detectIndexPath(path);
-
             this.setIndexPath(s3UrlIndexPath);
-
         } else {
             this.path = path;
         }

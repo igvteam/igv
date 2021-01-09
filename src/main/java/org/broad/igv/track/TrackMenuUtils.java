@@ -342,6 +342,7 @@ public class TrackMenuUtils {
             final JMenuItem overlayGroups = new JMenuItem("Overlay Tracks");
             overlayGroups.addActionListener(e -> {
                 OverlayTracksMenuAction.merge(dataTrackList, "Overlay");
+                IGV.getInstance().repaint();
             });
 
             int numDataTracks = dataTrackList.size();
@@ -355,6 +356,7 @@ public class TrackMenuUtils {
             if (merged) {
                 unmergeItem.addActionListener(e -> {
                     OverlayTracksMenuAction.unmerge(tracks);
+                    IGV.getInstance().repaint();
                 });
             } else {
                 unmergeItem.setEnabled(false);
