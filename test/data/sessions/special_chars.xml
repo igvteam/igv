@@ -26,26 +26,8 @@
 
 <Session genome="hg18" hasGeneTrack="true" locus="All" version="6">
     <Resources>
-        <Resource path="${DATA_DIR}folder with spaces/test+wp.wig"/>
-        <Resource path="${DATA_DIR}folder with spaces/%test%2D.wig"/>
-        <Resource path="${DATA_DIR}folder with spaces/test.wig"/>
+        <Resource path="../folder with spaces/test+wp.wig"/>
+        <Resource path="../folder with spaces/%test%2D.wig"/>
+        <Resource path="../folder with spaces/test.wig"/>
     </Resources>
-    <Panel height="489" name="DataPanel" width="1133">
-        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="${DATA_DIR}folder with spaces/%test%2D.wig" name="%test%2D.wig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
-            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="24.0" minimum="0.0" type="LINEAR"/>
-        </Track>
-        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="${DATA_DIR}folder with spaces/test.wig" name="test.wig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
-            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="24.0" minimum="0.0" type="LINEAR"/>
-        </Track>
-        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="${DATA_DIR}folder with spaces/test+wp.wig" name="test+wp.wig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
-            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="24.0" minimum="0.0" type="LINEAR"/>
-        </Track>
-    </Panel>
-    <Panel height="69" name="FeaturePanel" width="1133">
-        <Track altColor="0,0,178" autoScale="false" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="Reference sequence" name="Reference sequence" sortable="false" visible="true"/>
-        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;226.0;255,255,255;0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="35" id="hg18_genes" name="RefSeq genes" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
-            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="226.0" minimum="0.0" type="LINEAR"/>
-        </Track>
-    </Panel>
-    <PanelLayout dividerFractions="0.8690265486725663"/>
 </Session>
