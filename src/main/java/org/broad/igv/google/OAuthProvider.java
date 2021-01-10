@@ -53,6 +53,7 @@ public class OAuthProvider {
     private long expirationTime; // in milliseconds
     private String scope;
     private String currentUserName;
+    private String currentUserID;
     private String currentUserEmail;
     private JsonObject response;
     private JsonObject config;
