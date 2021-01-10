@@ -53,7 +53,6 @@ public class OAuthProvider {
     private long expirationTime; // in milliseconds
     private String scope;
     private String currentUserName;
-    private String currentUserID;
     private String currentUserEmail;
     private JsonObject response;
     private JsonObject config;
@@ -189,7 +188,8 @@ public class OAuthProvider {
         if (clientSecret != null) {
             params.put("client_secret", clientSecret);
         }
-        params.put("redirect_uri", new URLDecoder().decode(redirectURI, "utf-8"));
+
+        params.put("redirect_uri", new URLDecoder().decode(redirect, "utf-8"));
         params.put("grant_type", "authorization_code");
 
         //  set the resource if it necessary for the auth provider dwm08
