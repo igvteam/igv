@@ -265,12 +265,11 @@ public class AlignmentPacker {
 
         for (Alignment a : alList) {
 
-            if(a.isPrimary()) {
+            if (a.isPrimary()) {
                 Object bc;
-                if("READNAME".equals(tag)) {
+                if ("READNAME".equals(tag)) {
                     bc = a.getReadName();
-                }
-                else {
+                } else {
                     bc = a.getAttribute(tag);
                 }
 
@@ -285,8 +284,7 @@ public class AlignmentPacker {
                     }
                     linkedAlignment.addAlignment(a);
                 }
-            }
-            else {
+            } else {
                 // Don't link secondary (i.e alternative) alignments
                 bcList.add(a);
             }
@@ -294,18 +292,16 @@ public class AlignmentPacker {
 
         // Now copy list, de-linking orhpaned alignments (alignments with no linked mates)
         List<Alignment> delinkedList = new ArrayList<>(alList.size());
-        for(Alignment a : bcList) {
-            if(a instanceof LinkedAlignment) {
+        for (Alignment a : bcList) {
+            if (a instanceof LinkedAlignment) {
                 final List<Alignment> alignments = ((LinkedAlignment) a).alignments;
-                if(alignments.size() == 1) {
+                if (alignments.size() == 1) {
                     delinkedList.add(alignments.get(0));
-                }
-                else {
+                } else {
                     a.finish();
                     delinkedList.add(a);
                 }
-            }
-            else {
+            } else {
                 delinkedList.add(a);
             }
         }
@@ -360,16 +356,13 @@ public class AlignmentPacker {
                                 if (o1 instanceof Integer && o2 instanceof Integer) {
                                     Integer i1 = (Integer) o1, i2 = (Integer) o2;
                                     return i1.compareTo(i2);
-                                }
-                                else if (o1 instanceof Float && o2 instanceof Float) {
+                                } else if (o1 instanceof Float && o2 instanceof Float) {
                                     Float f1 = (Float) o1, f2 = (Float) o2;
                                     return f1.compareTo(f2);
-                                }
-                                else if (o1 instanceof Double && o2 instanceof Double) {
+                                } else if (o1 instanceof Double && o2 instanceof Double) {
                                     Double d1 = (Double) o1, d2 = (Double) o2;
                                     return d1.compareTo(d2);
-                                }
-                                else {
+                                } else {
                                     String s1 = o1.toString(), s2 = o2.toString();
                                     return s1.compareToIgnoreCase(s2);
                                 }
@@ -406,11 +399,9 @@ public class AlignmentPacker {
                 Object tagValue = al.getAttribute(tag);
                 if (tagValue == null) {
                     return null;
-                }
-                else if (tagValue instanceof Integer || tagValue instanceof Float || tagValue instanceof Double) {
+                } else if (tagValue instanceof Integer || tagValue instanceof Float || tagValue instanceof Double) {
                     return tagValue;
-                }
-                else {
+                } else {
                     return tagValue.toString();
                 }
             case FIRST_OF_PAIR_STRAND:
@@ -418,12 +409,11 @@ public class AlignmentPacker {
                 String strandString = strand == Strand.NONE ? null : strand.toString();
                 return strandString;
             case READ_ORDER:
-                if(al.isPaired() && al.isFirstOfPair()) {
+                if (al.isPaired() && al.isFirstOfPair()) {
                     return "FIRST";
-                } else if(al.isPaired() && al.isSecondOfPair()) {
+                } else if (al.isPaired() && al.isSecondOfPair()) {
                     return "SECOND";
-                }
-                else {
+                } else {
                     return "";
                 }
             case PAIR_ORIENTATION:
@@ -445,6 +435,11 @@ public class AlignmentPacker {
                 }
             case SUPPLEMENTARY:
                 return al.isSupplementary() ? "SUPPLEMENTARY" : "";
+            case SV_ALIGNMENT:
+                return !al.isProperPair() ||
+                        al.getCigarString().toUpperCase().contains("S") ||
+                        al.isSupplementary() ?
+                        "SV": "";
             case BASE_AT_POS:
                 // Use a string prefix to enforce grouping rules:
                 //    1: alignments with a base at the position
@@ -459,8 +454,7 @@ public class AlignmentPacker {
                     byte[] baseAtPos = new byte[]{al.getBase(pos.getStart())};
                     if (baseAtPos[0] == 0) { // gap at position
                         return "2:";
-                    }
-                    else { // base at position
+                    } else { // base at position
                         return "1:" + new String(baseAtPos);
                     }
                 } else { // does not overlap position

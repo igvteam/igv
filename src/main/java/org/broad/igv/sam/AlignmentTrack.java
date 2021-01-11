@@ -100,7 +100,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     public enum GroupOption {
         STRAND, SAMPLE, READ_GROUP, LIBRARY, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE,
-        SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW, HAPLOTYPE, READ_ORDER, LINKED, PHASE
+        SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW, HAPLOTYPE, READ_ORDER, LINKED, PHASE, SV_ALIGNMENT
     }
 
     public enum BisulfiteContext {
@@ -1583,6 +1583,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("chromosome of mate", GroupOption.MATE_CHROMOSOME);
             mappings.put("pair orientation", GroupOption.PAIR_ORIENTATION);
             mappings.put("supplementary flag", GroupOption.SUPPLEMENTARY);
+            mappings.put("structural variant evidence", GroupOption.SV_ALIGNMENT);
             mappings.put("movie", GroupOption.MOVIE);
             mappings.put("ZMW", GroupOption.ZMW);
             mappings.put("read order", GroupOption.READ_ORDER);
