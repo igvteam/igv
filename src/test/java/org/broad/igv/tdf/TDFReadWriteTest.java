@@ -92,7 +92,6 @@ public class TDFReadWriteTest {
         assertEquals(2, group.attributes.size());
         assertEquals("attValue", group.attributes.get("attKey"));
         assertEquals("attValue2", group.attributes.get("attKey2"));
-        reader.close();
     }
 
     /**
@@ -114,9 +113,6 @@ public class TDFReadWriteTest {
         }
         assertEquals(type, reader.getTrackType());
         assertEquals(trackLine, reader.getTrackLine());
-        reader.close();
-
-
     }
 
     /**
@@ -180,7 +176,6 @@ public class TDFReadWriteTest {
                 assertEquals(data[i][j], dsTile.getValue(i, j), 1.0e-6);
             }
         }
-        reader.close();
     }
 
 
