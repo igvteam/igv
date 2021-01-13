@@ -93,7 +93,7 @@ public class BBFileReader {
 
     private static Logger log = Logger.getLogger(BBFileReader.class);
 
-    private SeekableStream fis;      // BBFile input stream handle
+    private String path;
     private long fileOffset;           // file offset for next item to be read
 
     private BBFileHeader fileHeader; // Big Binary file header
@@ -124,9 +124,11 @@ public class BBFileReader {
 
     public BBFileReader(String path) throws IOException {
 
+        this.path = path;
+
         log.debug("Opening BBFile source  " + path);
 
-        fis = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(path), 128000);
+        SeekableStream fis = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(path), 128000);
 
         // read in file header
         fileOffset = BBFILE_HEADER_OFFSET;
@@ -190,16 +192,6 @@ public class BBFileReader {
 
         // get number of data records indexed by the R+ chromosome data location tree
         fileOffset = fileHeader.getFullDataOffset();
-    }
-
-
-
-    public void close() {
-        try {
-            fis.close();
-        } catch (IOException e) {
-            log.error("Error closing bigwig stream", e);
-        }
     }
 
     /*
@@ -315,7 +307,7 @@ public class BBFileReader {
      * 2) A null object is returned if the file is not BigBed.(see isBigBedFile method)
      */
     synchronized public BigBedIterator getBigBedIterator(String startChromosome, int startBase,
-                                                         String endChromosome, int endBase, boolean contained) {
+                                                         String endChromosome, int endBase, boolean contained) throws IOException {
 
         if (!isBigBedFile())
             return null;
@@ -330,6 +322,7 @@ public class BBFileReader {
             return new BigBedIterator();  // an empty iterator
 
         // compose an iterator
+        SeekableStream fis = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(path), 128000);
         BigBedIterator bedIterator = new BigBedIterator(fis, chromosomeIDTree, chromosomeDataTree,
                 selectionRegion, contained);
 
@@ -357,7 +350,7 @@ public class BBFileReader {
      * 2) A null object is returned if the file is not BigWig.(see isBigWigFile method)
      */
     synchronized public BigWigIterator getBigWigIterator(String startChromosome, int startBase,
-                                                         String endChromosome, int endBase, boolean contained) {
+                                                         String endChromosome, int endBase, boolean contained) throws IOException {
 
 
         if (!isBigWigFile())
@@ -372,6 +365,7 @@ public class BBFileReader {
             return new BigWigIterator();
 
         // compose an iterator
+        SeekableStream fis = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(path), 128000);
         BigWigIterator wigIterator = new BigWigIterator(fis, chromosomeIDTree, chromosomeDataTree,
                 selectionRegion, contained);
 
@@ -399,7 +393,7 @@ public class BBFileReader {
      * 1) An empty iterator is returned if region has no data available
      */
     synchronized public ZoomLevelIterator getZoomLevelIterator(int zoomLevel, String startChromosome, int startBase,
-                                                               String endChromosome, int endBase, boolean contained) {
+                                                               String endChromosome, int endBase, boolean contained) throws IOException {
         // check for valid zoom level
         if (zoomLevel < 1 || zoomLevel > zoomLevelCount)
             throw new RuntimeException("Error: ZoomLevelIterator zoom level is out of range\n");
@@ -417,6 +411,7 @@ public class BBFileReader {
         }
 
         /// compose an iterator
+        SeekableStream fis = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(path), 128000);
         ZoomLevelIterator zoomIterator = new ZoomLevelIterator(fis, chromosomeIDTree,
                 zoomDataTree, zoomLevel, selectionRegion, contained);
 
@@ -436,7 +431,7 @@ public class BBFileReader {
      * Error conditions:
      * 1) An empty iterator is returned if region has no data available
      */
-    synchronized public ZoomLevelIterator getZoomLevelIterator(int zoomLevel) {
+    synchronized public ZoomLevelIterator getZoomLevelIterator(int zoomLevel) throws IOException {
 
         // check for valid zoom level
         if (zoomLevel < 1 || zoomLevel > zoomLevelCount)
@@ -449,6 +444,7 @@ public class BBFileReader {
         RPChromosomeRegion selectionRegion = zoomDataTree.getChromosomeBounds();
 
         // compose an iterator
+        SeekableStream fis = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(path), 128000);
         boolean contained = true;   //all regions are contained
         ZoomLevelIterator zoomIterator = new ZoomLevelIterator(fis, chromosomeIDTree,
                 zoomDataTree, zoomLevel, selectionRegion, contained);
@@ -512,5 +508,9 @@ public class BBFileReader {
 
     public String getChromsomeFromId(int chromId) {
         return chromosomeIDTree.getChromosomeName(chromId);
+    }
+
+    public String getPath() {
+        return path;
     }
 } // end of BBFileReader

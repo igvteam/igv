@@ -26,8 +26,10 @@
 package org.broad.igv.methyl;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.collections.LRUCache;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -169,30 +171,34 @@ public class CachingMethylSource implements MethylDataSource {
         try {
 
 
-            iter = reader.query(seq, start, end);
+            try {
+                iter = reader.query(seq, start, end);
+                while (iter != null && iter.hasNext()) {
+                    MethylScore record = iter.next();
 
-            while (iter != null && iter.hasNext()) {
-                MethylScore record = iter.next();
+                    // Range of tile indeces that this alignment contributes to.
+                    int aStart = record.getStart();
+                    int aEnd = record.getEnd();
+                    int idx0 = 0;
+                    int idx1 = 0;
+                    if (binSize > 0) {
+                        idx0 = Math.max(0, (aStart - start) / binSize);
+                        idx1 = Math.min(tiles.size() - 1, (aEnd - start) / binSize);
+                    }
 
-                // Range of tile indeces that this alignment contributes to.
-                int aStart = record.getStart();
-                int aEnd = record.getEnd();
-                int idx0 = 0;
-                int idx1 = 0;
-                if (binSize > 0) {
-                    idx0 = Math.max(0, (aStart - start) / binSize);
-                    idx1 = Math.min(tiles.size() - 1, (aEnd - start) / binSize);
-                }
+                    // Loop over tiles this read overlaps
+                    for (int i = idx0; i <= idx1; i++) {
+                        Bin t = tiles.get(i);
 
-                // Loop over tiles this read overlaps
-                for (int i = idx0; i <= idx1; i++) {
-                    Bin t = tiles.get(i);
-
-                    // A bin size == 0 means use a single bin for the entire chromosome.  This is a confusing convention.
-                    if (binSize == 0 || ((aStart >= t.start) && (aStart < t.end))) {
-                        t.containedRecords.add(record);
+                        // A bin size == 0 means use a single bin for the entire chromosome.  This is a confusing convention.
+                        if (binSize == 0 || ((aStart >= t.start) && (aStart < t.end))) {
+                            t.containedRecords.add(record);
+                        }
                     }
                 }
+            } catch (IOException e) {
+                MessageUtils.showMessage("Error: " + e.getMessage());
+                log.error(e);
             }
 
             for (Bin t : tiles) {

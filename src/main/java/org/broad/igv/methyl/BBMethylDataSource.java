@@ -64,7 +64,7 @@ public class BBMethylDataSource implements MethylDataSource {
         init(genome);
     }
 
-    public Iterator<MethylScore> query(String chr, int start, int end) {
+    public Iterator<MethylScore> query(String chr, int start, int end) throws IOException {
         String tmp = chrNameMap.get(chr);
         String querySeq = tmp == null ? chr : tmp;
         BigBedIterator bedIterator = reader.getBigBedIterator(querySeq, start, chr, end, false);

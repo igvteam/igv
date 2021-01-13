@@ -27,6 +27,7 @@ package org.broad.igv.methyl;
 
 import org.broad.igv.data.DataSource;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 /**
@@ -35,6 +36,6 @@ import java.util.Iterator;
  */
 public interface MethylDataSource  {
 
-    Iterator<MethylScore> query(String chr, int start, int end);
+    Iterator<MethylScore> query(String chr, int start, int end) throws IOException;
 
 }

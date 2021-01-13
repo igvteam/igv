@@ -91,7 +91,6 @@ public class BBFileHeader {
     // constructor reads BBFile header from an input stream
     public BBFileHeader(String path, SeekableStream fis, long fileOffset) {
 
-
         // save the path and seekable file handle
         this.path = path;
         this.fis = fis;
@@ -99,7 +98,6 @@ public class BBFileHeader {
 
         // read in BBFile header
         isHeaderOK = readBBFileHeader(fileHeaderOffset);
-
     }
 
 
@@ -107,11 +105,9 @@ public class BBFileHeader {
         return path;
     }
 
-
     public boolean isHeaderOK() {
         return isHeaderOK;
     }
-
 
     public boolean isLowToHigh() {
         return isLowToHigh;

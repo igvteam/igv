@@ -35,6 +35,7 @@ import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 
@@ -108,9 +109,13 @@ public class MethylTrack extends AbstractTrack {
         int expandedEnd = end + width;
 
         List<MethylScore> scores = new ArrayList<MethylScore>(1000);
-        Iterator<MethylScore> iter = dataSource.query(chr, expandedStart, expandedEnd);
-        while (iter.hasNext()) {
-            scores.add(iter.next());
+        try {
+            Iterator<MethylScore> iter = dataSource.query(chr, expandedStart, expandedEnd);
+            while (iter.hasNext()) {
+                scores.add(iter.next());
+            }
+        } catch (IOException e) {
+            MessageUtils.showErrorMessage("Error", e);
         }
         loadedRange = new Range(chr, expandedStart, expandedEnd, scores);
 
