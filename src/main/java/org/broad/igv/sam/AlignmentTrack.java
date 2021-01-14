@@ -88,9 +88,24 @@ import static org.broad.igv.prefs.Constants.*;
 
 public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
-    enum ColorOption {
-        INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, LIBRARY, MOVIE, ZMW,
-        BISULFITE, NOMESEQ, TAG, NONE, UNEXPECTED_PAIR, MAPPED_SIZE, LINK_STRAND, YC_TAG
+    public enum ColorOption {
+        INSERT_SIZE,
+        READ_STRAND,
+        FIRST_OF_PAIR_STRAND,
+        PAIR_ORIENTATION,
+        SAMPLE,
+        READ_GROUP,
+        LIBRARY,
+        MOVIE,
+        ZMW,
+        BISULFITE,
+        NOMESEQ,
+        TAG,
+        NONE,
+        UNEXPECTED_PAIR,
+        MAPPED_SIZE,
+        LINK_STRAND,
+        YC_TAG
     }
 
     public enum SortOption {
@@ -99,8 +114,31 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, LIBRARY, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE,
-        SUPPLEMENTARY, BASE_AT_POS, MOVIE, ZMW, HAPLOTYPE, READ_ORDER, LINKED, PHASE, SV_ALIGNMENT
+        STRAND("read strand"),
+        SAMPLE("sample"),
+        READ_GROUP("read group"),
+        LIBRARY("library"),
+        FIRST_OF_PAIR_STRAND("first-in-pair strand"),
+        TAG("tag"),
+        PAIR_ORIENTATION("pair orientation"),
+        MATE_CHROMOSOME("chromosome of mate"),
+        NONE("none"),
+        SUPPLEMENTARY("supplementary flag"),
+        BASE_AT_POS("base at position"),
+        MOVIE("movie"),
+        ZMW("ZMW"),
+        HAPLOTYPE("haplotype"),
+        READ_ORDER("read order"),
+        LINKED("linked"),
+        PHASE("phase"),
+        SV_ALIGNMENT("structural variant evidence");
+
+        public String label;
+
+        GroupOption(String label) {
+            this.label = label;
+        }
+
     }
 
     public enum BisulfiteContext {
@@ -742,6 +780,20 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
         renderOptions.setGroupByOption(option);
         dataManager.packAlignments(renderOptions);
+    }
+
+    public void setBisulfiteContext(BisulfiteContext option) {
+        renderOptions.bisulfiteContext = option;
+        getPreferences().put(SAM_BISULFITE_CONTEXT, option.toString());
+    }
+
+    public void setColorOption(ColorOption option) {
+        renderOptions.setColorOption(option);
+    }
+
+    public void setColorByTag(String tag) {
+        renderOptions.setColorByTag(tag);
+        getPreferences(experimentType).put(SAM_COLOR_BY_TAG, tag);
     }
 
     public void packAlignments() {
@@ -1573,26 +1625,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             JMenu groupMenu = new JMenu("Group alignments by");
             ButtonGroup group = new ButtonGroup();
 
-            Map<String, GroupOption> mappings = new LinkedHashMap<>();
-            mappings.put("none", GroupOption.NONE);
-            mappings.put("read strand", GroupOption.STRAND);
-            mappings.put("first-in-pair strand", GroupOption.FIRST_OF_PAIR_STRAND);
-            mappings.put("sample", GroupOption.SAMPLE);
-            mappings.put("library", GroupOption.LIBRARY);
-            mappings.put("read group", GroupOption.READ_GROUP);
-            mappings.put("chromosome of mate", GroupOption.MATE_CHROMOSOME);
-            mappings.put("pair orientation", GroupOption.PAIR_ORIENTATION);
-            mappings.put("supplementary flag", GroupOption.SUPPLEMENTARY);
-            mappings.put("structural variant evidence", GroupOption.SV_ALIGNMENT);
-            mappings.put("movie", GroupOption.MOVIE);
-            mappings.put("ZMW", GroupOption.ZMW);
-            mappings.put("read order", GroupOption.READ_ORDER);
-            mappings.put("linked", GroupOption.LINKED);
-            mappings.put("phase", GroupOption.PHASE);
+            GroupOption[] groupOptions = {
+                    GroupOption.NONE, GroupOption.STRAND, GroupOption.FIRST_OF_PAIR_STRAND, GroupOption.SAMPLE,
+                    GroupOption.LIBRARY, GroupOption.READ_GROUP, GroupOption.MATE_CHROMOSOME,
+                    GroupOption.PAIR_ORIENTATION, GroupOption.SUPPLEMENTARY, GroupOption.SV_ALIGNMENT,
+                    GroupOption.MOVIE, GroupOption.ZMW, GroupOption.READ_ORDER, GroupOption.LINKED, GroupOption.PHASE
+            };
 
-            for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {
-                final GroupOption option = el.getValue();
-                JCheckBoxMenuItem mi = new JCheckBoxMenuItem(el.getKey());
+            for (final GroupOption option : groupOptions) {
+                JCheckBoxMenuItem mi = new JCheckBoxMenuItem(option.label);
                 mi.setSelected(renderOptions.getGroupByOption() == option);
                 mi.addActionListener(aEvt -> {
                     IGV.getInstance().groupAlignmentTracks(option, null, null);
@@ -1704,16 +1745,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             add(filterMenu);
         }
 
-
-        private void setBisulfiteContext(BisulfiteContext option) {
-            renderOptions.bisulfiteContext = option;
-            getPreferences().put(SAM_BISULFITE_CONTEXT, option.toString());
-        }
-
-        private void setColorOption(ColorOption option) {
-            renderOptions.setColorOption(option);
-        }
-
         private JRadioButtonMenuItem getColorMenuItem(String label, final ColorOption option) {
             JRadioButtonMenuItem mi = new JRadioButtonMenuItem(label);
             mi.setSelected(renderOptions.getColorOption() == option);
@@ -1771,7 +1802,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 setColorOption(ColorOption.TAG);
                 String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getColorByTag());
                 if (tag != null && tag.trim().length() > 0) {
-                    getPreferences(experimentType).put(SAM_COLOR_BY_TAG, tag);
+                    setColorByTag(tag);
                     AlignmentTrack.this.repaint();
                 }
             });

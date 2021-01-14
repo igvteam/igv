@@ -128,6 +128,8 @@ public class CommandExecutor {
                 result = sort(param1, param2, param3, param4);
             } else if (cmd.equalsIgnoreCase("group")) {
                 result = group(param1, param2);
+            } else if (cmd.equalsIgnoreCase("colorBy")) {
+                result = colorBy(param1, param2);
             } else if (cmd.equalsIgnoreCase("collapse")) {
                 String trackName = parseTrackName(param1);
                 igv.setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
@@ -826,8 +828,13 @@ public class CommandExecutor {
                 }
             }
         }
-
         igv.groupAlignmentTracks(groupOption, tagArg, r);
+        return "OK";
+    }
+
+    private String colorBy(String colorArg, String tagArg) {
+        final AlignmentTrack.ColorOption colorOption = AlignmentTrack.ColorOption.valueOf(colorArg.toUpperCase());
+        igv.colorAlignmentTracks(colorOption, tagArg);
         return "OK";
     }
 
@@ -953,9 +960,8 @@ public class CommandExecutor {
                 log.error("Unknown group by option: " + str);
                 return AlignmentTrack.GroupOption.NONE;
             }
-
         }
-
     }
+
 
 }

@@ -1567,28 +1567,40 @@ public class IGV implements IGVEventObserver {
      * @api
      */
     public void groupAlignmentTracks(AlignmentTrack.GroupOption option, String tag, Range pos) {
-        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
-
-        prefMgr.put(SAM_GROUP_OPTION, option.toString());
-
-        // Don't persist "group by position"
-        if (option != AlignmentTrack.GroupOption.BASE_AT_POS) {
-            if (option == AlignmentTrack.GroupOption.NONE) {
-                prefMgr.remove(SAM_GROUP_OPTION);
-                prefMgr.remove(SAM_GROUP_BY_POS);
-            } else {
-                prefMgr.put(SAM_GROUP_OPTION, option.toString());
-                if (option == AlignmentTrack.GroupOption.TAG && tag != null) {
-                    prefMgr.put(SAM_GROUP_BY_TAG, tag);
-                }
-            }
-        }
 
         List<Track> alignmentTracks = getAllTracks().stream()
                 .filter(track -> track instanceof AlignmentTrack)
                 .collect(Collectors.toList());
         for (Track t : alignmentTracks) {
             ((AlignmentTrack) t).groupAlignments(option, tag, pos);
+        }
+        this.repaint(alignmentTracks);
+    }
+
+    /**
+     * Group all alignment tracks by the specified option.
+     *
+     * @param option
+     * @api
+     */
+    public void colorAlignmentTracks(AlignmentTrack.ColorOption option, String tag) {
+
+        List<Track> alignmentTracks = getAllTracks().stream()
+                .filter(track -> track instanceof AlignmentTrack)
+                .collect(Collectors.toList());
+        for (Track t : alignmentTracks) {
+            final AlignmentTrack alignmentTrack = (AlignmentTrack) t;
+            alignmentTrack.setColorOption(option);
+            if(option == AlignmentTrack.ColorOption.BISULFITE && tag != null) {
+                try {
+                    AlignmentTrack.BisulfiteContext context = AlignmentTrack.BisulfiteContext.valueOf(tag);
+                    alignmentTrack.setBisulfiteContext(context);
+                } catch (IllegalArgumentException e) {
+                    log.error("Error setting bisulfite context for: " + tag, e);
+                }
+            } else if (tag != null) {
+                alignmentTrack.setColorByTag(tag);
+            }
         }
         this.repaint(alignmentTracks);
     }
