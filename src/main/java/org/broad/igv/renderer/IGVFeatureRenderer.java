@@ -137,6 +137,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
 
             boolean alternateExonColor = (track instanceof FeatureTrack && ((FeatureTrack) track).isAlternateExonColor());
+            Color trackPosColor = track.getColor();
+            Color trackNegColor = alternateExonColor ? track.getColor() : track.getAltColor();
+
 
             for (IGVFeature feature : featureList) {
 
@@ -186,7 +189,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     continue;
                 }
 
-                Color color = getFeatureColor(feature, track);
+                Color color = getFeatureColor(feature, track, trackPosColor, trackNegColor);
                 Graphics2D g2D = context.getGraphic2DForColor(color);
 
                 // Draw block representing entire feature
@@ -694,7 +697,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         return "Basic Feature";
     }
 
-    protected Color getFeatureColor(IGVFeature feature, Track track) {
+    protected Color getFeatureColor(IGVFeature feature, Track track, Color posColor, Color negColor) {
         // Set color used to draw the feature
 
         Color color = null;
@@ -707,10 +710,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             if (track.getTrackType() == TrackType.CNV) {
                 color = feature.getName().equals("gain") ? DULL_RED : DULL_BLUE;
             } else {
-                // Only used if feature color is not set
-                color = track.getColor();
+                color = feature.getStrand() == Strand.NEGATIVE ? negColor : posColor;
             }
-
         }
 
         if (track.isUseScore()) {

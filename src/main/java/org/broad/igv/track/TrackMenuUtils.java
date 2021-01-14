@@ -745,29 +745,17 @@ public class TrackMenuUtils {
 
         menu.add(getTrackRenameItem(tracks));
 
-        String colorLabel = (hasFeatureTracks || hasCoverageTracks)
-                ? "Change Track Color..." : "Change Track Color (Positive Values)...";
+        String colorLabel = "Change Track Color...";
         JMenuItem item = new JMenuItem(colorLabel);
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                changeTrackColor(tracks);
-            }
-        });
+        item.addActionListener(evt -> changeTrackColor(tracks));
         menu.add(item);
 
-        if (!(hasFeatureTracks || hasCoverageTracks)) {
-
-            // Change track color by attribute
-            item = new JMenuItem("Change Track Color (Negative Values)...");
-            item.setToolTipText(
-                    "Change the alternate track color.  This color is used when graphing negative values");
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    changeAltTrackColor(tracks);
-                }
-            });
-            menu.add(item);
-        }
+        // Change track color by attribute
+        item = new JMenuItem("Change Track Color (Negative Values)...");
+        item.setToolTipText(
+                "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
+        item.addActionListener(evt -> changeAltTrackColor(tracks));
+        menu.add(item);
 
         menu.add(getChangeTrackHeightItem(tracks));
         menu.add(getChangeFontSizeItem(tracks));
@@ -1225,7 +1213,7 @@ public class TrackMenuUtils {
             return;
         }
 
-        Color currentSelection = selectedTracks.iterator().next().getColor();
+        Color currentSelection = selectedTracks.iterator().next().getAltColor();
 
         Color color = UIUtilities.showColorChooserDialog(
                 "Select Track Color (Negative Values)",
