@@ -332,10 +332,12 @@ public class ResourceLocator {
 
         // Set UI human-readable short name for the file
         String objFname = "";
-        if (path.contains("/")) {
-            objFname = path.substring(path.lastIndexOf('/')).replace("/", "");
-        } else {
-            objFname = path;
+        if(path != null) {
+            if (path.contains("/")) {
+                objFname = path.substring(path.lastIndexOf('/')).replace("/", "");
+            } else {
+                objFname = path;
+            }
         }
         this.setName(objFname);
 
