@@ -571,19 +571,19 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             List<Row> rows = entry.getValue();
             for (Row row : rows) {
                 if ((visibleRect != null && y > visibleRect.getMaxY())) {
-                    return;
+                    break;
                 }
 
                 assert visibleRect != null;
                 if (y + h > visibleRect.getY()) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
-
                     renderer.renderAlignments(row.alignments, alignmentCounts, context, rowRectangle, renderOptions);
                     row.y = y;
                     row.h = h;
                 }
                 y += h;
             }
+
             if (groupOption != GroupOption.NONE) {
                 // Draw a subtle divider line between groups
                 if (showGroupLine) {
@@ -604,8 +604,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     Rectangle rect = new Rectangle(inputRect.x, (int) yGroup, (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());
                     GraphicUtils.drawVerticallyCenteredText(
                             groupName, 5, rect, context.getGraphics2D("LABEL"), false, true);
-
-                    groupNames.put(new Rectangle(inputRect.x, (int) yGroup, inputRect.width, (int) (y - yGroup)), groupName);
+                    if(!Globals.isBatch()) groupNames.put(rect, groupName);
+                } else {
+                    System.out.println("No room");
                 }
 
             }
@@ -954,16 +955,17 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (insertionInterval != null) {
                 return "Insertions (" + insertionInterval.insertionMarker.size + " bases)";
             } else {
+
+                for (Map.Entry<Rectangle, String> groupNameEntry : groupNames.entrySet()) {
+                    Rectangle r = groupNameEntry.getKey();
+                    if (mouseY >= r.y && mouseY < r.y + r.height) {
+                        return groupNameEntry.getValue();
+                    }
+                }
+
                 Alignment feature = getAlignmentAt(position, mouseY, frame);
                 if (feature != null) {
                     return feature.getValueString(position, mouseX, getWindowFunction());
-                } else {
-                    for (Map.Entry<Rectangle, String> groupNameEntry : groupNames.entrySet()) {
-                        Rectangle r = groupNameEntry.getKey();
-                        if (mouseY >= r.y && mouseY < r.y + r.height) {
-                            return groupNameEntry.getValue();
-                        }
-                    }
                 }
             }
 
