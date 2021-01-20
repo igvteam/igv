@@ -155,7 +155,10 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
+    public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRectangle) {
+
+        // Use local graphics -- this method corrupts graphics context when exporting to "png" files
+        Graphics2D graphics = (Graphics2D) g.create();
 
         Font font = FontManager.getFont(fontSize);
 
@@ -180,6 +183,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
         }
+
+        graphics.dispose();
     }
 
     private void drawArrow(Graphics2D graphics) {

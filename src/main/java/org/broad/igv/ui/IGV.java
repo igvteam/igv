@@ -692,7 +692,7 @@ public class IGV implements IGVEventObserver {
         try {
             token = WaitCursorManager.showWaitCursor();
             contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
-            String msg = createSnapshotNonInteractive(target, file, false);
+            String msg = createSnapshotNonInteractive(target, file, true);
             if (msg != null && msg.toLowerCase().startsWith("error")) {
                 MessageUtils.showMessage(msg);
             }

@@ -36,9 +36,7 @@ package org.broad.igv.ui.util;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
-import org.broad.igv.util.RuntimeUtils;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
@@ -46,7 +44,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.lang.reflect.Constructor;
 
 /**
  * Utility methods for supporting saving of images as jpeg, png, and svg files.
@@ -87,33 +84,6 @@ public class SnapshotUtilities {
 
 
     public static String doComponentSnapshot(Component component, File file, ImageFileTypes.Type type, boolean paintOffscreen) throws IOException {
-
-        //TODO Should really make this work for more components
-        if (paintOffscreen && !(component instanceof Paintable)) {
-            log.error("Component cannot be painted offscreen. Performing onscreen paint");
-            paintOffscreen = false;
-        }
-
-        if (paintOffscreen) {
-
-            Rectangle rect = component.getBounds();
-
-            if (component instanceof MainPanel) {
-                rect.height = ((MainPanel) component).getOffscreenImageHeight();
-            } else {
-                rect.height = Math.min(component.getHeight(), getMaxPanelHeight());
-            }
-
-            // translate to (0, 0) if necessary
-            int dx = rect.x;
-            int dy = rect.y;
-            rect.x = 0;
-            rect.y = 0;
-            rect.width -= dx;
-            rect.height -= dy;
-
-            component.setBounds(rect);
-        }
 
         int width = component.getWidth();
         int height = component.getHeight();
@@ -224,8 +194,15 @@ public class SnapshotUtilities {
      */
     private static void exportScreenShotBufferedImage(Component target, File selectedFile, int width, int height,
                                                       String[] allowedExts, String format, boolean paintOffscreen) throws IOException {
-        BufferedImage image = getDeviceCompatibleImage(width, height);
+
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
+
+        // Start with a white background
+        Color c = g.getColor();
+        g.setColor(Color.white);
+        g.fillRect(0, 0, width, height);
+        g.setColor(c);
 
         paintImage(target, g, width, height, paintOffscreen);
 
@@ -234,31 +211,6 @@ public class SnapshotUtilities {
             log.debug("Writing image to " + selectedFile.getAbsolutePath());
             ImageIO.write(image, format, selectedFile);
         }
-    }
-
-    public static BufferedImage createBufferedImage(Component target, Rectangle clipRect,  int maxHeight) throws IOException {
-
-        int width = clipRect.width;
-        int height = Math.min(clipRect.height, 1000);
-
-        BufferedImage image = getDeviceCompatibleImage(width, height);
-        Graphics2D g = image.createGraphics();
-
-       // clipRect.x += 5;
-       // clipRect.width -=5;
-
-       // g.setClip(clipRect);
-        g.translate(0, -clipRect.y);
-        height += clipRect.y;
-
-        Rectangle rect = new Rectangle(0, 0, width, height);
-        ((Paintable) target).paintOffscreen(g, rect);
-
-        g.setBackground(Color.WHITE);
-        g.clearRect(0, 0, 5, height);
-
-        return image;
-
     }
 
     /**

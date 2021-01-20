@@ -28,7 +28,6 @@ package org.broad.igv.ui.panel;
 import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.session.Session;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -38,8 +37,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -230,7 +229,7 @@ public class MainPanel extends JPanel implements Paintable {
             featureTrackScrollPane = new TrackPanelScrollPane();
             featureTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 50));
             featureTrackScrollPane.setViewportView(new TrackPanel(IGV.FEATURE_PANEL_NAME, this));
-           // add(featureTrackScrollPane, java.awt.BorderLayout.SOUTH);
+            // add(featureTrackScrollPane, java.awt.BorderLayout.SOUTH);
         }
 
 
@@ -499,15 +498,6 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
 
-        // A hack -- we don't want to paint the background for vector graphics output (EPS and SVG)
-        String graphicsClassName = g.getClass().getName().toLowerCase();
-        if (!(graphicsClassName.contains("epd") || graphicsClassName.contains("svg"))) {
-            Graphics2D backgroundGraphics = (Graphics2D) g.create();
-            backgroundGraphics.setColor(Color.white);
-            backgroundGraphics.fill(rect);
-            backgroundGraphics.dispose();
-        }
-
         // Header
         int width = applicationHeaderPanel.getWidth();
         int height = applicationHeaderPanel.getHeight();
@@ -517,17 +507,14 @@ public class MainPanel extends JPanel implements Paintable {
         applicationHeaderPanel.paintOffscreen(headerGraphics, headerRect);
         headerGraphics.dispose();
 
+
         // Now loop through track panel
         Rectangle r = centerSplitPane.getBounds();
         g.translate(0, r.y);
 
         // Get the components of the center pane and sort by Y position.
         Component[] components = centerSplitPane.getComponents();
-        Arrays.sort(components, new Comparator<Component>() {
-            public int compare(Component component, Component component1) {
-                return component.getY() - component1.getY();
-            }
-        });
+        Arrays.sort(components, (component, component1) -> component.getY() - component1.getY());
 
         int dy = components[0].getY();
         for (Component c : components) {
@@ -563,8 +550,8 @@ public class MainPanel extends JPanel implements Paintable {
             g2d.dispose();
 
         }
-
-        //super.paintBorder(g);
+//
+//        //super.paintBorder(g);
 
     }
 
