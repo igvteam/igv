@@ -889,10 +889,9 @@ public class CommandExecutor {
 
     private static void createParents(File outputFile) {
         File parent = outputFile.getParentFile();
-        if (!parent.exists()) {
+        if (parent != null && !parent.exists()) {
             parent.mkdirs();
         }
-
     }
 
     private static RegionScoreType getRegionSortOption(String str) {
