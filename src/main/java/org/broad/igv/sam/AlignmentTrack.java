@@ -230,7 +230,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     // The "DataPanel" containing the track.  This field might be null at any given time.  It is updated each repaint.
     private JComponent dataPanel;
     protected final HashMap<String, Color> selectedReadNames = new HashMap<>();
-    private final HashMap<Rectangle, String> groupNames = new HashMap<>();
 
 
     /**
@@ -513,7 +512,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         final AlignmentCounts alignmentCounts = loadedInterval.getCounts();
 
-        groupNames.clear();
         RenderOptions renderOptions = PreferencesManager.forceDefaults ? new RenderOptions() : this.renderOptions;
 
         //log.debug("Render features");
@@ -594,7 +592,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 }
 
                 // Label the group, if there is room
-
                 double groupHeight = rows.size() * h;
                 if (groupHeight > GROUP_LABEL_HEIGHT + 2) {
                     String groupName = entry.getKey();
@@ -604,11 +601,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     Rectangle rect = new Rectangle(inputRect.x, (int) yGroup, (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());
                     GraphicUtils.drawVerticallyCenteredText(
                             groupName, 5, rect, context.getGraphics2D("LABEL"), false, true);
-                    if(!Globals.isBatch()) groupNames.put(rect, groupName);
-                } else {
-                    System.out.println("No room");
                 }
-
             }
             y += GROUP_MARGIN;
         }
@@ -955,14 +948,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (insertionInterval != null) {
                 return "Insertions (" + insertionInterval.insertionMarker.size + " bases)";
             } else {
-
-                for (Map.Entry<Rectangle, String> groupNameEntry : groupNames.entrySet()) {
-                    Rectangle r = groupNameEntry.getKey();
-                    if (mouseY >= r.y && mouseY < r.y + r.height) {
-                        return groupNameEntry.getValue();
-                    }
-                }
-
                 Alignment feature = getAlignmentAt(position, mouseY, frame);
                 if (feature != null) {
                     return feature.getValueString(position, mouseX, getWindowFunction());
