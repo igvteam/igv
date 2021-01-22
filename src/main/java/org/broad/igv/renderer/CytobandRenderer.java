@@ -61,7 +61,7 @@ public class CytobandRenderer {
 
             // If we are in the process of exporting to an image file
             // we need to write out the cytoband locus on the image
-            if (IGV.getInstance().isExportingSnapshot() || FrameManager.isGeneListMode()) {
+            if (FrameManager.isGeneListMode()) {
                 String locus = frame.getChrName();
                 if (locus != null) {
                     Graphics g2 = g2D.create();

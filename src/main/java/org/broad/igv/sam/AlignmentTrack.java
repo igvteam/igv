@@ -441,8 +441,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return;
         }
 
-        Graphics2D g = context.getGraphics2D("LABEL");
-        g.setFont(FontManager.getFont(GROUP_LABEL_HEIGHT));
+        context.getGraphics2D("LABEL").setFont(FontManager.getFont(GROUP_LABEL_HEIGHT));
 
         dataPanel = context.getPanel();
 
@@ -598,9 +597,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     Graphics2D g = context.getGraphics2D("LABEL");
                     FontMetrics fm = g.getFontMetrics();
                     Rectangle2D stringBouds = fm.getStringBounds(groupName, g);
-                    Rectangle rect = new Rectangle(inputRect.x, (int) yGroup, (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());
-                    GraphicUtils.drawVerticallyCenteredText(
-                            groupName, 5, rect, context.getGraphics2D("LABEL"), false, true);
+                    Rectangle rect = new Rectangle(inputRect.x, (int) yGroup,
+                            (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());
+                    GraphicUtils.drawVerticallyCenteredText(groupName, 5, rect, g, false, true);
                 }
             }
             y += GROUP_MARGIN;
