@@ -72,7 +72,6 @@ public class AlignmentDataManager implements IGVEventObserver {
     private SpliceJunctionHelper.LoadOptions loadOptions;
     private Range currentlyLoading;
 
-
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
         // The time-gated limit for an AWS signed URL has expired, we need to re-sign the URL with the newly acquired
@@ -106,6 +105,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     public void unsubscribe(Track track) {
         subscribedTracks.remove(track);
         if (subscribedTracks.isEmpty()) {
+            dispose();
             dumpAlignments();
             IGVEventBus.getInstance().unsubscribe(this);
         }
@@ -529,9 +529,8 @@ public class AlignmentDataManager implements IGVEventObserver {
         return groupCount;
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
+
+    private void dispose()  {
         if (reader != null) {
             try {
                 reader.close();
@@ -539,7 +538,6 @@ public class AlignmentDataManager implements IGVEventObserver {
                 log.error("Error closing AlignmentQueryReader. ", ex);
             }
         }
-
     }
 
     public void updatePEStats(AlignmentTrack.RenderOptions renderOptions) {
