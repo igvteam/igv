@@ -96,38 +96,36 @@ public class IGVPanel extends JPanel implements Paintable {
 
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
 
-        int h = rect.height;
+        g.setColor(Color.black);
 
         Component[] children = getComponents();
-        // name panel starts at offset=0
 
-        g.translate(mainPanel.getNamePanelX(), 0);
-
-
-        Rectangle nameRect = new Rectangle(children[0].getBounds());
-        nameRect.height = h;
-
+        Component namePanel = children[0];
+        Rectangle nameRect = new Rectangle(namePanel.getBounds());
         Graphics2D nameGraphics = (Graphics2D) g.create();
+        nameGraphics.translate(nameRect.x, 0);
+        nameRect.x = 0;
         nameGraphics.setClip(nameRect);
-        ((Paintable) children[0]).paintOffscreen(nameGraphics, nameRect);
+        ((Paintable) namePanel).paintOffscreen(nameGraphics, nameRect);
         nameGraphics.dispose();
 
-        int dx = mainPanel.getAttributePanelX() - mainPanel.getNamePanelX();
-        g.translate(dx, 0);
-        Rectangle attRect = new Rectangle(0, 0, children[1].getWidth(), h);
+        Component attributePanel = children[1];
+        Rectangle attRect = new Rectangle(attributePanel.getBounds());
         Graphics2D attributeGraphics = (Graphics2D) g.create();
+        attributeGraphics.translate(attRect.x, 0);
+        attRect.x = 0;
         attributeGraphics.setClip(attRect);
-        ((Paintable) children[1]).paintOffscreen(attributeGraphics, attRect);
+        ((Paintable) attributePanel).paintOffscreen(attributeGraphics, attRect);
         attributeGraphics.dispose();
 
-        dx = mainPanel.getDataPanelX() - mainPanel.getAttributePanelX();
-        g.translate(dx, 0);
-        Rectangle dataRect = new Rectangle(0, 0, mainPanel.getDataPanelWidth(), h);
+        Component dataPanel = children[2];
+        Rectangle dataRect = new Rectangle(dataPanel.getBounds());
         Graphics2D dataGraphics = (Graphics2D) g.create();
+        dataGraphics.translate(dataRect.x, 0);
+        dataRect.x = 0;
         g.setClip(dataRect);
-        ((Paintable) children[2]).paintOffscreen(dataGraphics, dataRect);
+        ((Paintable) dataPanel).paintOffscreen(dataGraphics, dataRect);
         dataGraphics.dispose();
-
 
 
     }

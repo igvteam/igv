@@ -134,7 +134,6 @@ public class IGV implements IGVEventObserver {
 
     // Misc state
     private LinkedList<String> recentSessionList = new LinkedList<String>();
-    private boolean isExportingSnapshot = false;
 
     private List<JComponent> otherToolMenus = new ArrayList<>();
 
@@ -677,10 +676,6 @@ public class IGV implements IGVEventObserver {
         createSnapshot(target, defaultFile);
     }
 
-    public boolean isExportingSnapshot() {
-        return isExportingSnapshot;
-    }
-
     final public void createSnapshot(final Component target, final File defaultFile) {
 
         File file = selectSnapshotFile(defaultFile);
@@ -692,7 +687,7 @@ public class IGV implements IGVEventObserver {
         try {
             token = WaitCursorManager.showWaitCursor();
             contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
-            String msg = createSnapshotNonInteractive(target, file, true);
+            String msg = createSnapshotNonInteractive(target, file, false);
             if (msg != null && msg.toLowerCase().startsWith("error")) {
                 MessageUtils.showMessage(msg);
             }
@@ -713,13 +708,11 @@ public class IGV implements IGVEventObserver {
      *
      * @param target
      * @param file
-     * @param paintOffscreen Whether to include offScreen data in the snapshot. Components must implement
-     *                       the {@link Paintable} interface for this to work
      * @throws IOException
      * @api
      * @see ImageFileTypes.Type
      */
-    public String createSnapshotNonInteractive(Component target, File file, boolean paintOffscreen) throws Exception {
+    public String createSnapshotNonInteractive(Component target, File file, boolean batch) throws Exception {
 
         log.debug("Creating snapshot: " + file.getName());
 
@@ -732,34 +725,21 @@ public class IGV implements IGVEventObserver {
 
         ImageFileTypes.Type type = ImageFileTypes.getImageFileType(extension);
 
-        String message;
-        Exception exc = null;
-
         if (type == ImageFileTypes.Type.NULL) {
-            message = "ERROR: Unknown file extension " + extension;
+            String message = "ERROR: Unknown file extension " + extension;
             log.error(message);
             return message;
-        } else if (type == ImageFileTypes.Type.EPS) {
-            message = "ERROR: EPS output is not supported";
+        } else if (type == ImageFileTypes.Type.EPS || type == ImageFileTypes.Type.JPEG) {
+            String message = "ERROR: " + type + " output is not supported.  Try '.png' or '.svg'";
             log.error(message);
             return message;
         }
 
-        //boolean doubleBuffered = RepaintManager.currentManager(contentPane).isDoubleBufferingEnabled();
         try {
-            setExportingSnapshot(true);
-            message = SnapshotUtilities.doComponentSnapshot(target, file, type, paintOffscreen);
-        } catch (Exception e) {
-            exc = e;
-            message = e.getMessage();
+            return SnapshotUtilities.doComponentSnapshot(target, file, type, batch);
         } finally {
-            setExportingSnapshot(false);
+            log.debug("Finished creating snapshot: " + file.getName());
         }
-        log.debug("Finished creating snapshot: " + file.getName());
-        if (exc != null) throw exc;
-
-
-        return message;
     }
 
     public File selectSnapshotFile(File defaultFile) {
@@ -1118,7 +1098,7 @@ public class IGV implements IGVEventObserver {
             return restoreSessionFromStream(sessionPath, locus, inputStream);
 
         } catch (Exception e) {
-            String message = "Error loading session session : <br>&nbsp;&nbsp;" + sessionPath + "<br>" +  e.getMessage();
+            String message = "Error loading session session : <br>&nbsp;&nbsp;" + sessionPath + "<br>" + e.getMessage();
             log.error(message, e);
             throw new RuntimeException(e);
         } finally {
@@ -1265,15 +1245,6 @@ public class IGV implements IGVEventObserver {
 
     public MainPanel getMainPanel() {
         return contentPane.getMainPanel();
-    }
-
-    public void setExportingSnapshot(boolean exportingSnapshot) {
-        isExportingSnapshot = exportingSnapshot;
-        if (isExportingSnapshot) {
-            RepaintManager.currentManager(contentPane).setDoubleBufferingEnabled(false);
-        } else {
-            RepaintManager.currentManager(contentPane).setDoubleBufferingEnabled(true);
-        }
     }
 
     public LinkedList<String> getRecentSessionList() {
@@ -1591,7 +1562,7 @@ public class IGV implements IGVEventObserver {
         for (Track t : alignmentTracks) {
             final AlignmentTrack alignmentTrack = (AlignmentTrack) t;
             alignmentTrack.setColorOption(option);
-            if(option == AlignmentTrack.ColorOption.BISULFITE && tag != null) {
+            if (option == AlignmentTrack.ColorOption.BISULFITE && tag != null) {
                 try {
                     AlignmentTrack.BisulfiteContext context = AlignmentTrack.BisulfiteContext.valueOf(tag);
                     alignmentTrack.setBisulfiteContext(context);

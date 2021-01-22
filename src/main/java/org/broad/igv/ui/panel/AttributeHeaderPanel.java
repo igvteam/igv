@@ -37,6 +37,7 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.FontManager;
@@ -48,9 +49,8 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author jrobinso
@@ -130,6 +130,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
                 x = columnLeftEdge + ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) - fontAscent) / 2;
                 String toDraw = key;
                 int stringOffset = 2;
+                System.out.println(toDraw + "  " + stringOffset + "  " + x);
                 graphics2.drawString(toDraw, stringOffset, x);
             }
 
@@ -201,5 +202,34 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
         g.drawRect(rect.x, rect.y, rect.width, rect.height);
         g.setColor(c);            //super.paintBorder(g);
 
+    }
+
+    private int calculatePackWidth() {
+
+        if (!PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_ATTRIBUTE_VIEWS_KEY)) {
+            return 0;
+        }
+
+        HashSet<String> attributeKeys = new HashSet(AttributeManager.getInstance().getAttributeNames());
+        final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
+        if (hiddenAttributes != null) attributeKeys.removeAll(hiddenAttributes);
+
+        int attributeCount = attributeKeys.size();
+        int packWidth = (attributeCount) * (AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH +
+                AttributeHeaderPanel.COLUMN_BORDER_WIDTH) + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
+        return packWidth;
+    }
+
+    /**
+     * Method description
+     *
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     */
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        super.setBounds(x, y, calculatePackWidth(), height);
     }
 }

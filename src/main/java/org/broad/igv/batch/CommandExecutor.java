@@ -96,13 +96,11 @@ public class CommandExecutor {
                 return "Empty command string";
             }
 
-
             String cmd = args.get(0).toLowerCase();
             String param1 = args.size() > 1 ? args.get(1) : null;
             String param2 = args.size() > 2 ? args.get(2) : null;
             String param3 = args.size() > 3 ? args.get(3) : null;
             String param4 = args.size() > 4 ? args.get(4) : null;
-
 
             if (cmd.equalsIgnoreCase("echo")) {
                 result = cmd;

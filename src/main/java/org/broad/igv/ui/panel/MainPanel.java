@@ -507,8 +507,7 @@ public class MainPanel extends JPanel implements Paintable {
         applicationHeaderPanel.paintOffscreen(headerGraphics, headerRect);
         headerGraphics.dispose();
 
-
-        // Now loop through track panel
+        // Now loop through track panels
         Rectangle r = centerSplitPane.getBounds();
         g.translate(0, r.y);
 
@@ -550,7 +549,7 @@ public class MainPanel extends JPanel implements Paintable {
             g2d.dispose();
 
         }
-//
+
 //        //super.paintBorder(g);
 
     }
@@ -574,13 +573,8 @@ public class MainPanel extends JPanel implements Paintable {
                     continue;
                 }
 
-                int panelHeight = getOffscreenImagePanelHeight(tsp);
+                height += getOffscreenImagePanelHeight(tsp);
 
-                Rectangle tspRect = new Rectangle(tsp.getBounds());
-                tspRect.height = panelHeight;
-
-
-                height += tspRect.height;
             } else {
                 height += c.getHeight();
             }
@@ -600,7 +594,7 @@ public class MainPanel extends JPanel implements Paintable {
         if (maxPanelHeight < 0) {
             panelHeight = visibleHeight;
         } else {
-            panelHeight = Math.min(maxPanelHeight, Math.max(visibleHeight, tsp.getDataPanel().getHeight()));
+            panelHeight = Math.min(maxPanelHeight, Math.max(visibleHeight, tsp.getTrackPanel().getPreferredPanelHeight()));
         }
         return panelHeight;
     }

@@ -40,7 +40,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
-import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.dnd.AbstractGhostDropManager;
@@ -52,7 +51,6 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.jdesktop.layout.GroupLayout;
 
 import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -76,7 +74,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     TrackGroup selectedGroup = null;
     boolean showGroupNames = true;
     boolean showSampleNamesWhenGrouped = false;
-
 
     public TrackNamePanel(TrackPanel trackPanel) {
         super(trackPanel);
@@ -103,18 +100,16 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         removeMousableRegions();
         Rectangle visibleRect = getVisibleRect();
-        paintImpl(g, visibleRect);
+        paintImpl(g, visibleRect, false);
     }
 
 
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
 
-        if (PreferencesManager.getPreferences().getAntiAliasing()) {
-            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        }
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         Color c = g.getColor();
-        paintImpl(g, rect);
+        paintImpl(g, rect, true);
 
         g.setColor(Color.darkGray);
         g.drawRect(rect.x, rect.y, rect.width, rect.height);
@@ -124,7 +119,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     }
 
 
-    private void paintImpl(Graphics g, Rectangle visibleRect) {
+    private void paintImpl(Graphics g, Rectangle visibleRect, boolean snapshot) {
 
         // Get available tracks
         Collection<TrackGroup> groups = getGroups();
@@ -170,13 +165,13 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                     int h = group.getHeight();
                     Rectangle groupRect = new Rectangle(visibleRect.x, regionY, visibleRect.width, h);
                     Rectangle displayableRect = getDisplayableRect(groupRect, visibleRect);
-                    regionY = printTrackNames(group, displayableRect, visibleRect, fontGraphics, 0, regionY);
+                    regionY = printTrackNames(group, displayableRect, visibleRect, fontGraphics, 0, regionY, snapshot);
 
                     if (isGrouped) {
                         groupExtents.add(new GroupExtent(group, groupRect.y, groupRect.y + groupRect.height));
                         if (showGroupNames) {
                             //Rectangle displayableRect = getDisplayableRect(groupRect, visibleRect);
-                            group.renderName(graphics2D, displayableRect, group == selectedGroup);
+                            group.renderName(fontGraphics, displayableRect);
                         }
                     }
 
@@ -208,7 +203,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     }
 
     private int printTrackNames(TrackGroup group, Rectangle visibleRect, Rectangle clipRect,
-                                Graphics2D graphics2D, int regionX, int regionY) {
+                                Graphics2D graphics2D, int regionX, int regionY, boolean snapshot) {
 
 
         List<Track> tmp = new ArrayList(group.getVisibleTracks());
@@ -233,7 +228,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                     if (!isGrouped() || showSampleNamesWhenGrouped) {
                         Rectangle rect = new Rectangle(regionX, regionY, width, height);
                         //Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
-                        if (track.isSelected()) {
+                        if (!snapshot && track.isSelected()) {
                             graphics2D.setBackground(Color.LIGHT_GRAY);
                             graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
                         } else {
