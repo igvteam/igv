@@ -230,6 +230,9 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     public void paintOffscreen(final Graphics2D g, Rectangle rect, boolean batch) {
 
         RenderContext context = null;
+        Graphics borderGraphics = g.create();
+        borderGraphics.setColor(Color.darkGray);
+
         try {
 
             context = new RenderContext(null, g, frame, rect);
@@ -239,16 +242,13 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
             drawAllRegions(g);
 
-            Color c = g.getColor();
-            g.setColor(Color.darkGray);
-            g.drawRect(rect.x, rect.y, rect.width, rect.height);
-            g.setColor(c);            //super.paintBorder(g);
+            borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
 
         } finally {
-
             if (context != null) {
                 context.dispose();
             }
+            borderGraphics.dispose();
         }
     }
 

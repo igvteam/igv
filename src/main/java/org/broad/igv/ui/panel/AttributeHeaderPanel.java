@@ -197,7 +197,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
         paintComponent(g);
         Color c = g.getColor();
         g.setColor(Color.darkGray);
-        g.drawRect(rect.x, rect.y, rect.width, rect.height);
+        g.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
         g.setColor(c);            //super.paintBorder(g);
     }
 

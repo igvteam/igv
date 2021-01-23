@@ -77,12 +77,22 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
         super.paintComponent(g);
         Rectangle visibleRect = getVisibleRect();
         removeMousableRegions();
-        paintOffscreen((Graphics2D) g, visibleRect, false);
+        paintImpl((Graphics2D) g, visibleRect, false);
 
     }
 
-
+    @Override
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
+        Graphics borderGraphics = g.create();
+        borderGraphics.setColor(Color.darkGray);
+
+        paintImpl((Graphics2D) g, rect, batch);
+
+        borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
+        borderGraphics.dispose();
+    }
+
+    public void paintImpl(Graphics2D g, Rectangle rect, boolean batch) {
 
         List<String> names = AttributeManager.getInstance().getAttributeNames();
 
