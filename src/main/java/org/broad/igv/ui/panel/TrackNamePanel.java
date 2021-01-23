@@ -106,16 +106,14 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        Graphics borderGraphics = g.create();
+        borderGraphics.setColor(Color.darkGray);
 
-        Color c = g.getColor();
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         paintImpl(g, rect, true);
 
-        g.setColor(Color.darkGray);
-        g.drawRect(rect.x, rect.y, rect.width, rect.height);
-        g.setColor(c);
-        //super.paintBorder(g);
-        //super.paintBorder(g);
+        borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
+        borderGraphics.dispose();
     }
 
     @Override
