@@ -104,7 +104,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     }
 
 
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
@@ -116,6 +116,11 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         g.setColor(c);
         //super.paintBorder(g);
         //super.paintBorder(g);
+    }
+
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
     }
 
 

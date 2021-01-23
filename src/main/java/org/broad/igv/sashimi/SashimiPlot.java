@@ -91,6 +91,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack) {
 
+        setContentPane(new SashimiContentPane());
         getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         int minJunctionCoverage = PreferencesManager.getPreferences().getAsInt(Constants.SAM_JUNCTION_MIN_COVERAGE);
 

@@ -94,7 +94,7 @@ public class IGVPanel extends JPanel implements Paintable {
         }
     }
 
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
         g.setColor(Color.black);
 
@@ -106,7 +106,7 @@ public class IGVPanel extends JPanel implements Paintable {
         nameGraphics.translate(nameRect.x, 0);
         nameRect.x = 0;
         nameGraphics.setClip(nameRect);
-        ((Paintable) namePanel).paintOffscreen(nameGraphics, nameRect);
+        ((Paintable) namePanel).paintOffscreen(nameGraphics, nameRect, batch);
         nameGraphics.dispose();
 
         Component attributePanel = children[1];
@@ -115,7 +115,7 @@ public class IGVPanel extends JPanel implements Paintable {
         attributeGraphics.translate(attRect.x, 0);
         attRect.x = 0;
         attributeGraphics.setClip(attRect);
-        ((Paintable) attributePanel).paintOffscreen(attributeGraphics, attRect);
+        ((Paintable) attributePanel).paintOffscreen(attributeGraphics, attRect, batch);
         attributeGraphics.dispose();
 
         Component dataPanel = children[2];
@@ -124,10 +124,13 @@ public class IGVPanel extends JPanel implements Paintable {
         dataGraphics.translate(dataRect.x, 0);
         dataRect.x = 0;
         g.setClip(dataRect);
-        ((Paintable) dataPanel).paintOffscreen(dataGraphics, dataRect);
+        ((Paintable) dataPanel).paintOffscreen(dataGraphics, dataRect, batch);
         dataGraphics.dispose();
+    }
 
-
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
     }
 
 

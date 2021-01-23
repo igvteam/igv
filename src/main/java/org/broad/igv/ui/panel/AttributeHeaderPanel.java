@@ -130,7 +130,6 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
                 x = columnLeftEdge + ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) - fontAscent) / 2;
                 String toDraw = key;
                 int stringOffset = 2;
-                System.out.println(toDraw + "  " + stringOffset + "  " + x);
                 graphics2.drawString(toDraw, stringOffset, x);
             }
 
@@ -194,14 +193,17 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
         }
     }
 
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
         paintComponent(g);
-
         Color c = g.getColor();
         g.setColor(Color.darkGray);
         g.drawRect(rect.x, rect.y, rect.width, rect.height);
         g.setColor(c);            //super.paintBorder(g);
+    }
 
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return this.getHeight();
     }
 
     private int calculatePackWidth() {

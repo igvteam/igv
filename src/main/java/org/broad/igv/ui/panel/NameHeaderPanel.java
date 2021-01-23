@@ -56,7 +56,12 @@ public class NameHeaderPanel extends JPanel implements Paintable {
         });
     }
 
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
         paintComponent(g);
+    }
+
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
     }
 }

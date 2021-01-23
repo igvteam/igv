@@ -221,10 +221,6 @@ public class HeaderPanel extends JPanel implements Transferable {
 
     }
 
-
-    // TODO -- this is a partial copy of the RegionOfInterestPanel method.  Refactor to share
-
-
     protected JPopupMenu getPopupMenu(final HeaderPanel parent, final ReferenceFrame frame) {
 
         int start = (int) frame.getOrigin();
@@ -271,7 +267,6 @@ public class HeaderPanel extends JPanel implements Transferable {
     }
 
     @Override
-
     public void setBackground(Color color) {
         super.setBackground(color);
         if (cytobandPanel != null) cytobandPanel.setBackground(color);
@@ -295,6 +290,7 @@ public class HeaderPanel extends JPanel implements Transferable {
 
         return dragAndDropPanelDataFlavor;
     }
+
 
     //private static final Cursor droppableCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
     //private static final Cursor notDroppableCursor = Cursor.getDefaultCursor();

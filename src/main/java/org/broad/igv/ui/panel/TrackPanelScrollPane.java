@@ -31,6 +31,7 @@ package org.broad.igv.ui.panel;
 
 import com.jidesoft.swing.JideScrollPane;
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.util.SnapshotUtilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -125,15 +126,29 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
     }
 
     @Override
-    public void doLayout() {
-        log.trace("Layout");
-        super.doLayout();
-        trackPanel.revalidate();
-        //trackPanel.doLayout();
+    public void paintOffscreen(Graphics2D g, Rectangle tspRect, boolean batch) {
+        trackPanel.paintOffscreen(g, tspRect, batch);
     }
 
-    public void paintOffscreen(Graphics2D g, Rectangle tspRect) {
+    @Override
+    public int getSnapshotHeight(boolean batch) {
 
-        trackPanel.paintOffscreen(g, tspRect);
+        if(trackPanel.getTracks().size() == 0) {
+            return 0;
+        }
+
+        if (batch) {
+            int panelHeight;
+            int maxPanelHeight = SnapshotUtilities.getMaxPanelHeight();
+            final int visibleHeight = getVisibleRect().height;
+            if (maxPanelHeight < 0) {
+                panelHeight = visibleHeight;
+            } else {
+                panelHeight = Math.min(maxPanelHeight, Math.max(visibleHeight, trackPanel.getPreferredPanelHeight()));
+            }
+            return panelHeight;
+        } else {
+            return getHeight();  // This is the height of the scroll pane, the visible height in the UI
+        }
     }
 }

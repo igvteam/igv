@@ -213,7 +213,7 @@ public class CommandExecutor {
             result = "Error: " + e.getMessage();
         }
 
-        log.info(result);
+        log.debug(result);
 
         return result;
     }

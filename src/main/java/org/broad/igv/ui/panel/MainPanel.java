@@ -496,7 +496,7 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
 
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
         // Header
         int width = applicationHeaderPanel.getWidth();
@@ -504,7 +504,7 @@ public class MainPanel extends JPanel implements Paintable {
 
         Graphics2D headerGraphics = (Graphics2D) g.create();
         Rectangle headerRect = new Rectangle(0, 0, width, height);
-        applicationHeaderPanel.paintOffscreen(headerGraphics, headerRect);
+        applicationHeaderPanel.paintOffscreen(headerGraphics, headerRect, batch);
         headerGraphics.dispose();
 
         // Now loop through track panels
@@ -516,28 +516,26 @@ public class MainPanel extends JPanel implements Paintable {
         Arrays.sort(components, (component, component1) -> component.getY() - component1.getY());
 
         int dy = components[0].getY();
+
         for (Component c : components) {
 
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.translate(0, dy);
 
-            if (c instanceof TrackPanelScrollPane) {
-
+            if (c instanceof Paintable) {
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
-
                 //Skip if panel has no tracks
                 if (tsp.getTrackPanel().getTracks().size() == 0) {
                     continue;
                 }
 
-                int panelHeight = getOffscreenImagePanelHeight(tsp);
+                int panelHeight = tsp.getSnapshotHeight(batch);
 
                 Rectangle tspRect = new Rectangle(tsp.getBounds());
                 tspRect.height = panelHeight;
 
                 g2d.setClip(new Rectangle(0, 0, tsp.getWidth(), tspRect.height));
-                tsp.paintOffscreen(g2d, tspRect);
-
+                tsp.paintOffscreen(g2d, tspRect, batch);
                 dy += tspRect.height;
 
             } else {
@@ -559,45 +557,41 @@ public class MainPanel extends JPanel implements Paintable {
      * images for offscreen drawing.
      *
      * @return
-     */
-    public int getOffscreenImageHeight() {
-        int height = centerSplitPane.getBounds().y;
-        for (Component c : centerSplitPane.getComponents()) {
+     */    @Override
+    public int getSnapshotHeight(boolean batch) {
 
-            if (c instanceof TrackPanelScrollPane) {
+        if (batch) {
 
-                TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+            int height = 0; //centerSplitPane.getBounds().y;
 
-                //Skip if panel has no tracks
-                if (tsp.getTrackPanel().getTracks().size() == 0) {
-                    continue;
+            for (Component c : centerSplitPane.getComponents()) {
+
+                if (c instanceof TrackPanelScrollPane) {
+
+                    TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+
+                    //Skip if panel has no tracks
+                    if (tsp.getTrackPanel().getTracks().size() == 0) {
+                        continue;
+                    }
+
+                    height += tsp.getSnapshotHeight(batch);
+
+                } else {
+                    height += c.getHeight();
                 }
 
-                height += getOffscreenImagePanelHeight(tsp);
-
-            } else {
-                height += c.getHeight();
             }
+            // TODO Not sure why this is neccessary
+            height += 35;
+            return height;
 
-        }
-        // TODO Not sure why this is neccessary
-        height += 35;
-        return height;
-
-    }
-
-    private int getOffscreenImagePanelHeight(TrackPanelScrollPane tsp) {
-
-        int panelHeight;
-        int maxPanelHeight = SnapshotUtilities.getMaxPanelHeight();
-        final int visibleHeight = tsp.getVisibleRect().height;
-        if (maxPanelHeight < 0) {
-            panelHeight = visibleHeight;
         } else {
-            panelHeight = Math.min(maxPanelHeight, Math.max(visibleHeight, tsp.getTrackPanel().getPreferredPanelHeight()));
+            return getHeight();
         }
-        return panelHeight;
     }
+
+
 
 
 }

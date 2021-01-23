@@ -36,7 +36,6 @@ package org.broad.igv.ui.util;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -77,6 +76,12 @@ public class SnapshotUtilities {
         maxPanelHeight = h;
     }
 
+    public static void resetMaxPanelHeight() {
+        maxPanelHeight = DEFAULT_MAX_PANEL_HEIGHT;
+    }
+
+    public static boolean snapshotInProgress = false;
+
     // Treat this class as a singleton, no instances allowed
     private SnapshotUtilities() {
     }
@@ -84,40 +89,36 @@ public class SnapshotUtilities {
 
     public static String doComponentSnapshot(Component component, File file, ImageFileTypes.Type type, boolean batch) throws IOException {
 
-        if (!(component instanceof Paintable)) {
-            throw new RuntimeException("Error: " + component + " is not an instance of Paintable");
-        }
+        try {
+            snapshotInProgress = true;
+            if (!(component instanceof Paintable)) {
+                throw new RuntimeException("Error: " + component + " is not an instance of Paintable");
+            }
 
-        Paintable paintable = (Paintable) component;
-        int width = component.getWidth();
-        int height = getSnapshotHeight(component, batch);
+            Paintable paintable = (Paintable) component;
+            int width = component.getWidth();
+            int height = paintable.getSnapshotHeight(batch);
 
-        // Call appropriate converter
-        if (type == SVG) {
-            exportScreenshotSVG((Paintable) component, file, width, height);
-            return "OK";
-        } else if (type == PNG) {
-            String format = "png";
-            String[] exts = new String[]{"." + format};
-            exportScreenShotBufferedImage((Paintable) component, file, width, height, exts, format);
-            return "OK";
-        } else {
-            final String message = "No image write for file type: " + file + " Try '.png' or '.svg'";
-            MessageUtils.showMessage(message);
-            return "ERROR: " + message;
-        }
-    }
-
-    private static int getSnapshotHeight(Component component, boolean batch) {
-System.out.println(component);
-        if(batch && component instanceof MainPanel) {
-            return ((MainPanel) component).getOffscreenImageHeight();
-        } else {
-            return component.getHeight();
+            // Call appropriate converter
+            if (type == SVG) {
+                exportScreenshotSVG((Paintable) component, file, width, height, batch);
+                return "OK";
+            } else if (type == PNG) {
+                String format = "png";
+                String[] exts = new String[]{"." + format};
+                exportScreenShotBufferedImage((Paintable) component, file, width, height, exts, format, batch);
+                return "OK";
+            } else {
+                final String message = "No image write for file type: " + file + " Try '.png' or '.svg'";
+                MessageUtils.showMessage(message);
+                return "ERROR: " + message;
+            }
+        } finally {
+            snapshotInProgress = false;
         }
     }
 
-    private static void exportScreenshotSVG(Paintable target, File selectedFile, int width, int height) throws IOException {
+    private static void exportScreenshotSVG(Paintable target, File selectedFile, int width, int height, boolean batch) throws IOException {
 
         String format = "svg";
         selectedFile = fixFileExt(selectedFile, new String[]{format}, format);
@@ -130,7 +131,7 @@ System.out.println(component);
         // Write image data into document                                                                                                   
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 
-        paintImage(target, svgGenerator, width, height);
+        paintImage(target, svgGenerator, width, height, batch);
 
         Writer out = null;
         try {
@@ -148,11 +149,6 @@ System.out.println(component);
         }
     }
 
-    private static void paintImage(Paintable target, Graphics2D g, int width, int height) {
-        Rectangle rect = new Rectangle(0, 0, width, height);
-        target.paintOffscreen(g, rect);
-    }
-
     /**
      * Export the specified {@code target} component as a {@code BufferedImage} to the given file.
      *
@@ -165,7 +161,7 @@ System.out.println(component);
      * @throws IOException
      */
     private static void exportScreenShotBufferedImage(Paintable target, File selectedFile, int width, int height,
-                                                      String[] allowedExts, String format) throws IOException {
+                                                      String[] allowedExts, String format, boolean batch) throws IOException {
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
@@ -176,7 +172,7 @@ System.out.println(component);
         g.fillRect(0, 0, width, height);
         g.setColor(c);
 
-        paintImage(target, g, width, height);
+        paintImage(target, g, width, height, batch);
 
         selectedFile = fixFileExt(selectedFile, allowedExts, format);
         if (selectedFile != null) {
@@ -187,6 +183,13 @@ System.out.println(component);
             }
         }
     }
+
+
+    private static void paintImage(Paintable target, Graphics2D g, int width, int height, boolean batch) {
+        Rectangle rect = new Rectangle(0, 0, width, height);
+        target.paintOffscreen(g, rect, batch);
+    }
+
 
     /**
      * Add a file extension to the file if it doesn't already

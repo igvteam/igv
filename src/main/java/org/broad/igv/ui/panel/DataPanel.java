@@ -227,7 +227,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
      * @param rect
      */
 
-    public void paintOffscreen(final Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(final Graphics2D g, Rectangle rect, boolean batch) {
 
         RenderContext context = null;
         try {
@@ -250,6 +250,11 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                 context.dispose();
             }
         }
+    }
+
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
     }
 
 

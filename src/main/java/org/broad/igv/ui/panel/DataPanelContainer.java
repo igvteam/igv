@@ -123,7 +123,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
      * @param g
      * @param rect
      */
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
         // Get the components of the sort by X position.
         Component[] components = getComponents();
@@ -141,11 +141,16 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 clipRect.height = rect.height;
                 g2d.setClip(clipRect);
                 g2d.translate(c.getX(), 0);
-                ((DataPanel) c).paintOffscreen(g2d, clipRect);
+                ((DataPanel) c).paintOffscreen(g2d, clipRect, batch);
 
             }
         }
         //super.paintBorder(g);
+    }
+
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
     }
 
     @Override

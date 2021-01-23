@@ -31,6 +31,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ParsingUtils;
 
@@ -68,7 +69,6 @@ public class BatchRunner implements NamedRunnable {
         setIsBatchMode(true);
 
         CommandExecutor cmdExe = new CommandExecutor(igv);
-
         WaitCursorManager.CursorToken cursorToken = null;
         BufferedReader reader = null;
         try {
@@ -84,7 +84,7 @@ public class BatchRunner implements NamedRunnable {
                         GenomeManager.getInstance().loadGenomeById(genomeId);
                     }
 
-                    log.info("Executing Command: " + inLine);
+                    log.debug("Executing Command: " + inLine);
                     cmdExe.execute(inLine);
                     firstCommand = false;
                 }
@@ -95,6 +95,7 @@ public class BatchRunner implements NamedRunnable {
             throw new DataLoadException(ioe.getMessage(), inputFile);
         } finally {
             setIsBatchMode(false);
+            SnapshotUtilities.resetMaxPanelHeight();
             if (cursorToken != null) WaitCursorManager.removeWaitCursor(cursorToken);
             if (reader != null) {
                 try {

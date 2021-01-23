@@ -441,7 +441,7 @@ public class TrackPanel extends IGVPanel {
     }
 
     @Override
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
         int h = rect.height;
 
@@ -455,7 +455,7 @@ public class TrackPanel extends IGVPanel {
         if (nameRect.width > 0) {
             Graphics2D nameGraphics = (Graphics2D) g.create();
             nameGraphics.setClip(nameRect);
-            ((Paintable) children[0]).paintOffscreen(nameGraphics, nameRect);
+            ((Paintable) children[0]).paintOffscreen(nameGraphics, nameRect, batch);
             nameGraphics.dispose();
         }
 
@@ -465,7 +465,7 @@ public class TrackPanel extends IGVPanel {
         if (attRect.width > 0) {
             Graphics2D attGraphics = (Graphics2D) g.create();
             attGraphics.setClip(attRect);
-            ((Paintable) children[1]).paintOffscreen(attGraphics, attRect);
+            ((Paintable) children[1]).paintOffscreen(attGraphics, attRect, batch);
             attGraphics.dispose();
         }
 
@@ -474,12 +474,17 @@ public class TrackPanel extends IGVPanel {
         Rectangle dataRect = new Rectangle(0, 0, mainPanel.getDataPanelWidth(), h);
         Graphics2D dataGraphics = (Graphics2D) g.create();
         dataGraphics.setClip(dataRect);
-        ((Paintable) children[2]).paintOffscreen(dataGraphics, dataRect);
+        ((Paintable) children[2]).paintOffscreen(dataGraphics, dataRect, batch);
         dataGraphics.dispose();
 
 
         //super.paintBorder(g);
 
+    }
+
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
     }
 
     public void addTrackGroup(TrackGroup trackGroup) {

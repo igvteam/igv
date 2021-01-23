@@ -77,12 +77,12 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
         super.paintComponent(g);
         Rectangle visibleRect = getVisibleRect();
         removeMousableRegions();
-        paintOffscreen((Graphics2D) g, visibleRect);
+        paintOffscreen((Graphics2D) g, visibleRect, false);
 
     }
 
 
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
         List<String> names = AttributeManager.getInstance().getAttributeNames();
 
@@ -178,6 +178,10 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
     }
 
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
+    }
 
     /*private int draw(List<String> names, Track track, int trackX, int trackY, int trackWidth, int trackHeight,
                      Graphics2D graphics) {
