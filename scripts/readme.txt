@@ -4,29 +4,32 @@ IGV BINARY DISTRIBUTION
 
 Prerequisites:
 
-Java 11 (http://openjdk.java.net).  This is bundled with our distributions.
-Not compatible with Java 8, 9, 10.
+Java 11 (http://openjdk.java.net).  Not compatible with Java 8, 9, 10.  We do not test 
+on Java releases > 11 and cannot vouch for the behavior.
 
+Java 11 is bundled with our "Java included" distributions.
+
+For our other "separate Java 11 required" distributions, Java 11 must be installed and made
+available as the default.  These bundles are recommended only for those users that wish to 
+manage Java for themselves.
+
+Note that we provide both a Mac App and a Windows installer for users on those platforms that
+want a more standard way to launch.
 
 Instructions:
 
 1. Download and unzip the distribution file to a directory of your choice.
 
-2. To start IGV execute the following from the command line,
-
-     java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
-
-Note that the command line has become more complex with Java 11 compared to Java 8.  
-Alternatively, you can start IGV with one of the following scripts; this is 
-recommended.  Some of these may not be present depending on the distribution you 
-downloaded.  You might have to make the script executable (chmod a+x igv.sh).  
-
+2. To start IGV execute one of the following launcher scripts from the command line:
 
 igv-launcher.bat  (for Windows)
 igv.bat           (for Windows batch jobs)
 igv.sh            (for Linux and macOS)
 igv_hidpi.sh      (for Linux with HiDPI displays)
 igv.command       (for macOS, double-click to start)
+
+Some of these may not be present depending on the distribution you downloaded.  You might have to
+make the script executable (e.g. chmod a+x igv.sh) depending on the way the bundle was unpacked.
 
 The bat and shell scripts are configured to start IGV with 4GB of memory.  This is a 
 reasonable default for most machines but if you are working with very large datasets
@@ -92,3 +95,27 @@ to the java_arguments file:
 Here, '/Users/igv_user' represents the user's home directory ($HOME or %USERPROFILE%). Adjust 
 this file path according to your own local circumstances.  We recommend a fully-specified 
 *absolute* path to avoid issues with (for example) tilde or environment variable expansion.
+
+
+Java command-line usage
+
+We don't recommend running IGV directly as a Java command-line launch as this has become more complex
+with Java 11 compared to Java 8.  We recommend the launcher scripts listed above instead.  The following 
+is for advanced users only.
+
+If it's really necessary to use the Java command directly for some reason, here is the appropriate 
+command-line:
+     java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
+
+This assumes that Java 11 has been installed as the default for your system.  If not, then it may be 
+necessary to set your PATH and JAVA_HOME to point to the correct location for Java 11.  It also 
+assumes that you are launching IGV from the directory where it was unpacked.
+
+Note that this lists the memory specification directly, and that the java_arguments file will be skipped.
+If you wish to use the java_arguments file (assuming one exists), modify the above to:
+     java --module-path=lib @igv.args @"$HOME/.igv/java_arguments" --module=org.igv/org.broad.igv.ui.Main
+on Linux & Mac.  On Windows, use:
+     java --module-path=lib @igv.args @"%USERPROFILE%/.igv/java_arguments" --module=org.igv/org.broad.igv.ui.Main
+
+In this case you can list the memory spec, HiDPI uiScaling, log4j config, etc either directly on the 
+command-line  or in the java_arguments file, as you prefer.
