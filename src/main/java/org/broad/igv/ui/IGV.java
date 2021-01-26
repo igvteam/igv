@@ -474,6 +474,11 @@ public class IGV implements IGVEventObserver {
                     loadResources(locators);
                     resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
                     showLoadedTrackCount();
+                    IGV.this.getMainPanel().updatePanelDimensions();  // Visible attributes might have changed
+                    UIUtilities.invokeAndWaitOnEventThread(() -> {
+                        IGV.this.getMainPanel().applicationHeaderPanel.doLayout();  // Forcing this is neccessary if # of attributes change, not sure why
+                        IGV.this.getMainPanel().revalidate();
+                    });
                     IGV.this.repaint();
                 }
 
@@ -661,7 +666,7 @@ public class IGV implements IGVEventObserver {
                 }
             }
             IGV.getInstance().getSession().setHiddenAttributes(dlg.getNonSelections());
-            repaint();
+            getMainPanel().revalidateTrackPanels();
         }
     }
 
@@ -918,6 +923,7 @@ public class IGV implements IGVEventObserver {
             setGenomeTracks(currentGenome.getGeneTrack());
         }
         this.menuBar.disableReloadSession();
+        goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
         this.repaint();
     }
 

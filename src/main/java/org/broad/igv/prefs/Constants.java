@@ -295,7 +295,9 @@ final public class Constants {
             SAM_ALLELE_THRESHOLD,
             SAM_FLAG_LARGE_INDELS,
             SAM_LARGE_INDELS_THRESHOLD,
-            SAM_SHOW_INSERTION_MARKERS
+            SAM_SHOW_INSERTION_MARKERS,
+            SAM_GROUP_OPTION,
+            SAM_GROUP_BY_TAG
     );
 
 }

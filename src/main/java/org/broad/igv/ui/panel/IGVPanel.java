@@ -71,26 +71,20 @@ public class IGVPanel extends JPanel implements Paintable {
     public void doLayout() {
         synchronized (getTreeLock()) {
 
-            log.trace("Layout: " + toString());
-
             int h = getHeight(); //getPreferredSize().height;
             Component[] children = getComponents();
 
             int nw = mainPanel.getNamePanelWidth();
-            int grabBarWidth = nw - 10;
 
-            int idx = 0;
-            if (children.length > 3) {
-                children[idx++].setBounds(mainPanel.getNamePanelX(), 0, 10, h);
-                children[idx++].setBounds(mainPanel.getNamePanelX() + 10, 0, nw - 10, h);
-            } else {
-                children[idx++].setBounds(mainPanel.getNamePanelX(), 0, nw, h);
+            Component namePanel = children[0];
+            Component attributePanel = children[1];
+            Component dataPanel = children[2];
 
-            }
-            children[idx++].setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);
-            children[idx].setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
+            namePanel.setBounds(mainPanel.getNamePanelX(), 0, nw, h);
+            attributePanel.setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);  // Attributes
+            dataPanel.setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
 
-            children[idx].doLayout();
+            dataPanel.doLayout();
         }
     }
 
@@ -102,21 +96,25 @@ public class IGVPanel extends JPanel implements Paintable {
 
         Component namePanel = children[0];
         Rectangle nameRect = new Rectangle(namePanel.getBounds());
-        Graphics2D nameGraphics = (Graphics2D) g.create();
-        nameGraphics.translate(nameRect.x, 0);
-        nameRect.x = 0;
-        nameGraphics.setClip(nameRect);
-        ((Paintable) namePanel).paintOffscreen(nameGraphics, nameRect, batch);
-        nameGraphics.dispose();
+        if(nameRect.width > 0) {
+            Graphics2D nameGraphics = (Graphics2D) g.create();
+            nameGraphics.translate(nameRect.x, 0);
+            nameRect.x = 0;
+            nameGraphics.setClip(nameRect);
+            ((Paintable) namePanel).paintOffscreen(nameGraphics, nameRect, batch);
+            nameGraphics.dispose();
+        }
 
         Component attributePanel = children[1];
         Rectangle attRect = new Rectangle(attributePanel.getBounds());
-        Graphics2D attributeGraphics = (Graphics2D) g.create();
-        attributeGraphics.translate(attRect.x, 0);
-        attRect.x = 0;
-        attributeGraphics.setClip(attRect);
-        ((Paintable) attributePanel).paintOffscreen(attributeGraphics, attRect, batch);
-        attributeGraphics.dispose();
+        if(attRect.width > 0) {
+            Graphics2D attributeGraphics = (Graphics2D) g.create();
+            attributeGraphics.translate(attRect.x, 0);
+            attRect.x = 0;
+            attributeGraphics.setClip(attRect);
+            ((Paintable) attributePanel).paintOffscreen(attributeGraphics, attRect, batch);
+            attributeGraphics.dispose();
+        }
 
         Component dataPanel = children[2];
         Rectangle dataRect = new Rectangle(dataPanel.getBounds());
@@ -132,6 +130,4 @@ public class IGVPanel extends JPanel implements Paintable {
     public int getSnapshotHeight(boolean batch) {
         return getHeight();
     }
-
-
 }

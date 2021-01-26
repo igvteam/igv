@@ -570,7 +570,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 } else {
                     IGV.getInstance().getMainPanel().collapseNamePanel();
                 }
-                IGV.getInstance().getMainPanel().revalidate();
             }
         };
         boolean isShowing = IGV.getInstance().getMainPanel().isExpanded();
@@ -611,7 +610,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                 JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
                 PreferencesManager.getPreferences().setShowAttributeView(menuItem.getState());
-                IGV.getInstance().getMainPanel().revalidate();
+                IGV.getInstance().getMainPanel().revalidateTrackPanels();
             }
         };
         menuItem = MenuAndToolbarUtils.createMenuItem(menuAction, isShow);

@@ -295,6 +295,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     break;
                 case RELOAD:
                     clearCaches();
+                    repaint();
                 case REFRESH:
                     renderOptions.repaintDefaults(getExperimentType());
                     repaint();

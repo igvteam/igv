@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
@@ -131,17 +130,25 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void collapseNamePanel() {
         namePanelWidth = 0;
-        revalidate();
+        revalidateTrackPanels();
     }
 
     public void expandNamePanel() {
         namePanelWidth = PreferencesManager.getPreferences().getAsInt(NAME_PANEL_WIDTH);
-        revalidate();
+        revalidateTrackPanels();
     }
 
     public void setNamePanelWidth(int width) {
         this.namePanelWidth = width;
-        revalidate();
+        revalidateTrackPanels();
+    }
+
+    public void revalidateTrackPanels() {
+        this.applicationHeaderPanel.invalidate();
+        for (TrackPanel tp : this.getTrackPanels()) {
+            tp.invalidate();
+        }
+        this.revalidate();
     }
 
     public void removeHeader() {
@@ -159,8 +166,8 @@ public class MainPanel extends JPanel implements Paintable {
     public void doLayout() {
 
         super.doLayout();
-        applicationHeaderPanel.doLayout();
         layoutFrames();
+        applicationHeaderPanel.doLayout();
         for (TrackPanel tp : getTrackPanels()) {
             tp.getScrollPane().doLayout();
         }
@@ -428,13 +435,17 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void layoutFrames() {
         synchronized (getTreeLock()) {
-            Insets insets = applicationHeaderPanel.getInsets();
-            namePanelX = insets.left;
-            attributePanelX = namePanelX + namePanelWidth + hgap;
-            attributePanelWidth = calculateAttributeWidth();
-            dataPanelX = attributePanelX + attributePanelWidth + hgap;
-            dataPanelWidth = applicationHeaderPanel.getWidth() - insets.right - dataPanelX;
+            updatePanelDimensions();
         }
+    }
+
+    public void updatePanelDimensions() {
+        Insets insets = applicationHeaderPanel.getInsets();
+        namePanelX = insets.left;
+        attributePanelX = namePanelX + namePanelWidth + hgap;
+        attributePanelWidth = calculateAttributeWidth();
+        dataPanelX = attributePanelX + attributePanelWidth + hgap;
+        dataPanelWidth = applicationHeaderPanel.getWidth() - insets.right - dataPanelX;
     }
 
 
@@ -557,7 +568,8 @@ public class MainPanel extends JPanel implements Paintable {
      * images for offscreen drawing.
      *
      * @return
-     */    @Override
+     */
+    @Override
     public int getSnapshotHeight(boolean batch) {
 
         if (batch) {
@@ -590,8 +602,6 @@ public class MainPanel extends JPanel implements Paintable {
             return getHeight();
         }
     }
-
-
 
 
 }

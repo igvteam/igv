@@ -147,6 +147,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
 //        locationPanel.setEnabled(!geneListMode);
         chromosomeComboBox.setEnabled(!geneListMode);
+        if(geneListMode) searchTextField.setText("");
 //        searchTextField.setEnabled(!geneListMode);
 //        goButton.setEnabled(!geneListMode);
         zoomControl.setEnabled(!geneListMode);
