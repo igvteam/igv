@@ -268,7 +268,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
 
         // Bed files can be tab or whitespace delimited
         if(delimiter == null) {
-            delimiter = trimLine.contains("\t") ? Globals.tabPattern : Globals.whitespacePattern;
+            delimiter = trimLine.contains("\t") ? Globals.multiTabPattern : Globals.whitespacePattern;
         }
 
         tokens = delimiter.split(trimLine);

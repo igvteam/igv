@@ -61,4 +61,21 @@ public class IGVBEDCodecTest extends AbstractHeadlessTest {
         IGVFeature feature =  codec.decode(line);
         assertEquals("strong GGGCGGGTGGGGCGGG", feature.getName());
     }
+
+    @Test
+    public void testMultiTabDelimited() throws Exception {
+        String line = "chr1\t1051161\t\t\t1051177\tstrong GGGCGGGTGGGGCGGG\t0.81";
+        IGVBEDCodec codec = new IGVBEDCodec();
+        IGVFeature feature =  codec.decode(line);
+        assertEquals("strong GGGCGGGTGGGGCGGG", feature.getName());
+    }
+
+    @Test
+    public void testSpaceDelimited() throws Exception {
+        String line = "chr1 1051161 1051177 strong_GGGCGGGTGGGGCGGG 0.81";
+        IGVBEDCodec codec = new IGVBEDCodec();
+        IGVFeature feature =  codec.decode(line);
+        assertEquals("strong_GGGCGGGTGGGGCGGG", feature.getName());
+    }
+
 }
