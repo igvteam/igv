@@ -2078,37 +2078,55 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
             int clippingThreshold = BlatClient.MINIMUM_BLAT_LENGTH;
-
             int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
-            /* Add a "BLAT left clipped sequence" item if there is significant left clipping. */
-            if (clipping[1] > clippingThreshold) {
-                final JMenuItem lcItem = new JMenuItem("Blat left-clipped sequence");
-                add(lcItem);
 
-                lcItem.addActionListener(aEvt -> {
-                    String lcSeq = alignment.getReadSequence().substring(0, clipping[1]);
-                    if (alignment.getReadStrand() == Strand.NEGATIVE) {
-                        lcSeq = SequenceTrack.getReverseComplement(lcSeq);
-                    }
-                    BlatClient.doBlatQuery(lcSeq, alignment.getReadName() + " - left clip");
-                });
+            /* Add a "BLAT left clipped sequence" item if there is significant left clipping. */
+            if (clipping[1] > 0) {
+                String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping[1]);
+
+                final JMenuItem lccItem = new JMenuItem("Copy left-clipped sequence");
+                add(lccItem);
+                lccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(lcSeq));
+
+                if (clipping[1] > clippingThreshold) {
+                    final JMenuItem lcbItem = new JMenuItem("Blat left-clipped sequence");
+                    add(lcbItem);
+                    lcbItem.addActionListener(aEvt ->
+                            BlatClient.doBlatQuery(lcSeq, alignment.getReadName() + " - left clip")
+                    );
+                }
             }
             /* Add a "BLAT right clipped sequence" item if there is significant right clipping. */
-            if (clipping[3] > clippingThreshold) {
-                final JMenuItem lcItem = new JMenuItem("Blat right-clipped sequence");
-                add(lcItem);
+            if (clipping[3] > 0) {
 
-                lcItem.addActionListener(aEvt -> {
-                    String seq = alignment.getReadSequence();
-                    int seqLength = seq.length();
+                String seq = alignment.getReadSequence();
+                int seqLength = seq.length();
+                String rcSeq = getClippedSequence(
+                        alignment.getReadSequence(),
+                        alignment.getReadStrand(),
+                        seqLength - clipping[3],
+                        seqLength);
 
-                    String rcSeq = seq.substring(seqLength - clipping[3], seqLength);
-                    if (alignment.getReadStrand() == Strand.NEGATIVE) {
-                        rcSeq = SequenceTrack.getReverseComplement(rcSeq);
-                    }
-                    BlatClient.doBlatQuery(rcSeq, alignment.getReadName() + " - right clip");
-                });
+                final JMenuItem rccItem = new JMenuItem("Copy right-clipped sequence");
+                add(rccItem);
+                rccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(rcSeq));
+
+                if (clipping[3] > clippingThreshold) {
+                    final JMenuItem rcbItem = new JMenuItem("Blat right-clipped sequence");
+                    add(rcbItem);
+                    rcbItem.addActionListener(aEvt ->
+                            BlatClient.doBlatQuery(rcSeq, alignment.getReadName() + " - right clip")
+                    );
+                }
             }
+        }
+
+        private String getClippedSequence(String readSequence, Strand strand, int i, int i2) {
+            String seq = readSequence.substring(i, i2);
+            if (strand == Strand.NEGATIVE) {
+                seq = SequenceTrack.getReverseComplement(seq);
+            }
+            return seq;
         }
 
         void addExtViewItem(final TrackClickEvent te) {
