@@ -104,18 +104,24 @@ with Java 11 compared to Java 8.  We recommend the launcher scripts listed above
 is for advanced users only.
 
 If it's really necessary to use the Java command directly for some reason, here is the appropriate 
-command-line:
-     java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
+command-line.  To use the default Java, independently installed (java 11 required)
 
-This assumes that Java 11 has been installed as the default for your system.  If not, then it may be 
-necessary to set your PATH and JAVA_HOME to point to the correct location for Java 11.  It also 
-assumes that you are launching IGV from the directory where it was unpacked.
+     java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
+     
+To use the java included with our packaged bundles substitute "./jdk-11/bin/java" for "java", as follows.
+
+    ./jdk-11/bin/java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
+
+The above commands assume that you are launching IGV from the directory where it was unpacked.
 
 Note that this lists the memory specification directly, and that the java_arguments file will be skipped.
-If you wish to use the java_arguments file (assuming one exists), modify the above to:
+If you wish to use the java_arguments file (assuming one exists), modify the above to (substituting ./jdk-11/bin/java for java as required):
+
      java --module-path=lib @igv.args @"$HOME/.igv/java_arguments" --module=org.igv/org.broad.igv.ui.Main
+
 on Linux & Mac.  On Windows, use:
-     java --module-path=lib @igv.args @"%USERPROFILE%/.igv/java_arguments" --module=org.igv/org.broad.igv.ui.Main
+
+java --module-path=lib @igv.args @"%USERPROFILE%/.igv/java_arguments" --module=org.igv/org.broad.igv.ui.Main
 
 In this case you can list the memory spec, HiDPI uiScaling, log4j config, etc either directly on the 
 command-line  or in the java_arguments file, as you prefer.
