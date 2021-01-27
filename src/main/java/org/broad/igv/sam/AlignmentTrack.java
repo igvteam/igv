@@ -131,7 +131,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         READ_ORDER("read order"),
         LINKED("linked"),
         PHASE("phase"),
-        SV_ALIGNMENT("structural variant evidence");
+        SV_ALIGNMENT("reference concordance");
 
         public String label;
 
