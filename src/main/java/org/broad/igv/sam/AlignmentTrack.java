@@ -131,7 +131,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         READ_ORDER("read order"),
         LINKED("linked"),
         PHASE("phase"),
-        SV_ALIGNMENT("reference concordance");
+        REFERENCE_CONCORDANCE("reference concordance");
 
         public String label;
 
@@ -1615,7 +1615,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             GroupOption[] groupOptions = {
                     GroupOption.NONE, GroupOption.STRAND, GroupOption.FIRST_OF_PAIR_STRAND, GroupOption.SAMPLE,
                     GroupOption.LIBRARY, GroupOption.READ_GROUP, GroupOption.MATE_CHROMOSOME,
-                    GroupOption.PAIR_ORIENTATION, GroupOption.SUPPLEMENTARY, GroupOption.SV_ALIGNMENT,
+                    GroupOption.PAIR_ORIENTATION, GroupOption.SUPPLEMENTARY, GroupOption.REFERENCE_CONCORDANCE,
                     GroupOption.MOVIE, GroupOption.ZMW, GroupOption.READ_ORDER, GroupOption.LINKED, GroupOption.PHASE
             };
 

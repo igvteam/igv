@@ -435,11 +435,11 @@ public class AlignmentPacker {
                 }
             case SUPPLEMENTARY:
                 return al.isSupplementary() ? "SUPPLEMENTARY" : "";
-            case SV_ALIGNMENT:
+            case REFERENCE_CONCORDANCE:
                 return !al.isProperPair() ||
                         al.getCigarString().toUpperCase().contains("S") ||
                         al.isSupplementary() ?
-                        "SV": "";
+                        "DISCORDANT": "";
             case BASE_AT_POS:
                 // Use a string prefix to enforce grouping rules:
                 //    1: alignments with a base at the position
