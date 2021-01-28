@@ -78,7 +78,7 @@ public class RegionOfInterestPanel extends JPanel {
         drawRegionsOfInterest((Graphics2D) g, getHeight());
 
         g.setColor(Color.BLACK);
-        g.drawRect(0, 0, getWidth(), getHeight());
+        g.drawLine(0, 0, getWidth(), 0);
     }
 
 

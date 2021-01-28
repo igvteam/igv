@@ -208,14 +208,15 @@ public class RulerPanel extends JPanel {
                     " " + ts.getMajorUnit();
             int strWidth = g.getFontMetrics().stringWidth(chrPosition);
             int strPosition = x - strWidth / 2;
-            //if (strPosition > strEnd) {
-
             final int height = getHeight();
-            if (nTick % 2 == 0) {
+
+            if (nTick % 2 == 0 && strPosition > 0) {
                 g.drawString(chrPosition, strPosition, height - 15);
             }
+            if(x > 0) {
+                g.drawLine(x, height - 10, x, height - 2);
+            }
 
-            g.drawLine(x, height - 10, x, height - 2);
             nTick++;
         }
     }
@@ -264,8 +265,9 @@ public class RulerPanel extends JPanel {
             int x = (int) (gStart / scale);
             int dw = (int) (chrLength / (locationUnit * scale));
 
-
-            g.drawLine(x, getHeight() - 10, x, getHeight() - 2);
+            if(x > 0) {
+                g.drawLine(x, getHeight() - 10, x, getHeight() - 2);
+            }
 
             // Don't label chromosome if its width is < 5 pixels
             if (dw > 5) {
@@ -337,8 +339,7 @@ public class RulerPanel extends JPanel {
 
     private void init() {
 
-        setBorder(BorderFactory.createLineBorder(UIConstants.TRACK_BORDER_GRAY));
-
+        //setBorder(BorderFactory.createLineBorder(UIConstants.TRACK_BORDER_GRAY));
         setCursor(Cursor.getDefaultCursor());
         if (isWholeGenomeView()) {
             this.setToolTipText(WHOLE_GENOME_TOOLTIP);
@@ -395,12 +396,11 @@ public class RulerPanel extends JPanel {
                 }
             }
 
-         @Override
+            @Override
             public void mousePressed(final MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     // ignore
-                }
-                else {
+                } else {
                     dragStart = e.getX();
                     mouseDown = e;
                 }
@@ -427,7 +427,7 @@ public class RulerPanel extends JPanel {
             private double distance(MouseEvent e1, MouseEvent e2) {
                 double dx = e1.getX() - e2.getX();
                 double dy = e1.getY() - e2.getY();
-                return Math.sqrt(dx*dx + dy*dy);
+                return Math.sqrt(dx * dx + dy * dy);
             }
 
 
