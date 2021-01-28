@@ -198,10 +198,8 @@ public class MainPanel extends JPanel implements Paintable {
 
         nameHeaderPanel = new NameHeaderPanel();
         nameHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
-        nameHeaderPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         nameHeaderPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         nameHeaderPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        nameHeaderPanel.setLayout(new BorderLayout());
 
         attributeHeaderPanel = new AttributeHeaderPanel();
         attributeHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
@@ -279,7 +277,6 @@ public class MainPanel extends JPanel implements Paintable {
             centerSplitPane.remove(tsp);
             TrackNamePanel.removeDropListenerFor(tsp.getNamePanel());
         }
-        igv.reset();
     }
 
     /**

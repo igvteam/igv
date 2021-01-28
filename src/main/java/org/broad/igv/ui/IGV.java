@@ -898,7 +898,18 @@ public class IGV implements IGVEventObserver {
         } else {
             session.reset(sessionPath);
         }
-        contentPane.getMainPanel().resetPanels();
+        getMainPanel().resetPanels();
+
+        groupByAttribute = null;
+        for (TrackPanel sp : getTrackPanels()) {
+            if (DATA_PANEL_NAME.equals(sp.getName())) {
+                sp.reset();
+                break;
+            }
+        }
+
+        getMainPanel().updatePanelDimensions();
+        getMainPanel().revalidateTrackPanels();
 
         //TODO -- this is a very blunt way to clean up -- change to close files associated with this session
         SeekableFileStream.closeAllInstances();
@@ -1505,17 +1516,6 @@ public class IGV implements IGVEventObserver {
                 filename.endsWith("bed") || filename.endsWith("gistic") ||
                 filename.endsWith("bedz") || filename.endsWith("repmask") ||
                 filename.contains("dranger") || filename.endsWith("ucscsnp");
-    }
-
-    public void reset() {
-        groupByAttribute = null;
-        for (TrackPanel sp : getTrackPanels()) {
-            if (DATA_PANEL_NAME.equals(sp.getName())) {
-                sp.reset();
-                break;
-            }
-        }
-
     }
 
 
