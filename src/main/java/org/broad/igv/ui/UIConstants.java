@@ -97,7 +97,7 @@ public class UIConstants {
 
     final public static Color LIGHT_GREY = new Color(238, 239, 240);
 
-    final public static Color TRACK_BORDER_GRAY = new Color(200, 200, 210);
+    final public static Color TRACK_BORDER_GRAY = new Color(240, 240, 240);
 
     static final public String REMOVE_GENOME_LIST_MENU_ITEM = "Remove Imported Genomes...";
     static final public String GENOME_LIST_SEPARATOR = "--SEPARATOR--";
