@@ -49,12 +49,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 /**
  * @author dhmay
- *         Finds splice junctions in real time and renders them as Features
+ * Finds splice junctions in real time and renders them as Features
  */
 public class SpliceJunctionTrack extends FeatureTrack {
 
@@ -92,7 +93,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
         super.setDataRange(new DataRange(0, 0, 60));
         setRendererClass(SpliceJunctionRenderer.class);
-        if(dataManager != null) {
+        if (dataManager != null) {
             dataManager.unsubscribe(this);
         }
         this.dataManager = dataManager;
@@ -122,6 +123,11 @@ public class SpliceJunctionTrack extends FeatureTrack {
         return removed;
     }
 
+    @Override
+    public boolean isVisible() {
+        return super.isVisible() && !removed;
+    }
+
     public void clear() {
         this.packedFeaturesMap.clear();
     }
@@ -133,12 +139,12 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
     @Override
     public void setVisible(boolean visible) {
-        if(visible != isVisible()) {
+        if (visible != isVisible()) {
             super.setVisible(visible);
             if (visible) {
                 dataManager.initLoadOptions();
             }
-            if(IGV.hasInstance()) {
+            if (IGV.hasInstance()) {
                 IGV.getInstance().getMainPanel().revalidate();
             }
         }
@@ -152,26 +158,26 @@ public class SpliceJunctionTrack extends FeatureTrack {
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
 
-        IGVPopupMenu popupMenu = new IGVPopupMenu();
+        IGVPopupMenu menu = new IGVPopupMenu();
 
         JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
 
-        Font newFont = popupMenu.getFont().deriveFont(Font.BOLD, 12);
+        Font newFont = menu.getFont().deriveFont(Font.BOLD, 12);
         popupTitle.setFont(newFont);
         if (popupTitle != null) {
-            popupMenu.add(popupTitle);
+            menu.add(popupTitle);
         }
-        popupMenu.addSeparator();
+        menu.addSeparator();
 
         ArrayList<Track> tmp = new ArrayList();
         tmp.add(this);
-        TrackMenuUtils.addStandardItems(popupMenu, tmp, te);
+        TrackMenuUtils.addStandardItems(menu, tmp, te);
 
-        popupMenu.addSeparator();
-        popupMenu.add(getChangeAutoScale());
+        menu.addSeparator();
+        menu.add(getChangeAutoScale());
 
 
-        popupMenu.addSeparator();
+        menu.addSeparator();
         JMenuItem sashimi = new JMenuItem("Sashimi Plot");
         sashimi.addActionListener(new ActionListener() {
             @Override
@@ -179,56 +185,49 @@ public class SpliceJunctionTrack extends FeatureTrack {
                 SashimiPlot.getSashimiPlot(null);
             }
         });
-        popupMenu.add(sashimi);
+        menu.add(sashimi);
 
 
+        // Hide/show items
         if (alignmentTrack != null) {
-            popupMenu.addSeparator();
+
+            menu.addSeparator();
+
+            final CoverageTrack coverageTrack = alignmentTrack.getCoverageTrack();
+            if (coverageTrack != null) {
+                final JMenuItem item = new JCheckBoxMenuItem("Show Coverage Track");
+                item.setSelected(coverageTrack.isVisible());
+                item.setEnabled(!coverageTrack.isRemoved());
+                item.addActionListener(e -> {
+                    coverageTrack.setVisible(item.isSelected());
+                    IGV.getInstance().repaint(Arrays.asList(coverageTrack));
+                });
+                menu.add(item);
+            }
+
+            final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Splice Junction Track");
+            junctionItem.setSelected(true);
+            junctionItem.addActionListener(e -> {
+                SpliceJunctionTrack.this.setVisible(junctionItem.isSelected());
+                IGV.getInstance().repaint(Arrays.asList(SpliceJunctionTrack.this));
+            });
+            menu.add(junctionItem);
+            // Disable if this is the only visible track
+            if (!((coverageTrack != null && coverageTrack.isVisible()) ||  alignmentTrack.isVisible())) {
+                junctionItem.setEnabled(false);
+            }
 
             final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show Alignment Track");
             alignmentItem.setSelected(alignmentTrack.isVisible());
             alignmentItem.setEnabled(!alignmentTrack.isRemoved());
-            alignmentItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    alignmentTrack.setVisible(alignmentItem.isSelected());
-                }
+            alignmentItem.addActionListener(e -> {
+                alignmentTrack.setVisible(alignmentItem.isSelected());
+                IGV.getInstance().repaint(Arrays.asList(alignmentTrack));
             });
-            popupMenu.add(alignmentItem);
-
-            final CoverageTrack coverageTrack = alignmentTrack.getCoverageTrack();
-            if (coverageTrack != null) {
-                final JMenuItem coverageItem = new JCheckBoxMenuItem("Show Coverage Track");
-                coverageItem.setSelected(coverageTrack.isVisible());
-                coverageItem.setEnabled(!coverageTrack.isRemoved());
-                coverageItem.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        UIUtilities.invokeOnEventThread(new Runnable() {
-
-                            public void run() {
-                                coverageTrack.setVisible(coverageItem.isSelected());
-                                IGV.getInstance().getMainPanel().revalidate();
-
-                            }
-                        });
-                    }
-                });
-                popupMenu.add(coverageItem);
-            }
-
-
-            final JMenuItem junctionItem = new JMenuItem("Hide Splice Junction Track");
-            junctionItem.setEnabled(!isRemoved());
-            junctionItem.addActionListener(e -> {
-                setVisible(false);
-            });
-            popupMenu.add(junctionItem);
-
+            menu.add(alignmentItem);
         }
 
-
-        return popupMenu;
+        return menu;
     }
 
     public boolean isLogNormalized() {
@@ -249,10 +248,10 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
         // Intercept renderFeatures call and create splice junctions from alignments, if needed.
         ReferenceFrame frame = context.getReferenceFrame();
-        if(!packedFeaturesMap.containsKey(frame.getName())) {
+        if (!packedFeaturesMap.containsKey(frame.getName())) {
 
             AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
-            if(loadedInterval != null) {
+            if (loadedInterval != null) {
                 SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
                 List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption);
                 if (features == null) {
@@ -275,15 +274,14 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-        if (frame.getChrName().equals(Globals.CHR_ALL) ||  frame.getScale() > dataManager.getMinVisibleScale()) {
+        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > dataManager.getMinVisibleScale()) {
             return true;   // Nothing to paint
         } else {
 
-            if(!dataManager.isLoaded(frame)) {
+            if (!dataManager.isLoaded(frame)) {
                 packedFeaturesMap.clear();
                 return false;
-            }
-            else {
+            } else {
 
 //                AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
 //
@@ -354,13 +352,12 @@ public class SpliceJunctionTrack extends FeatureTrack {
     // End of Roche-Tessella modification
 
 
-
     @Override
     public void marshalXML(Document document, Element element) {
 
         super.marshalXML(document, element);
 
-        if(removed) {
+        if (removed) {
             element.setAttribute("removed", String.valueOf(removed));
         }
 
@@ -372,7 +369,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
         super.unmarshalXML(element, version);
 
-        if(element.hasAttribute("removed")) {
+        if (element.hasAttribute("removed")) {
             this.removed = Boolean.parseBoolean("removed");
         }
 

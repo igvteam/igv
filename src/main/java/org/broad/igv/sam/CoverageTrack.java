@@ -63,6 +63,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -186,6 +187,11 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public boolean isRemoved() {
         return removed;
+    }
+
+    @Override
+    public boolean isVisible() {
+        return super.isVisible() && !removed;
     }
 
     @Override
@@ -785,8 +791,10 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         popupMenu.addSeparator();
         addCopyDetailsItem(popupMenu, te);
 
-        popupMenu.addSeparator();
-        addShowItems(popupMenu);
+        if (alignmentTrack != null) {
+            popupMenu.addSeparator();
+            addShowItems(popupMenu);
+        }
 
         return popupMenu;
     }
@@ -868,48 +876,41 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public void addShowItems(JPopupMenu menu) {
 
+        final SpliceJunctionTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
+
+        final JMenuItem item = new JCheckBoxMenuItem("Show Coverage Track");
+        item.setSelected(true);
+        item.addActionListener(e -> {
+            CoverageTrack.this.setVisible(item.isSelected());
+            IGV.getInstance().repaint(Arrays.asList(CoverageTrack.this));
+        });
+        //If this is the only track visible, disable option to hide it.
+        if (!(alignmentTrack.isVisible() ||
+                (spliceJunctionTrack != null && spliceJunctionTrack.isVisible()))) {
+            item.setEnabled(false);
+        }
+        menu.add(item);
+
+        if (spliceJunctionTrack != null) {
+            final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Splice Junction Track");
+            junctionItem.setSelected(spliceJunctionTrack.isVisible());
+            junctionItem.setEnabled(!spliceJunctionTrack.isRemoved());
+            junctionItem.addActionListener(e -> {
+                spliceJunctionTrack.setVisible(junctionItem.isSelected());
+                IGV.getInstance().repaint(Arrays.asList(spliceJunctionTrack));
+            });
+            menu.add(junctionItem);
+        }
+
         if (alignmentTrack != null) {
             final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show Alignment Track");
             alignmentItem.setSelected(alignmentTrack.isVisible());
             alignmentItem.setEnabled(!alignmentTrack.isRemoved());
-            alignmentItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    alignmentTrack.setVisible(alignmentItem.isSelected());
-                }
+            alignmentItem.addActionListener(e -> {
+                alignmentTrack.setVisible(alignmentItem.isSelected());
+                IGV.getInstance().repaint(Arrays.asList(alignmentTrack));
             });
             menu.add(alignmentItem);
-
-            final SpliceJunctionTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
-            if (spliceJunctionTrack != null) {
-                final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Splice Junction Track");
-                junctionItem.setSelected(spliceJunctionTrack.isVisible());
-                junctionItem.setEnabled(!spliceJunctionTrack.isRemoved());
-                junctionItem.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        spliceJunctionTrack.setVisible(junctionItem.isSelected());
-                    }
-                });
-
-                menu.add(junctionItem);
-            }
-
-            final JMenuItem coverageItem = new JMenuItem("Hide Coverage Track");
-            coverageItem.setEnabled(!isRemoved());
-            coverageItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    UIUtilities.invokeOnEventThread(new Runnable() {
-                        public void run() {
-                            setVisible(false);
-                            if (IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
-
-                        }
-                    });
-                }
-            });
-            menu.add(coverageItem);
         }
     }
 

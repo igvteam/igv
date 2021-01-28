@@ -1152,9 +1152,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-
     public boolean isRemoved() {
         return removed;
+    }
+
+    @Override
+    public boolean isVisible() {
+        return super.isVisible() && !removed;
     }
 
     IGVPreferences getPreferences() {
@@ -1990,34 +1994,42 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         void addShowItems() {
 
-            if (AlignmentTrack.this.coverageTrack != null) {
+            if (coverageTrack != null) {
                 final JMenuItem item = new JCheckBoxMenuItem("Show Coverage Track");
-                item.setSelected(AlignmentTrack.this.coverageTrack.isVisible());
-                item.setEnabled(!AlignmentTrack.this.coverageTrack.isRemoved());
-                item.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
-                    if (getCoverageTrack() != null) {
-                        getCoverageTrack().setVisible(item.isSelected());
-                        IGV.getInstance().getMainPanel().revalidate();
-                    }
-                }));
+                item.setSelected(coverageTrack.isVisible());
+                item.setEnabled(!coverageTrack.isRemoved());
+                item.addActionListener(aEvt -> {
+                    getCoverageTrack().setVisible(item.isSelected());
+                    IGV.getInstance().repaint(Arrays.asList(coverageTrack));
+
+                });
                 add(item);
             }
 
-            if (AlignmentTrack.this.spliceJunctionTrack != null) {
+            if (spliceJunctionTrack != null) {
                 final JMenuItem item = new JCheckBoxMenuItem("Show Splice Junction Track");
-                item.setSelected(AlignmentTrack.this.spliceJunctionTrack.isVisible());
-                item.setEnabled(!AlignmentTrack.this.spliceJunctionTrack.isRemoved());
-                item.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
-                    if (AlignmentTrack.this.spliceJunctionTrack != null) {
-                        AlignmentTrack.this.spliceJunctionTrack.setVisible(item.isSelected());
-                    }
-                }));
+                item.setSelected(spliceJunctionTrack.isVisible());
+                item.setEnabled(!spliceJunctionTrack.isRemoved());
+                item.addActionListener(aEvt -> {
+                    spliceJunctionTrack.setVisible(item.isSelected());
+                    IGV.getInstance().repaint(Arrays.asList(spliceJunctionTrack));
+
+                });
                 add(item);
             }
 
-            final JMenuItem alignmentItem = new JMenuItem("Hide Alignment Track");
-            alignmentItem.setEnabled(!AlignmentTrack.this.isRemoved());
-            alignmentItem.addActionListener(e -> AlignmentTrack.this.setVisible(false));
+            final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show Alignment Track");
+            alignmentItem.setSelected(true);
+            alignmentItem.addActionListener(e -> {
+                AlignmentTrack.this.setVisible(alignmentItem.isSelected());
+                IGV.getInstance().repaint(Arrays.asList(AlignmentTrack.this));
+            });
+            // Disable if this is the only visible track
+            if (!((coverageTrack != null && coverageTrack.isVisible()) ||
+                    (spliceJunctionTrack != null && spliceJunctionTrack.isVisible()))) {
+                alignmentItem.setEnabled(false);
+            }
+
             add(alignmentItem);
         }
 
