@@ -710,13 +710,7 @@ public class TrackLoader {
             ParsingUtils.parseTrackLine(trackLine, props);
         }
 
-        // In case of conflict between the resource locator display name and the track properties name,
-        // use the resource locator
         String name = locator.getName();
-        if (name != null && props != null) {
-            props.setName(name);
-        }
-
         if (name == null) {
             name = props == null ? locator.getTrackName() : props.getName();
         }
