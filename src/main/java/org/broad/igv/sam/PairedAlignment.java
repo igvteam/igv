@@ -227,7 +227,7 @@ public class PairedAlignment implements Alignment {
     }
 
     public boolean isPaired() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;  //Counter intuitive, but the pair does not have a mate
     }
 
     public boolean isNegativeStrand() {

@@ -1192,8 +1192,9 @@ public class AlignmentRenderer {
                 }
             case INSERT_SIZE:
                 boolean isPairedAlignment = alignment instanceof PairedAlignment;
-                if ((alignment.isPaired() && alignment.getMate().isMapped()) || isPairedAlignment) {
-                    boolean sameChr = isPairedAlignment || alignment.getMate().getChr().equals(alignment.getChr());
+                ReadMate mate = alignment.getMate();
+                if ((alignment.isPaired() && mate != null && mate.isMapped()) || isPairedAlignment) {
+                    boolean sameChr = isPairedAlignment || mate.getChr().equals(alignment.getChr());
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
                         if (readDistance != 0) {
