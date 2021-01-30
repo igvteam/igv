@@ -65,4 +65,21 @@ public class ResourceLocatorTest {
         assertTrue(type.endsWith(".peak.bin"));
     }
 
+    @Test
+    public void getTrackName() throws Exception {
+
+        ResourceLocator resourceLocator = new ResourceLocator("http://foo.bar/track");
+        String trackName = resourceLocator.getTrackName();
+        assertEquals("track", trackName);
+
+        resourceLocator = new ResourceLocator("http://foo.bar/track?param=abc");
+        trackName = resourceLocator.getTrackName();
+        assertEquals("track", trackName);
+
+        resourceLocator = new ResourceLocator("http://foo.bar/track?param=abc/123");
+        trackName = resourceLocator.getTrackName();
+        assertEquals("track", trackName);
+
+    }
+
 }

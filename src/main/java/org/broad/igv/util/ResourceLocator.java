@@ -111,7 +111,7 @@ public class ResourceLocator {
     Color color;
 
     String sampleId;
-    
+
     private HashMap attributes = new HashMap();
     private boolean indexed;
 
@@ -251,7 +251,17 @@ public class ResourceLocator {
     }
 
     public String getFileName() {
-        return (new File(path)).getName();
+        if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("gs://")) {
+            int idxQuestion = path.indexOf('?');
+            String actualPath = idxQuestion < 0 ? path : path.substring(0, idxQuestion);
+            int idxSlash = actualPath.lastIndexOf('/');
+            return idxSlash < 0 ?
+                    actualPath :
+                    actualPath.substring(idxSlash + 1);
+
+        } else {
+            return (new File(path)).getName();
+        }
     }
 
 
@@ -280,18 +290,7 @@ public class ResourceLocator {
     }
 
     public String getTrackName() {
-        if (name == null) {
-            if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("gs://")) {
-                int idx = path.lastIndexOf('/');
-                int idx2 = path.indexOf('?');
-                return idx2 > idx ? path.substring(idx + 1, idx2) : path.substring(idx + 1);
-
-            } else {
-                return new File(path).getName();
-            }
-        }
-        return name;
-
+        return this.getFileName();
     }
 
 
@@ -330,17 +329,6 @@ public class ResourceLocator {
 
     public void setPath(String path) {
 
-        // Set UI human-readable short name for the file
-        String objFname = "";
-        if(path != null) {
-            if (path.contains("/")) {
-                objFname = path.substring(path.lastIndexOf('/')).replace("/", "");
-            } else {
-                objFname = path;
-            }
-        }
-        this.setName(objFname);
-
         if (path != null && path.startsWith("file://")) {
             this.path = path.substring("file://".length());
         } else if (path != null && path.startsWith("gs://")) {
@@ -352,6 +340,17 @@ public class ResourceLocator {
         } else {
             this.path = path;
         }
+
+        // Set UI human-readable short name for the file
+        String objFname = "";
+        if (path != null) {
+            if (path.contains("/")) {
+                objFname = this.getTrackName();
+            } else {
+                objFname = path;
+            }
+        }
+        this.setName(objFname);
     }
 
     public String getTrackLine() {
