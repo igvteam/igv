@@ -386,7 +386,7 @@ public class IGVDatasetParser {
             String chromosome = chrSummary.getName();
             boolean chromosomeStarted = false;
             String nextLine = reader.readLine();
-
+            int skippedLineCount = 0;
             while ((nextLine != null) && (nextLine.trim().length() > 0)) {
 
                 if (!nextLine.startsWith("#")) {
@@ -429,9 +429,10 @@ public class IGVDatasetParser {
                         }
 
                     } catch (NumberFormatException numberFormatException) {
-
-                        // Skip line
-                        log.info("Skipping line (NumberFormatException) " + nextLine);
+                        if(skippedLineCount < 5) {
+                            skippedLineCount++;
+                            log.info("Skipping line: " + nextLine + (skippedLineCount < 5 ? "" : " Further skipped lines will not be logged"));
+                        }
                     }
                 }
 

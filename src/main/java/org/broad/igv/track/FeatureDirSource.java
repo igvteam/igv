@@ -88,7 +88,7 @@ public class FeatureDirSource implements FeatureSource {
                 BufferedReader reader = null;
                 String path = rootDir + "/" + filename;
                 try {
-                    log.info("Loading " + path);
+                    //log.info("Loading " + path);
                     // Load features here
                     ResourceLocator loc = new ResourceLocator(path);
 
@@ -98,7 +98,7 @@ public class FeatureDirSource implements FeatureSource {
                     featureCache.put(chr, features);
                 } catch (IOException ex) {
                     MessageUtils.showMessage("Error loading file: " + path + " (" + ex.toString() + ")");
-                    log.info("Error loading feature file: " + filename, ex);
+                    log.error("Error loading feature file: " + filename, ex);
                 } finally {
                     if (reader != null) {
                         try {

@@ -80,7 +80,7 @@ public class BatchRunner implements NamedRunnable {
                 if (!(inLine.startsWith("#") || inLine.startsWith("//"))) {
 
                     if (firstCommand && genomeId != null && !inLine.toLowerCase().startsWith("genome")) {
-                        log.info("Loading genome " + genomeId);
+                        log.debug("Loading genome " + genomeId);
                         GenomeManager.getInstance().loadGenomeById(genomeId);
                     }
 

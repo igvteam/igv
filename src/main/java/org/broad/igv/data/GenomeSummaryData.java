@@ -132,7 +132,7 @@ public class GenomeSummaryData {
         if (locations == null) {
             if (!skippedChromosomes.contains(chr)) {
                 skippedChromosomes.add(chr);
-                log.info("Skipping data for: " + chr);
+                //log.info("Skipping data for: " + chr);
             }
             return;
         }

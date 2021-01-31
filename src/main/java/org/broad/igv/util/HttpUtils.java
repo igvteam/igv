@@ -726,9 +726,8 @@ public class HttpUtils {
             if (PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
                 log.info("PROXY NOT USED ");
                 if (proxySettings.getWhitelist().contains(url.getHost())) {
-                    log.info(url.getHost() + " is whitelisted");
+                    //log.info(url.getHost() + " is whitelisted");
                 }
-                ;
             }
             conn = (HttpURLConnection) url.openConnection();
         }
@@ -958,7 +957,7 @@ public class HttpUtils {
                     boolean byteRangeTestSuccess = testByteRange(url);
 
                     if (byteRangeTestSuccess) {
-                        log.info("Range-byte request succeeded");
+                        //log.info("Range-byte request succeeded");
                     } else {
                         log.info("Range-byte test failed -- Host: " + host +
                                 " does not support range-byte requests or there is a problem with client network environment.");

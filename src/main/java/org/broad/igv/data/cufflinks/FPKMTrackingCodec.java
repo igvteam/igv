@@ -95,7 +95,7 @@ public class FPKMTrackingCodec extends CufflinksCodec<FPKMValue>{
             return new FPKMValue(locus.getChr(), locus.getStart() - 1, locus.getEnd(), gene,
                     fpkm, confLo, confHi);
         } else {
-            log.info("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);
+            log.error("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);
             return null;
         }
     }

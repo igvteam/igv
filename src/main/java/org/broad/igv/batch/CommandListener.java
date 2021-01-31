@@ -184,7 +184,7 @@ public class CommandListener implements Runnable {
                             headers.put(tokens[0].trim(), tokens[1].trim());
                         }
                     }
-                    log.info(cmd);
+                    //log.info(cmd);
 
                     String command = null;
                     Map<String, String> params = null;

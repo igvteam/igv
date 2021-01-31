@@ -2158,7 +2158,6 @@ public class IGV implements IGVEventObserver {
                         List<String> dataFiles = igvArgs.getDataFileStrings();
 
                         Collection<String> h = igvArgs.getHttpHeader();
-                        log.info("h= " + igvArgs.getHttpHeader());
                         if (h != null && !h.isEmpty()) {
                             HttpUtils.getInstance().addHeaders(h, dataFiles);
                         }

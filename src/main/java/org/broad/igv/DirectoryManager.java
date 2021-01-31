@@ -83,7 +83,6 @@ public class DirectoryManager {
      */
     public static synchronized File getUserDirectory() {
         if (USER_DIRECTORY == null) {
-            log.info("Fetching user directory... ");
             USER_DIRECTORY = FileSystemView.getFileSystemView().getDefaultDirectory();
             //Mostly for testing, in some environments USER_DIRECTORY can be null
             if (USER_DIRECTORY == null) {
@@ -124,7 +123,7 @@ public class DirectoryManager {
                     try {
                         legacyDirectory = getLegacyIGVDirectory();
                         if (legacyDirectory.exists()) {
-                            log.info("Copying " + legacyDirectory + " => " + IGV_DIRECTORY);
+                            //log.info("Copying " + legacyDirectory + " => " + IGV_DIRECTORY);
                             FileUtils.copyDirectory(legacyDirectory, IGV_DIRECTORY);
                         }
                     } catch (IOException e) {

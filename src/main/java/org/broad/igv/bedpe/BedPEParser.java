@@ -40,6 +40,7 @@ public class BedPEParser {
         br = ParsingUtils.openBufferedReader(locator.getPath());
         String nextLine;
         boolean firstLine = true;
+        int skippedLineCount = 0;
         while ((nextLine = br.readLine()) != null) {
 
             if (nextLine.startsWith("#columns")) {
@@ -91,7 +92,10 @@ public class BedPEParser {
                 String[] tokens = Globals.tabPattern.split(nextLine);
 
                 if (tokens.length < 6) {
-                    log.info("Skipping line: " + nextLine);
+                    if(skippedLineCount < 5) {
+                        skippedLineCount++;
+                        log.info("Skipping line: " + nextLine + (skippedLineCount < 5 ? "" : " Further skipped lines will not be logged"));
+                    }
                     continue;
                 }
 

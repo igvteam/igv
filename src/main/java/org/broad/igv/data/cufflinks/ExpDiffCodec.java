@@ -80,7 +80,7 @@ public class ExpDiffCodec extends CufflinksCodec<ExpDiffValue>{
             float logRatio = Float.parseFloat(logRatioStr);
 
             if (Float.isInfinite(logRatio) || Float.isNaN(logRatio)) {
-                log.info("LogRatio " + logRatioStr + " cannot be parsed as a float");
+                log.error("LogRatio " + logRatioStr + " cannot be parsed as a float");
                 logRatio = Float.NaN;
             }
 
@@ -91,7 +91,7 @@ public class ExpDiffCodec extends CufflinksCodec<ExpDiffValue>{
             return new ExpDiffValue(locus.getChr(), locus.getStart() - 1, locus.getEnd(), gene,
                     logRatio, fpkmX, fpkmY, significant);
         } else {
-            log.info("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);
+            log.error("Unexpected # of columns.  Expected at least 12,  found " + tokens.length);
             return null;
         }
     }

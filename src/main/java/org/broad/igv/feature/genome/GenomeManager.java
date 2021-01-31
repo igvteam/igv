@@ -221,7 +221,7 @@ public class GenomeManager {
             }
 
 
-            log.info("Genome loaded.  id= " + newGenome.getId());
+           // log.info("Genome loaded.  id= " + newGenome.getId());
             return currentGenome;
 
         } catch (SocketException e) {

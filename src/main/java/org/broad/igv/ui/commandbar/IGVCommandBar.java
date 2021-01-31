@@ -164,7 +164,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
      */
     public void selectGenome(String genomeId) {
 
-        log.info("Selecting genome " + genomeId);
+        //log.info("Selecting genome " + genomeId);
 
         GenomeListItem selectedItem = GenomeListManager.getInstance().getGenomeListItem(genomeId);
 
