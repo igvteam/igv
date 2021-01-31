@@ -1191,10 +1191,12 @@ public class AlignmentRenderer {
                     break;
                 }
             case INSERT_SIZE:
+//                   boolean sameChr = isPairedAlignment || alignment.getMate().getChr().equals(alignment.getChr());
                 boolean isPairedAlignment = alignment instanceof PairedAlignment;
                 ReadMate mate = alignment.getMate();
                 if ((alignment.isPaired() && mate != null && mate.isMapped()) || isPairedAlignment) {
-                    boolean sameChr = isPairedAlignment || mate.getChr().equals(alignment.getChr());
+                    String mateChr = mate == null ? null : mate.getChr();
+                    boolean sameChr = isPairedAlignment || (mateChr != null && mateChr.equals(alignment.getChr()));
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
                         if (readDistance != 0) {
