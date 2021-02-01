@@ -446,11 +446,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         homeButton.setMinimumSize(new java.awt.Dimension(32, 32));
         homeButton.setPreferredSize(new java.awt.Dimension(32, 32));
         homeButton.setToolTipText("Jump to whole genome view");
-        homeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                homeButtonActionPerformed(evt);
-            }
-        });
+        homeButton.addActionListener(evt -> homeButtonActionPerformed(evt));
         toolPanel.add(homeButton, JideBoxLayout.FIX);
 
 
@@ -464,11 +460,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         backButton.setMaximumSize(new java.awt.Dimension(32, 32));
         backButton.setMinimumSize(new java.awt.Dimension(32, 32));
         backButton.setPreferredSize(new java.awt.Dimension(32, 32));
-        backButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                IGV.getInstance().getSession().getHistory().back();
-
-            }
+        backButton.addActionListener(evt -> {
+            final History history = IGV.getInstance().getSession().getHistory();
+            history.back();
         });
         backButton.setEnabled(false);
         toolPanel.add(backButton, JideBoxLayout.FIX);
@@ -481,10 +475,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         forwardButton.setMaximumSize(new java.awt.Dimension(32, 32));
         forwardButton.setMinimumSize(new java.awt.Dimension(32, 32));
         forwardButton.setPreferredSize(new java.awt.Dimension(32, 32));
-        forwardButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                IGV.getInstance().getSession().getHistory().forward();
-            }
+        forwardButton.addActionListener(evt -> {
+            final History history = IGV.getInstance().getSession().getHistory();
+            history.forward();
         });
         forwardButton.setEnabled(false);
         toolPanel.add(forwardButton, JideBoxLayout.FIX);
