@@ -176,48 +176,40 @@ public class BlatClient {
         ArrayList<String> records = new ArrayList<String>();
 
         BufferedReader br = new BufferedReader(new StringReader(result));
-        String line;
-        int headerLineCount = 0;
-        boolean header = false;
-        boolean hgsidFound = false;
+        String l;
         boolean pslSectionFound = false;
-        while ((line = br.readLine()) != null) {
+        boolean pslHeaderFound = false;
+        while ((l = br.readLine()) != null) {
 
-            if (line.contains("hgsid=") && !hgsidFound) {
-                int startIDX = line.indexOf("hgsid=") + 6;
-                String sub = line.substring(startIDX);
-                int endIDX = sub.indexOf("\"");
-                if (endIDX < 0) endIDX = sub.indexOf("&");
-                if (endIDX > 0) {
-                    hgsid = sub.substring(0, endIDX);
-                    hgsidFound = true;
-                }
-            }
-            if (line.trim().startsWith("<TT><PRE>")) {
-                pslSectionFound = true;
-                if (line.contains("psLayout") && line.contains("version")) {
-                    header = true;
-                    headerLineCount++;
-                }
-            } else if (line.trim().startsWith("</PRE></TT>")) {
-                break;
-            }
+            String line = l.trim().toLowerCase();
 
-            if (pslSectionFound) {
-                if (header && headerLineCount < 6) {
-                    headerLineCount++;
-                    continue;
+            if(pslHeaderFound) {
+
+                if(line.contains("</tt>")) {
+                    break;
                 }
 
                 String[] tokens = Globals.whitespacePattern.split(line);
                 if (tokens.length != 21) {
-                    System.err.println("Unexpected number of fields (" + tokens.length + ")");
-                    System.err.println(line);
+                    // PSL record section over
+                    // Error?
                 } else {
                     records.add(line);
                 }
             }
+
+            if (line.contains("<tt>") && line.contains("<pre>") && line.contains("pslayout")) {
+                pslSectionFound = true;
+                continue;
+            }
+
+            if (pslSectionFound) {
+                if (line.startsWith("-----------------------------")) {
+                    pslHeaderFound = true;
+                }
+            }
         }
+
         return records;
     }
 
