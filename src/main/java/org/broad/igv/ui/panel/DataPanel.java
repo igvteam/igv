@@ -242,7 +242,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
             drawAllRegions(g);
 
-            borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
+            borderGraphics.drawRect(0, rect.y, rect.width-1, rect.height-1);
 
         } finally {
             if (context != null) {
