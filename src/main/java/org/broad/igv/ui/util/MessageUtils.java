@@ -75,31 +75,35 @@ public class MessageUtils {
 
         log.log(level, message);
         boolean showDialog = !(Globals.isHeadless() || Globals.isSuppressMessages() || Globals.isTesting() || Globals.isBatch());
-        if (showDialog) {
-            UIUtilities.invokeAndWaitOnEventThread(() -> {
-                // Always use HTML for message displays, but first remove any embedded <html> tags.
-                String dlgMessage = "<html>" + message.replaceAll("<html>", "");
-                Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
-                Color background = parent != null ? parent.getBackground() : Color.lightGray;
+        try {
+            if (showDialog) {
+                UIUtilities.invokeAndWaitOnEventThread(() -> {
+                    // Always use HTML for message displays, but first remove any embedded <html> tags.
+                    String dlgMessage = "<html>" + message.replaceAll("<html>", "");
+                    Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+                    Color background = parent != null ? parent.getBackground() : Color.lightGray;
 
-                //JEditorPane So users can select text
-                JEditorPane content = new JEditorPane();
-                content.setContentType("text/html");
-                content.setText(dlgMessage);
-                content.setBackground(background);
-                content.setEditable(false);
-                Component dispMessage = content;
+                    //JEditorPane So users can select text
+                    JEditorPane content = new JEditorPane();
+                    content.setContentType("text/html");
+                    content.setText(dlgMessage);
+                    content.setBackground(background);
+                    content.setEditable(false);
+                    Component dispMessage = content;
 
-                //Really long messages should be scrollable
-                if (dlgMessage.length() > 200) {
-                    Dimension size = new Dimension(1000, content.getHeight() + 100);
-                    content.setPreferredSize(size);
-                    JScrollPane pane = new JScrollPane(content);
-                    dispMessage = pane;
-                }
+                    //Really long messages should be scrollable
+                    if (dlgMessage.length() > 200) {
+                        Dimension size = new Dimension(1000, content.getHeight() + 100);
+                        content.setPreferredSize(size);
+                        JScrollPane pane = new JScrollPane(content);
+                        dispMessage = pane;
+                    }
 
-                JOptionPane.showMessageDialog(parent, dispMessage);
-            });
+                    JOptionPane.showMessageDialog(parent, dispMessage);
+                });
+            }
+        } catch (NullPointerException npe) {
+            // XXX: Don't print nullpointers, no need XD
         }
     }
 

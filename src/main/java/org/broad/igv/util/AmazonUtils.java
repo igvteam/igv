@@ -243,8 +243,8 @@ public class AmazonUtils {
         s3ObjectAccessResult res = new s3ObjectAccessResult();
         HeadObjectResponse s3Meta;
 
-        String s3ObjectStorageStatus = null;
-        String s3ObjectStorageClass;
+        String s3ObjectStorageStatus;   // Can it be retrieved immediately or not?
+        String s3ObjectStorageClass;    // Which AWS S3 tier is this object in?
 
         // Simple "null" case. The object is directly accessible in
         // STANDARD, INFREQUENT_ACCESS, INTELLIGENT_TIERING

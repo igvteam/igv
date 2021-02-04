@@ -104,7 +104,7 @@ public class S3LoadDialog extends JDialog {
                     Triple<String, String, String> bucketKeyTier = getBucketKeyTierFromTreePath(path);
 
                     AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucketKeyTier.getLeft(), bucketKeyTier.getMiddle());
-                    if(!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
+                    //if(!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
 
                     preLocatorPaths.add(bucketKeyTier);
                 }
