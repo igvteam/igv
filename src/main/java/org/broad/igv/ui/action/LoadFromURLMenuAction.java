@@ -105,7 +105,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                                 String key = AmazonUtils.getKeyFromS3URL(url);
 
                                 AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucket, key);
-                                if (!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
+                                if (!res.isObjectAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
                             }
                         } catch (NullPointerException npe) {
                             // User has not yet done Amazon->Login sequence

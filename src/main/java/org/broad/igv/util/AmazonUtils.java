@@ -1,8 +1,6 @@
 package org.broad.igv.util;
 
 import com.google.gson.JsonObject;
-import htsjdk.samtools.util.Tuple;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.aws.IGVS3Object;
@@ -219,7 +217,7 @@ public class AmazonUtils {
         private boolean objAvailable;
         private String errorReason;
 
-        public boolean getObjAvailable() {
+        public boolean isObjectAvailable() {
             return objAvailable;
         }
 
@@ -241,10 +239,14 @@ public class AmazonUtils {
     // Tiers GLACIER and DEEP_ARCHIVE are not immediately retrievable without action.
     public static s3ObjectAccessResult isObjectAccessible(String bucket, String key) {
         s3ObjectAccessResult res = new s3ObjectAccessResult();
-        HeadObjectResponse s3Meta;
 
-        String s3ObjectStorageStatus = null;
-        String s3ObjectStorageClass;
+        // Safeguard for null corner case(s), assume we can access the object
+        res.setObjAvailable(true);
+        //res.setErrorReason("Object not found, perhaps a new tier was introduced on AWS?"); // not really an error
+
+        HeadObjectResponse s3Meta;      // Head metadata from the S3 object
+        String s3ObjectStorageStatus;   // Can it be retrieved immediately or not?
+        String s3ObjectStorageClass;    // Which AWS S3 tier is this object in?
 
         // Simple "null" case. The object is directly accessible in
         // STANDARD, INFREQUENT_ACCESS, INTELLIGENT_TIERING
