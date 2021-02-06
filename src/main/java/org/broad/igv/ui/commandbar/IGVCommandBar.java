@@ -492,11 +492,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         refreshButton.setMinimumSize(new java.awt.Dimension(32, 32));
         refreshButton.setPreferredSize(new java.awt.Dimension(32, 32));
         refreshButton.setToolTipText("Reload tracks and refresh the screen");
-        refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshButtonActionPerformed(evt);
-            }
-        });
+        refreshButton.addActionListener(evt -> refreshButtonActionPerformed(evt));
         toolPanel.add(refreshButton, JideBoxLayout.FIX);
 
 
