@@ -276,7 +276,7 @@ public class BlatClient {
                     } else {
 
                         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
-
+                        IGV.getInstance().repaint();
                         BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), userSeq, newTrack.getFeatures());
                         win.setVisible(true);
 
