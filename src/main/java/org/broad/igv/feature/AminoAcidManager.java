@@ -149,6 +149,12 @@ public class AminoAcidManager {
         return setCodonTable(key);
     }
 
+    /**
+     * Set the current codon translation table.  This is called from explicit menu action.
+     *
+     * @param key
+     * @return
+     */
     public boolean setCodonTable(CodonTableKey key) {
         if (allCodonTables.containsKey(key)) {
             currentCodonTable = allCodonTables.get(key);
