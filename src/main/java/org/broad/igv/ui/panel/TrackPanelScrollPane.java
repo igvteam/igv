@@ -140,11 +140,12 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
         if (batch) {
             int panelHeight;
             int maxPanelHeight = SnapshotUtilities.getMaxPanelHeight();
-            final int visibleHeight = getVisibleRect().height;
-            if (maxPanelHeight < 0) {
-                panelHeight = visibleHeight;
+            final int scrollPaneHeight = getHeight();
+            if (maxPanelHeight <= 0) {
+                panelHeight = scrollPaneHeight;
             } else {
-                panelHeight = Math.min(maxPanelHeight, Math.max(visibleHeight, trackPanel.getPreferredPanelHeight()));
+                int contentHeight = trackPanel.getPreferredPanelHeight();
+                panelHeight = Math.min(maxPanelHeight, Math.max(scrollPaneHeight, contentHeight));
             }
             return panelHeight;
         } else {
