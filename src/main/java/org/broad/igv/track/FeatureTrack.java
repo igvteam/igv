@@ -755,7 +755,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 lastFeatureMode = null;
             }
             renderFeatures(context, renderRect);
-        } else {
+        } else if (coverageRenderer != null) {
             if (getDisplayMode() != DisplayMode.COLLAPSED) {
                 // An ugly hack, but we want to prevent this for vcf tracks
                 if (!(this instanceof VariantTrack)) {
@@ -789,7 +789,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     protected void renderCoverage(RenderContext context, Rectangle inputRect) {
 
         final String chr = context.getChr();
-
         List<LocusScore> scores = (source != null && chr.equals(Globals.CHR_ALL)) ?
                 source.getCoverageScores(chr, (int) context.getOrigin(),
                         (int) context.getEndLocation(), context.getZoom()) :

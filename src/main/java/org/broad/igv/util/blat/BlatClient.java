@@ -56,8 +56,8 @@ import java.util.Map;
  * Port of perl script blatPlot.pl   http://genomewiki.cse.ucsc.edu/index.php/Blat_Scripts
  *
  * @author jrobinso
- *         Date: 11/21/12
- *         Time: 8:28 AM
+ * Date: 11/21/12
+ * Time: 8:28 AM
  */
 public class BlatClient {
 
@@ -66,7 +66,6 @@ public class BlatClient {
 
     static String hgsid;  // cached, not sure what this is for but apparently its best to reuse it.
     static long lastQueryTime = 0;
-
 
 
     public static void main(String[] args) throws IOException {
@@ -134,32 +133,43 @@ public class BlatClient {
             System.exit(255);
         }
 
-        //$response;
-        String $url = PreferencesManager.getPreferences().get(Constants.BLAT_URL);
+        String $url = PreferencesManager.getPreferences().get(Constants.BLAT_URL).trim();
 
-        //if an hgsid was obtained from the output of the first batch
-        //then use this.
+        // Now determine if this is a custom web blat url or UCSC mirror
+        boolean customBlat = $url.contains(" ") ? Globals.whitespacePattern.split($url)[0].equals(db) : false;
 
-        String urlString = ($url + "?org=" + org + "&db=" + db + "&type=" + searchType + "&sort=" + sortOrder +
-                "&output=" + outputType); // + "&hgsid=" + hgsid);
-        if (hgsid != null) {
-            urlString += "&hgsid=" + hgsid;
-        }
-
-        long dt = System.currentTimeMillis() - lastQueryTime;
-        if (dt < sleepTime) {
-            try {
-                Thread.sleep(dt);
-            } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        String result;
+        if (!customBlat) {
+            //if an hgsid was obtained from the output of the first batch
+            //then use this.
+            String urlString = ($url + "?org=" + org + "&db=" + db + "&type=" + searchType + "&sort=" + sortOrder +
+                    "&output=" + outputType); // + "&hgsid=" + hgsid);
+            if (hgsid != null) {
+                urlString += "&hgsid=" + hgsid;
             }
+
+
+            URL url = HttpUtils.createURL(urlString);
+
+            long dt = System.currentTimeMillis() - lastQueryTime;
+            if (dt < sleepTime) {
+                try {
+                    Thread.sleep(dt);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+            lastQueryTime = System.currentTimeMillis();
+            Map<String, String> params = new HashMap();
+            params.put("userSeq", userSeq);
+            result = HttpUtils.getInstance().doPost(url, params);
+
+        } else {
+            String urlString = ($url + "?&wb_qtype=" + searchType + "&wb_sort=" + sortOrder +
+                    "&wb_output=" + outputType + "&wb_seq=" + userSeq); // + "&hgsid=" + hgsid);
+            result = HttpUtils.getInstance().getContentsAsString(new URL(urlString));
         }
 
-        lastQueryTime = System.currentTimeMillis();
-
-        Map<String, String> params = new HashMap();
-        params.put("userSeq", userSeq);
-        String result = HttpUtils.getInstance().doPost(HttpUtils.createURL(urlString), params);
 
         return parseResult(result);
     }
@@ -183,9 +193,9 @@ public class BlatClient {
 
             String line = l.trim().toLowerCase();
 
-            if(pslHeaderFound) {
+            if (pslHeaderFound) {
 
-                if(line.contains("</tt>")) {
+                if (line.contains("</tt>")) {
                     break;
                 }
 
@@ -219,7 +229,7 @@ public class BlatClient {
 
     public static void doBlatQuery(final String chr, final int start, final int end, Strand strand, final String trackLabel) {
 
-        if((end - start) > 8000) {
+        if ((end - start) > 8000) {
             MessageUtils.showMessage("BLAT searches are limited to 8kb.  Please try a shorter sequence.");
             return;
         }
@@ -228,7 +238,7 @@ public class BlatClient {
         final byte[] seqBytes = genome.getSequence(chr, start, end);
         String userSeq = new String(seqBytes);
 
-        if(strand == Strand.NEGATIVE) {
+        if (strand == Strand.NEGATIVE) {
             userSeq = SequenceTrack.getReverseComplement(userSeq);
         }
 
@@ -252,13 +262,14 @@ public class BlatClient {
 
                     String db = genome.getId();
                     String species = genome.getSpecies();
+
                     if (species == null) {
                         MessageUtils.showMessage("Cannot determine species name for genome: " + genome.getDisplayName());
                         return;
                     }
 
-                    BlatTrack newTrack = new BlatTrack(species, userSeq, db, genome, trackLabel);
-
+                    List<String> tokensList = BlatClient.blat(species, db, userSeq);
+                    BlatTrack newTrack = new BlatTrack(userSeq, tokensList, trackLabel); //species, userSeq, db, genome, trackLabel);
 
                     if (newTrack.getFeatures().isEmpty()) {
                         MessageUtils.showMessage("No features found");
@@ -283,7 +294,7 @@ public class BlatClient {
         menuItem.addActionListener(e -> {
 
             String blatSequence = MessageUtils.showInputDialog("Enter sequence to blat:");
-            if(blatSequence != null) {
+            if (blatSequence != null) {
                 doBlatQuery(blatSequence);
             }
 
