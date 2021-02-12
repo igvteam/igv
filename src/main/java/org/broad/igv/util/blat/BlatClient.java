@@ -25,6 +25,7 @@
 
 package org.broad.igv.util.blat;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.Strand;
@@ -61,7 +62,9 @@ import java.util.Map;
  */
 public class BlatClient {
 
+    private static Logger log = Logger.getLogger(BlatClient.class);
     public static final int MINIMUM_BLAT_LENGTH = 20;
+
     static int sleepTime = 15 * 1000;  //	#	milli seconds to wait between requests
 
     static String hgsid;  // cached, not sure what this is for but apparently its best to reuse it.
@@ -134,23 +137,25 @@ public class BlatClient {
         }
 
         String $url = PreferencesManager.getPreferences().get(Constants.BLAT_URL).trim();
-
-        // Now determine if this is a custom web blat url or UCSC mirror
-        boolean customBlat = $url.contains(" ") ? Globals.whitespacePattern.split($url)[0].equals(db) : false;
+        String serverType = PreferencesManager.getPreferences().get(Constants.BLAT_SERVER_TYPE);
 
         String result;
-        if (!customBlat) {
-            //if an hgsid was obtained from the output of the first batch
-            //then use this.
+        if (serverType.equalsIgnoreCase("web_blat")) {
+            String urlString = ($url + "?&wb_qtype=" + searchType + "&wb_sort=" + sortOrder +
+                    "&wb_output=" + outputType + "&wb_seq=" + userSeq); // + "&hgsid=" + hgsid);
+            log.info("BLAT: " + urlString);
+            result = HttpUtils.getInstance().getContentsAsString(new URL(urlString));
+
+        } else {
             String urlString = ($url + "?org=" + org + "&db=" + db + "&type=" + searchType + "&sort=" + sortOrder +
                     "&output=" + outputType); // + "&hgsid=" + hgsid);
+
+            //if an hgsid was obtained from the output of the first batch then resuse.  I'm not sure what this is all about.
             if (hgsid != null) {
                 urlString += "&hgsid=" + hgsid;
             }
 
-
             URL url = HttpUtils.createURL(urlString);
-
             long dt = System.currentTimeMillis() - lastQueryTime;
             if (dt < sleepTime) {
                 try {
@@ -164,12 +169,7 @@ public class BlatClient {
             params.put("userSeq", userSeq);
             result = HttpUtils.getInstance().doPost(url, params);
 
-        } else {
-            String urlString = ($url + "?&wb_qtype=" + searchType + "&wb_sort=" + sortOrder +
-                    "&wb_output=" + outputType + "&wb_seq=" + userSeq); // + "&hgsid=" + hgsid);
-            result = HttpUtils.getInstance().getContentsAsString(new URL(urlString));
         }
-
 
         return parseResult(result);
     }
@@ -269,12 +269,10 @@ public class BlatClient {
                     }
 
                     List<String> tokensList = BlatClient.blat(species, db, userSeq);
-                    BlatTrack newTrack = new BlatTrack(userSeq, tokensList, trackLabel); //species, userSeq, db, genome, trackLabel);
-
-                    if (newTrack.getFeatures().isEmpty()) {
+                    if (tokensList.isEmpty()) {
                         MessageUtils.showMessage("No features found");
                     } else {
-
+                        BlatTrack newTrack = new BlatTrack(userSeq, tokensList, trackLabel); //species, userSeq, db, genome, trackLabel);
                         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
                         IGV.getInstance().repaint();
                         BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), userSeq, newTrack.getFeatures());
