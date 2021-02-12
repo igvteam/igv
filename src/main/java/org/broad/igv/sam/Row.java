@@ -136,7 +136,7 @@ public class Row implements Comparable<Row> {
 
                     }
 
-                    return baseScore - insertionScore;
+                    return baseScore - insertionScore;   // base score is negative, so this is actually a sum of magnitudes
 
                 case QUALITY:
                     return -centerAlignment.getMappingQuality();

@@ -90,7 +90,6 @@ public class MainPanel extends JPanel implements Paintable {
         addComponentListener(new ComponentListener() {
 
             public void componentResized(ComponentEvent componentEvent) {
-                System.out.println(componentEvent);
                 revalidateTrackPanels();
                 igv.repaint();
             }

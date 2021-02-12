@@ -113,7 +113,7 @@ public class SequenceRenderer {
 
         String chr = context.getChr();
         if (!chr.equals(sequenceInterval.range.chr)) {
-            log.error("Chromosome mismatch in sequence track");
+            //log.error("Chromosome mismatch in sequence track: " + chr + " != " + sequenceInterval.range.chr);
             return;
         }
 
