@@ -47,7 +47,11 @@ public class TestClient {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             //testGOTO(out, in);
-            runBatchFile(out, in, "test/data/batch/test_commands.txt");
+            //runBatchFile(out, in, "test/data/batch/test_commands.txt");
+            runBatchFile(out, in, "test/data/batch/load_bigwig.txt");
+            manyLoci(out, in);
+            snapshot(out, in);
+
         } catch (UnknownHostException e) {
             System.err.println("Unknown host exception: " + e.getMessage());
             System.exit(1);
@@ -61,6 +65,7 @@ public class TestClient {
             socket.close();
         }
     }
+
 
     private static void runBatchFile(PrintWriter out, BufferedReader in, String inputFile) throws IOException {
 
@@ -90,7 +95,6 @@ public class TestClient {
 
     }
 
-
     private static void testMultiLocus(PrintWriter out, BufferedReader in) throws IOException {
 
         String cmd = "load https://s3.amazonaws.com/igv.org.demo/GBM-TP.seg.gz";
@@ -105,7 +109,6 @@ public class TestClient {
 
 
     }
-
 
     private static void testGOTO(PrintWriter out, BufferedReader in) throws IOException {
 
@@ -134,9 +137,30 @@ public class TestClient {
             System.out.println("snapshot " + response);
 
         }
-
-
     }
 
+    private static void manyLoci(PrintWriter out, BufferedReader in) throws IOException {
+
+        int cnt = 100;
+        while (cnt-- >= 0) {
+            int pos = 1000000 + (int) (Math.random() * 1000000);
+            String cmd = "goto chr1:" + pos;
+            out.println(cmd);
+            String response = in.readLine();
+            System.out.println(cmd + " " + response);
+
+            out.println("snapshot");
+            response = in.readLine();
+            System.out.println("snapshot " + response);
+
+        }
+    }
+
+    private static void snapshot(PrintWriter out, BufferedReader in) throws IOException {
+
+        out.println("snapshot");
+        String response = in.readLine();
+        System.out.println(response);
+    }
 
 }
