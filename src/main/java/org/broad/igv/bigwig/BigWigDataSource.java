@@ -26,7 +26,6 @@
 package org.broad.igv.bigwig;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.bbfile.*;
 import org.broad.igv.data.AbstractDataSource;
@@ -38,7 +37,6 @@ import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import htsjdk.tribble.Feature;
@@ -53,8 +51,6 @@ import java.util.*;
  * @date Jun 19, 2011
  */
 public class BigWigDataSource extends AbstractDataSource implements FeatureSource {
-
-    private static Logger log = Logger.getLogger(BigWigDataSource.class);
 
     final int screenWidth = 1000; // TODO use actual screen width
 
@@ -124,34 +120,25 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         if (zoomLevelHeader == null) {
             List<String> chrNames = reader.getChromosomeNames();
             for (String chr : chrNames) {
-                try {
-                    BigWigIterator iter = reader.getBigWigIterator(chr, 0, chr, Integer.MAX_VALUE, false);
-                    while (iter.hasNext()) {
-                        WigItem item = iter.next();
-                        values[nValues++] = item.getWigValue();
-                        if (nValues >= 10000) break;
-                    }
-                } catch (IOException e) {
-                    MessageUtils.showMessage("Error reading " + reader.getPath() + ": " + e.getMessage());
-                    log.error(e);
+                BigWigIterator iter = reader.getBigWigIterator(chr, 0, chr, Integer.MAX_VALUE, false);
+                while (iter.hasNext()) {
+                    WigItem item = iter.next();
+                    values[nValues++] = item.getWigValue();
+                    if (nValues >= 10000) break;
                 }
             }
         } else {
 
             int z = zoomLevelHeader.getZoomLevel();
-            try {
-                ZoomLevelIterator zlIter = reader.getZoomLevelIterator(z);
-                if (zlIter.hasNext()) {
-                    while (zlIter.hasNext()) {
-                        ZoomDataRecord rec = zlIter.next();
-                        values[nValues++] = (rec.getMeanVal());
-                        if (nValues >= 10000) {
-                            break;
-                        }
+            ZoomLevelIterator zlIter = reader.getZoomLevelIterator(z);
+            if (zlIter.hasNext()) {
+                while (zlIter.hasNext()) {
+                    ZoomDataRecord rec = zlIter.next();
+                    values[nValues++] = (rec.getMeanVal());
+                    if (nValues >= 10000) {
+                        break;
                     }
                 }
-            } catch (IOException e) {
-                log.error(e);
             }
         }
 
@@ -256,18 +243,13 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
         if (reader.isBigBedFile() || bbLevel > 1 || (bbLevel == 1 && (reductionLevel / scale) < 2)) {
             ArrayList<LocusScore> scores = new ArrayList(1000);
-            try {
-                ZoomLevelIterator zlIter = reader.getZoomLevelIterator(bbLevel, querySeq, start, querySeq, end, false);
-                while (zlIter.hasNext()) {
-                    ZoomDataRecord rec = zlIter.next();
+            ZoomLevelIterator zlIter = reader.getZoomLevelIterator(bbLevel, querySeq, start, querySeq, end, false);
+            while (zlIter.hasNext()) {
+                ZoomDataRecord rec = zlIter.next();
 
-                    float v = getValue(rec);
-                    BasicScore bs = new BasicScore(rec.getChromStart(), rec.getChromEnd(), v);
-                    scores.add(bs);
-                }
-            } catch (IOException e) {
-                MessageUtils.showMessage("Error reading " + reader.getPath() + ": " + e.getMessage());
-                log.error(e);
+                float v = getValue(rec);
+                BasicScore bs = new BasicScore(rec.getChromStart(), rec.getChromEnd(), v);
+                scores.add(bs);
             }
             return scores;
 
@@ -313,17 +295,13 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         FloatArrayList valuesList = new FloatArrayList(100000);
 
         String chrAlias = chrNameMap.containsKey(chr) ? chrNameMap.get(chr) : chr;
-        try {
-            Iterator<WigItem> iter = reader.getBigWigIterator(chrAlias, start, chrAlias, end, false);
-            while (iter.hasNext()) {
-                WigItem wi = iter.next();
-                startsList.add(wi.getStartBase());
-                endsList.add(wi.getEndBase());
-                valuesList.add(wi.getWigValue());
-            }
-        } catch (IOException e) {
-            MessageUtils.showMessage("Error reading " + reader.getPath() + ": " + e.getMessage());
-            log.error(e);
+        Iterator<WigItem> iter = reader.getBigWigIterator(chrAlias, start, chrAlias, end, false);
+
+        while (iter.hasNext()) {
+            WigItem wi = iter.next();
+            startsList.add(wi.getStartBase());
+            endsList.add(wi.getEndBase());
+            valuesList.add(wi.getWigValue());
         }
 
         DataTile tile = new DataTile(startsList.toArray(), endsList.toArray(), valuesList.toArray(), null);
@@ -354,34 +332,29 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
                 Set<String> wgChrNames = new HashSet<>(genome.getLongChromosomeNames());
 
-                try {
-                    ZoomLevelIterator zlIter = reader.getZoomLevelIterator(
-                            lowestResHeader.getZoomLevel(), firstChr, 0, lastChr, Integer.MAX_VALUE, false);
+                ZoomLevelIterator zlIter = reader.getZoomLevelIterator(
+                        lowestResHeader.getZoomLevel(), firstChr, 0, lastChr, Integer.MAX_VALUE, false);
 
-                    while (zlIter.hasNext()) {
-                        ZoomDataRecord rec = zlIter.next();
+                while (zlIter.hasNext()) {
+                    ZoomDataRecord rec = zlIter.next();
 
-                        if (rec == null) {
-                            continue;
-                        }
-
-                        float value = getValue(rec);
-                        if (Float.isNaN(value) || Float.isInfinite(value)) {
-                            continue;
-                        }
-
-                        String chr = genome.getCanonicalChrName(rec.getChromName());
-
-                        if (wgChrNames.contains(chr)) {
-
-                            int genomeStart = genome.getGenomeCoordinate(chr, rec.getChromStart());
-                            int genomeEnd = genome.getGenomeCoordinate(chr, rec.getChromEnd());
-                            scores.add(new BasicScore(genomeStart, genomeEnd, value));
-                        }
+                    if (rec == null) {
+                        continue;
                     }
-                } catch (IOException e) {
-                    MessageUtils.showMessage("Error reading " + reader.getPath() + ": " + e.getMessage());
-                    log.error(e);
+
+                    float value = getValue(rec);
+                    if (Float.isNaN(value) || Float.isInfinite(value)) {
+                        continue;
+                    }
+
+                    String chr = genome.getCanonicalChrName(rec.getChromName());
+
+                    if (wgChrNames.contains(chr)) {
+
+                        int genomeStart = genome.getGenomeCoordinate(chr, rec.getChromStart());
+                        int genomeEnd = genome.getGenomeCoordinate(chr, rec.getChromEnd());
+                        scores.add(new BasicScore(genomeStart, genomeEnd, value));
+                    }
                 }
 
                 scores.sort((o1, o2) -> o1.getStart() - o2.getStart());
@@ -394,6 +367,13 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (reader != null) {
+            reader.close();
+        }
+    }
 
     // Feature interface follows ------------------------------------------------------------------------
 
