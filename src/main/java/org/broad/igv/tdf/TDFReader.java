@@ -56,6 +56,7 @@ public class TDFReader {
     static final Logger log = Logger.getLogger(TDFReader.class);
     public static final int GZIP_FLAG = 0x1;
 
+    private SeekableStream seekableStream = null;
     private int version;
     private Map<String, IndexEntry> datasetIndex;
     private Map<String, IndexEntry> groupIndex;
@@ -89,23 +90,27 @@ public class TDFReader {
     public TDFReader(ResourceLocator locator) {
         //this.path = path;
         this.locator = locator;
-        SeekableStream seekableStream = null;
         try {
+            log.debug("Getting stream");
             seekableStream = IGVSeekableStreamFactory.getInstance().getStreamFor(locator.getPath());
+            log.debug("Reading header");
             readHeader();
+            log.debug("Done reading header");
+
         } catch (IOException ex) {
             log.error("Error loading file: " + locator.getPath(), ex);
             throw new DataLoadException("Error loading file: " + ex.toString(), locator.getPath());
-        } finally {
-            try {
-                seekableStream.close();
-            } catch (IOException e) {
-                log.error("Error closing stream for " + locator.getPath(), e);
-            }
         }
         compressionUtils = new CompressionUtils();
     }
 
+    public void close() {
+        try {
+            seekableStream.close();
+        } catch (IOException e) {
+            log.error("Error closing reader for: " + getPath(), e);
+        }
+    }
 
     public String getPath() {
         return locator.getPath();
@@ -428,17 +433,10 @@ public class TDFReader {
 
 
     public synchronized byte[] readBytes(long position, int nBytes) throws IOException {
-
-        SeekableStream seekableStream = null;
-        try {
-            seekableStream = IGVSeekableStreamFactory.getInstance().getStreamFor(locator.getPath());
-            seekableStream.seek(position);
-            byte[] buffer = new byte[nBytes];
-            int read = seekableStream.read(buffer, 0, nBytes);
-            return buffer;
-        } finally {
-            seekableStream.close();
-        }
+        seekableStream.seek(position);
+        byte[] buffer = new byte[nBytes];
+        int read = seekableStream.read(buffer, 0, nBytes);
+        return buffer;
     }
 
     /**

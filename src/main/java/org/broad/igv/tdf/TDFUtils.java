@@ -56,6 +56,7 @@ public class TDFUtils {
 
         TDFReader reader = TDFReader.getReader(tdfFile);
         reader.dumpIndex();
+        reader.close();;
     }
 
     public static void tdfToBedgraph(String tdfFile, String bedGraphFile) throws FileNotFoundException {
@@ -87,6 +88,7 @@ public class TDFUtils {
                 }
             }
         } finally {
+            if (reader != null) reader.close();
             if (ps != null) ps.close();
         }
 
