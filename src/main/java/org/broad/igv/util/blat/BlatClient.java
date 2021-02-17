@@ -70,24 +70,44 @@ public class BlatClient {
     static String hgsid;  // cached, not sure what this is for but apparently its best to reuse it.
     static long lastQueryTime = 0;
 
-
-    public static void main(String[] args) throws IOException {
-
-        if (args.length != 6) {
-            Usage();
-            System.exit(255);
-        }
-
-        String org = args[0];
-        String db = args[1];
-        String searchType = args[2];
-        String sortOrder = args[3];
-        String outputType = args[4];
-        String userSeq = args[5];
-
-        blat(org, db, searchType, sortOrder, outputType, userSeq);
-
-    }
+//
+//    public static void main(String[] args) throws IOException {
+//
+//        if (args.length != 6) {
+//            Usage();
+//            System.exit(255);
+//        }
+//
+//        String org = args[0];
+//        String db = args[1];
+//        String searchType = args[2];
+//        String sortOrder = args[3];
+//        String outputType = args[4];
+//        String userSeq = args[5];
+//
+//            if (searchType.equals("BLATGuess")) {
+//        searchType = "Blat's Guess";
+//    } else if (searchType.equals("transDNA")) {
+//        searchType = "translated DNA";
+//    } else if (searchType.equals("transRNA")) {
+//        searchType = "translated RNA";
+//    } else if (searchType.equals("DNA") || (searchType.equals("RNA"))) {
+//    } else {
+//        System.out.println("ERROR: have not specified an acceptable search type - it should be BLATGuess, transDNA, transRNA, DNA or RNA.");
+//        Usage();
+//        System.exit(255);
+//    }
+//        if (outputType.equals("pslNoHeader")) {
+//        outputType = "psl no header";
+//    } else if (outputType.equals("psl") || outputType.equals("hyperlink")) {
+//    } else {
+//        System.out.println("ERROR: have not specified an acceptable output type - it should be pslNoHeader, psl or hyperlink.");
+//        Usage();
+//        System.exit(255);
+//    }
+//        blat(org, db, searchType, sortOrder, outputType, userSeq);
+//
+//    }
 
     static void Usage() {
         System.out.println("usage: BlatBot <organism> <db> <searchType> <sortOrder>");
@@ -104,37 +124,10 @@ public class BlatClient {
     }
 
     public static List<String> blat(String org, String db, String userSeq) throws IOException {
+
         String searchType = "DNA";
         String sortOrder = "query,score";
         String outputType = "psl";
-
-        List<String> blatRecords = blat(org, db, searchType, sortOrder, outputType, userSeq);
-        return blatRecords;
-
-
-    }
-
-    public static List<String> blat(String org, String db, String searchType, String sortOrder, String outputType, String userSeq) throws IOException {
-        if (searchType.equals("BLATGuess")) {
-            searchType = "Blat's Guess";
-        } else if (searchType.equals("transDNA")) {
-            searchType = "translated DNA";
-        } else if (searchType.equals("transRNA")) {
-            searchType = "translated RNA";
-        } else if (searchType.equals("DNA") || (searchType.equals("RNA"))) {
-        } else {
-            System.out.println("ERROR: have not specified an acceptable search type - it should be BLATGuess, transDNA, transRNA, DNA or RNA.");
-            Usage();
-            System.exit(255);
-        }
-        if (outputType.equals("pslNoHeader")) {
-            outputType = "psl no header";
-        } else if (outputType.equals("psl") || outputType.equals("hyperlink")) {
-        } else {
-            System.out.println("ERROR: have not specified an acceptable output type - it should be pslNoHeader, psl or hyperlink.");
-            Usage();
-            System.exit(255);
-        }
 
         String $url = PreferencesManager.getPreferences().get(Constants.BLAT_URL).trim();
         String serverType = PreferencesManager.getPreferences().get(Constants.BLAT_SERVER_TYPE);
@@ -170,6 +163,23 @@ public class BlatClient {
             result = HttpUtils.getInstance().doPost(url, params);
 
         }
+
+        return parseResult(result);
+    }
+
+    public static List<String> webBlat(String userSeq) throws IOException {
+
+        String searchType = "DNA";
+        String sortOrder = "query,score";
+        String outputType = "psl";
+
+        String $url = PreferencesManager.getPreferences().get(Constants.BLAT_URL).trim();
+
+        String result;
+        String urlString = ($url + "?&wb_qtype=" + searchType + "&wb_sort=" + sortOrder +
+                "&wb_output=" + outputType + "&wb_seq=" + userSeq); // + "&hgsid=" + hgsid);
+        log.info("BLAT: " + urlString);
+        result = HttpUtils.getInstance().getContentsAsString(new URL(urlString));
 
         return parseResult(result);
     }
@@ -258,17 +268,26 @@ public class BlatClient {
             public void run() {
                 try {
 
-                    Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
+                    String serverType = PreferencesManager.getPreferences().get(Constants.BLAT_SERVER_TYPE);
+                    List<String> tokensList;
+                    if (serverType.equalsIgnoreCase("web_blat")) {
+                        tokensList = BlatClient.webBlat(userSeq);
 
-                    String db = genome.getId();
-                    String species = genome.getSpecies();
+                    } else {
 
-                    if (species == null) {
-                        MessageUtils.showMessage("Cannot determine species name for genome: " + genome.getDisplayName());
-                        return;
+                        Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
+
+                        String db = genome.getId();
+                        String species = genome.getSpecies();
+
+                        if (species == null) {
+                            MessageUtils.showMessage("Cannot determine species name for genome: " + genome.getDisplayName());
+                            return;
+                        }
+
+                        tokensList = BlatClient.blat(species, db, userSeq);
                     }
 
-                    List<String> tokensList = BlatClient.blat(species, db, userSeq);
                     if (tokensList.isEmpty()) {
                         MessageUtils.showMessage("No features found");
                     } else {
