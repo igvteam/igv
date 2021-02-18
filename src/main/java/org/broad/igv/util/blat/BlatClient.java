@@ -48,10 +48,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Port of perl script blatPlot.pl   http://genomewiki.cse.ucsc.edu/index.php/Blat_Scripts
@@ -136,7 +133,7 @@ public class BlatClient {
         if (serverType.equalsIgnoreCase("web_blat")) {
             String urlString = ($url + "?&wb_qtype=" + searchType + "&wb_sort=" + sortOrder +
                     "&wb_output=" + outputType + "&wb_seq=" + userSeq); // + "&hgsid=" + hgsid);
-            log.info("BLAT: " + urlString);
+            //log.info("BLAT: " + urlString);
             result = HttpUtils.getInstance().getContentsAsString(new URL(urlString));
 
         } else {
@@ -181,7 +178,33 @@ public class BlatClient {
         log.info("BLAT: " + urlString);
         result = HttpUtils.getInstance().getContentsAsString(new URL(urlString));
 
-        return parseResult(result);
+        List<String> records = parseResult(result);
+        return fixWebBlat(records);
+    }
+
+    static List<String> fixWebBlat(List<String> records) {
+        // Hack -- weblat appends the filename to sequenc names.  Strip it
+        List<String> fixed = new ArrayList<>(records.size());
+        for (String line : records) {
+            if (line.startsWith("#")) {
+                fixed.add(line);
+                continue;
+            }
+
+            String fixedLine = "";
+            String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
+            for (int i = 0; i < tokens.length; i++) {
+                if (i > 0) fixedLine += "\t";
+                if (i == 13) {
+                    int idx = tokens[i].indexOf(":");
+                    fixedLine += tokens[i].substring(idx + 1);
+                } else {
+                    fixedLine += tokens[i];
+                }
+            }
+            fixed.add(fixedLine);
+        }
+        return fixed;
     }
 
     /**
@@ -193,7 +216,7 @@ public class BlatClient {
      */
     static List<String> parseResult(String result) throws IOException {
 
-        ArrayList<String> records = new ArrayList<String>();
+        List<String> records = new ArrayList<>();
 
         BufferedReader br = new BufferedReader(new StringReader(result));
         String l;
