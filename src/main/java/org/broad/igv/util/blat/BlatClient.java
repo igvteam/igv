@@ -194,13 +194,17 @@ public class BlatClient {
             String fixedLine = "";
             String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
             for (int i = 0; i < tokens.length; i++) {
-                if (i > 0) fixedLine += "\t";
-                if (i == 13) {
-                    int idx = tokens[i].indexOf(":");
-                    fixedLine += tokens[i].substring(idx + 1);
-                } else {
-                    fixedLine += tokens[i];
+                if (i > 0) {
+                    fixedLine += "\t";
                 }
+                String t = tokens[i];
+                if (i == 13) {
+                    int idx = t.indexOf(":");
+                    if (idx > 0) {
+                        t = t.substring(idx + 1);
+                    }
+                }
+                fixedLine += t;
             }
             fixed.add(fixedLine);
         }
@@ -224,11 +228,12 @@ public class BlatClient {
         boolean pslHeaderFound = false;
         while ((l = br.readLine()) != null) {
 
-            String line = l.trim().toLowerCase();
+            String line = l.trim();
+            String lowerCase = line.toLowerCase();
 
             if (pslHeaderFound) {
 
-                if (line.contains("</tt>")) {
+                if (lowerCase.contains("</tt>")) {
                     break;
                 }
 
@@ -241,13 +246,13 @@ public class BlatClient {
                 }
             }
 
-            if (line.contains("<tt>") && line.contains("<pre>") && line.contains("pslayout")) {
+            if (lowerCase.contains("<tt>") && lowerCase.contains("<pre>") && lowerCase.contains("pslayout")) {
                 pslSectionFound = true;
                 continue;
             }
 
             if (pslSectionFound) {
-                if (line.startsWith("-----------------------------")) {
+                if (lowerCase.startsWith("-----------------------------")) {
                     pslHeaderFound = true;
                 }
             }
