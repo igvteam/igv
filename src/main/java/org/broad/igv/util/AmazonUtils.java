@@ -96,6 +96,13 @@ public class AmazonUtils {
         JsonObject igv_oauth_conf = GetCognitoConfig();
         JsonObject response = provider.getResponse();
 
+        // user-defined-genomes.txt, probably behind S3 urls?
+        if (response == null) {
+            // Go back to auth flow, not auth'd yet
+            checkLogin();
+            response = provider.getResponse();
+        }
+
         JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
 
         log.debug("JWT payload id token: " + payload);
@@ -238,6 +245,8 @@ public class AmazonUtils {
     // On AWS this means present in STANDARD, STANDARD_IA, INTELLIGENT_TIERING object access tiers.
     // Tiers GLACIER and DEEP_ARCHIVE are not immediately retrievable without action.
     public static s3ObjectAccessResult isObjectAccessible(String bucket, String key) {
+        // TODO:
+        //  1. Determine if it's a public S3 resource first of all? If so, none of the logic below is needed
         s3ObjectAccessResult res = new s3ObjectAccessResult();
 
         // Safeguard for null corner case(s), assume we can access the object
