@@ -82,6 +82,7 @@ public class CommandListener implements Runnable {
     public static synchronized void start(int port) {
         listener = new CommandListener(port);
         listener.listenerThread.start();
+        isListening = true;
     }
 
 
