@@ -115,12 +115,14 @@ public class OAuthProvider {
     public void openAuthorizationPage() throws IOException, URISyntaxException {
         Desktop desktop = Desktop.getDesktop();
 
+        String url;
         String redirect = oobURI;
+
         // if the listener is active, then set the redirect URI.  dwm08
         if (CommandListener.isListening()) {
             redirect = redirectURI;
         }
-        String url;
+
         if (appIdURI == null) {
             log.debug("appIdURI is null, skipping resource setting");
             url = authURI + "?" +

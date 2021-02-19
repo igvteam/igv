@@ -2051,7 +2051,6 @@ public class IGV implements IGVEventObserver {
 
         StartupRunnable(Main.IGVArgs args) {
             this.igvArgs = args;
-
         }
 
         @Override
@@ -2066,18 +2065,6 @@ public class IGV implements IGVEventObserver {
                 }
                 mainFrame.setVisible(true);
             });
-
-            // Start up a port listener.  Port # can be overriden with "-p" command line switch
-            boolean portEnabled = preferences.getAsBoolean(PORT_ENABLED);
-            String portString = igvArgs.getPort();
-            if (portEnabled || portString != null) {
-                // Command listener thread
-                int port = preferences.getAsInt(PORT_NUMBER);
-                if (portString != null) {
-                    port = Integer.parseInt(portString);
-                }
-                CommandListener.start(port);
-            }
 
             // Load the initial genome.
             final boolean runningBatch = igvArgs.getBatchFile() != null;

@@ -31,6 +31,7 @@ import htsjdk.samtools.seekablestream.SeekableStreamFactory;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.batch.CommandListener;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
@@ -109,7 +110,7 @@ public class Main {
             }
 
             DesktopIntegration.verifyJavaPlatform();
-            initApplication();
+            initApplication(igvArgs);
 
             JFrame frame = new JFrame();
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -192,7 +193,7 @@ public class Main {
         }
     }
 
-    private static void initApplication() {
+    private static void initApplication(Main.IGVArgs igvArgs) {
 
         long mem = RuntimeUtils.getAvailableMemory();
         int MB = 1000000;
@@ -225,8 +226,6 @@ public class Main {
         System.setProperty("swing.aatext", "true");
 
         checkVersion();
-
-
     }
 
     public static void updateTooltipSettings() {
@@ -335,13 +334,38 @@ public class Main {
         }
 
         HttpUtils.getInstance().updateProxySettings();
-
+        // Start CommandsServer **before** loading the initial genome (since that could be hosted privately)
+        try {
+            final IGVPreferences preferences = PreferencesManager.getPreferences();
+            startCommandsServer(igvArgs, preferences);
+        } catch(java.lang.RuntimeException e) {
+            // Ignore this exception since the main IGV "Frame" has not been initialized
+        }
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
         IGV.createInstance(frame).startUp(igvArgs);
 
         // TODO Should this be done here?  Will this step on other key dispatchers?
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
+    }
+
+    /**
+     * Enables command port early, otherwise private URLs pointing to custom genomes cannot be accessed.
+     * This is because CommandListener (http://localhost:65301) is needed for OAuth's redirect parameter.
+     * @param igvArgs: Used to specify a different port.
+     */
+    private static void startCommandsServer(Main.IGVArgs igvArgs, IGVPreferences prefMgr) {
+        // Port # can be overriden with "-p" command line switch
+        boolean portEnabled = prefMgr.getAsBoolean(PORT_ENABLED);
+        String portString = igvArgs.getPort();
+        if (portEnabled || portString != null) {
+            // Command listener thread
+            int port = prefMgr.getAsInt(PORT_NUMBER);
+            if (portString != null) {
+                port = Integer.parseInt(portString);
+            }
+            CommandListener.start(port);
+        }
     }
 
     private static void initializeLookAndFeel() {
