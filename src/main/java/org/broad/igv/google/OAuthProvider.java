@@ -124,6 +124,7 @@ public class OAuthProvider {
         }
 
         if (appIdURI == null) {
+            // OOB IETF urn: url instead of localhost CommandListener
             log.debug("appIdURI is null, skipping resource setting");
             url = authURI + "?" +
                     "scope=" + scope + "&" +
@@ -132,6 +133,7 @@ public class OAuthProvider {
                     "response_type=code&" +
                     "client_id=" + clientId; // Native app
         } else {
+            // CommandListener is up and running
             log.debug("appIdURI is not null, setting resource= as part of the authURI");
             url = authURI + "?" +
                     "scope=" + scope + "&" +

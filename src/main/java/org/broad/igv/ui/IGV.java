@@ -140,11 +140,11 @@ public class IGV implements IGVEventObserver {
     // Vertical line that follows the mouse
     private boolean rulerEnabled;
 
-    public static IGV createInstance(Frame frame) {
+    public static IGV createInstance(Frame frame, Main.IGVArgs igvArgs) {
         if (theInstance != null) {
             throw new RuntimeException("Only a single instance is allowed.");
         }
-        theInstance = new IGV(frame);
+        theInstance = new IGV(frame, igvArgs);
         return theInstance;
     }
 
@@ -184,14 +184,22 @@ public class IGV implements IGVEventObserver {
     /**
      * Creates new IGV
      */
-    private IGV(Frame frame) {
+    private IGV(Frame frame, Main.IGVArgs igvArgs) {
 
         theInstance = this;
 
         final IGVPreferences preferences = PreferencesManager.getPreferences();
 
-        genomeManager = GenomeManager.getInstance();
         mainFrame = frame;
+
+        // Start CommandsServer **before** loading the initial genome (since that object might be hosted privately)
+        try {
+            startCommandsServer(igvArgs, preferences);
+        } catch (InterruptedException ie) {
+            log.info(ie.getMessage());
+        }
+
+        genomeManager = GenomeManager.getInstance();
         mainFrame.addWindowListener(new WindowAdapter() {
 
 
@@ -2039,6 +2047,26 @@ public class IGV implements IGVEventObserver {
 
     public boolean isRulerEnabled() {
         return rulerEnabled;
+    }
+
+    /**
+     * Enables command port early, otherwise private URLs pointing to custom genomes cannot be accessed.
+     * This is because CommandListener (http://localhost:65301) is needed for OAuth's redirect parameter.
+     * @param igvArgs: Used to specify a different port.
+     */
+    private static void startCommandsServer(Main.IGVArgs igvArgs, IGVPreferences prefMgr) throws InterruptedException {
+        // Port # can be overriden with "-p" command line switch
+        boolean portEnabled = prefMgr.getAsBoolean(PORT_ENABLED);
+        String portString = igvArgs.getPort();
+
+        if (portEnabled || portString != null) {
+            // Command listener thread
+            int port = prefMgr.getAsInt(PORT_NUMBER);
+            if (portString != null) {
+                port = Integer.parseInt(portString);
+            }
+            CommandListener.start(port);
+        }
     }
 
     /**

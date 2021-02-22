@@ -295,6 +295,7 @@ public class Main {
      * @param igvArgs command-line arguments
      */
     public static void open(Frame frame, Main.IGVArgs igvArgs) {
+        final IGVPreferences preferences = PreferencesManager.getPreferences();
 
         // Add a listener for the "close" icon, unless its a JFrame
         if (!(frame instanceof JFrame)) {
@@ -334,38 +335,14 @@ public class Main {
         }
 
         HttpUtils.getInstance().updateProxySettings();
-        // Start CommandsServer **before** loading the initial genome (since that could be hosted privately)
-        try {
-            final IGVPreferences preferences = PreferencesManager.getPreferences();
-            startCommandsServer(igvArgs, preferences);
-        } catch(java.lang.RuntimeException e) {
-            // Ignore this exception since the main IGV "Frame" has not been initialized
-        }
+
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
-        IGV.createInstance(frame).startUp(igvArgs);
+        // Start IGV's UI itself (frame) and other components
+        IGV.createInstance(frame, igvArgs).startUp(igvArgs);
 
         // TODO Should this be done here?  Will this step on other key dispatchers?
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
-    }
-
-    /**
-     * Enables command port early, otherwise private URLs pointing to custom genomes cannot be accessed.
-     * This is because CommandListener (http://localhost:65301) is needed for OAuth's redirect parameter.
-     * @param igvArgs: Used to specify a different port.
-     */
-    private static void startCommandsServer(Main.IGVArgs igvArgs, IGVPreferences prefMgr) {
-        // Port # can be overriden with "-p" command line switch
-        boolean portEnabled = prefMgr.getAsBoolean(PORT_ENABLED);
-        String portString = igvArgs.getPort();
-        if (portEnabled || portString != null) {
-            // Command listener thread
-            int port = prefMgr.getAsInt(PORT_NUMBER);
-            if (portString != null) {
-                port = Integer.parseInt(portString);
-            }
-            CommandListener.start(port);
-        }
     }
 
     private static void initializeLookAndFeel() {

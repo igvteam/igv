@@ -96,7 +96,7 @@ public class AmazonUtils {
         JsonObject igv_oauth_conf = GetCognitoConfig();
         JsonObject response = provider.getResponse();
 
-        // user-defined-genomes.txt, probably behind S3 urls?
+        // Handle non-user initiated S3 auth (IGV early startup), i.e user-specified GenomesLoader
         if (response == null) {
             // Go back to auth flow, not auth'd yet
             checkLogin();
@@ -412,6 +412,7 @@ public class AmazonUtils {
     // Amazon S3 Presign URLs
     // Also keeps an internal mapping between ResourceLocator and active/valid signed URLs.
     private static String createPresignedURL(String s3Path) throws IOException {
+        // TODO: Ideally the presigned URL should be generated without any of the Cognito being involved first?
         // Make sure access token are valid (refreshes token internally)
         OAuthProvider provider = OAuthUtils.getInstance().getProvider("Amazon");
         provider.getAccessToken();
