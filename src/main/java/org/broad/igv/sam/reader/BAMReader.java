@@ -182,7 +182,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
                 log.error("Error querying for sequence: " + sequence, e);
                 return new EmptyAlignmentIterator();
             }
-            return new ListIterator(iter);
+            return new PicardIterator(iter);
         }
     }
 
@@ -397,6 +397,33 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
             iterator = null;
         }
 
+
+    }
+
+    static class PicardIterator implements CloseableIterator<PicardAlignment> {
+
+        CloseableIterator<SAMRecord>  iterator;
+
+        public PicardIterator(CloseableIterator<SAMRecord> iter) {
+            this.iterator = iter;
+
+        }
+
+        public void close() {
+            iterator.close();
+        }
+
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        public PicardAlignment next() {
+            return new PicardAlignment(iterator.next());
+        }
+
+        public void remove() {
+            iterator.remove();
+        }
 
     }
 

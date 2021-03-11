@@ -44,6 +44,7 @@ import org.broad.igv.util.RuntimeUtils;
 import javax.swing.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.text.DecimalFormat;
 import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -56,6 +57,8 @@ import static org.broad.igv.prefs.Constants.*;
 public class AlignmentTileLoader implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(AlignmentTileLoader.class);
+
+    static DecimalFormat df = new DecimalFormat("###,###,###");
 
     private static Set<WeakReference<AlignmentTileLoader>> activeLoaders = Collections.synchronizedSet(new HashSet());
 
@@ -158,17 +161,24 @@ public class AlignmentTileLoader implements IGVEventObserver {
             }
 
             MessageUtils.setStatusBarMessage("Reading...");
+
+            long memBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            System.out.println("Mem before " + memBefore);
+
+
             iter = reader.query(chr, start, end, false);
             MessageUtils.setStatusBarMessage("Iterating...");
-            
-            while (iter != null && iter.hasNext()) {
+
+        int count = 0;
+        Runtime.getRuntime().gc();
+             while (iter != null && iter.hasNext()) {
 
                 if (cancel) {
                     break;
                 }
 
                 Alignment record = iter.next();
-
+count++;
                 if (readStats != null) {
                     readStats.addAlignment(record);
                 }
@@ -250,6 +260,13 @@ public class AlignmentTileLoader implements IGVEventObserver {
                     //System.out.println(msg);
                     MessageUtils.setStatusBarMessage(msg);
                     if (memoryTooLow()) {
+                        Runtime.getRuntime().gc();
+                        long memAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                        System.out.println("# Reads " + df.format(count));
+                        System.out.println("Memory: " + df.format(memAfter - memBefore));
+                        double memoryPerRead = (memAfter - memBefore) / count;
+                        System.out.println("Memory per read: " + memoryPerRead);
+
                         cancelReaders();
                         t.finish();
                         return t;
