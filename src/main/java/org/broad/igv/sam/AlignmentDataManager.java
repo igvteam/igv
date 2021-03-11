@@ -262,7 +262,7 @@ public class AlignmentDataManager implements IGVEventObserver {
             }
         }
         // No contains, look for overlap
-        if(includeOverlaps) {
+        if (includeOverlaps) {
             for (AlignmentInterval interval : intervalCache) {
                 if (interval.overlaps(frame.getCurrentRange())) {
                     return interval;
@@ -344,7 +344,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         int adjustedEnd = end;
         Range adjustedRange = new Range(chr, start, end);
 
-        if(currentlyLoading != null && currentlyLoading.contains(adjustedRange)) {
+        if (currentlyLoading != null && currentlyLoading.contains(adjustedRange)) {
             return;  // Already loading
         }
         try {
@@ -419,7 +419,6 @@ public class AlignmentDataManager implements IGVEventObserver {
                 downsampleOptions, readStats, peStats, bisulfiteContext);
 //
         if (getExperimentType() == null) {
-            readStats.compute();
             inferType(readStats);
         }
 
@@ -434,10 +433,11 @@ public class AlignmentDataManager implements IGVEventObserver {
      * @param readStats
      */
     private void inferType(ReadStats readStats) {
-
+        readStats.compute();
+        if (readStats.readCount < 100) return; // Not enough reads
         if (readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
             setExperimentType(AlignmentTrack.ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
-        } else if (readStats.medianRefToReadRatio > 10) {
+        } else if (readStats.medianRefToReadRatio > 10 || readStats.fracReadsWithNs > 0.2) {
             setExperimentType(AlignmentTrack.ExperimentType.RNA);
         } else {
             setExperimentType(AlignmentTrack.ExperimentType.OTHER);
@@ -454,7 +454,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
 
     public PackedAlignments getGroups(AlignmentInterval interval, AlignmentTrack.RenderOptions renderOptions) {
-       //AlignmentInterval interval = getLoadedInterval(context.getReferenceFrame());
+        //AlignmentInterval interval = getLoadedInterval(context.getReferenceFrame());
         if (interval != null) {
             return interval.getPackedAlignments();
         } else {
@@ -530,7 +530,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
 
-    private void dispose()  {
+    private void dispose() {
         if (reader != null) {
             try {
                 reader.close();

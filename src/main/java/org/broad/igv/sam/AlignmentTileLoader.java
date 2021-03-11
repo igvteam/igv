@@ -173,10 +173,6 @@ public class AlignmentTileLoader implements IGVEventObserver {
 
                 Alignment record = iter.next();
 
-                if (readStats != null) {
-                    readStats.addAlignment(record);
-                }
-
                 // Set mate sequence of unmapped mates
                 // Put a limit on the total size of this collection.
                 String readName = record.getReadName();
@@ -245,6 +241,10 @@ public class AlignmentTileLoader implements IGVEventObserver {
 
                 }
 
+                if (readStats != null) {
+                    readStats.addAlignment(record);
+                }
+
                 t.addRecord(record, reducedMemory);
 
                 alignmentCount++;
@@ -286,11 +286,6 @@ public class AlignmentTileLoader implements IGVEventObserver {
                     stats.computeExpectedOrientation();
                 }
             }
-
-            if (readStats != null) {
-                readStats.compute();
-            }
-
 
             // Clean up any remaining unmapped mate sequences
             for (String mappedMateName : mappedMates.getKeys()) {
