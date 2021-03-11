@@ -162,23 +162,17 @@ public class AlignmentTileLoader implements IGVEventObserver {
 
             MessageUtils.setStatusBarMessage("Reading...");
 
-            long memBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-            System.out.println("Mem before " + memBefore);
-
-
             iter = reader.query(chr, start, end, false);
             MessageUtils.setStatusBarMessage("Iterating...");
 
-        int count = 0;
-        Runtime.getRuntime().gc();
-             while (iter != null && iter.hasNext()) {
+            while (iter != null && iter.hasNext()) {
 
                 if (cancel) {
                     break;
                 }
 
                 Alignment record = iter.next();
-count++;
+
                 if (readStats != null) {
                     readStats.addAlignment(record);
                 }
@@ -238,13 +232,13 @@ count++;
                 }
 
                 // Alignment score (optional tag)
-                if(alignmentScoreTheshold > 0) {
+                if (alignmentScoreTheshold > 0) {
 
                     Object alignmentScoreObj = record.getAttribute("AS");
 
-                    if(alignmentScoreObj != null) {
+                    if (alignmentScoreObj != null) {
                         int as = ((Number) alignmentScoreObj).intValue();
-                        if(as < alignmentScoreTheshold) {
+                        if (as < alignmentScoreTheshold) {
                             continue;
                         }
                     }
@@ -261,12 +255,6 @@ count++;
                     MessageUtils.setStatusBarMessage(msg);
                     if (memoryTooLow()) {
                         Runtime.getRuntime().gc();
-                        long memAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                        System.out.println("# Reads " + df.format(count));
-                        System.out.println("Memory: " + df.format(memAfter - memBefore));
-                        double memoryPerRead = (memAfter - memBefore) / count;
-                        System.out.println("Memory per read: " + memoryPerRead);
-
                         cancelReaders();
                         t.finish();
                         return t;

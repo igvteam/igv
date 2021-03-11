@@ -367,38 +367,6 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         }
     };
 
-    static class ListIterator implements CloseableIterator<PicardAlignment> {
-
-        Iterator<PicardAlignment> iterator;
-
-        public ListIterator(CloseableIterator<SAMRecord> iter) {
-            List<PicardAlignment> alignments = new ArrayList<>(1000);
-            while (iter.hasNext()) {
-                alignments.add(new PicardAlignment(iter.next()));
-            }
-            iter.close();
-            iterator = alignments.iterator();
-
-        }
-
-        public void close() {
-            iterator = null;
-        }
-
-        public boolean hasNext() {
-            return iterator.hasNext();
-        }
-
-        public PicardAlignment next() {
-            return iterator.next();
-        }
-
-        public void remove() {
-            iterator = null;
-        }
-
-
-    }
 
     static class PicardIterator implements CloseableIterator<PicardAlignment> {
 
