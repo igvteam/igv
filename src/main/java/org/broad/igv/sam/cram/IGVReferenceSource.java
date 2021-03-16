@@ -55,15 +55,16 @@ public class IGVReferenceSource implements CRAMReferenceSource {
 
     private static Logger log = Logger.getLogger(IGVReferenceSource.class);
 
-    static ObjectCache<String, byte[]> cachedSequences = new ObjectCache<String, byte[]>(2);
+    static ObjectCache<String, byte[]> cachedSequences = new ObjectCache<String, byte[]>(5);
 
     static GenomeChangeListener genomeChangeListener;
 
     @Override
-    public  byte[] getReferenceBases(SAMSequenceRecord record, boolean tryNameVariants) {
+    public  synchronized byte[] getReferenceBases(SAMSequenceRecord record, boolean tryNameVariants) {
 
         final String name = record.getSequenceName();
 
+        //System.out.println("Get ref " + name + "  " + Thread.currentThread().getName());
         final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         String chrName = currentGenome.getCanonicalChrName(name);
         Chromosome chromosome = currentGenome.getChromosome(chrName);
@@ -71,7 +72,6 @@ public class IGVReferenceSource implements CRAMReferenceSource {
         byte[] bases = cachedSequences.get(chrName);
 
         if (bases == null) {
-
             try {
                 if (bases == null) {
                     if (IGV.hasInstance()) IGV.getInstance().setStatusBarMessage("Loading sequence");
