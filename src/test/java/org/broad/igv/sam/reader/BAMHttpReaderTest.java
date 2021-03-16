@@ -82,7 +82,7 @@ public class BAMHttpReaderTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testIterator() {
+    public void testIterator() throws IOException {
         CloseableIterator<PicardAlignment> iter = reader.iterator();
         //This takes a long time. We just look for a minimum number
         int minnum = 10;
