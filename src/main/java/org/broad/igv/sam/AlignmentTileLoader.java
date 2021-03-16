@@ -106,7 +106,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
         return reader.getSequenceNames();
     }
 
-    public CloseableIterator<Alignment> iterator() {
+    public CloseableIterator<Alignment> iterator() throws IOException {
         return reader.iterator();
     }
 

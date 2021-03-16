@@ -58,20 +58,22 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     static Logger log = Logger.getLogger(BAMReader.class);
 
     private final ResourceLocator locator;
+    private final boolean requireIndex;
 
     SAMFileHeader header;
-    htsjdk.samtools.SamReader reader;
+    //htsjdk.samtools.SamReader reader;
     List<String> sequenceNames;
     private boolean indexed = false; // False until proven otherwise
     private Map<String, Long> sequenceDictionary;
 
     public BAMReader(ResourceLocator locator, boolean requireIndex) throws IOException {
         this.locator = locator;
-        reader = getSamReader(locator, requireIndex);
+        this.requireIndex = requireIndex;
+        SamReader reader = getSamReader();
         header = reader.getFileHeader();
     }
 
-    private SamReader getSamReader(ResourceLocator locator, boolean requireIndex) throws IOException {
+    private SamReader getSamReader() throws IOException {
 
         boolean isLocal = locator.isLocal();
         final SamReaderFactory factory = SamReaderFactory.makeDefault().
@@ -112,14 +114,18 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     }
 
     public void close() throws IOException {
-        if (reader != null) {
-            reader.close();
-        }
+        //    if (reader != null) {
+        //        reader.close();
+        //    }
     }
 
     public synchronized SAMFileHeader getFileHeader() {
         if (header == null) {
-            header = reader.getFileHeader();
+            try {
+                header = getSamReader().getFileHeader();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return header;
     }
@@ -167,22 +173,22 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     }
 
 
-    public CloseableIterator<PicardAlignment> iterator() {
-        return new WrappedIterator(reader.iterator());
+    public CloseableIterator<PicardAlignment> iterator() throws IOException {
+        return new WrappedIterator(getSamReader().iterator());
     }
 
-    public synchronized  CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
+    public synchronized CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
         if (sequenceDictionary != null && !sequenceDictionary.containsKey(sequence)) {
             return EMPTY_ITERATOR;
         } else {
             CloseableIterator<SAMRecord> iter = null;
             try {
-                iter = reader.query(sequence, start + 1, end, contained);
-            } catch (IllegalArgumentException e) {
+                SamReader samReader = getSamReader();
+                return new PicardIterator(samReader, sequence, start + 1, end, contained);
+            } catch (Exception e) {
                 log.error("Error querying for sequence: " + sequence, e);
                 return new EmptyAlignmentIterator();
             }
-            return new PicardIterator(iter);
         }
     }
 
@@ -370,15 +376,22 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
 
     static class PicardIterator implements CloseableIterator<PicardAlignment> {
 
-        CloseableIterator<SAMRecord>  iterator;
+        private SamReader reader;    // Readers are 1-time use (for this iterator only)
+        CloseableIterator<SAMRecord> iterator;
 
-        public PicardIterator(CloseableIterator<SAMRecord> iter) {
-            this.iterator = iter;
-
+        public PicardIterator(SamReader samReader, String sequence, int start, int end, boolean contained) {
+            this.reader = samReader;
+            this.iterator = samReader.query(sequence, start, end, contained);
         }
 
         public void close() {
             iterator.close();
+            try {
+                reader.close();
+            } catch (IOException e) {
+                log.error("Error closing SamReader", e);
+            }
+
         }
 
         public boolean hasNext() {
