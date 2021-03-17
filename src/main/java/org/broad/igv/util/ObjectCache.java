@@ -49,7 +49,7 @@ public class ObjectCache<K, V> {
      * Maximum number of objects to cache
      */
     private int maxSize = 1000;
-    private LinkedHashMap<K, SoftReference<V>> map = new LinkedHashMap<K, SoftReference<V>>();
+    private LinkedHashMap<K, SoftReference<V>> map;
 
     public ObjectCache() {
         this(50);
@@ -57,7 +57,7 @@ public class ObjectCache<K, V> {
 
     public ObjectCache(int maxSize) {
         this.maxSize = maxSize;
-        map = new LinkedHashMap<K, SoftReference<V>>(maxSize);
+        map = new LinkedHashMap<>(maxSize);
     }
 
     public void put(K key, V image) {

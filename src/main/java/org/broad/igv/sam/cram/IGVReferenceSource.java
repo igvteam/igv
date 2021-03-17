@@ -42,12 +42,10 @@ import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.util.ObjectCache;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 /**
- * Provide a reference sequence for CRAM decompression.  Note the rule for MD5 calculation.
- * <p>
- * M5 (sequence MD5 checksum) field of @SQ sequence record in the BAM header is required and UR (URI
- * for the sequence fasta optionally gzipped file) field is strongly advised. The rule for calculating MD5 is
+ * Provide a reference sequence for CRAM decompression.   The rule for calculating MD5 is
  * to remove any non-base symbols (like \n, sequence name or length and spaces) and upper case the rest.
  */
 
@@ -55,12 +53,14 @@ public class IGVReferenceSource implements CRAMReferenceSource {
 
     private static Logger log = Logger.getLogger(IGVReferenceSource.class);
 
-    static ObjectCache<String, byte[]> cachedSequences = new ObjectCache<String, byte[]>(5);
+    static ObjectCache<String, byte[]> cachedSequences = new ObjectCache<>(5);
 
     static GenomeChangeListener genomeChangeListener;
 
+    static HashMap<String, Object> locks = new HashMap<>();
+
     @Override
-    public  synchronized byte[] getReferenceBases(SAMSequenceRecord record, boolean tryNameVariants) {
+    public byte[] getReferenceBases(SAMSequenceRecord record, boolean tryNameVariants) {
 
         final String name = record.getSequenceName();
 
@@ -73,7 +73,10 @@ public class IGVReferenceSource implements CRAMReferenceSource {
 
         if (bases == null) {
             try {
-                if (bases == null) {
+                Object lock = getLock(chrName);
+
+                synchronized (lock) {
+
                     if (IGV.hasInstance()) IGV.getInstance().setStatusBarMessage("Loading sequence");
                     bases = currentGenome.getSequence(chrName, 0, chromosome.getLength(), false);
 
@@ -81,9 +84,9 @@ public class IGVReferenceSource implements CRAMReferenceSource {
                     for (int i = 0; i < bases.length; i++) {
                         if (bases[i] >= 97) bases[i] -= 32;
                     }
-                }
 
-                cachedSequences.put(chrName, bases);
+                    cachedSequences.put(chrName, bases);
+                }
             } finally {
                 if (IGV.hasInstance()) IGV.getInstance().setStatusBarMessage("");
             }
@@ -92,8 +95,16 @@ public class IGVReferenceSource implements CRAMReferenceSource {
         return bases;
     }
 
-    public static class GenomeChangeListener implements IGVEventObserver {
+    static synchronized Object getLock(String chr) {
+        Object lock = locks.get(chr);
+        if (lock == null) {
+            lock = new Object();
+            locks.put(chr, lock);
+        }
+        return lock;
+    }
 
+    public static class GenomeChangeListener implements IGVEventObserver {
         @Override
         public void receiveEvent(Object event) {
             cachedSequences.clear();
@@ -101,7 +112,6 @@ public class IGVReferenceSource implements CRAMReferenceSource {
     }
 
     static {
-
         genomeChangeListener = new GenomeChangeListener();
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, genomeChangeListener);
     }
