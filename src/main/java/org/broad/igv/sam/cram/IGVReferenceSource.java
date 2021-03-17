@@ -30,18 +30,15 @@ package org.broad.igv.sam.cram;
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ObjectCache;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 /**
@@ -63,8 +60,6 @@ public class IGVReferenceSource implements CRAMReferenceSource {
     public byte[] getReferenceBases(SAMSequenceRecord record, boolean tryNameVariants) {
 
         final String name = record.getSequenceName();
-
-        //System.out.println("Get ref " + name + "  " + Thread.currentThread().getName());
         final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         String chrName = currentGenome.getCanonicalChrName(name);
         Chromosome chromosome = currentGenome.getChromosome(chrName);
@@ -115,6 +110,60 @@ public class IGVReferenceSource implements CRAMReferenceSource {
         genomeChangeListener = new GenomeChangeListener();
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, genomeChangeListener);
     }
-
-
 }
+
+
+// Idea below was to compress the sequences to keep more in memory.  Unfortunately compressing takes a long time.
+//    static class SequenceCache {
+//
+//        Map<String, byte[]> compressedSequences = new HashMap<>();
+//        Map<String, Integer> decompressedSizes = new HashMap<>();
+//
+//        void put(String chr, byte [] sequence) {
+//            Deflater d = new Deflater();
+//            byte [] buffer = new byte[sequence.length];
+//            d.setInput(sequence);
+//            d.finish();
+//            int size = d.deflate(buffer);
+//            byte [] output = new byte[size];
+//            System.arraycopy(buffer, 0, output, 0, size);
+//   System.out.println("Decompressed size: "  + size +  "   (" + ((size * 100.0) / sequence.length) + "%)");
+//            compressedSequences.put(chr, output);
+//            decompressedSizes.put(chr, sequence.length);
+//        }
+//
+//        byte [] get(String chr) {
+//
+//            byte [] compressed = compressedSequences.get(chr);
+//            Integer size = decompressedSizes.get(chr);
+//            if(compressed == null ) {
+//                return null;
+//            }
+//            if(size == null) {
+//                // Should not get here, but just in case free compressed sequence memory
+//                compressedSequences.put(chr, null);
+//                return null;
+//            }
+//
+//            byte [] sequence = new byte[size];
+//            Inflater inflater = new Inflater();
+//            inflater.setInput(compressed);
+//            try {
+//                inflater.inflate(sequence);
+//                inflater.end();
+//                return sequence;
+//            } catch (DataFormatException e) {
+//                decompressedSizes.put(chr, null);
+//                decompressedSizes.put(chr, null);
+//                return null;
+//            }
+//        }
+//
+//
+//        void clear() {
+//            compressedSequences.clear();
+//            decompressedSizes.clear();
+//        }
+//
+//
+//    }
