@@ -43,6 +43,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -779,6 +780,13 @@ public class CommandExecutor {
             igv.sortByRegionScore(roi, regionSortOption, FrameManager.getFirstFrame());
             return "OK";
         } else {
+            // check if an attribute
+            List<String> allAttributes = AttributeManager.getInstance().getAttributeNames();
+            if(allAttributes.indexOf(sortArg) != -1) {
+                igv.sortAllTracksByAttributes(new String[]{sortArg}, new boolean[]{true});
+                return "OK";
+            }
+
             // Alignments
             String tag = null;
             String locusString = null;
