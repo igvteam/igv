@@ -189,6 +189,25 @@ public class CommandExecutor {
                 FrameManager.incrementZoom(-1);
             } else if ("oauth".equals(cmd)) {
                 OAuthUtils.getInstance().getProvider().setAccessToken(param1);
+            } else if(cmd.equalsIgnoreCase("sortByAttribute")) {
+                List<String> allAttributes = AttributeManager.getInstance().getAttributeNames();
+                int nattributes = (args.size() - 1) / 2;
+                if (nattributes==0 || (args.size() - 1) % 2 != 0) {
+                    return String.format("Error: sortByAttribute usage: sortByAttribute attributeName asc|desc");
+                }
+                boolean[] ascending = new boolean[nattributes];
+                String[] trackNames = new String[nattributes];
+                for (int attributeIndex = 0, i = 1; attributeIndex < nattributes; attributeIndex++, i += 2) {
+                    String trackName = args.get(i);
+                    String order = args.get(i + 1);
+                    ascending[attributeIndex] = order.equalsIgnoreCase("asc");
+                    if (allAttributes.indexOf(trackName) == -1) {
+                        return String.format("Error: Track %s not found", trackName);
+                    }
+                    trackNames[attributeIndex] = trackName;
+                }
+                igv.sortAllTracksByAttributes(trackNames, ascending);
+                return "OK";
             } else {
                 result = "UNKOWN COMMAND: " + command;
                 log.error(result);
@@ -780,13 +799,6 @@ public class CommandExecutor {
             igv.sortByRegionScore(roi, regionSortOption, FrameManager.getFirstFrame());
             return "OK";
         } else {
-            // check if an attribute
-            List<String> allAttributes = AttributeManager.getInstance().getAttributeNames();
-            if(allAttributes.indexOf(sortArg) != -1) {
-                igv.sortAllTracksByAttributes(new String[]{sortArg}, new boolean[]{true});
-                return "OK";
-            }
-
             // Alignments
             String tag = null;
             String locusString = null;
