@@ -43,6 +43,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -188,6 +189,8 @@ public class CommandExecutor {
                 FrameManager.incrementZoom(-1);
             } else if ("oauth".equals(cmd)) {
                 OAuthUtils.getInstance().getProvider().setAccessToken(param1);
+            } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
+                result = sortByAttribute(args);
             } else {
                 result = "UNKOWN COMMAND: " + command;
                 log.error(result);
@@ -216,6 +219,42 @@ public class CommandExecutor {
         log.debug(result);
 
         return result;
+    }
+
+    /**
+     * Sort tracks by one or more sample attribute values.
+     *
+     * @param args
+     * @return
+     */
+    private String sortByAttribute(List<String> args) {
+
+        int nattributes = (args.size() - 1) / 2;
+        if (nattributes == 0 || (args.size() - 1) % 2 != 0) {
+            return String.format("Error: sortByAttribute usage: sortByAttribute attributeName asc|desc");
+        }
+
+        // Build a hash to support case insensitve attribute name comparison
+        List<String> allAttributes = AttributeManager.getInstance().getAttributeNames();
+        Map<String, String> attributeMap = new HashMap<>();
+        for(String att : allAttributes) {
+            attributeMap.put(att.toUpperCase(), att);
+        }
+
+        boolean[] ascending = new boolean[nattributes];
+        String[] attributes = new String[nattributes];
+        for (int attributeIndex = 0, i = 1; attributeIndex < nattributes; attributeIndex++, i += 2) {
+            String attributeArg = StringUtils.stripQuotes(args.get(i)).toUpperCase();
+            String attributeName = attributeMap.get(attributeArg);
+            if (attributeName == null) {
+                return String.format("Error: Attribute %s not found", attributeName);
+            }
+            String order = args.get(i + 1);
+            ascending[attributeIndex] = order.equalsIgnoreCase("asc");
+            attributes[attributeIndex] = attributeName;
+        }
+        igv.sortAllTracksByAttributes(attributes, ascending);
+        return "OK";
     }
 
     private String removeTrack(String trackName) {
