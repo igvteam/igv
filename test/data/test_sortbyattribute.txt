@@ -1,0 +1,4 @@
+genome hg18
+load https://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz
+load https://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/sampleTable.txt.gz
+sortByAttribute subtype asc,  "secondary or recurrent" desc, AgeAtFirstDiagnosis asc
