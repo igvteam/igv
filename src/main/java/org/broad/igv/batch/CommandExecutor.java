@@ -194,8 +194,8 @@ public class CommandExecutor {
                 result = sortByAttribute(args);
             } else if (cmd.equalsIgnoreCase("fitTracks")) {
                 igv.fitTracksToPanel();
-            } else if (cmd.equalsIgnoreCase("attributes")) {
-                result = this.attributes(args);
+            } else if (cmd.equalsIgnoreCase("showAttributes")) {
+                result = this.showAttributes(args);
             } else if (cmd.equalsIgnoreCase("showDataRange")) {
                 result = this.setShowDataRange(param1, param2);
             } else {
@@ -352,16 +352,22 @@ public class CommandExecutor {
         return "OK";
     }
 
-    private String attributes(List<String> args) {
+    private String showAttributes(List<String> args) {
         // provides whitelist of visible attributes
         Set<String> hiddenAttributes = new HashSet<>(AttributeManager.getInstance().getAttributeNames());
         hiddenAttributes.addAll(igv.getSession().getHiddenAttributes());
+        // Build a hash to support case insensitive attribute name comparison
+        Map<String, String> attributeMap = new HashMap<>();
+        for(String att : hiddenAttributes) {
+            attributeMap.put(att.toUpperCase(), att);
+        }
         for (int i = 1; i < args.size(); i++) {
-            String attribute = args.get(i);
-            if (!hiddenAttributes.contains(attribute)) {
-                return String.format("Error: Attribute %s not found", attribute);
+            String attributeArg = StringUtils.stripQuotes(args.get(i)).toUpperCase();
+            String attributeName = attributeMap.get(attributeArg);
+            if (!hiddenAttributes.contains(attributeName)) {
+                return String.format("Error: Attribute %s not found", attributeName);
             }
-            hiddenAttributes.remove(attribute);
+            hiddenAttributes.remove(attributeName);
         }
         igv.getSession().setHiddenAttributes(hiddenAttributes);
         igv.getMainPanel().revalidateTrackPanels();
