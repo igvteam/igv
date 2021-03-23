@@ -44,6 +44,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -191,6 +192,12 @@ public class CommandExecutor {
                 OAuthUtils.getInstance().getProvider().setAccessToken(param1);
             } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
                 result = sortByAttribute(args);
+            } else if (cmd.equalsIgnoreCase("fitTracks")) {
+                igv.fitTracksToPanel();
+            } else if (cmd.equalsIgnoreCase("attributes")) {
+                result = this.attributes(args);
+            } else if (cmd.equalsIgnoreCase("showDataRange")) {
+                result = this.setShowDataRange(param1, param2);
             } else {
                 result = "UNKOWN COMMAND: " + command;
                 log.error(result);
@@ -342,6 +349,44 @@ public class CommandExecutor {
                 }
             }
         }
+        return "OK";
+    }
+
+    private String attributes(List<String> args) {
+        // provides whitelist of visible attributes
+        Set<String> hiddenAttributes = new HashSet<>(AttributeManager.getInstance().getAttributeNames());
+        hiddenAttributes.addAll(igv.getSession().getHiddenAttributes());
+        for (int i = 1; i < args.size(); i++) {
+            String attribute = args.get(i);
+            if (!hiddenAttributes.contains(attribute)) {
+                return String.format("Error: Attribute %s not found", attribute);
+            }
+            hiddenAttributes.remove(attribute);
+        }
+        igv.getSession().setHiddenAttributes(hiddenAttributes);
+        igv.getMainPanel().revalidateTrackPanels();
+        return "OK";
+    }
+    private String setShowDataRange(String show, String trackName) {
+        List<Track> tracks = igv.getAllTracks();
+        boolean showDataRange;
+        try {
+            if (show.equalsIgnoreCase("true") || show.equalsIgnoreCase("false")) {
+                showDataRange = Boolean.valueOf(show);
+            } else {
+                return "ERROR: showDataRange value (" + show + ") is not 'true' or 'false'.";
+            }
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
+        List<Track> affectedTracks = new ArrayList<>();
+        for (Track track : tracks) {
+            if (track instanceof DataTrack && (trackName == null || trackName.equalsIgnoreCase(track.getName()))) {
+                ((DataTrack) track).setShowDataRange(showDataRange);
+                affectedTracks.add(track);
+            }
+        }
+        igv.repaint(affectedTracks);
         return "OK";
     }
 
