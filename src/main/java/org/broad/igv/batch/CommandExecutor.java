@@ -193,11 +193,13 @@ public class CommandExecutor {
             } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
                 result = sortByAttribute(args);
             } else if (cmd.equalsIgnoreCase("fitTracks")) {
-                igv.fitTracksToPanel();
+               igv.fitTracksToPanel();
             } else if (cmd.equalsIgnoreCase("showAttributes")) {
                 result = this.showAttributes(args);
             } else if (cmd.equalsIgnoreCase("showDataRange")) {
                 result = this.setShowDataRange(param1, param2);
+            } else if(cmd.equalsIgnoreCase("setTrackHeight")){
+                result = this.setTrackHeight(param1, param2);
             } else {
                 result = "UNKOWN COMMAND: " + command;
                 log.error(result);
@@ -373,6 +375,24 @@ public class CommandExecutor {
         igv.getMainPanel().revalidateTrackPanels();
         return "OK";
     }
+
+
+    private String setTrackHeight(String trackName, String value) {
+        if (trackName == null) return "Error: NULL TRACK NAME";
+        trackName = parseTrackName(trackName);
+        int height = Integer.parseInt(value);
+        height = Math.max(0, height);
+
+        for (Track track : igv.getAllTracks()) {
+            if (track.getName().equals(trackName)) {
+                track.setHeight(height, true);
+                igv.repaint(track);
+                return "OK";
+            }
+        }
+        return String.format("Error: Track %s not found", trackName);
+    }
+
     private String setShowDataRange(String show, String trackName) {
         List<Track> tracks = igv.getAllTracks();
         boolean showDataRange;
