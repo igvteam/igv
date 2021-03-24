@@ -570,8 +570,7 @@ public class MainPanel extends JPanel implements Paintable {
     public int getSnapshotHeight(boolean batch) {
 
         if (batch) {
-
-            int height = 0; //centerSplitPane.getBounds().y;
+            int height = applicationHeaderPanel.getHeight();
 
             for (Component c : centerSplitPane.getComponents()) {
 
@@ -591,10 +590,7 @@ public class MainPanel extends JPanel implements Paintable {
                 }
 
             }
-            // TODO Not sure why this is neccessary
-            height += 35;
             return height;
-
         } else {
             return getHeight();
         }
