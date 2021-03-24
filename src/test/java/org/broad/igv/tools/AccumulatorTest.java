@@ -60,6 +60,7 @@ public class AccumulatorTest {
                 WindowFunction.percentile10,
                 WindowFunction.mean,
                 WindowFunction.median,
+                WindowFunction.absoluteMax,
                 WindowFunction.max,
                 WindowFunction.count,
                 WindowFunction.percentile2,
@@ -71,6 +72,7 @@ public class AccumulatorTest {
         values.put(WindowFunction.mean, 0.5);
         values.put(WindowFunction.median, 0.5);
         values.put(WindowFunction.max, 1.0);
+        values.put(WindowFunction.absoluteMax, 1.0);
         values.put(WindowFunction.count, (double) numberOfPoints);
         values.put(WindowFunction.percentile2, 0.02);
         values.put(WindowFunction.percentile98, 0.98);
@@ -78,6 +80,41 @@ public class AccumulatorTest {
 
     }
 
+
+    @Test
+    public void testAbsoluteMaxNegativeValue() {
+        WindowFunction f = WindowFunction.absoluteMax;
+        ListAccumulator accum = new ListAccumulator(Arrays.asList(f));
+        accum.add(1, -2);
+        accum.add(1, 1);
+        accum.finish();
+        int v = (int) accum.getValue(f);
+        assertEquals(v, -2);
+    }
+
+    @Test
+    public void testAbsoluteEqual() {
+        // positive value wins when tied with negative value
+        WindowFunction f = WindowFunction.absoluteMax;
+        ListAccumulator accum = new ListAccumulator(Arrays.asList(f));
+        accum.add(1, -2);
+        accum.add(1, 2);
+        accum.finish();
+        int v = (int) accum.getValue(f);
+        assertEquals(v, 2);
+    }
+
+
+    @Test
+    public void testAbsoluteMaxPositiveValue() {
+        WindowFunction f = WindowFunction.absoluteMax;
+        ListAccumulator accum = new ListAccumulator(Arrays.asList(f));
+        accum.add(1, -2);
+        accum.add(1, 3);
+        accum.finish();
+        int v = (int) accum.getValue(f);
+        assertEquals(v, 3);
+    }
 
     /**
      * Test calculation of all percentiles

@@ -42,6 +42,7 @@ public enum WindowFunction implements CollUtils.Valued {
     median("Median"),
     min("Minimum"),
     max("Maximum"),
+    absoluteMax("Absolute Maximum"),
     percentile2("2nd Percentile"),
     percentile10("10th Percentile"),
     percentile90("90th Percentile"),

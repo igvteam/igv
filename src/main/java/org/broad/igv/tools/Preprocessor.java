@@ -81,6 +81,7 @@ public class Preprocessor implements DataConsumer {
             WindowFunction.median,
             WindowFunction.min,
             WindowFunction.max,
+            WindowFunction.absoluteMax,
             WindowFunction.percentile2,
             WindowFunction.percentile10,
             WindowFunction.percentile90,
