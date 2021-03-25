@@ -245,12 +245,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-
-    @Override
-    public boolean isFilterable() {
-        return false; // Don't filter "feature" tracks
-    }
-
     @Override
     public int getHeight() {
         if (!isVisible()) {
