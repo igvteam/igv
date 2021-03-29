@@ -1,4 +1,4 @@
-name: gradle_test
+name: Build Status
 
 on: [push, pull_request]
 
