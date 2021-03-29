@@ -13,4 +13,6 @@ jobs:
         with:
           java-version: 11
       - name: Build with Gradle
+        env:
+          DEFAULT_BRANCH: master
         run: ./gradlew assemble check
