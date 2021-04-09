@@ -671,14 +671,16 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    final public void saveImage(Component target) {
-        saveImage(target, "igv_snapshot");
+    final public void saveImage(Component target, String extension) {
+        saveImage(target, "igv_snapshot", extension);
     }
 
-    final public void saveImage(Component target, String title) {
-        contentPane.getStatusBar().setMessage("Creating image...");
-        File defaultFile = new File(title + ".png");
-        createSnapshot(target, defaultFile);
+    final public void saveImage(Component target, String title, String extension) {
+        if ("png".equalsIgnoreCase(extension) || "svg".equalsIgnoreCase(extension)) {
+            contentPane.getStatusBar().setMessage("Creating image...");
+            File defaultFile = new File(title + "." + extension);
+            createSnapshot(target, defaultFile);
+        }
     }
 
     final public void createSnapshot(final Component target, final File defaultFile) {
