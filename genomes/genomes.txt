@@ -14,6 +14,7 @@ C. elegans (ce10)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce10.g
 C. elegans (ce11)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce11.genome	ce11
 Chicken (galGal4)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal4.genome	galGal4
 Chicken (galGal5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal5.genome	galGal5
+Chicken (GRCg6a / galGal6)	https://s3.amazonaws.com/igv.org.genomes/galGal6/galGal6.genome	galGal6
 Chimp (panTro3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro3.genome	panTro3
 Chimp (panTro4)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro4.genome	panTro4
 Cat (felCat5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/felCat5.genome	felCat5
