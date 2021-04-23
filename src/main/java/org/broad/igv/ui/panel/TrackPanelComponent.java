@@ -214,11 +214,14 @@ abstract public class TrackPanelComponent extends JPanel {
 
             TrackMenuUtils.addPluginItems(menu, selectedTracks, te);
 
-            // Add saveImage
+            // Add saveImage items
             menu.addSeparator();
-            JMenuItem item = new JMenuItem("Save image...");
-            item.addActionListener(e1 -> saveImage());
-            menu.add(item);
+            JMenuItem savePng = new JMenuItem("Save PNG image...");
+            savePng.addActionListener(e1 -> saveImage("png"));
+            menu.add(savePng);
+            JMenuItem saveSvg = new JMenuItem("Save SVG image...");
+            saveSvg.addActionListener(e1 -> saveImage("svg"));
+            menu.add(saveSvg);
 
             // Add export features
             ReferenceFrame frame = FrameManager.getDefaultFrame();
@@ -274,8 +277,8 @@ abstract public class TrackPanelComponent extends JPanel {
     }
 
 
-    public void saveImage() {
-        IGV.getInstance().saveImage(getTrackPanel().getScrollPane(), "igv_panel");
+    public void saveImage(String extension) {
+        IGV.getInstance().saveImage(getTrackPanel().getScrollPane(), "igv_panel", extension);
     }
 
 
