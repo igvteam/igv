@@ -2407,6 +2407,7 @@ public class IGV implements IGVEventObserver {
                         }
                     }
                 }
+                Autoscaler.autoscale(getAllTracks());
                 checkPanelLayouts();
                 component.paintImmediately(component.getBounds());
             });
