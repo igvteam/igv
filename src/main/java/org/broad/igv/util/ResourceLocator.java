@@ -31,12 +31,13 @@ import org.apache.log4j.Logger;
 import org.broad.igv.google.Ga4ghAPIHelper;
 import org.broad.igv.google.GoogleUtils;
 
+//import java.awt.*;
 import java.awt.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 /**
  * Represents a data file or other resource, which might be local file or remote resource.
@@ -115,8 +116,44 @@ public class ResourceLocator {
     private HashMap attributes = new HashMap();
     private boolean indexed;
 
+    public static List<ResourceLocator> getLocators(Collection<File> files) {
+
+        List<ResourceLocator> locators = new ArrayList<>();
+
+        Set<String> indexExtensions = new HashSet<>(Arrays.asList("bai", "crai", "sai", "tbi", "tbx"));
+        Set<File> indexes = new HashSet<>();
+        Map<String, File> indexMap = new HashMap<>();
+        for(File f : files) {
+            String fn = f.getName();
+            int idx = fn.lastIndexOf('.');
+            if(idx > 0) {
+                String ext = fn.substring(idx + 1);
+                if(indexExtensions.contains(ext)) {
+                    String base = fn.substring(0, idx);
+                    if (ext.equals(".bai") && !base.endsWith("bam")) {
+                        base += ".bam";   // Picard convention
+                    }
+                    indexes.add(f);
+                    indexMap.put(base, f);
+                }
+            }
+        }
+
+        for(File f : files) {
+            if(indexes.contains(f)) continue;
+            ResourceLocator locator = new ResourceLocator(f.getAbsolutePath());
+            File indexFile = indexMap.get(f.getName());
+            if(indexFile != null) {
+                locator.setIndexPath(indexFile.getAbsolutePath());
+            }
+            locators.add(locator);
+        }
+
+        return locators;
+    }
+
     /**
-     * Constructor for local files
+     * Constructor for local files and URLs
      *
      * @param path
      */
