@@ -76,10 +76,10 @@ public class AminoAcidManager {
 
     private static final String DEFAULT_CHROMO_KEY = "default";
 
-    private LinkedHashMap<CodonTableKey, CodonTable> allCodonTables = new LinkedHashMap<CodonTableKey, CodonTable>(20);
+    private LinkedHashMap<String, CodonTable> allCodonTables = new LinkedHashMap<>(20);
     private CodonTable currentCodonTable;
 
-    private static Table<String, String, CodonTableKey> genomeChromoTable = TreeBasedTable.create();
+    private static Table<String, String, String> genomeChromoTable = TreeBasedTable.create();
 
     private static AminoAcidManager instance;
 
@@ -145,7 +145,7 @@ public class AminoAcidManager {
      * @return Whether setting the table was successful
      */
     public boolean setCodonTable(String codonTablePath, int id) {
-        CodonTableKey key = new CodonTableKey(codonTablePath, id);
+        String key = getCodonTableKey(codonTablePath, id);
         return setCodonTable(key);
     }
 
@@ -155,7 +155,7 @@ public class AminoAcidManager {
      * @param key
      * @return
      */
-    public boolean setCodonTable(CodonTableKey key) {
+    public boolean setCodonTable(String key) {
         if (allCodonTables.containsKey(key)) {
             currentCodonTable = allCodonTables.get(key);
             return true;
@@ -309,7 +309,7 @@ public class AminoAcidManager {
      * @return
      */
     synchronized void loadCodonTables(String codonTablesPath) throws IOException, JsonParseException {
-        LinkedHashMap<CodonTableKey, CodonTable> newCodonTables = new LinkedHashMap<CodonTableKey, CodonTable>(20);
+        LinkedHashMap<String, CodonTable> newCodonTables = new LinkedHashMap<>(20);
         CodonTable defaultCodonTable = null;
 
         InputStream is = AminoAcidManager.class.getResourceAsStream(codonTablesPath);
@@ -427,7 +427,7 @@ public class AminoAcidManager {
                 Map.Entry<String, JsonElement> entry = iterator.next();
                 String chromoName = entry.getKey();
                 int id = entry.getValue().getAsInt();
-                CodonTableKey key = new CodonTableKey(codonTablePath, id);
+                String key = getCodonTableKey(codonTablePath, id);
                 genomeChromoTable.put(genomeId, chromoName, key);
             }
 
@@ -456,34 +456,8 @@ public class AminoAcidManager {
 //        }
 //    }
 
-    public static class CodonTableKey {
-
-        private final String sourcePath;
-        private final int id;
-
-        private CodonTableKey(String sourcePath, int id) {
-            this.sourcePath = sourcePath;
-            this.id = id;
-        }
-
-        @Override
-        public boolean equals(Object object) {
-            if (object instanceof CodonTableKey) {
-                CodonTableKey other = (CodonTableKey) object;
-                return this.id == other.id &&
-                        Objects.equal(this.sourcePath, other.sourcePath);
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(this.sourcePath, this.id);
-        }
-
-        public int getId() {
-            return id;
-        }
+    public static String getCodonTableKey(String sourcePath, int id) {
+        return "" + id + ":" + (sourcePath == null ? "null" : sourcePath);
     }
 
     /**
@@ -493,7 +467,7 @@ public class AminoAcidManager {
      */
     public static class CodonTable {
 
-        private final CodonTableKey key;
+        private final String key;
         private final List<String> names;
         private final Set<AminoAcid> starts;
         private final Map<String, AminoAcid> codonMap;
@@ -519,7 +493,7 @@ public class AminoAcidManager {
         }
 
         private CodonTable(String path, int id, List<String> names, Set<AminoAcid> starts, Map<String, AminoAcid> codonMap) {
-            this.key = new CodonTableKey(path, id);
+            this.key = getCodonTableKey(path, id);
             this.names = Collections.unmodifiableList(names);
             this.starts = Collections.unmodifiableSet(starts);
             this.codonMap = Collections.unmodifiableMap(codonMap);
@@ -590,7 +564,8 @@ public class AminoAcidManager {
         }
 
         public int getId() {
-            return key.id;
+            int idx = key.indexOf(":");
+            return Integer.parseInt(key.substring(0, idx));
         }
 
         public String getDisplayName() {
@@ -623,10 +598,10 @@ public class AminoAcidManager {
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(this.key.id, this.key.sourcePath, this.names, this.starts, this.codonMap);
+            return Objects.hashCode(this.key,  this.names, this.starts, this.codonMap);
         }
 
-        public CodonTableKey getKey() {
+        public String getKey() {
             return key;
         }
     }

@@ -57,11 +57,6 @@ public class Exon extends AbstractFeature implements IExon {
 
     private AminoAcidSequence aminoAcidSequence;
 
-    //Raw bytes representing nucleotides
-    //Stored separately from the aminoAcidSequence because the latter changes
-    //when we change translation tables
-    private byte[] seqBytes;
-
     private boolean noncoding = false;
 
     // The position of the first base of this exon relative to the start of the mRNA.  This will correspond
@@ -190,8 +185,8 @@ public class Exon extends AbstractFeature implements IExon {
     }
 
     public AminoAcidSequence getAminoAcidSequence(Genome genome, Exon prevExon, Exon nextExon) {
+        //If the stored sequence was computed with a different codon table, we reset
         if (aminoAcidSequence == null ||
-                //If the stored sequence was computed with a different codon table, we reset
                 !(Objects.equal(aminoAcidSequence.getCodonTableKey(), AminoAcidManager.getInstance().getCodonTable().getKey()))) {
             computeAminoAcidSequence(genome, prevExon, nextExon);
         }
@@ -211,13 +206,9 @@ public class Exon extends AbstractFeature implements IExon {
             int readEnd = Math.min(end, codingEnd);
 
             if (readEnd > readStart + 3) {
-                if (seqBytes == null) {
-                    seqBytes = genome.getSequence(chr, readStart, readEnd);
-                }
+                byte[] seqBytes = genome.getSequence(chr, readStart, readEnd);
                 if (seqBytes != null) {
-
                     if (strand == Strand.POSITIVE) {
-
                         if (readingFrame > 0 && prevExon != null) {
                             int diff = readingFrame;
                             byte[] d = genome.getSequence(chr, prevExon.getCdEnd() - diff, prevExon.getCdEnd());
@@ -226,7 +217,6 @@ public class Exon extends AbstractFeature implements IExon {
                             System.arraycopy(seqBytes, 0, tmp, diff, seqBytes.length);
                             seqBytes = tmp;
                             readStart -= readingFrame;
-
                         }
 
                         // Grab nucleotides from next exon if needed for last codon
@@ -272,7 +262,6 @@ public class Exon extends AbstractFeature implements IExon {
 
     public Exon copy() {
         Exon copy = new Exon(getChr(), getStart(), getEnd(), getStrand());
-        copy.seqBytes = this.seqBytes;
         copy.aminoAcidSequence = this.aminoAcidSequence;
         copy.codingEnd = this.codingEnd;
         copy.codingStart = this.codingStart;

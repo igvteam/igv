@@ -48,11 +48,11 @@ public class AminoAcidSequence {
      * If the sequence was computed from a nucleotide sequence,
      * we store how the calculation was performed
      */
-    private final AminoAcidManager.CodonTableKey codonTableKey;
+    private final String codonTableKey;
 
     public AminoAcidSequence(Strand strand, int startPosition,
                              List<CodonAA> sequence,
-                             AminoAcidManager.CodonTableKey codonTableKey) {
+                             String codonTableKey) {
         this.strand = strand;
         this.start = startPosition;
         this.sequence = sequence;
@@ -86,7 +86,19 @@ public class AminoAcidSequence {
         return nonNullSequence;
     }
 
-    public AminoAcidManager.CodonTableKey getCodonTableKey() {
+    public String getCodonTableKey() {
         return codonTableKey;
+    }
+
+    /**
+     * Return the codon sequence as a string -- primarily for debugging.
+     * @return
+     */
+    public String getSequenceString() {
+        String ss = "";
+        for(CodonAA c : sequence) {
+            ss += c.getAminoAcid().getSymbol();
+        }
+        return ss;
     }
 }

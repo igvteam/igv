@@ -373,15 +373,12 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             item.setToolTipText(fullName);
         }
         item.setText(shortName);
-        final AminoAcidManager.CodonTableKey curKey = codonTable.getKey();
+        final String curKey = codonTable.getKey();
         item.setSelected(curKey.equals(AminoAcidManager.getInstance().getCodonTable().getKey()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                AminoAcidManager.getInstance().setCodonTable(curKey);
-                SequenceTrack.this.refreshAminoAcids();
-                repaint();
-            }
+        item.addActionListener(e -> {
+            AminoAcidManager.getInstance().setCodonTable(curKey);
+            SequenceTrack.this.refreshAminoAcids();
+            repaint();
         });
         return item;
     }
