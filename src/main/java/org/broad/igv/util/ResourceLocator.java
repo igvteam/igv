@@ -130,8 +130,10 @@ public class ResourceLocator {
                 String ext = fn.substring(idx + 1);
                 if(indexExtensions.contains(ext)) {
                     String base = fn.substring(0, idx);
-                    if (ext.equals(".bai") && !base.endsWith("bam")) {
+                    if (ext.equals(".bai") && !base.endsWith(".bam")) {
                         base += ".bam";   // Picard convention
+                    } else if(ext.equals(".crai") && !base.endsWith(".cram")) {
+                        base += ".cram";  // Possible Picard convention
                     }
                     indexes.add(f);
                     indexMap.put(base, f);

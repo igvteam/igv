@@ -2049,7 +2049,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (seq == null) {
                 item.setEnabled(false);
                 return;
-
             }
 
             item.addActionListener(aEvt -> StringUtils.copyTextToClipboard(seq));
@@ -2069,7 +2068,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
             final String seq = alignment.getReadSequence();
-            if (seq == null) {
+            if (seq == null || seq.equals("*")) {
                 item.setEnabled(false);
                 return;
 
@@ -2134,6 +2133,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         private String getClippedSequence(String readSequence, Strand strand, int i, int i2) {
+            if(readSequence == null || readSequence.equals("*")) {
+                return "*";
+            }
             String seq = readSequence.substring(i, i2);
             if (strand == Strand.NEGATIVE) {
                 seq = SequenceTrack.getReverseComplement(seq);
