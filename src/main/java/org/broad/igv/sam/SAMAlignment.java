@@ -38,14 +38,12 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,8 +70,6 @@ public class SAMAlignment implements Alignment {
     public static final char UNKNOWN = 0;
     public static final String REDUCE_READS_TAG = "RR";
 
-    private static IGVPreferences prefMgr = PreferencesManager.getPreferences();
-
     private static final int READ_PAIRED_FLAG = 0x1;
     private static final int PROPER_PAIR_FLAG = 0x2;
     private static final int READ_UNMAPPED_FLAG = 0x4;
@@ -88,39 +84,13 @@ public class SAMAlignment implements Alignment {
     private static final int SUPPLEMENTARY_ALIGNMENT_FLAG = 0x800;
 
     private SAMReadGroupRecord readGroupRecord;
+
     private int flags;
 
     /**
      * Picard object upon which this SAMAlignment is based
      */
     private SAMRecord record;
-
-
-    /**
-     * Converts a DNA integer value to its reverse compliment integer value.
-     */
-    protected static final char[] NT2COMP = {
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'T', 'N', 'G', 'N', 'N', 'N', 'C', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'A', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'T', 'N', 'G', 'N', 'N', 'N', 'C', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'A', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
-            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N'
-    };
-    private static final String FLOW_SIGNAL_TAG = "ZF";
-    protected int alignmentStart;
-    protected int alignmentEnd;
-
 
     String chr;
     protected int start;  // <= Might differ from alignment start if soft clipping is considered
@@ -139,8 +109,8 @@ public class SAMAlignment implements Alignment {
     private Strand secondOfPairStrand;
 
     public SAMAlignment(SAMRecord record) {
-        this.record = record;
 
+        this.record = record;
         this.flags = record.getFlags();
 
         String refName = record.getReferenceName();
@@ -148,10 +118,8 @@ public class SAMAlignment implements Alignment {
         this.chr = genome == null ? refName : genome.getCanonicalChrName(refName);
 
         // SAMRecord is 1 based inclusive.  IGV is 0 based exclusive.
-
         this.end = record.getAlignmentEnd();   // might be modified later for soft clipping
         this.start = record.getAlignmentStart() - 1;   // might be modified later for soft clipping
-
 
         if (record.getReadPairedFlag()) {
             String mateReferenceName = record.getMateReferenceName();
@@ -182,15 +150,18 @@ public class SAMAlignment implements Alignment {
 
         setPairOrientation();
         setPairStrands();
-        createAlignmentBlocks(record.getCigarString(), record.getReadBases(), record.getBaseQualities());
+        createAlignmentBlocks();
+
     }
 
+    public SAMRecord getRecord() {
+        return this.record;
+    }
 
     public String getChr() {
         return chr;
     }
 
-    @Override
     public String getContig() {
         return chr;
     }
@@ -207,19 +178,11 @@ public class SAMAlignment implements Alignment {
         return ycColor;
     }
 
-    /**
-     * @return The SAMRecord which created this SAMAlignment
-     */
-    public SAMRecord getRecord() {
-        return this.record;
-    }
-
     public Object getAttribute(String key) {
         // SAM alignment tag keys must be of length 2
         return key.length() == 2 ? record.getAttribute(key) :
                 (key.equals("TEMPLATE_ORIENTATION") ? pairOrientation : null);
     }
-
 
     public boolean isFirstOfPair() {
         return isPaired() && (flags & FIRST_OF_PAIR_FLAG) != 0;
@@ -237,7 +200,6 @@ public class SAMAlignment implements Alignment {
         return (flags & READ_UNMAPPED_FLAG) == 0;
     }
 
-
     public boolean isPaired() {
         return (flags & READ_PAIRED_FLAG) != 0;
     }
@@ -250,138 +212,57 @@ public class SAMAlignment implements Alignment {
         return (flags & READ_STRAND_FLAG) != 0;
     }
 
-    @Override
     public boolean isSupplementary() {
         return (flags & SUPPLEMENTARY_ALIGNMENT_FLAG) != 0;
     }
-
 
     public boolean isVendorFailedRead() {
         return (flags & READ_FAILS_VENDOR_QUALITY_CHECK_FLAG) != 0;
     }
 
-    @Override
     public boolean isPrimary() {
         return (flags & NOT_PRIMARY_ALIGNMENT_FLAG) == 0;
     }
 
-    @Override
     public String toString() {
         return record.getSAMString();
     }
 
-    @Override
     public String getReadName() {
         return record.getReadName();
     }
 
-    @Override
     public int getMappingQuality() {
         return record.getMappingQuality();
     }
 
-    @Override
     public int getInferredInsertSize() {
         return record.getInferredInsertSize();
     }
 
-    @Override
     public String getCigarString() {
         return record.getCigarString();
     }
 
-    public String getReadLengthString() {
-        String rs = record.getReadString();
-        if(rs.equals("*") || rs.equals("")) {
-            return "undefined";
-        } else {
-            return  Globals.DECIMAL_FORMAT.format(rs.length()) + "bp";
-        }
-    }
-
-    @Override
     public String getReadSequence() {
         return record.getReadString();
     }
 
-    @Override
     public int getAlignmentStart() {
         return record.getAlignmentStart() - 1;
     }
 
-    @Override
     public int getAlignmentEnd() {
         return record.getAlignmentEnd();
     }
 
-    protected String getAttributeString(boolean truncate) {
-        // List of tags to skip.  Some tags, like MD and SA, are both quite verbose and not easily
-        // interpreted by a human reader.  It is best to just hide these tags.  The list of tags
-        // to hide is set through the SAM_HIDDEN_TAGS preference.
-        ArrayList<String> tagsToHide = new ArrayList<String>(),
-                tagsHidden = new ArrayList<String>();
-
-        String samHiddenTagsPref = prefMgr.get(Constants.SAM_HIDDEN_TAGS);
-        for (String s : (samHiddenTagsPref == null ? "" : samHiddenTagsPref).split("[, ]")) {
-            if (!s.equals("")) {
-                tagsToHide.add(s);
-            }
+    public String getReadLengthString() {
+        String rs = record.getReadString();
+        if (rs.equals("*") || rs.equals("")) {
+            return "undefined";
+        } else {
+            return Globals.DECIMAL_FORMAT.format(rs.length()) + "bp";
         }
-
-        StringBuffer buf = new StringBuffer();
-        SAMRecord record = getRecord();
-        List<SAMRecord.SAMTagAndValue> attributes = record.getAttributes();
-        if (attributes != null && !attributes.isEmpty()) {
-
-            for (SAMRecord.SAMTagAndValue tag : attributes) {
-                if (tagsToHide.contains(tag.tag)) {
-                    tagsHidden.add(tag.tag);
-                    continue;
-                }
-                buf.append("<br>" + tag.tag + " = ");
-
-                if (tag.value.getClass().isArray()) { // ignore array types
-                    buf.append("[not shown]<br>");
-                    continue;
-                }
-
-                // Break tag
-                final String tagValue = tag.value.toString();
-                final int maxLength = 70;
-                if (tagValue.length() > maxLength && truncate) {
-                    String[] tokens = tagValue.split("<br>");
-                    for (String token : tokens) {
-                        if (token.length() > maxLength) {
-                            // Insert line breaks
-                            String remainder = token;
-                            while (remainder.length() > maxLength) {
-                                String tmp = remainder.substring(0, maxLength);
-                                int spaceIndex = tmp.lastIndexOf(' ');
-                                int idx = spaceIndex > 30 ? spaceIndex : maxLength;
-                                final String substring = remainder.substring(0, idx);
-                                buf.append(substring);
-                                buf.append("<br>");
-                                remainder = remainder.substring(idx);
-                            }
-                            buf.append(remainder);
-                            buf.append("<br>");
-
-                        } else {
-                            buf.append(token);
-                            buf.append("<br>");
-                        }
-                    }
-                } else {
-                    buf.append(tagValue);
-                }
-
-            }
-
-            if (tagsHidden.size() > 0) {
-                buf.append("<br>Hidden tags: " + String.join(", ", tagsHidden));
-            }
-        }
-        return buf.toString();
     }
 
     public String getSample() {
@@ -396,8 +277,6 @@ public class SAMAlignment implements Alignment {
         return readGroupRecord == null ? null : readGroupRecord.getLibrary();
     }
 
-
-
     public AlignmentBlock[] getAlignmentBlocks() {
         return alignmentBlocks;
     }
@@ -405,8 +284,6 @@ public class SAMAlignment implements Alignment {
     public AlignmentBlockImpl[] getInsertions() {
         return insertions;
     }
-
-
 
     public boolean contains(double location) {
         return location >= getStart() && location < getEnd();
@@ -440,7 +317,7 @@ public class SAMAlignment implements Alignment {
      * Set pair strands.  Used for strand specific libraries to recover strand of
      * originating fragment.
      */
-    protected void setPairStrands() {
+    private void setPairStrands() {
 
         if (isPaired()) {
             if (isFirstOfPair()) {
@@ -475,22 +352,15 @@ public class SAMAlignment implements Alignment {
         }
     }
 
-
-    private static boolean operatorIsMatch(boolean showSoftClipped, char operator) {
-        return operator == MATCH || operator == PERFECT_MATCH || operator == MISMATCH
-                || (showSoftClipped && operator == SOFT_CLIP);
-    }
-
-
     /**
      * Create the alignment blocks from the read bases and alignment information in the CIGAR
      * string.  The CIGAR string encodes insertions, deletions, skipped regions, and padding.
-     *
-     * @param cigarString
-     * @param readBases
-     * @param readBaseQualities
      */
-    protected void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities) {
+    private void createAlignmentBlocks() {
+
+        String cigarString = record.getCigarString();
+        byte[] readBases = record.getReadBases();
+        byte[] readBaseQualities = record.getBaseQualities();
 
         if (cigarString.equals("*")) {
             alignmentBlocks = new AlignmentBlockImpl[1];
@@ -573,14 +443,13 @@ public class SAMAlignment implements Alignment {
                 }
                 if (operatorIsMatch(showSoftClipped, op.operator)) {
 
-                    AlignmentBlockImpl block = buildAlignmentBlock(
+                    AlignmentBlockImpl block = AlignmentUtils.buildAlignmentBlock(
                             op.operator,
                             readBases,
                             readBaseQualities,
                             blockStart,
                             fromIdx,
-                            op.nBases,
-                            true);
+                            op.nBases);
 
                     if (op.operator == SOFT_CLIP) {
                         block.setSoftClipped(true);
@@ -617,8 +486,8 @@ public class SAMAlignment implements Alignment {
                     // This gap is between blocks split by insertion.   It is a zero
                     // length gap but must be accounted for.
                     gapTypes[gapIdx++] = ZERO_GAP;
-                    AlignmentBlockImpl block = buildAlignmentBlock(op.operator, readBases, readBaseQualities,
-                            blockStart, fromIdx, op.nBases, false);
+                    AlignmentBlockImpl block = AlignmentUtils.buildAlignmentBlock(op.operator, readBases, readBaseQualities,
+                            blockStart, fromIdx, op.nBases);
                     block.setPadding(padding);
                     insertions[insertionIdx++] = block;
                     fromIdx += op.nBases;
@@ -650,7 +519,7 @@ public class SAMAlignment implements Alignment {
      * @param cigarString
      * @return
      */
-    public static List<CigarOperator> buildOperators(String cigarString) {
+    private static List<CigarOperator> buildOperators(String cigarString) {
 
         java.util.List<CigarOperator> operators = new ArrayList();
         StringBuilder buffer = new StringBuilder(4);
@@ -677,43 +546,6 @@ public class SAMAlignment implements Alignment {
         }
         return operators;
 
-    }
-
-
-    private static AlignmentBlockImpl buildAlignmentBlock(char operator,
-                                                          byte[] readBases,
-                                                          byte[] readBaseQualities,
-                                                          int blockStart,
-                                                          int fromIdx,
-                                                          int nBases,
-                                                          boolean checkNBasesAvailable) {
-
-        byte[] blockBases = null;
-        byte[] blockQualities = null;
-        if (readBases != null && readBases.length > 0) {
-            int nBasesAvailable = nBases;
-            if (checkNBasesAvailable) {
-                nBasesAvailable = readBases.length - fromIdx;
-            }
-            blockBases = new byte[nBases];
-            if (nBasesAvailable < nBases) {
-                Arrays.fill(blockBases, (byte) '?');
-            }
-            System.arraycopy(readBases, fromIdx, blockBases, 0, nBases);
-        }
-        if (readBaseQualities != null && readBaseQualities.length > 0) {
-            int nBasesAvailable = nBases;
-            if (checkNBasesAvailable) {
-                nBasesAvailable = readBaseQualities.length - fromIdx;
-            }
-            blockQualities = new byte[nBases];
-            if (nBasesAvailable < nBases) {
-                Arrays.fill(blockQualities, (byte) 126);
-            }
-            System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, nBases);
-        }
-        AlignmentBlockImpl block = new AlignmentBlockImpl(blockStart, blockBases, blockQualities, nBases, operator);
-        return block;
     }
 
 
@@ -906,8 +738,75 @@ public class SAMAlignment implements Alignment {
         return buf.toString();
     }
 
+    private String getAttributeString(boolean truncate) {
+        // List of tags to skip.  Some tags, like MD and SA, are both quite verbose and not easily
+        // interpreted by a human reader.  It is best to just hide these tags.  The list of tags
+        // to hide is set through the SAM_HIDDEN_TAGS preference.
+        ArrayList<String> tagsToHide = new ArrayList<String>(),
+                tagsHidden = new ArrayList<String>();
 
-    // chr21,26002386,-,11785S1115M,60,0;chr21,26001844,+,1115S111M1D41M1D394M11239S,60,4;
+        String samHiddenTagsPref = PreferencesManager.getPreferences().get(Constants.SAM_HIDDEN_TAGS);
+        for (String s : (samHiddenTagsPref == null ? "" : samHiddenTagsPref).split("[, ]")) {
+            if (!s.equals("")) {
+                tagsToHide.add(s);
+            }
+        }
+
+        StringBuffer buf = new StringBuffer();
+        SAMRecord record = getRecord();
+        List<SAMRecord.SAMTagAndValue> attributes = record.getAttributes();
+        if (attributes != null && !attributes.isEmpty()) {
+
+            for (SAMRecord.SAMTagAndValue tag : attributes) {
+                if (tagsToHide.contains(tag.tag)) {
+                    tagsHidden.add(tag.tag);
+                    continue;
+                }
+                buf.append("<br>" + tag.tag + " = ");
+
+                if (tag.value.getClass().isArray()) { // ignore array types
+                    buf.append("[not shown]<br>");
+                    continue;
+                }
+
+                // Break tag
+                final String tagValue = tag.value.toString();
+                final int maxLength = 70;
+                if (tagValue.length() > maxLength && truncate) {
+                    String[] tokens = tagValue.split("<br>");
+                    for (String token : tokens) {
+                        if (token.length() > maxLength) {
+                            // Insert line breaks
+                            String remainder = token;
+                            while (remainder.length() > maxLength) {
+                                String tmp = remainder.substring(0, maxLength);
+                                int spaceIndex = tmp.lastIndexOf(' ');
+                                int idx = spaceIndex > 30 ? spaceIndex : maxLength;
+                                final String substring = remainder.substring(0, idx);
+                                buf.append(substring);
+                                buf.append("<br>");
+                                remainder = remainder.substring(idx);
+                            }
+                            buf.append(remainder);
+                            buf.append("<br>");
+
+                        } else {
+                            buf.append(token);
+                            buf.append("<br>");
+                        }
+                    }
+                } else {
+                    buf.append(tagValue);
+                }
+
+            }
+
+            if (tagsHidden.size() > 0) {
+                buf.append("<br>Hidden tags: " + String.join(", ", tagsHidden));
+            }
+        }
+        return buf.toString();
+    }
 
     private String getSupplAlignmentString(String sa) {
 
@@ -1010,20 +909,6 @@ public class SAMAlignment implements Alignment {
         return secondOfPairStrand;
     }
 
-    /**
-     * @return start index in the flow signal as specified by the ZF tag, or -1 if not present
-     * or non-numeric
-     */
-    public int getFlowSignalsStart() {
-        Object attribute = getAttribute(FLOW_SIGNAL_TAG); // NB: from a TMAP optional tag
-        int toRet = -1;
-        if (attribute != null && attribute instanceof Integer) {
-            toRet = (Integer) attribute;
-        }
-        return toRet;
-    }
-
-
     protected void setPairOrientation() {
 
         /*
@@ -1080,7 +965,6 @@ public class SAMAlignment implements Alignment {
     public void setChr(String chr) {
         this.chr = chr;
     }
-
 
     static class CigarOperator {
 
@@ -1176,7 +1060,6 @@ public class SAMAlignment implements Alignment {
 
     }
 
-
     public static int[] getClipping(String cigarString) {
         // Identify the number of hard and soft clipped bases.
         Matcher lclipMatcher = Pattern.compile("^(([0-9]+)H)?(([0-9]+)S)?").matcher(cigarString);
@@ -1191,6 +1074,11 @@ public class SAMAlignment implements Alignment {
             rclipSoft = rclipMatcher.group(2) == null ? 0 : Integer.parseInt(rclipMatcher.group(2), 10);
         }
         return new int[]{lclipHard, lclipSoft, rclipHard, rclipSoft};
+    }
+
+    private static boolean operatorIsMatch(boolean showSoftClipped, char operator) {
+        return operator == MATCH || operator == PERFECT_MATCH || operator == MISMATCH
+                || (showSoftClipped && operator == SOFT_CLIP);
     }
 
 

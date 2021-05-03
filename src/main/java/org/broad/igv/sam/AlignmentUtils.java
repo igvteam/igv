@@ -26,6 +26,10 @@
 package org.broad.igv.sam;
 
 
+import org.broad.igv.Globals;
+
+import java.util.Arrays;
+
 /**
  * @author Jim Robinson
  * @date 12/6/11
@@ -40,7 +44,7 @@ public class AlignmentUtils {
     public static final byte C = 'C';
     public static final byte G = 'G';
     public static final byte T = 'T';
-    
+
     /**
      * Return true if the two bases can be considered a match.  The comparison is case-insensitive, and
      * considers ambiguity codes in the reference.
@@ -51,7 +55,7 @@ public class AlignmentUtils {
      */
     public static boolean compareBases(byte refbase, byte readbase) {
 
-        if(readbase == 61) {
+        if (readbase == 61) {
             return true;  // By definition, 61 is "equals"
         }
         // Force both bases to upper case
@@ -98,16 +102,17 @@ public class AlignmentUtils {
      * Check whether there is a mismatch between {@code reference[idx]} and {@code read[idx]},
      * guarding against {@code reference} being too short.
      * If we do not have a valid reference we assume a match, that is, NOT a misMatch.
-     *
+     * <p>
      * Note '=' means indicates a match by definition
+     *
      * @param reference
      * @param read
      * @param isSoftClipped
      * @param idx
      * @return
      */
-    static boolean isMisMatch(byte[] reference, byte[] read, boolean isSoftClipped, int idx){
-        if(reference == null) return false;
+    static boolean isMisMatch(byte[] reference, byte[] read, boolean isSoftClipped, int idx) {
+        if (reference == null) return false;
         boolean misMatch = false;
         if (isSoftClipped) {
             // Goby will return '=' characters when the soft-clip happens to match the reference.
@@ -131,13 +136,12 @@ public class AlignmentUtils {
      * Reverses and complements a copy of the original array
      */
     public static byte[] reverseComplementCopy(final byte[] bases) {
-    	final int lastIndex = bases.length - 1;
-    	byte[] out = new byte[bases.length];
-    	int i;
-    	for (i=0; i <= lastIndex; i++)
-    	{
-    		out[lastIndex-i] = complement(bases[i]);
-    	}
+        final int lastIndex = bases.length - 1;
+        byte[] out = new byte[bases.length];
+        int i;
+        for (i = 0; i <= lastIndex; i++) {
+            out[lastIndex - i] = complement(bases[i]);
+        }
         return out;
     }
 
@@ -196,4 +200,92 @@ public class AlignmentUtils {
         reverseComplement(bases);
         return htsjdk.samtools.util.StringUtil.bytesToString(bases);
     }
+
+    static void testGetModificationPositions() {
+        //top-fwd	0	*	0	0	*	*	0	0	AGGATCTCTAGCGGATCGGCGGGGGATATGCCATAT	*	Mm:Z:C+m,1,3,0;	Ml:B:C,128,153,179
+        byte[] sequence = "AGGATCTCTAGCGGATCGGCGGGGGATATGCCATAT".getBytes();
+        String mm = "C+m,1,3,0";
+
+        int[] expectedPositions = {7, 30, 31};
+        int[] positions = AlignmentUtils.getModificationPositions(mm, sequence);
+        //assertArrayEquals(expectedPositions, positions);
+        System.out.println(positions);
+
+    }
+
+    public static AlignmentBlockImpl buildAlignmentBlock(char operator,
+                                                          byte[] readBases,
+                                                          byte[] readBaseQualities,
+                                                          int blockStart,
+                                                          int fromIdx,
+                                                          int nBases) {
+
+        byte[] blockBases = null;
+        byte[] blockQualities = null;
+
+        if (readBases != null && readBases.length > 0) {
+            blockBases = new byte[nBases];
+            int nBasesAvailable = readBases.length - fromIdx;
+            if (nBasesAvailable < nBases) {
+                Arrays.fill(blockBases, (byte) '?');
+            }
+            System.arraycopy(readBases, fromIdx, blockBases, 0, nBases);
+        }
+        if (readBaseQualities != null && readBaseQualities.length > 0) {
+            blockQualities = new byte[nBases];
+            int nBasesAvailable = readBaseQualities.length - fromIdx;
+            if (nBasesAvailable < nBases) {
+                Arrays.fill(blockQualities, (byte) 126);
+            }
+            System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, nBases);
+        }
+        AlignmentBlockImpl block = new AlignmentBlockImpl(blockStart, blockBases, blockQualities, nBases, operator);
+
+        return block;
+    }
+
+
+    static int[] emptyArray = {};
+
+    public static int[] getModificationPositions(String mm, byte[] sequence) {
+        //C+m,865,452,94,425,45,49
+        String firstMM = mm.split(";")[0];
+
+        String[] tokens = firstMM.split(","); //Globals.commaPattern.split(mm);
+        if (tokens.length == 1) {
+            return emptyArray;
+        }
+
+        char base = tokens[0].charAt(0);
+        char strand = tokens[0].charAt(1);
+        String modification = tokens[0].substring(2);
+
+        int[] positions = new int[tokens.length - 1];
+        int idx = 0;
+        int s = 0;
+        int skip = Integer.parseInt(tokens[idx + 1]);
+        int matchCount = 0;
+        while (idx < positions.length) {
+            if (sequence[s] == base) {
+                if (matchCount == skip) {
+                    positions[idx] = s;
+                    if(idx+1 == positions.length) {
+                        break;
+                    }
+                    idx++;
+                    skip = Integer.parseInt(tokens[idx + 1]);
+                    matchCount = 0;
+                } else {
+                    matchCount++;
+                }
+            }
+            s++;
+        }
+        return positions;
+    }
+
+    public static void main(String [] args) {
+        testGetModificationPositions();
+    }
+
 }
