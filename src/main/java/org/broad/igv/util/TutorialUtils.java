@@ -31,7 +31,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
-import org.broad.igv.sam.PicardAlignment;
+import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 
@@ -103,9 +103,9 @@ public class TutorialUtils {
 
             for (Region r : regions) {
 
-                CloseableIterator<PicardAlignment> iter = reader.query(r.chr, r.start, r.end, false);
+                CloseableIterator<SAMAlignment> iter = reader.query(r.chr, r.start, r.end, false);
                 while (iter.hasNext()) {
-                    PicardAlignment alignment = iter.next();
+                    SAMAlignment alignment = iter.next();
                     SAMRecord record = alignment.getRecord();
                     record.setReferenceName(r.name);
                     record.setAlignmentStart(record.getAlignmentStart() - r.start);

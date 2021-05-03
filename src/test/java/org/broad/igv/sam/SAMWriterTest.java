@@ -71,7 +71,7 @@ public class SAMWriterTest extends AbstractHeadlessTest {
      * @param origPath       Used for error message only. Can be null
      * @throws java.io.IOException
      */
-    public void checkRecordsMatch(List<PicardAlignment> origAlignments, File outFile, String origPath) throws IOException {
+    public void checkRecordsMatch(List<SAMAlignment> origAlignments, File outFile, String origPath) throws IOException {
         //Read back in, check equality
         AlignmentReader outputReader = AlignmentReaderFactory.getReader(outFile.getAbsolutePath(), false);
         Iterator<Alignment> outputIter = outputReader.iterator();
@@ -126,15 +126,15 @@ public class SAMWriterTest extends AbstractHeadlessTest {
 
     private static class SamHeaderIterator {
         private SAMFileHeader header;
-        private List<PicardAlignment> alignments;
+        private List<SAMAlignment> alignments;
 
         public SamHeaderIterator(String inpath) throws IOException {
 
             SAMReader reader = new SAMReader(inpath, false);
             this.header = reader.getFileHeader();
-            Iterator<PicardAlignment> iter = reader.iterator();
+            Iterator<SAMAlignment> iter = reader.iterator();
 
-            alignments = new ArrayList<PicardAlignment>();
+            alignments = new ArrayList<SAMAlignment>();
             while (iter.hasNext()) {
                 alignments.add(iter.next());
             }
