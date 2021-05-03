@@ -98,16 +98,11 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         }
 
         SAMFileHeader header = record.getHeader();
-        String keySequence = null;
-        String flowOrder = null;
         if (header != null) {
             String readGroup = (String) record.getAttribute("RG");
             if (readGroup != null) {
                 this.readGroupRecord = header.getReadGroup(readGroup);
-                if(this.readGroupRecord != null) {
-                    keySequence = this.readGroupRecord.getKeySequence();
-                    flowOrder = this.readGroupRecord.getFlowOrder();
-                }
+
             }
         }
 
@@ -123,8 +118,6 @@ public class PicardAlignment extends SAMAlignment implements Alignment {
         setPairOrientation();
         setPairStrands();
         createAlignmentBlocks(record.getCigarString(), record.getReadBases(), record.getBaseQualities());
-
-
     }      // End constructor
 
     /**

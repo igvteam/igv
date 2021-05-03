@@ -63,7 +63,6 @@ import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
-import org.broad.igv.google.Ga4ghAPIHelper;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.gwas.*;
 import org.broad.igv.lists.GeneList;
@@ -257,8 +256,7 @@ public class TrackLoader {
         return typeString.endsWith(".sam") || typeString.endsWith(".bam") || typeString.endsWith(".cram") ||
                 typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
                 typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
-                typeString.endsWith(".bai") || typeString.endsWith(".csi") || typeString.equals("alist") ||
-                typeString.equals(Ga4ghAPIHelper.RESOURCE_TYPE);
+                typeString.endsWith(".bai") || typeString.endsWith(".csi") || typeString.equals("alist");
     }
 
     private void loadSMAPFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
@@ -396,9 +394,9 @@ public class TrackLoader {
             TribbleFeatureSource tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
 
             FeatureSource src;
-            if(GFFFeatureSource.isGFF(locator.getPath())) {
-                GFFCodec codec =  (GFFCodec) CodecFactory.getCodec(locator, genome);
-                 src = new GFFFeatureSource(tribbleFeatureSource, codec.getVersion()) ;
+            if (GFFFeatureSource.isGFF(locator.getPath())) {
+                GFFCodec codec = (GFFCodec) CodecFactory.getCodec(locator, genome);
+                src = new GFFFeatureSource(tribbleFeatureSource, codec.getVersion());
             } else {
                 src = tribbleFeatureSource;
             }
@@ -427,8 +425,8 @@ public class TrackLoader {
             String path = locator.getPath().toLowerCase();
             if (path.contains(".narrowpeak") ||
                     locator.getPath().contains(".broadpeak") ||
-                    locator.getPath().contains(".gappedpeak")||
-                    locator.getPath().contains(".regionpeak") ) {
+                    locator.getPath().contains(".gappedpeak") ||
+                    locator.getPath().contains(".regionpeak")) {
                 t.setUseScore(true);
             }
             newTracks.add(t);
@@ -886,9 +884,8 @@ public class TrackLoader {
 
             // Search for precalculated coverage data
             // Skip for GA4GH & SU2C resources
-            if (!(Ga4ghAPIHelper.RESOURCE_TYPE.equals(locator.getType()) ||
-                    locator.getPath().contains("dataformat=.bam") ||
-                    GoogleUtils.isGoogleCloud(locator.getPath()))) {
+            if (!locator.getPath().contains("dataformat=.bam") ||
+                    GoogleUtils.isGoogleCloud(locator.getPath())) {
 
                 String covPath = locator.getCoverage();
                 if (covPath == null) {

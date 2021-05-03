@@ -28,7 +28,6 @@ package org.broad.igv.util;
 import com.google.gson.JsonObject;
 import htsjdk.tribble.Tribble;
 import org.apache.log4j.Logger;
-import org.broad.igv.google.Ga4ghAPIHelper;
 import org.broad.igv.google.GoogleUtils;
 
 //import java.awt.*;
@@ -309,7 +308,7 @@ public class ResourceLocator {
     }
 
     public boolean isLocal() {
-        return dbURL == null && !FileUtils.isRemote(path) && !Ga4ghAPIHelper.RESOURCE_TYPE.equals(type);
+        return dbURL == null && !FileUtils.isRemote(path);
     }
 
     public void setTrackInforURL(String trackInforURL) {
