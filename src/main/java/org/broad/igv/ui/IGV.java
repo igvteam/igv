@@ -2433,6 +2433,7 @@ public class IGV implements IGVEventObserver {
 
             if (futures.size() == 0) {
                 UIUtilities.invokeOnEventThread(() -> {
+                    Autoscaler.autoscale(getAllTracks());
                     checkPanelLayouts();
                     component.repaint();
                 });
