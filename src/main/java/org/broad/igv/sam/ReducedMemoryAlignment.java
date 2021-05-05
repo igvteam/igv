@@ -409,7 +409,7 @@ public class ReducedMemoryAlignment implements Alignment {
         }
 
         @Override
-        public byte[] getBases() {
+        public ByteSubarray getBases() {
             return null;
         }
 
@@ -424,7 +424,7 @@ public class ReducedMemoryAlignment implements Alignment {
         }
 
         @Override
-        public byte[] getQualities() {
+        public ByteSubarray getQualities() {
             return null;
         }
 

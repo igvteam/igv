@@ -78,8 +78,8 @@ public class BisulfiteCounts {
                     AlignmentUtils.reverseComplementCopy(inReference) :
                     inReference);
 
-            byte[] inRead = block.getBases();
-            byte[] read = (flipRead) ? AlignmentUtils.reverseComplementCopy(inRead) : inRead;
+            ByteSubarray inRead = block.getBases();
+            ByteSubarray read = (flipRead) ? AlignmentUtils.reverseComplementCopy(inRead) : inRead;
 
             int alignmentLen = inRead.length;
             final int idxEnd = alignmentLen - 1;
@@ -101,7 +101,7 @@ public class BisulfiteCounts {
 
                 // Strand has already been accounted for
                 if (refbase == 'C') {
-                    byte readbase = read[idx];
+                    byte readbase = read.getByte(idx);
                     if (readbase == '=') {
                         readbase = refbase;
                     }
@@ -161,7 +161,7 @@ public class BisulfiteCounts {
      *         as the context passed in, derived classes might return a different context).
      *         If we don't match, return null.
      */
-    protected AlignmentTrack.BisulfiteContext contextIsMatching(byte[] reference, byte[] read, int idx,
+    protected AlignmentTrack.BisulfiteContext contextIsMatching(byte[] reference, ByteSubarray read, int idx,
                                                                 AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
 
@@ -187,7 +187,7 @@ public class BisulfiteCounts {
             for (int posti = 0; matchesContext && (posti < postContext.length); posti++) {
                 byte contextb = postContext[posti];
                 int offsetidx = idx + 1 + posti;
-                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read[offsetidx]);
+                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read.getByte(offsetidx));
             }
         }
 
@@ -199,7 +199,7 @@ public class BisulfiteCounts {
             for (int prei = 0; matchesContext && (prei < preContext.length); prei++) {
                 byte contextb = preContext[prei];
                 int offsetidx = idx - (preContext.length - prei);
-                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read[offsetidx]);
+                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read.getByte(offsetidx));
             }
         }
 

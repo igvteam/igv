@@ -364,7 +364,7 @@ public class SAMAlignment implements Alignment {
 
         if (cigarString.equals("*")) {
             alignmentBlocks = new AlignmentBlockImpl[1];
-            alignmentBlocks[0] = new AlignmentBlockImpl(getStart(), readBases, readBaseQualities, readBases.length, '*');
+            alignmentBlocks[0] = new AlignmentBlockImpl(getStart(), readBases, readBaseQualities, 0, readBases.length, '*');
             return;
         }
 
@@ -573,16 +573,16 @@ public class SAMAlignment implements Alignment {
 
                 if (block.containsPixel(mouseX)) {
 
-                    byte[] bases = block.getBases();
+                    ByteSubarray bases = block.getBases();
                     if (bases == null) {
                         buf.append("Insertion: " + block.getLength() + " bases");
                     } else {
                         if (bases.length < 50) {
-                            buf.append("Insertion (" + bases.length + " bases): " + new String(bases));
+                            buf.append("Insertion (" + bases.length + " bases): " + bases.getString());
                         } else {
                             int len = bases.length;
-                            buf.append("Insertion (" + bases.length + " bases): " + new String(Arrays.copyOfRange(bases, 0, 25)) + "..." +
-                                    new String(Arrays.copyOfRange(bases, len - 25, len)));
+                            buf.append("Insertion (" + bases.length + " bases): " + new String(bases.copyOfRange(0, 25)) + "..." +
+                                    new String(bases.copyOfRange(len - 25, len)));
                         }
                     }
                     return buf.toString();

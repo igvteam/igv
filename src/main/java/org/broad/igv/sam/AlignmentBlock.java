@@ -40,13 +40,13 @@ public interface AlignmentBlock {
 
     byte getBase(int offset);
 
-    byte[] getBases();
+    ByteSubarray getBases();
 
     int getStart();
 
     byte getQuality(int offset);
 
-    byte[] getQualities();
+    ByteSubarray getQualities();
 
     int getEnd();
 

@@ -823,7 +823,7 @@ public class AlignmentRenderer {
                         bisinfo = new BisulfiteBaseInfo(reference, alignment, block, renderOptions.bisulfiteContext);
                     }
 
-                    byte[] read = block.getBases();
+                    ByteSubarray read = block.getBases();
                     final int s = (int) Math.max(Math.floor(bpStart), start);
                     final int e = (int) Math.min(Math.ceil(bpEnd), end);
                     for (int loc = s; loc < e; loc++) {
@@ -833,7 +833,7 @@ public class AlignmentRenderer {
 
                         if (showAllBases || (!bisulfiteMode && misMatch) ||
                                 (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
-                            char c = (char) read[idx];
+                            char c = (char) read.getByte(idx);
 
                             Color color = null;
                             if (bisulfiteMode) {
@@ -1109,7 +1109,7 @@ public class AlignmentRenderer {
                                             AlignmentBlock block,
                                             boolean leaveMargin) {
         Graphics2D g = context.getGraphics2D("INSERTIONS");
-        byte[] bases = block.getBases();
+        ByteSubarray bases = block.getBases();
         int padding = block.getPadding();
 
         double locScale = context.getScale();
@@ -1123,7 +1123,7 @@ public class AlignmentRenderer {
         final int size = bases.length + padding;
         for (int p = 0; p < size; p++) {
 
-            char c = p < padding ? '-' : (char) bases[p - padding];
+            char c = p < padding ? '-' : (char) bases.getByte(p - padding);
 
             Color color = SequenceRenderer.nucleotideColors.get(c);
             if (color == null) {

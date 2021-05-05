@@ -111,19 +111,19 @@ public class AlignmentUtils {
      * @param idx
      * @return
      */
-    static boolean isMisMatch(byte[] reference, byte[] read, boolean isSoftClipped, int idx) {
+    static boolean isMisMatch(byte[] reference, ByteSubarray read, boolean isSoftClipped, int idx) {
         if (reference == null) return false;
         boolean misMatch = false;
         if (isSoftClipped) {
             // Goby will return '=' characters when the soft-clip happens to match the reference.
             // It could actually be useful to see which part of the soft clipped bases match, to help detect
             // cases when an aligner clipped too much.
-            final byte readbase = read[idx];
+            final byte readbase = read.getByte(idx);
             misMatch = readbase != '=';  // mismatch, except when the soft-clip has an '=' base.
         } else {
             final int referenceLength = reference.length;
             final byte refbase = idx < referenceLength ? reference[idx] : 0;
-            final byte readbase = read[idx];
+            final byte readbase = read.getByte(idx);
             misMatch = readbase != '=' &&
                     idx < referenceLength &&
                     refbase != 0 &&
@@ -160,6 +160,19 @@ public class AlignmentUtils {
         if (bases.length % 2 == 1) {
             bases[i] = complement(bases[i]);
         }
+    }
+
+    /**
+     * Reverses and complements a copy of the original array
+     */
+    public static ByteSubarray reverseComplementCopy(ByteSubarray bases) {
+        final int lastIndex = bases.length - 1;
+        byte[] out = new byte[bases.length];
+        int i;
+        for (i = 0; i <= lastIndex; i++) {
+            out[lastIndex - i] = complement(bases.getByte(i));
+        }
+        return new ByteSubarray(out, 0, out.length);
     }
 
     /**
@@ -239,7 +252,7 @@ public class AlignmentUtils {
             }
             System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, nBases);
         }
-        AlignmentBlockImpl block = new AlignmentBlockImpl(blockStart, blockBases, blockQualities, nBases, operator);
+        AlignmentBlockImpl block = new AlignmentBlockImpl(blockStart, readBases, readBaseQualities, fromIdx, nBases, operator);
 
         return block;
     }

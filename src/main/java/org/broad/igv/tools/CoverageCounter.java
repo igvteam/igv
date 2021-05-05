@@ -387,13 +387,13 @@ public class CoverageCounter {
                                     adjustedEnd = Math.min(queryInterval.getEnd(), adjustedEnd);
                                 }
 
-                                byte[] bases = block.getBases();
+                                ByteSubarray bases = block.getBases();
                                 if(bases != null) {
                                     for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
                                         byte base = 0;
                                         int baseIdx = pos - blockStart;
                                         if (bases != null && baseIdx >= 0 && baseIdx < bases.length) {
-                                            base = bases[baseIdx];
+                                            base = bases.getByte(baseIdx);
                                         }
                                         //int idx = pos - blockStart;
                                         //byte quality = (idx >= 0 && idx < block.qualities.length) ?
