@@ -130,7 +130,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     }
 
     @Override
-    public boolean isSoftClipped() {
+    public boolean isSoftClip() {
         return softClipped;
     }
 
@@ -143,7 +143,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("[block ");
-        sb.append(isSoftClipped() ? "softClipped " : " ");
+        sb.append(isSoftClip() ? "softClipped " : " ");
         sb.append(getStart());
         sb.append("-");
         sb.append(getEnd());

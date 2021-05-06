@@ -135,7 +135,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
                 //Strand strand = alignment.getFirstOfPairStrand();
 
                 // Don't count softclips
-                if (!b.isSoftClipped() && strand != Strand.NONE) {
+                if (!b.isSoftClip() && strand != Strand.NONE) {
                     incBlockCounts(b, isNegativeStrand);
                 }
             }

@@ -272,13 +272,13 @@ public class GobyAlignment implements Alignment {
     private AlignmentBlockImpl[] keepSoftClips(AlignmentBlockImpl[] blocks) {
         int numSoftCLippedBlocks = 0;
         for (AlignmentBlock block : blocks) {
-            if (block.isSoftClipped()) numSoftCLippedBlocks++;
+            if (block.isSoftClip()) numSoftCLippedBlocks++;
         }
         AlignmentBlockImpl[] tmp = new AlignmentBlockImpl[numSoftCLippedBlocks];
         int j = 0;
         for (int i = 0; i < numSoftCLippedBlocks; i++) {
             AlignmentBlockImpl block = blocks[j++];
-            if (block.isSoftClipped()) {
+            if (block.isSoftClip()) {
                 tmp[i] = block;
             }
         }
@@ -349,7 +349,7 @@ public class GobyAlignment implements Alignment {
 
 
             for (AlignmentBlock block : blocks) {
-                if (!block.isSoftClipped()) {
+                if (!block.isSoftClip()) {
 
                     final int vrPos = var.getPosition() + entry.getPosition();
                     if (hasReadDeletion(var) && vrPos >= block.getStart() && vrPos <= block.getEnd()) {

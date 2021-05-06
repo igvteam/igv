@@ -50,7 +50,7 @@ public interface AlignmentBlock {
 
     int getEnd();
 
-    boolean isSoftClipped();
+    boolean isSoftClip();
 
     boolean hasBases();
 

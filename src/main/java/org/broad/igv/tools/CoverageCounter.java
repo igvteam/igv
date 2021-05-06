@@ -346,7 +346,7 @@ public class CoverageCounter {
                     if (blocks != null && !pairedCoverage) {
                         for (AlignmentBlock block : blocks) {
 
-                            if (!block.isSoftClipped()) {
+                            if (!block.isSoftClip()) {
 
                                 int blockStart = block.getStart();
                                 int blockEnd = block.getEnd();

@@ -170,7 +170,7 @@ public class HaplotypeUtils {
                 for (Integer pos : positions) {
                     boolean found = false;
                     for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-                        if (block.isSoftClipped()) continue;
+                        if (block.isSoftClip()) continue;
                         if (block.contains(pos)) {
                             int blockOffset = pos - block.getStart();
                             hapName += (char) block.getBase(blockOffset);
