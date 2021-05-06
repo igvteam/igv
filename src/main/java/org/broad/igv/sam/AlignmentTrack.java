@@ -105,7 +105,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         UNEXPECTED_PAIR,
         MAPPED_SIZE,
         LINK_STRAND,
-        YC_TAG
+        YC_TAG,
+        BASE_MODIFICATION
     }
 
     public enum SortOption {
@@ -1780,6 +1781,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("library", ColorOption.LIBRARY);
             mappings.put("movie", ColorOption.MOVIE);
             mappings.put("ZMW", ColorOption.ZMW);
+            mappings.put("base modification", ColorOption.BASE_MODIFICATION);
 
             for (Map.Entry<String, ColorOption> el : mappings.entrySet()) {
                 JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());

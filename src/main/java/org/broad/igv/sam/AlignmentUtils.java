@@ -28,7 +28,9 @@ package org.broad.igv.sam;
 
 import org.broad.igv.Globals;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Jim Robinson
@@ -214,24 +216,14 @@ public class AlignmentUtils {
         return htsjdk.samtools.util.StringUtil.bytesToString(bases);
     }
 
-    static void testGetModificationPositions() {
-        //top-fwd	0	*	0	0	*	*	0	0	AGGATCTCTAGCGGATCGGCGGGGGATATGCCATAT	*	Mm:Z:C+m,1,3,0;	Ml:B:C,128,153,179
-        byte[] sequence = "AGGATCTCTAGCGGATCGGCGGGGGATATGCCATAT".getBytes();
-        String mm = "C+m,1,3,0";
 
-        int[] expectedPositions = {7, 30, 31};
-        int[] positions = AlignmentUtils.getModificationPositions(mm, sequence);
-        //assertArrayEquals(expectedPositions, positions);
-        System.out.println(positions);
-
-    }
 
     public static AlignmentBlockImpl buildAlignmentBlock(char operator,
-                                                          byte[] readBases,
-                                                          byte[] readBaseQualities,
-                                                          int blockStart,
-                                                          int fromIdx,
-                                                          int nBases) {
+                                                         byte[] readBases,
+                                                         byte[] readBaseQualities,
+                                                         int blockStart,
+                                                         int fromIdx,
+                                                         int nBases) {
 
         byte[] blockBases = null;
         byte[] blockQualities = null;
@@ -260,45 +252,60 @@ public class AlignmentUtils {
 
     static int[] emptyArray = {};
 
-    public static int[] getModificationPositions(String mm, byte[] sequence) {
-        //C+m,865,452,94,425,45,49
-        String firstMM = mm.split(";")[0];
+    public static List<BaseModifications> getBaseModifications(String mm, byte[] sequence, boolean isNegativeStrand) {
 
-        String[] tokens = firstMM.split(","); //Globals.commaPattern.split(mm);
-        if (tokens.length == 1) {
-            return emptyArray;
+        if(isNegativeStrand) {
+            sequence = reverseComplementCopy(sequence);
         }
 
-        char base = tokens[0].charAt(0);
-        char strand = tokens[0].charAt(1);
-        String modification = tokens[0].substring(2);
+        List<BaseModifications> mods = new ArrayList<>();
+        //C+m,865,452,94,425,45,49
+        String [] mmTokens = mm.split(";");
+        for(String firstMM: mmTokens) {
 
-        int[] positions = new int[tokens.length - 1];
-        int idx = 0;
-        int s = 0;
-        int skip = Integer.parseInt(tokens[idx + 1]);
-        int matchCount = 0;
-        while (idx < positions.length) {
-            if (sequence[s] == base) {
-                if (matchCount == skip) {
-                    positions[idx] = s;
-                    if(idx+1 == positions.length) {
-                        break;
+            String[] tokens = firstMM.split(","); //Globals.commaPattern.split(mm);
+
+            if (tokens.length > 3){
+
+                char base = tokens[0].charAt(0);
+                char strand = tokens[0].charAt(1);
+                String modification = tokens[0].substring(2);
+
+                int[] positions = new int[tokens.length - 1];
+                int idx = 0;
+                int s = 0;
+                int skip = Integer.parseInt(tokens[idx + 1]);
+                int matchCount = 0;
+                while (idx < positions.length && s < sequence.length) {
+                    if (sequence[s] == base) {
+                        if (matchCount == skip) {
+                            positions[idx] = s;
+                            if (idx + 1 == positions.length) {
+                                break;
+                            }
+                            idx++;
+                            skip = Integer.parseInt(tokens[idx + 1]);
+                            matchCount = 0;
+                        } else {
+                            matchCount++;
+                        }
                     }
-                    idx++;
-                    skip = Integer.parseInt(tokens[idx + 1]);
-                    matchCount = 0;
+                    s++;
+                }
+
+                if (isNegativeStrand) {
+                    int[] reversedPositions = new int[positions.length];
+                    for (int i = 0; i < positions.length; i++) {
+                        reversedPositions[i] = sequence.length - 1 - positions[i];
+                    }
+                    mods.add(new BaseModifications(base, strand, modification, reversedPositions));
                 } else {
-                    matchCount++;
+                    mods.add(new BaseModifications(base, strand, modification, positions));
                 }
             }
-            s++;
         }
-        return positions;
-    }
 
-    public static void main(String [] args) {
-        testGetModificationPositions();
+        return mods;
     }
 
 }

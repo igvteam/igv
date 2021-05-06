@@ -102,6 +102,7 @@ public class SAMAlignment implements Alignment {
     public AlignmentBlockImpl[] insertions;
     List<Gap> gaps;
     char[] gapTypes;
+    private Map<Integer, BaseModifications.Mod> baseModifications;
 
     protected String mateSequence = null;
     protected String pairOrientation = "";
@@ -311,6 +312,25 @@ public class SAMAlignment implements Alignment {
             }
         }
         return 0;
+    }
+
+    @Override
+    public Map<Integer, BaseModifications.Mod> getBaseModificationMap() {
+
+        if (baseModifications == null && record.hasAttribute("Mm")) {
+
+            Object mm = record.getAttribute("Mm");
+            List<BaseModifications> mods = AlignmentUtils.getBaseModifications(mm.toString(), record.getReadBases(), isNegativeStrand());
+
+            for(BaseModifications m : mods) {
+                int[] positions = m.positions;
+                baseModifications = new HashMap<>();
+                for (int i : positions) {
+                    baseModifications.put(i, new BaseModifications.Mod(m.base, m.strand, (byte) 255));
+                }
+            }
+        }
+        return baseModifications;
     }
 
     /**
@@ -722,7 +742,7 @@ public class SAMAlignment implements Alignment {
                 int offset = basePosition - block.getStart();
                 byte base = block.getBase(offset);
 
-                if (base == 0 && this.getReadSequence().equals("=") && !block.isSoftClipped() && genome != null) {
+                if (base == 0 && this.getReadSequence().equals("=") && !block.isSoftClip() && genome != null) {
                     base = genome.getReference(chr, basePosition);
 
                 }
