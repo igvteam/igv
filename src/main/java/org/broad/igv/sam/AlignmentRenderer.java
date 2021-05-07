@@ -770,17 +770,21 @@ public class AlignmentRenderer {
         if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
             Map<Integer, BaseModifications.Mod> baseModifications = alignment.getBaseModificationMap();
             if (baseModifications != null) {
+
                 for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
                     // Compute bounds
                     int pY = (int) rowRect.getY();
                     int dY = (int) rowRect.getHeight();
                     dX = (int) Math.max(1, (1.0 / locScale));
                     Graphics g = context.getGraphics();
-                    g.setColor(Color.RED);    // TODO -- get color from modification type, alpha shade by likelihood
 
                     for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
 
                         if (baseModifications.containsKey(i)) {
+
+                            BaseModifications.Mod mod = baseModifications.get(i);
+                            Color c = BaseModifications.getModColor("todo-modification", (byte) 10); //mod.likelihood);
+                            g.setColor(c);
 
                             int blockIdx = i - block.getBases().startOffset;
                             int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);

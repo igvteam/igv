@@ -318,17 +318,9 @@ public class SAMAlignment implements Alignment {
     public Map<Integer, BaseModifications.Mod> getBaseModificationMap() {
 
         if (baseModifications == null && record.hasAttribute("Mm")) {
-
             Object mm = record.getAttribute("Mm");
-            List<BaseModifications> mods = AlignmentUtils.getBaseModifications(mm.toString(), record.getReadBases(), isNegativeStrand());
-
-            for(BaseModifications m : mods) {
-                int[] positions = m.positions;
-                baseModifications = new HashMap<>();
-                for (int i : positions) {
-                    baseModifications.put(i, new BaseModifications.Mod(m.base, m.strand, (byte) 255));
-                }
-            }
+            byte [] ml = (byte []) record.getAttribute("Ml");
+            baseModifications = BaseModifications.getBaseModificationMap(mm.toString(), ml, record.getReadBases(), isNegativeStrand());
         }
         return baseModifications;
     }
@@ -784,7 +776,12 @@ public class SAMAlignment implements Alignment {
                 }
                 buf.append("<br>" + tag.tag + " = ");
 
-                if (tag.value.getClass().isArray()) { // ignore array types
+                if(tag.tag.equals("Ml")) {
+                    buf.append(this.getMlTagString(tag));
+                    buf.append("<br>");
+                    continue;
+                }
+                else if (tag.value.getClass().isArray()) { // ignore array types
                     buf.append("[not shown]<br>");
                     continue;
                 }
@@ -826,6 +823,16 @@ public class SAMAlignment implements Alignment {
             }
         }
         return buf.toString();
+    }
+
+    private String getMlTagString(SAMRecord.SAMTagAndValue tag) {
+        byte [] bytes = (byte [])tag.value;
+        String buf = "";
+        for(int i=0; i<bytes.length; i++) {
+            if(i > 0) buf += ",";
+            buf += Byte.toUnsignedInt(bytes[i]);
+        }
+        return buf;
     }
 
     private String getSupplAlignmentString(String sa) {
