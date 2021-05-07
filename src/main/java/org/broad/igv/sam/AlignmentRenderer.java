@@ -766,42 +766,6 @@ public class AlignmentRenderer {
             }
         }
 
-        // Base modification
-        if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
-            Map<Integer, BaseModifications.Mod> baseModifications = alignment.getBaseModificationMap();
-            if (baseModifications != null) {
-
-                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-                    // Compute bounds
-                    int pY = (int) rowRect.getY();
-                    int dY = (int) rowRect.getHeight();
-                    dX = (int) Math.max(1, (1.0 / locScale));
-                    Graphics g = context.getGraphics();
-
-                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
-
-                        if (baseModifications.containsKey(i)) {
-
-                            BaseModifications.Mod mod = baseModifications.get(i);
-                            Color c = BaseModifications.getModColor("todo-modification", (byte) 10); //mod.likelihood);
-                            g.setColor(c);
-
-                            int blockIdx = i - block.getBases().startOffset;
-                            int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
-
-                            // Don't draw out of clipping rect
-                            if (pX > rowRect.getMaxX()) {
-                                break;
-                            } else if (pX + dX < rowRect.getX()) {
-                                continue;
-                            }
-                            g.fillRect(pX, pY, dX, dY);
-                        }
-                    }
-                }
-            }
-        }
-
         // Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
         // that is proportional to the base quality score, or flow signal deviation, whichever is selected.
 
@@ -912,6 +876,51 @@ public class AlignmentRenderer {
                 }
             }
         }
+
+
+        // Base modification
+        if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
+            Map<Integer, BaseModifications.Mod> baseModifications = alignment.getBaseModificationMap();
+            if (baseModifications != null) {
+
+                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
+                    // Compute bounds
+                    int pY = (int) rowRect.getY();
+                    int dY = (int) rowRect.getHeight();
+                    dX = (int) Math.max(1, (1.0 / locScale));
+                    Graphics g = context.getGraphics();
+
+                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
+
+                        if (baseModifications.containsKey(i)) {
+
+                            BaseModifications.Mod mod = baseModifications.get(i);
+                            Color c = BaseModifications.getModColor("todo-modification", mod.likelihood);
+                            g.setColor(c);
+
+                            int blockIdx = i - block.getBases().startOffset;
+                            int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
+
+                            // Don't draw out of clipping rect
+                            if (pX > rowRect.getMaxX()) {
+                                break;
+                            } else if (pX + dX < rowRect.getX()) {
+                                continue;
+                            }
+
+                            // Expand narrow width to make more visible
+                            if(dX < 3) {
+                                dX = 3;
+                                pX--;
+                            }
+
+                            g.fillRect(pX, pY, dX, Math.max(1, dY-2));
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     /**
