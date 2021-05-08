@@ -130,5 +130,5 @@ public interface Alignment extends LocusScore {
 
     default int getHapDistance() {return 0;}
 
-    default Map<Integer, BaseModifications.Mod> getBaseModificationMap() { return null;}
+    default Map<Integer, BaseModification> getBaseModificationMap() { return null;}
 }

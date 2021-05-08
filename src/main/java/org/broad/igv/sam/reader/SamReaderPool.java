@@ -43,8 +43,7 @@ public class SamReaderPool {
         availableReaders = Collections.synchronizedList(new ArrayList<>());
     }
 
-    public SamReader getReader() throws IOException {
-        System.out.println("Pool size = " + availableReaders.size());
+    public synchronized SamReader getReader() throws IOException {
         if (availableReaders.size() > 0) {
             return availableReaders.remove(0);
         } else {

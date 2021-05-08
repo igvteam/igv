@@ -102,7 +102,7 @@ public class SAMAlignment implements Alignment {
     public AlignmentBlockImpl[] insertions;
     List<Gap> gaps;
     char[] gapTypes;
-    private Map<Integer, BaseModifications.Mod> baseModifications;
+    private Map<Integer, BaseModification> baseModificationMap;
 
     protected String mateSequence = null;
     protected String pairOrientation = "";
@@ -315,14 +315,22 @@ public class SAMAlignment implements Alignment {
     }
 
     @Override
-    public Map<Integer, BaseModifications.Mod> getBaseModificationMap() {
+    public synchronized Map<Integer, BaseModification> getBaseModificationMap() {
 
-        if (baseModifications == null && record.hasAttribute("Mm")) {
+        if (baseModificationMap == null && record.hasAttribute("Mm")) {
             Object mm = record.getAttribute("Mm");
-            byte [] ml = (byte []) record.getAttribute("Ml");
-            baseModifications = BaseModifications.getBaseModificationMap(mm.toString(), ml, record.getReadBases(), isNegativeStrand());
+            byte[] ml = (byte[]) record.getAttribute("Ml");
+            List<BaseModification> baseModifications = BaseModification.getBaseModifications(mm.toString(), ml, record.getReadBases(), isNegativeStrand());
+            baseModificationMap = new HashMap<>();
+            for (BaseModification mod : baseModifications) {
+                Integer p = mod.position;
+                if (!baseModificationMap.containsKey(p) || Byte.toUnsignedInt(mod.likelihood) > Byte.toUnsignedInt(baseModificationMap.get(p).likelihood)) {
+                    baseModificationMap.put(p, mod);
+                }
+
+            }
         }
-        return baseModifications;
+        return baseModificationMap;
     }
 
     /**
@@ -776,12 +784,11 @@ public class SAMAlignment implements Alignment {
                 }
                 buf.append("<br>" + tag.tag + " = ");
 
-                if(tag.tag.equals("Ml")) {
+                if (tag.tag.equals("Ml")) {
                     buf.append(this.getMlTagString(tag));
                     buf.append("<br>");
                     continue;
-                }
-                else if (tag.value.getClass().isArray()) { // ignore array types
+                } else if (tag.value.getClass().isArray()) { // ignore array types
                     buf.append("[not shown]<br>");
                     continue;
                 }
@@ -826,10 +833,10 @@ public class SAMAlignment implements Alignment {
     }
 
     private String getMlTagString(SAMRecord.SAMTagAndValue tag) {
-        byte [] bytes = (byte [])tag.value;
+        byte[] bytes = (byte[]) tag.value;
         String buf = "";
-        for(int i=0; i<bytes.length; i++) {
-            if(i > 0) buf += ",";
+        for (int i = 0; i < bytes.length; i++) {
+            if (i > 0) buf += ",";
             buf += Byte.toUnsignedInt(bytes[i]);
         }
         return buf;

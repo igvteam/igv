@@ -880,7 +880,7 @@ public class AlignmentRenderer {
 
         // Base modification
         if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
-            Map<Integer, BaseModifications.Mod> baseModifications = alignment.getBaseModificationMap();
+            Map<Integer, BaseModification> baseModifications = alignment.getBaseModificationMap();
             if (baseModifications != null) {
 
                 for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
@@ -894,8 +894,8 @@ public class AlignmentRenderer {
 
                         if (baseModifications.containsKey(i)) {
 
-                            BaseModifications.Mod mod = baseModifications.get(i);
-                            Color c = BaseModifications.getModColor("todo-modification", mod.likelihood);
+                            BaseModification mod = baseModifications.get(i);
+                            Color c = BaseModification.getModColor(mod.modification, mod.likelihood);
                             g.setColor(c);
 
                             int blockIdx = i - block.getBases().startOffset;
