@@ -34,7 +34,6 @@
 --add-exports org.igv/org.broad.igv.renderer=junit
 --add-exports org.igv/org.broad.igv.sam=junit
 --add-exports org.igv/org.broad.igv.sam.cram=junit
---add-exports org.igv/org.broad.igv.sam.lite=junit
 --add-exports org.igv/org.broad.igv.sam.reader=junit
 --add-exports org.igv/org.broad.igv.session=junit
 --add-exports org.igv/org.broad.igv.tdf=junit
