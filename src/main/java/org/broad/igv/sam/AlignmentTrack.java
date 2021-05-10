@@ -802,7 +802,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         if (alignment != null) {
             StringBuilder buf = new StringBuilder();
-            buf.append(alignment.getValueString(location, mouseX, null).replace("<br>", "\n"));
+            buf.append(alignment.getClipboardString(location, mouseX)
+                    .replace("<br>", "\n")
+                    .replace("<br/>", "\n"));
             buf.append("\n");
             buf.append("Alignment start position = ").append(alignment.getChr()).append(":").append(alignment.getAlignmentStart() + 1);
             buf.append("\n");
@@ -951,7 +953,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             } else {
                 Alignment feature = getAlignmentAt(position, mouseY, frame);
                 if (feature != null) {
-                    return feature.getValueString(position, mouseX, getWindowFunction());
+                    return feature.getValueString(position, mouseX, renderOptions);
                 }
             }
 

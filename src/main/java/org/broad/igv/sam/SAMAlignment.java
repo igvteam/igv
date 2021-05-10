@@ -570,15 +570,13 @@ public class SAMAlignment implements Alignment {
 
 
     public String getClipboardString(double location, int mouseX) {
-        return getValueStringImpl(location, mouseX, false);
+        return getValueString(location, mouseX, (AlignmentTrack.RenderOptions) null);
     }
 
-    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
-        return getValueStringImpl(position, mouseX, true);
-    }
 
-    private String getValueStringImpl(double position, int mouseX, boolean truncate) {
+    public String getValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
 
+        boolean truncate = renderOptions != null;
         int basePosition = (int) position;
         StringBuffer buf = new StringBuffer();
 
@@ -590,9 +588,7 @@ public class SAMAlignment implements Alignment {
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
             for (AlignmentBlock block : this.insertions) {
-
                 if (block.containsPixel(mouseX)) {
-
                     ByteSubarray bases = block.getBases();
                     if (bases == null) {
                         buf.append("Insertion: " + block.getLength() + " bases");
@@ -610,7 +606,18 @@ public class SAMAlignment implements Alignment {
             }
         }
 
-        // Not over an insertion
+        // Check base modifications
+        if (renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION) {
+            for (AlignmentBlock block : this.alignmentBlocks) {
+                if (block.contains((int) position)) {
+                    int p = (int) (position - block.getStart()) + block.getBasesOffset();
+                    if (baseModificationMap != null && baseModificationMap.containsKey(p)) {
+                        BaseModification mod = baseModificationMap.get(p);
+                        return mod.valueString();
+                    }
+                }
+            }
+        }
 
         buf.append("Read name = " + getReadName() + "<br>");
 

@@ -752,7 +752,7 @@ public class GobyAlignment implements Alignment {
      * @return
      */
     public String getClipboardString(double location, int mouseX) {
-        return getValueString(location, mouseX, null);
+        return getValueString(location, mouseX, (WindowFunction) null);
     }
 
 

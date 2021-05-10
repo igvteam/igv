@@ -1,5 +1,9 @@
 package org.broad.igv.sam;
 
+import org.broad.igv.ui.color.ColorPalette;
+import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.color.PaletteColorTable;
+
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -7,15 +11,21 @@ import java.util.List;
 public class BaseModification {
 
     public String modification;
+    char strand;
     public int position;
     public byte likelihood;
 
     static Set<Character> STANDARD_CODES = new HashSet<>(Arrays.asList('C', 'm', 'h', 'f', 'c', 'T', 'g', 'e', 'b', 'U', 'A', 'a', 'G', 'o', 'N', 'n'));
 
-    public BaseModification(String modification, int position, byte likelihood) {
+    public BaseModification(String modification, char strand, int position, byte likelihood) {
         this.likelihood = likelihood;
         this.modification = modification;
         this.position = position;
+    }
+
+    public String valueString() {
+        int l = (int) (100.0 * Byte.toUnsignedInt(likelihood) / 255);
+        return modification + strand + " (" + l + "%)";
     }
 
 //    public static Map<Integer, Mod> getBaseModificationMap(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand) {
@@ -35,7 +45,7 @@ public class BaseModification {
 //    }
 
     public static List<BaseModification> getBaseModifications(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand) {
-
+byte [] origSequence = sequence;
         if (isNegativeStrand) {
             sequence = AlignmentUtils.reverseComplementCopy(sequence);
         }
@@ -87,6 +97,10 @@ public class BaseModification {
                 while (idx < positions.length) {
                     if (s >= sequence.length) {
                         System.err.println("Ran out of sequence");
+                        System.out.println(isNegativeStrand);
+                        System.out.println(mm);
+                        System.out.println(new String(origSequence));
+                        System.out.println(new String(sequence));
                         break;
                     }
                     if (base == 'N' || sequence[s] == base) {
@@ -94,7 +108,7 @@ public class BaseModification {
                             int position = isNegativeStrand ? sequence.length - 1 - s : s;
                             for(String modification : modifications) {
                                 byte likelihood = ml == null ? (byte) 255 : ml[mlIdx];
-                                mods.add(new BaseModification(modification, position, likelihood));
+                                mods.add(new BaseModification(modification, strand,  position, likelihood));
                                 mlIdx++;
                             }
                             if (idx + 1 == positions.length) {
@@ -130,7 +144,16 @@ public class BaseModification {
     public static Color getModColor(String modification, byte likelihood) {
 
         // TODO -- determine base color by modification
-        Color baseColor = Color.red;
+        Color baseColor;
+
+        if(modification.equals("m")) {
+            baseColor = Color.red;
+        } else {
+            if(modColorPallete == null) {
+                modColorPallete = new PaletteColorTable(ColorUtilities.getPalette("Set 1"));
+            }
+            baseColor = modColorPallete.get(modification);
+        }
 
         int l = Byte.toUnsignedInt(likelihood);
         if (l > 250) {
@@ -138,14 +161,16 @@ public class BaseModification {
         }
 
         l = Math.max(25, l);
-        if (!modColorMap.containsKey(l)) {
-            modColorMap.put(l, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), l));
+        String key = modification + "--" + l;
+        if (!modColorMap.containsKey(key)) {
+            modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), l));
         }
 
-        return modColorMap.get(l);
+        return modColorMap.get(key);
     }
 
+    static PaletteColorTable modColorPallete;
 
-    static Map<Integer, Color> modColorMap = new HashMap<>();
+    static Map<String, Color> modColorMap = new HashMap<>();
 
 }

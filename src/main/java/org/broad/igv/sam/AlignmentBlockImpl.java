@@ -33,7 +33,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
 
     private static ByteSubarray EMPTY_ARRAY = new ByteSubarray(new byte[0], 0, 0);
     private int start;
-    private int length;
+    private int offset;
     private ByteSubarray bases;
     private int basesLength = -1;
     public ByteSubarray qualities;
@@ -50,6 +50,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities, int offset, int nBases, char cigarOperator) {
 
         this.start = start;
+        this.offset = offset;
         this.bases = new ByteSubarray(bases, offset, nBases);
         this.basesLength = nBases;
         this.qualities = new ByteSubarray(qualities, offset, nBases);
@@ -86,6 +87,11 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     @Override
     public int getBasesLength() {
         return basesLength;
+    }
+
+    @Override
+    public int getBasesOffset() {
+        return offset;
     }
 
     @Override

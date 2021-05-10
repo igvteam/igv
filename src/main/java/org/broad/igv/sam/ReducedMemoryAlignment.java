@@ -229,7 +229,7 @@ public class ReducedMemoryAlignment implements Alignment {
     }
 
     public String getClipboardString(double location, int mouseX) {
-        return getValueString(location, mouseX, null);
+        return getValueString(location, mouseX, (WindowFunction) null);
     }
 
     public String getValueString(double position, int mouseX, WindowFunction ignored) {
@@ -395,6 +395,11 @@ public class ReducedMemoryAlignment implements Alignment {
         @Override
         public int getBasesLength() {
             return length;
+        }
+
+        @Override
+        public int getBasesOffset() {
+            return 0;
         }
 
 

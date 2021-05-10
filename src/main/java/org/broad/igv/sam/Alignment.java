@@ -31,6 +31,7 @@ package org.broad.igv.sam;
 
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
 import java.util.Map;
@@ -131,4 +132,8 @@ public interface Alignment extends LocusScore {
     default int getHapDistance() {return 0;}
 
     default Map<Integer, BaseModification> getBaseModificationMap() { return null;}
+
+    default String getValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
+        return getValueString(position, mouseX, (WindowFunction) null);
+    }
 }

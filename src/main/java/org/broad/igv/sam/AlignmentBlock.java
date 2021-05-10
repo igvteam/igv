@@ -36,6 +36,11 @@ public interface AlignmentBlock {
 
     int getBasesLength();
 
+    /**
+     * Offset into read sequence
+     */
+    int getBasesOffset();
+
     int getLength();
 
     byte getBase(int offset);
