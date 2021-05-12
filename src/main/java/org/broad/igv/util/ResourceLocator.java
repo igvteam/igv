@@ -328,7 +328,11 @@ public class ResourceLocator {
     }
 
     public String getTrackName() {
-        return this.getFileName();
+        if(name != null) {
+            return name;
+        } else {
+            return this.getFileName();
+        }
     }
 
 
