@@ -15,9 +15,8 @@ public class BaseModification {
     public int position;
     public byte likelihood;
 
-    static Set<Character> STANDARD_CODES = new HashSet<>(Arrays.asList('C', 'm', 'h', 'f', 'c', 'T', 'g', 'e', 'b', 'U', 'A', 'a', 'G', 'o', 'N', 'n'));
-
     static Map<String, String> codeValues;
+
     static {
         codeValues = new HashMap<>();
         codeValues.put("m", "5mC");
@@ -147,25 +146,29 @@ public class BaseModification {
         }
     }
 
+
     public static Color getModColor(String modification, byte likelihood) {
 
-        // TODO -- determine base color by modification
         Color baseColor;
 
-        if (modification.equals("m")) {
-            baseColor = Color.red;
-        } else {
-            if (modColorPallete == null) {
-                modColorPallete = new PaletteColorTable(ColorUtilities.getPalette("Set 1"));
-            }
-            baseColor = modColorPallete.get(modification);
+        if (modColorPallete == null) {
+            modColorPallete = new PaletteColorTable(new Color(132, 178, 158));
+            modColorPallete.put("m", Color.red);
+            modColorPallete.put("h", new Color(11, 132, 165));
+            modColorPallete.put("o", new Color(111, 78, 129));
+            modColorPallete.put("f", new Color(246, 200, 95));
+            modColorPallete.put("c", new Color(157, 216, 102));
+            modColorPallete.put("g", new Color(255, 160, 86));
+            modColorPallete.put("e", new Color(141, 221, 208));
+            modColorPallete.put("b", new Color(202, 71, 47));
         }
+        baseColor = modColorPallete.get(modification);
 
+        // Alpha shade by likelihood
         int l = Byte.toUnsignedInt(likelihood);
         if (l > 250) {
             return baseColor;
         }
-
         l = Math.max(25, l);
         String key = modification + "--" + l;
         if (!modColorMap.containsKey(key)) {
