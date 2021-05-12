@@ -17,6 +17,26 @@ public class BaseModification {
 
     static Set<Character> STANDARD_CODES = new HashSet<>(Arrays.asList('C', 'm', 'h', 'f', 'c', 'T', 'g', 'e', 'b', 'U', 'A', 'a', 'G', 'o', 'N', 'n'));
 
+    static Map<String, String> codeValues;
+    static {
+        codeValues = new HashMap<>();
+        codeValues.put("m", "5mC");
+        codeValues.put("h", "5hmC");
+        codeValues.put("f", "5fC");
+        codeValues.put("c", "5caC");
+        codeValues.put("g", "5hmU");
+        codeValues.put("e", "5fU");
+        codeValues.put("b", "5caU");
+        codeValues.put("a", "6mA");
+        codeValues.put("o", "8xoG");
+        codeValues.put("n", "Xao");
+        codeValues.put("C", "Unknown C");
+        codeValues.put("T", "Unknown T");
+        codeValues.put("A", "Unknown A");
+        codeValues.put("G", "Unknown G");
+        codeValues.put("N", "Unknown");
+    }
+
     public BaseModification(String modification, char strand, int position, byte likelihood) {
         this.likelihood = likelihood;
         this.modification = modification;
@@ -25,27 +45,12 @@ public class BaseModification {
 
     public String valueString() {
         int l = (int) (100.0 * Byte.toUnsignedInt(likelihood) / 255);
-        return modification + strand + " (" + l + "%)";
+        return "Base modification: " +
+                ((codeValues.containsKey(modification)) ? codeValues.get(modification) : "Uknown") + " (" + l + "%)";
     }
 
-//    public static Map<Integer, Mod> getBaseModificationMap(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand) {
-//        Map<Integer, Mod> map = new HashMap<>();
-//        List<BaseModification> mods = BaseModification.getBaseModifications(mm, sequence, isNegativeStrand);
-//        for (BaseModification m : mods) {
-//            int[] positions = m.positions;
-//            for (int i = 0; i < positions.length; i++) {
-//                Integer pos = positions[i];
-//                byte likelihood = ml == null ? (byte) 255 : ml[i];
-//                if (!map.containsKey(pos) || (map.containsKey(pos) && Byte.toUnsignedInt(likelihood) > Byte.toUnsignedInt(map.get(pos).likelihood))) {
-//                    map.put(positions[i], new BaseModification.Mod(m.base, m.strand, likelihood));
-//                }
-//            }
-//        }
-//        return map;
-//    }
-
     public static List<BaseModification> getBaseModifications(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand) {
-byte [] origSequence = sequence;
+        byte[] origSequence = sequence;
         if (isNegativeStrand) {
             sequence = AlignmentUtils.reverseComplementCopy(sequence);
         }
@@ -66,23 +71,24 @@ byte [] origSequence = sequence;
 
                 String modificationString = tokens[0].substring(2);
                 String[] modifications = null;
+
                 if (modificationString.length() > 1) {
-                    // If all characters are in the standard code set assume this is a multi-modification
-                    boolean multiMod = true;
-                    for (byte b : modificationString.getBytes()) {
-                        if (!STANDARD_CODES.contains((char) b)) {
-                            multiMod = false;
-                            break;
-                        }
+                    // If string can be converted to a number assume its a ChEBI code
+                    boolean isChEBI = true;
+                    try {
+                        Integer.parseInt(modificationString);
+                    } catch (NumberFormatException e) {
+                        isChEBI = false;
                     }
-                    if (multiMod) {
+                    if (isChEBI) {
+                        modifications = new String[]{modificationString};
+                    } else {
                         modifications = new String[modificationString.length()];
                         for (int i = 0; i < modificationString.length(); i++) {
                             modifications[i] = modificationString.substring(i, i + 1);
                         }
                     }
-                }
-                if (modifications == null) {
+                } else {
                     modifications = new String[]{modificationString};
                 }
 
@@ -106,9 +112,9 @@ byte [] origSequence = sequence;
                     if (base == 'N' || sequence[s] == base) {
                         if (matchCount == skip) {
                             int position = isNegativeStrand ? sequence.length - 1 - s : s;
-                            for(String modification : modifications) {
+                            for (String modification : modifications) {
                                 byte likelihood = ml == null ? (byte) 255 : ml[mlIdx];
-                                mods.add(new BaseModification(modification, strand,  position, likelihood));
+                                mods.add(new BaseModification(modification, strand, position, likelihood));
                                 mlIdx++;
                             }
                             if (idx + 1 == positions.length) {
@@ -146,10 +152,10 @@ byte [] origSequence = sequence;
         // TODO -- determine base color by modification
         Color baseColor;
 
-        if(modification.equals("m")) {
+        if (modification.equals("m")) {
             baseColor = Color.red;
         } else {
-            if(modColorPallete == null) {
+            if (modColorPallete == null) {
                 modColorPallete = new PaletteColorTable(ColorUtilities.getPalette("Set 1"));
             }
             baseColor = modColorPallete.get(modification);
