@@ -636,7 +636,7 @@ public class CommandExecutor {
             if (fileString.endsWith(".xml") || fileString.endsWith(".php") || fileString.endsWith(".php3")) {
                 unload = !merge;
             } else {
-                unload = MessageUtils.confirm("Unload current session before loading new tracks?");
+                unload = true;
             }
             if (unload) {
                 igv.newSession();
