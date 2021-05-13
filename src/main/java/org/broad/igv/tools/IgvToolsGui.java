@@ -532,6 +532,9 @@ public class IgvToolsGui extends JDialog {
         if (maxCheckBox.isSelected()) {
             wfs.add(WindowFunction.max);
         }
+        if (absoluteMaxCheckBox.isSelected()) {
+            wfs.add(WindowFunction.absoluteMax);
+        }
         if (meanCheckBox.isSelected()) {
             wfs.add(WindowFunction.mean);
         }
@@ -663,6 +666,7 @@ public class IgvToolsGui extends JDialog {
         windowFunctionPanel = new JPanel();
         minCheckBox = new JCheckBox();
         maxCheckBox = new JCheckBox();
+        absoluteMaxCheckBox = new JCheckBox();
         meanCheckBox = new JCheckBox();
         medianCheckBox = new JCheckBox();
         a2CheckBox = new JCheckBox();
@@ -821,6 +825,10 @@ public class IgvToolsGui extends JDialog {
                     //---- maxCheckBox ----
                     maxCheckBox.setText("Max");
                     windowFunctionPanel.add(maxCheckBox);
+
+                    //---- absoluteMaxCheckBox ----
+                    absoluteMaxCheckBox.setText("Absolute Max");
+                    windowFunctionPanel.add(absoluteMaxCheckBox);
 
                     //---- meanCheckBox ----
                     meanCheckBox.setSelected(true);
@@ -1026,6 +1034,7 @@ public class IgvToolsGui extends JDialog {
     private JPanel windowFunctionPanel;
     private JCheckBox minCheckBox;
     private JCheckBox maxCheckBox;
+    private JCheckBox absoluteMaxCheckBox;
     private JCheckBox meanCheckBox;
     private JCheckBox medianCheckBox;
     private JCheckBox a2CheckBox;
