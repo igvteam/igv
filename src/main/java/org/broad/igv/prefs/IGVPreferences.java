@@ -86,16 +86,15 @@ public class IGVPreferences {
     public String get(String key) {
         key = key.trim();
 
-        if(userPreferences.containsKey(key)) {
+        if (userPreferences.containsKey(key)) {
             return userPreferences.get(key);
-        }
-        else if(defaults != null && defaults.containsKey(key)) {
+        } else if (parent != null && parent.userPreferences.containsKey(key)) {
+            return parent.userPreferences.get(key);
+        } else if (defaults != null && defaults.containsKey(key)) {
             return defaults.get(key);
-        }
-        else if(parent != null) {
+        } else if (parent != null) {
             return parent.get(key);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -104,6 +103,7 @@ public class IGVPreferences {
     /**
      * Return preference with given key and specified default value.  If key is not present defaultValue is returned,
      * no search through defaults or hierarchy is performed.
+     *
      * @param key
      * @param defaultValue
      * @return
@@ -113,7 +113,6 @@ public class IGVPreferences {
         String val = userPreferences.get(key);
         return val == null ? defaultValue : val;
     }
-
 
 
     /**
@@ -243,10 +242,9 @@ public class IGVPreferences {
 
     public boolean getAntiAliasing() {
 
-        if(userPreferences.containsKey(Constants.ENABLE_ANTIALISING) || Globals.IS_LINUX == false) {
+        if (userPreferences.containsKey(Constants.ENABLE_ANTIALISING) || Globals.IS_LINUX == false) {
             return getAsBoolean(Constants.ENABLE_ANTIALISING);
-        }
-        else {
+        } else {
             // Linux with no explicit setting
             return false;
         }
@@ -792,7 +790,7 @@ public class IGVPreferences {
     }
 
     static String getMutationColorKey(String type) {
-        switch(type) {
+        switch (type) {
             case "Indel":
                 return MUTATION_INDEL_COLOR_KEY;
             case "Missense":
@@ -934,6 +932,6 @@ public class IGVPreferences {
             pw.println(entry.getValue());
         }
     }
-    
+
 
 }

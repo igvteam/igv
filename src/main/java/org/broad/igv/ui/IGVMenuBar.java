@@ -36,7 +36,6 @@ import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.commandbar.RemoveGenomesDialog;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.google.OAuthUtils;
@@ -47,6 +46,7 @@ import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.commandbar.GenomeComboBox;
+import org.broad.igv.ui.commandbar.RemoveGenomesDialog;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.MainPanel;
@@ -336,15 +336,27 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // ***** Snapshots
         // Snapshot Application
         menuAction =
-                new MenuAction("Save Image ...", null, KeyEvent.VK_A) {
+                new MenuAction("Save PNG Image ...", null, KeyEvent.VK_A) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        igv.saveImage(igv.getMainPanel());
+                        igv.saveImage(igv.getMainPanel(), "png");
 
                     }
                 };
 
-        menuAction.setToolTipText(SAVE_IMAGE_TOOLTIP);
+        menuAction.setToolTipText(SAVE_PNG_IMAGE_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction =
+                new MenuAction("Save SVG Image ...", null) {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        igv.saveImage(igv.getMainPanel(), "svg");
+
+                    }
+                };
+
+        menuAction.setToolTipText(SAVE_SVG_IMAGE_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // TODO -- change "Exit" to "Close" for BioClipse
@@ -880,11 +892,23 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         // Save entire window
         menuAction =
-                new MenuAction("Save Screenshot ...", null, KeyEvent.VK_A) {
+                new MenuAction("Save PNG Screenshot ...", null, KeyEvent.VK_A) {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGV.getInstance().saveImage(IGV.getInstance().getContentPane());
+                        IGV.getInstance().saveImage(IGV.getInstance().getContentPane(), "png");
+
+                    }
+                };
+
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction =
+                new MenuAction("Save SVG Screenshot ...", null) {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        IGV.getInstance().saveImage(IGV.getInstance().getContentPane(), "svg");
 
                     }
                 };

@@ -41,6 +41,7 @@ import org.broad.igv.util.ResourceLocator;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -124,14 +125,9 @@ public class LoadFilesMenuAction extends MenuAction {
             }
 
             if (files.length > 0) {
-
                 // Create DataResouceLocators for the selected files
-                final List<ResourceLocator> locators = new ArrayList(files.length);
-                for (File f : files) {
-                    locators.add(new ResourceLocator(f.getAbsolutePath()));
-                }
-
-                igv.loadTracks(locators);
+                final List<ResourceLocator> locators = ResourceLocator.getLocators(Arrays.asList(files));
+               igv.loadTracks(locators);
             }
         }
     }

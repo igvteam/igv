@@ -44,6 +44,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -191,6 +192,14 @@ public class CommandExecutor {
                 OAuthUtils.getInstance().getProvider().setAccessToken(param1);
             } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
                 result = sortByAttribute(args);
+            } else if (cmd.equalsIgnoreCase("fitTracks")) {
+               igv.fitTracksToPanel();
+            } else if (cmd.equalsIgnoreCase("showAttributes")) {
+                result = this.showAttributes(args);
+            } else if (cmd.equalsIgnoreCase("showDataRange")) {
+                result = this.setShowDataRange(param1, param2);
+            } else if(cmd.equalsIgnoreCase("setTrackHeight")){
+                result = this.setTrackHeight(param1, param2);
             } else {
                 result = "UNKOWN COMMAND: " + command;
                 log.error(result);
@@ -342,6 +351,68 @@ public class CommandExecutor {
                 }
             }
         }
+        return "OK";
+    }
+
+    private String showAttributes(List<String> args) {
+        // provides whitelist of visible attributes
+        Set<String> hiddenAttributes = new HashSet<>(AttributeManager.getInstance().getAttributeNames());
+        hiddenAttributes.addAll(igv.getSession().getHiddenAttributes());
+        // Build a hash to support case insensitive attribute name comparison
+        Map<String, String> attributeMap = new HashMap<>();
+        for(String att : hiddenAttributes) {
+            attributeMap.put(att.toUpperCase(), att);
+        }
+        for (int i = 1; i < args.size(); i++) {
+            String attributeArg = StringUtils.stripQuotes(args.get(i)).toUpperCase();
+            String attributeName = attributeMap.get(attributeArg);
+            if (!hiddenAttributes.contains(attributeName)) {
+                return String.format("Error: Attribute %s not found", attributeName);
+            }
+            hiddenAttributes.remove(attributeName);
+        }
+        igv.getSession().setHiddenAttributes(hiddenAttributes);
+        igv.getMainPanel().revalidateTrackPanels();
+        return "OK";
+    }
+
+
+    private String setTrackHeight(String trackName, String value) {
+        if (trackName == null) return "Error: NULL TRACK NAME";
+        trackName = parseTrackName(trackName);
+        int height = Integer.parseInt(value);
+        height = Math.max(0, height);
+
+        for (Track track : igv.getAllTracks()) {
+            if (track.getName().equals(trackName)) {
+                track.setHeight(height, true);
+                igv.repaint(track);
+                return "OK";
+            }
+        }
+        return String.format("Error: Track %s not found", trackName);
+    }
+
+    private String setShowDataRange(String show, String trackName) {
+        List<Track> tracks = igv.getAllTracks();
+        boolean showDataRange;
+        try {
+            if (show.equalsIgnoreCase("true") || show.equalsIgnoreCase("false")) {
+                showDataRange = Boolean.valueOf(show);
+            } else {
+                return "ERROR: showDataRange value (" + show + ") is not 'true' or 'false'.";
+            }
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
+        List<Track> affectedTracks = new ArrayList<>();
+        for (Track track : tracks) {
+            if (track instanceof DataTrack && (trackName == null || trackName.equalsIgnoreCase(track.getName()))) {
+                ((DataTrack) track).setShowDataRange(showDataRange);
+                affectedTracks.add(track);
+            }
+        }
+        igv.repaint(affectedTracks);
         return "OK";
     }
 
@@ -565,7 +636,7 @@ public class CommandExecutor {
             if (fileString.endsWith(".xml") || fileString.endsWith(".php") || fileString.endsWith(".php3")) {
                 unload = !merge;
             } else {
-                unload = MessageUtils.confirm("Unload current session before loading new tracks?");
+                unload = true;
             }
             if (unload) {
                 igv.newSession();
