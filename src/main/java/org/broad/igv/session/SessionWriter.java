@@ -124,6 +124,11 @@ public class SessionWriter {
 
             String genomeId = GenomeManager.getInstance().getGenomeId();
             if (genomeId != null) {
+                // If genomeId is a file try to write it out as a relative path
+                boolean useRelative = PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
+                if(useRelative && (new File(genomeId)).exists()) {
+                    genomeId = FileUtils.getRelativePath(outputFile.getAbsolutePath(), genomeId);
+                }
                 globalElement.setAttribute(SessionAttribute.GENOME, genomeId);
             }
 
