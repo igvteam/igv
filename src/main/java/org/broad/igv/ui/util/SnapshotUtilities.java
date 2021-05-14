@@ -123,21 +123,21 @@ public class SnapshotUtilities {
         String format = "svg";
         selectedFile = fixFileExt(selectedFile, new String[]{format}, format);
 
-        // Create an instance of org.w3c.dom.Document.
+        // Create an instance of org.w3c.dom.Document.                                                                                      
         DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
         String svgNS = "http://www.w3.org/2000/svg";
         Document document = domImpl.createDocument(svgNS, format, null);
 
-        // Write image data into document
+        // Write image data into document                                                                                                   
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 
         paintImage(target, svgGenerator, width, height, batch);
 
         Writer out = null;
         try {
-            // Finally, stream out SVG to the standard output using
-            // UTF-8 encoding.
-            boolean useCSS = true; // we want to use CSS style attributes
+            // Finally, stream out SVG to the standard output using                                                                         
+            // UTF-8 encoding.                                                                                                              
+            boolean useCSS = true; // we want to use CSS style attributes                                                                   
             out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(selectedFile), "UTF-8"));
             svgGenerator.stream(out, useCSS);
         } finally {
