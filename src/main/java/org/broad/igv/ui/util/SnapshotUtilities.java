@@ -61,7 +61,7 @@ public class SnapshotUtilities {
     /**
      * The maximum height in pixels for snapshots of a panel.
      */
-    public static int DEFAULT_MAX_PANEL_HEIGHT = Integer.MAX_VALUE;
+    public static int DEFAULT_MAX_PANEL_HEIGHT = 1000;
 
     /**
      * We need to use a static for max panel height,  or alternatively much refactoring
