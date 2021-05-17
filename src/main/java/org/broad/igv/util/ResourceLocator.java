@@ -383,17 +383,6 @@ public class ResourceLocator {
         } else {
             this.path = path;
         }
-
-        // Set UI human-readable short name for the file
-        String objFname = "";
-        if (path != null) {
-            if (path.contains("/")) {
-                objFname = this.getTrackName();
-            } else {
-                objFname = path;
-            }
-        }
-        this.setName(objFname);
     }
 
     public String getTrackLine() {
