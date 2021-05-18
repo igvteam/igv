@@ -53,7 +53,9 @@ public class AlignmentBlockImpl implements AlignmentBlock {
         this.offset = offset;
         this.bases = new ByteSubarray(bases, offset, nBases);
         this.basesLength = nBases;
-        this.qualities = new ByteSubarray(qualities, offset, nBases);
+
+        // qualities are optional in a SAMRecord, we might get null or an array of zero
+        this.qualities = qualities == null || qualities.length == 0 ? EMPTY_ARRAY :  new ByteSubarray(qualities, offset, nBases);
         this.cigarOperator = cigarOperator;
     }
 
@@ -121,8 +123,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
 
     @Override
     public byte getQuality(int offset) {
-        return qualities == null || offset >= qualities.length ? (byte) 126 : qualities.getByte(offset);
-
+        return (qualities == null || offset >= qualities.length) ? (byte) 126 : qualities.getByte(offset);
     }
 
     @Override
