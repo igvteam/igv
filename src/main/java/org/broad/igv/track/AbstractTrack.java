@@ -583,11 +583,7 @@ public abstract class AbstractTrack implements Track {
             Point p = me.getComponent().getLocationOnScreen();
             tf.setLocation(Math.max(0, p.x + me.getX() - 150), Math.max(0, p.y + me.getY() - 150));
 
-            UIUtilities.invokeOnEventThread(new Runnable() {
-                public void run() {
-                    tf.setVisible(true);
-                }
-            });
+            UIUtilities.invokeOnEventThread(() -> tf.setVisible(true));
             return true;
         }
         return false;

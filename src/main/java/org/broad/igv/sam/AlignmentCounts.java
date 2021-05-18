@@ -65,6 +65,10 @@ public interface AlignmentCounts extends Feature {
 
     BisulfiteCounts getBisulfiteCounts();
 
+    default ModifiedBaseCounts getModifiedBaseCounts() {
+        return null;
+    }
+
     int getBucketSize();
 
     boolean hasBaseCounts();
