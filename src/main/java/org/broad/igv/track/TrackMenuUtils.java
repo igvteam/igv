@@ -388,34 +388,6 @@ public class TrackMenuUtils {
 
     }
 
-    private static List<JMenuItem> getCombinedDataSourceItems(final Collection<Track> tracks) {
-
-        Iterable<DataTrack> dataTracksIter = Iterables.filter(tracks, DataTrack.class);
-        final List<DataTrack> dataTracks = Lists.newArrayList(dataTracksIter);
-        JMenuItem addItem = new JMenuItem("Sum Tracks");
-        JMenuItem subItem = new JMenuItem("Subtract Tracks");
-        boolean enableComb = dataTracks.size() == 2;
-
-        addItem.setEnabled(enableComb);
-        addItem.setEnabled(enableComb);
-
-        addItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addCombinedDataTrack(dataTracks, CombinedDataSource.Operation.ADD);
-            }
-        });
-
-        subItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addCombinedDataTrack(dataTracks, CombinedDataSource.Operation.SUBTRACT);
-            }
-        });
-
-        return Arrays.asList(addItem, subItem);
-    }
-
     private static void addCombinedDataTrack(List<DataTrack> dataTracks, CombinedDataSource.Operation op) {
         String text = "";
         switch (op) {
@@ -751,7 +723,7 @@ public class TrackMenuUtils {
         menu.add(item);
 
         // Change track color by attribute
-        item = new JMenuItem("Change Track Color (Negative Values)...");
+        item = new JMenuItem("Change Track Color (Negative Values or Strand)...");
         item.setToolTipText(
                 "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
         item.addActionListener(evt -> changeAltTrackColor(tracks));
