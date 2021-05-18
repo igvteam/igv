@@ -635,7 +635,9 @@ public class SAMAlignment implements Alignment {
         }
         buf.append("Read length = " + getReadLengthString() + "<br>");
 
+        buf.append("Flags = " + record.getFlags()  + "<br>");
 
+        buf.append("----------------------" + "<br>");
         String cigarString = getCigarString();
         // Abbreviate long CIGAR strings.  Retain the start and end of the CIGAR, which show
         // clipping; trim the middle.
@@ -647,8 +649,6 @@ public class SAMAlignment implements Alignment {
             cigarString = (lMatcher.find() ? lMatcher.group(1) : "") + "..." + (rMatcher.find() ? rMatcher.group(1) : "");
         }
 
-
-        buf.append("----------------------" + "<br>");
         buf.append("Mapping = " + (isPrimary() ? (isSupplementary() ? "Supplementary" : "Primary") : "Secondary") +
                 (isDuplicate() ? " Duplicate" : "") + (isVendorFailedRead() ? " Failed QC" : "") +
                 " @ MAPQ " + Globals.DECIMAL_FORMAT.format(getMappingQuality()) + "<br>");
