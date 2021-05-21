@@ -105,7 +105,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         UNEXPECTED_PAIR,
         MAPPED_SIZE,
         LINK_STRAND,
-        YC_TAG
+        YC_TAG,
+        BASE_MODIFICATION
     }
 
     public enum SortOption {
@@ -801,7 +802,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         if (alignment != null) {
             StringBuilder buf = new StringBuilder();
-            buf.append(alignment.getValueString(location, mouseX, null).replace("<br>", "\n"));
+            buf.append(alignment.getClipboardString(location, mouseX)
+                    .replace("<br>", "\n")
+                    .replace("<br/>", "\n"));
             buf.append("\n");
             buf.append("Alignment start position = ").append(alignment.getChr()).append(":").append(alignment.getAlignmentStart() + 1);
             buf.append("\n");
@@ -950,7 +953,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             } else {
                 Alignment feature = getAlignmentAt(position, mouseY, frame);
                 if (feature != null) {
-                    return feature.getValueString(position, mouseX, getWindowFunction());
+                    return feature.getValueString(position, mouseX, renderOptions);
                 }
             }
 
@@ -1780,6 +1783,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("library", ColorOption.LIBRARY);
             mappings.put("movie", ColorOption.MOVIE);
             mappings.put("ZMW", ColorOption.ZMW);
+            mappings.put("base modification", ColorOption.BASE_MODIFICATION);
 
             for (Map.Entry<String, ColorOption> el : mappings.entrySet()) {
                 JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
@@ -2236,13 +2240,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             final JMenuItem item = new JMenuItem("Copy insert sequence");
             add(item);
-            item.addActionListener(aEvt -> StringUtils.copyTextToClipboard(new String(insertion.getBases())));
+            item.addActionListener(aEvt -> StringUtils.copyTextToClipboard(insertion.getBases().getString()));
 
             if (insertion.getBases() != null && insertion.getBases().length >= 10) {
                 final JMenuItem blatItem = new JMenuItem("Blat insert sequence");
                 add(blatItem);
                 blatItem.addActionListener(aEvt -> {
-                    String blatSeq = new String(insertion.getBases());
+                    String blatSeq = insertion.getBases().getString();
                     BlatClient.doBlatQuery(blatSeq);
                 });
             }
@@ -2316,7 +2320,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             // Change track height by attribute
             final JMenuItem item = new JMenuItem("Copy insert sequence");
             add(item);
-            item.addActionListener(aEvt -> StringUtils.copyTextToClipboard(new String(insertion.getBases())));
+            item.addActionListener(aEvt -> StringUtils.copyTextToClipboard(insertion.getBases().getString()));
         }
 
 
@@ -2325,7 +2329,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             final JMenuItem item = new JMenuItem("Blat insert sequence");
             add(item);
             item.addActionListener(aEvt -> {
-                String blatSeq = new String(insertion.getBases());
+                String blatSeq = insertion.getBases().getString();
                 BlatClient.doBlatQuery(blatSeq);
             });
             item.setEnabled(insertion.getBases() != null && insertion.getBases().length >= 10);

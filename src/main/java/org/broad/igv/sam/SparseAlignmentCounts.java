@@ -333,15 +333,15 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
 
     protected void incBlockCounts(AlignmentBlock block, boolean isNegativeStrand) {
         int start = block.getStart();
-        byte[] bases = block.getBases();
+        ByteSubarray bases = block.getBases();
         // NOTE:  the direct access block.qualities is intentional,  profiling reveals this to be a critical bottleneck
-        byte [] qualities = ((AlignmentBlockImpl) block).qualities;
+        ByteSubarray qualities = ((AlignmentBlockImpl) block).qualities;
         if (bases != null) {
             for (int i = 0; i < bases.length; i++) {
                 int pos = start + i;
-                byte q = qualities == null || i >= qualities.length ? (byte) 126 : qualities[i];
+                byte q = qualities == null || i >= qualities.length ? (byte) 126 : qualities.getByte(i);
                 // TODO -- handle "=" in cigar string with no read bases
-                byte n = bases[i];
+                byte n = bases.getByte(i);
                 incPositionCount(pos, n, q, isNegativeStrand);
             }
         }

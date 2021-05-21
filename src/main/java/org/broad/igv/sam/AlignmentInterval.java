@@ -57,7 +57,6 @@ public class AlignmentInterval extends Locus {
         this.alignments = alignments;
         genome = GenomeManager.getInstance().getCurrentGenome();
         this.counts = counts;
-
         this.spliceJunctionHelper = spliceJunctionHelper;
         this.downsampledIntervals = downsampledIntervals;
     }

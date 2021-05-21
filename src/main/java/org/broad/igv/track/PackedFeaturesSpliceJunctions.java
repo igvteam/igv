@@ -58,8 +58,8 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
 
     private static Logger log = Logger.getLogger(PackedFeaturesSpliceJunctions.class);
 
-    public PackedFeaturesSpliceJunctions(String chr, int start, int end, Iterator<T> iter, String trackName) {
-        super(chr, start, end, iter, trackName);
+    public PackedFeaturesSpliceJunctions(String chr, int start, int end, Iterator<T> iter, Track.DisplayMode displayMode) {
+        super(chr, start, end, iter, displayMode, false);
     }
 
     /**
@@ -187,7 +187,7 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
 
             // Check to prevent infinite loops
             if (lastAllocatedCount == allocatedCount) {
-                String msg = "Infinite loop detected while packing features for track: " + getTrackName() +
+                String msg = "Infinite loop detected while packing features "  +
                         ".<br>Not all features will be shown." +
                         "<br>Please contact igv-team@broadinstitute.org";
 

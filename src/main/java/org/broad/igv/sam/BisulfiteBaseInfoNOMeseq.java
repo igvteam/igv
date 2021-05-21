@@ -76,7 +76,7 @@ public class BisulfiteBaseInfoNOMeseq extends BisulfiteBaseInfo {
 
 
 	@Override
-	protected BisulfiteContext contextIsMatching(byte[] reference, byte[] read, int idx,
+	protected BisulfiteContext contextIsMatching(byte[] reference, ByteSubarray read, int idx,
 			BisulfiteContext bisulfiteContext) {
 
 		for (BisulfiteContext context : BISULFITE_CONTEXTS)

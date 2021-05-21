@@ -31,8 +31,6 @@ import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.google.Ga4ghAlignmentReader;
-import org.broad.igv.google.Ga4ghProvider;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -99,9 +97,6 @@ public class AlignmentReaderFactory {
                 throw new RuntimeException("Cannot load Goby alignment " + locator.getPath(), e);
 
             }
-        } else if (Ga4ghAlignmentReader.supportsFileType(locator.getType())) {
-            Ga4ghProvider provider = (Ga4ghProvider) locator.getAttribute("provider");
-            return new Ga4ghAlignmentReader(provider, locator.getPath());
         } else {
             throw new RuntimeException("Cannot determine file format: " + locator.getPath());
         }

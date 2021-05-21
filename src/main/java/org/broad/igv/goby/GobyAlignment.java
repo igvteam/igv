@@ -272,13 +272,13 @@ public class GobyAlignment implements Alignment {
     private AlignmentBlockImpl[] keepSoftClips(AlignmentBlockImpl[] blocks) {
         int numSoftCLippedBlocks = 0;
         for (AlignmentBlock block : blocks) {
-            if (block.isSoftClipped()) numSoftCLippedBlocks++;
+            if (block.isSoftClip()) numSoftCLippedBlocks++;
         }
         AlignmentBlockImpl[] tmp = new AlignmentBlockImpl[numSoftCLippedBlocks];
         int j = 0;
         for (int i = 0; i < numSoftCLippedBlocks; i++) {
             AlignmentBlockImpl block = blocks[j++];
-            if (block.isSoftClipped()) {
+            if (block.isSoftClip()) {
                 tmp[i] = block;
             }
         }
@@ -296,7 +296,7 @@ public class GobyAlignment implements Alignment {
             bases[i] = (byte) softClippedBasesLeft.charAt(i);
             scores[i] = hasSoftClippedQuality ? softClippedQuality[i] : readQualScores[j++];
         }
-        final AlignmentBlockImpl alignmentBlock = new AlignmentBlockImpl( position, bases, scores, bases.length,  'S');
+        final AlignmentBlockImpl alignmentBlock = new AlignmentBlockImpl( position, bases, scores, 0, bases.length,  'S');
         alignmentBlock.setSoftClipped(true);
         blocks.add(alignmentBlock);
 
@@ -349,15 +349,15 @@ public class GobyAlignment implements Alignment {
 
 
             for (AlignmentBlock block : blocks) {
-                if (!block.isSoftClipped()) {
+                if (!block.isSoftClip()) {
 
                     final int vrPos = var.getPosition() + entry.getPosition();
                     if (hasReadDeletion(var) && vrPos >= block.getStart() && vrPos <= block.getEnd()) {
 
-                        ByteList leftBases = new ByteArrayList(block.getBases());
-                        ByteList leftScores = new ByteArrayList(block.getQualities());
-                        ByteList rightBases = new ByteArrayList(block.getBases());
-                        ByteList rightScores = new ByteArrayList(block.getQualities());
+                        ByteList leftBases = new ByteArrayList(block.getBases().getBytes());
+                        ByteList leftScores = new ByteArrayList(block.getQualities().getBytes());
+                        ByteList rightBases = new ByteArrayList(block.getBases().getBytes());
+                        ByteList rightScores = new ByteArrayList(block.getQualities().getBytes());
                         int deletionPosition = var.getPosition() - 1;
                         leftBases = leftBases.subList(0, deletionPosition);
                         rightBases = rightBases.subList(deletionPosition, rightBases.size());
@@ -752,7 +752,7 @@ public class GobyAlignment implements Alignment {
      * @return
      */
     public String getClipboardString(double location, int mouseX) {
-        return getValueString(location, mouseX, null);
+        return getValueString(location, mouseX, (WindowFunction) null);
     }
 
 

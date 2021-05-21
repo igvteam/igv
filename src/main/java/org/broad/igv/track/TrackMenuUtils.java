@@ -416,6 +416,8 @@ public class TrackMenuUtils {
      */
     private static void addFeatureItems(JPopupMenu featurePopupMenu, final Collection<Track> tracks, TrackClickEvent te) {
 
+        TrackMenuUtils.addGroupByStrandItem(tracks, featurePopupMenu);
+        featurePopupMenu.addSeparator();
 
         addDisplayModeItems(tracks, featurePopupMenu);
 
@@ -972,23 +974,36 @@ public class TrackMenuUtils {
             JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
             mm.setSelected(currentMode == entry.getValue());
             mm.addActionListener(evt -> {
-                setTrackDisplayMode(tracks, entry.getValue());
+                for (Track t : tracks) {
+                    t.setDisplayMode(entry.getValue());
+                }
                 IGV.getInstance().repaint(tracks);
             });
             group.add(mm);
             menu.add(mm);
         }
-
     }
 
+    public static void addGroupByStrandItem(final Collection<Track> tracks, JPopupMenu menu) {
 
-    private static void setTrackDisplayMode(Collection<Track> tracks, Track.DisplayMode mode) {
+        // Find "most representative" state from track collection
+        boolean allGrouped = tracks.stream().allMatch(track -> {
+            return track instanceof FeatureTrack && ((FeatureTrack) track).isGroupByStrand();
+        });
 
-        for (Track t : tracks) {
-            t.setDisplayMode(mode);
-        }
+        final JRadioButtonMenuItem groupByItem = new JRadioButtonMenuItem("Group by strand");
+        groupByItem.setSelected(allGrouped);
+        groupByItem.addActionListener(evt -> {
+            tracks.stream().forEach(track -> {
+                if (track instanceof FeatureTrack) {
+                    ((FeatureTrack) track).setGroupByStrand(groupByItem.isSelected());
+                }
+            });
+            IGV.getInstance().repaint(tracks);
+        });
+
+        menu.add(groupByItem);
     }
-
 
     public static JMenuItem getRemoveMenuItem(final Collection<Track> selectedTracks) {
 

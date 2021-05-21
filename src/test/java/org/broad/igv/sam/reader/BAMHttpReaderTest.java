@@ -34,7 +34,7 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.PicardAlignment;
+import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.*;
 
@@ -83,7 +83,7 @@ public class BAMHttpReaderTest extends AbstractHeadlessTest {
 
     @Test
     public void testIterator() throws IOException {
-        CloseableIterator<PicardAlignment> iter = reader.iterator();
+        CloseableIterator<SAMAlignment> iter = reader.iterator();
         //This takes a long time. We just look for a minimum number
         int minnum = 10;
         int actnum = 0;
@@ -107,7 +107,7 @@ public class BAMHttpReaderTest extends AbstractHeadlessTest {
     }
 
     private void checkNumber(String chr, int start, int end, int expected_count) throws IOException {
-        CloseableIterator<PicardAlignment> iter = reader.query(chr, start, end, false);
+        CloseableIterator<SAMAlignment> iter = reader.query(chr, start, end, false);
         int counted = 0;
         while (iter.hasNext()) {
             Alignment a = iter.next();

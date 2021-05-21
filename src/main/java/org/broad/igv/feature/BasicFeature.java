@@ -135,14 +135,21 @@ public class BasicFeature extends AbstractFeature {
 
 
         String name = getName();
-        if (name != null) {
+        if (name != null && name.length() > 0) {
             valueString.append("<b>" + name + "</b><br>");
         }
+
         valueString.append(getLocusString());
+        if(strand == Strand.POSITIVE) {
+            valueString.append(" (+)");
+        } else if(strand == Strand.NEGATIVE) {
+            valueString.append(" (-)");
+        }
+
         if (type != null && type.length() > 0) {
             valueString.append("<br>Type = " + type);
         }
-        if ((identifier != null) && ((name == null) || !name.equals(identifier))) {
+        if ((identifier != null) && ((name == null || name.length() == 0) || !name.equals(identifier))) {
             valueString.append("<br>id = " + identifier);
         }
 

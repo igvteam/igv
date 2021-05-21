@@ -409,7 +409,7 @@ public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
 
         Assert.assertEquals(2 + (showSoftClipped ? 1 : 0), igvAlignment.getAlignmentBlocks().length);
         Assert.assertEquals("==A====G===GA=====T============================================",
-                basesToText(igvAlignment.getAlignmentBlocks()[1 + (showSoftClipped ? 1 : 0)].getBases()));
+                basesToText(igvAlignment.getAlignmentBlocks()[1 + (showSoftClipped ? 1 : 0)].getBases().getBytes()));
         iter.close();
         reader.close();
 

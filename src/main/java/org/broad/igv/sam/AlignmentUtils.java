@@ -26,6 +26,12 @@
 package org.broad.igv.sam;
 
 
+import org.broad.igv.Globals;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Jim Robinson
  * @date 12/6/11
@@ -40,7 +46,7 @@ public class AlignmentUtils {
     public static final byte C = 'C';
     public static final byte G = 'G';
     public static final byte T = 'T';
-    
+
     /**
      * Return true if the two bases can be considered a match.  The comparison is case-insensitive, and
      * considers ambiguity codes in the reference.
@@ -51,7 +57,7 @@ public class AlignmentUtils {
      */
     public static boolean compareBases(byte refbase, byte readbase) {
 
-        if(readbase == 61) {
+        if (readbase == 61) {
             return true;  // By definition, 61 is "equals"
         }
         // Force both bases to upper case
@@ -98,27 +104,28 @@ public class AlignmentUtils {
      * Check whether there is a mismatch between {@code reference[idx]} and {@code read[idx]},
      * guarding against {@code reference} being too short.
      * If we do not have a valid reference we assume a match, that is, NOT a misMatch.
-     *
+     * <p>
      * Note '=' means indicates a match by definition
+     *
      * @param reference
      * @param read
      * @param isSoftClipped
      * @param idx
      * @return
      */
-    static boolean isMisMatch(byte[] reference, byte[] read, boolean isSoftClipped, int idx){
-        if(reference == null) return false;
+    static boolean isMisMatch(byte[] reference, ByteSubarray read, boolean isSoftClipped, int idx) {
+        if (reference == null) return false;
         boolean misMatch = false;
         if (isSoftClipped) {
             // Goby will return '=' characters when the soft-clip happens to match the reference.
             // It could actually be useful to see which part of the soft clipped bases match, to help detect
             // cases when an aligner clipped too much.
-            final byte readbase = read[idx];
+            final byte readbase = read.getByte(idx);
             misMatch = readbase != '=';  // mismatch, except when the soft-clip has an '=' base.
         } else {
             final int referenceLength = reference.length;
             final byte refbase = idx < referenceLength ? reference[idx] : 0;
-            final byte readbase = read[idx];
+            final byte readbase = read.getByte(idx);
             misMatch = readbase != '=' &&
                     idx < referenceLength &&
                     refbase != 0 &&
@@ -131,13 +138,12 @@ public class AlignmentUtils {
      * Reverses and complements a copy of the original array
      */
     public static byte[] reverseComplementCopy(final byte[] bases) {
-    	final int lastIndex = bases.length - 1;
-    	byte[] out = new byte[bases.length];
-    	int i;
-    	for (i=0; i <= lastIndex; i++)
-    	{
-    		out[lastIndex-i] = complement(bases[i]);
-    	}
+        final int lastIndex = bases.length - 1;
+        byte[] out = new byte[bases.length];
+        int i;
+        for (i = 0; i <= lastIndex; i++) {
+            out[lastIndex - i] = complement(bases[i]);
+        }
         return out;
     }
 
@@ -156,6 +162,19 @@ public class AlignmentUtils {
         if (bases.length % 2 == 1) {
             bases[i] = complement(bases[i]);
         }
+    }
+
+    /**
+     * Reverses and complements a copy of the original array
+     */
+    public static ByteSubarray reverseComplementCopy(ByteSubarray bases) {
+        final int lastIndex = bases.length - 1;
+        byte[] out = new byte[bases.length];
+        int i;
+        for (i = 0; i <= lastIndex; i++) {
+            out[lastIndex - i] = complement(bases.getByte(i));
+        }
+        return new ByteSubarray(out, 0, out.length);
     }
 
     /**
@@ -196,4 +215,41 @@ public class AlignmentUtils {
         reverseComplement(bases);
         return htsjdk.samtools.util.StringUtil.bytesToString(bases);
     }
+
+
+
+    public static AlignmentBlockImpl buildAlignmentBlock(char operator,
+                                                         byte[] readBases,
+                                                         byte[] readBaseQualities,
+                                                         int blockStart,
+                                                         int fromIdx,
+                                                         int nBases) {
+
+        byte[] blockBases = null;
+        byte[] blockQualities = null;
+
+        if (readBases != null && readBases.length > 0) {
+            blockBases = new byte[nBases];
+            int nBasesAvailable = readBases.length - fromIdx;
+            if (nBasesAvailable < nBases) {
+                Arrays.fill(blockBases, (byte) '?');
+            }
+            System.arraycopy(readBases, fromIdx, blockBases, 0, nBases);
+        }
+        if (readBaseQualities != null && readBaseQualities.length > 0) {
+            blockQualities = new byte[nBases];
+            int nBasesAvailable = readBaseQualities.length - fromIdx;
+            if (nBasesAvailable < nBases) {
+                Arrays.fill(blockQualities, (byte) 126);
+            }
+            System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, nBases);
+        }
+        AlignmentBlockImpl block = new AlignmentBlockImpl(blockStart, readBases, readBaseQualities, fromIdx, nBases, operator);
+
+        return block;
+    }
+
+
+    static int[] emptyArray = {};
+
 }

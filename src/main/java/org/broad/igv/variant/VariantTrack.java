@@ -250,7 +250,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             if (defVisibilityWindow > 0) {
                 setVisibilityWindow(defVisibilityWindow * 1000);
             } else {
-                int vw = Math.max(10000, (100000 -  100 * (allSamples.size() - 1)));
+                int vw = Math.max(10000, (100000 - 100 * (allSamples.size() - 1)));
                 setVisibilityWindow(vw);
             }
         }
@@ -539,10 +539,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                     }
 
                 }
-                if (areFeaturesStacked()) {
-                    curRowTop += variantBandHeight;
-                    lastEndX = -1;
-                }
+
+                curRowTop += variantBandHeight;
+                lastEndX = -1;
+
             }
         } else {
             tmpRect.height = variantBandHeight;
@@ -654,11 +654,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         rect.y += rect.height;
         rect.height = getGenotypeBandHeight();
-        if (areFeaturesStacked()) {
-            // The sample bounds list will get reset when  the names are drawn.
-            sampleBounds.clear();
-            drawBackground(g2D, rect, visibleRectangle, BackgroundType.NAME);
-        }
+
+        // The sample bounds list will get reset when  the names are drawn.
+        sampleBounds.clear();
+        drawBackground(g2D, rect, visibleRectangle, BackgroundType.NAME);
+
 
         renderBoundaryLines(g2D, trackRectangle, visibleRectangle);
 
@@ -896,7 +896,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         try {
             double maxDistance = 10 * frame.getScale();
             if (mouseY < top + getVariantsHeight()) {
-                int modY = areFeaturesStacked() ? mouseY : -1;
+                int modY = mouseY;
                 Variant variant = getFeatureClosest(position, modY, frame.getName(), maxDistance);
                 if (variant == null) return null;
 
@@ -1015,7 +1015,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
 
         double qual = variant.getPhredScaledQual();
-        String qualString =  variant.hasLog10PError() ? numFormat.format(qual) : ".";
+        String qualString = variant.hasLog10PError() ? numFormat.format(qual) : ".";
         toolTip.append("<br>Qual: " + qualString);
         toolTip.append("<br>Type: " + variant.getType());
         if (variant.isFiltered()) {
@@ -1139,7 +1139,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     @Override
     public void receiveEvent(Object event) {
-        if(event instanceof  TrackGroupEvent) {
+        if (event instanceof TrackGroupEvent) {
             setupGroupsFromAttributes();
         }
     }
@@ -1486,15 +1486,15 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         super.marshalXML(document, element);
 
-        if(this.squishedHeight != DEFAULT_SQUISHED_GENOTYPE_HEIGHT) {
+        if (this.squishedHeight != DEFAULT_SQUISHED_GENOTYPE_HEIGHT) {
             element.setAttribute("squishedHeight", String.valueOf(squishedHeight));
         }
 
-        if(coloring != ColorMode.GENOTYPE) {
+        if (coloring != ColorMode.GENOTYPE) {
             element.setAttribute("coloring", coloring.toString());
         }
 
-        if(siteColorMode != null) {
+        if (siteColorMode != null) {
             element.setAttribute("siteColorMode", siteColorMode.toString());
         }
 
@@ -1505,15 +1505,15 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         super.unmarshalXML(element, version);
 
-        if(element.hasAttribute("squishedHeight")) {
+        if (element.hasAttribute("squishedHeight")) {
             this.squishedHeight = Integer.parseInt(element.getAttribute("squishedHeight"));
         }
 
-        if(element.hasAttribute("coloring")) {
+        if (element.hasAttribute("coloring")) {
             this.coloring = ColorMode.valueOf(element.getAttribute("coloring"));
         }
 
-        if(element.hasAttribute("siteColorMode")) {
+        if (element.hasAttribute("siteColorMode")) {
             this.siteColorMode = ColorMode.valueOf(element.getAttribute("siteColorMode"));
 
         }

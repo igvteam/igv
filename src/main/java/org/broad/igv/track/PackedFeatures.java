@@ -25,8 +25,9 @@
 
 package org.broad.igv.track;
 
-import htsjdk.samtools.util.Locatable;
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import htsjdk.tribble.Feature;
@@ -40,7 +41,7 @@ import java.util.*;
  * @author jrobinso
  * @date Oct 7, 2010
  */
-public class PackedFeatures<T extends Feature>{
+public class PackedFeatures<T extends Feature> {
     protected String trackName;
     protected String chr;
     protected int start;
@@ -50,13 +51,17 @@ public class PackedFeatures<T extends Feature>{
     private static Logger log = Logger.getLogger(PackedFeatures.class);
     protected int maxFeatureLength = 0;
     protected static int maxLevels = 1000000;
+    private Track.DisplayMode displayMode;
+    private boolean groupByStrand;
+
 
     /**
-     * No-arg constructor to allow subclassing
+     * Create an empty PackedFeatures object.
+     *
+     * @param chr
+     * @param start
+     * @param end
      */
-    PackedFeatures(){
-    }
-
     PackedFeatures(String chr, int start, int end) {
         this.chr = chr;
         this.start = start;
@@ -65,24 +70,69 @@ public class PackedFeatures<T extends Feature>{
         rows = Collections.emptyList();
     }
 
-    PackedFeatures(String chr, int start, int end, Iterator<T> iter, String trackName) {
-        this.trackName = trackName;
+    PackedFeatures(String chr, int start, int end, Iterator<T> iter, Track.DisplayMode displayMode, boolean groupByStrand) {
         this.chr = chr;
         this.start = start;
         this.end = end;
-        features = new ArrayList(1000);
-        rows = packFeatures(iter);
+        features = new ArrayList<>(100);
+        while (iter.hasNext()) {
+            T feature = (T) iter.next();
+            maxFeatureLength = Math.max(maxFeatureLength,
+                    getFeatureEndForPacking(feature) - getFeatureStartForPacking(feature));
+            features.add(feature);
+        }
+
+        pack(displayMode, groupByStrand);
+    }
+
+    public void pack(Track.DisplayMode displayMode, boolean groupByStrand) {
+
+        // Repack if groupByStrand has changed, or if display mode has switched to/from COLLAPSED
+        if (this.displayMode == null ||
+                this.groupByStrand != groupByStrand ||
+                (this.displayMode == Track.DisplayMode.COLLAPSED && displayMode != Track.DisplayMode.COLLAPSED) ||
+                (this.displayMode != Track.DisplayMode.COLLAPSED && displayMode == Track.DisplayMode.COLLAPSED)) {
+
+            this.displayMode = displayMode;
+            this.groupByStrand = groupByStrand;
+
+
+            if (groupByStrand) {
+                List<T> posFeatures = new ArrayList<>();
+                List<T> negFeatures = new ArrayList<>();
+                for (T f : features) {
+                    if (f instanceof IGVFeature && ((IGVFeature) f).getStrand() == Strand.NEGATIVE) {
+                        negFeatures.add(f);
+                    } else {
+                        posFeatures.add(f);
+                    }
+                }
+                if (displayMode == Track.DisplayMode.COLLAPSED) {
+                    rows = Arrays.asList(new FeatureRow(posFeatures), new FeatureRow(negFeatures));
+                } else {
+                    rows = packFeatures(posFeatures.iterator());
+                    rows.addAll(packFeatures(negFeatures.iterator()));
+                }
+            } else {
+
+                if (displayMode == Track.DisplayMode.COLLAPSED) {
+                    rows = Arrays.asList(new FeatureRow(features));
+                } else {
+                    rows = packFeatures(features.iterator());
+                }
+            }
+        }
     }
 
 
     /**
      * Some types of Features (splice junctions) should be packed on the same row even if start and end overlap.
      * This can be overridden in a subclass
+     *
      * @param feature
      * @return
      */
-    protected int getFeatureStartForPacking(Feature feature)
-    {
+    protected int getFeatureStartForPacking(Feature feature) {
         return feature.getStart();
     }
 
@@ -90,16 +140,16 @@ public class PackedFeatures<T extends Feature>{
     /**
      * Some types of Features (splice junctions) should be packed on the same row even if start and end overlap.
      * This can be overridden in a subclass
+     *
      * @param feature
      * @return
      */
-    protected int getFeatureEndForPacking(Feature feature)
-    {
+    protected int getFeatureEndForPacking(Feature feature) {
         return feature.getEnd();
     }
 
     int getRowCount() {
-        return getRows().size();
+        return rows.size();
     }
 
     public boolean containsInterval(String chr, int start, int end) {
@@ -114,7 +164,7 @@ public class PackedFeatures<T extends Feature>{
      * Allocates each feature to the rows such that there is no overlap.
      *
      * @param iter TabixLineReader wrapping the collection of alignments. Note that this should
-     * really be an Iterator<T>, but it can't be subclassed if that's the case.
+     *             really be an Iterator<T>, but it can't be subclassed if that's the case.
      */
     List<FeatureRow> packFeatures(Iterator iter) {
 
@@ -123,22 +173,14 @@ public class PackedFeatures<T extends Feature>{
             return rows;
         }
 
-        maxFeatureLength = 0;
         int totalCount = 0;
 
         LinkedHashMap<Integer, PriorityQueue<T>> bucketArray = new LinkedHashMap();
-        Comparator pqComparator = new Comparator<T>() {
-            public int compare(Feature row1, Feature row2) {
-                return (row2.getEnd() - row2.getStart()) - (row1.getEnd() - row2.getStart());
-            }
-        };
+        Comparator pqComparator = (Comparator<T>) (row1, row2) -> (row2.getEnd() - row2.getStart()) - (row1.getEnd() - row2.getStart());
 
         // Allocate features to buckets,  1 bucket per base position
         while (iter.hasNext()) {
             T feature = (T) iter.next();
-            maxFeatureLength = Math.max(maxFeatureLength,
-                    getFeatureEndForPacking(feature) - getFeatureStartForPacking(feature));
-            features.add(feature);
 
             int bucketNumber = getFeatureStartForPacking(feature);
 
@@ -163,8 +205,8 @@ public class PackedFeatures<T extends Feature>{
             // Check to prevent infinite loops
             if (lastAllocatedCount == allocatedCount) {
 
-                if(IGV.hasInstance()) {
-                    String msg = "Infinite loop detected while packing features for track: " + getTrackName() +
+                if (IGV.hasInstance()) {
+                    String msg = "Infinite loop detected while packing features for track: " +
                             ".<br>Not all features will be shown." +
                             "<br>Please contact igv-team@broadinstitute.org";
 
@@ -216,10 +258,6 @@ public class PackedFeatures<T extends Feature>{
         return rows;
     }
 
-    public String getTrackName() {
-        return trackName;
-    }
-
     public String getChr() {
         return chr;
     }
@@ -251,6 +289,10 @@ public class PackedFeatures<T extends Feature>{
 
         public FeatureRow() {
             this.features = new ArrayList(100);
+        }
+
+        public FeatureRow(List<T> features) {
+            this.features = features;
         }
 
         public void addFeature(T feature) {

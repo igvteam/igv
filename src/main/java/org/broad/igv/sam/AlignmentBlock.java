@@ -36,21 +36,26 @@ public interface AlignmentBlock {
 
     int getBasesLength();
 
+    /**
+     * Offset into read sequence
+     */
+    int getBasesOffset();
+
     int getLength();
 
     byte getBase(int offset);
 
-    byte[] getBases();
+    ByteSubarray getBases();
 
     int getStart();
 
     byte getQuality(int offset);
 
-    byte[] getQualities();
+    ByteSubarray getQualities();
 
     int getEnd();
 
-    boolean isSoftClipped();
+    boolean isSoftClip();
 
     boolean hasBases();
 

@@ -31,7 +31,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.EmptyAlignmentIterator;
-import org.broad.igv.sam.PicardAlignment;
+import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.sam.cram.IGVReferenceSource;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
@@ -53,7 +53,7 @@ import java.util.*;
  * Date: Sep 22, 2009
  * Time: 2:21:04 PM
  */
-public class BAMReader implements AlignmentReader<PicardAlignment> {
+public class BAMReader implements AlignmentReader<SAMAlignment> {
 
     static Logger log = Logger.getLogger(BAMReader.class);
 
@@ -133,11 +133,11 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     }
 
 
-    public CloseableIterator<PicardAlignment> iterator() throws IOException {
+    public CloseableIterator<SAMAlignment> iterator() throws IOException {
         return new WrappedIterator(getSamReader().iterator());
     }
 
-    public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
+    public CloseableIterator<SAMAlignment> query(String sequence, int start, int end, boolean contained) {
         if (sequenceDictionary != null && !sequenceDictionary.containsKey(sequence)) {
             return EMPTY_ITERATOR;
         } else {
@@ -151,7 +151,7 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         }
     }
 
-    static CloseableIterator<PicardAlignment> EMPTY_ITERATOR = new CloseableIterator<PicardAlignment>() {
+    static CloseableIterator<SAMAlignment> EMPTY_ITERATOR = new CloseableIterator<SAMAlignment>() {
         @Override
         public void close() {
 
@@ -163,13 +163,13 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         }
 
         @Override
-        public PicardAlignment next() {
+        public SAMAlignment next() {
             return null;
         }
     };
 
 
-    class PicardIterator implements CloseableIterator<PicardAlignment> {
+    class PicardIterator implements CloseableIterator<SAMAlignment> {
 
         private SamReader reader;    // Readers are 1-time use (for this iterator only)
         CloseableIterator<SAMRecord> iterator;
@@ -188,8 +188,8 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
             return iterator.hasNext();
         }
 
-        public PicardAlignment next() {
-            return new PicardAlignment(iterator.next());
+        public SAMAlignment next() {
+            return new SAMAlignment(iterator.next());
         }
 
         public void remove() {

@@ -37,7 +37,6 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.google.Ga4ghAPIHelper;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -246,7 +245,7 @@ public class CommandExecutor {
         // Build a hash to support case insensitve attribute name comparison
         List<String> allAttributes = AttributeManager.getInstance().getAttributeNames();
         Map<String, String> attributeMap = new HashMap<>();
-        for(String att : allAttributes) {
+        for (String att : allAttributes) {
             attributeMap.put(att.toUpperCase(), att);
         }
 
@@ -678,22 +677,18 @@ public class CommandExecutor {
                     rl.setType(format);
                 }
 
-                if ("ga4gh".equals(rl.getType())) {
-                    // TODO -- distinguish reads and variants
-                    rl.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
-                } else {
-                    if (params != null) {
-                        String trackLine = createTrackLine(params);
-                        rl.setTrackLine(trackLine);
-                    }
+                if (params != null) {
+                    String trackLine = createTrackLine(params);
+                    rl.setTrackLine(trackLine);
+                }
 
-                    if (rl.isLocal()) {
-                        File file = new File(rl.getPath());
-                        if (!file.exists()) {
-                            return "Error: " + f + " does not exist.";
-                        }
+                if (rl.isLocal()) {
+                    File file = new File(rl.getPath());
+                    if (!file.exists()) {
+                        return "Error: " + f + " does not exist.";
                     }
                 }
+
                 fileLocators.add(rl);
             }
         }
