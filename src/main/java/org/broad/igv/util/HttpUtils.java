@@ -204,12 +204,14 @@ public class HttpUtils {
 
     public String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
 
+
         InputStream is = null;
 
         HttpURLConnection conn = openConnection(url, headers);
         try {
             is = conn.getInputStream();
-            return readContents(is);
+            byte[] bytes = is.readAllBytes();
+            return new String(bytes, "UTF-8");
         } catch (IOException e) {
             readErrorStream(conn);  // Consume content
             throw e;

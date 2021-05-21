@@ -91,6 +91,7 @@ public class ParsingUtils {
         return new AsciiLineReader(stream);
 
     }
+
     public static InputStream openInputStream(String path) throws IOException {
         return openInputStreamGZ(new ResourceLocator(path));
     }
@@ -125,13 +126,8 @@ public class ParsingUtils {
     }
 
     public static String readContentsFromStream(InputStream is) throws IOException {
-        BufferedInputStream bis = new BufferedInputStream(is);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        int b;
-        while ((b = bis.read()) >= 0) {
-            bos.write(b);
-        }
-        return new String(bos.toByteArray());
+        byte[] bytes = is.readAllBytes();
+        return new String(bytes, "UTF-8");
     }
 
     /**
@@ -462,7 +458,7 @@ public class ParsingUtils {
                                     float max = Float.parseFloat(limits[1].trim());
                                     trackProperties.setMinValue(min);
                                     trackProperties.setMaxValue(max);
-                                } else if(limits.length == 3) {
+                                } else if (limits.length == 3) {
                                     float min = Float.parseFloat(limits[0].trim());
                                     float base = Float.parseFloat(limits[1].trim());
                                     float max = Float.parseFloat(limits[2].trim());
