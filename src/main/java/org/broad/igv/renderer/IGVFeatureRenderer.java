@@ -419,6 +419,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
             Graphics2D blockGraphics = g2D;
             Graphics2D edgeGraphics = context.getGraphic2DForColor(Color.gray);
+
             if (alternateExonColor) {
                 Color color = colorToggle ? color1 : color2;
                 blockGraphics = context.getGraphic2DForColor(color);
@@ -432,14 +433,13 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             int pEnd = getPixelFromChromosomeLocation(exon.getChr(), exon.getEnd(), theOrigin, locationScale);
 
 
-            Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.blue);
             //We draw connecting lines/arrows from previous exon to this one.
             //Exons may not be strictly sorted, we avoid double-drawing using maxLineEndX
             if (drawConnectingLine && lastExonEndX > Integer.MIN_VALUE && lastY > Integer.MIN_VALUE
                     && lastExonEndX >= maxLineEndX) {
                 drawConnectingLine(lastExonEndX, lastY, pStart, curYOffset, exon.getStrand(), blockGraphics);
                 double angle = Math.atan(-(curYOffset - lastY) / ((pStart - lastExonEndX) + 1e-12));
-                drawStrandArrows(gene.getStrand(), lastExonEndX, pStart, lastY, angle, mode, trackRectangle, arrowGraphics);
+                drawStrandArrows(gene.getStrand(), lastExonEndX, pStart, lastY, angle, mode, trackRectangle, blockGraphics);
                 maxLineEndX = Math.max(maxLineEndX, pStart);
             }
             lastExonEndX = pEnd;
