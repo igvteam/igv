@@ -436,7 +436,7 @@ public abstract class AbstractTrack implements Track {
             return 10;
         }
     }
-    
+
     public void setMinimumHeight(int minimumHeight) {
         this.minimumHeight = minimumHeight;
     }
@@ -819,7 +819,7 @@ public abstract class AbstractTrack implements Track {
 
     public float logScaleData(float dataY) {
 
-        if(Float.isNaN(dataY)) {
+        if (Float.isNaN(dataY)) {
             return dataY;
         }
 
@@ -833,8 +833,7 @@ public abstract class AbstractTrack implements Track {
                     ? 1.0 : 2.0;
 
             return (float) (Math.log(Math.max(Float.MIN_VALUE, dataY) / centerValue) / Globals.log2);
-        }
-        else {
+        } else {
             return dataY;
         }
     }
@@ -1055,8 +1054,13 @@ public abstract class AbstractTrack implements Track {
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
-        this.name = element.getAttribute("name");
-        this.id = element.getAttribute("id");
+        if (element.hasAttribute("name")) {
+            this.name = element.getAttribute("name");
+        }
+
+        if (element.hasAttribute("id")) {
+            this.id = element.getAttribute("id");
+        }
 
         if (element.hasAttribute("attributeKey")) {
             this.attributeKey = element.getAttribute("attributeKey");

@@ -1009,7 +1009,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         this.groupByStrand = "true".equals(element.getAttribute("groupByStrand"));
 
-
         NodeList tmp = element.getElementsByTagName("SequenceMatchSource");
         if (tmp.getLength() > 0) {
             Element sourceElement = (Element) tmp.item(0);
