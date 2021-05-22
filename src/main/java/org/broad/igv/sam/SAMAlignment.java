@@ -317,9 +317,9 @@ public class SAMAlignment implements Alignment {
     @Override
     public synchronized Map<Integer, BaseModification> getBaseModificationMap() {
 
-        if (baseModificationMap == null && record.hasAttribute("Mm")) {
-            Object mm = record.getAttribute("Mm");
-            byte[] ml = (byte[]) record.getAttribute("Ml");
+        if (baseModificationMap == null && (record.hasAttribute("Mm") || record.hasAttribute("MM"))) {
+            Object mm = record.hasAttribute("Mm") ? record.getAttribute("Mm") : record.getAttribute("MM");
+            byte[] ml = (byte[]) (record.hasAttribute("Ml") ? record.getAttribute("Ml") : record.getAttribute("ML"));
             List<BaseModification> baseModifications = BaseModification.getBaseModifications(mm.toString(), ml, record.getReadBases(), isNegativeStrand());
             baseModificationMap = new HashMap<>();
             for (BaseModification mod : baseModifications) {
