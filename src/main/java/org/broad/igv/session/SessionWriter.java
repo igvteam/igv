@@ -323,7 +323,8 @@ public class SessionWriter {
 
                     String resourcePath = resourceLocator.getPath();
                     if (outputFile != null) {
-                        boolean useRelative = PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
+                        boolean useRelative = outputFile != null &&
+                                PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
                         if (useRelative) {
                             resourcePath = FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourcePath);
                         }
@@ -388,7 +389,8 @@ public class SessionWriter {
                     element.setAttribute("clazz", SessionElement.getXMLClassName(track.getClass()));
 
                     String id = track.getId();
-                    boolean useRelative = PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
+                    boolean useRelative = outputFile != null &&
+                            PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
                     if (useRelative && !FileUtils.isRemote(id) && this.outputFile != null) {
                         id = FileUtils.getRelativePath(this.outputFile.getAbsolutePath(), id);
                     }
