@@ -139,7 +139,7 @@ public abstract class AbstractTrack implements Track {
 
     String autoscaleGroup;
 
-    protected Color posColor = DEFAULT_COLOR;
+    protected Color posColor = null;
     protected Color altColor = null;
 
     protected int visibilityWindow = VISIBILITY_WINDOW;
@@ -305,12 +305,19 @@ public abstract class AbstractTrack implements Track {
 
 
     public Color getColor() {
+        return posColor == null ? DEFAULT_COLOR : posColor;
+    }
+
+    public Color getExplicitColor() {
         return posColor;
     }
 
     public Color getAltColor() {
-        return altColor == null ? posColor : altColor;
+        return altColor == null ? getColor() : altColor;
+    }
 
+    public Color getExplicitAltColor() {
+        return altColor;
     }
 
     public ResourceLocator getResourceLocator() {
@@ -988,7 +995,7 @@ public abstract class AbstractTrack implements Track {
         if (showFeatureNames != DEFAULT_SHOW_FEATURE_NAMES) {
             element.setAttribute("showFeatureNames", Boolean.toString(showFeatureNames));
         }
-        if (posColor != DEFAULT_COLOR) {
+        if (posColor != null) {
             element.setAttribute(SessionAttribute.COLOR, ColorUtilities.colorToString(posColor));
         }
         if (altColor != null) {

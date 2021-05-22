@@ -194,7 +194,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         this.source = source;
         setMinimumHeight(10);
-        setColor(Color.blue.darker());
 
         coverageRenderer = new BarChartRenderer();
 
@@ -997,8 +996,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public void marshalXML(Document document, Element element) {
-
         element.setAttribute("groupByStrand", String.valueOf(groupByStrand));
+
+        super.marshalXML(document, element);
 
     }
 

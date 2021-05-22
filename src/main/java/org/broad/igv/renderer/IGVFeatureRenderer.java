@@ -697,20 +697,33 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         return "Basic Feature";
     }
 
-    protected Color getFeatureColor(IGVFeature feature, Track track, Color posColor, Color negColor) {
-        // Set color used to draw the feature
+    protected Color getFeatureColor(IGVFeature feature, Track track, Color defaultPosColor, Color defaultNegColor) {
 
-        Color color = null;
-        if (track.isItemRGB()) {
+        // Set color used to draw the feature
+         Color color = null;
+
+        // If an alt color is explicitly set use it for negative strand features;
+        if(feature.getStrand() == Strand.NEGATIVE) {
+            color = track.getExplicitAltColor();
+        }
+
+        // If color is explicitly set use it
+        if(color == null) {
+             color = track.getExplicitColor();
+        }
+
+        // No explicitly set color, try the feature itself
+        if(color == null && track.isItemRGB()) {
             color = feature.getColor();
         }
 
+        // If still no color use defaults
         if (color == null) {
             // TODO -- hack, generalize this
             if (track.getTrackType() == TrackType.CNV) {
                 color = feature.getName().equals("gain") ? DULL_RED : DULL_BLUE;
             } else {
-                color = feature.getStrand() == Strand.NEGATIVE ? negColor : posColor;
+                color = feature.getStrand() == Strand.NEGATIVE ? defaultNegColor : defaultPosColor;
             }
         }
 
