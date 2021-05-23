@@ -804,7 +804,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             StringBuilder buf = new StringBuilder();
             buf.append(alignment.getClipboardString(location, mouseX)
                     .replace("<br>", "\n")
-                    .replace("<br/>", "\n"));
+                    .replace("<br/>", "\n")
+                    .replace("<hr>", "\n------------------\n")
+                    .replace("<hr/>", "\n------------------\n"));
             buf.append("\n");
             buf.append("Alignment start position = ").append(alignment.getChr()).append(":").append(alignment.getAlignmentStart() + 1);
             buf.append("\n");
@@ -2137,7 +2139,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         private String getClippedSequence(String readSequence, Strand strand, int i, int i2) {
-            if(readSequence == null || readSequence.equals("*")) {
+            if (readSequence == null || readSequence.equals("*")) {
                 return "*";
             }
             String seq = readSequence.substring(i, i2);
