@@ -273,6 +273,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         IGVEventBus.getInstance().subscribe(AlignmentTrackEvent.class, this);
     }
 
+    public void init() {
+        if(experimentType == null) {
+            ExperimentType type = dataManager.inferType();
+            if (type != null) {
+                setExperimentType(type);
+            }
+        }
+    }
+
 
     @Override
     public void receiveEvent(Object event) {

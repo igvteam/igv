@@ -880,9 +880,9 @@ public class TrackLoader {
             alignmentTrack.setName(dsName);
             alignmentTrack.setVisible(PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK));
 
+
             // Create coverage track
             CoverageTrack covTrack = new CoverageTrack(locator, dsName + " Coverage", alignmentTrack, genome);
-            covTrack.setVisible(PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_COV_TRACK));
             newTracks.add(covTrack);
             covTrack.setDataManager(dataManager);
             dataManager.setCoverageTrack(covTrack);
@@ -918,15 +918,13 @@ public class TrackLoader {
                 }
             }
 
-            boolean showSpliceJunctionTrack = PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_JUNCTION_TRACK);
-
             SpliceJunctionTrack spliceJunctionTrack = new SpliceJunctionTrack(locator,
                     dsName + " Junctions", dataManager, alignmentTrack, SpliceJunctionTrack.StrandOption.BOTH);
             spliceJunctionTrack.setHeight(60);
-            spliceJunctionTrack.setVisible(showSpliceJunctionTrack);
             newTracks.add(spliceJunctionTrack);
-
             alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
+
+            alignmentTrack.init();
 
             newTracks.add(alignmentTrack);
 

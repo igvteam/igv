@@ -123,7 +123,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
                            int end,
                            SpliceJunctionHelper spliceJunctionHelper,
                            AlignmentDataManager.DownsampleOptions downsampleOptions,
-                           ReadStats readStats, Map<String, PEStats> peStats,
+                           Map<String, PEStats> peStats,
                            AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
@@ -239,10 +239,6 @@ public class AlignmentTileLoader implements IGVEventObserver {
                         }
                     }
 
-                }
-
-                if (readStats != null) {
-                    readStats.addAlignment(record);
                 }
 
                 t.addRecord(record, reducedMemory);

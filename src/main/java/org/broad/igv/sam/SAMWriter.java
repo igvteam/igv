@@ -248,7 +248,7 @@ public class SAMWriter {
         ResourceLocator inlocator = dataManager.getLocator();
         checkExportableAlignmentFile(inlocator.getTypeString());
 
-        final SAMFileHeader fileHeader = dataManager.getReader().getFileHeader();
+        final SAMFileHeader fileHeader = dataManager.getLoader().getFileHeader();
         //IGV can only load files sorted in coordinate order, but they aren't always
         //labelled as such.
         fileHeader.setSortOrder(SAMFileHeader.SortOrder.coordinate);

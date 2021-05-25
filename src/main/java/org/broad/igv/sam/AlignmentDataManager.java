@@ -36,8 +36,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
+import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
-import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -58,6 +58,7 @@ import static org.broad.igv.prefs.Constants.*;
 public class AlignmentDataManager implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(AlignmentDataManager.class);
+    private final AlignmentReader reader;
 
 
     private AlignmentTrack alignmentTrack;
@@ -67,7 +68,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     private List<AlignmentInterval> intervalCache;
     private ResourceLocator locator;
     private HashMap<String, String> chrMappings = new HashMap();
-    private AlignmentTileLoader reader;
+    private AlignmentTileLoader loader;
     private Map<String, PEStats> peStats;
     private SpliceJunctionHelper.LoadOptions loadOptions;
     private Range currentlyLoading;
@@ -77,7 +78,8 @@ public class AlignmentDataManager implements IGVEventObserver {
         // The time-gated limit for an AWS signed URL has expired, we need to re-sign the URL with the newly acquired
         // access token, otherwise we will face an Access Denied error. CheckReader() provides a very low overhead
         // mechanism to refresh expired presigned URLs.
-        reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
+        reader = AlignmentReaderFactory.getReader(locator);
+        loader = new AlignmentTileLoader(reader);
         peStats = new HashMap();
         initLoadOptions();
         initChrMap(genome);
@@ -181,7 +183,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         return chrMappings.size() > 0;
     }
 
-    public AlignmentTileLoader getReader() {
+    public AlignmentTileLoader getLoader() {
         return checkReader();
     }
 
@@ -413,34 +415,27 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
 
-        ReadStats readStats = new ReadStats();
-
         AlignmentTileLoader.AlignmentTile t = checkReader().loadTile(sequence, start, end, spliceJunctionHelper,
-                downsampleOptions, readStats, peStats, bisulfiteContext);
-//
-        if (getExperimentType() == null) {
-            inferType(readStats);
-        }
-
-        List<Alignment> alignments = t.getAlignments();
+                downsampleOptions, peStats, bisulfiteContext);
+      List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
         return new AlignmentInterval(chr, start, end, alignments, t.getCounts(), spliceJunctionHelper, downsampledIntervals);
     }
 
-    /**
-     * Some empirical metrics for determining experiment type
-     *
-     * @param readStats
-     */
-    private void inferType(ReadStats readStats) {
+    public AlignmentTrack.ExperimentType inferType() {
+        ReadStats readStats = new ReadStats();
+        List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 1000);
+        for(Alignment a : sample) {
+            readStats.addAlignment(a);
+        }
         readStats.compute();
-        if (readStats.readCount < 100) return; // Not enough reads
+        if (readStats.readCount < 100) return null; // Not enough reads
         if (readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
-            setExperimentType(AlignmentTrack.ExperimentType.THIRD_GEN);  // Could also use fracReadsWithIndels
+            return AlignmentTrack.ExperimentType.THIRD_GEN;  // Could also use fracReadsWithIndels
         } else if (readStats.medianRefToReadRatio > 10 || readStats.fracReadsWithNs > 0.2) {
-            setExperimentType(AlignmentTrack.ExperimentType.RNA);
+            return AlignmentTrack.ExperimentType.RNA;
         } else {
-            setExperimentType(AlignmentTrack.ExperimentType.OTHER);
+            return AlignmentTrack.ExperimentType.OTHER;
         }
     }
 
@@ -531,9 +526,9 @@ public class AlignmentDataManager implements IGVEventObserver {
 
 
     private void dispose() {
-        if (reader != null) {
+        if (loader != null) {
             try {
-                reader.close();
+                loader.close();
             } catch (IOException ex) {
                 log.error("Error closing AlignmentQueryReader. ", ex);
             }
@@ -583,7 +578,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         try {
             String aPath = locator.getPath();
             if (AmazonUtils.isAwsS3Path(aPath) && !AmazonUtils.isS3PresignedValid(aPath)) {
-                reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
+                loader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -591,7 +586,7 @@ public class AlignmentDataManager implements IGVEventObserver {
             e.printStackTrace();
         }
 
-        return reader;
+        return loader;
     }
 
     public static class DownsampleOptions {

@@ -26,8 +26,11 @@
 package org.broad.igv.sam;
 
 
+import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
+import org.broad.igv.sam.reader.AlignmentReader;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -217,7 +220,6 @@ public class AlignmentUtils {
     }
 
 
-
     public static AlignmentBlockImpl buildAlignmentBlock(char operator,
                                                          byte[] readBases,
                                                          byte[] readBaseQualities,
@@ -247,6 +249,26 @@ public class AlignmentUtils {
         AlignmentBlockImpl block = new AlignmentBlockImpl(blockStart, readBases, readBaseQualities, fromIdx, nBases, operator);
 
         return block;
+    }
+
+
+    public static List<Alignment> firstAlignments(AlignmentReader reader, int count) {
+        
+        List<Alignment> alignments = new ArrayList<>();
+        CloseableIterator<Alignment> iter = null;
+
+        try {
+            iter = reader.iterator();
+            while (iter.hasNext() && alignments.size() < count) {
+                alignments.add(iter.next());
+            }
+            return alignments;
+        } catch (IOException e) {
+
+        } finally {
+            iter.close();
+        }
+        return alignments;
     }
 
 
