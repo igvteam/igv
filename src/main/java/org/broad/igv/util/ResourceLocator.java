@@ -114,6 +114,7 @@ public class ResourceLocator {
 
     private HashMap attributes = new HashMap();
     private boolean indexed;
+    private boolean dataURL;
 
     public static List<ResourceLocator> getLocators(Collection<File> files) {
 
@@ -183,6 +184,10 @@ public class ResourceLocator {
     public ResourceLocator(String dbURL, String path) {
         this.dbURL = dbURL;
         this.setPath(path);
+    }
+
+    public boolean isDataURL() {
+        return dataURL;
     }
 
     /**
@@ -308,7 +313,7 @@ public class ResourceLocator {
     }
 
     public boolean isLocal() {
-        return dbURL == null && !FileUtils.isRemote(path);
+        return dbURL == null && !dataURL && !FileUtils.isRemote(path);
     }
 
     public void setTrackInforURL(String trackInforURL) {
@@ -380,6 +385,7 @@ public class ResourceLocator {
             String s3UrlIndexPath = detectIndexPath(path);
             this.setIndexPath(s3UrlIndexPath);
         } else {
+            this.dataURL = ParsingUtils.isDataURL(path);
             this.path = path;
         }
     }

@@ -192,12 +192,12 @@ public class CommandExecutor {
             } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
                 result = sortByAttribute(args);
             } else if (cmd.equalsIgnoreCase("fitTracks")) {
-               igv.fitTracksToPanel();
+                igv.fitTracksToPanel();
             } else if (cmd.equalsIgnoreCase("showAttributes")) {
                 result = this.showAttributes(args);
             } else if (cmd.equalsIgnoreCase("showDataRange")) {
                 result = this.setShowDataRange(param1, param2);
-            } else if(cmd.equalsIgnoreCase("setTrackHeight")){
+            } else if (cmd.equalsIgnoreCase("setTrackHeight")) {
                 result = this.setTrackHeight(param1, param2);
             } else {
                 result = "UNKOWN COMMAND: " + command;
@@ -359,7 +359,7 @@ public class CommandExecutor {
         hiddenAttributes.addAll(igv.getSession().getHiddenAttributes());
         // Build a hash to support case insensitive attribute name comparison
         Map<String, String> attributeMap = new HashMap<>();
-        for(String att : hiddenAttributes) {
+        for (String att : hiddenAttributes) {
             attributeMap.put(att.toUpperCase(), att);
         }
         for (int i = 1; i < args.size(); i++) {
@@ -540,11 +540,15 @@ public class CommandExecutor {
                 format = param.substring(7);
             }
         }
+
+
         // Locus is not specified from port commands
         String locus = null;
         Map<String, String> params = null;
         return loadFiles(fileString, index, coverage, name, format, locus, merge, params);
+
     }
+
 
     String loadFiles(final String fileString,
                      final String indexString,
@@ -584,14 +588,15 @@ public class CommandExecutor {
 
         log.debug("Run load files");
 
+        boolean isDataURL = ParsingUtils.isDataURL(fileString);
 
-        List<String> files = StringUtils.breakQuotedString(fileString, ',');
+        List<String> files = isDataURL ? Arrays.asList(fileString) : StringUtils.breakQuotedString(fileString, ',');
         List<String> names = StringUtils.breakQuotedString(nameString, ',');
         List<String> indexFiles = StringUtils.breakQuotedString(indexString, ',');
         List<String> coverageFiles = StringUtils.breakQuotedString(coverageString, ',');
         List<String> formats = StringUtils.breakQuotedString(formatString, ',');
 
-        if (files.size() == 1) {
+        if (files.size() == 1 && !ParsingUtils.isDataURL(files.get(0))) {
             // String might be URL encoded
             files = StringUtils.breakQuotedString(fileString.replaceAll("%2C", ","), ',');
             names = nameString != null ? StringUtils.breakQuotedString(nameString.replaceAll("%2C", ","), ',') : null;
@@ -654,16 +659,23 @@ public class CommandExecutor {
 
             String f = files.get(fi);
 
+            if (isDataURL && formats == null) {
+                throw new Error("ERROR: format must be specified for dataURLs");
+            }
+
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
 
             if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3") || f.endsWith(".session")) {
                 sessionPaths.add(f);
             } else {
+
                 ResourceLocator rl = new ResourceLocator(f);
 
                 if (names != null) {
                     rl.setName(names.get(fi));
+                } else if(isDataURL) {
+                    rl.setName("Data");
                 }
                 if (indexFiles != null) {
                     rl.setIndexPath(indexFiles.get(fi));
@@ -682,10 +694,10 @@ public class CommandExecutor {
                     rl.setTrackLine(trackLine);
                 }
 
-                if (rl.isLocal()) {
+                if (!isDataURL && rl.isLocal()) {
                     File file = new File(rl.getPath());
                     if (!file.exists()) {
-                        return "Error: " + f + " does not exist.";
+                        throw new Error("Error: " + f + " does not exist.");
                     }
                 }
 

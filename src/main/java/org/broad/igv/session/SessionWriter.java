@@ -69,7 +69,7 @@ public class SessionWriter {
 
 
     /**
-     * Method description
+     * Save the session as an XML document
      *
      * @param session
      * @param outputFile
@@ -105,8 +105,6 @@ public class SessionWriter {
 
     public String createXmlFromSession(Session session, File outputFile) throws RuntimeException {
 
-        String xmlString = null;
-
         this.session = session;
         this.outputFile = outputFile;
 
@@ -125,9 +123,7 @@ public class SessionWriter {
             String genomeId = GenomeManager.getInstance().getGenomeId();
             if (genomeId != null) {
                 // If genomeId is a file try to write it out as a relative path
-                boolean useRelative = outputFile != null &&
-                        PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
-                if (useRelative && (new File(genomeId)).exists()) {
+                if ((new File(genomeId)).exists() && isUseRelative(outputFile)) {
                     genomeId = FileUtils.getRelativePath(outputFile.getAbsolutePath(), genomeId);
                 }
                 globalElement.setAttribute(SessionAttribute.GENOME, genomeId);
@@ -164,7 +160,6 @@ public class SessionWriter {
             // Panel layout
             writePanelLayout(globalElement, document);
 
-
             // Regions of Interest
             writeRegionsOfInterest(globalElement, document);
 
@@ -180,19 +175,16 @@ public class SessionWriter {
                 writeHiddenAttributes(session, globalElement, document);
             }
 
-
             document.appendChild(globalElement);
 
             // Transform document into XML
-            xmlString = Utilities.getString(document);
+            return Utilities.getString(document);
         } catch (Exception e) {
-            String message = "An error has occurred while trying to create the session!";
+            String message = "Error creating session.";
             log.error(message, e);
             JOptionPane.showMessageDialog(IGV.getMainFrame(), message);
             throw new RuntimeException(e);
         }
-
-        return xmlString;
     }
 
 
@@ -269,7 +261,6 @@ public class SessionWriter {
             hiddenAttributes.appendChild(regionElement);
         }
         globalElement.appendChild(hiddenAttributes);
-
     }
 
     private void writeGeneList(Element globalElement, Document document) {
@@ -322,12 +313,8 @@ public class SessionWriter {
                     Element dataFileElement = document.createElement(SessionElement.RESOURCE);
 
                     String resourcePath = resourceLocator.getPath();
-                    if (outputFile != null) {
-                        boolean useRelative = outputFile != null &&
-                                PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
-                        if (useRelative) {
-                            resourcePath = FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourcePath);
-                        }
+                    if (isUseRelative(outputFile)) {
+                        resourcePath = FileUtils.getRelativePath(outputFile.getAbsolutePath(), resourcePath);
                     }
                     dataFileElement.setAttribute(SessionAttribute.PATH, resourcePath);
 
@@ -369,6 +356,11 @@ public class SessionWriter {
         }
     }
 
+    private boolean isUseRelative(File outputFile) {
+        return outputFile != null &&
+                PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
+    }
+
     private void writePanels(Element globalElement, Document document) throws DOMException {
 
         for (TrackPanel trackPanel : IGV.getInstance().getTrackPanels()) {
@@ -389,10 +381,8 @@ public class SessionWriter {
                     element.setAttribute("clazz", SessionElement.getXMLClassName(track.getClass()));
 
                     String id = track.getId();
-                    boolean useRelative = outputFile != null &&
-                            PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
-                    if (useRelative && !FileUtils.isRemote(id) && this.outputFile != null) {
-                        id = FileUtils.getRelativePath(this.outputFile.getAbsolutePath(), id);
+                    if (isUseRelative(outputFile) && !FileUtils.isRemote(id)) {
+                        id = FileUtils.getRelativePath(outputFile.getAbsolutePath(), id);
                     }
                     element.setAttribute("id", id);
 
@@ -422,15 +412,12 @@ public class SessionWriter {
             globalElement.appendChild(panelLayout);
 
             StringBuffer locString = new StringBuffer();
-            locString.append(String.valueOf(dividerFractions[0]));
+            locString.append(dividerFractions[0]);
             for (int i = 1; i < dividerFractions.length; i++) {
                 locString.append("," + dividerFractions[i]);
             }
             panelLayout.setAttribute("dividerFractions", locString.toString());
-
-
         }
-
     }
 
     /**

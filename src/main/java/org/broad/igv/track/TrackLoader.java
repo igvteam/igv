@@ -39,10 +39,7 @@ import org.broad.igv.data.expression.ExpressionDataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.data.seg.*;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.BasePairFileUtils;
-import org.broad.igv.feature.GisticFileParser;
-import org.broad.igv.feature.MutationTrackLoader;
-import org.broad.igv.feature.ShapeFileUtils;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.bedpe.BedPEParser;
 import org.broad.igv.bedpe.InteractionTrack;
@@ -177,9 +174,6 @@ public class TrackLoader {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".maf.dict")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-            } else if (typeString.endsWith("mage-tab") || ExpressionFileParser.parsableMAGE_TAB(locator)) {
-                locator.setDescription("MAGE_TAB");
-                loadGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".db") || typeString.endsWith(".dbn")) {
                 convertLoadStructureFile(locator, newTracks, genome, "dotBracket");
             } else if (typeString.endsWith(".ct")) {
@@ -391,23 +385,36 @@ public class TrackLoader {
             loadVCF(locator, newTracks, genome);
         } else {
 
-            TribbleFeatureSource tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
+            FeatureSource src = null;
 
-            FeatureSource src;
-            if (GFFFeatureSource.isGFF(locator.getPath())) {
-                GFFCodec codec = (GFFCodec) CodecFactory.getCodec(locator, genome);
-                src = new GFFFeatureSource(tribbleFeatureSource, codec.getVersion());
-            } else {
-                src = tribbleFeatureSource;
+            if(locator.isDataURL()) {
+                // Simulate a tribble source
+                DataURLParser parser = new DataURLParser();
+                parser.parseFeatures(locator.getPath(), locator.getTypeString(), genome);
+                src = new FeatureCollectionSource(parser.getFeatures(), genome);
+
+                TrackProperties tp = parser.getTrackProperties();
+                if(tp != null) {
+                    ((FeatureCollectionSource) src).setHeader(tp);
+                }
+            }
+            else {
+                TribbleFeatureSource tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
+                if (GFFFeatureSource.isGFF(locator.getPath())) {
+                    GFFCodec codec = (GFFCodec) CodecFactory.getCodec(locator, genome);
+                    src = new GFFFeatureSource(tribbleFeatureSource, codec.getVersion());
+                } else {
+                    src = tribbleFeatureSource;
+                }
             }
 
             // Create feature source and track
             FeatureTrack t = new FeatureTrack(locator, src);
-            t.setName(locator.getTrackName());
+
             //t.setRendererClass(BasicTribbleRenderer.class);
 
             // Set track properties from header
-            Object header = tribbleFeatureSource.getHeader();
+            Object header = src.getHeader();
             if (header != null && header instanceof FeatureFileHeader) {
                 FeatureFileHeader ffh = (FeatureFileHeader) header;
                 if (ffh.getTrackType() != null) {

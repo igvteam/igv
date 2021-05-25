@@ -77,36 +77,40 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
 
         boolean indexExists = false;
+        String idxPath = null;
+        boolean indexRequired = false;
         // Explicit index path
-        String idxPath = locator.getIndexPath();
-        if (idxPath != null && idxPath.length() > 0) {
-            if (FileUtils.isRemote(idxPath)) {
-                idxPath = HttpUtils.mapURL(idxPath);
-            }
-            indexExists = true;
-        } else {
-            String maybeIdxPath = ResourceLocator.indexFile(locator);
-            if (maybeIdxPath == null || maybeIdxPath.length() == 0) {
-                indexExists = false;
+        if (!locator.isDataURL()) {
+            idxPath = locator.getIndexPath();
+            if (idxPath != null && idxPath.length() > 0) {
+                if (FileUtils.isRemote(idxPath)) {
+                    idxPath = HttpUtils.mapURL(idxPath);
+                }
+                indexExists = true;
             } else {
-                if (FileUtils.isRemote(maybeIdxPath)) {
-                    maybeIdxPath = HttpUtils.mapURL(maybeIdxPath);
-                }
-                if (FileUtils.resourceExists(maybeIdxPath)) {
-                    indexExists = true;
-                    idxPath = maybeIdxPath;
+                String maybeIdxPath = ResourceLocator.indexFile(locator);
+                if (maybeIdxPath == null || maybeIdxPath.length() == 0) {
+                    indexExists = false;
+                } else {
+                    if (FileUtils.isRemote(maybeIdxPath)) {
+                        maybeIdxPath = HttpUtils.mapURL(maybeIdxPath);
+                    }
+                    if (FileUtils.resourceExists(maybeIdxPath)) {
+                        indexExists = true;
+                        idxPath = maybeIdxPath;
+                    }
                 }
             }
-        }
 
-        // Optionally let the user create an index.
-        final int hundredMB = 100000000;
-        final int oneGB = 1000000000;
-        long size = FileUtils.getLength(locator.getPath());
-        final boolean indexRequired = size > oneGB;
-        if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
-            if (size > hundredMB) {
-                createIndex(locator, indexRequired);   // Note, might return null.
+            // Optionally let the user create an index.
+            final int hundredMB = 100000000;
+            final int oneGB = 1000000000;
+            long size = FileUtils.getLength(locator.getPath());
+            indexRequired = size > 10*oneGB;
+            if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
+                if (size > hundredMB) {
+                    createIndex(locator, indexRequired);   // Note, might return null.
+                }
             }
         }
 

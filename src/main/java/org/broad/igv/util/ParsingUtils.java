@@ -27,9 +27,13 @@ package org.broad.igv.util;
 
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPReply;
+import htsjdk.tribble.Feature;
 import htsjdk.tribble.readers.AsciiLineReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.AbstractFeatureParser;
+import org.broad.igv.feature.FeatureParser;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
@@ -37,12 +41,15 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ftp.FTPUtils;
+import software.amazon.awssdk.utils.StringInputStream;
 
 import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -106,7 +113,17 @@ public class ParsingUtils {
     public static InputStream openInputStreamGZ(ResourceLocator locator) throws IOException {
 
         InputStream inputStream = null;
-        if (HttpUtils.isRemoteURL(locator.getPath())) {
+
+        if (isDataURL(locator.getPath())) {
+            String dataURL = locator.getPath();
+            int commaIndex = dataURL.indexOf(',');
+            if (commaIndex < 0) {
+                throw new Error("dataURL missing commas");
+            }
+            // TODO -- check optional media type - only text/plain supported
+            String contents = URLDecoder.decode(dataURL.substring(commaIndex + 1), StandardCharsets.UTF_8);
+            return new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
+        } else if (HttpUtils.isRemoteURL(locator.getPath())) {
             URL url = HttpUtils.createURL(locator.getPath());
             inputStream = HttpUtils.getInstance().openConnectionStream(url);
         } else {
@@ -578,5 +595,9 @@ public class ParsingUtils {
 
         int idx = path.lastIndexOf('.');
         return idx < 0 ? path : path.substring(idx + 1, path.length());
+    }
+
+    public static boolean isDataURL(String url) {
+        return url != null && url.startsWith("data:") && !((new File(url)).exists());
     }
 }
