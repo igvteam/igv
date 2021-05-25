@@ -29,7 +29,7 @@ public class FastaBlockCompressedSequence extends FastaIndexedSequence {
 
         super(path);
 
-        if(indexPath == null) indexPath = path + ".gzi";
+        if (indexPath == null) indexPath = path + ".gzi";
 
         readGziMappings(indexPath);
     }
@@ -89,15 +89,19 @@ public class FastaBlockCompressedSequence extends FastaIndexedSequence {
         InputStream is = null;
         LittleEndianInputStream dis = null;
 
-        is = ParsingUtils.openInputStream(gziPath);
-        dis = new LittleEndianInputStream(new BufferedInputStream(is));
+        try {
+            is = ParsingUtils.openInputStream(gziPath);
+            dis = new LittleEndianInputStream(new BufferedInputStream(is));
 
-        int nEntries = (int) dis.readLong();
+            int nEntries = (int) dis.readLong();
 
-        gziMappings = new Mapping[nEntries];
+            gziMappings = new Mapping[nEntries];
 
-        for (int i = 0; i < nEntries; i++) {
-            gziMappings[i] = new Mapping(dis.readLong(), dis.readLong());
+            for (int i = 0; i < nEntries; i++) {
+                gziMappings[i] = new Mapping(dis.readLong(), dis.readLong());
+            }
+        } finally {
+            is.close();
         }
 
     }

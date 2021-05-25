@@ -338,6 +338,8 @@ public class AminoAcidManager {
 
         allCodonTables.putAll(newCodonTables);
         currentCodonTable = defaultCodonTable;
+
+        is.close();
     }
 
 //    private static JsonObject readJSONFromStream(InputStream is) throws JsonParseException {

@@ -55,7 +55,7 @@ public class FileUtils {
         if (isRemote(path)) {
             return HttpUtils.getInstance().resourceAvailable(path);
         } else {
-            if(path.startsWith("file://")) {
+            if (path.startsWith("file://")) {
                 path = path.substring(7);
             }
             return (new File(path)).exists();
@@ -258,7 +258,7 @@ public class FileUtils {
      */
     public static String getFirstLine(String path, String commentChar) throws IOException {
 
-        if(path == null) return null;
+        if (path == null) return null;
 
         BufferedReader reader = null;
         try {
@@ -501,15 +501,20 @@ public class FileUtils {
      */
     public static String getContents(String path) throws IOException {
 
-        BufferedReader reader = ParsingUtils.openBufferedReader(path);
+        BufferedReader reader = null;
 
-        StringBuilder contents = new StringBuilder();
-        PrintWriter pw = new PrintWriter(new StringBuilderWriter(contents));
-        String nextLine;
-        while ((nextLine = reader.readLine()) != null) {
-            pw.println(nextLine);
+        try {
+            reader = ParsingUtils.openBufferedReader(path);
+            StringBuilder contents = new StringBuilder();
+            PrintWriter pw = new PrintWriter(new StringBuilderWriter(contents));
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                pw.println(nextLine);
+            }
+            return contents.toString();
+        } finally {
+            reader.close();
         }
-        return contents.toString();
 
     }
 

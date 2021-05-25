@@ -12,6 +12,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by jrobinso on 10/31/17.
@@ -36,11 +37,18 @@ public class PAFCodec extends AsciiFeatureCodec<PAFFeature> {
         super(PAFFeature.class);
         this.path = path;
         this.genome = genome;
+        InputStream is = null;
         try {
-            LineIterator reader = new LineIteratorImpl(new AsciiLineReader(ParsingUtils.openInputStream(path)));
+            is = ParsingUtils.openInputStream(path);
+            LineIterator reader = new LineIteratorImpl(new AsciiLineReader(is));
             readActualHeader(reader);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+            }
         }
     }
 

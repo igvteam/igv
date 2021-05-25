@@ -29,9 +29,9 @@ public class VariantCodec extends AsciiFeatureCodec<Variant> {
     protected VariantCodec(Genome genome, ResourceLocator locator) throws IOException {
         super(Variant.class);
         this.genome = genome;
-
         BufferedReader reader = ParsingUtils.openBufferedReader(locator);
         header = parseHeader(reader);
+        reader.close();
     }
 
     @Override

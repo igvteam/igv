@@ -69,25 +69,30 @@ public class MAFtoSAM {
 
         File unsortedOutput = new File(outputPath + ".unsorted");
         File outputFile = new File(outputPath);
+        BufferedReader reader = null;
 
-        BufferedReader reader = ParsingUtils.openBufferedReader(path);
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(unsortedOutput)));
-        Map<String, Integer> sequenceDictionary = new LinkedHashMap<String, Integer>();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith("a")) {
-                // Parse alignments until blank line
-                parseBlock(reader, out, sequenceDictionary);
+        try {
+            reader = ParsingUtils.openBufferedReader(path);
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(unsortedOutput)));
+            Map<String, Integer> sequenceDictionary = new LinkedHashMap<String, Integer>();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("a")) {
+                    // Parse alignments until blank line
+                    parseBlock(reader, out, sequenceDictionary);
+                }
             }
+            out.flush();
+            out.close();
+            reader.close();
+
+            // Insert header and  SA tags
+            addHeaderAndSort(unsortedOutput, outputFile, sequenceDictionary);
+
+            unsortedOutput.deleteOnExit();
+        } finally {
+            reader.close();
         }
-        out.flush();
-        out.close();
-        reader.close();
-
-        // Insert header and  SA tags
-        addHeaderAndSort(unsortedOutput, outputFile, sequenceDictionary);
-
-        unsortedOutput.deleteOnExit();
 
     }
 
@@ -118,7 +123,6 @@ public class MAFtoSAM {
                 }
             }
             if (line.startsWith("s")) {
-
 
 
                 if (null == referenceLine) {
