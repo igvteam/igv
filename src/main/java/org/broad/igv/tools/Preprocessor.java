@@ -123,7 +123,7 @@ public class Preprocessor implements DataConsumer {
     public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames, boolean computeWholeGenome) {
 
         if (trackLine != null) {
-           // log.info(trackLine);
+            // log.info(trackLine);
         }
 
         if (outputFile != null && writer == null) {
@@ -329,16 +329,16 @@ public class Preprocessor implements DataConsumer {
             log.warn("No features were found that matched chromosomes in genome: " + genome.getId());
         } else {
             rawData.close();
-
-            // Record max/min
-            allDataStats.finish();
-            TDFGroup group = writer.getGroup("/");
-            group.setAttribute(TDFGroup.USE_PERCENTILE_AUTOSCALING, "true");
-            for (WindowFunction wf : allDataFunctions) {
-                group.setAttribute(wf.getValue(), String.valueOf(allDataStats.getValue(wf)));
-            }
-            writer.closeFile();
         }
+        // Record max/min
+        allDataStats.finish();
+        TDFGroup group = writer.getGroup("/");
+        group.setAttribute(TDFGroup.USE_PERCENTILE_AUTOSCALING, "true");
+        for (WindowFunction wf : allDataFunctions) {
+            group.setAttribute(wf.getValue(), String.valueOf(allDataStats.getValue(wf)));
+        }
+        writer.closeFile();
+
 
         if (statusMonitor != null) {
             statusMonitor.setPercentComplete(100);
