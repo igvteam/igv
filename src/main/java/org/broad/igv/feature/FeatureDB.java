@@ -337,7 +337,7 @@ public class FeatureDB {
                     }
 
                     BasicFeature bf = (BasicFeature) f;
-                    Codon c = bf.getCodon(currentGenome, proteinPosition);
+                    Codon c = bf.getCodon(currentGenome, bf.getChr(), proteinPosition);
                     if (c == null) {
                         continue;
                     }

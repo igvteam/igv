@@ -451,6 +451,8 @@ public class SequenceRenderer {
                     g.setFont(f);
                 }
 
+                AminoAcidManager.CodonTable codonTable = AminoAcidManager.getInstance().getCodonTable(context.getChr());
+
                 for (CodonAA acid : aaSequence.getSequence()) {
                     if (acid != null) {
                         //calculate x pixel boundaries of this AA rectangle
@@ -468,7 +470,7 @@ public class SequenceRenderer {
 
                             char aaSymbol = acid.getAminoAcid().getSymbol();
                             Graphics2D bgGraphics =
-                                    context.getGraphic2DForColor(getColorForAminoAcid(aaSymbol, odd, acid.getCodon()));
+                                    context.getGraphic2DForColor(getColorForAminoAcid(aaSymbol, odd, acid.getCodon(), codonTable));
 
                             bgGraphics.fill(aaRect);
 
@@ -488,14 +490,13 @@ public class SequenceRenderer {
             }
         }
 
-        protected Color getColorForAminoAcid(char acidSymbol, boolean odd, String codon) {
+        protected Color getColorForAminoAcid(char acidSymbol, boolean odd, String codon, AminoAcidManager.CodonTable codonTable) {
 
             if (codon.equals("ATG")) {
                 return METHIONINE_COLOR;
             } else if (acidSymbol == '*') {
                 return STOP_CODON_COLOR;
             } else {
-                AminoAcidManager.CodonTable codonTable = AminoAcidManager.getInstance().getCodonTable();
                 Set<String> altStartCodons = codonTable.getAltStartCodons();
                 if (altStartCodons != null && altStartCodons.contains(codon)) {
                     return ALT_START_COLOR;

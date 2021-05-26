@@ -186,14 +186,17 @@ public class Exon extends AbstractFeature implements IExon {
 
     public AminoAcidSequence getAminoAcidSequence(Genome genome, Exon prevExon, Exon nextExon) {
         //If the stored sequence was computed with a different codon table, we reset
+        String chr = getChr();
         if (aminoAcidSequence == null ||
-                !(Objects.equal(aminoAcidSequence.getCodonTableKey(), AminoAcidManager.getInstance().getCodonTable().getKey()))) {
+                !(Objects.equal(aminoAcidSequence.getCodonTableKey(),
+                        AminoAcidManager.getInstance().getCodonTable(chr).getKey()))) {
             computeAminoAcidSequence(genome, prevExon, nextExon);
         }
         return aminoAcidSequence;
     }
 
     private void computeAminoAcidSequence(Genome genome, Exon prevExon, Exon nextExon) {
+
         if (noncoding) {
             return;
         }
@@ -254,7 +257,8 @@ public class Exon extends AbstractFeature implements IExon {
                         }
                     }
 
-                    aminoAcidSequence = AminoAcidManager.getInstance().getAminoAcidSequence(getStrand(), readStart, new String(seqBytes));
+                    AminoAcidManager.CodonTable codonTable = AminoAcidManager.getInstance().getCodonTable(chr);
+                    aminoAcidSequence = AminoAcidManager.getInstance().getAminoAcidSequence(getStrand(), readStart, new String(seqBytes), codonTable);
                 }
             }
         }

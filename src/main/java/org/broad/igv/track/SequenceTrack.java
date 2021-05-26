@@ -148,9 +148,9 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    private void refreshAminoAcids() {
+    private void refreshAminoAcids(AminoAcidManager.CodonTable codonTable) {
         for (LoadedDataInterval<SeqCache> i : loadedIntervalCache.values()) {
-            i.getFeatures().refreshAminoAcids();
+            i.getFeatures().refreshAminoAcids(codonTable);
         }
     }
 
@@ -241,7 +241,9 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         byte[] seq = sequence.substring(deltaStart, len - deltaEnd).getBytes();
 
         SeqCache cache = new SeqCache(start, seq);
-        cache.refreshAminoAcids();
+
+        AminoAcidManager.CodonTable codonTable = AminoAcidManager.getInstance().getCodonTable(chr);
+        cache.refreshAminoAcids(codonTable);
         loadedIntervalCache.put(referenceFrame.getName(), new LoadedDataInterval<>(chr, start, end, cache));
     }
 
@@ -374,10 +376,17 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         }
         item.setText(shortName);
         final String curKey = codonTable.getKey();
-        item.setSelected(curKey.equals(AminoAcidManager.getInstance().getCodonTable().getKey()));
+
+        // Get the explicitly set codon table, if any
+        AminoAcidManager.CodonTable currentCodonTable = AminoAcidManager.getInstance().getCurrentCodonTable();
+        if(currentCodonTable != null) {
+            item.setSelected(curKey.equals(AminoAcidManager.getInstance().getCodonTable().getKey()));
+        }
+
         item.addActionListener(e -> {
             AminoAcidManager.getInstance().setCodonTable(curKey);
-            SequenceTrack.this.refreshAminoAcids();
+            AminoAcidManager.CodonTable selectedTable = AminoAcidManager.getInstance().getCodonTable();
+            SequenceTrack.this.refreshAminoAcids(selectedTable);
             repaint();
         });
         return item;
@@ -418,7 +427,11 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             this.negAA = negAA;
         }
 
-        public void refreshAminoAcids() {
+        /**
+         * Refresh the amino acids with a specific codon table -- called from explicit menu choice.
+         * @param codonTable
+         */
+        public void refreshAminoAcids(AminoAcidManager.CodonTable codonTable) {
             int mod = start % 3;
             int n1 = normalize3(3 - mod);
             int n2 = normalize3(n1 + 1);
@@ -426,17 +439,17 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
             String sequence = new String(seq);
             AminoAcidSequence[] posAA = {
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n1, sequence.substring(n1)),
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n2, sequence.substring(n2)),
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n3, sequence.substring(n3))
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n1, sequence.substring(n1), codonTable),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n2, sequence.substring(n2), codonTable),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n3, sequence.substring(n3), codonTable)
             };
             this.posAA = posAA;
 
             final int len = sequence.length();
             AminoAcidSequence[] negAA = {
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n1)),
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n2)),
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n3))
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n1), codonTable),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n2), codonTable),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n3), codonTable)
             };
             this.negAA = negAA;
         }
