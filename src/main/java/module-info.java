@@ -2,6 +2,7 @@ module org.igv {
     exports org.broad.igv;
     exports org.broad.igv.tools;
     exports org.broad.igv.ui;
+    exports org.broad.igv.feature.aa;
 
     requires com.google.common;
     requires protobuf.java;

@@ -27,6 +27,7 @@ package org.broad.igv.feature;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.aa.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
@@ -329,7 +330,7 @@ public class BasicFeature extends AbstractFeature {
         }
         codonInfo.calcSequence(genome);
 
-        AminoAcidManager.CodonTable codonTable = AminoAcidManager.getInstance().getCodonTable(chr);
+        CodonTable codonTable = CodonTableManager.getInstance().getCodonTableForChromosome(chr);
         AminoAcid aa = codonTable.getAminoAcid(codonInfo.getSequence());
         if (aa != null) {
             codonInfo.setAminoAcid(aa);

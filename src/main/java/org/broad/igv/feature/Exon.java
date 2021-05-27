@@ -27,6 +27,10 @@ package org.broad.igv.feature;
 
 
 import com.google.common.base.Objects;
+import org.broad.igv.feature.aa.AminoAcidManager;
+import org.broad.igv.feature.aa.AminoAcidSequence;
+import org.broad.igv.feature.aa.CodonTable;
+import org.broad.igv.feature.aa.CodonTableManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
@@ -188,8 +192,8 @@ public class Exon extends AbstractFeature implements IExon {
         //If the stored sequence was computed with a different codon table, we reset
         String chr = getChr();
         if (aminoAcidSequence == null ||
-                !(Objects.equal(aminoAcidSequence.getCodonTableKey(),
-                        AminoAcidManager.getInstance().getCodonTable(chr).getKey()))) {
+                !(Objects.equal(aminoAcidSequence.getId(),
+                        CodonTableManager.getInstance().getCodonTableForChromosome(chr).getId()))) {
             computeAminoAcidSequence(genome, prevExon, nextExon);
         }
         return aminoAcidSequence;
@@ -257,7 +261,7 @@ public class Exon extends AbstractFeature implements IExon {
                         }
                     }
 
-                    AminoAcidManager.CodonTable codonTable = AminoAcidManager.getInstance().getCodonTable(chr);
+                    CodonTable codonTable = CodonTableManager.getInstance().getCodonTableForChromosome(chr);
                     aminoAcidSequence = AminoAcidManager.getInstance().getAminoAcidSequence(getStrand(), readStart, new String(seqBytes), codonTable);
                 }
             }

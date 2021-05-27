@@ -23,8 +23,9 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature;
+package org.broad.igv.feature.aa;
 
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.SequenceTrack;
 
@@ -32,7 +33,7 @@ import org.broad.igv.track.SequenceTrack;
  * @author Jim Robinson
  * @date 12/26/11
  */
-class Codon {
+public class Codon {
 
     // Position in protein coordinates, first amino acid is numbered 1
     private int proteinPosition;
@@ -67,7 +68,7 @@ class Codon {
      *
      * @param gp
      */
-    void setNextGenomePosition(int gp) {
+    public void setNextGenomePosition(int gp) {
         try {
             genomePositions[nextPos] = gp;
             nextPos += incr;
@@ -76,7 +77,7 @@ class Codon {
         }
     }
 
-    boolean isGenomePositionsSet() {
+    public boolean isGenomePositionsSet() {
         boolean set = true;
         for (int ii : genomePositions) {
             set &= ii >= 0;
@@ -122,7 +123,7 @@ class Codon {
         this.sequence = aas;
     }
 
-    String getSequence() {
+    public String getSequence() {
         return sequence;
     }
 }

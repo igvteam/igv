@@ -31,6 +31,7 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.aa.*;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.LoadedDataInterval;
@@ -451,7 +452,7 @@ public class SequenceRenderer {
                     g.setFont(f);
                 }
 
-                AminoAcidManager.CodonTable codonTable = AminoAcidManager.getInstance().getCodonTable(context.getChr());
+                CodonTable codonTable = CodonTableManager.getInstance().getCodonTableForChromosome(context.getChr());
 
                 for (CodonAA acid : aaSequence.getSequence()) {
                     if (acid != null) {
@@ -490,7 +491,7 @@ public class SequenceRenderer {
             }
         }
 
-        protected Color getColorForAminoAcid(char acidSymbol, boolean odd, String codon, AminoAcidManager.CodonTable codonTable) {
+        protected Color getColorForAminoAcid(char acidSymbol, boolean odd, String codon, CodonTable codonTable) {
 
             if (codon.equals("ATG")) {
                 return METHIONINE_COLOR;

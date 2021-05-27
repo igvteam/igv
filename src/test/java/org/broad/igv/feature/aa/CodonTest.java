@@ -23,9 +23,13 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature;
+package org.broad.igv.feature.aa;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.feature.aa.Codon;
 import org.junit.Ignore;
 import org.junit.Test;
 

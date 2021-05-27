@@ -26,6 +26,10 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.aa.AminoAcidManager;
+import org.broad.igv.feature.aa.AminoAcidSequence;
+import org.broad.igv.feature.aa.CodonTable;
+import org.broad.igv.feature.aa.CodonTableManager;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -91,7 +95,8 @@ public class ExonTest extends AbstractHeadlessTest {
         AminoAcidSequence seq = testExon.getAminoAcidSequence(genome, prevExon, nextExon);
         assertEquals('I', seq.getSequence().get(5).getSymbol());
 
-        AminoAcidManager.getInstance().setCodonTable(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, 2);
+        CodonTable codonTable= CodonTableManager.getInstance().getCodonTableByID(2);
+        CodonTableManager.getInstance().setCurrentCodonTable(codonTable);
         seq = testExon.getAminoAcidSequence(genome, prevExon, nextExon);;
         assertEquals('M', seq.getSequence().get(5).getSymbol());
 
