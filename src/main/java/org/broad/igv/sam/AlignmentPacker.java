@@ -396,7 +396,7 @@ public class AlignmentPacker {
             case PHASE:
                 return al.getAttribute("HP");
             case TAG:
-                Object tagValue = al.getAttribute(tag);
+                Object tagValue = tag == null ? null : al.getAttribute(tag);
                 if (tagValue == null) {
                     return null;
                 } else if (tagValue instanceof Integer || tagValue instanceof Float || tagValue instanceof Double) {
