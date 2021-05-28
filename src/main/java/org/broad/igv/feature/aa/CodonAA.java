@@ -1,4 +1,4 @@
-package org.broad.igv.feature;
+package org.broad.igv.feature.aa;
 
 public class CodonAA {
     String codon;

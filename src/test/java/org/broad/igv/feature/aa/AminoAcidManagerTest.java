@@ -27,10 +27,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.broad.igv.feature;
+package org.broad.igv.feature.aa;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.tribble.UCSCGeneTableCodec;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -45,11 +47,10 @@ import static org.junit.Assert.*;
  */
 public class AminoAcidManagerTest extends AbstractHeadlessTest {
 
-
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        AminoAcidManager.resetToDefaultCodonTables();
+        //CodonTableManager.getInstance().resetToDefaults();
     }
 
     @Test
@@ -69,8 +70,8 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
 
         int aaSeqLen = aaSeq.getSequence().size();
         int start = aaSeqLen - expectedSeq.length();
-        for(int i=start; i<aaSeqLen - 1; i++) {
-            char exp = expectedSeq.charAt(i-start);
+        for (int i = start; i < aaSeqLen - 1; i++) {
+            char exp = expectedSeq.charAt(i - start);
             char actual = aaSeq.getSequence().get(i).getAminoAcid().getSymbol();
             assertEquals("i=" + i, exp, actual);
         }
@@ -123,8 +124,8 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
 
         IGVFeature egfr = (IGVFeature) FeatureDB.getFeature("EGFR");
         Exon exon = egfr.getExons().get(exonIndex);
-        Exon prevExon = egfr.getExons().get(exonIndex-1);
-        Exon nextExon = egfr.getExons().get(exonIndex+1);
+        Exon prevExon = egfr.getExons().get(exonIndex - 1);
+        Exon nextExon = egfr.getExons().get(exonIndex + 1);
 
         AminoAcidSequence aaSeq = exon.getAminoAcidSequence(genome, prevExon, nextExon);
         List<CodonAA> aaList = aaSeq.getSequence();
@@ -149,11 +150,11 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         IGVFeature fbxw7 = (IGVFeature) FeatureDB.getFeature("FBXW7");
 
         // Insure that this is a negative strand gene, and that its transcript can be read
-        assertEquals(Strand.NEGATIVE, fbxw7.getStrand());
+        Assert.assertEquals(Strand.NEGATIVE, fbxw7.getStrand());
 
         int lastExonIdx = 10;
         Exon exon = fbxw7.getExons().get(lastExonIdx);
-        Exon prevExon = fbxw7.getExons().get(lastExonIdx-1);
+        Exon prevExon = fbxw7.getExons().get(lastExonIdx - 1);
         Exon nextExon = null;
 
 
@@ -228,7 +229,8 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String seq = "ATGCGACCC";
         char[] aminoSeq = {'M', 'R', 'P'};
 
-        List<CodonAA> acids = AminoAcidManager.getInstance().getAminoAcids(Strand.POSITIVE, seq);
+        CodonTable defaultTable = CodonTableManager.getInstance().getDefaultCodonTable();
+        List<CodonAA> acids = AminoAcidManager.getInstance().getAminoAcids(Strand.POSITIVE, seq, defaultTable);
         assertEquals(3, acids.size());
         for (int i = 0; i < 3; i++) {
             assertEquals(aminoSeq[i], acids.get(i).getSymbol());
@@ -241,7 +243,8 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String seq = "ACGACGCCAT";   // "Extra" A at front (size == 10)
         char[] aminoSeq = {'S', 'A', 'M'};
 
-        List<CodonAA> acids = AminoAcidManager.getInstance().getAminoAcids(Strand.NEGATIVE, seq);
+        CodonTable defaultTable = CodonTableManager.getInstance().getDefaultCodonTable();
+        List<CodonAA> acids = AminoAcidManager.getInstance().getAminoAcids(Strand.NEGATIVE, seq, defaultTable);
         assertEquals(3, acids.size());
         for (int i = 0; i < 3; i++) {
             assertEquals(aminoSeq[i], acids.get(i).getSymbol());
@@ -254,13 +257,15 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String seq = "ACGACGCCAT";   // "Extra" A at front (size == 10)
         char[] aminoSeq = {'S', 'A', 'M'};
 
-        AminoAcidSequence aaSequence = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, 0, seq);
+        CodonTable defaultTable = CodonTableManager.getInstance().getDefaultCodonTable();
+        AminoAcidSequence aaSequence = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, 0, seq, defaultTable);
         assertEquals(3, aaSequence.getSequence().size());
         assertEquals(1, aaSequence.getStart());
         for (int i = 0; i < 3; i++) {
             assertEquals(aminoSeq[i], aaSequence.getSequence().get(i).getSymbol());
         }
     }
+
     //getAminoAcidSequence
     //GGCAGAACCAGCCGACGAGTCAGGCGCCGCATGGTCCCCTT
     @Test
@@ -269,7 +274,8 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String seq = "GGCAGAACCAGCCGACGAGTCAGGCGCCGCATGGTCCCCTT";
         byte[] aminoSeq1 = "LVLRRTLRRMTGK".getBytes();
 
-        AminoAcidSequence aaSequence = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, 0, seq);
+        CodonTable defaultTable = CodonTableManager.getInstance().getDefaultCodonTable();
+        AminoAcidSequence aaSequence = AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, 0, seq, defaultTable);
         assertEquals(13, aaSequence.getSequence().size());
         assertEquals(2, aaSequence.getStart());
         for (int i = 0; i < aminoSeq1.length; i++) {
@@ -305,39 +311,6 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
             String exp = expected.get(name);
             String act = AminoAcidManager.getAminoAcidByName(name).getFullName();
             assertEquals(exp, act);
-        }
-    }
-
-    //Just check that we have the ids we expect
-    @Test
-    public void testCodonTablesExist() throws Exception {
-        int[] expIds = {1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24};
-        for (int id : expIds) {
-            assertTrue(AminoAcidManager.getInstance().setCodonTable(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, id));
-        }
-    }
-
-    //Sample a few codon tables, test different translations
-    @Test
-    public void testVariousCodonTables() throws Exception {
-
-        int[] codonTableIds = {2, 2, 3, 6, 16, 22, 23, 24};
-        String[] testCodons = {"AGA", "TGA", "CTG", "TAA", "TAG", "TCA", "TTA", "AGA"};
-        char[] expAAs = {'*', 'W', 'T', 'Q', 'L', '*', '*', 'S'};
-
-        for (int ii = 0; ii < expAAs.length; ii++) {
-            AminoAcidManager aam = AminoAcidManager.getInstance();
-            int id = codonTableIds[ii];
-            boolean loaded = aam.setCodonTable(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, id);
-
-            assertTrue("Failed to load codon table with id " + id, loaded);
-
-            AminoAcid actualAA = aam.getAminoAcid(testCodons[ii]);
-            assertNotSame("Got null amino acid for " + testCodons[ii], AminoAcid.NULL_AMINO_ACID, actualAA);
-            assertEquals(String.valueOf(expAAs[ii]), String.valueOf(actualAA.getSymbol()));
-
-            //We want to only store one copy of each amino acid. Check that this is the case
-            assertTrue(AminoAcidManager.getAminoAcidByName(actualAA.getShortName()) == actualAA);
         }
     }
 

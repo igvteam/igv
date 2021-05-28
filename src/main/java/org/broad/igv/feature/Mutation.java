@@ -28,6 +28,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.aa.AminoAcidSequence;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;

@@ -4,7 +4,6 @@
   "organisms": [
     {
       "genomeId": "hg16",
-      "codonTablePath": null,
       "chromosomes": {
         "default": 1,
         "chrM": 2,
@@ -15,7 +14,6 @@
     },
     {
       "genomeId": "hg17",
-      "codonTablePath": null,
       "chromosomes": {
         "default": 1,
         "chrM": 2,
@@ -26,7 +24,6 @@
     },
     {
       "genomeId": "hg18",
-      "codonTablePath": null,
       "chromosomes": {
         "default": 1,
         "chrM": 2,
@@ -37,7 +34,6 @@
     },
     {
       "genomeId": "hg19",
-      "codonTablePath": null,
       "chromosomes": {
         "default": 1,
         "chrM": 2,
@@ -48,7 +44,6 @@
     },
     {
       "genomeId": "1kg_v37_ensembl",
-      "codonTablePath": null,
       "chromosomes": {
         "default": 1,
         "chrM": 2,
@@ -59,7 +54,6 @@
     },
     {
       "genomeId": "1kg_v37",
-      "codonTablePath": null,
       "chromosomes": {
         "default": 1,
         "chrM": 2,
@@ -70,7 +64,6 @@
     },
     {
       "genomeId": "hg38_1kg",
-      "codonTablePath": null,
       "chromosomes": {
         "default": 1,
         "chrM": 2,

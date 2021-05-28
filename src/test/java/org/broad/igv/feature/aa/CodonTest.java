@@ -23,9 +23,13 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature;
+package org.broad.igv.feature.aa;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.feature.aa.Codon;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -70,7 +74,7 @@ public class CodonTest extends AbstractHeadlessTest {
         BasicFeature bf = (BasicFeature) feature;
 
         for (int pos = 0; pos < expected.length; pos++) {
-            Codon codon = bf.getCodon(genome, pos + 1);
+            Codon codon = bf.getCodon(genome, bf.getChr(), pos + 1);
             assertEquals(expected[pos], codon.getAminoAcid().getSymbol());
         }
     }
@@ -90,7 +94,7 @@ public class CodonTest extends AbstractHeadlessTest {
         for (NamedFeature feat : featuresList) {
             BasicFeature bf = (BasicFeature) feat;
             System.out.println(bf.getIdentifier());
-            Codon c = bf.getCodon(genome, proteinPos);
+            Codon c = bf.getCodon(genome, bf.getChr(),  proteinPos);
 
             if (bf.getIdentifier().equals(invalidId)) {
                 assertNull(c);

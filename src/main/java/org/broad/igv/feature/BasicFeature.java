@@ -27,6 +27,7 @@ package org.broad.igv.feature;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.aa.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
@@ -313,7 +314,7 @@ public class BasicFeature extends AbstractFeature {
      * @param proteinPosition 1-Indexed position of protein
      * @return
      */
-    public Codon getCodon(Genome genome, int proteinPosition) {
+    public Codon getCodon(Genome genome, String chr, int proteinPosition) {
         // Nucleotide position on the coding portion of the transcript (the untranslated messenger RNA)
         int startTranscriptPosition = (proteinPosition - 1) * 3;
         int[] featurePositions = new int[]{startTranscriptPosition, startTranscriptPosition + 1,
@@ -328,7 +329,9 @@ public class BasicFeature extends AbstractFeature {
             return null;
         }
         codonInfo.calcSequence(genome);
-        AminoAcid aa = AminoAcidManager.getInstance().getAminoAcid(codonInfo.getSequence());
+
+        CodonTable codonTable = CodonTableManager.getInstance().getCodonTableForChromosome(chr);
+        AminoAcid aa = codonTable.getAminoAcid(codonInfo.getSequence());
         if (aa != null) {
             codonInfo.setAminoAcid(aa);
             return codonInfo;

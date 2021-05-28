@@ -27,7 +27,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.broad.igv.feature;
+package org.broad.igv.feature.aa;
+
+import org.broad.igv.feature.Strand;
 
 import java.util.List;
 
@@ -48,15 +50,15 @@ public class AminoAcidSequence {
      * If the sequence was computed from a nucleotide sequence,
      * we store how the calculation was performed
      */
-    private final String codonTableKey;
+    private final Integer id;
 
     public AminoAcidSequence(Strand strand, int startPosition,
                              List<CodonAA> sequence,
-                             String codonTableKey) {
+                             Integer codonTableKey) {
         this.strand = strand;
         this.start = startPosition;
         this.sequence = sequence;
-        this.codonTableKey = codonTableKey;
+        this.id = codonTableKey;
 
         // Look for a non null sequence.  Sequences are null if the sequence
         // directory is undefined or unreachable.  
@@ -86,8 +88,8 @@ public class AminoAcidSequence {
         return nonNullSequence;
     }
 
-    public String getCodonTableKey() {
-        return codonTableKey;
+    public Integer getId() {
+        return id;
     }
 
     /**
