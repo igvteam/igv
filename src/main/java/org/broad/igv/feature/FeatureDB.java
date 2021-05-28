@@ -32,6 +32,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.aa.AminoAcidManager;
 import org.broad.igv.feature.aa.Codon;
+import org.broad.igv.feature.aa.CodonTable;
+import org.broad.igv.feature.aa.CodonTableManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.SequenceTrack;
@@ -344,10 +346,14 @@ public class FeatureDB {
                         continue;
                     }
                     if (c.getAminoAcid().equalsByName(refAA)) {
-                        Set<String> snps = AminoAcidManager.getInstance().getMappingSNPs(c.getSequence(),
-                                AminoAcidManager.getAminoAcidByName(mutAA));
-                        if (snps.size() >= 1) {
-                            results.put(c.getGenomePositions()[0], bf);
+
+                        CodonTable codonTable = CodonTableManager.getInstance().getCodonTableForChromosome(currentGenome.getId(), bf.getChr());
+                        if(codonTable != null) {
+                            Set<String> snps = AminoAcidManager.getInstance().getMappingSNPs(c.getSequence(),
+                                    AminoAcidManager.getAminoAcidByName(mutAA), codonTable);
+                            if (snps.size() >= 1) {
+                                results.put(c.getGenomePositions()[0], bf);
+                            }
                         }
                     }
                 }

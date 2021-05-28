@@ -79,10 +79,6 @@ public class AminoAcidManager {
 
     private LinkedHashMap<String, CodonTable> allCodonTables = new LinkedHashMap<>(20);
 
-    private CodonTable defaultCodonTable;
-
-    private CodonTable currentCodonTable;
-
     private static Table<String, String, String> genomeChromoTable = TreeBasedTable.create();
 
     private static AminoAcidManager instance;
@@ -101,16 +97,6 @@ public class AminoAcidManager {
                 instance = newInstance;
         }
         return instance;
-    }
-
-
-    /**
-     * @param codon 3-letter nucleotide sequence
-     * @return The amino acid represented by this codon, as
-     * decoded from the current codon table
-     */
-    public AminoAcid getAminoAcid(String codon) {
-        return currentCodonTable.getAminoAcid(codon);
     }
 
 
@@ -196,13 +182,13 @@ public class AminoAcidManager {
         return aa;
     }
 
-    public Set<String> getMappingSNPs(String codon, AminoAcid mutAA) {
+    public Set<String> getMappingSNPs(String codon, AminoAcid mutAA, CodonTable codonTable) {
         Set<String> mapSNPs = new HashSet<String>();
         Set<String> SNPs = getAllSNPs(codon);
         for (String modCodon : SNPs) {
             //We use short name because all 3 stop codon have different long names,
             //and we don't care about the difference here.
-            if (currentCodonTable.getAminoAcid(modCodon).equalsByName(mutAA.getShortName())) {
+            if (codonTable.getAminoAcid(modCodon).equalsByName(mutAA.getShortName())) {
                 mapSNPs.add(modCodon);
             }
         }
