@@ -63,24 +63,6 @@ public class AminoAcidManager {
      */
     static final Map<String, AminoAcid> AANameMap = new HashMap<String, AminoAcid>(20);
 
-    private static final String[] BASE_SEQUENCES = {"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"};
-
-
-    public static final String DEFAULT_CODON_TABLE_PATH = "resources/geneticCode.json";
-
-    static final String DEFAULT_TRANS_TABLE_PATH = "resources/defaultTranslationTables.json";
-
-    //ID of the "standard" translation table
-    public static final int STANDARD_TABLE_ID = 1;
-
-    private static final String DEFAULT_CHROMO_KEY = "default";
-
-    private LinkedHashMap<String, CodonTable> allCodonTables = new LinkedHashMap<>(20);
-
-    private static Table<String, String, String> genomeChromoTable = TreeBasedTable.create();
-
     private static AminoAcidManager instance;
 
     private AminoAcidManager() {
