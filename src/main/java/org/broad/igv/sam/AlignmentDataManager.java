@@ -354,8 +354,8 @@ public class AlignmentDataManager implements IGVEventObserver {
 
             // Expand the interval by the lesser of  +/- a 2 screens, or max visible range
             int windowSize = Math.min(4 * (end - start), PreferencesManager.getPreferences().getAsInt(SAM_MAX_VISIBLE_RANGE) * 1000);
-            int center = (end + start) / 2;
-            int expand = Math.max(end - start, windowSize / 2);
+            int center = start + (end - start) / 2;     // Be careful how you calculate this -- potential overflow for large chromosomes
+            int expand = Math.min(Integer.MAX_VALUE - center, Math.max(end - start, windowSize / 2));
 
             if (expandEnds) {
                 adjustedStart = Math.max(0, Math.min(start, center - expand));
