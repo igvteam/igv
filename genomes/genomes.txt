@@ -47,6 +47,7 @@ Human respiratory synctial virus	https://s3.amazonaws.com/igv.broadinstitute.org
 Macaca fascicularis (CE_1.0)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/CE_1.0.genome	CE_1.0
 Macaca fascicularis (5.0)	https://s3.amazonaws.com/igv.org.genomes/Macaca_fascicularis_5.0/Macaca_fascicularis_5.0.genome	GCF_000364345.1
 Mouse (129S1/SvImJ)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/SvImJ.genome	129S1/SvImJ
+Mouse mm39	https://s3.amazonaws.com/igv.org.genomes/mm39/mm39.genome	mm39
 Mouse mm10	https://s3.amazonaws.com/igv.org.genomes/mm10/mm10.genome	mm10
 Mouse mm8	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm8.genome	mm8
 Mouse mm9	https://s3.amazonaws.com/igv.org.genomes/mm9/mm9.genome	mm9
