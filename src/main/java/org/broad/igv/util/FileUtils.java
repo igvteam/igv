@@ -394,7 +394,7 @@ public class FileUtils {
      * @return
      */
     public static String getAbsolutePath(String inputPath, String referencePath) {
-        if (isRemote(inputPath)) {
+        if (isRemote(inputPath) || referencePath == null) {
             return inputPath;
         }
         File inFile = new File(inputPath);
