@@ -21,52 +21,55 @@ public class ClusterParser {
 
         BufferedReader br = null;
 
-        br = ParsingUtils.openBufferedReader(file);
+        try {
+            br = ParsingUtils.openBufferedReader(file);
 
-        String nextLine;
-        while ((nextLine = br.readLine()) != null) {
+            String nextLine;
+            while ((nextLine = br.readLine()) != null) {
 
-            String[] tokens = ParsingUtils.TAB_PATTERN.split(nextLine);
+                String[] tokens = ParsingUtils.TAB_PATTERN.split(nextLine);
 
-            if(tokens[0].startsWith("#")) {
-                if(tokens[0].startsWith("#binSize")) {
-                    String [] t = ParsingUtils.EQ_PATTERN.split(tokens[0]);
-                    binSize = Integer.parseInt(t[1].trim());
-                }
-                else {
-                    continue;   // Comment or unrecognized directive
-                }
-            }
-
-            if (tokens.length < 2) {
-                log.info("Skipping line: " + nextLine);
-                continue;
-            }
-
-            String name = tokens[0];
-            Map<String, List<Integer>> positions = new HashMap<>();
-            for(int i=1; i<tokens.length; i++) {
-                String [] l = tokens[i].split(":");
-                String chr = l[0];
-                Integer position = Integer.parseInt(l[1]);
-
-                List<Integer> posList = positions.get(chr);
-                if(posList == null) {
-                    posList = new ArrayList<>();
-                    positions.put(chr, posList);
+                if (tokens[0].startsWith("#")) {
+                    if (tokens[0].startsWith("#binSize")) {
+                        String[] t = ParsingUtils.EQ_PATTERN.split(tokens[0]);
+                        binSize = Integer.parseInt(t[1].trim());
+                    } else {
+                        continue;   // Comment or unrecognized directive
+                    }
                 }
 
-                posList.add(position);
+                if (tokens.length < 2) {
+                    log.info("Skipping line: " + nextLine);
+                    continue;
+                }
+
+                String name = tokens[0];
+                Map<String, List<Integer>> positions = new HashMap<>();
+                for (int i = 1; i < tokens.length; i++) {
+                    String[] l = tokens[i].split(":");
+                    String chr = l[0];
+                    Integer position = Integer.parseInt(l[1]);
+
+                    List<Integer> posList = positions.get(chr);
+                    if (posList == null) {
+                        posList = new ArrayList<>();
+                        positions.put(chr, posList);
+                    }
+
+                    posList.add(position);
+                }
+
+                for (List<Integer> posList : positions.values()) {
+                    Collections.sort(posList);
+                }
+
+                features.add(new Cluster(name, positions));
             }
 
-            for(List<Integer> posList : positions.values()) {
-                Collections.sort(posList);
-            }
-
-            features.add(new Cluster(name, positions));
+            return new ClusterSet(binSize, features);
+        } finally {
+            br.close();
         }
-
-        return new ClusterSet(binSize, features);
 
     }
 

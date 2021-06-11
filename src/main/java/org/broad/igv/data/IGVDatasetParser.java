@@ -83,9 +83,8 @@ public class IGVDatasetParser {
     }
 
     private void setColumnDefaults() {
-        String tmp = (dataResourceLocator.getPath().endsWith(".txt")
-                ? dataResourceLocator.getPath().substring(0,
-                dataResourceLocator.getPath().length() - 4) : dataResourceLocator.getPath()).toLowerCase();
+
+        String tmp = dataResourceLocator.getTypeString();
 
         if (tmp.endsWith(".igv")) {
             chrColumn = 0;

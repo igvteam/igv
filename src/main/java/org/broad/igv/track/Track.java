@@ -188,9 +188,17 @@ public interface Track extends Persistable {
 
     Color getColor();
 
+    default Color getExplicitColor() {
+        return null;
+    }
+
     void setColor(Color color);
 
     Color getAltColor();
+
+    default Color getExplicitAltColor() {
+        return null;
+    }
 
     void setAltColor(Color color);
 

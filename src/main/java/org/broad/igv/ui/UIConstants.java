@@ -50,7 +50,8 @@ public class UIConstants {
     // Menu tooltips
     static final public String LOAD_TRACKS_TOOLTIP = "Load tracks or sample information";
     static final public String LOAD_SERVER_DATA_TOOLTIP = "Load tracks or sample information from a server";
-    static final public String SAVE_IMAGE_TOOLTIP = "Capture and save an image";
+    static final public String SAVE_PNG_IMAGE_TOOLTIP = "Capture and save a PNG image";
+    static final public String SAVE_SVG_IMAGE_TOOLTIP = "Capture and save an SVG image";
     static final public String NEW_SESSION_TOOLTIP = "Create a new session";
     static final public String SAVE_SESSION_TOOLTIP = "Save the current session";
     static final public String OPEN_SESSION_TOOLTIP = "Load a session";

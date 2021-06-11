@@ -147,15 +147,20 @@ public class TribbleListFeatureSource implements FeatureSource {
         this.windowSize = size;
     }
 
-    public Object getHeader() throws TribbleIndexNotFoundException {
+    public Object getHeader()  {
         if (header == null) {
             // Arbitrarily get the first source
             if (pathMap != null && pathMap.size() > 0) {
                 String chr = pathMap.keySet().iterator().next();
-                TribbleFeatureSource src = getSource(chr);
+                TribbleFeatureSource src = null;
+                try {
+                    src = getSource(chr);
+                } catch (TribbleIndexNotFoundException e) {
+                    log.error("Error reading header form Tribble source", e);
+                    return null;
+                }
                 header = src.getHeader();
             }
-
         }
         return header;
     }

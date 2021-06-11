@@ -28,15 +28,15 @@ package org.broad.igv.util;
 import com.google.gson.JsonObject;
 import htsjdk.tribble.Tribble;
 import org.apache.log4j.Logger;
-import org.broad.igv.google.Ga4ghAPIHelper;
 import org.broad.igv.google.GoogleUtils;
 
+//import java.awt.*;
 import java.awt.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 /**
  * Represents a data file or other resource, which might be local file or remote resource.
@@ -114,9 +114,48 @@ public class ResourceLocator {
 
     private HashMap attributes = new HashMap();
     private boolean indexed;
+    private boolean dataURL;
+
+    public static List<ResourceLocator> getLocators(Collection<File> files) {
+
+        List<ResourceLocator> locators = new ArrayList<>();
+
+        Set<String> indexExtensions = new HashSet<>(Arrays.asList("bai", "crai", "sai", "tbi", "tbx"));
+        Set<File> indexes = new HashSet<>();
+        Map<String, File> indexMap = new HashMap<>();
+        for(File f : files) {
+            String fn = f.getName();
+            int idx = fn.lastIndexOf('.');
+            if(idx > 0) {
+                String ext = fn.substring(idx + 1);
+                if(indexExtensions.contains(ext)) {
+                    String base = fn.substring(0, idx);
+                    if (ext.equals(".bai") && !base.endsWith(".bam")) {
+                        base += ".bam";   // Picard convention
+                    } else if(ext.equals(".crai") && !base.endsWith(".cram")) {
+                        base += ".cram";  // Possible Picard convention
+                    }
+                    indexes.add(f);
+                    indexMap.put(base, f);
+                }
+            }
+        }
+
+        for(File f : files) {
+            if(indexes.contains(f)) continue;
+            ResourceLocator locator = new ResourceLocator(f.getAbsolutePath());
+            File indexFile = indexMap.get(f.getName());
+            if(indexFile != null) {
+                locator.setIndexPath(indexFile.getAbsolutePath());
+            }
+            locators.add(locator);
+        }
+
+        return locators;
+    }
 
     /**
-     * Constructor for local files
+     * Constructor for local files and URLs
      *
      * @param path
      */
@@ -145,6 +184,10 @@ public class ResourceLocator {
     public ResourceLocator(String dbURL, String path) {
         this.dbURL = dbURL;
         this.setPath(path);
+    }
+
+    public boolean isDataURL() {
+        return dataURL;
     }
 
     /**
@@ -270,7 +313,7 @@ public class ResourceLocator {
     }
 
     public boolean isLocal() {
-        return dbURL == null && !FileUtils.isRemote(path) && !Ga4ghAPIHelper.RESOURCE_TYPE.equals(type);
+        return dbURL == null && !dataURL && !FileUtils.isRemote(path);
     }
 
     public void setTrackInforURL(String trackInforURL) {
@@ -290,7 +333,11 @@ public class ResourceLocator {
     }
 
     public String getTrackName() {
-        return this.getFileName();
+        if(name != null) {
+            return name;
+        } else {
+            return this.getFileName();
+        }
     }
 
 
@@ -338,19 +385,9 @@ public class ResourceLocator {
             String s3UrlIndexPath = detectIndexPath(path);
             this.setIndexPath(s3UrlIndexPath);
         } else {
+            this.dataURL = ParsingUtils.isDataURL(path);
             this.path = path;
         }
-
-        // Set UI human-readable short name for the file
-        String objFname = "";
-        if (path != null) {
-            if (path.contains("/")) {
-                objFname = this.getTrackName();
-            } else {
-                objFname = path;
-            }
-        }
-        this.setName(objFname);
     }
 
     public String getTrackLine() {

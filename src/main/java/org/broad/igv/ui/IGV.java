@@ -671,14 +671,16 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    final public void saveImage(Component target) {
-        saveImage(target, "igv_snapshot");
+    final public void saveImage(Component target, String extension) {
+        saveImage(target, "igv_snapshot", extension);
     }
 
-    final public void saveImage(Component target, String title) {
-        contentPane.getStatusBar().setMessage("Creating image...");
-        File defaultFile = new File(title + ".png");
-        createSnapshot(target, defaultFile);
+    final public void saveImage(Component target, String title, String extension) {
+        if ("png".equalsIgnoreCase(extension) || "svg".equalsIgnoreCase(extension)) {
+            contentPane.getStatusBar().setMessage("Creating image...");
+            File defaultFile = new File(title + "." + extension);
+            createSnapshot(target, defaultFile);
+        }
     }
 
     final public void createSnapshot(final Component target, final File defaultFile) {
@@ -2369,6 +2371,19 @@ public class IGV implements IGVEventObserver {
     }
 
 
+    /**
+     * Adjust the height of tracks so that all tracks fit in the available
+     * height of the panel. This is not possible in all cases as the
+     * minimum height for tracks is respected.
+     *
+     */
+    public void fitTracksToPanel() {
+        for (TrackPanel tp : getTrackPanels()) {
+            tp.fitTracksToPanel();
+        }
+        repaint();
+    }
+
     public void repaint() {
         repaint(contentPane);
     }
@@ -2405,6 +2420,7 @@ public class IGV implements IGVEventObserver {
                         }
                     }
                 }
+                Autoscaler.autoscale(getAllTracks());
                 checkPanelLayouts();
                 component.paintImmediately(component.getBounds());
             });
@@ -2430,6 +2446,7 @@ public class IGV implements IGVEventObserver {
 
             if (futures.size() == 0) {
                 UIUtilities.invokeOnEventThread(() -> {
+                    Autoscaler.autoscale(getAllTracks());
                     checkPanelLayouts();
                     component.repaint();
                 });

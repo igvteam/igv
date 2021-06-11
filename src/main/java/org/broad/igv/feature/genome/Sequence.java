@@ -39,7 +39,7 @@ public interface Sequence {
 
     byte[] getSequence(String chr, int start, int end, boolean useCache);
 
-    public byte getBase(String chr, int position);
+    byte getBase(String chr, int position);
 
     List<String> getChromosomeNames();
 

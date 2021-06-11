@@ -31,8 +31,10 @@ package org.broad.igv.sam;
 
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -115,7 +117,6 @@ public interface Alignment extends LocusScore {
 
     String getClipboardString(double location, int mouseX);
 
-
     void finish();
 
     default AlignmentBlock getInsertionAt(int position) {
@@ -127,5 +128,12 @@ public interface Alignment extends LocusScore {
     default String getHaplotypeName() {return null;}
 
     default void setHapDistance(int dist) {};
+
     default int getHapDistance() {return 0;}
+
+    default Map<Integer, BaseModification> getBaseModificationMap() { return null;}
+
+    default String getValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
+        return getValueString(position, mouseX, (WindowFunction) null);
+    }
 }

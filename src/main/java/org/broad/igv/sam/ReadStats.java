@@ -40,7 +40,9 @@ import java.util.Random;
 
 public class ReadStats {
 
-    private int readCount = 0;
+    private static int MAX_READ_COUNT = 100000;   // Sufficiently high to get good statistics
+
+    public int readCount = 0;
     private int indelCount = 0;
     private int nCount = 0;
     private DoubleArrayList readLengths = new DoubleArrayList(10000);
@@ -56,6 +58,8 @@ public class ReadStats {
 
 
     public void addAlignment(Alignment alignment) {
+
+        if(readCount > MAX_READ_COUNT) return;
 
         if (alignment.isMapped()) {
 

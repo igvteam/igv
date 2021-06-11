@@ -36,11 +36,11 @@ import org.broad.igv.track.WindowFunction;
  */
 public interface LocusScore extends htsjdk.tribble.Feature {
 
-    public void setStart(int start);
+     void setStart(int start);
 
-    public void setEnd(int end);
+     void setEnd(int end);
 
-    public float getScore();
+     float getScore();
 
     /**
      * Return a string to be used for popup text.   The WindowFunction is passed
@@ -52,6 +52,8 @@ public interface LocusScore extends htsjdk.tribble.Feature {
      * @param windowFunction
      * @return
      */
-    public String getValueString(double position, int mouseX, WindowFunction windowFunction);
+    default String getValueString(double position, int mouseX, WindowFunction windowFunction) {
+        return "";
+    }
 
 }

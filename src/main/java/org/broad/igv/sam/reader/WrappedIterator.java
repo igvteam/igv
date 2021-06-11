@@ -27,13 +27,13 @@ package org.broad.igv.sam.reader;
 
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.util.CloseableIterator;
-import org.broad.igv.sam.PicardAlignment;
+import org.broad.igv.sam.SAMAlignment;
 
 /**
  * @author jrobinso
  * @since Sep 22, 2009
  */
-public class WrappedIterator implements CloseableIterator<PicardAlignment> {
+public class WrappedIterator implements CloseableIterator<SAMAlignment> {
 
     CloseableIterator<SAMRecord> iter;
 
@@ -49,8 +49,8 @@ public class WrappedIterator implements CloseableIterator<PicardAlignment> {
         return iter.hasNext();
     }
 
-    public PicardAlignment next() {
-        return new PicardAlignment(iter.next());
+    public SAMAlignment next() {
+        return new SAMAlignment(iter.next());
     }
 
     public void remove() {

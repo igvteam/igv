@@ -102,6 +102,10 @@ public class Row implements Comparable<Row> {
                     byte base = centerAlignment.getBase(adjustedCenter);
                     byte ref = interval.getReference(adjustedCenter);
 
+                    // Uppercase
+                    if (base >= 97) base -= 32;
+                    if (ref >= 97) ref -= 32;
+
                     // Check insertions
                     int insertionScore = 0;
                     AlignmentBlock[] insertions = centerAlignment.getInsertions();
@@ -113,8 +117,8 @@ public class Row implements Comparable<Row> {
                     }
 
                     float baseScore;
-                    if (base == 'N' || base == 'n') {
-                        baseScore = 2;  // Base is "n"
+                    if (base == 'N') {
+                        baseScore = 2;
                     } else if (base == ref) {
                         baseScore = 3;  // Base is reference
                     } else {
@@ -132,8 +136,6 @@ public class Row implements Comparable<Row> {
                             byte phred = centerAlignment.getPhred(adjustedCenter);
                             baseScore = -(count + (phred / 1000.0f));   // The second bit will always be < 1
                         }
-
-
                     }
 
                     return baseScore - insertionScore;   // base score is negative, so this is actually a sum of magnitudes

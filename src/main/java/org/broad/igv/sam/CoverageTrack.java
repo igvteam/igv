@@ -363,21 +363,17 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 AlignmentCounts counts = interval.getCounts();
                 if (counts != null) {
                     buf.append(counts.getValueStringAt((int) position));
+                    boolean baseModMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION;
+                    if (baseModMode && counts.getModifiedBaseCounts() != null) {
+                        buf.append("<hr>");
+                        buf.append(counts.getModifiedBaseCounts().getValueString((int) position));
+                    }
                 }
             }
         } else {
             buf.append(getPrecomputedValueString(chr, position, frame));
         }
         return buf.toString();
-    }
-
-    public AlignmentCounts getCounts(String chr, double position, ReferenceFrame frame) {
-        AlignmentInterval interval = dataManager.getLoadedInterval(frame);
-        if (interval != null && interval.contains(chr, (int) position, (int) position)) {
-            return interval.getCounts();
-        } else {
-            return null;
-        }
     }
 
     private String getPrecomputedValueString(String chr, double position, ReferenceFrame frame) {
@@ -458,6 +454,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             final double scale = context.getScale();
 
             boolean bisulfiteMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BISULFITE;
+            boolean baseModMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION;
 
 
             // First pass, coverage
@@ -553,7 +550,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             }
                         }
 
-                        if (!mismatch) {
+                        if (!(mismatch || baseModMode)) {
                             continue;
                         }
 
@@ -575,6 +572,9 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                                     drawBarBisulfite(context, pos, rect, totalCount, maxRange,
                                             pY, pX, dX, bc, range.isLog());
                                 }
+                            } else if (baseModMode) {
+                                drawModifiedBaseBar(context, pos, rect, totalCount, maxRange,
+                                        pY, pX, dX, alignmentCounts, range.isLog());
                             } else {
                                 drawBar(context, pos, rect, totalCount, maxRange,
                                         pY, pX, dX, alignmentCounts, range.isLog());
@@ -617,24 +617,58 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         for (char nucleotide : nucleotides) {
 
             int count = interval.getCount(pos, (byte) nucleotide);
-
-            Color c = SequenceRenderer.nucleotideColors.get(nucleotide);
-
-            Graphics2D tGraphics = context.getGraphic2DForColor(c);
-
             double tmp = isLog ?
                     (count / totalCount) * Math.log10(totalCount + 1) / max :
                     count / max;
             int height = (int) (tmp * rect.getHeight());
-
             height = Math.min(pY - rect.y, height);
             int baseY = pY - height;
 
             if (height > 0) {
+                Color c = SequenceRenderer.nucleotideColors.get(nucleotide);
+                Graphics2D tGraphics = context.getGraphic2DForColor(c);
                 tGraphics.fillRect(pX, baseY, dX, height);
             }
 
             pY = baseY;
+        }
+        return pX + dX;
+    }
+
+    int drawModifiedBaseBar(RenderContext context,
+                            int pos,
+                            Rectangle rect,
+                            double totalCount,
+                            double max,
+                            int pY,
+                            int pX,
+                            int dX,
+                            AlignmentCounts interval,
+                            boolean isLog) {
+
+        ModifiedBaseCounts baseCounts = interval.getModifiedBaseCounts();
+
+        if (baseCounts != null) {
+
+            byte likelihood = (byte) 255;
+
+            for (String modification : baseCounts.getAllModifications()) {
+
+                int count = baseCounts.getCount(pos, modification);
+                double tmp = isLog ?
+                        (count / totalCount) * Math.log10(totalCount + 1) / max :
+                        count / max;
+                int height = (int) (tmp * rect.getHeight());
+                height = Math.min(pY - rect.y, height);
+                int baseY = pY - height;
+                if (height > 0) {
+                    Color c = BaseModification.getModColor(modification, likelihood);
+                    Graphics2D tGraphics = context.getGraphic2DForColor(c);
+                    tGraphics.fillRect(pX, baseY, dX, height);
+                }
+
+                pY = baseY;
+            }
         }
         return pX + dX;
     }
@@ -650,8 +684,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                          BisulfiteCounts.Count count,
                          boolean isLog) {
 
-        // If bisulfite mode, we expand the rectangle to make it more visible.  This code is copied from
-        // AlignmentRenderer
+        // If bisulfite mode, we expand the rectangle to make it more visible.  This code is copied from AlignmentRenderer
         int pX = pX0;
         if (dX < 3) {
             int expansion = dX;

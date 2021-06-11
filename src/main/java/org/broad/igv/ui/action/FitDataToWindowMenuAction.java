@@ -61,71 +61,9 @@ public class FitDataToWindowMenuAction extends MenuAction {
      *
      */
     public void actionPerformed(ActionEvent e) {
-
-        for (TrackPanel tp : IGV.getInstance().getTrackPanels()) {
-            fitTracksToPanel(tp.getScrollPane().getDataPanel());
-        }
-        igv.repaint();
-
+        igv.fitTracksToPanel();
     }
 
-    /**
-     * Adjust the height of  tracks so that all tracks fit in the available
-     * height of the panel.  This is not possible in all cases as the
-     * minimum height for tracks is respected.
-     *
-     * @param dataPanel
-     * @return
-     */
-    private boolean fitTracksToPanel(DataPanelContainer dataPanel) {
 
-        boolean success = true;
-
-        int availableHeight = dataPanel.getVisibleHeight();
-        int visibleTrackCount = 0;
-
-        // Process data tracks first
-        Collection<TrackGroup> groups = dataPanel.getTrackGroups();
-
-
-        // Count visible tracks.
-        for (TrackGroup group : groups) {
-            List<Track> tracks = group.getVisibleTracks();
-            for (Track track : tracks) {
-                if (track.isVisible()) {
-                    ++visibleTrackCount;
-                }
-            }
-        }
-
-
-        // Auto resize the height of the visible tracks
-        if (visibleTrackCount > 0) {
-            int groupGapHeight = (groups.size() + 1) * UIConstants.groupGap;
-            double adjustedAvailableHeight = Math.max(1, availableHeight - groupGapHeight);
-
-            double delta = adjustedAvailableHeight / visibleTrackCount;
-
-            // Minimum track height is 1
-            if (delta < 1) {
-                delta = 1;
-            }
-
-            int iTotal = 0;
-            double target = 0;
-            for (TrackGroup group : groups) {
-                List<Track> tracks = group.getVisibleTracks();
-                for (Track track : tracks) {
-                    target += delta;
-                    int height = (int) (target - iTotal);
-                    track.setHeight(height);
-                    iTotal += height;
-                }
-            }
-
-        }
-
-        return success;
-    }
 
 }

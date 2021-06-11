@@ -74,17 +74,17 @@ public class ReducedMemoryAlignment implements Alignment {
             List<AlignmentBlock> rmBlocks = new ArrayList<AlignmentBlock>(blocks.length);
             int start = blocks[0].getStart();
             int end = blocks[0].getEnd();
-            boolean softClip = blocks[0].isSoftClipped();
+            boolean softClip = blocks[0].isSoftClip();
 
             for (int i = 1; i < blocks.length; i++) {
 
-                if (blocks[i].getStart() - end < indelLimit && blocks[i].isSoftClipped() == softClip) {
+                if (blocks[i].getStart() - end < indelLimit && blocks[i].isSoftClip() == softClip) {
                     end = blocks[i].getEnd();
                 } else {
                     rmBlocks.add(new ReducedMemoryAlignmentBlock(start, end - start, softClip));
                     start = blocks[i].getStart();
                     end = blocks[i].getEnd();
-                    softClip = blocks[i].isSoftClipped();
+                    softClip = blocks[i].isSoftClip();
                 }
             }
 
@@ -229,7 +229,7 @@ public class ReducedMemoryAlignment implements Alignment {
     }
 
     public String getClipboardString(double location, int mouseX) {
-        return getValueString(location, mouseX, null);
+        return getValueString(location, mouseX, (WindowFunction) null);
     }
 
     public String getValueString(double position, int mouseX, WindowFunction ignored) {
@@ -397,6 +397,11 @@ public class ReducedMemoryAlignment implements Alignment {
             return length;
         }
 
+        @Override
+        public int getBasesOffset() {
+            return 0;
+        }
+
 
         @Override
         public int getLength() {
@@ -409,7 +414,7 @@ public class ReducedMemoryAlignment implements Alignment {
         }
 
         @Override
-        public byte[] getBases() {
+        public ByteSubarray getBases() {
             return null;
         }
 
@@ -424,7 +429,7 @@ public class ReducedMemoryAlignment implements Alignment {
         }
 
         @Override
-        public byte[] getQualities() {
+        public ByteSubarray getQualities() {
             return null;
         }
 
@@ -434,7 +439,7 @@ public class ReducedMemoryAlignment implements Alignment {
         }
 
         @Override
-        public boolean isSoftClipped() {
+        public boolean isSoftClip() {
             return softClipped;
         }
 
@@ -515,7 +520,7 @@ public class ReducedMemoryAlignment implements Alignment {
             AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
             if (blocks != null) {
                 for (AlignmentBlock b : blocks) {
-                    if (!b.isSoftClipped()) {
+                    if (!b.isSoftClip()) {
                         incrementBuckets(b.getStart(), b.getEnd());
                     }
                 }

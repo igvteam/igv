@@ -388,34 +388,6 @@ public class TrackMenuUtils {
 
     }
 
-    private static List<JMenuItem> getCombinedDataSourceItems(final Collection<Track> tracks) {
-
-        Iterable<DataTrack> dataTracksIter = Iterables.filter(tracks, DataTrack.class);
-        final List<DataTrack> dataTracks = Lists.newArrayList(dataTracksIter);
-        JMenuItem addItem = new JMenuItem("Sum Tracks");
-        JMenuItem subItem = new JMenuItem("Subtract Tracks");
-        boolean enableComb = dataTracks.size() == 2;
-
-        addItem.setEnabled(enableComb);
-        addItem.setEnabled(enableComb);
-
-        addItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addCombinedDataTrack(dataTracks, CombinedDataSource.Operation.ADD);
-            }
-        });
-
-        subItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addCombinedDataTrack(dataTracks, CombinedDataSource.Operation.SUBTRACT);
-            }
-        });
-
-        return Arrays.asList(addItem, subItem);
-    }
-
     private static void addCombinedDataTrack(List<DataTrack> dataTracks, CombinedDataSource.Operation op) {
         String text = "";
         switch (op) {
@@ -444,6 +416,8 @@ public class TrackMenuUtils {
      */
     private static void addFeatureItems(JPopupMenu featurePopupMenu, final Collection<Track> tracks, TrackClickEvent te) {
 
+        TrackMenuUtils.addGroupByStrandItem(tracks, featurePopupMenu);
+        featurePopupMenu.addSeparator();
 
         addDisplayModeItems(tracks, featurePopupMenu);
 
@@ -751,7 +725,7 @@ public class TrackMenuUtils {
         menu.add(item);
 
         // Change track color by attribute
-        item = new JMenuItem("Change Track Color (Negative Values)...");
+        item = new JMenuItem("Change Track Color (Negative Values or Strand)...");
         item.setToolTipText(
                 "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
         item.addActionListener(evt -> changeAltTrackColor(tracks));
@@ -918,7 +892,7 @@ public class TrackMenuUtils {
             }
 
             PreferencesManager.getPreferences().setShowAttributeView(true);
-            IGV.getInstance().getMainPanel().invalidate();
+            IGV.getInstance().getMainPanel().revalidateTrackPanels();
             IGV.getInstance().repaint(selectedTracks);
 
         });
@@ -1000,23 +974,36 @@ public class TrackMenuUtils {
             JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
             mm.setSelected(currentMode == entry.getValue());
             mm.addActionListener(evt -> {
-                setTrackDisplayMode(tracks, entry.getValue());
+                for (Track t : tracks) {
+                    t.setDisplayMode(entry.getValue());
+                }
                 IGV.getInstance().repaint(tracks);
             });
             group.add(mm);
             menu.add(mm);
         }
-
     }
 
+    public static void addGroupByStrandItem(final Collection<Track> tracks, JPopupMenu menu) {
 
-    private static void setTrackDisplayMode(Collection<Track> tracks, Track.DisplayMode mode) {
+        // Find "most representative" state from track collection
+        boolean allGrouped = tracks.stream().allMatch(track -> {
+            return track instanceof FeatureTrack && ((FeatureTrack) track).isGroupByStrand();
+        });
 
-        for (Track t : tracks) {
-            t.setDisplayMode(mode);
-        }
+        final JRadioButtonMenuItem groupByItem = new JRadioButtonMenuItem("Group by strand");
+        groupByItem.setSelected(allGrouped);
+        groupByItem.addActionListener(evt -> {
+            tracks.stream().forEach(track -> {
+                if (track instanceof FeatureTrack) {
+                    ((FeatureTrack) track).setGroupByStrand(groupByItem.isSelected());
+                }
+            });
+            IGV.getInstance().repaint(tracks);
+        });
+
+        menu.add(groupByItem);
     }
-
 
     public static JMenuItem getRemoveMenuItem(final Collection<Track> selectedTracks) {
 

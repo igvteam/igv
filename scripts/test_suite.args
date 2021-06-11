@@ -14,6 +14,7 @@
 --add-exports org.igv/org.broad.igv.event=junit
 --add-exports org.igv/org.broad.igv.exceptions=junit
 --add-exports org.igv/org.broad.igv.feature=junit
+--add-exports org.igv/org.broad.igv.feature.aa=junit
 --add-exports org.igv/org.broad.igv.feature.basepair=junit
 --add-exports org.igv/org.broad.igv.feature.bionano=junit
 --add-exports org.igv/org.broad.igv.feature.dranger=junit
@@ -34,7 +35,6 @@
 --add-exports org.igv/org.broad.igv.renderer=junit
 --add-exports org.igv/org.broad.igv.sam=junit
 --add-exports org.igv/org.broad.igv.sam.cram=junit
---add-exports org.igv/org.broad.igv.sam.lite=junit
 --add-exports org.igv/org.broad.igv.sam.reader=junit
 --add-exports org.igv/org.broad.igv.session=junit
 --add-exports org.igv/org.broad.igv.tdf=junit

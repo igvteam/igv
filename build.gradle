@@ -137,7 +137,7 @@ dependencies {
     )
 
     testImplementation(
-        fileTree(dir: 'test/lib', include: '*.jar'), // first search on disk (old behavior), then maven repos
+        [group: 'junit', name: 'junit', version: '4.12'],
         [group: 'com.sparkjava', name: 'spark-core', version: '2.2'],
         [group: 'org.glassfish.jersey.core', name: 'jersey-common', version: '2.22.4']
     )

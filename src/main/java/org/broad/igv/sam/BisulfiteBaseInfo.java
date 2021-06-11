@@ -79,7 +79,7 @@ public class BisulfiteBaseInfo {
         super();
 
         myContext = bisulfiteContext;
-        byte[] inRead = block.getBases();
+        ByteSubarray inRead = block.getBases();
         if (inRead != null) {
             int alignmentLen = inRead.length;
 
@@ -89,7 +89,7 @@ public class BisulfiteBaseInfo {
             } else {
                 flipRead = baseAlignment.isNegativeStrand();
             }
-            byte[] read = (flipRead) ? AlignmentUtils.reverseComplementCopy(inRead) : inRead;
+            ByteSubarray read = (flipRead) ? AlignmentUtils.reverseComplementCopy(inRead) : inRead;
             byte[] reference = (flipRead && inReference != null) ? AlignmentUtils.reverseComplementCopy(inReference) : inReference;
 
 
@@ -110,7 +110,7 @@ public class BisulfiteBaseInfo {
 
                 // The read base can be an equals sign, so change that to the actual ref base
                 byte refbase = reference[idx];
-                byte readbase = read[idx];
+                byte readbase = read.getByte(idx);
                 if (readbase == '=') readbase = refbase;
 
                 // Force both bases to upper case
@@ -206,7 +206,7 @@ public class BisulfiteBaseInfo {
      * as the context passed in, derived classes might return a different context).
      * If we don't match, return null.
      */
-    protected BisulfiteContext contextIsMatching(byte[] reference, byte[] read, int idx,
+    protected BisulfiteContext contextIsMatching(byte[] reference, ByteSubarray read, int idx,
                                                  BisulfiteContext bisulfiteContext) {
 
         if (BisulfiteContext.NONE == bisulfiteContext) {
@@ -228,7 +228,7 @@ public class BisulfiteBaseInfo {
             for (int posti = 0; matchesContext && (posti < postContext.length); posti++) {
                 byte contextb = postContext[posti];
                 int offsetidx = idx + 1 + posti;
-                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read[offsetidx]);
+                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read.getByte(offsetidx));
 
                 //				System.err.printf("POST posMatchesContext(posti=%d, contextb=%c, refb=%c, readb=%c, offsetidx=%d) = %s\n",
                 //						posti, contextb, reference[offsetidx], read[offsetidx], offsetidx, matchesContext);
@@ -244,7 +244,7 @@ public class BisulfiteBaseInfo {
             for (int prei = 0; matchesContext && (prei < preContext.length); prei++) {
                 byte contextb = preContext[prei];
                 int offsetidx = idx - (preContext.length - prei);
-                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read[offsetidx]);
+                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read.getByte(offsetidx));
                 //				System.err.printf("PRE posMatchesContext(prei=%d, contextb=%c, refb=%c, readb=%c, offsetidx=%d) = %s\n",
                 //						prei, contextb, reference[offsetidx], read[offsetidx], offsetidx, matchesContext);
             }

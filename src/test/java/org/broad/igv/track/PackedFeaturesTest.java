@@ -56,7 +56,7 @@ public class PackedFeaturesTest extends AbstractHeadlessTest {
                 new TestFeature("chr1", 4, 103));
 
 
-        PackedFeatures<TestFeature> pf = new PackedFeatures("chr1", 0, 1000, features.iterator(), "");
+        PackedFeatures<TestFeature> pf = new PackedFeatures("chr1", 0, 1000, features.iterator(), Track.DisplayMode.EXPANDED,  false );
         assertEquals(4, pf.getRowCount());
 
     }

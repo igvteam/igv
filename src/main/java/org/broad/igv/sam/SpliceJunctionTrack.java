@@ -259,7 +259,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
                 }
                 int intervalStart = loadedInterval.getStart();
                 int intervalEnd = loadedInterval.getEnd();
-                PackedFeatures pf = new PackedFeaturesSpliceJunctions(frame.getChrName(), intervalStart, intervalEnd, features.iterator(), getName());
+                PackedFeatures pf = new PackedFeaturesSpliceJunctions(frame.getChrName(), intervalStart, intervalEnd,features.iterator(), getDisplayMode());
                 packedFeaturesMap.put(frame.getName(), pf);
             }
         }

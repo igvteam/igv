@@ -37,12 +37,13 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.google.Ga4ghAPIHelper;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -188,6 +189,16 @@ public class CommandExecutor {
                 FrameManager.incrementZoom(-1);
             } else if ("oauth".equals(cmd)) {
                 OAuthUtils.getInstance().getProvider().setAccessToken(param1);
+            } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
+                result = sortByAttribute(args);
+            } else if (cmd.equalsIgnoreCase("fitTracks")) {
+                igv.fitTracksToPanel();
+            } else if (cmd.equalsIgnoreCase("showAttributes")) {
+                result = this.showAttributes(args);
+            } else if (cmd.equalsIgnoreCase("showDataRange")) {
+                result = this.setShowDataRange(param1, param2);
+            } else if (cmd.equalsIgnoreCase("setTrackHeight")) {
+                result = this.setTrackHeight(param1, param2);
             } else {
                 result = "UNKOWN COMMAND: " + command;
                 log.error(result);
@@ -216,6 +227,42 @@ public class CommandExecutor {
         log.debug(result);
 
         return result;
+    }
+
+    /**
+     * Sort tracks by one or more sample attribute values.
+     *
+     * @param args
+     * @return
+     */
+    private String sortByAttribute(List<String> args) {
+
+        int nattributes = (args.size() - 1) / 2;
+        if (nattributes == 0 || (args.size() - 1) % 2 != 0) {
+            return String.format("Error: sortByAttribute usage: sortByAttribute attributeName asc|desc");
+        }
+
+        // Build a hash to support case insensitve attribute name comparison
+        List<String> allAttributes = AttributeManager.getInstance().getAttributeNames();
+        Map<String, String> attributeMap = new HashMap<>();
+        for (String att : allAttributes) {
+            attributeMap.put(att.toUpperCase(), att);
+        }
+
+        boolean[] ascending = new boolean[nattributes];
+        String[] attributes = new String[nattributes];
+        for (int attributeIndex = 0, i = 1; attributeIndex < nattributes; attributeIndex++, i += 2) {
+            String attributeArg = StringUtils.stripQuotes(args.get(i)).toUpperCase();
+            String attributeName = attributeMap.get(attributeArg);
+            if (attributeName == null) {
+                return String.format("Error: Attribute %s not found", attributeName);
+            }
+            String order = args.get(i + 1);
+            ascending[attributeIndex] = order.equalsIgnoreCase("asc");
+            attributes[attributeIndex] = attributeName;
+        }
+        igv.sortAllTracksByAttributes(attributes, ascending);
+        return "OK";
     }
 
     private String removeTrack(String trackName) {
@@ -303,6 +350,68 @@ public class CommandExecutor {
                 }
             }
         }
+        return "OK";
+    }
+
+    private String showAttributes(List<String> args) {
+        // provides whitelist of visible attributes
+        Set<String> hiddenAttributes = new HashSet<>(AttributeManager.getInstance().getAttributeNames());
+        hiddenAttributes.addAll(igv.getSession().getHiddenAttributes());
+        // Build a hash to support case insensitive attribute name comparison
+        Map<String, String> attributeMap = new HashMap<>();
+        for (String att : hiddenAttributes) {
+            attributeMap.put(att.toUpperCase(), att);
+        }
+        for (int i = 1; i < args.size(); i++) {
+            String attributeArg = StringUtils.stripQuotes(args.get(i)).toUpperCase();
+            String attributeName = attributeMap.get(attributeArg);
+            if (!hiddenAttributes.contains(attributeName)) {
+                return String.format("Error: Attribute %s not found", attributeName);
+            }
+            hiddenAttributes.remove(attributeName);
+        }
+        igv.getSession().setHiddenAttributes(hiddenAttributes);
+        igv.getMainPanel().revalidateTrackPanels();
+        return "OK";
+    }
+
+
+    private String setTrackHeight(String trackName, String value) {
+        if (trackName == null) return "Error: NULL TRACK NAME";
+        trackName = parseTrackName(trackName);
+        int height = Integer.parseInt(value);
+        height = Math.max(0, height);
+
+        for (Track track : igv.getAllTracks()) {
+            if (track.getName().equals(trackName)) {
+                track.setHeight(height, true);
+                igv.repaint(track);
+                return "OK";
+            }
+        }
+        return String.format("Error: Track %s not found", trackName);
+    }
+
+    private String setShowDataRange(String show, String trackName) {
+        List<Track> tracks = igv.getAllTracks();
+        boolean showDataRange;
+        try {
+            if (show.equalsIgnoreCase("true") || show.equalsIgnoreCase("false")) {
+                showDataRange = Boolean.valueOf(show);
+            } else {
+                return "ERROR: showDataRange value (" + show + ") is not 'true' or 'false'.";
+            }
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
+        List<Track> affectedTracks = new ArrayList<>();
+        for (Track track : tracks) {
+            if (track instanceof DataTrack && (trackName == null || trackName.equalsIgnoreCase(track.getName()))) {
+                ((DataTrack) track).setShowDataRange(showDataRange);
+                affectedTracks.add(track);
+            }
+        }
+        igv.repaint(affectedTracks);
         return "OK";
     }
 
@@ -431,11 +540,15 @@ public class CommandExecutor {
                 format = param.substring(7);
             }
         }
+
+
         // Locus is not specified from port commands
         String locus = null;
         Map<String, String> params = null;
         return loadFiles(fileString, index, coverage, name, format, locus, merge, params);
+
     }
+
 
     String loadFiles(final String fileString,
                      final String indexString,
@@ -475,14 +588,15 @@ public class CommandExecutor {
 
         log.debug("Run load files");
 
+        boolean isDataURL = ParsingUtils.isDataURL(fileString);
 
-        List<String> files = StringUtils.breakQuotedString(fileString, ',');
+        List<String> files = isDataURL ? Arrays.asList(fileString) : StringUtils.breakQuotedString(fileString, ',');
         List<String> names = StringUtils.breakQuotedString(nameString, ',');
         List<String> indexFiles = StringUtils.breakQuotedString(indexString, ',');
         List<String> coverageFiles = StringUtils.breakQuotedString(coverageString, ',');
         List<String> formats = StringUtils.breakQuotedString(formatString, ',');
 
-        if (files.size() == 1) {
+        if (files.size() == 1 && !ParsingUtils.isDataURL(files.get(0))) {
             // String might be URL encoded
             files = StringUtils.breakQuotedString(fileString.replaceAll("%2C", ","), ',');
             names = nameString != null ? StringUtils.breakQuotedString(nameString.replaceAll("%2C", ","), ',') : null;
@@ -526,7 +640,7 @@ public class CommandExecutor {
             if (fileString.endsWith(".xml") || fileString.endsWith(".php") || fileString.endsWith(".php3")) {
                 unload = !merge;
             } else {
-                unload = MessageUtils.confirm("Unload current session before loading new tracks?");
+                unload = true;
             }
             if (unload) {
                 igv.newSession();
@@ -545,16 +659,23 @@ public class CommandExecutor {
 
             String f = files.get(fi);
 
+            if (isDataURL && formats == null) {
+                throw new Error("ERROR: format must be specified for dataURLs");
+            }
+
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
 
             if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3") || f.endsWith(".session")) {
                 sessionPaths.add(f);
             } else {
+
                 ResourceLocator rl = new ResourceLocator(f);
 
                 if (names != null) {
                     rl.setName(names.get(fi));
+                } else if(isDataURL) {
+                    rl.setName("Data");
                 }
                 if (indexFiles != null) {
                     rl.setIndexPath(indexFiles.get(fi));
@@ -568,22 +689,18 @@ public class CommandExecutor {
                     rl.setType(format);
                 }
 
-                if ("ga4gh".equals(rl.getType())) {
-                    // TODO -- distinguish reads and variants
-                    rl.setAttribute("provider", Ga4ghAPIHelper.GA4GH_GOOGLE_PROVIDER);
-                } else {
-                    if (params != null) {
-                        String trackLine = createTrackLine(params);
-                        rl.setTrackLine(trackLine);
-                    }
+                if (params != null) {
+                    String trackLine = createTrackLine(params);
+                    rl.setTrackLine(trackLine);
+                }
 
-                    if (rl.isLocal()) {
-                        File file = new File(rl.getPath());
-                        if (!file.exists()) {
-                            return "Error: " + f + " does not exist.";
-                        }
+                if (!isDataURL && rl.isLocal()) {
+                    File file = new File(rl.getPath());
+                    if (!file.exists()) {
+                        throw new Error("Error: " + f + " does not exist.");
                     }
                 }
+
                 fileLocators.add(rl);
             }
         }

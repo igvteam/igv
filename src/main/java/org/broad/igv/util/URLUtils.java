@@ -67,7 +67,7 @@ public class URLUtils {
     }
 
     public static String addParameter(String urlString, String parameter) {
-        return (urlString.indexOf('?') > 0 ? "&" : "?") + parameter;
+        return urlString + (urlString.indexOf('?') > 0 ? "&" : "?") + parameter;
     }
 
     /**

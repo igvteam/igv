@@ -51,6 +51,7 @@ Mouse mm10	https://s3.amazonaws.com/igv.org.genomes/json/mm10.json	mm10
 Mouse mm8	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm8.genome	mm8
 Mouse mm9	https://s3.amazonaws.com/igv.org.genomes/json/mm9.json	mm9
 Mouse (mm10)	https://s3.amazonaws.com/igv.org.genomes/json/mm10.json	mm10
+Mouse mm39	https://s3.amazonaws.com/igv.org.genomes/mm39/mm39.genome	mm39
 Mycobacterium TB (CD1551)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_002755.genome	NC_002755
 N. Meningitidis (FAM18)	https://s3.amazonaws.com/igv.broadinstitute.org/test/genomes/NC_008767.genome	NC_008767
 N. Meningitidis (MC58)	https://s3.amazonaws.com/igv.broadinstitute.org/test/genomes/NC_003112.genome	NC_003112
@@ -62,6 +63,7 @@ Rat (rn5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rn5.genome	rn5
 Rat (rn6)	https://s3.amazonaws.com/igv.org.genomes/json/rn6.json	rn6
 Rhesus (rheMac3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac3.genome	rheMac3
 Rhesus (rheMac8)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac8.genome	rheMac8
+Rhesus (Mmul_10/rheMac10)	https://s3.amazonaws.com/igv.org.genomes/rheMac10/rheMac10.genome	rheMac10
 S. cerevisiae (Y55)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/Y55.genome	Y55
 S. cerevisiae (sacCer3)	https://s3.amazonaws.com/igv.org.genomes/json/sacCer3.json	sacCer3
 S. pombe (ASM294v2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ASM294v2.genome	ASM294v2

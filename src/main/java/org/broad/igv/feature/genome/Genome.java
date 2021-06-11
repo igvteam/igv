@@ -54,6 +54,8 @@ public class Genome {
     private static Logger log = Logger.getLogger(Genome.class);
     public static final int MAX_WHOLE_GENOME = 10000;
 
+    private static Object aliasLock = new Object();
+
     private String id;
     private String displayName;
     private List<String> chromosomeNames;
@@ -139,6 +141,10 @@ public class Genome {
         } else if (chrAliasTable.containsKey(str)){
             return chrAliasTable.get(str);
         } else {
+            // Add entry, which effectively interns the string
+            synchronized (aliasLock) {
+                chrAliasTable.put(str, str);
+            }
             return str;
         }
     }

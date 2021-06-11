@@ -30,13 +30,8 @@ import org.broad.igv.track.TrackType;
 
 import java.util.*;
 
-/**
- * Created by IntelliJ IDEA.
- * User: jrobinso
- * Date: May 22, 2010
- * Time: 7:10:59 PM
- * To change this template use File | Settings | File Templates.
- */
+//  TODO -- why do we need this class and TrackProperties?
+
 public class FeatureFileHeader {
 
     /* An object to collection track properties, if specified in the feature file. */
@@ -44,29 +39,27 @@ public class FeatureFileHeader {
 
     private TrackType trackType;
 
-    private Set<String> featuresToHide = new HashSet();
-
-    public TrackProperties getTrackProperties() {
-        return trackProperties;
+    public FeatureFileHeader() {
     }
 
-    public TrackType getTrackType() {
-        return trackType;
+    public FeatureFileHeader(TrackProperties trackProperties) {
+        this.trackProperties = trackProperties;
     }
 
     public void setTrackProperties(TrackProperties trackProperties) {
         this.trackProperties = trackProperties;
     }
 
+    public TrackProperties getTrackProperties() {
+        return trackProperties;
+    }
+
     public void setTrackType(TrackType trackType) {
         this.trackType = trackType;
     }
 
-    public Set<String> getFeaturesToHide() {
-        return featuresToHide;
+    public TrackType getTrackType() {
+        return trackType;
     }
 
-    public void setFeaturesToHide(Collection<String> featuresToHide) {
-        this.featuresToHide.addAll(featuresToHide);
-    }
 }

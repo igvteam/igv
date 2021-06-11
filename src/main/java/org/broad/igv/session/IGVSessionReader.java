@@ -525,7 +525,7 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        String absolutePath = (rootPath == null || "ga4gh".equals(type)) ? path : FileUtils.getAbsolutePath(path, rootPath);
+        String absolutePath = (rootPath == null || "ga4gh".equals(type) || ParsingUtils.isDataURL(path)) ? path : FileUtils.getAbsolutePath(path, rootPath);
 
         fullToRelPathMap.put(absolutePath, path);
 

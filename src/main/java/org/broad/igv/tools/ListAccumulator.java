@@ -68,6 +68,7 @@ public class ListAccumulator {
 
     float min = Float.NaN;
     float max = Float.NaN;
+    float absoluteMax = Float.NaN;
     float mean = Float.NaN;
     float median = Float.NaN;
     float percentile2 = Float.NaN;
@@ -115,6 +116,7 @@ public class ListAccumulator {
 
         mean = Float.isNaN(sum) ? Float.NaN : sum / basesCovered;
 
+        absoluteMax = Math.abs(min) > Math.abs(max) ? min : max;
         if (values != null) {
             if (nPts == 1) {
                 for (WindowFunction wf : quantileFunctions) {
@@ -216,6 +218,8 @@ public class ListAccumulator {
                 return min;
             case max:
                 return max;
+            case absoluteMax:
+                return absoluteMax;
             case percentile2:
                 return percentile2;
             case percentile10:
