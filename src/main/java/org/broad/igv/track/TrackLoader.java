@@ -153,8 +153,13 @@ public class TrackLoader {
                 loadGisticFile(locator, newTracks);
             } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
                 loadBlastMapping(locator, newTracks);
-            } else if (isAlignmentTrack(typeString) || (path.startsWith("http") && path.contains("/query.cgi?")) || isHtsGet) {
+            } else if (isAlignmentTrack(typeString) || (path.startsWith("http") && path.contains("/query.cgi?"))) {
                 loadAlignmentsTrack(locator, newTracks, genome);
+                // HtsGet URL
+            } else if (locator.getTypeString() == "htsgetReads") {
+                loadAlignmentsTrack(locator, newTracks, genome);
+            } else if (locator.getTypeString() == "htsgetVariants" ) {
+                loadVcf(locator, newTracks, genome);
             } else if (typeString.endsWith(".shape") || typeString.endsWith(".map")) {
                 convertLoadShapeFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || typeString.endsWith(".bedgraph") || typeString.endsWith(".bdg") ||

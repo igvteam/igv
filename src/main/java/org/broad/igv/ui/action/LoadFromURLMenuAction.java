@@ -125,6 +125,11 @@ public class LoadFromURLMenuAction extends MenuAction {
                         }
                         if (isHtsGet(url)) {
                             rl.setAttribute("htsget", true);
+                            if (url.contains("reads")) {
+                                rl.setType("htsgetReads");
+                            } else if (url.contains("variants")) {
+                                rl.setType("htsgetVariants");
+                            }
                         }
                         igv.loadTracks(Arrays.asList(rl));
 
