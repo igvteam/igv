@@ -1139,7 +1139,9 @@ public class IGVSessionReader implements SessionReader {
             return new EWigTrack();
         } else if (className.contains("FeatureTrack")) {
             return new FeatureTrack();
-        } else if (className.contains("GisticTrack")) {
+        } else if (className.contains("MotifTrack")) {
+            return new MotifTrack();
+        }else if (className.contains("GisticTrack")) {
             return new GisticTrack();
         } else if (className.contains("InteractionTrack")) {
             return new InteractionTrack();
