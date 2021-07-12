@@ -10,11 +10,13 @@ public class ByteSubarray {
     public byte [] backingArray;
     public int startOffset;
     public int length;
+    byte fillByte;
 
-    public ByteSubarray(byte[] backingArray, int startOffset, int length) {
+    public ByteSubarray(byte[] backingArray, int startOffset, int length, byte fillByte) {
         this.backingArray = backingArray;
         this.startOffset = startOffset;
         this.length = length;
+        this.fillByte = fillByte;
     }
 
     public byte getByte(int idx) {
@@ -23,7 +25,8 @@ public class ByteSubarray {
             throw new IndexOutOfBoundsException("Index out of bounds: "  + idx);
         }
 
-        return backingArray[startOffset + idx];
+        int i = startOffset + idx;
+        return i < backingArray.length ?  backingArray[startOffset + idx] : fillByte;
     }
 
     public byte [] copyOfRange(int start, int end) {
