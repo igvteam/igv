@@ -123,6 +123,14 @@ public class LoadFromURLMenuAction extends MenuAction {
 
                             rl.setIndexPath(indexUrl);
                         }
+                        if (isHtsGet(url)) {
+                            rl.setAttribute("htsget", true);
+                            if (url.contains("reads")) {
+                                rl.setType("htsgetReads");
+                            } else if (url.contains("variants")) {
+                                rl.setType("htsgetVariants");
+                            }
+                        }
                         igv.loadTracks(Arrays.asList(rl));
 
                     }
@@ -155,6 +163,11 @@ public class LoadFromURLMenuAction extends MenuAction {
                 }
             }
         }
+    }
+//  ToDo: need to figure out how to detect HtsGet resources
+//    Also check : Supported htsget protocol version: vnd.ga4gh.htsget.v1.2.0may not be compatible with received content type: application/vnd.ga4gh.htsget.v0.2.0+json
+    private boolean isHtsGet(String url) {
+        return url.contains("htsget.ga4gh.org");
     }
 
     private String mapURL(String url) {
