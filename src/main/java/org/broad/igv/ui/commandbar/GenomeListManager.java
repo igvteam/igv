@@ -437,6 +437,7 @@ public class GenomeListManager {
                             continue;
                         }
 
+                        // TODO: File should be called tsv maybe???
                         String[] fields = nextLine.split("\t");
                         if (fields.length < 3) {
                             if (mightBeProperties && fields[0].contains("=")) {

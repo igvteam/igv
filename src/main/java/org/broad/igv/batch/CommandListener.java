@@ -82,6 +82,7 @@ public class CommandListener implements Runnable {
     public static synchronized void start(int port) {
         listener = new CommandListener(port);
         listener.listenerThread.start();
+        isListening = true;
     }
 
 
@@ -114,15 +115,14 @@ public class CommandListener implements Runnable {
      */
     public void run() {
 
-        CommandExecutor cmdExe = new CommandExecutor(IGV.getInstance());
-
         try {
+            CommandExecutor cmdExe = new CommandExecutor(IGV.getInstance());
+
             serverSocket = new ServerSocket(port);
             log.info("Listening on port " + port);
             currentListenerPort = port;
             isListening = true;
             while (!halt) {
-            	
                 clientSocket = serverSocket.accept();
                 processClientSession(cmdExe);
                 if (clientSocket != null) {
@@ -136,8 +136,6 @@ public class CommandListener implements Runnable {
                     }
                 }
             }
-
-
         } catch (java.net.BindException e) {
             log.error(e);
             currentListenerPort = -1;
@@ -145,7 +143,6 @@ public class CommandListener implements Runnable {
         } catch (ClosedByInterruptException e) {
             log.error(e);
             isListening = false;
-
         } catch (IOException e) {
         	isListening = false;
             if (!halt) {
