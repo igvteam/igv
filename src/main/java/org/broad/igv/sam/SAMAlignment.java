@@ -389,148 +389,147 @@ public class SAMAlignment implements Alignment {
         if (cigarString.equals("*")) {
             alignmentBlocks = new AlignmentBlockImpl[1];
             alignmentBlocks[0] = new AlignmentBlockImpl(getStart(), readBases, readBaseQualities, 0, readBases.length, '*');
-            return;
-        }
+        } else {
+            // Create list of cigar operators
+            java.util.List<CigarOperator> operators = buildOperators(cigarString);
 
-        // Create list of cigar operators
-        java.util.List<CigarOperator> operators = buildOperators(cigarString);
+            boolean showSoftClipped = PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_SHOW_SOFT_CLIPPED);
 
-        boolean showSoftClipped = PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_SHOW_SOFT_CLIPPED);
+            int nInsertions = 0;
+            int nBlocks = 0;
+            boolean firstOperator = true;
+            int softClippedBaseCount = 0;
+            int nGaps = 0;
+            int nRealGaps = 0;
+            char prevOp = 0;
+            for (CigarOperator operator : operators) {
 
-        int nInsertions = 0;
-        int nBlocks = 0;
-        boolean firstOperator = true;
-        int softClippedBaseCount = 0;
-        int nGaps = 0;
-        int nRealGaps = 0;
-        char prevOp = 0;
-        for (CigarOperator operator : operators) {
-
-            char op = operator.operator;
-            if (op == HARD_CLIP) {
-                continue;  // Just skip hardclips
-            }
-            int nBases = operator.nBases;
-            if (operatorIsMatch(showSoftClipped, op)) {
-                nBlocks++;
-                if (operatorIsMatch(showSoftClipped, prevOp)) {
-                    nGaps++;
+                char op = operator.operator;
+                if (op == HARD_CLIP) {
+                    continue;  // Just skip hardclips
                 }
-            } else if (op == DELETION || op == SKIPPED_REGION) {
-                nGaps++;
-                nRealGaps++;
-            } else if (op == INSERTION) {
-                nInsertions++;
-                nGaps++; // "virtual" gap, account for artificial block split @ insertion
-            }
-
-            if (firstOperator && op == SOFT_CLIP) {
-                softClippedBaseCount += nBases;
-            }
-
-            if (op != SOFT_CLIP) {
-                firstOperator = false;
-            }
-
-            prevOp = op;
-        }
-
-
-        alignmentBlocks = new AlignmentBlockImpl[nBlocks];
-        insertions = new AlignmentBlockImpl[nInsertions];
-        if (nGaps > 0) {
-            gapTypes = new char[nGaps];
-        }
-        if (nRealGaps > 0) {
-            gaps = new ArrayList<Gap>();
-        }
-
-        // Adjust start to include soft clipped bases a
-        if (showSoftClipped) {
-            start -= softClippedBaseCount;
-        }
-        int fromIdx = showSoftClipped ? 0 : softClippedBaseCount;
-        int blockStart = start;
-
-        // Create blocks
-        int blockIdx = 0;
-        int insertionIdx = 0;
-        int gapIdx = 0;
-        int padding = 0;
-        prevOp = 0;
-        for (int i = 0; i < operators.size(); i++) {
-            CigarOperator op = operators.get(i);
-            try {
-
-                if (op.operator == HARD_CLIP) {
-                    continue;
-                }
-                if (operatorIsMatch(showSoftClipped, op.operator)) {
-
-                    AlignmentBlockImpl block = AlignmentUtils.buildAlignmentBlock(
-                            op.operator,
-                            readBases,
-                            readBaseQualities,
-                            blockStart,
-                            fromIdx,
-                            op.nBases);
-
-                    if (op.operator == SOFT_CLIP) {
-                        block.setSoftClipped(true);
-                    }
-                    alignmentBlocks[blockIdx++] = block;
-
-                    fromIdx += op.nBases;
-                    blockStart += op.nBases;
-
+                int nBases = operator.nBases;
+                if (operatorIsMatch(showSoftClipped, op)) {
+                    nBlocks++;
                     if (operatorIsMatch(showSoftClipped, prevOp)) {
-                        gapTypes[gapIdx++] = ZERO_GAP;
+                        nGaps++;
                     }
-
-                } else if (op.operator == DELETION) {
-                    gaps.add(new Gap(blockStart, op.nBases, op.operator));
-                    blockStart += op.nBases;
-                    gapTypes[gapIdx++] = op.operator;
-                } else if (op.operator == SKIPPED_REGION) {
-
-                    // Need the "flanking" regions, i.e. size of blocks either side of splice
-                    // NOTE -- WE'RE ASSUMING HERE THAT THE "N" REGION IS FLANKED BY ALIGNMENT BLOCKS
-                    int flankingLeft = 0;
-                    int flankingRight = 0;
-                    if (i > 0) {
-                        flankingLeft = operators.get(i - 1).nBases;
-                    }
-                    if (i < operators.size() - 1) {
-                        flankingRight = operators.get(i + 1).nBases;
-                    }
-                    gaps.add(new SpliceGap(blockStart, op.nBases, op.operator, flankingLeft, flankingRight));
-                    blockStart += op.nBases;
-                    gapTypes[gapIdx++] = op.operator;
-                } else if (op.operator == INSERTION) {
-                    // This gap is between blocks split by insertion.   It is a zero
-                    // length gap but must be accounted for.
-                    gapTypes[gapIdx++] = ZERO_GAP;
-                    AlignmentBlockImpl block = AlignmentUtils.buildAlignmentBlock(op.operator, readBases, readBaseQualities,
-                            blockStart, fromIdx, op.nBases);
-                    block.setPadding(padding);
-                    insertions[insertionIdx++] = block;
-                    fromIdx += op.nBases;
-                    padding = 0;
-                } else if (op.operator == PADDING) {
-                    // Padding for insertion start, which should be the next operator
-                    padding += op.nBases;
+                } else if (op == DELETION || op == SKIPPED_REGION) {
+                    nGaps++;
+                    nRealGaps++;
+                } else if (op == INSERTION) {
+                    nInsertions++;
+                    nGaps++; // "virtual" gap, account for artificial block split @ insertion
                 }
-            } catch (Exception e) {
-                log.error("Error processing CIGAR string", e);
-            }
-            prevOp = op.operator;
-        }
 
-        // Check for soft clipping at end
-        if (showSoftClipped && operators.size() > 0) {
-            CigarOperator last = operators.get(operators.size() - 1);
-            if (last.operator == SOFT_CLIP) {
-                end += last.nBases;
+                if (firstOperator && op == SOFT_CLIP) {
+                    softClippedBaseCount += nBases;
+                }
+
+                if (op != SOFT_CLIP) {
+                    firstOperator = false;
+                }
+
+                prevOp = op;
+            }
+
+
+            alignmentBlocks = new AlignmentBlockImpl[nBlocks];
+            insertions = new AlignmentBlockImpl[nInsertions];
+            if (nGaps > 0) {
+                gapTypes = new char[nGaps];
+            }
+            if (nRealGaps > 0) {
+                gaps = new ArrayList<Gap>();
+            }
+
+            // Adjust start to include soft clipped bases a
+            if (showSoftClipped) {
+                start -= softClippedBaseCount;
+            }
+            int fromIdx = showSoftClipped ? 0 : softClippedBaseCount;
+            int blockStart = start;
+
+            // Create blocks
+            int blockIdx = 0;
+            int insertionIdx = 0;
+            int gapIdx = 0;
+            int padding = 0;
+            prevOp = 0;
+            for (int i = 0; i < operators.size(); i++) {
+                CigarOperator op = operators.get(i);
+                try {
+
+                    if (op.operator == HARD_CLIP) {
+                        continue;
+                    }
+                    if (operatorIsMatch(showSoftClipped, op.operator)) {
+
+                        AlignmentBlockImpl block = AlignmentUtils.buildAlignmentBlock(
+                                op.operator,
+                                readBases,
+                                readBaseQualities,
+                                blockStart,
+                                fromIdx,
+                                op.nBases);
+
+                        if (op.operator == SOFT_CLIP) {
+                            block.setSoftClipped(true);
+                        }
+                        alignmentBlocks[blockIdx++] = block;
+
+                        fromIdx += op.nBases;
+                        blockStart += op.nBases;
+
+                        if (operatorIsMatch(showSoftClipped, prevOp)) {
+                            gapTypes[gapIdx++] = ZERO_GAP;
+                        }
+
+                    } else if (op.operator == DELETION) {
+                        gaps.add(new Gap(blockStart, op.nBases, op.operator));
+                        blockStart += op.nBases;
+                        gapTypes[gapIdx++] = op.operator;
+                    } else if (op.operator == SKIPPED_REGION) {
+
+                        // Need the "flanking" regions, i.e. size of blocks either side of splice
+                        // NOTE -- WE'RE ASSUMING HERE THAT THE "N" REGION IS FLANKED BY ALIGNMENT BLOCKS
+                        int flankingLeft = 0;
+                        int flankingRight = 0;
+                        if (i > 0) {
+                            flankingLeft = operators.get(i - 1).nBases;
+                        }
+                        if (i < operators.size() - 1) {
+                            flankingRight = operators.get(i + 1).nBases;
+                        }
+                        gaps.add(new SpliceGap(blockStart, op.nBases, op.operator, flankingLeft, flankingRight));
+                        blockStart += op.nBases;
+                        gapTypes[gapIdx++] = op.operator;
+                    } else if (op.operator == INSERTION) {
+                        // This gap is between blocks split by insertion.   It is a zero
+                        // length gap but must be accounted for.
+                        gapTypes[gapIdx++] = ZERO_GAP;
+                        AlignmentBlockImpl block = AlignmentUtils.buildAlignmentBlock(op.operator, readBases, readBaseQualities,
+                                blockStart, fromIdx, op.nBases);
+                        block.setPadding(padding);
+                        insertions[insertionIdx++] = block;
+                        fromIdx += op.nBases;
+                        padding = 0;
+                    } else if (op.operator == PADDING) {
+                        // Padding for insertion start, which should be the next operator
+                        padding += op.nBases;
+                    }
+                } catch (Exception e) {
+                    log.error("Error processing CIGAR string", e);
+                }
+                prevOp = op.operator;
+            }
+
+            // Check for soft clipping at end
+            if (showSoftClipped && operators.size() > 0) {
+                CigarOperator last = operators.get(operators.size() - 1);
+                if (last.operator == SOFT_CLIP) {
+                    end += last.nBases;
+                }
             }
         }
     }
