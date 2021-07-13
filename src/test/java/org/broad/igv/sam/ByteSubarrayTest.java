@@ -11,7 +11,7 @@ public class ByteSubarrayTest {
         byte [] forwardSeq = "AAAAATCGAAAA".getBytes();
         byte [] expected = "CGAT".getBytes();
 
-        ByteSubarray subarray = new ByteSubarray(forwardSeq, 4, 4);
+        ByteSubarray subarray = new ByteSubarray(forwardSeq, 4, 4, (byte) 0);
         ByteSubarray reverse = AlignmentUtils.reverseComplementCopy(subarray);
         for(int i=0; i<4; i++) {
             byte b = reverse.getByte(i);
