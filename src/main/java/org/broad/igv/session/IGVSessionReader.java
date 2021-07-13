@@ -64,6 +64,7 @@ import org.broad.igv.variant.VariantTrack;
 import org.w3c.dom.*;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
@@ -108,7 +109,15 @@ public class IGVSessionReader implements SessionReader {
     private final Map<String, List<Track>> allTracks = Collections.synchronizedMap(new LinkedHashMap<>());
 
     public List<Track> getTracksById(String trackId) {
-        return allTracks.get(trackId);
+        List<Track> tracks = allTracks.get(trackId);
+        if(tracks == null) {
+            // ID is usually a full file path or URL.  See if we can find the track with just filename
+            if(!FileUtils.isRemote(trackId)) {
+                String fn = (new File(trackId)).getName();
+                tracks = allTracks.get(fn);
+            }
+        }
+        return tracks;
     }
 
 
@@ -430,6 +439,13 @@ public class IGVSessionReader implements SessionReader {
                             if (id == null) {
                                 log.info("Null track id for resource " + locator.getPath());
                                 continue;
+                            }
+                            // id is often an absolute file path.  Use just the filename if unique
+                            if(!FileUtils.isRemote(id)) {
+                                String fn = (new File(id)).getName();
+                                if(!allTracks.containsKey(fn)) {
+                                    id = fn;
+                                }
                             }
 
                             List<Track> trackList = leftoverTrackDictionary.get(id);
@@ -869,7 +885,7 @@ public class IGVSessionReader implements SessionReader {
         // Find track matching element id, created earlier from "Resource or File" elements, or during genome load.
         // Normally this is a single track, but that can't be assumed as uniqueness
         // of "id" is not enforce.
-        List<Track> matchedTracks = allTracks.get(id);
+        List<Track> matchedTracks = getTracksById(id);
 
         if (matchedTracks == null) {
             //Try creating an absolute path for the id
@@ -973,11 +989,11 @@ public class IGVSessionReader implements SessionReader {
 
             DataTrack track1 = null;
             DataTrack track2 = null;
-            List<Track> tmp = allTracks.get(element.getAttribute("track1"));
+            List<Track> tmp = getTracksById(element.getAttribute("track1"));
             if (tmp != null && tmp.size() > 0) {
                 track1 = (DataTrack) tmp.get(0);
             }
-            tmp = allTracks.get(element.getAttribute("track2"));
+            tmp = getTracksById(element.getAttribute("track2"));
             if (tmp != null && tmp.size() > 0) {
                 track2 = (DataTrack) tmp.get(0);
             }
@@ -1163,7 +1179,9 @@ public class IGVSessionReader implements SessionReader {
             return new VariantTrack();
         } else if (className.contains("SequenceTrack")) {
             return new SequenceTrack("Reference sequence");
-        } else {
+        }
+
+        else {
             log.info("Unrecognized class name: " + className);
             try {
                 Class clazz = SessionElement.getClass(className);
