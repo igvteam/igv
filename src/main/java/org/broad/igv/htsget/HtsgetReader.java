@@ -1,17 +1,12 @@
 package org.broad.igv.htsget;
 
 import com.google.gson.*;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 public class HtsgetReader {
@@ -19,6 +14,14 @@ public class HtsgetReader {
     String url;
     String format;
 
+    /**
+     * Factor method to return an htsget reader for the URL.   In the case of an unexpected response, return "null",
+     * this indicates that the URL is not an htsget source.
+     *
+     * @param url
+     * @return
+     * @throws IOException
+     */
     public static HtsgetReader getReader(final String url) throws IOException {
 
         String ticket = HttpUtils.getInstance().getContentsAsJSON(new URL(url + "?class=header"));
@@ -27,8 +30,7 @@ public class HtsgetReader {
         try {
             json = parser.parse(ticket).getAsJsonObject();
         } catch (JsonSyntaxException e) {
-            e.printStackTrace();   // Not an htsget server?
-            throw e;
+            return null;  // Not an htsget server
         }
 
         if (!json.has("htsget")) {
@@ -55,36 +57,12 @@ public class HtsgetReader {
         }
     }
 
-    /**
-     * Example
-     * {
-     * htsget: {
-     * format: "VCF",
-     * urls: [
-     * {
-     * url: "https://htsget.ga4gh.org/variants/data/1000genomes.phase1.chr8?class=header",
-     * headers: {
-     * HtsgetBlockClass: "header",
-     * HtsgetCurrentBlock: "0",
-     * HtsgetTotalBlocks: "1"
-     * },
-     * class: "header"
-     * }
-     * ]
-     * }
-     * }
-     *
-     * @return
-     * @throws IOException
-     */
-
-    public String readHeader() throws IOException {
+    public byte [] readHeader() throws IOException {
         String url = this.url + "?class=header"; // + "&format=" + this.format;
         String ticketString = HttpUtils.getInstance().getContentsAsJSON(new URL(url));
         JsonParser parser = new JsonParser();
         JsonObject ticket = parser.parse(ticketString).getAsJsonObject();
-        byte[] bytes = loadURLs(ticket);
-        return new String(bytes);
+        return loadURLs(ticket);
     }
 
     public byte[] readData(String chr, int start, int end) throws IOException {
@@ -93,6 +71,10 @@ public class HtsgetReader {
         JsonParser parser = new JsonParser();
         JsonObject ticket = parser.parse(ticketString).getAsJsonObject();
         return loadURLs(ticket);
+    }
+
+    public String getFormat() {
+        return format;
     }
 
     private byte[] loadURLs(JsonObject ticket) throws IOException {
@@ -104,8 +86,12 @@ public class HtsgetReader {
         while (iter.hasNext()) {
 
             JsonObject next = iter.next().getAsJsonObject();
-            URL url = new URL(next.get("url").getAsString());
+            String urlString = next.get("url").getAsString();
+            if(urlString.startsWith("data:")) {
+                throw new RuntimeException("Data URLs are not currently supported");
+            }
 
+            URL url = new URL(urlString);
             Map<String, String> headers = new HashMap<>();
             JsonObject headerObj = next.getAsJsonObject("headers");
             if(headerObj != null) {

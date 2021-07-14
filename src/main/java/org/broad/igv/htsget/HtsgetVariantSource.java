@@ -1,24 +1,19 @@
 package org.broad.igv.htsget;
 
-import htsjdk.samtools.util.BlockCompressedInputStream;
-import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.readers.LineIterator;
 import htsjdk.tribble.readers.LineIteratorImpl;
 import htsjdk.tribble.readers.LineReader;
-import htsjdk.variant.vcf.*;
+import htsjdk.variant.vcf.VCFCodec;
+import htsjdk.variant.vcf.VCFContigHeaderLine;
+import htsjdk.variant.vcf.VCFHeader;
+import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.VCFWrapperCodec;
 import org.broad.igv.track.FeatureSource;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.util.*;
 
 public class HtsgetVariantSource implements FeatureSource {
@@ -28,12 +23,14 @@ public class HtsgetVariantSource implements FeatureSource {
     VCFHeader header;
     Map<String, String> chrAliasMap;
     int featureWindowSize;
+    Genome genome;
 
     public HtsgetVariantSource(HtsgetReader htsgetReader, Genome genome) {
         this.htsgetReader = htsgetReader;
         this.codec = new VCFCodec();
         this.featureWindowSize = 1000;  // default
         this.chrAliasMap = new HashMap<>();
+        this.genome = genome;
         init(genome);
     }
 
@@ -59,13 +56,14 @@ public class HtsgetVariantSource implements FeatureSource {
         String data = new String(htsgetReader.readData(queryChr, start + 1, end));
         String[] lines = data.split("\\R");
 
+        VCFWrapperCodec wrapperCodec = new VCFWrapperCodec(this.codec, this.genome);
         List<Feature> features = new ArrayList<>();
         for (String line : lines) {
             try {
                 if (line.startsWith("#")) {
                     continue;
                 } else {
-                    Feature f = codec.decode(line);
+                    Feature f = wrapperCodec.decode(line);
                     if (f.getEnd() < start) {
                         continue;
                     }
@@ -102,7 +100,7 @@ public class HtsgetVariantSource implements FeatureSource {
     public Object getHeader() {
         try {
             if (header == null) {
-                String headerText = htsgetReader.readHeader();
+                String headerText = new String(htsgetReader.readHeader());
                 LineIterator iter = new LineIteratorImpl(new StringLineReader(headerText));
                 header = (VCFHeader) codec.readActualHeader(iter);
 

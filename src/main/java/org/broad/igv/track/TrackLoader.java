@@ -62,6 +62,8 @@ import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.gwas.*;
+import org.broad.igv.htsget.HtsgetReader;
+import org.broad.igv.htsget.HtsgetVariantSource;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.maf.MultipleAlignmentTrack;
@@ -203,13 +205,32 @@ public class TrackLoader {
                 loadMutFile(locator, newTracks, genome); // Must be tried before ".maf" test below
             } else if (typeString.endsWith(".maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-            } else if (AttributeManager.isSampleInfoFile(locator)) {
-                // This might be a sample information file.
-                AttributeManager.getInstance().loadSampleInfo(locator);
             } else {
-                MessageUtils.showMessage("<html>Unknown file type: " + path + "<br>Check file extension");
-            }
+                //if a url, try htsget
+                boolean isHtsget = false;
+                if(locator.getPath().startsWith("https://")) {
+                    try {
+                        HtsgetReader reader = HtsgetReader.getReader(locator.getPath());
+                        if(reader != null && reader.getFormat().equals("VCF")) {
+                            isHtsget = true;
+                            HtsgetVariantSource source = new HtsgetVariantSource(reader, genome);
+                            loadVCFWithSource(locator, source, newTracks);
+                        }
+                    } catch (IOException e) {
+                        // Not neccessarily an error, might just indicate its not an htsget server.  Not sure
+                        // if this should be logged or not.
+                    }
+                }
 
+                if(!isHtsget) {
+                    if (AttributeManager.isSampleInfoFile(locator)) {
+                        // This might be a sample information file.
+                        AttributeManager.getInstance().loadSampleInfo(locator);
+                    } else {
+                        MessageUtils.showMessage("<html>Unknown file type: " + path + "<br>Check file extension");
+                    }
+                }
+            }
 
             // Track line
             if (newTracks.size() > 0) {
@@ -285,11 +306,11 @@ public class TrackLoader {
     }
 
     private void loadVCF(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
-
-
         TribbleFeatureSource src = TribbleFeatureSource.getFeatureSource(locator, genome);
+        loadVCFWithSource(locator, src, newTracks);
+    }
 
-
+    private void loadVCFWithSource(ResourceLocator locator, FeatureSource src, List<Track> newTracks) {
         VCFHeader header = (VCFHeader) src.getHeader();
 
         // Test if the input VCF file contains methylation rate data:
@@ -335,7 +356,6 @@ public class TrackLoader {
         t.setMargin(0);
         newTracks.add(t);
     }
-
 
     private void loadBlastMapping(ResourceLocator locator, List<Track> newTracks) {
 
