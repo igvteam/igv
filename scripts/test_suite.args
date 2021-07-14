@@ -72,3 +72,4 @@
 --add-exports org.igv/org.broad.igv.preprocess=junit
 --add-exports org.igv/org.broad.tribble=junit
 --add-exports org.igv/util=junit
+--add-exports org.igv/org.broad.igv.htsget=junit

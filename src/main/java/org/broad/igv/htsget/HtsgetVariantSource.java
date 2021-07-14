@@ -1,0 +1,146 @@
+package org.broad.igv.htsget;
+
+import htsjdk.samtools.util.BlockCompressedInputStream;
+import htsjdk.tribble.AsciiFeatureCodec;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.readers.LineIterator;
+import htsjdk.tribble.readers.LineIteratorImpl;
+import htsjdk.tribble.readers.LineReader;
+import htsjdk.variant.vcf.*;
+import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.track.FeatureSource;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.util.*;
+
+public class HtsgetVariantSource implements FeatureSource {
+
+    HtsgetReader htsgetReader;
+    VCFCodec codec;
+    VCFHeader header;
+    Map<String, String> chrAliasMap;
+    int featureWindowSize;
+
+    public HtsgetVariantSource(HtsgetReader htsgetReader, Genome genome) {
+        this.htsgetReader = htsgetReader;
+        this.codec = new VCFCodec();
+        this.featureWindowSize = 1000;  // default
+        this.chrAliasMap = new HashMap<>();
+        init(genome);
+    }
+
+    private void init(Genome genome) {
+
+        VCFHeader header = (VCFHeader) getHeader();
+        if (genome != null) {
+            List<VCFContigHeaderLine> contigsLines = header.getContigLines();
+            if (contigsLines != null) {
+                for (VCFContigHeaderLine l : contigsLines) {
+                    String vcfChr = l.getID();
+                    String genomeChr = genome.getCanonicalChrName(vcfChr);
+                    chrAliasMap.put(genomeChr, vcfChr);
+                }
+            }
+        }
+    }
+
+    @Override
+    public Iterator getFeatures(String chr, int start, int end) throws IOException {
+
+        String queryChr = chrAliasMap.containsKey(chr) ? chrAliasMap.get(chr) : chr;
+        String data = new String(htsgetReader.readData(queryChr, start + 1, end));
+        String[] lines = data.split("\\R");
+
+        List<Feature> features = new ArrayList<>();
+        for (String line : lines) {
+            try {
+                if (line.startsWith("#")) {
+                    continue;
+                } else {
+                    Feature f = codec.decode(line);
+                    if (f.getEnd() < start) {
+                        continue;
+                    }
+                    if (f.getStart() > end) {
+                        break;
+                    }
+                    features.add(f);
+                }
+            } catch (Exception e) {
+                // This can happen for the last feature if a partial record is returned in the query. Presumably
+                // the partial record is beyond the query region.  So not actually an error.
+                e.printStackTrace();
+            }
+        }
+        return features.iterator();
+    }
+
+    @Override
+    public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
+        return null;
+    }
+
+    @Override
+    public int getFeatureWindowSize() {
+        return featureWindowSize;
+    }
+
+    @Override
+    public void setFeatureWindowSize(int size) {
+        this.featureWindowSize = size;
+    }
+
+    @Override
+    public Object getHeader() {
+        try {
+            if (header == null) {
+                String headerText = htsgetReader.readHeader();
+                LineIterator iter = new LineIteratorImpl(new StringLineReader(headerText));
+                header = (VCFHeader) codec.readActualHeader(iter);
+
+                // We need to parse the vcf version, its not in the header read by the codec. Perhaps an htsjdk bug?
+                String formatLine = headerText.split("\\R")[0];
+                VCFHeaderVersion version = VCFHeaderVersion.getHeaderVersion(formatLine);
+                codec.setVCFHeader(header, version);
+            }
+            return header;
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+class StringLineReader implements LineReader {
+
+    String[] lines;
+    int lineNumber;
+
+    public StringLineReader(String text) {
+        this.lines = text.split("\\R");
+        this.lineNumber = 0;
+    }
+
+    @Override
+    public String readLine() throws IOException {
+        if (lineNumber < lines.length) {
+            return lines[lineNumber++];
+        } else {
+            return null;
+        }
+
+    }
+
+    @Override
+    public void close() {
+
+    }
+}
