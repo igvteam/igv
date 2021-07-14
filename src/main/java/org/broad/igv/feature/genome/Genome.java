@@ -53,6 +53,7 @@ public class Genome {
 
     private static Logger log = Logger.getLogger(Genome.class);
     public static final int MAX_WHOLE_GENOME = 10000;
+    public static final int MAX_WHOLE_GENOME_LONG = 200;
 
     private static Object aliasLock = new Object();
 
@@ -284,7 +285,7 @@ public class Genome {
      * @return
      */
     public String getHomeChromosome() {
-        if (chromosomeNames.size() == 1 || chromosomeNames.size() > MAX_WHOLE_GENOME) {
+        if (chromosomeNames.size() == 1 || getLongChromosomeNames().size() > MAX_WHOLE_GENOME_LONG) {
             return chromosomeNames.get(0);
         } else {
             return Globals.CHR_ALL;
