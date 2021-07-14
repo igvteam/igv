@@ -17,6 +17,8 @@ Chicken (galGal5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal
 Chicken (GRCg6a / galGal6)	https://s3.amazonaws.com/igv.org.genomes/galGal6/galGal6.genome	galGal6
 Chimp (panTro3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro3.genome	panTro3
 Chimp (panTro4)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro4.genome	panTro4
+Chimp (panTro5)	https://s3.amazonaws.com/igv.org.genomes/panTro5/panTro5.genome	panTro5
+Chimp (panTro6)	https://s3.amazonaws.com/igv.org.genomes/panTro6/panTro6.genome	panTro6
 Cat (felCat5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/felCat5.genome	felCat5
 Cow (bosTau7)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau7.genome	bosTau7
 Cow (bosTau8)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau8.genome	bosTau8
@@ -90,3 +92,4 @@ C. reinhardtii (CC-503 v5.6 Cp+Mt v4.4)	https://s3.amazonaws.com/igv.org.genomes
 Ixodes scapularis JCVI_ISG_i3_1.0 (GCA_000208615.1)	https://s3.amazonaws.com/igv.org.genomes/tick/GCA_000208615.1/GCA_000208615.1.genome	GCA_000208615.1
 Ixodes scapularis ISE6_asm2.2_deduplicated (GCA_002892825.2)	https://s3.amazonaws.com/igv.org.genomes/tick/GCA_000208615.1/GCA_000208615.1.genome	GCA_002892825.2
 SARS-CoV-2	https://s3.amazonaws.com/igv.org.genomes/SARS-CoV-2/ASM985889v3.genome	ASM985889v3
+Dog (canFam5)	https://s3.amazonaws.com/igv.org.genomes/canFam5/canFam5.genome	canFam5
