@@ -74,6 +74,7 @@ public class Globals {
 
     final static public Pattern commaPattern = Pattern.compile(",");
     final static public Pattern tabPattern = Pattern.compile("\t");
+    final static public Pattern multiTabPattern = Pattern.compile("\t+");
     final static public Pattern colonPattern = Pattern.compile(":");
     final static public Pattern dashPattern = Pattern.compile("-");
     final static public Pattern equalPattern = Pattern.compile("=");

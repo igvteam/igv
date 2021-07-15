@@ -53,6 +53,7 @@ public abstract class AbstractDataSource implements DataSource {
             WindowFunction.percentile90,
             WindowFunction.percentile98,
             WindowFunction.max,
+            WindowFunction.absoluteMax,
             WindowFunction.none
     });
     private static Logger log = Logger.getLogger(AbstractDataSource.class);

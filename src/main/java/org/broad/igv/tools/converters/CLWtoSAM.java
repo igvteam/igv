@@ -63,58 +63,64 @@ public class CLWtoSAM {
     public static void convert(String path, String outputPath) throws IOException {
 
         File outputFile = new File(outputPath);
-        BufferedReader reader = ParsingUtils.openBufferedReader(path);
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+        BufferedReader reader = null;
+        PrintWriter out = null;
 
-        String chr = "MSA_SARS2_20200329_consensus";
-        int chrLen = 30005;
-        out.println("@HD\tVN:1.5");
-        out.println("@SQ\tSN:" + chr + "\tLN:" + chrLen);
-        out.println("@PG\tPN:MFastaToSAM\tID:MFastaToSAM");
+        try {
+            reader = ParsingUtils.openBufferedReader(path);
+            out = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
 
-        String readname = null;
-        String seq = null;
-        String cigarString = null;
-        String line;
-        int m = 0;
-        int d = 0;
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith(">")) {
-                if (readname != null) {
-                    outputSamRecord(readname, chr, cigarString, seq, out);
-                }
-                readname = line.substring(1);
-                cigarString = "";
-                seq = "";
-                m = 0;
-                d = 0;
-            } else {
-                char[] chars = line.toCharArray();
-                boolean lastCharDash = chars[0] == '-';
-                for (int i = 0; i < chars.length; i++) {
-                    char c = chars[i];
-                    if (c == '-') {
-                        if (!lastCharDash) {
-                            cigarString += String.valueOf(m) + 'M';
-                            m = 0;
+            String chr = "MSA_SARS2_20200329_consensus";
+            int chrLen = 30005;
+            out.println("@HD\tVN:1.5");
+            out.println("@SQ\tSN:" + chr + "\tLN:" + chrLen);
+            out.println("@PG\tPN:MFastaToSAM\tID:MFastaToSAM");
+
+            String readname = null;
+            String seq = null;
+            String cigarString = null;
+            String line;
+            int m = 0;
+            int d = 0;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith(">")) {
+                    if (readname != null) {
+                        outputSamRecord(readname, chr, cigarString, seq, out);
+                    }
+                    readname = line.substring(1);
+                    cigarString = "";
+                    seq = "";
+                    m = 0;
+                    d = 0;
+                } else {
+                    char[] chars = line.toCharArray();
+                    boolean lastCharDash = chars[0] == '-';
+                    for (int i = 0; i < chars.length; i++) {
+                        char c = chars[i];
+                        if (c == '-') {
+                            if (!lastCharDash) {
+                                cigarString += String.valueOf(m) + 'M';
+                                m = 0;
+                            }
+                            d++;
+                            lastCharDash = true;
+                        } else {
+                            if (lastCharDash) {
+                                cigarString += String.valueOf(d) + 'D';
+                                d = 0;
+                            }
+                            m++;
+                            seq += c;
+                            lastCharDash = false;
                         }
-                        d++;
-                        lastCharDash = true;
-                    } else {
-                        if (lastCharDash) {
-                            cigarString += String.valueOf(d) + 'D';
-                            d = 0;
-                        }
-                        m++;
-                        seq += c;
-                        lastCharDash = false;
                     }
                 }
             }
+            out.flush();
+        } finally {
+            out.close();
+            reader.close();
         }
-        out.flush();
-        out.close();
-        reader.close();
     }
 
     private static void outputSamRecord(String readName, String chr, String cigarString, String seq, PrintWriter out) {

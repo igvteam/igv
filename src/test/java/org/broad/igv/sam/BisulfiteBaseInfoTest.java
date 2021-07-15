@@ -25,9 +25,14 @@
 
 package org.broad.igv.sam;
 
+import htsjdk.samtools.SAMRecord;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.track.WindowFunction;
 import org.junit.Test;
+
+import java.awt.*;
+import java.util.List;
 
 /**
  * @author Jim Robinson
@@ -49,7 +54,7 @@ public class BisulfiteBaseInfoTest {
 
 
 
-    static class TestAlignment extends SAMAlignment {
+    static class TestAlignment implements Alignment {
 
         protected String readGroup;
         protected String library;
@@ -60,6 +65,11 @@ public class BisulfiteBaseInfoTest {
 
         public String getReadSequence() {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public String getChr() {
+            return null;
         }
 
         public int getAlignmentStart() {
@@ -77,6 +87,16 @@ public class BisulfiteBaseInfoTest {
         }
 
         @Override
+        public ReadMate getMate() {
+            return null;
+        }
+
+        @Override
+        public Strand getReadStrand() {
+            return null;
+        }
+
+        @Override
         public int getInferredInsertSize() {
             return 0;
         }
@@ -87,6 +107,10 @@ public class BisulfiteBaseInfoTest {
         }
 
         @Override
+        public List<Gap> getGaps() {
+            return null;
+        }
+
         public String getReadLengthString() {
             return "0";
         }
@@ -117,12 +141,37 @@ public class BisulfiteBaseInfoTest {
             return 0;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
+        @Override
+        public boolean contains(double location) {
+            return false;
+        }
+
+        @Override
+        public AlignmentBlock[] getAlignmentBlocks() {
+            return new AlignmentBlock[0];
+        }
+
+        @Override
+        public AlignmentBlock[] getInsertions() {
+            return new AlignmentBlock[0];
+        }
+
         public String getSample() {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
         @Override
         public Object getAttribute(String key) {
+            return null;
+        }
+
+        @Override
+        public void setMateSequence(String sequence) {
+
+        }
+
+        @Override
+        public String getPairOrientation() {
             return null;
         }
 
@@ -141,8 +190,23 @@ public class BisulfiteBaseInfoTest {
         }
 
         @Override
+        public byte getBase(double position) {
+            return 0;
+        }
+
+        @Override
+        public byte getPhred(double position) {
+            return 0;
+        }
+
+        @Override
         public boolean isVendorFailedRead() {
             return false;
+        }
+
+        @Override
+        public Color getYcColor() {
+            return null;
         }
 
         @Override
@@ -158,8 +222,23 @@ public class BisulfiteBaseInfoTest {
             //To change body of implemented methods use File | Settings | File Templates.
         }
 
+        @Override
+        public float getScore() {
+            return 0;
+        }
+
+        @Override
+        public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
+            return null;
+        }
+
         public LocusScore copy() {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public String getContig() {
+            return null;
         }
 
         /**
@@ -215,7 +294,6 @@ public class BisulfiteBaseInfoTest {
             }
         }
 
-        @Override
         protected String getAttributeString(boolean truncate) {
             return "";
         }
@@ -250,6 +328,16 @@ public class BisulfiteBaseInfoTest {
 
         public String getLibrary() {
             return library;
+        }
+
+        @Override
+        public String getClipboardString(double location, int mouseX) {
+            return null;
+        }
+
+        @Override
+        public void finish() {
+
         }
     }
 }

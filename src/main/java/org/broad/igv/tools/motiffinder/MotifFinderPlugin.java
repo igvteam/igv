@@ -29,6 +29,7 @@ import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.MotifTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.PanelName;
@@ -110,10 +111,7 @@ public class MotifFinderPlugin {
                     String tName = curTrackNames[ci];
                     if (tName == null) continue;
 
-                    MotifFinderSource src = new MotifFinderSource(pattern, strands[ci], GenomeManager.getInstance().getCurrentGenome());
-                    CachingFeatureSource cachingSrc = new CachingFeatureSource(src);
-
-                    FeatureTrack track = new FeatureTrack(tName, tName, cachingSrc);
+                    MotifTrack track = new MotifTrack(tName, pattern, strands[ci]);
                     if (colors[ci] != null) track.setColor(colors[ci]);
 
                     track.setDisplayMode(Track.DisplayMode.SQUISHED);

@@ -68,12 +68,6 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
         assertEquals(1, reader.getVersion());
     }
 
-    @Test
-    public void test_v3() {
-        String tdfFile = "http://data.broadinstitute.org/igvdata/test/tdf/NA12878.pilot2.454.bam.tdf";
-        TDFReader reader = TDFReader.getReader(tdfFile);
-        assertEquals(3, reader.getVersion());
-    }
 
     String[] dm3posChromos = new String[]{"chr2RHet", "chr4", "chrU"};
     String[] dm3emptyChromos = new String[]{"chrUextra"};

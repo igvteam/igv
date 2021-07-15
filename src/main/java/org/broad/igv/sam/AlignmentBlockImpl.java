@@ -31,12 +31,12 @@ package org.broad.igv.sam;
 
 public class AlignmentBlockImpl implements AlignmentBlock {
 
-    private static byte [] EMPTY_ARRAY = new byte[0];
+    private static ByteSubarray EMPTY_ARRAY = new ByteSubarray(new byte[0], 0, 0, (byte) 0);
     private int start;
-    private int length;
-    private byte[] bases;
+    private int offset;
+    private ByteSubarray bases;
     private int basesLength = -1;
-    public byte[] qualities;
+    public ByteSubarray qualities;
     private boolean softClipped = false;
     private int pixelStart;
     private int pixelEnd;
@@ -44,15 +44,18 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     private char cigarOperator;
 
     public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities) {
-        this(start, bases, qualities, bases.length, (char) 0);
+        this(start, bases, qualities, 0, bases.length, (char) 0);
     }
 
-    public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities, int nBases, char cigarOperator) {
+    public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities, int offset, int nBases, char cigarOperator) {
 
         this.start = start;
-        this.bases = bases;
+        this.offset = offset;
+        this.bases = new ByteSubarray(bases, offset, nBases, (byte) '?');
         this.basesLength = nBases;
-        this.qualities = qualities;
+
+        // qualities are optional in a SAMRecord, we might get null or an array of zero
+        this.qualities = qualities == null || qualities.length == 0 ? EMPTY_ARRAY :  new ByteSubarray(qualities, offset, nBases, (byte) 126);
         this.cigarOperator = cigarOperator;
     }
 
@@ -89,13 +92,18 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     }
 
     @Override
+    public int getBasesOffset() {
+        return offset;
+    }
+
+    @Override
     public int getLength() {
         return basesLength + padding;
     }
 
     @Override
     public byte getBase(int offset) {
-        return bases != null && offset < bases.length ? bases[offset] : 0;
+        return bases != null && offset < bases.length ? bases.getByte(offset) : 0;
     }
 
     /**
@@ -104,7 +112,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
      * @return
      */
     @Override
-    public byte[] getBases() {
+    public ByteSubarray getBases() {
         return bases == null ? EMPTY_ARRAY : bases;
     }
 
@@ -115,12 +123,11 @@ public class AlignmentBlockImpl implements AlignmentBlock {
 
     @Override
     public byte getQuality(int offset) {
-        return qualities == null || offset >= qualities.length ? (byte) 126 : qualities[offset];
-
+        return (qualities == null || offset >= qualities.length) ? (byte) 126 : qualities.getByte(offset);
     }
 
     @Override
-    public byte[] getQualities() {
+    public ByteSubarray getQualities() {
         return qualities == null ? EMPTY_ARRAY : qualities;
     }
 
@@ -130,7 +137,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     }
 
     @Override
-    public boolean isSoftClipped() {
+    public boolean isSoftClip() {
         return softClipped;
     }
 
@@ -143,15 +150,13 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("[block ");
-        sb.append(isSoftClipped() ? "softClipped " : " ");
+        sb.append(isSoftClip() ? "softClipped " : " ");
         sb.append(getStart());
         sb.append("-");
         sb.append(getEnd());
         sb.append(" ");
-        if(bases != null) {
-            for (int i = 0; i < bases.length; i++) {
-                sb.append((char) bases[i]);
-            }
+        if (bases != null) {
+            sb.append(bases.getString());
         }
         sb.append("]");
         return sb.toString();

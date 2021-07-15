@@ -322,12 +322,12 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     protected void incBlockCounts(AlignmentBlock block, boolean isNegativeStrand) {
         int start = block.getStart();
-        byte[] bases = block.getBases();
+        ByteSubarray bases = block.getBases();
         if (bases != null) {
             for (int i = 0; i < bases.length; i++) {
                 int pos = start + i;
                 byte q =  block.getQuality (i);
-                byte n = bases[i];
+                byte n = bases.getByte(i);
                 incPositionCount(pos, n, q, isNegativeStrand);
             }
         }

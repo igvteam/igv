@@ -139,8 +139,8 @@ public abstract class AbstractTrack implements Track {
 
     String autoscaleGroup;
 
-    protected Color posColor = DEFAULT_COLOR;
-    protected Color altColor = posColor;
+    protected Color posColor = null;
+    protected Color altColor = null;
 
     protected int visibilityWindow = VISIBILITY_WINDOW;
     private DisplayMode displayMode = DEFAULT_DISPLAY_MODE;
@@ -305,12 +305,19 @@ public abstract class AbstractTrack implements Track {
 
 
     public Color getColor() {
+        return posColor == null ? DEFAULT_COLOR : posColor;
+    }
+
+    public Color getExplicitColor() {
         return posColor;
     }
 
     public Color getAltColor() {
-        return altColor;
+        return altColor == null ? getColor() : altColor;
+    }
 
+    public Color getExplicitAltColor() {
+        return altColor;
     }
 
     public ResourceLocator getResourceLocator() {
@@ -437,7 +444,6 @@ public abstract class AbstractTrack implements Track {
         }
     }
 
-
     public void setMinimumHeight(int minimumHeight) {
         this.minimumHeight = minimumHeight;
     }
@@ -445,7 +451,6 @@ public abstract class AbstractTrack implements Track {
     public void setMaximumHeight(int maximumHeight) {
         this.maximumHeight = maximumHeight;
     }
-
 
     /**
      * Return the actual minimum height if one has been set, otherwise get the default for the current renderer.
@@ -463,7 +468,6 @@ public abstract class AbstractTrack implements Track {
     public void setTrackType(TrackType type) {
         this.trackType = type;
     }
-
 
     public TrackType getTrackType() {
         return trackType;
@@ -490,11 +494,9 @@ public abstract class AbstractTrack implements Track {
         this.posColor = color;
     }
 
-
     public void setAltColor(Color color) {
         altColor = color;
     }
-
 
     public void setVisible(boolean visible) {
         if (this.visible != visible) {
@@ -503,21 +505,17 @@ public abstract class AbstractTrack implements Track {
         }
     }
 
-
     public void setOverlayed(boolean bool) {
         this.overlaid = bool;
     }
-
 
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
 
-
     public boolean isSelected() {
         return selected;
     }
-
 
     public void setHeight(int height) {
         setHeight(height, false);
@@ -587,16 +585,15 @@ public abstract class AbstractTrack implements Track {
         String popupText = getValueStringAt(frame.getChrName(), e.getChromosomePosition(), e.getMouseEvent().getX(), e.getMouseEvent().getY(), frame);
 
         if (popupText != null) {
+            Color color = IGV.getRootPane().getJMenuBar().getForeground();
+            String htmlColor = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()); 
+            popupText = "<div style=\"color: " + htmlColor + "\">" + popupText + "</div>";
 
             final TooltipTextFrame tf = new TooltipTextFrame(getName(), popupText);
             Point p = me.getComponent().getLocationOnScreen();
             tf.setLocation(Math.max(0, p.x + me.getX() - 150), Math.max(0, p.y + me.getY() - 150));
 
-            UIUtilities.invokeOnEventThread(new Runnable() {
-                public void run() {
-                    tf.setVisible(true);
-                }
-            });
+            UIUtilities.invokeOnEventThread(() -> tf.setVisible(true));
             return true;
         }
         return false;
@@ -832,7 +829,7 @@ public abstract class AbstractTrack implements Track {
 
     public float logScaleData(float dataY) {
 
-        if(Float.isNaN(dataY)) {
+        if (Float.isNaN(dataY)) {
             return dataY;
         }
 
@@ -846,8 +843,7 @@ public abstract class AbstractTrack implements Track {
                     ? 1.0 : 2.0;
 
             return (float) (Math.log(Math.max(Float.MIN_VALUE, dataY) / centerValue) / Globals.log2);
-        }
-        else {
+        } else {
             return dataY;
         }
     }
@@ -1002,10 +998,10 @@ public abstract class AbstractTrack implements Track {
         if (showFeatureNames != DEFAULT_SHOW_FEATURE_NAMES) {
             element.setAttribute("showFeatureNames", Boolean.toString(showFeatureNames));
         }
-        if (posColor != DEFAULT_COLOR) {
+        if (posColor != null) {
             element.setAttribute(SessionAttribute.COLOR, ColorUtilities.colorToString(posColor));
         }
-        if (altColor != DEFAULT_COLOR) {
+        if (altColor != null) {
             element.setAttribute(SessionAttribute.ALT_COLOR, ColorUtilities.colorToString(altColor));
         }
 
@@ -1068,8 +1064,13 @@ public abstract class AbstractTrack implements Track {
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
-        this.name = element.getAttribute("name");
-        this.id = element.getAttribute("id");
+        if (element.hasAttribute("name")) {
+            this.name = element.getAttribute("name");
+        }
+
+        if (element.hasAttribute("id")) {
+            this.id = element.getAttribute("id");
+        }
 
         if (element.hasAttribute("attributeKey")) {
             this.attributeKey = element.getAttribute("attributeKey");
@@ -1090,7 +1091,6 @@ public abstract class AbstractTrack implements Track {
             try {
                 Color c = ColorUtilities.stringToColor(element.getAttribute("color"));
                 this.posColor = c;
-                this.altColor = c;  // default
             } catch (Exception e) {
                 log.error("Unrecognized color: " + element.getAttribute("color"));
             }

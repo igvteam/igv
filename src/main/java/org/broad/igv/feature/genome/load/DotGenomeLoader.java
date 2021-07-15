@@ -99,11 +99,9 @@ public class DotGenomeLoader extends GenomeLoader {
             sequence = null;
         } else {
             if (sequencePath.endsWith(".gz")) {
-                FastaBlockCompressedSequence fastaSequence = new FastaBlockCompressedSequence(sequencePath);
-                sequence = new SequenceWrapper(fastaSequence);
+                sequence = new FastaBlockCompressedSequence(sequencePath);
             } else {
-                FastaIndexedSequence fastaSequence = new FastaIndexedSequence(sequencePath);
-                sequence = new SequenceWrapper(fastaSequence);
+                sequence = new FastaIndexedSequence(sequencePath);
             }
             chromosOrdered = true;
         }

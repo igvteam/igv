@@ -1,0 +1,17 @@
+snapshotDirectory test/data/batch/snapshots/path_with_spaces
+load "test/data/folder with spaces/test.wig"
+goto chr1:16270500-16270600
+snapshot "folder with spaces.png"
+new
+load "test/data/folder with spaces/test,with,commas.wig"
+snapshot "test,with,commas.png"
+new
+load "test/data/folder.with.periods/test.wig"
+snapshot "folder.with.periods.png"
+new
+load "test/data/folder with spaces/%test%2D.wig"
+snapshot "%test%2D.png"
+new
+load "test/data/folder with spaces/test+wp.wig"
+snapshot "test+wp.png"
+exit

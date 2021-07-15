@@ -28,8 +28,10 @@ package org.broad.igv.batch;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ParsingUtils;
 
@@ -37,10 +39,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 public class BatchRunner implements NamedRunnable {
+
     private static Logger log = Logger.getLogger(BatchRunner.class);
 
-    String inputFile;
-    IGV igv;
+    private String inputFile;
+    private IGV igv;
 
     public BatchRunner(final String inputFile, IGV igv) {
         this.inputFile = inputFile;
@@ -48,30 +51,42 @@ public class BatchRunner implements NamedRunnable {
     }
 
     public String getName() {
-        return "batchExecution";  //To change body of implemented methods use File | Settings | File Templates.
+        return "batchExecution";
     }
 
-    public static void setIsBatchMode(boolean isBatchMode){
+    public static void setIsBatchMode(boolean isBatchMode) {
         Globals.setSuppressMessages(isBatchMode);
         Globals.setBatch(isBatchMode);
     }
 
     public void run() {
+        runWithDefaultGenome(null);
+    }
+
+    public void runWithDefaultGenome(String genomeId) {
+
         String inLine;
         setIsBatchMode(true);
 
         CommandExecutor cmdExe = new CommandExecutor(igv);
-
         WaitCursorManager.CursorToken cursorToken = null;
         BufferedReader reader = null;
         try {
             cursorToken = WaitCursorManager.showWaitCursor();
             reader = ParsingUtils.openBufferedReader(inputFile);
 
+            boolean firstCommand = true;
             while ((inLine = reader.readLine()) != null) {
                 if (!(inLine.startsWith("#") || inLine.startsWith("//"))) {
-                    log.info("Executing Command: " + inLine);
+
+                    if (firstCommand && genomeId != null && !inLine.toLowerCase().startsWith("genome")) {
+                        log.debug("Loading genome " + genomeId);
+                        GenomeManager.getInstance().loadGenomeById(genomeId);
+                    }
+
+                    log.debug("Executing Command: " + inLine);
                     cmdExe.execute(inLine);
+                    firstCommand = false;
                 }
             }
 
@@ -80,6 +95,7 @@ public class BatchRunner implements NamedRunnable {
             throw new DataLoadException(ioe.getMessage(), inputFile);
         } finally {
             setIsBatchMode(false);
+            SnapshotUtilities.resetMaxPanelHeight();
             if (cursorToken != null) WaitCursorManager.removeWaitCursor(cursorToken);
             if (reader != null) {
                 try {
@@ -90,35 +106,4 @@ public class BatchRunner implements NamedRunnable {
             }
         }
     }
-
-    /**
-     * Returns true if this is "provably" a batch file.  Proof in this instance means the first line of the file
-     * is #batch
-     *
-     * @param resource path to a file or URL
-     */
-    public static boolean isBatchFile(String resource) {
-
-        BufferedReader reader = null;
-
-        try {
-            reader = ParsingUtils.openBufferedReader(resource);
-            String firstLine = reader.readLine();
-            return firstLine.startsWith("#batch");
-        }
-        catch (IOException e) {
-            return false;
-        }
-        finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-    }
-
 }

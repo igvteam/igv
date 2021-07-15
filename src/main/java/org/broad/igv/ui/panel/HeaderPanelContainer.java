@@ -107,8 +107,13 @@ public class HeaderPanelContainer extends JPanel implements Paintable {
         invalidate();
     }
 
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
        paint(g);
+    }
+
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
     }
 }
 

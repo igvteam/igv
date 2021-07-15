@@ -295,11 +295,9 @@ public class VariantMenu extends IGVPopupMenu {
 
         JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Collapsed");
         m1.setSelected(displayMode == Track.DisplayMode.COLLAPSED);
-        m1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                track.setDisplayMode(Track.DisplayMode.COLLAPSED);
-                IGV.getInstance().repaint();
-            }
+        m1.addActionListener(evt -> {
+            track.setDisplayMode(Track.DisplayMode.COLLAPSED);
+            track.repaint();
         });
 
         JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("Squished");
@@ -307,7 +305,7 @@ public class VariantMenu extends IGVPopupMenu {
         m2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.SQUISHED);
-                IGV.getInstance().repaint();
+                track.repaint();
             }
         });
 
@@ -316,7 +314,7 @@ public class VariantMenu extends IGVPopupMenu {
         m3.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.EXPANDED);
-                IGV.getInstance().repaint();
+                track.repaint();
             }
         });
 

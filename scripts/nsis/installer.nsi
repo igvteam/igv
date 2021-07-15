@@ -5,7 +5,7 @@ InstallDir "$PROGRAMFILES64\IGV_@VERSION@"
 
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
-SetCompressor /solid lzma
+SetCompressor lzma
 AutoCloseWindow true
 Icon "IGV_@VERSION@\IGV_64.ico"
 LicenseData license_win.txt

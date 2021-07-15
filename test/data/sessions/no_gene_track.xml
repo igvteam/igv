@@ -24,7 +24,7 @@
   ~ THE SOFTWARE.
   -->
 
-<Session genome="hg18" hasGeneTrack="false" locus="All" version="6">
+<Session genome="hg18" locus="All" version="6">
     <Panel height="90" name="FeaturePanel" width="1169">
         <Track altColor="0,0,178" autoScale="false" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="Reference sequence" name="Reference sequence" sortable="false" visible="true"/>
     </Panel>

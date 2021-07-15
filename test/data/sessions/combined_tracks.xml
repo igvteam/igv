@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" hasGeneTrack="true" hasSequenceTrack="true" locus="All" version="8">
+    <Resources>
+        <Resource name="GM12878 H3K4me1"
+                  path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me1StdSig.wig.tdf"
+                  trackLine="viewLimits=0:25"/>
+        <Resource name="GM12878 H3K4me2"
+                  path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me2StdSig.wig.tdf"
+                  trackLine="viewLimits=0:25"/>
+    </Resources>
+    <Panel height="482" name="DataPanel" width="1255">
+        <Track attributeKey="GM12878 H3K4me1" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack"
+               color="0,150,0" colorScale="ContinuousColorScale;0.0;25.0;255,255,255;0,150,0" fontSize="10"
+               id="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me1StdSig.wig.tdf"
+               name="GM12878 H3K4me1" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="25.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GM12878 H3K4me2" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack"
+               color="0,150,0" fontSize="10"
+               id="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me2StdSig.wig.tdf"
+               name="GM12878 H3K4me2" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="25.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Sum + Difference" autoScale="false" clazz="org.broad.igv.track.CombinedDataTrack"
+               colorScale="ContinuousColorScale;0.0;25.0;255,255,255;0,150,0" fontSize="10"
+               id="3"
+               name="Sum + Difference" op="ADD" renderer="BAR_CHART"
+               track1="1"
+               track2="2"
+               visible="true" windowFunction="none">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="25.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Sum" autoScale="false" clazz="org.broad.igv.track.CombinedDataTrack"
+               colorScale="ContinuousColorScale;0.0;25.0;255,255,255;0,150,0" fontSize="10"
+               id="1"
+               name="Sum" op="ADD" renderer="BAR_CHART"
+               track1="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me1StdSig.wig.tdf"
+               track2="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me2StdSig.wig.tdf"
+               visible="true" windowFunction="none">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="25.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Difference" autoScale="false" clazz="org.broad.igv.track.CombinedDataTrack"
+               colorScale="ContinuousColorScale;0.0;25.0;255,255,255;0,150,0" fontSize="10"
+               id="2"
+               name="Difference" op="SUBTRACT" renderer="BAR_CHART"
+               track1="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me1StdSig.wig.tdf"
+               track2="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me2StdSig.wig.tdf"
+               visible="true" windowFunction="none">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="25.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="238" name="FeaturePanel" width="1255">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10"
+               id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE"
+               shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="RefSeq Genes" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178"
+               colorScale="ContinuousColorScale;0.0;444.0;255,255,255;0,0,178" fontSize="10" height="35" id="hg19_genes"
+               name="RefSeq Genes" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.6657496561210454"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>

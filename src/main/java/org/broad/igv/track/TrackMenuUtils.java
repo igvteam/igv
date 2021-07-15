@@ -34,7 +34,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.CombinedDataSource;
-import org.broad.igv.event.RepaintEvent;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.basepair.BasePairTrack;
@@ -343,6 +342,7 @@ public class TrackMenuUtils {
             final JMenuItem overlayGroups = new JMenuItem("Overlay Tracks");
             overlayGroups.addActionListener(e -> {
                 OverlayTracksMenuAction.merge(dataTrackList, "Overlay");
+                IGV.getInstance().repaint();
             });
 
             int numDataTracks = dataTrackList.size();
@@ -356,6 +356,7 @@ public class TrackMenuUtils {
             if (merged) {
                 unmergeItem.addActionListener(e -> {
                     OverlayTracksMenuAction.unmerge(tracks);
+                    IGV.getInstance().repaint();
                 });
             } else {
                 unmergeItem.setEnabled(false);
@@ -387,34 +388,6 @@ public class TrackMenuUtils {
 
     }
 
-    private static List<JMenuItem> getCombinedDataSourceItems(final Collection<Track> tracks) {
-
-        Iterable<DataTrack> dataTracksIter = Iterables.filter(tracks, DataTrack.class);
-        final List<DataTrack> dataTracks = Lists.newArrayList(dataTracksIter);
-        JMenuItem addItem = new JMenuItem("Sum Tracks");
-        JMenuItem subItem = new JMenuItem("Subtract Tracks");
-        boolean enableComb = dataTracks.size() == 2;
-
-        addItem.setEnabled(enableComb);
-        addItem.setEnabled(enableComb);
-
-        addItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addCombinedDataTrack(dataTracks, CombinedDataSource.Operation.ADD);
-            }
-        });
-
-        subItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addCombinedDataTrack(dataTracks, CombinedDataSource.Operation.SUBTRACT);
-            }
-        });
-
-        return Arrays.asList(addItem, subItem);
-    }
-
     private static void addCombinedDataTrack(List<DataTrack> dataTracks, CombinedDataSource.Operation op) {
         String text = "";
         switch (op) {
@@ -443,6 +416,8 @@ public class TrackMenuUtils {
      */
     private static void addFeatureItems(JPopupMenu featurePopupMenu, final Collection<Track> tracks, TrackClickEvent te) {
 
+        TrackMenuUtils.addGroupByStrandItem(tracks, featurePopupMenu);
+        featurePopupMenu.addSeparator();
 
         addDisplayModeItems(tracks, featurePopupMenu);
 
@@ -596,15 +571,13 @@ public class TrackMenuUtils {
         for (final Map.Entry<String, BasePairTrack.ArcDirection> entry : arcDirections.entrySet()) {
             JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
             mm.setSelected(currentArcDirection == entry.getValue());
-            mm.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    for (Track track : tracks) {
-                        if (track instanceof BasePairTrack) {
-                            ((BasePairTrack) track).getRenderOptions().setArcDirection(entry.getValue());
-                        }
+            mm.addActionListener(evt -> {
+                for (Track track : tracks) {
+                    if (track instanceof BasePairTrack) {
+                        ((BasePairTrack) track).getRenderOptions().setArcDirection(entry.getValue());
                     }
-                    refresh();
                 }
+                IGV.getInstance().repaint(tracks);
             });
             group.add(mm);
             menu.add(mm);
@@ -746,29 +719,17 @@ public class TrackMenuUtils {
 
         menu.add(getTrackRenameItem(tracks));
 
-        String colorLabel = (hasFeatureTracks || hasCoverageTracks)
-                ? "Change Track Color..." : "Change Track Color (Positive Values)...";
+        String colorLabel = "Change Track Color...";
         JMenuItem item = new JMenuItem(colorLabel);
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                changeTrackColor(tracks);
-            }
-        });
+        item.addActionListener(evt -> changeTrackColor(tracks));
         menu.add(item);
 
-        if (!(hasFeatureTracks || hasCoverageTracks)) {
-
-            // Change track color by attribute
-            item = new JMenuItem("Change Track Color (Negative Values)...");
-            item.setToolTipText(
-                    "Change the alternate track color.  This color is used when graphing negative values");
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    changeAltTrackColor(tracks);
-                }
-            });
-            menu.add(item);
-        }
+        // Change track color by attribute
+        item = new JMenuItem("Change Track Color (Negative Values or Strand)...");
+        item.setToolTipText(
+                "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
+        item.addActionListener(evt -> changeAltTrackColor(tracks));
+        menu.add(item);
 
         menu.add(getChangeTrackHeightItem(tracks));
         menu.add(getChangeFontSizeItem(tracks));
@@ -779,7 +740,7 @@ public class TrackMenuUtils {
         for (Track track : selectedTracks) {
             track.setWindowFunction(WindowFunction.valueOf(statType));
         }
-        refresh();
+        IGV.getInstance().repaint(selectedTracks);
     }
 
 
@@ -836,33 +797,30 @@ public class TrackMenuUtils {
     public static JMenuItem getDataRangeItem(final Collection<Track> selectedTracks) {
         JMenuItem item = new JMenuItem("Set Data Range...");
 
-        item.addActionListener(new ActionListener() {
+        item.addActionListener(evt -> {
+            if (selectedTracks.size() > 0) {
 
-            public void actionPerformed(ActionEvent evt) {
-                if (selectedTracks.size() > 0) {
+                // Create a datarange that spans the extent of prev tracks range
+                DataRange prevAxisDefinition = DataRange.getFromTracks(selectedTracks);
+                DataRangeDialog dlg = new DataRangeDialog(IGV.getMainFrame(), prevAxisDefinition);
+                dlg.setVisible(true);
+                if (!dlg.isCanceled()) {
+                    float min = Math.min(dlg.getMax(), dlg.getMin());
+                    float max = Math.max(dlg.getMin(), dlg.getMax());
+                    float mid = dlg.getBase();
+                    mid = Math.max(min, Math.min(mid, max));
 
-                    // Create a datarange that spans the extent of prev tracks range
-                    DataRange prevAxisDefinition = DataRange.getFromTracks(selectedTracks);
-                    DataRangeDialog dlg = new DataRangeDialog(IGV.getMainFrame(), prevAxisDefinition);
-                    dlg.setVisible(true);
-                    if (!dlg.isCanceled()) {
-                        float min = Math.min(dlg.getMax(), dlg.getMin());
-                        float max = Math.max(dlg.getMin(), dlg.getMax());
-                        float mid = dlg.getBase();
-                        mid = Math.max(min, Math.min(mid, max));
+                    DataRange axisDefinition = new DataRange(dlg.getMin(), mid, dlg.getMax(),
+                            prevAxisDefinition.isDrawBaseline(), dlg.isLog());
 
-                        DataRange axisDefinition = new DataRange(dlg.getMin(), mid, dlg.getMax(),
-                                prevAxisDefinition.isDrawBaseline(), dlg.isLog());
-
-                        for (Track track : selectedTracks) {
-                            track.setDataRange(axisDefinition);
-                            track.setAutoScale(false);
-                            track.removeAttribute(AttributeManager.GROUP_AUTOSCALE);
-                        }
-                        IGV.getInstance().repaint();
+                    for (Track track : selectedTracks) {
+                        track.setDataRange(axisDefinition);
+                        track.setAutoScale(false);
+                        track.removeAttribute(AttributeManager.GROUP_AUTOSCALE);
                     }
-
+                    IGV.getInstance().repaint(selectedTracks);
                 }
+
             }
         });
 
@@ -886,7 +844,7 @@ public class TrackMenuUtils {
                 for (Track t : selectedTracks) {
                     t.getDataRange().setType(scaleType);
                 }
-                IGV.getInstance().postEvent(new RepaintEvent(selectedTracks));
+                IGV.getInstance().repaint(selectedTracks);
             }
         });
 
@@ -914,7 +872,7 @@ public class TrackMenuUtils {
                             t.removeAttribute(AttributeManager.GROUP_AUTOSCALE);
                         }
                     }
-                    IGV.getInstance().repaint();
+                    IGV.getInstance().repaint(selectedTracks);
                 }
             });
         }
@@ -934,9 +892,8 @@ public class TrackMenuUtils {
             }
 
             PreferencesManager.getPreferences().setShowAttributeView(true);
-            IGV.getInstance().getMainPanel().invalidate();
-            IGV.getInstance().repaint();
-
+            IGV.getInstance().getMainPanel().revalidateTrackPanels();
+            IGV.getInstance().repaint(selectedTracks);
 
         });
 
@@ -977,7 +934,7 @@ public class TrackMenuUtils {
                         ((DataTrack) t).setShowDataRange(showDataRange1);
                     }
                 }
-                IGV.getInstance().postEvent(new RepaintEvent(selectedTracks));
+                IGV.getInstance().repaint(selectedTracks);
             });
         }
         return item;
@@ -1016,26 +973,37 @@ public class TrackMenuUtils {
         for (final Map.Entry<String, Track.DisplayMode> entry : modes.entrySet()) {
             JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
             mm.setSelected(currentMode == entry.getValue());
-            mm.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    setTrackDisplayMode(tracks, entry.getValue());
-                    refresh();
+            mm.addActionListener(evt -> {
+                for (Track t : tracks) {
+                    t.setDisplayMode(entry.getValue());
                 }
+                IGV.getInstance().repaint(tracks);
             });
             group.add(mm);
             menu.add(mm);
         }
-
     }
 
+    public static void addGroupByStrandItem(final Collection<Track> tracks, JPopupMenu menu) {
 
-    private static void setTrackDisplayMode(Collection<Track> tracks, Track.DisplayMode mode) {
+        // Find "most representative" state from track collection
+        boolean allGrouped = tracks.stream().allMatch(track -> {
+            return track instanceof FeatureTrack && ((FeatureTrack) track).isGroupByStrand();
+        });
 
-        for (Track t : tracks) {
-            t.setDisplayMode(mode);
-        }
+        final JRadioButtonMenuItem groupByItem = new JRadioButtonMenuItem("Group by strand");
+        groupByItem.setSelected(allGrouped);
+        groupByItem.addActionListener(evt -> {
+            tracks.stream().forEach(track -> {
+                if (track instanceof FeatureTrack) {
+                    ((FeatureTrack) track).setGroupByStrand(groupByItem.isSelected());
+                }
+            });
+            IGV.getInstance().repaint(tracks);
+        });
+
+        menu.add(groupByItem);
     }
-
 
     public static JMenuItem getRemoveMenuItem(final Collection<Track> selectedTracks) {
 
@@ -1061,7 +1029,7 @@ public class TrackMenuUtils {
         if (selectedTracks.isEmpty()) {
             return;
         }
-        IGV.getInstance().removeTracks(selectedTracks);
+        IGV.getInstance().deleteTracks(selectedTracks);
         IGV.getInstance().repaint();
     }
 
@@ -1070,7 +1038,7 @@ public class TrackMenuUtils {
         for (Track track : selectedTracks) {
             track.setRendererClass(rendererClass);
         }
-        refresh();
+        IGV.getInstance().repaint(selectedTracks);
     }
 
     public static void renameTrack(final Collection<Track> selectedTracks) {
@@ -1086,7 +1054,7 @@ public class TrackMenuUtils {
         }
 
         t.setName(newName);
-        refresh();
+        IGV.getInstance().repaintNamePanels();
     }
 
     public static void changeTrackHeight(final Collection<Track> selectedTracks) {
@@ -1104,7 +1072,7 @@ public class TrackMenuUtils {
         for (Track track : selectedTracks) {
             track.setHeight(value, true);
         }
-        refresh();
+        IGV.getInstance().repaint(selectedTracks);
     }
 
     public static void changeFeatureVisibilityWindow(final Collection<Track> selectedTracks) {
@@ -1132,7 +1100,7 @@ public class TrackMenuUtils {
             track.setVisibilityWindow((int) (value * 1000));
         }
 
-        refresh();
+        IGV.getInstance().repaint(featureTracks);
     }
 
     public static void changeFontSize(final Collection<Track> selectedTracks) {
@@ -1153,7 +1121,8 @@ public class TrackMenuUtils {
             track.setFontSize(value);
         }
 
-        refresh();
+        IGV.getInstance().repaintNamePanels();
+        IGV.getInstance().repaint(selectedTracks);
     }
 
 
@@ -1222,8 +1191,7 @@ public class TrackMenuUtils {
             //We preserve the alpha value. This is motivated by MergedTracks
             track.setColor(ColorUtilities.modifyAlpha(color, currentSelection.getAlpha()));
         }
-        refresh();
-
+        IGV.getInstance().repaint(selectedTracks);
     }
 
     public static void changeAltTrackColor(final Collection<Track> selectedTracks) {
@@ -1232,7 +1200,7 @@ public class TrackMenuUtils {
             return;
         }
 
-        Color currentSelection = selectedTracks.iterator().next().getColor();
+        Color currentSelection = selectedTracks.iterator().next().getAltColor();
 
         Color color = UIUtilities.showColorChooserDialog(
                 "Select Track Color (Negative Values)",
@@ -1245,8 +1213,7 @@ public class TrackMenuUtils {
         for (Track track : selectedTracks) {
             track.setAltColor(ColorUtilities.modifyAlpha(color, currentSelection.getAlpha()));
         }
-        refresh();
-
+        IGV.getInstance().repaint(selectedTracks);
     }
 
     /**
@@ -1271,7 +1238,7 @@ public class TrackMenuUtils {
         for (BasePairTrack t : tracks) {
             t.getRenderOptions().changeColor(currentColor, currentLabel, newColor);
         }
-        refresh();
+        IGV.getInstance().repaint(tracks);
 
     }
 
@@ -1426,13 +1393,6 @@ public class TrackMenuUtils {
 
         return PreferencesManager.getPreferences().getAsInt(Constants.INITIAL_TRACK_HEIGHT);
 
-    }
-
-    public static void refresh() {
-        if (IGV.hasInstance()) {
-            IGV.getInstance().showLoadedTrackCount();
-            IGV.getInstance().repaint();
-        }
     }
 
     public static JMenuItem getChangeTrackHeightItem(final Collection<Track> selectedTracks) {

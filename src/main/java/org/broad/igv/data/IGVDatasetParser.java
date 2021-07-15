@@ -83,9 +83,8 @@ public class IGVDatasetParser {
     }
 
     private void setColumnDefaults() {
-        String tmp = (dataResourceLocator.getPath().endsWith(".txt")
-                ? dataResourceLocator.getPath().substring(0,
-                dataResourceLocator.getPath().length() - 4) : dataResourceLocator.getPath()).toLowerCase();
+
+        String tmp = dataResourceLocator.getTypeString();
 
         if (tmp.endsWith(".igv")) {
             chrColumn = 0;
@@ -360,13 +359,14 @@ public class IGVDatasetParser {
     public ChromosomeData loadChromosomeData(ChromosomeSummary chrSummary, String[] dataHeaders) {
 
         // InputStream is = null;
+        SeekableStream is = null;
         try {
             int skipColumns = hasCalls ? 2 : 1;
 
             // Get an estimate of the number of snps (rows).  THIS IS ONLY AN ESTIMATE
             int nRowsEst = chrSummary.getNDataPts();
 
-            SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(dataResourceLocator.getPath());
+            is = IGVSeekableStreamFactory.getInstance().getStreamFor(dataResourceLocator.getPath());
             is.seek(chrSummary.getStartPosition());
             AsciiLineReader reader = new AsciiLineReader(is);
 
@@ -385,7 +385,7 @@ public class IGVDatasetParser {
             String chromosome = chrSummary.getName();
             boolean chromosomeStarted = false;
             String nextLine = reader.readLine();
-
+            int skippedLineCount = 0;
             while ((nextLine != null) && (nextLine.trim().length() > 0)) {
 
                 if (!nextLine.startsWith("#")) {
@@ -428,9 +428,12 @@ public class IGVDatasetParser {
                         }
 
                     } catch (NumberFormatException numberFormatException) {
-
-                        // Skip line
-                        log.info("Skipping line (NumberFormatException) " + nextLine);
+                        if(skippedLineCount < 5) {
+                            skippedLineCount++;
+                            if(skippedLineCount == 5) {
+                                log.info("Skipping line: " + nextLine + (skippedLineCount < 5 ? "" : " Further skipped lines will not be logged"));
+                            }
+                        }
                     }
                 }
 
@@ -452,8 +455,14 @@ public class IGVDatasetParser {
             return cd;
 
         } catch (IOException ex) {
-            log.error("Error parsing cn file", ex);
-            throw new RuntimeException("Error parsing cn file", ex);
+            log.error("Error parsing igv file " + this.dataResourceLocator.getPath(), ex);
+            throw new RuntimeException("Error parsing igv file", ex);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                log.error("Error closing igv file " + this.dataResourceLocator.getPath(), e);
+            }
         }
 
     }

@@ -30,7 +30,7 @@ import htsjdk.samtools.cram.ref.ReferenceSource;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.PicardAlignment;
+import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.SAMReader;
@@ -185,7 +185,7 @@ public class PairedUtils {
             while (iter != null && iter.hasNext()) {
 
                 SAMRecord record = iter.next();
-                Alignment alignment = new PicardAlignment(record);
+                Alignment alignment = new SAMAlignment(record);
                 if (alignment.isPaired() && alignment.getMate().isMapped() && !alignment.isProperPair()) {
                     if (funnyPairFilter(alignment)) {
                         Orientation orientation = getOrientation(alignment);

@@ -216,10 +216,10 @@ public class LoadFromServerAction extends MenuAction {
     private static Document readXMLDocument(String url, StringBuffer errors) {
         InputStream is = null;
         Document xmlDocument = null;
+        //long t0 = System.currentTimeMillis();
         try {
             is = ParsingUtils.openInputStreamGZ(new ResourceLocator(url));
             xmlDocument = Utilities.createDOMDocumentFromXmlStream(is);
-
             xmlDocument = resolveIncludes(xmlDocument, errors);
 
         } catch (SAXException e) {
@@ -243,6 +243,8 @@ public class LoadFromServerAction extends MenuAction {
                 }
             }
         }
+        //double dt = (System.currentTimeMillis() - t0) / 1000.0;
+        //System.out.println(url + "  " + dt);
         return xmlDocument;
     }
 

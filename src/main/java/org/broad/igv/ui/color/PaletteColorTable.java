@@ -42,8 +42,14 @@ public class PaletteColorTable implements ColorTable {
 
     LinkedHashMap<String, Color> colorMap;
     Color[] colors;
+    Color defaultColor;
 
     public PaletteColorTable() {
+        colorMap = new LinkedHashMap();
+    }
+
+    public PaletteColorTable(Color defaultColor) {
+        this.defaultColor = defaultColor;
         colorMap = new LinkedHashMap();
     }
 
@@ -62,13 +68,17 @@ public class PaletteColorTable implements ColorTable {
         key =key.toLowerCase();
         Color c = colorMap.get(key);
         if (c == null) {
-            final int colorIdx = colorMap.size();
-            if (colors != null && colorIdx < colors.length) {
-                c = colors[colorIdx];
+            if(defaultColor != null) {
+                c = defaultColor;
             } else {
-                c = ColorUtilities.randomColor(colorIdx);
+                final int colorIdx = colorMap.size();
+                if (colors != null && colorIdx < colors.length) {
+                    c = colors[colorIdx];
+                } else {
+                    c = ColorUtilities.randomColor(colorIdx);
+                }
+                colorMap.put(key, c);
             }
-            colorMap.put(key, c);
         }
         return c;
     }

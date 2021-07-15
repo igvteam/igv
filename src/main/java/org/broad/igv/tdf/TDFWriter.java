@@ -315,7 +315,7 @@ public class TDFWriter {
         }
 
         // group index
-        log.info("Group idx: " + groupIndex.size());
+        // log.info("Group idx: " + groupIndex.size());
         buffer.putInt(groupIndex.size());
         for (Map.Entry<String, IndexEntry> entry : groupIndex.entrySet()) {
             buffer.putNullTerminatedString(entry.getKey());

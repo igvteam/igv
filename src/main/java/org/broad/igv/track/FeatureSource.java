@@ -92,4 +92,8 @@ public interface FeatureSource<T extends Feature> {
     default void dispose() {
       // Do nothing by default
     };
+
+    default Object getHeader() {
+        return null;
+    }
 }

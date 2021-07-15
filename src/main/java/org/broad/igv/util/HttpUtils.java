@@ -203,19 +203,8 @@ public class HttpUtils {
 
 
     public String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
-
-        InputStream is = null;
-
-        HttpURLConnection conn = openConnection(url, headers);
-        try {
-            is = conn.getInputStream();
-            return readContents(is);
-        } catch (IOException e) {
-            readErrorStream(conn);  // Consume content
-            throw e;
-        } finally {
-            if (is != null) is.close();
-        }
+            byte[] bytes = this.getContentsAsBytes(url, headers);
+            return new String(bytes, "UTF-8");
     }
 
     public String getContentsAsGzippedString(URL url) throws IOException {
@@ -224,6 +213,20 @@ public class HttpUtils {
         try {
             is = conn.getInputStream();
             return readContents(new GZIPInputStream(is));
+        } catch (IOException e) {
+            readErrorStream(conn);  // Consume content
+            throw e;
+        } finally {
+            if (is != null) is.close();
+        }
+    }
+
+    public byte [] getContentsAsBytes(URL url, Map<String, String> headers) throws IOException {
+        InputStream is = null;
+        HttpURLConnection conn = openConnection(url, headers);
+        try {
+            is = conn.getInputStream();
+            return is.readAllBytes();
         } catch (IOException e) {
             readErrorStream(conn);  // Consume content
             throw e;
@@ -660,7 +663,6 @@ public class HttpUtils {
                 log.debug("Removing expired URL from redirection cache: " + url);
                 redirectCache.remove(url);
             }
-
         }
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
@@ -676,10 +678,17 @@ public class HttpUtils {
         }
 
         //Encode base portions. Right now just spaces, most common case
-        //TODO This is a hack and doesn't work for all characters which need it
         if (StringUtils.countChar(url.toExternalForm(), ' ') > 0) {
             String newPath = url.toExternalForm().replaceAll(" ", "%20");
             url = HttpUtils.createURL(newPath);
+        }
+
+        // If this is a Google URL and we have set a userProject ("requestor pays') use it.
+        if (GoogleUtils.isGoogleURL(url.toExternalForm()) &&
+                GoogleUtils.getProjectID() != null &&
+                GoogleUtils.getProjectID().length() > 0 &&
+                !hasQueryParameter(url, "userProject")) {
+            url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
         }
 
         Proxy sysProxy = null;
@@ -726,9 +735,8 @@ public class HttpUtils {
             if (PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
                 log.info("PROXY NOT USED ");
                 if (proxySettings.getWhitelist().contains(url.getHost())) {
-                    log.info(url.getHost() + " is whitelisted");
+                    //log.info(url.getHost() + " is whitelisted");
                 }
-                ;
             }
             conn = (HttpURLConnection) url.openConnection();
         }
@@ -768,11 +776,6 @@ public class HttpUtils {
             String token = OAuthUtils.getInstance().getProvider().getAccessToken();
             if (token != null) {
                 conn.setRequestProperty("Authorization", "Bearer " + token);
-            }
-            if (GoogleUtils.getProjectID() != null &&
-                    GoogleUtils.getProjectID().length() > 0 &&
-                    !hasQueryParameter(url, "userProject")) {
-                url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
             }
         }
 
@@ -888,9 +891,9 @@ public class HttpUtils {
         return (host.equals("dl.dropboxusercontent.com") || host.equals("www.dropbox.com"));
     }
 
-    private URL addQueryParameter(URL url, String userProject, String projectID) {
+    private URL addQueryParameter(URL url, String param, String value) {
         String urlString = url.toExternalForm();
-        urlString = urlString + (urlString.contains("?") ? "&" : "?") + userProject + "=" + projectID;
+        urlString = urlString + (urlString.contains("?") ? "&" : "?") + param + "=" + value;
         try {
             return new URL(urlString);
         } catch (MalformedURLException e) {
@@ -903,7 +906,7 @@ public class HttpUtils {
         String urlstring = url.toExternalForm();
         if (urlstring.contains("?")) {
             int idx = urlstring.indexOf('?');
-            return urlstring.substring(idx).contains("parameter" + "=");
+            return urlstring.substring(idx).contains(parameter + "=");
         } else {
             return false;
         }
@@ -958,7 +961,7 @@ public class HttpUtils {
                     boolean byteRangeTestSuccess = testByteRange(url);
 
                     if (byteRangeTestSuccess) {
-                        log.info("Range-byte request succeeded");
+                        //log.info("Range-byte request succeeded");
                     } else {
                         log.info("Range-byte test failed -- Host: " + host +
                                 " does not support range-byte requests or there is a problem with client network environment.");

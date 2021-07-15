@@ -50,7 +50,8 @@ public class UIConstants {
     // Menu tooltips
     static final public String LOAD_TRACKS_TOOLTIP = "Load tracks or sample information";
     static final public String LOAD_SERVER_DATA_TOOLTIP = "Load tracks or sample information from a server";
-    static final public String SAVE_IMAGE_TOOLTIP = "Capture and save an image";
+    static final public String SAVE_PNG_IMAGE_TOOLTIP = "Capture and save a PNG image";
+    static final public String SAVE_SVG_IMAGE_TOOLTIP = "Capture and save an SVG image";
     static final public String NEW_SESSION_TOOLTIP = "Create a new session";
     static final public String SAVE_SESSION_TOOLTIP = "Save the current session";
     static final public String OPEN_SESSION_TOOLTIP = "Load a session";
@@ -97,7 +98,7 @@ public class UIConstants {
 
     final public static Color LIGHT_GREY = new Color(238, 239, 240);
 
-    final public static Color TRACK_BORDER_GRAY = new Color(200, 200, 210);
+    final public static Color TRACK_BORDER_GRAY = new Color(240, 240, 240);
 
     static final public String REMOVE_GENOME_LIST_MENU_ITEM = "Remove Imported Genomes...";
     static final public String GENOME_LIST_SEPARATOR = "--SEPARATOR--";

@@ -141,6 +141,10 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         int delta = multiLocus ? 1 : (end - start) / 2;
         int expandedStart = Math.max(0, start - delta);
         int expandedEnd = Math.min(maxEnd, end + delta);
+        if(expandedEnd < 0) {
+            // overflow
+            expandedEnd = Integer.MAX_VALUE;
+        }
         LoadedDataInterval<List<LocusScore>> interval = getSummaryScores(queryChr, expandedStart, expandedEnd, zoom);
         loadedIntervalCache.put(referenceFrame.getName(), interval);
 

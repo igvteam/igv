@@ -98,7 +98,7 @@ public class AbstractDataSourceTest extends AbstractHeadlessTest {
             totPoints += numPoints;
         }
         double mean = sum / totPoints;
-        assertEquals(10.0, mean, 1.0e-2);
+        assertEquals(10.0, mean, 0.1);
     }
 
     @Test

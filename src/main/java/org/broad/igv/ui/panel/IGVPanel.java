@@ -71,66 +71,63 @@ public class IGVPanel extends JPanel implements Paintable {
     public void doLayout() {
         synchronized (getTreeLock()) {
 
-            log.trace("Layout: " + toString());
-
             int h = getHeight(); //getPreferredSize().height;
             Component[] children = getComponents();
 
             int nw = mainPanel.getNamePanelWidth();
-            int grabBarWidth = nw - 10;
 
-            int idx = 0;
-            if (children.length > 3) {
-                children[idx++].setBounds(mainPanel.getNamePanelX(), 0, 10, h);
-                children[idx++].setBounds(mainPanel.getNamePanelX() + 10, 0, nw - 10, h);
-            } else {
-                children[idx++].setBounds(mainPanel.getNamePanelX(), 0, nw, h);
+            Component namePanel = children[0];
+            Component attributePanel = children[1];
+            Component dataPanel = children[2];
 
-            }
-            children[idx++].setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);
-            children[idx].setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
+            namePanel.setBounds(mainPanel.getNamePanelX(), 0, nw, h);
+            attributePanel.setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);  // Attributes
+            dataPanel.setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
 
-            children[idx].doLayout();
+            dataPanel.doLayout();
         }
     }
 
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
-        int h = rect.height;
+        g.setColor(Color.black);
 
         Component[] children = getComponents();
-        // name panel starts at offset=0
 
-        g.translate(mainPanel.getNamePanelX(), 0);
+        Component namePanel = children[0];
+        Rectangle nameRect = new Rectangle(namePanel.getBounds());
+        if(nameRect.width > 0) {
+            Graphics2D nameGraphics = (Graphics2D) g.create();
+            nameGraphics.translate(nameRect.x, 0);
+            nameRect.x = 0;
+            nameGraphics.setClip(nameRect);
+            ((Paintable) namePanel).paintOffscreen(nameGraphics, nameRect, batch);
+            nameGraphics.dispose();
+        }
 
+        Component attributePanel = children[1];
+        Rectangle attRect = new Rectangle(attributePanel.getBounds());
+        if(attRect.width > 0) {
+            Graphics2D attributeGraphics = (Graphics2D) g.create();
+            attributeGraphics.translate(attRect.x, 0);
+            attRect.x = 0;
+            attributeGraphics.setClip(attRect);
+            ((Paintable) attributePanel).paintOffscreen(attributeGraphics, attRect, batch);
+            attributeGraphics.dispose();
+        }
 
-        Rectangle nameRect = new Rectangle(children[0].getBounds());
-        nameRect.height = h;
-
-        Graphics2D nameGraphics = (Graphics2D) g.create();
-        nameGraphics.setClip(nameRect);
-        ((Paintable) children[0]).paintOffscreen(nameGraphics, nameRect);
-        nameGraphics.dispose();
-
-        int dx = mainPanel.getAttributePanelX() - mainPanel.getNamePanelX();
-        g.translate(dx, 0);
-        Rectangle attRect = new Rectangle(0, 0, children[1].getWidth(), h);
-        Graphics2D attributeGraphics = (Graphics2D) g.create();
-        attributeGraphics.setClip(attRect);
-        ((Paintable) children[1]).paintOffscreen(attributeGraphics, attRect);
-        attributeGraphics.dispose();
-
-        dx = mainPanel.getDataPanelX() - mainPanel.getAttributePanelX();
-        g.translate(dx, 0);
-        Rectangle dataRect = new Rectangle(0, 0, mainPanel.getDataPanelWidth(), h);
+        Component dataPanel = children[2];
+        Rectangle dataRect = new Rectangle(dataPanel.getBounds());
         Graphics2D dataGraphics = (Graphics2D) g.create();
+        dataGraphics.translate(dataRect.x, 0);
+        dataRect.x = 0;
         g.setClip(dataRect);
-        ((Paintable) children[2]).paintOffscreen(dataGraphics, dataRect);
+        ((Paintable) dataPanel).paintOffscreen(dataGraphics, dataRect, batch);
         dataGraphics.dispose();
-
-
-
     }
 
-
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
+    }
 }

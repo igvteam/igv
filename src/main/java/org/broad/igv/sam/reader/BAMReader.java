@@ -31,7 +31,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.EmptyAlignmentIterator;
-import org.broad.igv.sam.PicardAlignment;
+import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.sam.cram.IGVReferenceSource;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
@@ -53,73 +53,40 @@ import java.util.*;
  * Date: Sep 22, 2009
  * Time: 2:21:04 PM
  */
-public class BAMReader implements AlignmentReader<PicardAlignment> {
+public class BAMReader implements AlignmentReader<SAMAlignment> {
 
     static Logger log = Logger.getLogger(BAMReader.class);
 
-    private final ResourceLocator locator;
-
-    SAMFileHeader header;
-    htsjdk.samtools.SamReader reader;
-    List<String> sequenceNames;
-    private boolean indexed = false; // False until proven otherwise
+    private SAMFileHeader header;
+    private List<String> sequenceNames;
+    private boolean indexed;
     private Map<String, Long> sequenceDictionary;
+    private SamReaderPool readerPool;
 
     public BAMReader(ResourceLocator locator, boolean requireIndex) throws IOException {
-        this.locator = locator;
-        reader = getSamReader(locator, requireIndex);
+        this.indexed = requireIndex;
+        readerPool = new SamReaderPool(locator, requireIndex);
+
+        SamReader reader = readerPool.getReader();
         header = reader.getFileHeader();
+        readerPool.freeReader(reader);
     }
 
-    private SamReader getSamReader(ResourceLocator locator, boolean requireIndex) throws IOException {
-
-        boolean isLocal = locator.isLocal();
-        final SamReaderFactory factory = SamReaderFactory.makeDefault().
-                referenceSource(new IGVReferenceSource()).
-                validationStringency(ValidationStringency.SILENT);
-        SamInputResource resource;
-
-        if (isLocal) {
-            resource = SamInputResource.of(new File(locator.getPath()));
-        } else {
-            URL url = HttpUtils.createURL(locator.getPath());
-            if (requireIndex) {
-                resource = SamInputResource.of(IGVSeekableStreamFactory.getInstance().getStreamFor(url));
-            } else {
-                resource = SamInputResource.of(new BufferedInputStream(HttpUtils.getInstance().openConnectionStream(url)));
-            }
-        }
-
-        if (requireIndex) {
-
-            String indexPath = getExplicitIndexPath(locator);
-            if (indexPath == null || indexPath.length() == 0) {
-                indexPath = getIndexPath(locator.getPath());
-            }
-
-            indexed = true;
-            if (isLocal) {
-                File indexFile = new File(indexPath);
-                resource = resource.index(indexFile);
-            } else {
-                SeekableStream indexStream = IGVSeekableStreamFactory.getInstance().getStreamFor(HttpUtils.createURL(indexPath));
-                resource = resource.index(indexStream);
-            }
-        }
-
-        return factory.open(resource);
-
+    private SamReader getSamReader() throws IOException {
+        return readerPool.getReader();
     }
 
     public void close() throws IOException {
-        if (reader != null) {
-            reader.close();
-        }
+        readerPool.close();
     }
 
-    public SAMFileHeader getFileHeader() {
+    public synchronized SAMFileHeader getFileHeader() {
         if (header == null) {
-            header = reader.getFileHeader();
+            try {
+                header = getSamReader().getFileHeader();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return header;
     }
@@ -131,7 +98,6 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     public Set<String> getPlatforms() {
         return AlignmentReaderFactory.getPlatforms(getFileHeader());
     }
-
 
     public List<String> getSequenceNames() {
         if (sequenceNames == null) {
@@ -167,190 +133,25 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
     }
 
 
-    public CloseableIterator<PicardAlignment> iterator() {
-        return new WrappedIterator(reader.iterator());
+    public CloseableIterator<SAMAlignment> iterator() throws IOException {
+        return new WrappedIterator(getSamReader().iterator());
     }
 
-    public CloseableIterator<PicardAlignment> query(String sequence, int start, int end, boolean contained) {
+    public CloseableIterator<SAMAlignment> query(String sequence, int start, int end, boolean contained) {
         if (sequenceDictionary != null && !sequenceDictionary.containsKey(sequence)) {
             return EMPTY_ITERATOR;
         } else {
-            CloseableIterator<SAMRecord> iter = null;
             try {
-                iter = reader.query(sequence, start + 1, end, contained);
-            } catch (IllegalArgumentException e) {
+                SamReader samReader = getSamReader();
+                return new PicardIterator(samReader, sequence, start + 1, end, contained);
+            } catch (Exception e) {
                 log.error("Error querying for sequence: " + sequence, e);
                 return new EmptyAlignmentIterator();
             }
-            return new ListIterator(iter);
         }
     }
 
-    /**
-     * Fetch an explicitly set index path, either via the ResourceLocator or as a parameter in a URL
-     *
-     * @param locator
-     * @return the index path, or null if no index path is set
-     */
-    private String getExplicitIndexPath(ResourceLocator locator) {
-
-        String p = locator.getPath().toLowerCase();
-        String idx = locator.getIndexPath();
-
-        if (idx == null && (p.startsWith("http://") || p.startsWith("https://"))) {
-            try {
-                URL url = HttpUtils.createURL(locator.getPath());
-                String queryString = url.getQuery();
-                if (queryString != null) {
-                    Map<String, String> parameters = URLUtils.parseQueryString(queryString);
-                    if (parameters.containsKey("index")) {
-                        idx = parameters.get("index");
-
-                    }
-                }
-            } catch (MalformedURLException e) {
-                log.error("Error parsing url: " + locator.getPath());
-            }
-        }
-        return idx;
-    }
-
-    /**
-     * Try to guess the index path.
-     *
-     * @param pathOrURL
-     * @return
-     * @throws IOException
-     */
-    private String getIndexPath(String pathOrURL) throws IOException {
-
-        List<String> pathsTried = new ArrayList<String>();
-
-        String indexPath;
-
-        if (URLUtils.isURL(pathOrURL)) {
-
-            String path = URLUtils.getPath(pathOrURL);
-
-            if (path.endsWith(".bam")) {
-                // Try .bam.bai
-                indexPath = URLUtils.addExtension(pathOrURL, ".bai");
-                pathsTried.add(indexPath);
-                if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
-                    return indexPath;
-                }
-
-                // Try .bai
-                indexPath = URLUtils.replaceExtension(pathOrURL, ".bam", ".bai");
-                pathsTried.add(indexPath);
-                if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
-                    return indexPath;
-                }
-
-                // Try .bam.csi
-                indexPath = URLUtils.addExtension(pathOrURL, ".csi");
-                pathsTried.add(indexPath);
-                if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
-                    return indexPath;
-                }
-
-                // Try .csi
-                indexPath = URLUtils.replaceExtension(pathOrURL, ".bam", ".csi");
-                pathsTried.add(indexPath);
-                if (HttpUtils.getInstance().resourceAvailable(indexPath)) {
-                    return indexPath;
-                }
-            }
-
-            //  cram
-            if (path.endsWith(".cram")) {
-                indexPath = URLUtils.addExtension(pathOrURL, ".crai");
-                if (FileUtils.resourceExists(indexPath)) {
-                    pathsTried.add(indexPath);
-                    return indexPath;
-                } else {
-                    indexPath = pathOrURL.substring(0, pathOrURL.length() - 5) + ".crai";
-                    if (FileUtils.resourceExists(indexPath)) {
-                        return indexPath;
-                    }
-                }
-            }
-
-
-        } else {
-            // Local file
-
-            indexPath = pathOrURL + ".bai";
-
-            if (FileUtils.resourceExists(indexPath)) {
-                return indexPath;
-            }
-
-            if (indexPath.contains(".bam.bai")) {
-                indexPath = indexPath.replaceFirst(".bam.bai", ".bai");
-                pathsTried.add(indexPath);
-                if (FileUtils.resourceExists(indexPath)) {
-                    return indexPath;
-                }
-            } else {
-                indexPath = indexPath.replaceFirst(".bai", ".bam.bai");
-                pathsTried.add(indexPath);
-                if (FileUtils.resourceExists(indexPath)) {
-                    return indexPath;
-                }
-            }
-
-
-            // Try .bam.csi
-            indexPath = pathOrURL + ".csi";
-            pathsTried.add(indexPath);
-            if (FileUtils.resourceExists(indexPath)) {
-                return indexPath;
-            }
-
-            // Try .csi
-            if (pathOrURL.endsWith(".bam")) {
-                indexPath = pathOrURL.substring(0, pathOrURL.length() - 4) + ".csi";
-                pathsTried.add(indexPath);
-                if (FileUtils.resourceExists(indexPath)) {
-                    return indexPath;
-                }
-            }
-
-            if (pathOrURL.endsWith(".cram")) {
-                indexPath = pathOrURL + ".crai";
-                if (FileUtils.resourceExists(indexPath)) {
-                    return indexPath;
-                } else {
-                    indexPath = pathOrURL.substring(0, pathOrURL.length() - 5) + ".crai";
-                    if (FileUtils.resourceExists(indexPath)) {
-                        return indexPath;
-                    }
-                }
-            }
-
-
-        }
-
-        String defaultValue = pathOrURL + (pathOrURL.endsWith(".cram") ? ".crai" : ".bai");
-        indexPath = MessageUtils.showInputDialog(
-                "Index is required, but no index found.  Please enter path to index file:",
-                defaultValue);
-        if (indexPath != null && FileUtils.resourceExists(indexPath)) {
-            return indexPath;
-        }
-
-
-        String msg = "Index file not found.  Tried ";
-        for (String p : pathsTried) {
-            msg += "<br>" + p;
-        }
-        throw new DataLoadException(msg, indexPath);
-
-    }
-
-
-    static CloseableIterator<PicardAlignment> EMPTY_ITERATOR = new CloseableIterator<PicardAlignment>() {
+    static CloseableIterator<SAMAlignment> EMPTY_ITERATOR = new CloseableIterator<SAMAlignment>() {
         @Override
         public void close() {
 
@@ -362,43 +163,38 @@ public class BAMReader implements AlignmentReader<PicardAlignment> {
         }
 
         @Override
-        public PicardAlignment next() {
+        public SAMAlignment next() {
             return null;
         }
     };
 
-    static class ListIterator implements CloseableIterator<PicardAlignment> {
 
-        Iterator<PicardAlignment> iterator;
+    class PicardIterator implements CloseableIterator<SAMAlignment> {
 
-        public ListIterator(CloseableIterator<SAMRecord> iter) {
-            List<PicardAlignment> alignments = new ArrayList<>(1000);
-            while (iter.hasNext()) {
-                alignments.add(new PicardAlignment(iter.next()));
-            }
-            iter.close();
-            iterator = alignments.iterator();
+        private SamReader reader;    // Readers are 1-time use (for this iterator only)
+        CloseableIterator<SAMRecord> iterator;
 
+        public PicardIterator(SamReader samReader, String sequence, int start, int end, boolean contained) {
+            this.reader = samReader;
+            this.iterator = samReader.query(sequence, start, end, contained);
         }
 
         public void close() {
-            iterator = null;
+            iterator.close();
+            readerPool.freeReader(this.reader);
         }
 
         public boolean hasNext() {
             return iterator.hasNext();
         }
 
-        public PicardAlignment next() {
-            return iterator.next();
+        public SAMAlignment next() {
+            return new SAMAlignment(iterator.next());
         }
 
         public void remove() {
-            iterator = null;
+            iterator.remove();
         }
 
-
     }
-
-
 }

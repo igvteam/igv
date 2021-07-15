@@ -35,6 +35,7 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.Persistable;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -117,7 +118,6 @@ public interface Track extends Persistable {
     void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
                           List<String> names, List<MouseableRegion> mouseRegions);
 
-
     void setName(String name);
 
     String getName();
@@ -188,9 +188,17 @@ public interface Track extends Persistable {
 
     Color getColor();
 
+    default Color getExplicitColor() {
+        return null;
+    }
+
     void setColor(Color color);
 
     Color getAltColor();
+
+    default Color getExplicitAltColor() {
+        return null;
+    }
 
     void setAltColor(Color color);
 
@@ -267,5 +275,9 @@ public interface Track extends Persistable {
     default boolean isShowFeatureNames() {return true;}
 
     default void setShowFeatureNames(boolean b) {}
+
+    default void repaint() {
+        IGV.getInstance().repaint(this);
+    }
 
 }

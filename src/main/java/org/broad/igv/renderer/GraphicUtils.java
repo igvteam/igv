@@ -157,7 +157,6 @@ public class GraphicUtils {
     public static void drawRightJustifiedText(String text, int right, int y,
                                               Graphics g) {
         FontMetrics fontMetrics = g.getFontMetrics();
-
         Rectangle2D textBounds = fontMetrics.getStringBounds(text, g);
         int x = right - (int) textBounds.getWidth();
         g.drawString(text, x, y);

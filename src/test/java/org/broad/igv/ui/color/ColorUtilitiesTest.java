@@ -30,6 +30,7 @@ import org.junit.Test;
 import java.awt.*;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 
 /**
  * @author jrobinso
@@ -41,11 +42,16 @@ public class ColorUtilitiesTest {
 
     @Test
     public void testStringToColor() throws Exception {
-
         // Test parsing strings with quotes (common problem with Excel exports)
         String quotedString = "\"0,0,255,\"";
         Color b = ColorUtilities.stringToColor(quotedString);
         assertEquals(Color.blue, b);
+    }
 
+    @Test
+    public void testHexColorString() throws Exception {
+        Color grey = new Color(170,170, 170);
+        Color c = ColorUtilities.stringToColor("#AAAAAA");
+        assertEquals(grey, c);
     }
 }

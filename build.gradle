@@ -22,7 +22,7 @@
 // THE SOFTWARE.
 
 apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'application'
 
 import org.apache.tools.ant.filters.ReplaceTokens
@@ -50,7 +50,7 @@ sourceSets {
     main {
         resources {
             srcDirs = ['src/main/resources', 'src/main/resources-jlfgr-1_0']
-            exclude "**/*LICENSE*", "**/META-INF"
+            exclude "**/*LICENSE*", "**/META-INF, **/log4j2_*.xml"
         }
     }
 }
@@ -132,14 +132,13 @@ dependencies {
         [group: 'org.sharegov', name: 'mjson', version: '1.4.1'],
 
         // Amazon deps
-        [group: 'software.amazon.awssdk', name: 'http-client-spi', version: '2.13.30'],
-        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.13.30'],
-        [group: 'software.amazon.awssdk', name: 'sts', version: '2.13.30'],
-        [group: 'software.amazon.awssdk', name: 's3', version: '2.13.30']
+        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.15.67'],
+        [group: 'software.amazon.awssdk', name: 'sts', version: '2.15.67'],
+        [group: 'software.amazon.awssdk', name: 's3', version: '2.15.67']
     )
 
     testImplementation(
-        fileTree(dir: 'test/lib', include: '*.jar'), // first search on disk (old behavior), then maven repos
+        [group: 'junit', name: 'junit', version: '4.12'],
         [group: 'com.sparkjava', name: 'spark-core', version: '2.2'],
         [group: 'org.glassfish.jersey.core', name: 'jersey-common', version: '2.22.4']
     )

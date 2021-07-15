@@ -56,6 +56,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
     protected boolean countDeletedBasesCovered = false;
 
     private BisulfiteCounts bisulfiteCounts;
+    private ModifiedBaseCounts modifiedBaseCounts;
 
 
     public BaseAlignmentCounts(int start, int end, AlignmentTrack.BisulfiteContext bisulfiteContext) {
@@ -72,6 +73,8 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         if (!Globals.isHeadless() && bisulfiteContext != null) {
             bisulfiteCounts = new BisulfiteCounts(bisulfiteContext, GenomeManager.getInstance().getCurrentGenome());
         }
+
+        modifiedBaseCounts = new ModifiedBaseCounts();
 
     }
 
@@ -94,8 +97,14 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         return null;
     }
 
+    @Override
     public BisulfiteCounts getBisulfiteCounts() {
         return bisulfiteCounts;
+    }
+
+    @Override
+    public ModifiedBaseCounts getModifiedBaseCounts() {
+        return modifiedBaseCounts;
     }
 
     @Override
@@ -118,6 +127,9 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         if (bisulfiteCounts != null) {
             bisulfiteCounts.incrementCounts(alignment);
         }
+        if(modifiedBaseCounts != null) {
+            modifiedBaseCounts.incrementCounts(alignment);
+        }
 
         int alignmentStart = alignment.getAlignmentStart();
         int alignmentEnd = alignment.getAlignmentEnd();
@@ -135,7 +147,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
                 //Strand strand = alignment.getFirstOfPairStrand();
 
                 // Don't count softclips
-                if (!b.isSoftClipped() && strand != Strand.NONE) {
+                if (!b.isSoftClip() && strand != Strand.NONE) {
                     incBlockCounts(b, isNegativeStrand);
                 }
             }
@@ -192,8 +204,8 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         }
         int delCount = getDelCount(pos);
         int insCount = getInsCount(pos);
-        buf.append("<br>---------------");
         if (delCount > 0 || insCount > 0) {
+            buf.append("<br>---------------");
             buf.append("<br>DEL: " + delCount);
             buf.append("<br>INS: " + insCount);
         }

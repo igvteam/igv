@@ -37,8 +37,8 @@ import java.util.List;
 
 /**
  * @author jrobinso
- *         Date: 10/31/13
- *         Time: 12:16 PM
+ * Date: 10/31/13
+ * Time: 12:16 PM
  */
 public class UCSCEncodeUtils {
 
@@ -87,27 +87,31 @@ public class UCSCEncodeUtils {
 
         BufferedReader reader = null;
 
-        reader = ParsingUtils.openBufferedReader(url);
+        try {
+            reader = ParsingUtils.openBufferedReader(url);
 
-        String[] headers = Globals.tabPattern.split(reader.readLine());
+            String[] headers = Globals.tabPattern.split(reader.readLine());
 
-        String nextLine;
-        while ((nextLine = reader.readLine()) != null) {
-            if (!nextLine.startsWith("#")) {
-                String[] tokens = Globals.tabPattern.split(nextLine, -1);
-                String path = tokens[0];
-                Map<String, String> attributes = new HashMap<String, String>();
-                for (int i = 0; i < headers.length; i++) {
-                    String value = tokens[i];
-                    if (value.length() > 0) {
-                        attributes.put(headers[i], value);
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                if (!nextLine.startsWith("#")) {
+                    String[] tokens = Globals.tabPattern.split(nextLine, -1);
+                    String path = tokens[0];
+                    Map<String, String> attributes = new HashMap<String, String>();
+                    for (int i = 0; i < headers.length; i++) {
+                        String value = tokens[i];
+                        if (value.length() > 0) {
+                            attributes.put(headers[i], value);
+                        }
                     }
+                    records.add(new EncodeFileRecord(path, attributes));
                 }
-                records.add(new EncodeFileRecord(path, attributes));
-            }
 
+            }
+            return records;
+        } finally {
+            reader.close();
         }
-        return records;
     }
 
     static String[] columnHeadings = {"cell", "dataType", "antibody", "view", "replicate", "type", "lab"};
@@ -117,36 +121,39 @@ public class UCSCEncodeUtils {
         List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>();
 
         BufferedReader reader = null;
-        reader = ParsingUtils.openBufferedReader(inputFile);
+        try {
+            reader = ParsingUtils.openBufferedReader(inputFile);
 
-        String rootPath = reader.readLine();
+            String rootPath = reader.readLine();
 
-        String hub = null;
-        String nextLine;
-        while ((nextLine = reader.readLine()) != null) {
+            String hub = null;
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
 
-            if (nextLine.startsWith("#")) {
-                if(nextLine.startsWith("#hub=")) {
-                    hub = nextLine.substring(5);
-                }
-            }
-            else {
-                String dir = nextLine.equals(".") ? rootPath : rootPath + nextLine;
-                String filesDotTxt = dir + "/files.txt";
-                try {
-                    if (HttpUtils.getInstance().resourceAvailable(filesDotTxt)) {
-                        parseFilesDotTxt(filesDotTxt, records);
+                if (nextLine.startsWith("#")) {
+                    if (nextLine.startsWith("#hub=")) {
+                        hub = nextLine.substring(5);
                     }
-                } catch (IOException e) {
-                    // e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } else {
+                    String dir = nextLine.equals(".") ? rootPath : rootPath + nextLine;
+                    String filesDotTxt = dir + "/files.txt";
+                    try {
+                        if (HttpUtils.getInstance().resourceAvailable(filesDotTxt)) {
+                            parseFilesDotTxt(filesDotTxt, records);
+                        }
+                    } catch (IOException e) {
+                        // e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
                 }
+
             }
+            for (String dt : fileTypes) System.out.println(dt);
 
+
+            outputRecords(outputFile, records, hub);
+        } finally {
+            reader.close();
         }
-        for (String dt : fileTypes) System.out.println(dt);
-
-
-        outputRecords(outputFile, records, hub);
     }
 
     private static void outputRecords(String outputFile, List<EncodeFileRecord> records, String hub) throws IOException {
@@ -156,7 +163,7 @@ public class UCSCEncodeUtils {
             pw.print("\t");
             pw.print(h);
         }
-        if(hub != null) {
+        if (hub != null) {
             pw.print("\thub");
         }
         pw.println();
@@ -168,7 +175,7 @@ public class UCSCEncodeUtils {
                 String value = rec.getAttributeValue(h);
                 pw.print(value == null ? "" : value);
             }
-            if(hub != null) {
+            if (hub != null) {
                 pw.print("\t" + hub);
             }
             pw.println();
@@ -177,13 +184,11 @@ public class UCSCEncodeUtils {
     }
 
     static HashSet knownFileTypes = new HashSet(Arrays.asList(
-            "bam", "bigBed", "bed", "bb", "bw", "bigWig", "gtf", "broadPeak", "narrowPeak", "gappedPeak", "regionPeak", "gff"));
+            "bam", "bigBed", "bed", "bb", "bw", "bigWig", "gtf", "broadpeak", "narrowpeak", "gappedpeak", "regionpeak", "gff"));
 
     public static void parseFilesDotTxt(String url, List<EncodeFileRecord> fileRecords) throws IOException {
 
-
         BufferedReader reader = null;
-
 
         reader = ParsingUtils.openBufferedReader(url);
         String nextLine;
@@ -220,7 +225,8 @@ public class UCSCEncodeUtils {
 
             EncodeFileRecord df = new EncodeFileRecord(path, kvalues);
 
-            if (knownFileTypes.contains(df.getFileType())) {
+            String ftype = df.getFileType() == null ? null : df.getFileType().toLowerCase();
+            if (knownFileTypes.contains(ftype)) {
                 fileRecords.add(df);
             }
 

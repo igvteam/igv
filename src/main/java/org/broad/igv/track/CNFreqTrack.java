@@ -67,7 +67,6 @@ public class CNFreqTrack extends AbstractTrack {
 
     public CNFreqTrack() {
     }
-
     public CNFreqTrack(ResourceLocator rl, String id, String name, FreqData fd) {
         super(rl, id, name);
         data = fd;
@@ -87,6 +86,10 @@ public class CNFreqTrack extends AbstractTrack {
 
     }
 
+    @Override
+    public boolean isSortable() {
+        return false;
+    }
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
@@ -155,7 +158,7 @@ public class CNFreqTrack extends AbstractTrack {
 
 
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
-        return Integer.MIN_VALUE;  //To change body of implemented methods use File | Settings | File Templates.
+        return Float.MAX_VALUE;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -164,18 +167,15 @@ public class CNFreqTrack extends AbstractTrack {
         IGVPopupMenu menu = new IGVPopupMenu();
 
         final JMenuItem ampThresholdItem = new JMenuItem("Set amplification threshold (" + ampThreshold + ")");
-        ampThresholdItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String t = MessageUtils.showInputDialog("Amplification threshold  (log2(cn)/2)", String.valueOf(ampThreshold));
-                if (t != null) {
-                    try {
-                        float threshold = Float.parseFloat(t);
-                        setAmpThreshold(threshold);
-                        IGV.getInstance().repaint();
-                    } catch (NumberFormatException e1) {
-                        MessageUtils.showErrorMessage("Amplification threshold must be a number", e1);
-                    }
+        ampThresholdItem.addActionListener(e -> {
+            String t = MessageUtils.showInputDialog("Amplification threshold  (log2(cn)/2)", String.valueOf(ampThreshold));
+            if (t != null) {
+                try {
+                    float threshold = Float.parseFloat(t);
+                    setAmpThreshold(threshold);
+                    repaint();
+                } catch (NumberFormatException e1) {
+                    MessageUtils.showErrorMessage("Amplification threshold must be a number", e1);
                 }
             }
         });
@@ -189,7 +189,7 @@ public class CNFreqTrack extends AbstractTrack {
                 try {
                     float threshold = Float.parseFloat(t);
                     setDelThreshold(threshold);
-                    IGV.getInstance().repaint();
+                    repaint();
                 } catch (NumberFormatException e1) {
                     MessageUtils.showErrorMessage("Deletion threshold must be a number", e1);
                 }

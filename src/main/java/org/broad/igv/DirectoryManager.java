@@ -31,6 +31,8 @@ import org.apache.log4j.Logger;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
+import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
+import org.apache.logging.log4j.core.appender.rolling.RolloverStrategy;
 import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
@@ -81,7 +83,6 @@ public class DirectoryManager {
      */
     public static synchronized File getUserDirectory() {
         if (USER_DIRECTORY == null) {
-            log.info("Fetching user directory... ");
             USER_DIRECTORY = FileSystemView.getFileSystemView().getDefaultDirectory();
             //Mostly for testing, in some environments USER_DIRECTORY can be null
             if (USER_DIRECTORY == null) {
@@ -122,7 +123,7 @@ public class DirectoryManager {
                     try {
                         legacyDirectory = getLegacyIGVDirectory();
                         if (legacyDirectory.exists()) {
-                            log.info("Copying " + legacyDirectory + " => " + IGV_DIRECTORY);
+                            //log.info("Copying " + legacyDirectory + " => " + IGV_DIRECTORY);
                             FileUtils.copyDirectory(legacyDirectory, IGV_DIRECTORY);
                         }
                     } catch (IOException e) {
@@ -497,12 +498,15 @@ public class DirectoryManager {
             rootLogger.removeAppender("IGV_ROLLING_APPENDER");
             PatternLayout layout = PatternLayout.newBuilder().withConfiguration(configuration)
                     .withPattern("%p [%d{ISO8601}] [%F:%L]  %m%n").build();
+            RolloverStrategy rolloverStrategy = DefaultRolloverStrategy.newBuilder().withConfig(configuration)
+            		.withMax("1").withMin("1").build();
             RollingFileAppender appender = RollingFileAppender.newBuilder().withName("IGV_ROLLING_APPENDER")
                     .setConfiguration(configuration)
                     .withFileName(logFile.getAbsolutePath()).withAppend(true)
-                    .withFilePattern(getIgvDirectory().getAbsolutePath() + File.pathSeparator + "igv-%i.log")
+                    .withFilePattern(getIgvDirectory().getAbsolutePath() + File.separator + "igv-backup-%i.log")
                     .withLayout(layout)
-                    .withPolicy(SizeBasedTriggeringPolicy.createPolicy("1000K"))
+                    .withPolicy(SizeBasedTriggeringPolicy.createPolicy("500K"))
+                    .withStrategy(rolloverStrategy)
                     .build();
             appender.start();
             configuration.addAppender(appender);

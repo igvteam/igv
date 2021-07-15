@@ -361,7 +361,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         } else {
             List<String> selectedSpecies = dialog.getSelectedSpecies();
             setSelectedSpecies(selectedSpecies);
-            IGV.getInstance().repaint();
+            repaint();
         }
     }
 

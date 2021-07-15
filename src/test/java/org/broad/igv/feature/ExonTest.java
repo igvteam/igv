@@ -26,6 +26,10 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.aa.AminoAcidManager;
+import org.broad.igv.feature.aa.AminoAcidSequence;
+import org.broad.igv.feature.aa.CodonTable;
+import org.broad.igv.feature.aa.CodonTableManager;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -82,19 +86,19 @@ public class ExonTest extends AbstractHeadlessTest {
     public void testChangeCodonTable() throws Exception {
 
         String geneId = "LANCL2";
-        int exonNum = 2;
+        int exonNum = 1;
 
         BasicFeature lancl = (BasicFeature) FeatureDB.getFeature(geneId);
         Exon testExon = lancl.getExons().get(exonNum);
         Exon prevExon = lancl.getExons().get(exonNum-1);
         Exon nextExon = lancl.getExons().get(exonNum+1);
         AminoAcidSequence seq = testExon.getAminoAcidSequence(genome, prevExon, nextExon);
-        assertEquals('I', seq.getSequence().get(1).getSymbol());
+        assertEquals('I', seq.getSequence().get(5).getSymbol());
 
-        AminoAcidManager.getInstance().setCodonTable(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, 2);
-
-        seq = testExon.getAminoAcidSequence(genome, prevExon, nextExon);
-        assertEquals('H', seq.getSequence().get(1).getSymbol());
+        CodonTable codonTable= CodonTableManager.getInstance().getCodonTableByID(2);
+        CodonTableManager.getInstance().setCurrentCodonTable(codonTable);
+        seq = testExon.getAminoAcidSequence(genome, prevExon, nextExon);;
+        assertEquals('M', seq.getSequence().get(5).getSymbol());
 
         AminoAcidSequence seq2 = testExon.getAminoAcidSequence(genome, prevExon, nextExon);
 

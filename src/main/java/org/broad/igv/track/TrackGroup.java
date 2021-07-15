@@ -198,16 +198,13 @@ public class TrackGroup {
         return h;
     }
 
-    public void renderName(Graphics2D g2D, Rectangle rect, boolean isSelected) {
+    public void renderName(Graphics2D g2D, Rectangle rect) {
 
         // Calculate fontsize
         int fontSize = PreferencesManager.getPreferences().getAsInt(Constants.DEFAULT_FONT_SIZE);
-
         Font font = FontManager.getFont(Font.BOLD, fontSize);
         g2D.setFont(font);
-
         GraphicUtils.drawWrappedText(getName(), rect, g2D, true);
-
     }
 
     /**

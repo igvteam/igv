@@ -112,6 +112,8 @@ public class Accumulator {
                 case mean:
                     sum += nBases * v;
                     break;
+                case absoluteMax:
+                    value = Float.isNaN(value) ? v : Math.abs(v) > Math.abs(value) ? v : value;
                 default:
                     if (valueList != null) {
                         valueList.add(v);

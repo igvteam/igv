@@ -105,7 +105,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                                 String key = AmazonUtils.getKeyFromS3URL(url);
 
                                 AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucket, key);
-                                if (!res.getObjAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
+                                if (!res.isObjectAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
                             }
                         } catch (NullPointerException npe) {
                             // User has not yet done Amazon->Login sequence
@@ -149,11 +149,17 @@ public class LoadFromURLMenuAction extends MenuAction {
             String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL to .genome or FASTA file",
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
-                try {
-                    url = mapURL(url);
-                    GenomeManager.getInstance().loadGenome(url.trim(), null);
-                } catch (Exception e1) {
-                    MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
+                if(url.startsWith("s3://")) {
+                    MessageUtils.showMessage("S3 URLs are not supported for genomes");
+                } else if (url.startsWith("ftp://")) {
+                    MessageUtils.showMessage("FTP protocol is not supported");
+                } else {
+                    try {
+                        url = mapURL(url);
+                        GenomeManager.getInstance().loadGenome(url.trim(), null);
+                    } catch (Exception e1) {
+                        MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
+                    }
                 }
             }
         }

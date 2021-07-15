@@ -67,7 +67,7 @@ public interface AlignmentReader<T extends Alignment> {
      */
     Set<String>  getPlatforms();
 
-    CloseableIterator<T> iterator();
+    CloseableIterator<T> iterator() throws IOException;
 
     /**
      * Query alignments over a given range. Be careful about start/end,

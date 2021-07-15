@@ -21,13 +21,10 @@ import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
 import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
-import static org.broad.igv.track.TrackMenuUtils.refresh;
 
 
 /**
@@ -286,7 +283,7 @@ public class InteractionTrack extends AbstractTrack {
                 PreferencesManager.getPreferences().put(Constants.ARC_TYPE, entry.getValue().toString());
                 autoscaleCB.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
                 maxScoreItem.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
-                refresh();
+                repaint();
             });
             group.add(mm);
             menu.add(mm);
@@ -298,7 +295,7 @@ public class InteractionTrack extends AbstractTrack {
         showBlocksCB.addActionListener(e -> {
             showBlocks = showBlocksCB.isSelected();
             PreferencesManager.getPreferences().put(Constants.ARC_BLOCKS, String.valueOf(showBlocksCB.isSelected()));
-            refresh();
+            repaint();
         });
         menu.add(showBlocksCB);
 
@@ -307,7 +304,7 @@ public class InteractionTrack extends AbstractTrack {
         autoscaleCB.setSelected(autoscale);
         autoscaleCB.addActionListener(e -> {
             autoscale = autoscaleCB.isSelected();
-            refresh();
+            repaint();
         });
         menu.add(autoscaleCB);
 
@@ -320,7 +317,7 @@ public class InteractionTrack extends AbstractTrack {
                     if (ms > 0) {
                         maxScore = ms;
                         autoscale = false;
-                        refresh();
+                        repaint();
                     } else {
                         MessageUtils.showMessage("maximum score must be > 0");
                     }
@@ -343,7 +340,7 @@ public class InteractionTrack extends AbstractTrack {
             } else {
                 direction = UP;
             }
-            IGV.getInstance().repaint();
+            repaint();
         });
         menu.add(item);
 
@@ -353,7 +350,7 @@ public class InteractionTrack extends AbstractTrack {
             if (t != null) {
                 try {
                     thickness = Integer.parseInt(t);
-                    IGV.getInstance().repaint();
+                    repaint();
                 } catch (NumberFormatException e1) {
                     MessageUtils.showErrorMessage("Line thickness must be an integer", e1);
                 }

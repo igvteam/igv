@@ -53,9 +53,10 @@ public class TrackPanel extends IGVPanel {
     private AttributePanel attributePanel;
     private DataPanelContainer dataPanelContainer;
     private String groupAttribute;
-    int trackCountEstimate = 0;  // <= used to size array list, not neccesarily precise
+    private int trackCountEstimate = 0;  // <= used to size array list, not neccesarily precise
+    private List<TrackGroup> trackGroups;
 
-    List<TrackGroup> trackGroups;
+    transient int lastHeight = 0;
 
     /**
      * Constructs ...
@@ -156,6 +157,12 @@ public class TrackPanel extends IGVPanel {
         return count;
     }
 
+    public boolean isHeightChanged() {
+        int height = getPreferredPanelHeight();
+        boolean change = height != lastHeight;
+        lastHeight = height;
+        return change;
+    }
 
     public List<Track> getTracks() {
         ArrayList<Track> tracks = new ArrayList(trackCountEstimate);
@@ -169,7 +176,6 @@ public class TrackPanel extends IGVPanel {
 
         final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         Track geneTrack = currentGenome == null ? null : currentGenome.getGeneTrack();
-
         for (Track t : getTracks()) {
             if (t != geneTrack) {
                 t.dispose();
@@ -177,6 +183,58 @@ public class TrackPanel extends IGVPanel {
         }
         trackGroups.clear();
         trackCountEstimate = 0;
+    }
+
+
+    public boolean fitTracksToPanel() {
+        DataPanelContainer dataPanel = this.getScrollPane().getDataPanel();
+        boolean success = true;
+
+        int availableHeight = dataPanel.getVisibleHeight();
+        int visibleTrackCount = 0;
+
+        // Process data tracks first
+        Collection<TrackGroup> groups = dataPanel.getTrackGroups();
+
+
+        // Count visible tracks.
+        for (TrackGroup group : groups) {
+            List<Track> tracks = group.getVisibleTracks();
+            for (Track track : tracks) {
+                if (track.isVisible()) {
+                    ++visibleTrackCount;
+                }
+            }
+        }
+
+
+        // Auto resize the height of the visible tracks
+        if (visibleTrackCount > 0) {
+            int groupGapHeight = (groups.size() + 1) * UIConstants.groupGap;
+            double adjustedAvailableHeight = Math.max(1, availableHeight - groupGapHeight);
+
+            double delta = adjustedAvailableHeight / visibleTrackCount;
+
+            // Minimum track height is 1
+            if (delta < 1) {
+                delta = 1;
+            }
+
+            int iTotal = 0;
+            double target = 0;
+            for (TrackGroup group : groups) {
+                List<Track> tracks = group.getVisibleTracks();
+                for (Track track : tracks) {
+                    target += delta;
+                    int height = (int) (target - iTotal);
+                    track.setHeight(height);
+                    iTotal += height;
+                }
+            }
+
+        }
+
+        return success;
     }
 
     /**
@@ -211,6 +269,10 @@ public class TrackPanel extends IGVPanel {
         for (Track t : tracks) {
             addTrack(t);
         }
+    }
+
+    public boolean hasTrack(Track track) {
+        return trackGroups.stream().anyMatch(tg -> (new HashSet(tg.getTracks()).contains(track)));
     }
 
     public void moveGroup(TrackGroup group, int index) {
@@ -367,6 +429,13 @@ public class TrackPanel extends IGVPanel {
         }
     }
 
+    /**
+     * Remove, but do not dispose of, tracks.  Used by session reader
+     */
+    public void removeAllTracks() {
+        trackGroups.clear();
+        trackCountEstimate = 0;
+    }
 
     /**
      * Insert the selectedTracks collection either before or after the target and return true.
@@ -424,7 +493,7 @@ public class TrackPanel extends IGVPanel {
     }
 
     @Override
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
         int h = rect.height;
 
@@ -438,7 +507,7 @@ public class TrackPanel extends IGVPanel {
         if (nameRect.width > 0) {
             Graphics2D nameGraphics = (Graphics2D) g.create();
             nameGraphics.setClip(nameRect);
-            ((Paintable) children[0]).paintOffscreen(nameGraphics, nameRect);
+            ((Paintable) children[0]).paintOffscreen(nameGraphics, nameRect, batch);
             nameGraphics.dispose();
         }
 
@@ -448,7 +517,7 @@ public class TrackPanel extends IGVPanel {
         if (attRect.width > 0) {
             Graphics2D attGraphics = (Graphics2D) g.create();
             attGraphics.setClip(attRect);
-            ((Paintable) children[1]).paintOffscreen(attGraphics, attRect);
+            ((Paintable) children[1]).paintOffscreen(attGraphics, attRect, batch);
             attGraphics.dispose();
         }
 
@@ -457,12 +526,17 @@ public class TrackPanel extends IGVPanel {
         Rectangle dataRect = new Rectangle(0, 0, mainPanel.getDataPanelWidth(), h);
         Graphics2D dataGraphics = (Graphics2D) g.create();
         dataGraphics.setClip(dataRect);
-        ((Paintable) children[2]).paintOffscreen(dataGraphics, dataRect);
+        ((Paintable) children[2]).paintOffscreen(dataGraphics, dataRect, batch);
         dataGraphics.dispose();
 
 
         //super.paintBorder(g);
 
+    }
+
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
     }
 
     public void addTrackGroup(TrackGroup trackGroup) {

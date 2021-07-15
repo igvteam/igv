@@ -29,14 +29,11 @@
  */
 package org.broad.igv.ui.action;
 
-import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.AttributeSelectionDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.UIUtilities;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author jrobinso
@@ -44,11 +41,11 @@ import java.util.List;
 public class GroupTracksMenuAction extends MenuAction {
 
     //static Logger log = Logger.getLogger(GroupTracksMenuAction.class);
-    IGV mainFrame;
+    IGV igv;
 
-    public GroupTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public GroupTracksMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
     }
 
     @Override
@@ -66,7 +63,7 @@ public class GroupTracksMenuAction extends MenuAction {
             public void run() {
 
                 final AttributeSelectionDialog dlg = new AttributeSelectionDialog(
-                        mainFrame.getMainFrame(),
+                        igv.getMainFrame(),
                         "Group");
 
 
@@ -82,7 +79,7 @@ public class GroupTracksMenuAction extends MenuAction {
                 if (!dlg.isCanceled()) {
                     String selectedAttribute = dlg.getSelected();
                     IGV.getInstance().setGroupByAttribute(selectedAttribute);
-                    mainFrame.repaint();
+                    igv.repaint();
 
                 }
 

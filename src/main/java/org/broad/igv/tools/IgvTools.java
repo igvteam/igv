@@ -670,16 +670,16 @@ public class IgvTools {
 
         if (!ifile.endsWith(".affective.csv")) validateIsTilable(typeString);
 
-        log.info("toTDF.  File = " + ifile);
-        log.info("Max zoom = " + maxZoomValue);
-        if (probeFile != null && probeFile.trim().length() > 0) {
-            log.info("Probe file = " + probeFile);
-        }
-        String wfString = "Window functions: ";
-        for (WindowFunction wf : windowFunctions) {
-            wfString += wf.toString() + " ";
-        }
-        log.info(wfString);
+//        log.info("toTDF.  File = " + ifile);
+//        log.info("Max zoom = " + maxZoomValue);
+//        if (probeFile != null && probeFile.trim().length() > 0) {
+//            log.info("Probe file = " + probeFile);
+//        }
+//        String wfString = "Window functions: ";
+//        for (WindowFunction wf : windowFunctions) {
+//            wfString += wf.toString() + " ";
+//        }
+//        log.info(wfString);
 
         boolean isGCT = isGCT(typeString);
         Genome genome = loadGenome(genomeId);
@@ -834,15 +834,15 @@ public class IgvTools {
                         String trackLine, String queryString, int minMapQuality, int countFlags) throws IOException {
 
 
-        log.info("Computing coverage.  File = " + ifile);
-        log.info("Max zoom = " + maxZoomValue);
-        log.info("Window size = " + windowSizeValue);
-        String wfString = "Window functions: ";
-        for (WindowFunction wf : windowFunctions) {
-            wfString += wf.toString() + " ";
-        }
-        log.info(wfString);
-        log.info("Ext factor = " + extFactorValue);
+//        log.info("Computing coverage.  File = " + ifile);
+//        log.info("Max zoom = " + maxZoomValue);
+//        log.info("Window size = " + windowSizeValue);
+//        String wfString = "Window functions: ";
+//        for (WindowFunction wf : windowFunctions) {
+//            wfString += wf.toString() + " ";
+//        }
+//        log.info(wfString);
+//        log.info("Ext factor = " + extFactorValue);
 
 
         Genome genome = loadGenome(genomeId);
@@ -1023,7 +1023,7 @@ public class IgvTools {
         while(iter.hasNext()) {
             SAMRecord rec = iter.next();
             if (++totalRecords % 1000000 == 0) {
-                if (null != log) log.info(totalRecords + " reads processed ...");
+                System.out.println(totalRecords + " reads processed ...");
             }
             indexer.processAlignment(rec);
         }

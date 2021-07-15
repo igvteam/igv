@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" version="8">
+    <Resources>
+        <Resource path="bedpe/GSM1872886_GM12878_CTCF_PET.bedpe.txt"/>
+    </Resources>
+</Session>

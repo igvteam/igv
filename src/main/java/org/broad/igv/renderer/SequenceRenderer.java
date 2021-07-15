@@ -31,6 +31,7 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.aa.*;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.LoadedDataInterval;
@@ -113,7 +114,7 @@ public class SequenceRenderer {
 
         String chr = context.getChr();
         if (!chr.equals(sequenceInterval.range.chr)) {
-            log.error("Chromosome mismatch in sequence track");
+            //log.error("Chromosome mismatch in sequence track: " + chr + " != " + sequenceInterval.range.chr);
             return;
         }
 
@@ -451,6 +452,8 @@ public class SequenceRenderer {
                     g.setFont(f);
                 }
 
+                CodonTable codonTable = CodonTableManager.getInstance().getCodonTableForChromosome(context.getChr());
+
                 for (CodonAA acid : aaSequence.getSequence()) {
                     if (acid != null) {
                         //calculate x pixel boundaries of this AA rectangle
@@ -468,7 +471,7 @@ public class SequenceRenderer {
 
                             char aaSymbol = acid.getAminoAcid().getSymbol();
                             Graphics2D bgGraphics =
-                                    context.getGraphic2DForColor(getColorForAminoAcid(aaSymbol, odd, acid.getCodon()));
+                                    context.getGraphic2DForColor(getColorForAminoAcid(aaSymbol, odd, acid.getCodon(), codonTable));
 
                             bgGraphics.fill(aaRect);
 
@@ -488,14 +491,13 @@ public class SequenceRenderer {
             }
         }
 
-        protected Color getColorForAminoAcid(char acidSymbol, boolean odd, String codon) {
+        protected Color getColorForAminoAcid(char acidSymbol, boolean odd, String codon, CodonTable codonTable) {
 
             if (codon.equals("ATG")) {
                 return METHIONINE_COLOR;
             } else if (acidSymbol == '*') {
                 return STOP_CODON_COLOR;
             } else {
-                AminoAcidManager.CodonTable codonTable = AminoAcidManager.getInstance().getCodonTable();
                 Set<String> altStartCodons = codonTable.getAltStartCodons();
                 if (altStartCodons != null && altStartCodons.contains(codon)) {
                     return ALT_START_COLOR;

@@ -86,7 +86,6 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     }
 
     /**
-     *
      * @param reader
      * @return
      */
@@ -120,35 +119,35 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                 }
 
                 try {
-                    if (nextLine.startsWith("#")) {
-                        if (nextLine.startsWith("#type")) {
-                            String[] tokens = Globals.equalPattern.split(nextLine);
-                            if (tokens.length > 1) {
-                                try {
-                                    // TODO: type is not currently used, is there any reason to keep this?
-                                    TrackType type = TrackType.valueOf(tokens[1]);
-                                } catch (Exception e) {
-                                    log.error("Error converting track type: " + tokens[1]);
-                                }
-                            }
-                        } else if (nextLine.startsWith("#track") || nextLine.startsWith("track")) {
-                            TrackProperties tp = new TrackProperties();
-                            ParsingUtils.parseTrackLine(nextLine, tp);
-                            setTrackProperties(tp);
-                            if (tp.isGffTags()) {
-                                gffTags = true;
-                            }
-                        } else if (nextLine.startsWith("#coords")) {
+                    if (nextLine.startsWith("#type")) {
+                        String[] tokens = Globals.equalPattern.split(nextLine);
+                        if (tokens.length > 1) {
                             try {
-                                String[] tokens = Globals.equalPattern.split(nextLine);
-                                startBase = Integer.parseInt(tokens[1]);
+                                // TODO: type is not currently used, is there any reason to keep this?
+                                TrackType type = TrackType.valueOf(tokens[1]);
                             } catch (Exception e) {
-                                log.error("Error parsing coords line: " + nextLine, e);
+                                log.error("Error converting track type: " + tokens[1]);
                             }
-
-                        } else if (nextLine.startsWith("#gffTags")) {
+                        }
+                    } else if (nextLine.startsWith("#track") || nextLine.startsWith("track")) {
+                        TrackProperties tp = new TrackProperties();
+                        ParsingUtils.parseTrackLine(nextLine, tp);
+                        setTrackProperties(tp);
+                        if (tp.isGffTags()) {
                             gffTags = true;
                         }
+                    } else if (nextLine.startsWith("#coords")) {
+                        try {
+                            String[] tokens = Globals.equalPattern.split(nextLine);
+                            startBase = Integer.parseInt(tokens[1]);
+                        } catch (Exception e) {
+                            log.error("Error parsing coords line: " + nextLine, e);
+                        }
+
+                    } else if (nextLine.startsWith("#gffTags")) {
+                        gffTags = true;
+                    } else if (nextLine.startsWith("#")) {
+                        // skip
                     } else {
                         Feature feature = parseLine(nextLine);
                         if (feature != null) {

@@ -34,5 +34,7 @@ import java.awt.*;
  */
 public interface Paintable  {
 
-    void paintOffscreen(Graphics2D g, Rectangle rect);
+    void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch);
+
+    int getSnapshotHeight(boolean batch);
 }

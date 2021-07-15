@@ -25,6 +25,9 @@
 
 package org.broad.igv.sashimi;
 
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -33,9 +36,6 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.event.ViewChange;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.UIUtilities;
@@ -46,12 +46,11 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Window for displaying sashimi style junction plot
@@ -91,6 +90,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack) {
 
+        setContentPane(new SashimiContentPane());
         getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         int minJunctionCoverage = PreferencesManager.getPreferences().getAsInt(Constants.SAM_JUNCTION_MIN_COVERAGE);
 
@@ -425,11 +425,20 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             strandGroup.add(minusStrand);
 
 
-            JMenuItem saveImageItem = new JMenuItem("Save Image...");
-            saveImageItem.addActionListener(new ActionListener() {
+            JMenuItem savePngImageItem = new JMenuItem("Save PNG Image...");
+            savePngImageItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     File defaultFile = new File("Sashimi.png");
+                    IGV.getInstance().createSnapshot(SashimiPlot.this.getContentPane(), defaultFile);
+                }
+            });
+
+            JMenuItem saveSvgImageItem = new JMenuItem("Save SVG Image...");
+            saveSvgImageItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    File defaultFile = new File("Sashimi.svg");
                     IGV.getInstance().createSnapshot(SashimiPlot.this.getContentPane(), defaultFile);
                 }
             });
@@ -448,7 +457,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             menu.addSeparator();
             menu.add(textShape);
             menu.add(circleShape);
-           // menu.add(ellipseShape);
+            // menu.add(ellipseShape);
             menu.add(noShape);
 
             // Strand options -- applies to all plots
@@ -458,7 +467,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             menu.add(minusStrand);
             menu.addSeparator();
 
-            menu.add(saveImageItem);
+            menu.add(savePngImageItem);
+            menu.add(saveSvgImageItem);
 
             return menu;
         }

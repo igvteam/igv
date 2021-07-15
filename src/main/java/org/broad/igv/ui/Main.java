@@ -34,6 +34,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
@@ -165,7 +166,7 @@ public class Main {
                 return;
             }
         }
-        
+
         // Also check if the java_arguments file exists and create it if not.  This is
         // likewise only used by the launcher scripts.  We create it here as a user
         // convenience.  Note that we skip it if ~/.igv is not a directory.
@@ -248,26 +249,34 @@ public class Main {
                     final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
                     // See if user has specified to skip this update
 
-                    final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
-                    if (skipString != null) {
-                        HashSet<String> skipVersion = new HashSet<>(Arrays.asList(skipString.split(",")));
-                        if (skipVersion.contains(serverVersionString)) return;
-                    }
-
                     Version serverVersion = Version.getVersion(serverVersionString.trim());
                     if (serverVersion == null) return;
 
                     if (thisVersion.lessThan(serverVersion)) {
-                        log.info("A later version of IGV is available (" + serverVersionString + ")");
-                    }
-                } else if (Globals.VERSION.contains("3.0_beta") || Globals.VERSION.contains("snapshot")) {
-                    HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
-                } else {
-                    log.info("Unknown version: " + Globals.VERSION);
-                }
 
+                        log.info("A later version of IGV is available (" + serverVersionString + ")");
+                        final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
+                        boolean skip = false;
+                        if (skipString != null) {
+                            HashSet<String> skipVersion = new HashSet<>(Arrays.asList(skipString.split(",")));
+                            skip = (skipVersion.contains(serverVersionString));
+                        }
+
+                        if (!(skip || Globals.isBatch() || Globals.isHeadless() || Globals.isSuppressMessages())) {
+                            // Inform user, do this only once
+                            final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
+                            UIUtilities.invokeOnEventThread(() -> {
+                                dlg.setVisible(true);
+                                if (dlg.isSkipVersion()) {
+                                    String newSkipString = skipString + "," + serverVersionString;
+                                    PreferencesManager.getPreferences().put(SKIP_VERSION, newSkipString);
+                                }
+                            });
+                        }
+                    }
+                }
             } catch (Exception e) {
-                // ignore
+                log.error("Error checking IGV version ");
             } finally {
 
             }
@@ -407,7 +416,7 @@ public class Main {
                     return new Version(major, minor, build);
 
                 } catch (NumberFormatException e) {
-                    log.error("Error parsing version string: " + versionString);
+                    log.error("Error parsing version string");
                     return null;
                 }
             }
@@ -528,7 +537,7 @@ public class Main {
                 System.exit(0);
             }
 
-            if(parser.getOptionValue(helpOption) != null) {
+            if (parser.getOptionValue(helpOption) != null) {
                 printHelp();
                 System.exit(0);
             }

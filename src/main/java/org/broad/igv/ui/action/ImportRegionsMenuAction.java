@@ -50,11 +50,11 @@ import java.io.FileReader;
 public class ImportRegionsMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(ImportRegionsMenuAction.class);
-    IGV mainFrame;
+    IGV igv;
 
-    public ImportRegionsMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public ImportRegionsMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
         setToolTipText(UIConstants.IMPORT_REGION_TOOLTIP);
     }
 
@@ -120,7 +120,7 @@ public class ImportRegionsMenuAction extends MenuAction {
                             }
                             RegionOfInterest regionOfInterest = new RegionOfInterest(chr, start, end, name);
 
-                            mainFrame.addRegionOfInterest(regionOfInterest);
+                            igv.addRegionOfInterest(regionOfInterest);
                         } catch (NumberFormatException numberFormatException) {
                             log.error("Error importing regions of interest", numberFormatException);
                         }
@@ -131,7 +131,7 @@ public class ImportRegionsMenuAction extends MenuAction {
                 if (reader != null) {
                     reader.close();
                 }
-                mainFrame.repaint();
+                igv.repaint();
             }
         } catch (Exception e) {
             log.error("Failed to write Region of Interest export file!", e);

@@ -28,18 +28,16 @@ package org.broad.igv.ui.panel;
 import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.session.Session;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -92,8 +90,8 @@ public class MainPanel extends JPanel implements Paintable {
         addComponentListener(new ComponentListener() {
 
             public void componentResized(ComponentEvent componentEvent) {
-                revalidate();
-                repaint();
+                revalidateTrackPanels();
+                igv.repaint();
             }
 
             public void componentMoved(ComponentEvent componentEvent) {
@@ -132,17 +130,25 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void collapseNamePanel() {
         namePanelWidth = 0;
-        revalidate();
+        revalidateTrackPanels();
     }
 
     public void expandNamePanel() {
         namePanelWidth = PreferencesManager.getPreferences().getAsInt(NAME_PANEL_WIDTH);
-        revalidate();
+        revalidateTrackPanels();
     }
 
     public void setNamePanelWidth(int width) {
         this.namePanelWidth = width;
-        revalidate();
+        revalidateTrackPanels();
+    }
+
+    public void revalidateTrackPanels() {
+        this.applicationHeaderPanel.invalidate();
+        for (TrackPanel tp : this.getTrackPanels()) {
+            tp.invalidate();
+        }
+        this.revalidate();
     }
 
     public void removeHeader() {
@@ -160,8 +166,8 @@ public class MainPanel extends JPanel implements Paintable {
     public void doLayout() {
 
         super.doLayout();
-        applicationHeaderPanel.doLayout();
         layoutFrames();
+        applicationHeaderPanel.doLayout();
         for (TrackPanel tp : getTrackPanels()) {
             tp.getScrollPane().doLayout();
         }
@@ -192,10 +198,8 @@ public class MainPanel extends JPanel implements Paintable {
 
         nameHeaderPanel = new NameHeaderPanel();
         nameHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
-        nameHeaderPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         nameHeaderPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         nameHeaderPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        nameHeaderPanel.setLayout(new BorderLayout());
 
         attributeHeaderPanel = new AttributeHeaderPanel();
         attributeHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
@@ -230,7 +234,7 @@ public class MainPanel extends JPanel implements Paintable {
             featureTrackScrollPane = new TrackPanelScrollPane();
             featureTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 50));
             featureTrackScrollPane.setViewportView(new TrackPanel(IGV.FEATURE_PANEL_NAME, this));
-           // add(featureTrackScrollPane, java.awt.BorderLayout.SOUTH);
+            // add(featureTrackScrollPane, java.awt.BorderLayout.SOUTH);
         }
 
 
@@ -273,7 +277,6 @@ public class MainPanel extends JPanel implements Paintable {
             centerSplitPane.remove(tsp);
             TrackNamePanel.removeDropListenerFor(tsp.getNamePanel());
         }
-        igv.reset();
     }
 
     /**
@@ -429,13 +432,17 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void layoutFrames() {
         synchronized (getTreeLock()) {
-            Insets insets = applicationHeaderPanel.getInsets();
-            namePanelX = insets.left;
-            attributePanelX = namePanelX + namePanelWidth + hgap;
-            attributePanelWidth = calculateAttributeWidth();
-            dataPanelX = attributePanelX + attributePanelWidth + hgap;
-            dataPanelWidth = applicationHeaderPanel.getWidth() - insets.right - dataPanelX;
+            updatePanelDimensions();
         }
+    }
+
+    public void updatePanelDimensions() {
+        Insets insets = applicationHeaderPanel.getInsets();
+        namePanelX = insets.left;
+        attributePanelX = namePanelX + namePanelWidth + hgap;
+        attributePanelWidth = calculateAttributeWidth();
+        dataPanelX = attributePanelX + attributePanelWidth + hgap;
+        dataPanelWidth = applicationHeaderPanel.getWidth() - insets.right - dataPanelX;
     }
 
 
@@ -497,16 +504,7 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
 
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
-
-        // A hack -- we don't want to paint the background for vector graphics output (EPS and SVG)
-        String graphicsClassName = g.getClass().getName().toLowerCase();
-        if (!(graphicsClassName.contains("epd") || graphicsClassName.contains("svg"))) {
-            Graphics2D backgroundGraphics = (Graphics2D) g.create();
-            backgroundGraphics.setColor(Color.white);
-            backgroundGraphics.fill(rect);
-            backgroundGraphics.dispose();
-        }
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
         // Header
         int width = applicationHeaderPanel.getWidth();
@@ -514,44 +512,38 @@ public class MainPanel extends JPanel implements Paintable {
 
         Graphics2D headerGraphics = (Graphics2D) g.create();
         Rectangle headerRect = new Rectangle(0, 0, width, height);
-        applicationHeaderPanel.paintOffscreen(headerGraphics, headerRect);
+        applicationHeaderPanel.paintOffscreen(headerGraphics, headerRect, batch);
         headerGraphics.dispose();
 
-        // Now loop through track panel
+        // Now loop through track panels
         Rectangle r = centerSplitPane.getBounds();
         g.translate(0, r.y);
 
         // Get the components of the center pane and sort by Y position.
         Component[] components = centerSplitPane.getComponents();
-        Arrays.sort(components, new Comparator<Component>() {
-            public int compare(Component component, Component component1) {
-                return component.getY() - component1.getY();
-            }
-        });
+        Arrays.sort(components, (component, component1) -> component.getY() - component1.getY());
 
         int dy = components[0].getY();
+
         for (Component c : components) {
 
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.translate(0, dy);
 
-            if (c instanceof TrackPanelScrollPane) {
-
+            if (c instanceof Paintable) {
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
-
                 //Skip if panel has no tracks
                 if (tsp.getTrackPanel().getTracks().size() == 0) {
                     continue;
                 }
 
-                int panelHeight = getOffscreenImagePanelHeight(tsp);
+                int panelHeight = tsp.getSnapshotHeight(batch);
 
                 Rectangle tspRect = new Rectangle(tsp.getBounds());
                 tspRect.height = panelHeight;
 
                 g2d.setClip(new Rectangle(0, 0, tsp.getWidth(), tspRect.height));
-                tsp.paintOffscreen(g2d, tspRect);
-
+                tsp.paintOffscreen(g2d, tspRect, batch);
                 dy += tspRect.height;
 
             } else {
@@ -564,7 +556,7 @@ public class MainPanel extends JPanel implements Paintable {
 
         }
 
-        //super.paintBorder(g);
+//        //super.paintBorder(g);
 
     }
 
@@ -574,48 +566,34 @@ public class MainPanel extends JPanel implements Paintable {
      *
      * @return
      */
-    public int getOffscreenImageHeight() {
-        int height = centerSplitPane.getBounds().y;
-        for (Component c : centerSplitPane.getComponents()) {
+    @Override
+    public int getSnapshotHeight(boolean batch) {
 
-            if (c instanceof TrackPanelScrollPane) {
+        if (batch) {
+            int height = applicationHeaderPanel.getHeight();
 
-                TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+            for (Component c : centerSplitPane.getComponents()) {
 
-                //Skip if panel has no tracks
-                if (tsp.getTrackPanel().getTracks().size() == 0) {
-                    continue;
+                if (c instanceof TrackPanelScrollPane) {
+
+                    TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+
+                    //Skip if panel has no tracks
+                    if (tsp.getTrackPanel().getTracks().size() == 0) {
+                        continue;
+                    }
+
+                    height += tsp.getSnapshotHeight(batch);
+
+                } else {
+                    height += c.getHeight();
                 }
 
-                int panelHeight = getOffscreenImagePanelHeight(tsp);
-
-                Rectangle tspRect = new Rectangle(tsp.getBounds());
-                tspRect.height = panelHeight;
-
-
-                height += tspRect.height;
-            } else {
-                height += c.getHeight();
             }
-
-        }
-        // TODO Not sure why this is neccessary
-        height += 35;
-        return height;
-
-    }
-
-    private int getOffscreenImagePanelHeight(TrackPanelScrollPane tsp) {
-
-        int panelHeight;
-        int maxPanelHeight = SnapshotUtilities.getMaxPanelHeight();
-        final int visibleHeight = tsp.getVisibleRect().height;
-        if (maxPanelHeight < 0) {
-            panelHeight = visibleHeight;
+            return height;
         } else {
-            panelHeight = Math.min(maxPanelHeight, Math.max(visibleHeight, tsp.getDataPanel().getHeight()));
+            return getHeight();
         }
-        return panelHeight;
     }
 
 

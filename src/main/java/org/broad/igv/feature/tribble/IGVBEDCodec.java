@@ -53,7 +53,8 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
     static final Pattern EQ_PATTERN = Pattern.compile("=");
 
 
-    Genome genome;
+    private Genome genome;
+    private Pattern delimiter = null;
 
     public IGVBEDCodec() {
         this(null);
@@ -265,7 +266,12 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
             return null;
         }
 
-        tokens = Globals.whitespacePattern.split(trimLine);
+        // Bed files can be tab or whitespace delimited
+        if(delimiter == null) {
+            delimiter = trimLine.contains("\t") ?  Globals.multiTabPattern : Globals.whitespacePattern;
+        }
+
+        tokens = delimiter.split(trimLine);
         BasicFeature feature = decode(tokens);
         feature.setRepresentation(nextLine);
         return feature;

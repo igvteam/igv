@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+<HEAD>
+
+	<meta http-equiv='Content-Security-Policy' content="default-src *; script-src 'self' blob: 'unsafe-inline' 'nonce-EAFVXkwsC6LCuU7H5jit1UdaMdHj' code.jquery.com www.google-analytics.com www.samsarin.com/project/dagre-d3/latest/dagre-d3.js cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min.js cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js cdnjs.cloudflare.com/ajax/libs/bowser/1.6.1/bowser.min.js cdnjs.cloudflare.com/ajax/libs/jstree/3.3.4/jstree.min.js cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/jstree.min.js login.persona.org/include.js cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js ajax.googleapis.com maxcdn.bootstrapcdn.com d3js.org/d3.v3.min.js cdn.datatables.net; style-src * 'unsafe-inline'; font-src * data:; img-src * data:;">
+
+	<META HTTP-EQUIV="Content-Type" CONTENT="text/html;CHARSET=iso-8859-1">
+	<META http-equiv="Content-Script-Type" content="text/javascript">
+	<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+	<META HTTP-EQUIV="Expires" CONTENT="-1">
+	<TITLE>Human (hg19) BLAT Results	</TITLE>
+	<link rel='stylesheet' href='../style/HGStyle.css?v=1610993304' type='text/css'>
+</HEAD>
+<BODY CLASS="hgBlat cgi">
+<center><div id='warnBox' style='display:none;'><CENTER><B id='warnHead'></B></CENTER><UL id='warnList'></UL><CENTER><button id='warnOK'></button></CENTER></div></center>
+
+<noscript><div class='noscript'><div class='noscript-inner'><p><b>JavaScript is disabled in your web browser</b></p><p>You must have JavaScript enabled in your web browser to use the Genome Browser</p></div></div></noscript>
+<script type='text/javascript' SRC='../js/jquery.js?v=1610993305'></script>
+<script type='text/javascript' SRC='../js/jquery.plugins.js?v=1610993305'></script>
+<link rel='stylesheet' href='../style/nice_menu.css?v=1610993304' type='text/css'>
+<div id="main-menu-whole">
+
+	<div id="main-menu"><div id="block-nice_menus-1" class="clear-block block block-nice_menus">
+
+		<div class="upcorner"></div>
+		<div class="blockbg">
+			<div class="blockcontent">
+				<div class="content">
+
+					<ul class="nice-menu nice-menu-down sf-js-enabled" id="nice-menu-1">
+
+						<li class="first even" id="home"><a href="../index.html" ><span id="home-link">Home</span></a></li>
+
+						<li class="menuparent" id="tools1"><a href="../cgi-bin/hgGateway?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Genomes</a>
+							<ul style="display: none; visibility: hidden;">
+								<li class="first"><a href="../cgi-bin/hgTracks?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I&amp;db=hg38&amp;position=lastDbPos">Human GRCh38/hg38</a></li>
+								<li><a href="../cgi-bin/hgTracks?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I&amp;db=hg19&amp;position=lastDbPos">Human GRCh37/hg19</a></li>
+								<li><a href="../cgi-bin/hgTracks?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I&amp;db=mm39&amp;position=lastDbPos">Mouse GRCm39/mm39</a></li>
+								<li><a href="../cgi-bin/hgTracks?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I&amp;db=mm10&amp;position=lastDbPos">Mouse GRCm38/mm10</a></li>
+								<li><a href="http://hgdownload.soe.ucsc.edu/hubs/mouseStrains/hubIndex.html">Mouse: 16 strains</a></li>
+								<li><a href="../cgi-bin/hgTracks?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I&amp;db=wuhCor1&amp;position=lastDbPos">SARS-CoV-2 (COVID-19)</a></li>
+								<li class="last"><a href="../cgi-bin/hgGateway?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Other</a></li>
+							</ul>
+						</li>
+
+						<li class="menuparent" id="tools2"><a href="../cgi-bin/hgTracks?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Genome Browser</a>
+							<ul style="display: none; visibility: hidden;">
+								<li class="first"><a id="configureMenuLink" href="../cgi-bin/hgTracks?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I&amp;hgTracksConfigPage=configure">Configure</a></li>
+								<li><a id="trackSearchMenuLink" href="../cgi-bin/hgTracks?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I&amp;hgt_tSearch=track+search">Track Search</a></li>
+								<!-- OPTIONAL_RECOMMENDED_TRACK_SETS_MENU -->
+								<li><a id="cartResetMenuLink" href="../cgi-bin/cartReset">Reset All User Settings</a></li>
+							</ul>
+						</li>
+
+
+						<li class="menuparent" id="tools3"><span>Tools</span>
+							<ul style="display: none; visibility: hidden;">
+								<li class="first"><a id="blatMenuLink" href="../cgi-bin/hgBlat?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I&amp;command=start">Blat</a></li>
+								<li><a id="tableBrowserMenuLink" href="../cgi-bin/hgTables?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Table Browser</a></li>
+								<li><a id="vaiMenuLink" href="../cgi-bin/hgVai?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Variant Annotation Integrator</a></li>
+								<li><a id="diMenuLink" href="../cgi-bin/hgIntegrator?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Data Integrator</a></li>
+								<li><a title="Explore gene/protein interactions and pathways" id="interactionMenuLink" href="../cgi-bin/hgGeneGraph?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Gene Interactions</a></li>
+								<li><a id="gsMenuLink" href="../cgi-bin/hgNear?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Gene Sorter</a></li>
+								<li><a id="ggMenuLink" href="../cgi-bin/hgGenome?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Genome Graphs</a></li>
+								<li><a id="ispMenuLink" href="../cgi-bin/hgPcr?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">In-Silico PCR</a></li>
+								<li><a id="liftOverMenuLink" href="../cgi-bin/hgLiftOver?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">LiftOver</a></li>
+								<li><a id="visiGeneMenuLink" href="../cgi-bin/hgVisiGene?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">VisiGene</a></li>
+								<li class="last"><a href="../util.html">Other Utilities</a></li>
+							</ul>
+						</li>
+						<li class="menuparent" id="mirrors"><span>Mirrors</span>
+							<ul style="display: none; visibility: hidden;">
+								<li class="first"><a href="../mirror.html">Third Party Mirrors</a></li>
+								<li><a href="../goldenPath/help/mirror.html">Mirroring Instructions</a></li>
+								<li id="geoMirrorMenu" class="noHighlight"><hr></li>
+								<li id="server1" class="noHighlight">
+									<img alt="X" width="16" height="16" style="float:left;" src="../images/greenChecksmCtr.png">
+									US Server</li>
+								<li id="server2">
+									<img alt="X" width="16" height="16" style="float:left;visibility:hidden;" src="../images/greenChecksmCtr.png">
+									<a href="http://genome-euro.ucsc.edu/cgi-bin/hgGateway?redirect=manual">European Server</a></li>
+								<li id="server3">
+									<img alt="X" width="16" height="16" style="float:left;visibility:hidden;" src="../images/greenChecksmCtr.png">
+									<a href="http://genome-asia.ucsc.edu/cgi-bin/hgGateway?redirect=manual">Asian Server</a></li>
+
+							</ul>
+
+						</li>
+						<li class="menuparent" id="downloads"><span>Downloads</span>
+							<ul style="display: none; visibility: hidden;">
+								<li class="first"><a href="http://hgdownload.soe.ucsc.edu/downloads.html">Genome Data</a></li>
+								<li><a href="http://hgdownload.soe.ucsc.edu/downloads.html#source_downloads">Source Code</a></li>
+								<li><a href="https://genome-store.ucsc.edu">Genome Browser Store</a></li>
+								<li><a href="http://hgdownload.soe.ucsc.edu/downloads.html#utilities_downloads">Utilities</a></li>
+								<li class="last"><a href="../goldenPath/help/ftp.html">FTP</a></li>
+								<li class="last"><a href="../goldenPath/help/mysql.html">MySQL Access</a></li>
+								<li class="last"><a href="../goldenPath/help/api.html">REST API</a></li>
+							</ul>
+						</li>
+						<li class="menuparent" id="myData"><span>My Data</span>
+							<ul style="display: none; visibility: hidden;">
+								<li><a id="sessionsMenuLink" href="../cgi-bin/hgSession?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I&amp;hgS_doMainPage=1">My Sessions</a></li>
+								<li><a id="publicSessionsMenuLink" href="../cgi-bin/hgPublicSessions?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Public Sessions</a></li>
+								<li><a id="trackHubsMenuLink" href="../cgi-bin/hgHubConnect?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Track Hubs</a></li>
+								<li><a id="customTracksMenuLink" href="../cgi-bin/hgCustom?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Custom Tracks</a></li>
+								<li class="last"><a id="customCompositeMenuLink" href="../cgi-bin/hgCollection?hgsid=1021038171_aqKTu6B6AznO3rXiWWP0MFB40L6I">Track Collection Builder</a></li>
+							</ul>
+						</li>
+
+						<!-- OPTIONAL_VIEW_MENU -->
+
+						<!-- OPTIONAL_PROJECT_MENU_START -->
+						<li class="menuparent" id="projects"><span>Projects</span>
+							<ul style="display: none; visibility: hidden;">
+								<li class="first"><a href="../gtex.html">Genotype Tissue Expression (GTEx)</a></li>
+								<li><a href="../ENCODE/index.html">Encyclopedia of DNA Elements (ENCODE)</a></li>
+								<li><a href="../singlecell.html">UCSC Cell Browser</a></li>
+								<li class="last"><a href="../covid19.html">UCSC COVID-19 Resources</a></li>
+							</ul>
+							<!-- OPTIONAL_PROJECT_MENU_END -->
+
+						<li class="menuparent" id="help"><span>Help</span><ul style="display: none; visibility: hidden;">
+							<li><a href='../goldenPath/help/hgTracksHelp.html#BLATAlign'>Help on Blat</a></li>
+							<li><a href="../FAQ/">FAQs & Search</a></li>
+							<li><a href="../goldenPath/help/hgTracksHelp.html">Browser Documentation</a></li>
+							<li><a href="../training/index.html">Training</a></li>
+							<li><a href="../contacts.html">Mailing Lists</a></li>
+							<li class="last"><a href="http://genomewiki.ucsc.edu/" target="_blank">GenomeWiki</a></li>
+						</ul>
+						</li>
+
+						<li class="menuparent last" id="aboutUs"><span>About Us</span>
+							<ul style="display: none; visibility: hidden;">
+								<li class="first odd"><a href="../goldenPath/newsarch.html">News</a></li>
+								<li class="even"><a href="../goldenPath/pubs.html">Publications</a></li>
+								<li class="even"><a href="http://genome.ucsc.edu/blog/">Blog</a></li>
+								<li class="odd"><a href="../cite.html">Cite Us</a></li>
+								<li class="even"><a href="../goldenPath/credits.html">Credits</a></li>
+								<li class="odd"><a href="../goldenPath/releaseLog.html">Release Log</a></li>
+								<li class="even"><a href="../staff.html">Staff</a></li>
+								<li class="odd"><a href="../contacts.html">Contact Us</a></li>
+								<li class="even"><a href="../conditions.html">Conditions of Use</a></li>
+								<li class="odd"><a href="https://ucscgenomics.soe.ucsc.edu/careers/" TARGET="_blank">Jobs</a></li>
+								<li class="even last"><a href="../license/">Licenses</a></li>
+							</ul>
+						</li>
+
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="downcorner"></div>
+
+	</div>
+	</div><!-- end main-menu -->
+</div><!-- end main-menu-whole -->
+
+<A NAME="TOP"></A>
+<TABLE BORDER=0 CELLPADDING=0 CELLSPACING=0 WIDTH="100%">
+
+	<!-- +++++++++++++++++++++ CONTENT TABLES +++++++++++++++++++ -->
+	<TR><TD COLSPAN=3>
+		<div id=firstSection>      <!--outer table is for border purposes-->
+			<TABLE WIDTH='100%' BGCOLOR='#888888' BORDER='0' CELLSPACING='0' CELLPADDING='1'><TR><TD>
+				<TABLE BGCOLOR='#FFFEE8' WIDTH='100%'  BORDER='0' CELLSPACING='0' CELLPADDING='0'><TR><TD>
+					<div class='subheadingBar'><div class='windowSize' id='sectTtl'>
+						Human (hg19) BLAT Results     </div></div>
+					<TABLE BGCOLOR='#FFFEE8' WIDTH='100%' CELLPADDING=0><TR><TH HEIGHT=10></TH></TR>
+						<TR><TD WIDTH=10>&nbsp;</TD><TD>
+
+
+							<script type='text/javascript' SRC='../js/utils.js?v=1610993305'></script>
+							<script type='text/javascript' SRC='../js/ajax.js?v=1610993305'></script>
+							<INPUT TYPE=HIDDEN NAME='db' VALUE='hg19'>
+							<TT><PRE>psLayout version 4 DNA DNA
+
+match	mis- 	rep. 	N's	Q gap	Q gap	T gap	T gap	strand	Q        	Q   	Q    	Q  	T        	T   	T    	T  	block	blockSizes 	qStarts	 tStarts
+     	match	match	   	count	bases	count	bases	      	name     	size	start	end	name     	size	start	end	count
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+40	0	0	0	0	0	0	0	+	YourSeq	40	0	40	chr1	249250621	155158454	155158494	1	40,	0,	155158454,
+22	0	0	0	0	0	0	0	+	YourSeq	40	18	40	chr22	51304566	21845318	21845340	1	22,	18,	21845318,
+22	0	0	0	0	0	0	0	+	YourSeq	40	18	40	chr22	51304566	20401375	20401397	1	22,	18,	20401375,
+22	0	0	0	0	0	0	0	+	YourSeq	40	18	40	chr22	51304566	21091609	21091631	1	22,	18,	21091609,
+20	0	0	0	0	0	0	0	-	YourSeq	40	17	37	chr14	107349540	100552960	100552980	1	20,	3,	100552960,
+</PRE></TT>
+						</TD><TD WIDTH=15></TD></TR></TABLE>
+				</TD></TR></TABLE>
+			</TD></TR></TABLE>
+
+		</div>
+	</TD></TR></TABLE>
+
+<script type='text/javascript' nonce='EAFVXkwsC6LCuU7H5jit1UdaMdHj'>
+	function showWarnBox() {document.getElementById('warnOK').innerHTML='&nbsp;OK&nbsp;';var warnBox=document.getElementById('warnBox');warnBox.style.display=''; warnBox.style.width='65%';document.getElementById('warnHead').innerHTML='Warning/Error(s):';window.scrollTo(0, 0);}
+	function hideWarnBox() {var warnBox=document.getElementById('warnBox');warnBox.style.display='none';var warnList=document.getElementById('warnList');warnList.innerHTML='';var endOfPage = document.body.innerHTML.substr(document.body.innerHTML.length-20);if(endOfPage.lastIndexOf('-- ERROR --') > 0) { history.back(); }}
+	document.getElementById('warnOK').onclick = function() {hideWarnBox();return false;};
+	window.onunload = function(){}; // Trick to avoid FF back button issue.
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-4289047-4', 'auto');
+	ga('require', 'displayfeatures');
+	ga('set', 'transport', 'beacon');
+	ga('send', 'pageview');
+
+</script>
+</BODY></HTML>

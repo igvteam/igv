@@ -95,7 +95,7 @@ public class UCSCUtils {
                 int span = Integer.parseInt(tokens[5]);
 
                 if (!chr.equals(lastChr) || (span != lastSpan)) {
-                    log.info("variableStep chrom=" + chr + " span=" + span);
+                    //log.info("variableStep chrom=" + chr + " span=" + span);
                     wigWriter.println("variableStep chrom=" + chr + " span=" + span);
                     lastChr = chr;
                     lastSpan = span;

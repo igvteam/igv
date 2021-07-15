@@ -28,6 +28,8 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.aa.AminoAcidSequence;
+import org.broad.igv.feature.aa.CodonAA;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.PreferencesManager;
@@ -137,6 +139,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
 
             boolean alternateExonColor = (track instanceof FeatureTrack && ((FeatureTrack) track).isAlternateExonColor());
+            Color trackPosColor = track.getColor();
+            Color trackNegColor = alternateExonColor ? track.getColor() : track.getAltColor();
+
 
             for (IGVFeature feature : featureList) {
 
@@ -186,7 +191,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     continue;
                 }
 
-                Color color = getFeatureColor(feature, track);
+                Color color = getFeatureColor(feature, track, trackPosColor, trackNegColor);
                 Graphics2D g2D = context.getGraphic2DForColor(color);
 
                 // Draw block representing entire feature
@@ -416,6 +421,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
             Graphics2D blockGraphics = g2D;
             Graphics2D edgeGraphics = context.getGraphic2DForColor(Color.gray);
+
             if (alternateExonColor) {
                 Color color = colorToggle ? color1 : color2;
                 blockGraphics = context.getGraphic2DForColor(color);
@@ -429,14 +435,13 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             int pEnd = getPixelFromChromosomeLocation(exon.getChr(), exon.getEnd(), theOrigin, locationScale);
 
 
-            Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.blue);
             //We draw connecting lines/arrows from previous exon to this one.
             //Exons may not be strictly sorted, we avoid double-drawing using maxLineEndX
             if (drawConnectingLine && lastExonEndX > Integer.MIN_VALUE && lastY > Integer.MIN_VALUE
                     && lastExonEndX >= maxLineEndX) {
                 drawConnectingLine(lastExonEndX, lastY, pStart, curYOffset, exon.getStrand(), blockGraphics);
                 double angle = Math.atan(-(curYOffset - lastY) / ((pStart - lastExonEndX) + 1e-12));
-                drawStrandArrows(gene.getStrand(), lastExonEndX, pStart, lastY, angle, mode, trackRectangle, arrowGraphics);
+                drawStrandArrows(gene.getStrand(), lastExonEndX, pStart, lastY, angle, mode, trackRectangle, blockGraphics);
                 maxLineEndX = Math.max(maxLineEndX, pStart);
             }
             lastExonEndX = pEnd;
@@ -694,26 +699,34 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         return "Basic Feature";
     }
 
-    protected Color getFeatureColor(IGVFeature feature, Track track) {
-        // Set color used to draw the feature
+    protected Color getFeatureColor(IGVFeature feature, Track track, Color defaultPosColor, Color defaultNegColor) {
 
-        Color color = null;
-        if (track.isItemRGB()) {
+        // Set color used to draw the feature
+         Color color = null;
+
+        // If an alt color is explicitly set use it for negative strand features;
+        if(feature.getStrand() == Strand.NEGATIVE) {
+            color = track.getExplicitAltColor();
+        }
+
+        // If color is explicitly set use it
+        if(color == null) {
+             color = track.getExplicitColor();
+        }
+
+        // No explicitly set color, try the feature itself
+        if(color == null && track.isItemRGB()) {
             color = feature.getColor();
         }
 
+        // If still no color use defaults
         if (color == null) {
             // TODO -- hack, generalize this
             if (track.getTrackType() == TrackType.CNV) {
                 color = feature.getName().equals("gain") ? DULL_RED : DULL_BLUE;
             } else {
-                // Only used if feature color is not set
-                Color altColor = track.getAltColor();
-                color =  feature.getStrand() == Strand.NEGATIVE && altColor != null ?
-                        track.getAltColor() :
-                        track.getColor();
+                color = feature.getStrand() == Strand.NEGATIVE ? defaultNegColor : defaultPosColor;
             }
-
         }
 
         if (track.isUseScore()) {

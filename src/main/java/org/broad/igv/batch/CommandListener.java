@@ -31,6 +31,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.StringUtils;
 
 import java.awt.*;
@@ -183,7 +184,7 @@ public class CommandListener implements Runnable {
                             headers.put(tokens[0].trim(), tokens[1].trim());
                         }
                     }
-                    log.info(cmd);
+                    //log.info(cmd);
 
                     String command = null;
                     Map<String, String> params = null;
@@ -215,8 +216,6 @@ public class CommandListener implements Runnable {
                         }
 
                         // Process the request.
-
-
                         String result = processGet(command, params, cmdExe);
 
                         // If no callback was specified write back response now
@@ -233,11 +232,19 @@ public class CommandListener implements Runnable {
 
                 } else {
                     // Port command
-                    Globals.setBatch(true);
-                    Globals.setSuppressMessages(true);
-                    final String response = cmdExe.execute(inputLine);
-                    out.println(response);
-                    out.flush();
+                    try {
+                        Globals.setBatch(true);
+                        String finalInputLine = inputLine;
+                        PrintWriter finalOut = out;
+                        UIUtilities.invokeAndWaitOnEventThread(() -> {
+                            final String response = cmdExe.execute(finalInputLine);
+                            finalOut.println(response);
+                            finalOut.flush();
+                        });
+
+                    } finally {
+                        Globals.setBatch(false);
+                    }
                 }
             }
         } catch (IOException e) {

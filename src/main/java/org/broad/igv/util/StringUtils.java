@@ -48,24 +48,6 @@ import java.util.List;
  */
 public class StringUtils {
 
-    private static Map<String, String> internedStrings = new WeakHashMap<String, String>();
-
-    /**
-     * Creates or retrieves an interned copy of {@code string}. This way,
-     * we only keep one reference to strings of the same value.
-     * Backed by a WeakHashMap
-     *
-     * @param string
-     * @return
-     */
-    public static String intern(String string) {
-        if (!internedStrings.containsKey(string)) {
-            internedStrings.put(string, string);
-        }
-        return internedStrings.get(string);
-    }
-
-
     public static List<String> breakQuotedString(String string, char splitToken) {
         if(string == null) return null;
         ArrayList<String> strings = new ArrayList<String >();

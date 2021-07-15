@@ -190,7 +190,7 @@ public class ClusterTrack extends AbstractTrack {
                 try {
                     int bs = Integer.parseInt(t);
                     ClusterTrack.this.setBinSize(bs);
-                    IGV.getInstance().repaint();
+                    repaint();
                 } catch (NumberFormatException e1) {
                     MessageUtils.showErrorMessage("Bin size must be an integer", e1);
                 }
@@ -205,7 +205,7 @@ public class ClusterTrack extends AbstractTrack {
                 try {
                     int h = Integer.parseInt(t);
                     rowHeight = h;
-                    IGV.getInstance().repaint();
+                    repaint();
                 } catch (NumberFormatException e1) {
                     MessageUtils.showErrorMessage("Row height must be a number", e1);
                 }

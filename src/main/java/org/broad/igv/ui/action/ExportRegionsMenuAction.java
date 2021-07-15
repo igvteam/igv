@@ -94,7 +94,7 @@ public class ExportRegionsMenuAction extends MenuAction {
     private void writeRegionsOfInterestFile(File roiFile) {
 
         if (roiFile == null) {
-            log.info("A blank Region of Interest export file was supplied!");
+            //log.info("A blank Region of Interest export file was supplied!");
             return;
         }
         try {

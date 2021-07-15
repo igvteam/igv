@@ -106,6 +106,9 @@ public class MethylTrack extends AbstractTrack {
         int width = (end - start) / 2;
         int expandedStart = Math.max(0, start - width);
         int expandedEnd = end + width;
+        if(expandedEnd < 0) {
+            expandedEnd = Integer.MAX_VALUE;  // Overflow
+        }
 
         List<MethylScore> scores = new ArrayList<MethylScore>(1000);
         Iterator<MethylScore> iter = dataSource.query(chr, expandedStart, expandedEnd);

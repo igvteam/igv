@@ -58,23 +58,18 @@ public class BAMSorter implements Sorter {
 
         reader.getFileHeader().setSortOrder(SAMFileHeader.SortOrder.coordinate);
         SAMFileWriterFactory samFileWriterFactory = new SAMFileWriterFactory();
-        if(this.tmpDir != null) {
+        if (this.tmpDir != null) {
             samFileWriterFactory.setTempDirectory(this.tmpDir);
         }
-        if(this.maxRecords > 0) {
+        if (this.maxRecords > 0) {
             samFileWriterFactory.setMaxRecordsInRam(this.maxRecords);
         }
         final SAMFileWriter writer = samFileWriterFactory.makeSAMOrBAMWriter(reader.getFileHeader(), false, outputFile);
 
         int count = 0;
         for (final SAMRecord rec : reader) {
-            if(++count % 100000 == 0) {
-                if(IGV.hasInstance()) {
-                    System.out.println("" + count + " records processed");   // GUI
-                }
-                else {
-                    log.info("" + count + " records processed");   // Command line
-                }
+            if (++count % 100000 == 0) {
+                System.out.println("" + count + " records processed");   // GUI
             }
             writer.addAlignment(rec);
         }

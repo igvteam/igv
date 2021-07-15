@@ -92,42 +92,32 @@ public class HeatmapLegendPanel extends LegendPanel {
      */
     public void edit() {
 
-        UIUtilities.invokeOnEventThread(new Runnable() {
+        UIUtilities.invokeOnEventThread(() -> {
 
-            public void run() {
+            IGV.getInstance().setStatusBarMessage("Setting view properties...");
 
-                IGV.getInstance().setStatusBarMessage("Setting view properties...");
+            HeatmapLegendEditor dialog = new HeatmapLegendEditor(IGV.getMainFrame(), true, type, colorScale);
 
-                HeatmapLegendEditor dialog = new HeatmapLegendEditor(IGV.getMainFrame(), true, type, colorScale);
-
-                dialog.setTitle("HeatMap Preferences");
-                dialog.setVisible(true);
+            dialog.setTitle("HeatMap Preferences");
+            dialog.setVisible(true);
 
 
-                if (dialog.isCanceled()) {
-                    IGV.getInstance().resetStatusMessage();
-                    return;
-                }
-                // TODO -- temporary hack.  We need some specific knowledge fo the implementation
-                // in order to edit it,  but do it without a cast
+            if (dialog.isCanceled()) {
+                IGV.getInstance().resetStatusMessage();
+                return;
+            }
 
-                colorScale = dialog.getColorScheme();
-                PreferencesManager.getPreferences().setColorScale(type, colorScale);
-                IGV.getInstance().repaintContentPane();
-                try {
+            colorScale = dialog.getColorScheme();
+            PreferencesManager.getPreferences().setColorScale(type, colorScale);
+            IGV.getInstance().repaint();
+            try {
 
-                    reloadPreferences();
+                reloadPreferences();
 
-                } finally {
+            } finally {
 
-                    UIUtilities.invokeOnEventThread(new Runnable() {
-
-                        public void run() {
-                            SwingUtilities.getWindowAncestor(HeatmapLegendPanel.this).toFront();
-                        }
-                    });
-                    IGV.getInstance().resetStatusMessage();
-                }
+                UIUtilities.invokeOnEventThread(() -> SwingUtilities.getWindowAncestor(HeatmapLegendPanel.this).toFront());
+                IGV.getInstance().resetStatusMessage();
             }
         });
     }

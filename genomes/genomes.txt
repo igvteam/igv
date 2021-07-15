@@ -14,12 +14,17 @@ C. elegans (ce10)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce10.g
 C. elegans (ce11)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ce11.genome	ce11
 Chicken (galGal4)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal4.genome	galGal4
 Chicken (galGal5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal5.genome	galGal5
+Chicken (GRCg6a / galGal6)	https://s3.amazonaws.com/igv.org.genomes/galGal6/galGal6.genome	galGal6
 Chimp (panTro3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro3.genome	panTro3
 Chimp (panTro4)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro4.genome	panTro4
+Chimp (panTro5)	https://s3.amazonaws.com/igv.org.genomes/panTro5/panTro5.genome	panTro5
+Chimp (panTro6)	https://s3.amazonaws.com/igv.org.genomes/panTro6/panTro6.genome	panTro6
 Cat (felCat5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/felCat5.genome	felCat5
 Cow (bosTau7)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau7.genome	bosTau7
 Cow (bosTau8)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau8.genome	bosTau8
 D. melanogaster (dm6)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/dm6.genome	dm6
+D. melanogaster (dm3)	https://s3.amazonaws.com/igv.org.genomes/dm3/dm3.genome	dm3
+D. melanogaster (r5.9)	https://s3.amazonaws.com/igv.org.genomes/dmel_r5.9/dmel_r5.9.genome	dmel_r5.9
 Dog (canFam3)	https://s3.amazonaws.com/igv.org.genomes/canFam3/canFam3.genome	canFam3
 E. coli K-12 MG1655 (NC_000913.2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.2.genome	NC_000913.2
 E. coli K-12 (NC_000913.3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.3.gbk	NC_000913.3
@@ -30,7 +35,7 @@ Glycine max (Wm82.a2.v1)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes
 Helicobacter hepaticus	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_004917.genome	NC_004917
 HIV-1	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001802.genome	NC_001802
 HIV-2	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001722.genome	NC_001722
-Human (1kg, b37+decoy)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/1kg_v37.genome	1kg_v37
+Human (1kg, b37+decoy)	https://s3.amazonaws.com/igv.org.genomes/1kg_v37/1kg_v37.genome	1kg_v37
 Human (b37)	https://s3.amazonaws.com/igv.org.genomes/b37/b37.genome	b37
 Human Adenovirus C	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_001405.genome	NC_001405
 Human Herpesvirus 4, Type 1	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/HHV4_Type1.genome	HHV4_Type1
@@ -38,11 +43,13 @@ Human Herpesvirus 4, Type 2	https://s3.amazonaws.com/igv.broadinstitute.org/geno
 Human hg18	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg18.genome	hg18
 Human hg19	https://s3.amazonaws.com/igv.org.genomes/hg19/hg19.genome	hg19
 Human hg38	https://s3.amazonaws.com/igv.org.genomes/hg38/hg38.genome	hg38
+Human hg38 (1kg/GATK)	https://s3.amazonaws.com/igv.org.genomes/hg38/hg38_1kg.genome	hg38_1kg
 Human Mito (NC_012920)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_012920.1.gbk	NC_012920
 Human respiratory synctial virus	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/M74568.genome	M74568
 Macaca fascicularis (CE_1.0)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/CE_1.0.genome	CE_1.0
 Macaca fascicularis (5.0)	https://s3.amazonaws.com/igv.org.genomes/Macaca_fascicularis_5.0/Macaca_fascicularis_5.0.genome	GCF_000364345.1
 Mouse (129S1/SvImJ)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/SvImJ.genome	129S1/SvImJ
+Mouse mm39	https://s3.amazonaws.com/igv.org.genomes/mm39/mm39.genome	mm39
 Mouse mm10	https://s3.amazonaws.com/igv.org.genomes/mm10/mm10.genome	mm10
 Mouse mm8	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm8.genome	mm8
 Mouse mm9	https://s3.amazonaws.com/igv.org.genomes/mm9/mm9.genome	mm9
@@ -57,6 +64,7 @@ Rat (rn5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rn5.genome	rn5
 Rat (rn6)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rn6.genome	rn6
 Rhesus (rheMac3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac3.genome	rheMac3
 Rhesus (rheMac8)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac8.genome	rheMac8
+Rhesus (Mmul_10/rheMac10)	https://s3.amazonaws.com/igv.org.genomes/rheMac10/rheMac10.genome	rheMac10
 S. cerevisiae (Y55)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/Y55.genome	Y55
 S. cerevisiae (sacCer3)	https://s3.amazonaws.com/igv.org.genomes/sacCer3/sacCer3.genome	sacCer3
 S. pombe (ASM294v2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ASM294v2.genome	ASM294v2
@@ -84,3 +92,4 @@ C. reinhardtii (CC-503 v5.6 Cp+Mt v4.4)	https://s3.amazonaws.com/igv.org.genomes
 Ixodes scapularis JCVI_ISG_i3_1.0 (GCA_000208615.1)	https://s3.amazonaws.com/igv.org.genomes/tick/GCA_000208615.1/GCA_000208615.1.genome	GCA_000208615.1
 Ixodes scapularis ISE6_asm2.2_deduplicated (GCA_002892825.2)	https://s3.amazonaws.com/igv.org.genomes/tick/GCA_000208615.1/GCA_000208615.1.genome	GCA_002892825.2
 SARS-CoV-2	https://s3.amazonaws.com/igv.org.genomes/SARS-CoV-2/ASM985889v3.genome	ASM985889v3
+Dog (canFam5)	https://s3.amazonaws.com/igv.org.genomes/canFam5/canFam5.genome	canFam5

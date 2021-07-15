@@ -31,24 +31,22 @@ package org.broad.igv.ui.action;
 
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.session.Session;
-import org.broad.igv.track.Track;
 import org.broad.igv.ui.AttributeSelectionDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.UIUtilities;
 
 import java.awt.event.ActionEvent;
-import java.util.List;
 
 /**
  * @author jrobinso
  */
 public class RenameTracksMenuAction extends MenuAction {
 
-    IGV mainFrame;
+    IGV igv;
 
-    public RenameTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public RenameTracksMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
     }
 
     @Override
@@ -56,7 +54,7 @@ public class RenameTracksMenuAction extends MenuAction {
 
         UIUtilities.invokeOnEventThread(() -> {
 
-            final AttributeSelectionDialog dlg = new AttributeSelectionDialog(mainFrame.getMainFrame(), "Rename");
+            final AttributeSelectionDialog dlg = new AttributeSelectionDialog(igv.getMainFrame(), "Rename");
             dlg.setVisible(true);
 
             if (!dlg.isCanceled()) {
@@ -67,7 +65,7 @@ public class RenameTracksMenuAction extends MenuAction {
                 } else {
                     currentSession.setPreference(Constants.TRACK_ATTRIBUTE_NAME_KEY, selectedAttribute);
                 }
-                mainFrame.repaint();
+                igv.repaint();
             }
         });
     }

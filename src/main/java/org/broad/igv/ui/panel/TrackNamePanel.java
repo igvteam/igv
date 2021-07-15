@@ -51,7 +51,6 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.jdesktop.layout.GroupLayout;
 
 import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -76,7 +75,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     boolean showGroupNames = true;
     boolean showSampleNamesWhenGrouped = false;
 
-
     public TrackNamePanel(TrackPanel trackPanel) {
         super(trackPanel);
         init();
@@ -100,34 +98,41 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
 
-
         removeMousableRegions();
         Rectangle visibleRect = getVisibleRect();
-        paintImpl(g, visibleRect);
+        paintImpl(g, visibleRect, false);
     }
 
 
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
-        g.setColor(Color.white);
-        g.fill(rect);
-        paintImpl(g, rect);
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
-        Color c = g.getColor();
-        g.setColor(Color.darkGray);
-        g.drawRect(rect.x, rect.y, rect.width, rect.height);
-        g.setColor(c);            //super.paintBorder(g);
-        //super.paintBorder(g);
+        Graphics borderGraphics = g.create();
+        borderGraphics.setColor(Color.darkGray);
+
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        paintImpl(g, rect, true);
+
+        borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
+        borderGraphics.dispose();
+    }
+
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
     }
 
 
-    private void paintImpl(Graphics g, Rectangle visibleRect) {
+    private void paintImpl(Graphics g, Rectangle visibleRect, boolean snapshot) {
 
         // Get available tracks
         Collection<TrackGroup> groups = getGroups();
         boolean isGrouped = groups.size() > 1;
 
+        Graphics2D fontGraphics = (Graphics2D) g.create();
+        fontGraphics.setColor(Color.BLACK);
 
         if (!groups.isEmpty()) {
+
             final Graphics2D graphics2D = (Graphics2D) g;
             graphics2D.setColor(Color.BLACK);
 
@@ -163,13 +168,13 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                     int h = group.getHeight();
                     Rectangle groupRect = new Rectangle(visibleRect.x, regionY, visibleRect.width, h);
                     Rectangle displayableRect = getDisplayableRect(groupRect, visibleRect);
-                    regionY = printTrackNames(group, displayableRect, visibleRect, graphics2D, 0, regionY);
+                    regionY = printTrackNames(group, displayableRect, visibleRect, fontGraphics, 0, regionY, snapshot);
 
                     if (isGrouped) {
                         groupExtents.add(new GroupExtent(group, groupRect.y, groupRect.y + groupRect.height));
                         if (showGroupNames) {
                             //Rectangle displayableRect = getDisplayableRect(groupRect, visibleRect);
-                            group.renderName(graphics2D, displayableRect, group == selectedGroup);
+                            group.renderName(fontGraphics, displayableRect);
                         }
                     }
 
@@ -182,6 +187,8 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             graphics2D.dispose();
             greyGraphics.dispose();
         }
+
+        fontGraphics.dispose();
     }
 
     private Rectangle getDisplayableRect(Rectangle trackRectangle, Rectangle visibleRect) {
@@ -199,7 +206,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     }
 
     private int printTrackNames(TrackGroup group, Rectangle visibleRect, Rectangle clipRect,
-                                Graphics2D graphics2D, int regionX, int regionY) {
+                                Graphics2D graphics2D, int regionX, int regionY, boolean snapshot) {
 
 
         List<Track> tmp = new ArrayList(group.getVisibleTracks());
@@ -224,15 +231,13 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                     if (!isGrouped() || showSampleNamesWhenGrouped) {
                         Rectangle rect = new Rectangle(regionX, regionY, width, height);
                         //Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
-                        if (track.isSelected()) {
+                        if (!snapshot && track.isSelected()) {
                             graphics2D.setBackground(Color.LIGHT_GRAY);
                             graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
                         } else {
                             graphics2D.setBackground(backgroundColor);
                         }
-                        Graphics2D trackGraphics = (Graphics2D) graphics2D.create();
-                        track.renderName(trackGraphics, rect, visibleRect);
-                        trackGraphics.dispose();
+                        track.renderName(graphics2D, rect, visibleRect);
                     }
 
                 }
@@ -245,7 +250,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     private void init() {
 
-        setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
+    //    setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
         setBackground(new java.awt.Color(255, 255, 255));
         GroupLayout dataTrackNamePanelLayout = new org.jdesktop.layout.GroupLayout(this);
         setLayout(dataTrackNamePanelLayout);

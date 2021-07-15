@@ -58,16 +58,14 @@ public class FeatureCollectionSource implements FeatureSource {
 
     Genome genome;
 
+    Object header;  // usually null
+
     public FeatureCollectionSource(Iterable<? extends Feature> allFeatures, Genome genome) {
         this.genome = genome;
         initFeatures(allFeatures);
         coverageData = new CoverageDataSource(genome);
         coverageData.computeGenomeCoverage();
         sampleGenomeFeatures();
-    }
-
-    public Class getFeatureClass() {
-        return IGVFeature.class;
     }
 
     public List<LocusScore> getCoverageScores(String chr, int startLocation, int endLocation, int zoom) {
@@ -105,10 +103,6 @@ public class FeatureCollectionSource implements FeatureSource {
         return featureMap.get(chr);
     }
 
-    public Set<String> getChrs() {
-        return featureMap.keySet();
-    }
-
     public int getFeatureWindowSize() {
         return 0;
     }
@@ -116,7 +110,6 @@ public class FeatureCollectionSource implements FeatureSource {
     public void setFeatureWindowSize(int size) {
         // ignored
     }
-
 
     private void initFeatures(Iterable<? extends Feature> allFeatures) {
         // Separate features by chromosome
@@ -152,6 +145,15 @@ public class FeatureCollectionSource implements FeatureSource {
 
     public void setType(TrackType type) {
         this.type = type;
+    }
+
+    @Override
+    public Object getHeader() {
+        return header;
+    }
+
+    public void setHeader(Object header) {
+        this.header = header;
     }
 
     protected void sampleGenomeFeatures() {
@@ -191,40 +193,6 @@ public class FeatureCollectionSource implements FeatureSource {
     }
 
 
-    protected void computeGenomeCoverage() {
-        int nBins = 1000;
-        int[] starts = new int[nBins];
-        int[] ends = new int[nBins];
-        float[] values = new float[nBins];
-        Arrays.fill(values, 0);
-
-        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        double step = ((double) currentGenome.getNominalLength() / 1000) / nBins;
-        for (int i = 0; i < nBins; i++) {
-            starts[i] = (int) (i * step);
-            ends[i] = (int) ((i + 1) * step);
-        }
-
-
-        for (String chr : currentGenome.getLongChromosomeNames()) {
-            List<Feature> features = featureMap.get(chr);
-            if (features != null) {
-                long offset = currentGenome.getCumulativeOffset(chr);
-                for (Feature f : features) {
-                    int genStart = (int) ((offset + f.getStart()) / 1000);
-                    int genEnd = (int) ((offset + f.getEnd()) / 1000);
-                    int binStart = (int) (genStart / step);
-                    int binEnd = (int) (genEnd / step);
-                    for (int i = binStart; i <= binEnd; i++) {
-                        values[i] = values[i] + 1;
-                    }
-
-                }
-            }
-        }
-
-        coverageData.dataCache.put(Globals.CHR_ALL, new DataTile(starts, ends, values, null));
-    }
 
     class CoverageDataSource extends AbstractDataSource {
 

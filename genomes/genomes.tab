@@ -16,11 +16,15 @@ Chicken (galGal4)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal
 Chicken (galGal5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/galGal5.genome	galGal5
 Chimp (panTro3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/panTro3.genome	panTro3
 Chimp (panTro4)	https://s3.amazonaws.com/igv.org.genomes/json/panTro4.json	panTro4
+Chimp (panTro5)	https://s3.amazonaws.com/igv.org.genomes/panTro5/panTro5.genome	panTro5
+Chimp (panTro6)	https://s3.amazonaws.com/igv.org.genomes/panTro6/panTro6.genome	panTro6
 Cat (felCat5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/felCat5.genome	felCat5
 Cow (bosTau7)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau7.genome	bosTau7
 Cow (bosTau8)	https://s3.amazonaws.com/igv.org.genomes/json/bosTau8.json	bosTau8
 Cow (bosTau9)	https://s3.amazonaws.com/igv.org.genomes/json/bosTau9.json	bosTau9
 D. melanogaster (dm6)	https://s3.amazonaws.com/igv.org.genomes/json/dm6.json	dm6
+D. melanogaster (dm3)	https://s3.amazonaws.com/igv.org.genomes/dm3/dm3.json	dm3
+D. melanogaster (r5.9)	https://s3.amazonaws.com/igv.org.genomes/dmel_r5.9/dmel_r5.9.json	dmel_r5.9
 Dog (canFam3)	https://s3.amazonaws.com/igv.org.genomes/json/canFam3.json	canFam3
 E. coli K-12 MG1655 (NC_000913.2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.2.genome	NC_000913.2
 E. coli K-12 (NC_000913.3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_000913.3.gbk	NC_000913.3
@@ -39,6 +43,7 @@ Human Herpesvirus 4, Type 2	https://s3.amazonaws.com/igv.broadinstitute.org/geno
 Human hg18	https://s3.amazonaws.com/igv.org.genomes/json/hg18.json	hg18
 Human hg19	https://s3.amazonaws.com/igv.org.genomes/json/hg19.json	hg19
 Human hg38	https://s3.amazonaws.com/igv.org.genomes/json/hg38.json	hg38
+Human hg38 (1kg/GATK)	https://s3.amazonaws.com/igv.org.genomes/json/hg38_1kg.json	hg38_1kg
 Human Mito (NC_012920)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_012920.1.gbk	NC_012920
 Human respiratory synctial virus	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/M74568.genome	M74568
 Macaca fascicularis (CE_1.0)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/CE_1.0.genome	CE_1.0
@@ -48,6 +53,7 @@ Mouse mm10	https://s3.amazonaws.com/igv.org.genomes/json/mm10.json	mm10
 Mouse mm8	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm8.genome	mm8
 Mouse mm9	https://s3.amazonaws.com/igv.org.genomes/json/mm9.json	mm9
 Mouse (mm10)	https://s3.amazonaws.com/igv.org.genomes/json/mm10.json	mm10
+Mouse mm39	https://s3.amazonaws.com/igv.org.genomes/mm39/mm39.genome	mm39
 Mycobacterium TB (CD1551)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/NC_002755.genome	NC_002755
 N. Meningitidis (FAM18)	https://s3.amazonaws.com/igv.broadinstitute.org/test/genomes/NC_008767.genome	NC_008767
 N. Meningitidis (MC58)	https://s3.amazonaws.com/igv.broadinstitute.org/test/genomes/NC_003112.genome	NC_003112
@@ -59,6 +65,7 @@ Rat (rn5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rn5.genome	rn5
 Rat (rn6)	https://s3.amazonaws.com/igv.org.genomes/json/rn6.json	rn6
 Rhesus (rheMac3)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac3.genome	rheMac3
 Rhesus (rheMac8)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/rheMac8.genome	rheMac8
+Rhesus (Mmul_10/rheMac10)	https://s3.amazonaws.com/igv.org.genomes/rheMac10/rheMac10.genome	rheMac10
 S. cerevisiae (Y55)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/Y55.genome	Y55
 S. cerevisiae (sacCer3)	https://s3.amazonaws.com/igv.org.genomes/json/sacCer3.json	sacCer3
 S. pombe (ASM294v2)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/ASM294v2.genome	ASM294v2
@@ -90,3 +97,4 @@ S. pombe (ASM294v2)	https://s3.amazonaws.com/igv.org.genomes/json/ASM294v2.json	
 Gorilla (gorGor4)	https://s3.amazonaws.com/igv.org.genomes/json/gorGor4.json	gorGor4
 Bonobo (MPI-EVA panpan1.1/panPan2)	https://s3.amazonaws.com/igv.org.genomes/json/panPan2.json	panPan2
 Pig (SGSC Sscrofa11.1/susScr11)	https://s3.amazonaws.com/igv.org.genomes/json/susScr11.json	susScr11
+Dog (canFam5)	https://s3.amazonaws.com/igv.org.genomes/canFam5/canFam5.genome	canFam5

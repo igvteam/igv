@@ -1,5 +1,5 @@
 # igv
-[![Build Status](https://travis-ci.org/igvteam/igv.svg?branch=master)](https://travis-ci.org/igvteam/igv)
+![Build Status](https://github.com/igvteam/igv/actions/workflows/gradle_test.yml/badge.svg)
 ![GitHub issues](https://img.shields.io/github/issues/igvteam/igv)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/igvteam/igv)
 ![](https://img.shields.io/npm/l/igv.svg)
@@ -13,7 +13,7 @@ we recommend the pre-built releases available at [http://software.broadinstitute
 
 Builds are executed from the IGV project directory.  Files will be created in the 'build' subdirectory.
 
-IGV has been tested on **Java 11**. Previous (versions =< 2.6.3) running on Java8 have been deprecated.
+IGV is tested on **Java 11**. Previous (versions =< 2.6.3) running on Java8 have been deprecated.
 
 NOTE: If on a Windows platform use ```./gradlew.bat'``` in the instructions below
 
@@ -36,12 +36,13 @@ The IGV bundles ship with embedded JREs from AdoptOpenJDK.
 * Use ```./gradlew test``` to run the test suite.  See 'src/test/README.txt' for more information about running
   the tests.
   
-* This dashboard describes [project structure and dependencies](https://sourcespy.com/github/igvteamigv/). New contributors can quickly grasp overall structure of the code and technologies involved.  
-
 * See this [README](https://raw.githubusercontent.com/igvteam/igv/master/scripts/readme.txt) for tips about using the IGV launcher scripts.
+
+* This dashboard describes [project structure and dependencies](https://sourcespy.com/github/igvteamigv/). 
+
 
 Note that Gradle creates a number of other subdirectories in 'build'.  These can be safely ignored.
 
 #### Amazon Web Services support
 
-For more details on how to use IGV with AWS, please refer to the [UMCCR documentation](https://umccr.org/blog/igv-amazon-backend-setup/).
+Public data files hosted in Amazon S3 buckets can be loaded into IGV using [https endpoints](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html).  Authenticated access can be configured using the UMCCR contributed AWS configuration option.  For more details, refer to the [UMCCR documentation](https://umccr.org/blog/igv-amazon-backend-setup/).   Note authenticated access is currently restricted to the following file formats:  BAM, CRAM, tabix indexed VCF (vcf.gz / vcf.gz.tbi), and non-indexed feature file formats.

@@ -28,6 +28,7 @@ package org.broad.igv.ui;
 import org.apache.log4j.Logger;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
 
 import java.io.File;
@@ -47,6 +48,7 @@ public class ShutdownThread extends Thread {
         CommandListener.halt();
         if (IGV.hasInstance()) {
             IGV.getInstance().saveStateForExit();
+            PreferencesManager.getPreferences().setApplicationFrameBounds(IGV.getMainFrame().getBounds());
             for (Track t : IGV.getInstance().getAllTracks()) {
                 t.dispose();
             }
@@ -58,57 +60,4 @@ public class ShutdownThread extends Thread {
         runS();
     }
 
-    private static void writeRegionsOfInterestFile(File roiFile) {
-
-        if (roiFile == null) {
-            log.info("A blank Region of Interest export file was supplied!");
-            return;
-        }
-        try {
-            Collection<RegionOfInterest> regions = IGV.getInstance().getSession().getAllRegionsOfInterest();
-
-            if (regions == null || regions.isEmpty()) {
-                return;
-            }
-
-            // Create export file
-            roiFile.createNewFile();
-            PrintWriter writer = null;
-            try {
-                writer = new PrintWriter(roiFile);
-                for (RegionOfInterest regionOfInterest : regions) {
-                    Integer regionStart = regionOfInterest.getStart();
-                    if (regionStart == null) {
-                        // skip - null starts are bad regions of interest
-                        continue;
-                    }
-                    Integer regionEnd = regionOfInterest.getEnd();
-                    if (regionEnd == null) {
-                        regionEnd = regionStart;
-                    }
-
-                    // Write info in BED format
-                    writer.print(regionOfInterest.getChr());
-                    writer.print("\t");
-                    writer.print(regionStart);
-                    writer.print("\t");
-                    writer.print(regionEnd);
-
-                    if (regionOfInterest.getDescription() != null) {
-                        writer.print("\t");
-                        writer.println(regionOfInterest.getDescription());
-                    } else {
-                        writer.println();
-                    }
-                }
-            } finally {
-
-                if (writer != null) {
-                    writer.close();
-                }
-            }
-        } catch (Exception e) {
-            log.error("Failed to write Region of Interest export file!", e);
-        }
-    }
 }

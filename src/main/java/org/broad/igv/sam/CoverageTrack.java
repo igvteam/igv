@@ -32,12 +32,10 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CoverageDataSource;
-import org.broad.igv.event.RepaintEvent;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
-import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -65,6 +63,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -135,7 +134,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         prefs = PreferencesManager.getPreferences();
         snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
         autoScale = DEFAULT_AUTOSCALE;
-        this.igv = IGV.hasInstance() ? IGV.getInstance(): null;
+        this.igv = IGV.hasInstance() ? IGV.getInstance() : null;
     }
 
     @Override
@@ -174,7 +173,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public void load(ReferenceFrame referenceFrame) {
-         dataManager.load(referenceFrame, alignmentTrack.renderOptions, true);
+        dataManager.load(referenceFrame, alignmentTrack.renderOptions, true);
     }
 
 
@@ -188,6 +187,11 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public boolean isRemoved() {
         return removed;
+    }
+
+    @Override
+    public boolean isVisible() {
+        return super.isVisible() && !removed;
     }
 
     @Override
@@ -234,14 +238,11 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
-                interval = dataManager.getLoadedInterval(context.getReferenceFrame());
+                interval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
             }
             if (interval != null) {
-                if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
-                    //if (autoScale) rescale(context.getReferenceFrame());
-                    intervalRenderer.paint(context, rect, interval.getCounts());
-                    return;
-                }
+                intervalRenderer.paint(context, rect, interval.getCounts());
+                return;
             }
         }
 
@@ -362,21 +363,17 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 AlignmentCounts counts = interval.getCounts();
                 if (counts != null) {
                     buf.append(counts.getValueStringAt((int) position));
+                    boolean baseModMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION;
+                    if (baseModMode && counts.getModifiedBaseCounts() != null) {
+                        buf.append("<hr>");
+                        buf.append(counts.getModifiedBaseCounts().getValueString((int) position));
+                    }
                 }
             }
         } else {
             buf.append(getPrecomputedValueString(chr, position, frame));
         }
         return buf.toString();
-    }
-
-    public AlignmentCounts getCounts(String chr, double position, ReferenceFrame frame) {
-        AlignmentInterval interval = dataManager.getLoadedInterval(frame);
-        if (interval != null && interval.contains(chr, (int) position, (int) position)) {
-            return interval.getCounts();
-        } else {
-            return null;
-        }
     }
 
     private String getPrecomputedValueString(String chr, double position, ReferenceFrame frame) {
@@ -457,6 +454,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             final double scale = context.getScale();
 
             boolean bisulfiteMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BISULFITE;
+            boolean baseModMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION;
 
 
             // First pass, coverage
@@ -552,7 +550,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             }
                         }
 
-                        if (!mismatch) {
+                        if (!(mismatch || baseModMode)) {
                             continue;
                         }
 
@@ -574,6 +572,9 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                                     drawBarBisulfite(context, pos, rect, totalCount, maxRange,
                                             pY, pX, dX, bc, range.isLog());
                                 }
+                            } else if (baseModMode) {
+                                drawModifiedBaseBar(context, pos, rect, totalCount, maxRange,
+                                        pY, pX, dX, alignmentCounts, range.isLog());
                             } else {
                                 drawBar(context, pos, rect, totalCount, maxRange,
                                         pY, pX, dX, alignmentCounts, range.isLog());
@@ -616,24 +617,58 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         for (char nucleotide : nucleotides) {
 
             int count = interval.getCount(pos, (byte) nucleotide);
-
-            Color c = SequenceRenderer.nucleotideColors.get(nucleotide);
-
-            Graphics2D tGraphics = context.getGraphic2DForColor(c);
-
             double tmp = isLog ?
                     (count / totalCount) * Math.log10(totalCount + 1) / max :
                     count / max;
             int height = (int) (tmp * rect.getHeight());
-
             height = Math.min(pY - rect.y, height);
             int baseY = pY - height;
 
             if (height > 0) {
+                Color c = SequenceRenderer.nucleotideColors.get(nucleotide);
+                Graphics2D tGraphics = context.getGraphic2DForColor(c);
                 tGraphics.fillRect(pX, baseY, dX, height);
             }
 
             pY = baseY;
+        }
+        return pX + dX;
+    }
+
+    int drawModifiedBaseBar(RenderContext context,
+                            int pos,
+                            Rectangle rect,
+                            double totalCount,
+                            double max,
+                            int pY,
+                            int pX,
+                            int dX,
+                            AlignmentCounts interval,
+                            boolean isLog) {
+
+        ModifiedBaseCounts baseCounts = interval.getModifiedBaseCounts();
+
+        if (baseCounts != null) {
+
+            byte likelihood = (byte) 255;
+
+            for (String modification : baseCounts.getAllModifications()) {
+
+                int count = baseCounts.getCount(pos, modification);
+                double tmp = isLog ?
+                        (count / totalCount) * Math.log10(totalCount + 1) / max :
+                        count / max;
+                int height = (int) (tmp * rect.getHeight());
+                height = Math.min(pY - rect.y, height);
+                int baseY = pY - height;
+                if (height > 0) {
+                    Color c = BaseModification.getModColor(modification, likelihood);
+                    Graphics2D tGraphics = context.getGraphic2DForColor(c);
+                    tGraphics.fillRect(pX, baseY, dX, height);
+                }
+
+                pY = baseY;
+            }
         }
         return pX + dX;
     }
@@ -649,8 +684,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                          BisulfiteCounts.Count count,
                          boolean isLog) {
 
-        // If bisulfite mode, we expand the rectangle to make it more visible.  This code is copied from
-        // AlignmentRenderer
+        // If bisulfite mode, we expand the rectangle to make it more visible.  This code is copied from AlignmentRenderer
         int pX = pX0;
         if (dX < 3) {
             int expansion = dX;
@@ -790,8 +824,10 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         popupMenu.addSeparator();
         addCopyDetailsItem(popupMenu, te);
 
-        popupMenu.addSeparator();
-        addShowItems(popupMenu);
+        if (alignmentTrack != null) {
+            popupMenu.addSeparator();
+            addShowItems(popupMenu);
+        }
 
         return popupMenu;
     }
@@ -862,7 +898,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             try {
                 float tmp = Float.parseFloat(value);
                 snpThreshold = tmp;
-                if(igv != null) igv.postEvent(new RepaintEvent(CoverageTrack.this));
+                repaint();
             } catch (Exception exc) {
                 //log
             }
@@ -873,48 +909,41 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     public void addShowItems(JPopupMenu menu) {
 
+        final SpliceJunctionTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
+
+        final JMenuItem item = new JCheckBoxMenuItem("Show Coverage Track");
+        item.setSelected(true);
+        item.addActionListener(e -> {
+            CoverageTrack.this.setVisible(item.isSelected());
+            IGV.getInstance().repaint(Arrays.asList(CoverageTrack.this));
+        });
+        //If this is the only track visible, disable option to hide it.
+        if (!(alignmentTrack.isVisible() ||
+                (spliceJunctionTrack != null && spliceJunctionTrack.isVisible()))) {
+            item.setEnabled(false);
+        }
+        menu.add(item);
+
+        if (spliceJunctionTrack != null) {
+            final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Splice Junction Track");
+            junctionItem.setSelected(spliceJunctionTrack.isVisible());
+            junctionItem.setEnabled(!spliceJunctionTrack.isRemoved());
+            junctionItem.addActionListener(e -> {
+                spliceJunctionTrack.setVisible(junctionItem.isSelected());
+                IGV.getInstance().repaint(Arrays.asList(spliceJunctionTrack));
+            });
+            menu.add(junctionItem);
+        }
+
         if (alignmentTrack != null) {
             final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show Alignment Track");
             alignmentItem.setSelected(alignmentTrack.isVisible());
             alignmentItem.setEnabled(!alignmentTrack.isRemoved());
-            alignmentItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    alignmentTrack.setVisible(alignmentItem.isSelected());
-                }
+            alignmentItem.addActionListener(e -> {
+                alignmentTrack.setVisible(alignmentItem.isSelected());
+                IGV.getInstance().repaint(Arrays.asList(alignmentTrack));
             });
             menu.add(alignmentItem);
-
-            final SpliceJunctionTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
-            if (spliceJunctionTrack != null) {
-                final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Splice Junction Track");
-                junctionItem.setSelected(spliceJunctionTrack.isVisible());
-                junctionItem.setEnabled(!spliceJunctionTrack.isRemoved());
-                junctionItem.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        spliceJunctionTrack.setVisible(junctionItem.isSelected());
-                    }
-                });
-
-                menu.add(junctionItem);
-            }
-
-            final JMenuItem coverageItem = new JMenuItem("Hide Coverage Track");
-            coverageItem.setEnabled(!isRemoved());
-            coverageItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    UIUtilities.invokeOnEventThread(new Runnable() {
-                        public void run() {
-                            setVisible(false);
-                            if (IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
-
-                        }
-                    });
-                }
-            });
-            menu.add(coverageItem);
         }
     }
 
@@ -933,13 +962,13 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                     TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
                     TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
                     setDataSource(ds);
-                    if(igv != null) igv.postEvent(new RepaintEvent(CoverageTrack.this));
+                    repaint();
                 } else if (path.endsWith(".counts")) {
                     CoverageDataSource ds = new GobyCountArchiveDataSource(file);
                     setDataSource(ds);
-                    igv.postEvent(new RepaintEvent(CoverageTrack.this));
+                    repaint();
                 } else {
-                    if(igv != null) MessageUtils.showMessage("Coverage data must be in .tdf format");
+                    if (igv != null) MessageUtils.showMessage("Coverage data must be in .tdf format");
                 }
             }
         });

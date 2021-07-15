@@ -36,9 +36,7 @@ package org.broad.igv.ui.util;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
-import org.broad.igv.util.RuntimeUtils;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
@@ -46,7 +44,9 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.lang.reflect.Constructor;
+
+import static org.broad.igv.ui.util.ImageFileTypes.Type.PNG;
+import static org.broad.igv.ui.util.ImageFileTypes.Type.SVG;
 
 /**
  * Utility methods for supporting saving of images as jpeg, png, and svg files.
@@ -57,11 +57,6 @@ import java.lang.reflect.Constructor;
 public class SnapshotUtilities {
 
     private static Logger log = Logger.getLogger(SnapshotUtilities.class);
-
-
-    private static String EPSClassName = "net.sf.epsgraphics.EpsGraphics";
-    private static String EPSColorModeClassName = "net.sf.epsgraphics.ColorMode";
-
 
     /**
      * The maximum height in pixels for snapshots of a panel.
@@ -81,95 +76,49 @@ public class SnapshotUtilities {
         maxPanelHeight = h;
     }
 
+    public static void resetMaxPanelHeight() {
+        maxPanelHeight = DEFAULT_MAX_PANEL_HEIGHT;
+    }
+
+    public static boolean snapshotInProgress = false;
+
     // Treat this class as a singleton, no instances allowed
     private SnapshotUtilities() {
     }
 
 
-    public static String doComponentSnapshot(Component component, File file, ImageFileTypes.Type type, boolean paintOffscreen) throws IOException {
+    public static String doComponentSnapshot(Component component, File file, ImageFileTypes.Type type, boolean batch) throws IOException {
 
-        //TODO Should really make this work for more components
-        if (paintOffscreen && !(component instanceof Paintable)) {
-            log.error("Component cannot be painted offscreen. Performing onscreen paint");
-            paintOffscreen = false;
-        }
-
-        if (paintOffscreen) {
-
-            Rectangle rect = component.getBounds();
-
-            if (component instanceof MainPanel) {
-                rect.height = ((MainPanel) component).getOffscreenImageHeight();
-            } else {
-                rect.height = Math.min(component.getHeight(), getMaxPanelHeight());
+        try {
+            snapshotInProgress = true;
+            if (!(component instanceof Paintable)) {
+                throw new RuntimeException("Error: " + component + " is not an instance of Paintable");
             }
 
-            // translate to (0, 0) if necessary
-            int dx = rect.x;
-            int dy = rect.y;
-            rect.x = 0;
-            rect.y = 0;
-            rect.width -= dx;
-            rect.height -= dy;
+            Paintable paintable = (Paintable) component;
+            int width = component.getWidth();
+            int height = paintable.getSnapshotHeight(batch);
 
-            component.setBounds(rect);
+            // Call appropriate converter
+            if (type == SVG) {
+                exportScreenshotSVG((Paintable) component, file, width, height, batch);
+                return "OK";
+            } else if (type == PNG) {
+                String format = "png";
+                String[] exts = new String[]{"." + format};
+                exportScreenShotBufferedImage((Paintable) component, file, width, height, exts, format, batch);
+                return "OK";
+            } else {
+                final String message = "No image write for file type: " + file + " Try '.png' or '.svg'";
+                MessageUtils.showMessage(message);
+                return "ERROR: " + message;
+            }
+        } finally {
+            snapshotInProgress = false;
         }
-
-        int width = component.getWidth();
-        int height = component.getHeight();
-
-        // Call appropriate converter
-        String format = null;
-        String[] exts = null;
-        switch (type) {
-            case SVG:
-                //log.debug("Exporting svg screenshot");
-                exportScreenshotSVG(component, file, width, height, paintOffscreen);
-                //exportScreenshotVector2D(component, file, paintOffscreen);
-                break;
-            case JPEG:
-                format = "jpeg";
-                exts = new String[]{".jpg", ".jpeg"};
-                break;
-            case PNG:
-                format = "png";
-                exts = new String[]{"." + format};
-                break;
-//            case EPS:
-//                exportScreenshotEpsGraphics(component, file, width, height, paintOffscreen);
-//                //exportScreenshotEpsGraphicsNoRef(component, file, paintOffscreen);
-//                break;
-        }
-        if (format != null && exts != null) {
-            exportScreenShotBufferedImage(component, file, width, height, exts, format, paintOffscreen);
-        }
-        return "OK";
     }
 
-//    private static void exportScreenshotVector2D(Component target, File selectedFile, boolean paintOffscreen) throws IOException{
-//
-//        de.erichseifert.vectorgraphics2d.VectorGraphics2D g = null;
-//        String filePath = selectedFile.getAbsolutePath();
-//
-//        if(filePath.endsWith(".svg")){
-//            g = new de.erichseifert.vectorgraphics2d.SVGGraphics2D(0.0, 0.0, target.getWidth(), target.getHeight());
-//        }else if(filePath.endsWith(".eps")){
-//            g = new de.erichseifert.vectorgraphics2d.EPSGraphics2D(0.0, 0.0, target.getWidth(), target.getHeight());
-//        }
-//        target.paintAll(g);
-//
-//        // Write the output to a file
-//        FileOutputStream file = new FileOutputStream(selectedFile);
-//        try {
-//            file.write(g.getBytes());
-//        } finally {
-//            file.close();
-//        }
-//
-//    }
-
-
-    private static void exportScreenshotSVG(Component target, File selectedFile, int width, int height, boolean paintOffscreen) throws IOException {
+    private static void exportScreenshotSVG(Paintable target, File selectedFile, int width, int height, boolean batch) throws IOException {
 
         String format = "svg";
         selectedFile = fixFileExt(selectedFile, new String[]{format}, format);
@@ -182,7 +131,7 @@ public class SnapshotUtilities {
         // Write image data into document                                                                                                   
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 
-        paintImage(target, svgGenerator, width, height, paintOffscreen);
+        paintImage(target, svgGenerator, width, height, batch);
 
         Writer out = null;
         try {
@@ -200,16 +149,6 @@ public class SnapshotUtilities {
         }
     }
 
-    private static void paintImage(Component target, Graphics2D g, int width, int height, boolean paintOffscreen) {
-        log.debug("Painting to target " + target + " , offscreen " + paintOffscreen);
-        if (paintOffscreen) {
-            Rectangle rect = new Rectangle(0, 0, width, height);
-            ((Paintable) target).paintOffscreen(g, rect);
-        } else {
-            target.paintAll(g);
-        }
-    }
-
     /**
      * Export the specified {@code target} component as a {@code BufferedImage} to the given file.
      *
@@ -218,48 +157,39 @@ public class SnapshotUtilities {
      * @param width
      * @param height
      * @param allowedExts
-     * @param format         Format, also appended as an extension if the file doesn't end with anything in {@code allowedExts}
-     * @param paintOffscreen
+     * @param format       Format, also appended as an extension if the file doesn't end with anything in {@code allowedExts}
      * @throws IOException
      */
-    private static void exportScreenShotBufferedImage(Component target, File selectedFile, int width, int height,
-                                                      String[] allowedExts, String format, boolean paintOffscreen) throws IOException {
-        BufferedImage image = getDeviceCompatibleImage(width, height);
+    private static void exportScreenShotBufferedImage(Paintable target, File selectedFile, int width, int height,
+                                                      String[] allowedExts, String format, boolean batch) throws IOException {
+
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
 
-        paintImage(target, g, width, height, paintOffscreen);
+        // Start with a white background
+        Color c = g.getColor();
+        g.setColor(Color.white);
+        g.fillRect(0, 0, width, height);
+        g.setColor(c);
+
+        paintImage(target, g, width, height, batch);
 
         selectedFile = fixFileExt(selectedFile, allowedExts, format);
         if (selectedFile != null) {
             log.debug("Writing image to " + selectedFile.getAbsolutePath());
-            ImageIO.write(image, format, selectedFile);
+            boolean success = ImageIO.write(image, format, selectedFile);
+            if (!success) {
+                MessageUtils.showMessage("Error writing image file of type: " + format + ". Try .png or .svg");
+            }
         }
     }
 
-    public static BufferedImage createBufferedImage(Component target, Rectangle clipRect,  int maxHeight) throws IOException {
 
-        int width = clipRect.width;
-        int height = Math.min(clipRect.height, 1000);
-
-        BufferedImage image = getDeviceCompatibleImage(width, height);
-        Graphics2D g = image.createGraphics();
-
-       // clipRect.x += 5;
-       // clipRect.width -=5;
-
-       // g.setClip(clipRect);
-        g.translate(0, -clipRect.y);
-        height += clipRect.y;
-
+    private static void paintImage(Paintable target, Graphics2D g, int width, int height, boolean batch) {
         Rectangle rect = new Rectangle(0, 0, width, height);
-        ((Paintable) target).paintOffscreen(g, rect);
-
-        g.setBackground(Color.WHITE);
-        g.clearRect(0, 0, 5, height);
-
-        return image;
-
+        target.paintOffscreen(g, rect, batch);
     }
+
 
     /**
      * Add a file extension to the file if it doesn't already

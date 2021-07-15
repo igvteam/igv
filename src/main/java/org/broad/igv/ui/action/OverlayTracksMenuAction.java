@@ -108,7 +108,7 @@ public class OverlayTracksMenuAction extends MenuAction {
                 mergedTracks.setTrackAlphas(1.0);
                 panel.addTracks(mergedTracks.getMemberTracks());
                 panel.moveSelectedTracksTo(mergedTracks.getMemberTracks(), mergedTracks, true);
-                IGV.getInstance().removeTracks(Arrays.asList(mergedTracks));
+                IGV.getInstance().deleteTracks(Arrays.asList(mergedTracks));
             }
         }
         IGV.getInstance().repaint();

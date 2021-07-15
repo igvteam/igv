@@ -32,10 +32,12 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.feature.AminoAcidManager;
-import org.broad.igv.feature.AminoAcidSequence;
+import org.broad.igv.feature.aa.AminoAcidManager;
+import org.broad.igv.feature.aa.AminoAcidSequence;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.aa.CodonTable;
+import org.broad.igv.feature.aa.CodonTableManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.PreferencesManager;
@@ -48,19 +50,18 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.broad.igv.prefs.Constants.MAX_SEQUENCE_RESOLUTION;
-import static org.broad.igv.prefs.Constants.SHOW_SEQUENCE_TRANSLATION;
+import static org.broad.igv.prefs.Constants.*;
 
 
 /**
@@ -76,12 +77,10 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     private Map<String, LoadedDataInterval<SeqCache>> loadedIntervalCache = new HashMap(200);
 
-    private Map<String, Boolean> sequenceVisible;
-
     private SequenceRenderer sequenceRenderer = new SequenceRenderer();
 
     //should translated aminoacids be shown below the sequence?
-    private boolean shouldShowTranslation = true;
+    private boolean showTranslation = true;
 
     Strand strand = Strand.POSITIVE;
 
@@ -90,9 +89,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public SequenceTrack(String name) {
         super(null, name, name);
         setSortable(false);
-        shouldShowTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
+        showTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
-        sequenceVisible = Collections.synchronizedMap(new HashMap<>());
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
 
@@ -137,7 +135,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public void receiveEvent(Object event) {
 
         if (event instanceof FrameManager.ChangeEvent) {
-
+            // Remove cache for discarded frames.  This seems a rather round-about way to do it.
             Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).getFrames();
             Map<String, LoadedDataInterval<SeqCache>> newCache = Collections.synchronizedMap(new HashMap<>());
             for (ReferenceFrame f : frames) {
@@ -145,24 +143,31 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             }
             loadedIntervalCache = newCache;
 
-
         } else {
             log.info("Unknown event type: " + event.getClass());
         }
     }
 
-    private void refreshAminoAcids() {
-         for(LoadedDataInterval<SeqCache> i : loadedIntervalCache.values()) {
-             i.getFeatures().refreshAminoAcids();
-         }
+    private void refreshAminoAcids(CodonTable codonTable) {
+        for (LoadedDataInterval<SeqCache> i : loadedIntervalCache.values()) {
+            CodonTable intervalCodonTable = codonTable != null ?
+                    codonTable :
+                    CodonTableManager.getInstance().getCodonTableForChromosome(i.range.chr);
+            if (intervalCodonTable != null) {
+                i.getFeatures().refreshAminoAcids(intervalCodonTable);
+            }
+        }
     }
 
     @Override
-    public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
+    public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRectangle) {
+
+        // Use local graphics -- this method corrupts graphics context when exporting to "png" files
+        Graphics2D graphics = (Graphics2D) g.create();
 
         Font font = FontManager.getFont(fontSize);
 
-        boolean visible = this.sequenceVisible.values().stream().anyMatch(v -> v == true);
+        boolean visible = isVisible();
 
         if (visible) {
             graphics.setFont(font);
@@ -174,15 +179,17 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             drawArrow(graphics);
 
             //Show icon when translation non-standard
-            if (AminoAcidManager.getInstance().getCodonTable().getId() != AminoAcidManager.STANDARD_TABLE_ID) {
-                Font labFont = font.deriveFont(Font.BOLD);
-                graphics.setFont(labFont);
-                graphics.drawString("A", rx - 20, textBaseline);
-                graphics.setFont(font);
-            }
+//            if (AminoAcidManager.getInstance().getCodonTable().getId() != AminoAcidManager.STANDARD_TABLE_ID) {
+//                Font labFont = font.deriveFont(Font.BOLD);
+//                graphics.setFont(labFont);
+//                graphics.drawString("A", rx - 20, textBaseline);
+//                graphics.setFont(font);
+//            }
 
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
         }
+
+        graphics.dispose();
     }
 
     private void drawArrow(Graphics2D graphics) {
@@ -200,7 +207,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             return true; // Nothing to paint
         } else {
             LoadedDataInterval<SeqCache> interval = loadedIntervalCache.get(frame.getName());
-            return interval != null && interval.contains(frame);
+            boolean ready = interval != null && interval.contains(frame);
+            return ready;
         }
     }
 
@@ -238,7 +246,9 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         byte[] seq = sequence.substring(deltaStart, len - deltaEnd).getBytes();
 
         SeqCache cache = new SeqCache(start, seq);
-        cache.refreshAminoAcids();
+
+        CodonTable codonTable = CodonTableManager.getInstance().getCodonTableForChromosome(chr);
+        cache.refreshAminoAcids(codonTable);
         loadedIntervalCache.put(referenceFrame.getName(), new LoadedDataInterval<>(chr, start, end, cache));
     }
 
@@ -255,43 +265,42 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public void render(RenderContext context, Rectangle rect) {
 
         int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);
-
         boolean visible = context.getReferenceFrame().getScale() < resolutionThreshold &&
                 !context.getChr().equals(Globals.CHR_ALL);
         final String frameName = context.getReferenceFrame().getName();
 
-        if (!sequenceVisible.containsKey(frameName)) sequenceVisible.put(frameName, false);  // Default value
-
-        if (visible != sequenceVisible.get(frameName)) {
-            sequenceVisible.put(frameName, visible);
-            UIUtilities.invokeAndWaitOnEventThread(() -> {
-                if (context.getPanel() != null) {
-                    context.getPanel().revalidate();
-                }
-            });
-        }
         if (visible) {
             LoadedDataInterval<SeqCache> sequenceInterval = loadedIntervalCache.get(frameName);
             if (sequenceInterval != null) {
                 sequenceRenderer.setStrand(strand);
-                sequenceRenderer.draw(sequenceInterval, context, rect, shouldShowTranslation, resolutionThreshold);
+                sequenceRenderer.draw(sequenceInterval, context, rect, showTranslation, resolutionThreshold);
             }
         }
     }
 
+    @Override
+    public boolean isVisible() {
+        int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);
+        return FrameManager.getFrames().stream().anyMatch(frame -> (frame.getScale() < resolutionThreshold &&
+                !frame.getChrName().equals(Globals.CHR_ALL)));
+    }
+
+    @Override
+    public boolean isFilterable() {
+        return false;
+    }
 
     @Override
     public int getHeight() {
-        boolean visible = this.sequenceVisible.values().stream().anyMatch(v -> v == true);
-        return visible ? SEQUENCE_HEIGHT +
-                (shouldShowTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0) :
+        return isVisible() ? SEQUENCE_HEIGHT +
+                (showTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0) :
                 0;
     }
 
 
     @Override
     public boolean handleDataClick(TrackClickEvent e) {
-        setShouldShowTranslation(!shouldShowTranslation);
+        setShowTranslation(!showTranslation);
         Object source = e.getMouseEvent().getSource();
         if (source instanceof JComponent) {
             UIUtilities.invokeOnEventThread(() -> repaint());
@@ -314,10 +323,17 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     }
 
-    public void setShouldShowTranslation(boolean shouldShowTranslation) {
-        this.shouldShowTranslation = shouldShowTranslation;
-        // Remember this choice
-        PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
+    public void setStrand(Strand strandValue) {
+        strand = strandValue;
+        PreferencesManager.getPreferences().put(SEQUENCE_TRANSLATION_STRAND, strand.toString());
+        IGV.getInstance().clearSelections();
+        repaint();
+    }
+
+    public void setShowTranslation(boolean showTranslation) {
+        this.showTranslation = showTranslation;
+        PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, showTranslation);
+        repaint();
     }
 
 
@@ -335,21 +351,18 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         m1.addActionListener(e -> flipStrand());
 
         final JCheckBoxMenuItem m2 = new JCheckBoxMenuItem("Show translation");
-        m2.setSelected(shouldShowTranslation);
-        m2.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                setShouldShowTranslation(m2.isSelected());
-                repaint();
-                IGV.getInstance().clearSelections();
-            }
+        m2.setSelected(showTranslation);
+        m2.addActionListener(e -> {
+            setShowTranslation(m2.isSelected());
+            IGV.getInstance().clearSelections();
         });
 
         menu.add(m1);
         menu.add(m2);
 
         final JMenu transTableMenu = new JMenu("Translation Table");
-        for (AminoAcidManager.CodonTable codonTable : AminoAcidManager.getInstance().getAllCodonTables()) {
+        transTableMenu.add(getCodonTableMenuItem(null));   // The "null" or default item
+        for (CodonTable codonTable : CodonTableManager.getInstance().getAllCodonTables()) {
             JMenuItem item = getCodonTableMenuItem(codonTable);
             transTableMenu.add(item);
         }
@@ -358,33 +371,36 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         return menu;
     }
 
-    private JCheckBoxMenuItem getCodonTableMenuItem(AminoAcidManager.CodonTable codonTable) {
+    private JCheckBoxMenuItem getCodonTableMenuItem(CodonTable codonTable) {
 
         JCheckBoxMenuItem item = new JCheckBoxMenuItem();
-        String fullName = codonTable.getDisplayName();
-        String shortName = fullName;
-        if (fullName.length() > 40) {
-            shortName = fullName.substring(0, 37) + "...";
-            item.setToolTipText(fullName);
-        }
-        item.setText(shortName);
-        final AminoAcidManager.CodonTableKey curKey = codonTable.getKey();
-        item.setSelected(curKey.equals(AminoAcidManager.getInstance().getCodonTable().getKey()));
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                AminoAcidManager.getInstance().setCodonTable(curKey);
-                SequenceTrack.this.refreshAminoAcids();
-                repaint();
+
+        if (codonTable == null) {
+            item.setText("Default");
+        } else {
+            String fullName = codonTable.getDisplayName();
+            String shortName = fullName;
+            if (fullName.length() > 40) {
+                shortName = fullName.substring(0, 37) + "...";
+                item.setToolTipText(fullName);
             }
+            item.setText(shortName);
+        }
+
+        final Integer selectedID = codonTable == null ? null : codonTable.getId();
+
+        // Get the explicitly set codon table, if any
+        CodonTable currentCodonTable = CodonTableManager.getInstance().getCurrentCodonTable();
+        boolean selected = (selectedID == null && currentCodonTable == null) ||
+                (selectedID != null && currentCodonTable != null && selectedID.equals(currentCodonTable.getId()));
+        item.setSelected(selected);
+
+        item.addActionListener(e -> {
+            CodonTableManager.getInstance().setCurrentCodonTable(codonTable);
+            SequenceTrack.this.refreshAminoAcids(codonTable);
+            repaint();
         });
         return item;
-    }
-
-
-    private void repaint() {
-        // TODO -- what's really needed is a repaint of all panels the sequence track intersects
-        IGV.getMainFrame().repaint();
     }
 
     // SequenceTrack does not expose its renderer
@@ -395,10 +411,15 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public String getNameValueString(int y) {
-        String nvs = "<html>" + super.getNameValueString(y);
-        nvs += "<br>Translation Table: ";
-        nvs += AminoAcidManager.getInstance().getCodonTable().getDisplayName();
-        return nvs;
+        CodonTable explicitlySelectedTable = CodonTableManager.getInstance().getCurrentCodonTable();
+        if (explicitlySelectedTable != null) {
+            String nvs = "<html>" + super.getNameValueString(y);
+            nvs += "<br>Translation Table: ";
+            nvs += explicitlySelectedTable.getDisplayName();
+            return nvs;
+        } else {
+            return "";
+        }
     }
 
 
@@ -422,7 +443,12 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             this.negAA = negAA;
         }
 
-        public void refreshAminoAcids() {
+        /**
+         * Refresh the amino acids with a specific codon table -- called from explicit menu choice.
+         *
+         * @param codonTable
+         */
+        public void refreshAminoAcids(CodonTable codonTable) {
             int mod = start % 3;
             int n1 = normalize3(3 - mod);
             int n2 = normalize3(n1 + 1);
@@ -430,19 +456,42 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
             String sequence = new String(seq);
             AminoAcidSequence[] posAA = {
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n1, sequence.substring(n1)),
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n2, sequence.substring(n2)),
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n3, sequence.substring(n3))
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n1, sequence.substring(n1), codonTable),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n2, sequence.substring(n2), codonTable),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.POSITIVE, start + n3, sequence.substring(n3), codonTable)
             };
             this.posAA = posAA;
 
             final int len = sequence.length();
             AminoAcidSequence[] negAA = {
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n1)),
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n2)),
-                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n3))
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n1), codonTable),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n2), codonTable),
+                    AminoAcidManager.getInstance().getAminoAcidSequence(Strand.NEGATIVE, start, sequence.substring(0, len - n3), codonTable)
             };
             this.negAA = negAA;
         }
     }
+
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        element.setAttribute("shouldShowTranslation", String.valueOf(showTranslation));
+        element.setAttribute("sequenceTranslationStrandValue", String.valueOf(strand));
+
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        if (element.hasAttribute("shouldShowTranslation")) {
+            this.showTranslation = Boolean.valueOf(element.getAttribute("shouldShowTranslation"));
+        }
+        if (element.hasAttribute("sequenceTranslationStrandValue")) {
+            this.strand = Strand.fromString(element.getAttribute("sequenceTranslationStrandValue"));
+        }
+    }
+
 }

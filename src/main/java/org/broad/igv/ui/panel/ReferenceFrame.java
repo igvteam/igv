@@ -31,7 +31,8 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.event.ShiftEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
@@ -43,8 +44,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.ViewChange;
 import org.broad.igv.ui.util.MessageUtils;
 
 
@@ -429,16 +428,14 @@ public class ReferenceFrame {
 
         end = Math.min(getMaxCoordinate(chr), end);
 
- //       synchronized (this) {
-            this.initialLocus = locus;
-            this.chrName = chr;
-            if (start >= 0 && end >= 0) {
-                this.origin = start;
-                beforeScaleZoom(locus);
-                computeLocationScale();
-                computeZoom();
-            }
-   //     }
+        this.initialLocus = locus;
+        this.chrName = chr;
+        if (start >= 0 && end >= 0) {
+            this.origin = start;
+            beforeScaleZoom(locus);
+            computeLocationScale();
+            computeZoom();
+        }
 
         if (log.isDebugEnabled()) {
             log.debug("Data panel width = " + widthInPixels);

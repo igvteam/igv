@@ -35,7 +35,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.PicardAlignment;
+import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.sam.reader.BAMReader;
 import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.ResourceLocator;
@@ -79,7 +79,7 @@ public class CRAMReaderTest {
         assertEquals(4, seqNames.size());
 
 
-        CloseableIterator<PicardAlignment> iter = reader.iterator();
+        CloseableIterator<SAMAlignment> iter = reader.iterator();
         int counter = count(iter);
         assertEquals(11, counter);
 
@@ -93,7 +93,7 @@ public class CRAMReaderTest {
 
         BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
 
-        CloseableIterator<PicardAlignment> iter = reader.query("2", 500, 600, false);
+        CloseableIterator<SAMAlignment> iter = reader.query("2", 500, 600, false);
         int counter = count(iter);
         assertEquals(2, counter);
     }
@@ -107,7 +107,7 @@ public class CRAMReaderTest {
 
         BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
 
-        CloseableIterator<PicardAlignment> iter = reader.query("2", 500, 600, false);
+        CloseableIterator<SAMAlignment> iter = reader.query("2", 500, 600, false);
         int counter = count(iter);
         assertEquals(2, counter);
     }
@@ -122,7 +122,7 @@ public class CRAMReaderTest {
 
         BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
 
-        CloseableIterator<PicardAlignment> iter = reader.query("2", 500, 600, false);
+        CloseableIterator<SAMAlignment> iter = reader.query("2", 500, 600, false);
         int counter = count(iter);
         assertEquals(2, counter);
     }
@@ -136,13 +136,13 @@ public class CRAMReaderTest {
 
         BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
 
-        CloseableIterator<PicardAlignment> iter = reader.query("2", 500, 600, false);
+        CloseableIterator<SAMAlignment> iter = reader.query("2", 500, 600, false);
         int counter = count(iter);
         assertEquals(2, counter);
     }
 
 
-    public int count(CloseableIterator<PicardAlignment> iter) {
+    public int count(CloseableIterator<SAMAlignment> iter) {
         int counter = 0;
         while (iter.hasNext()) {
             iter.next();

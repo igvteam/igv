@@ -50,10 +50,6 @@ MUTATION_Other_AA_changing_COLOR	Other AA Changing	color	0,150,150
 MUTATION_Other_likely_neutral_COLOR	Other Likely Neutral	color	225,180,225
 MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
 
-##Other
-OVERLAY_ATTRIBUTE_KEY	Linking ID	string	LINKING_ID
-
-
 #Charts
 CHART.DRAW_TOP_BORDER	Draw top border	boolean	FALSE
 CHART.DRAW_BOTTOM_BORDER	Draw bottom border	boolean	FALSE
@@ -66,6 +62,7 @@ CN_FREQ.AMP_THRESHOLD	CN freq amplification threshold	float	0.1
 CN_FREQ.DEL_THRESHOLD	CN freq deletion threshold	float	-0.1
 
 #Alignments
+info	Settings for alignment tracks.  See the RNA or Third Gen tabs to override for specific types.
 
 ##Track Display
 SAM.SHOW_ALIGNMENT_TRACK	Show alignment track	boolean	TRUE
@@ -79,6 +76,10 @@ SAM.MAX_LEVELS	Number of reads per window	integer	100
 
 ##Alignment Track Options
 
+SAM.COLOR_BY	Color alignments by	select NONE|READ_STRAND|FIRST_OF_PAIR_STRAND|PAIR_ORIENTATION|UNEXPECTED_PAIR|INSERT_SIZE|SAMPLE|READ_GROUP|LIBRARY|MOVIE|ZMW|BISULFITE|NOMESEQ|TAG|MAPPED_SIZE|LINK_STRAND|YC_TAG	UNEXPECTED_PAIR
+SAM.COLOR_BY_TAG	Color by TAG	string
+SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE
+SAM.GROUP_BY_TAG	Group by TAG	string
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visibile
 SAM.QUALITY_THRESHOLD	Mapping quality threshold	int	0
 SAM.ALIGNMENT_SCORE_THRESHOLD	Alignment score threshold	int	0
@@ -186,12 +187,13 @@ PROXY.PW	Password	string	null
 PORT_ENABLED	Enable port	boolean	TRUE
 PORT_NUMBER	Port number	integer	60151
 ---
-IGV.genome.sequence.dir	Genome server URL	string	https://s3.amazonaws.com/igv.org.genomes/genomes.tab
+IGV.genome.sequence.dir	Genome server URL	string	https://s3.amazonaws.com/igv.org.genomes/genomes.txt
 MASTER_RESOURCE_FILE_KEY	Data registry url	string	https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
-BLAT_URL	Blat url	String	http://genome.cse.ucsc.edu/cgi-bin/hgBlat
+BLAT_SERVER_TYPE	Blat server type	select UCSC|WEB_BLAT	UCSC
+BLAT_URL	Blat url	String	https://genome.cse.ucsc.edu/cgi-bin/hgBlat
 ---
 TOOLTIP.INITIAL_DELAY	Tooltip inital delay (ms)	integer	50
 TOOLTIP.RESHOW_DELAY	Tooltip reshow delay (ms)	integer	50
@@ -201,7 +203,6 @@ TOOLTIP.DISMISS_DELAY	Tooltip dismiss delay (ms)	integer	60000
 #Hidden
 SCORE_VARIANTS	FALSE
 
-SAM.COLOR_BY	UNEXPECTED_PAIR
 SAM.AUTOSORT	FALSE
 SAM.SHADE_CENTER	TRUE
 SAM.SHOW_REF_SEQ	FALSE
@@ -247,6 +248,7 @@ DEFAULT_GENOME_KEY	hg19
 IGV.track.height	15
 FLANKING_REGION	2000
 SHOW_SEQUENCE_TRANSLATION	FALSE
+SEQUENCE_TRANSLATION_STRAND	POSITIVE
 AUTO_UPDATE_GENOMES	TRUE
 GWAS_TRACK_HEIGHT	200
 GWAS_DESCRIPTION_CACHE_SIZE	10000
@@ -283,7 +285,6 @@ COLOR.G	209,113,5
 COLOR.N	128,128,128
 
 SASHIMI.SHOW_COVERAGE	TRUE
-SAM.SHOW_DUPLICATES	FALSE
 GENE_LIST_BED_FORMAT	FALSE
 showLOS	TRUE
 DEBUG.PROXY	FALSE
@@ -299,3 +300,7 @@ MUTATION_Non-coding_Transcript_COLOR	Non-coding Transcript	color	0,0,150
 MUTATION_Other_AA_changing_COLOR	Other AA Changing	color	0,150,150
 MUTATION_Other_likely_neutral_COLO	Other Likely NeutralR	color	225,180,225
 MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
+
+OVERLAY_ATTRIBUTE_KEY	Linking ID	string	LINKING_ID
+
+

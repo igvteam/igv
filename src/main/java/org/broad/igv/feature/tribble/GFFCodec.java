@@ -209,13 +209,13 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
         String chrToken = tokens[0].trim();
-        String featureType = StringUtils.intern(tokens[2].trim());
+        String featureType = tokens[2].trim();
 
         if (ignoredTypes.contains(featureType)) {
             return null;
         }
 
-        String chromosome = genome == null ? StringUtils.intern(chrToken) : genome.getCanonicalChrName(chrToken);
+        String chromosome = genome == null ?chrToken : genome.getCanonicalChrName(chrToken);
 
         // GFF coordinates are 1-based inclusive (length = end - start + 1)
         // IGV (UCSC) coordinates are 0-based exclusive.  Adjust start and end accordingly
@@ -223,7 +223,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         int end;
         int col = 3;
         try {
-            start = (int)Double.parseDouble(tokens[col]) - 1;
+            start = (int) Double.parseDouble(tokens[col]) - 1;
             if (start < 0) throw new ParserException("Start index must be 1 or larger; GFF is 1-based", -1, line);
             col++;
             end = (int) Double.parseDouble(tokens[col]);
@@ -375,7 +375,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                 if (tokens.length >= 2) {
                     String key = tokens[0].trim().replaceAll("\"", "");
                     String value = tokens[1].trim().replaceAll("\"", "");
-                    kvalues.put(StringUtils.intern(key), value);
+                    kvalues.put(key, value);
                 }
             }
         }
@@ -502,7 +502,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                         key = StringUtils.decodeURL(key);
                         value = StringUtils.decodeURL(value);
                     }
-                    kvalues.put(StringUtils.intern(key), value);
+                    kvalues.put(key, value);
                 }
             }
         }

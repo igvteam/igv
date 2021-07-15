@@ -85,8 +85,8 @@ public class TooltipTextFrame extends JFrame {
         pane.setTransferHandler(new MyTransferHandler());
 
         Dimension d = pane.getPreferredSize();
-        int w = (int) (1.1 * d.width);
-        int h = (int) (1.1 * d.height);
+        int w = (int) (1.2 * d.width);
+        int h = (int) (1.25 * d.height);
 
         h = h > 600 ? 600 : (h < 100 ? 100 : h);
         w = w > 800 ? 800 : (w < 100 ? 100 : w);

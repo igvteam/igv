@@ -465,7 +465,7 @@ public class GenomeListManager {
                 } catch (FileNotFoundException e) {
                     //We swallow this because the user may not have the file,
                     //which doesn't really matter
-                    log.info(e);
+                    log.error(e);
                 } catch (IOException e) {
                     log.error(e);
                     throw new RuntimeException(e);

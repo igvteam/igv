@@ -52,6 +52,11 @@ public class HaplotypeUtils {
             start = snpPos.get(0) - 1;
             end = snpPos.get(snpPos.size() - 1) + 1;
 
+            // Clear any existing names
+            for(Alignment a : this.alignmentInterval.getAlignments()) {
+                a.setHaplotypeName("NONE");
+            }
+
             // Label alignments
             Map<String, List<Alignment>> labelAlignmentMap = labelAlignments(start, end, snpPos, reference, this.alignmentInterval.getAlignmentIterator());
             List<String> labels = new ArrayList(labelAlignmentMap.keySet());
@@ -170,7 +175,7 @@ public class HaplotypeUtils {
                 for (Integer pos : positions) {
                     boolean found = false;
                     for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-                        if (block.isSoftClipped()) continue;
+                        if (block.isSoftClip()) continue;
                         if (block.contains(pos)) {
                             int blockOffset = pos - block.getStart();
                             hapName += (char) block.getBase(blockOffset);

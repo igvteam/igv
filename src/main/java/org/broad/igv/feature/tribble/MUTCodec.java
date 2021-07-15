@@ -40,6 +40,7 @@ import org.broad.igv.util.collections.MultiMap;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -74,11 +75,18 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
         super(Mutation.class);
         this.path = path;
         this.genome = genome;
+        InputStream is = null;
         try {
-            LineIterator reader = new LineIteratorImpl(new AsciiLineReader(ParsingUtils.openInputStream(path)));
+            is = ParsingUtils.openInputStream(path);
+            LineIterator reader = new LineIteratorImpl(new AsciiLineReader(is));
             readActualHeader(reader);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+            }
         }
     }
 
@@ -150,7 +158,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                 if (errorCount > 100) {
                     throw new DataLoadException("Column " + (startColumn + 1) + " must be a numeric value.", path);
                 } else {
-                    log.info("Error parsing line: " + line);
+                    log.error("Error parsing line: " + line);
                     return null;
                 }
             }

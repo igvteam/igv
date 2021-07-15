@@ -313,7 +313,7 @@ public class AlignmentRenderer {
                 Color alignmentColor = getAlignmentColor(alignment, renderOptions);
                 final boolean leaveMargin = (this.track.getDisplayMode() != Track.DisplayMode.SQUISHED);
                 if ((pixelWidth < 2) &&
-                        !(AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) &&
+                        !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) || renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) &&
                                 (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
@@ -505,7 +505,6 @@ public class AlignmentRenderer {
         g.drawLine(startX, y + h / 2, endX, y + h / 2);
     }
 
-static int printCount = 0;
     /**
      * Draw a (possibly gapped) alignment
      * <p>
@@ -526,12 +525,12 @@ static int printCount = 0;
         Graphics2D gAlignment = context.getGraphics2D("ALIGNMENT");
         gAlignment.setColor(alignmentColor);
 
-
         // No blocks.  Note: SAM/BAM alignments always have at least 1 block
         if (blocks == null || blocks.length == 0) {
             drawSimpleAlignment(alignment, rowRect, gAlignment, context, renderOptions.isFlagUnmappedPairs());
             return;
         }
+
         IGVPreferences prefs = this.track.getPreferences();
         boolean flagLargeIndels = prefs.getAsBoolean(SAM_FLAG_LARGE_INDELS);
         int largeInsertionsThreshold = prefs.getAsInt(SAM_LARGE_INDELS_THRESHOLD);
@@ -663,16 +662,12 @@ static int printCount = 0;
             int blockPxEnd = (int) Math.round((blockChromEnd - bpStart) / locScale);
             boolean rightmost = blockIx + 1 == blocks.length;
             boolean tallEnoughForArrow = h > 6;
-            if(printCount < 5) {
-                System.out.println(alignment.getReadName() + "\t" + blockPxStart + "\t" + blockPxEnd + "\t" + (blockPxEnd - blockPxStart));
-                printCount++;
-            }
+
             if (!rightmost) { // consider waiting to draw the block unless it is rightmost
-                if (hideSmallIndelsBP && (blocks[blockIx+1].getStart() - blockChromEnd) < indelThresholdBP) {
+                if (hideSmallIndelsBP && (blocks[blockIx + 1].getStart() - blockChromEnd) < indelThresholdBP) {
                     continue; // small indel between this block and the next; wait to draw
-                }
-                else {
-                    blockChromStart = blocks[blockIx+1].getStart(); // start position for the next block
+                } else {
+                    blockChromStart = blocks[blockIx + 1].getStart(); // start position for the next block
                 }
             }
 
@@ -696,17 +691,12 @@ static int printCount = 0;
                         blockPxEnd + (rightmost && !alignment.isNegativeStrand() && tallEnoughForArrow ? arrowPxWidth : 0),
                         blockPxEnd,
                         blockPxStart},
-                        yPoly = {y + h / 2,
-                                y,
-                                y,
-                                y + h / 2,
-                                y + h,
-                                y + h};
+                        yPoly = {y + h / 2, y, y, y + h / 2, y + h, y + h};
                 blockShape = new Polygon(xPoly, yPoly, xPoly.length);
 
                 Graphics2D g = gAlignment;
-                if(!block.hasBases()) {
-                    if (block.isSoftClipped()) g = context.getGraphics2D("SOFT_CLIP");
+                if (!block.hasBases()) {
+                    if (block.isSoftClip()) g = context.getGraphics2D("SOFT_CLIP");
                     else if (block.getCigarOperator() == 'X') g = context.getGraphics2D("MISMATCH");
                 }
 
@@ -776,11 +766,11 @@ static int printCount = 0;
             }
         }
 
-
         // Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
         // that is proportional to the base quality score, or flow signal deviation, whichever is selected.
 
         if (locScale < 100) {
+
             ColorOption colorOption = renderOptions.getColorOption();
             boolean showAllBases = renderOptions.isShowAllBases() &&
                     !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ); // Disable showAllBases in bisulfite mode
@@ -790,7 +780,7 @@ static int printCount = 0;
                 for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
 
                     boolean haveBases = (block.hasBases() && block.getLength() > 0);
-                    if(!haveBases) {
+                    if (!haveBases) {
                         continue;   // nothing to draw
                     }
 
@@ -803,13 +793,13 @@ static int printCount = 0;
                         break; // done examining blocks
                     }
 
-                    boolean isSoftClipped = block.isSoftClipped();
+                    boolean isSoftClip = block.isSoftClip();
 
                     // Get the reference sequence
                     Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                    final byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
+                    final byte[] reference = isSoftClip ? softClippedReference : genome.getSequence(chr, start, end);
 
-                    if(reference == null && !showAllBases) {
+                    if (reference == null && !showAllBases) {
                         continue;   // No reference to compare to.
                     }
 
@@ -827,21 +817,25 @@ static int printCount = 0;
                         bisinfo = new BisulfiteBaseInfo(reference, alignment, block, renderOptions.bisulfiteContext);
                     }
 
-                    byte[] read = block.getBases();
+                    ByteSubarray blockBases = block.getBases();
                     final int s = (int) Math.max(Math.floor(bpStart), start);
                     final int e = (int) Math.min(Math.ceil(bpEnd), end);
                     for (int loc = s; loc < e; loc++) {
 
                         int idx = loc - start;
-                        boolean misMatch =  AlignmentUtils.isMisMatch(reference, read, isSoftClipped, idx);
 
+                        boolean misMatch = AlignmentUtils.isMisMatch(reference, blockBases, isSoftClip, idx);
+
+                        // if base is modified paint rectangle
                         if (showAllBases || (!bisulfiteMode && misMatch) ||
                                 (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
-                            char c = (char) read[idx];
+                            char c = (char) blockBases.getByte(idx);
 
                             Color color = null;
                             if (bisulfiteMode) {
                                 color = bisinfo.getDisplayColor(idx);
+                            } else if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
+                                color = Color.GRAY;
                             } else {
                                 color = nucleotideColors.get(c);
                             }
@@ -870,7 +864,7 @@ static int printCount = 0;
                             BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
 
                             final boolean showBase =
-                                    isSoftClipped ||
+                                    isSoftClip ||
                                             bisulfiteMode ||
                                             // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
                                             (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
@@ -882,6 +876,51 @@ static int printCount = 0;
                 }
             }
         }
+
+
+        // Base modification
+        if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
+            Map<Integer, BaseModification> baseModifications = alignment.getBaseModificationMap();
+            if (baseModifications != null) {
+
+                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
+                    // Compute bounds
+                    int pY = (int) rowRect.getY();
+                    int dY = (int) rowRect.getHeight();
+                    dX = (int) Math.max(1, (1.0 / locScale));
+                    Graphics g = context.getGraphics();
+
+                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
+
+                        if (baseModifications.containsKey(i)) {
+
+                            BaseModification mod = baseModifications.get(i);
+                            Color c = BaseModification.getModColor(mod.modification, mod.likelihood);
+                            g.setColor(c);
+
+                            int blockIdx = i - block.getBases().startOffset;
+                            int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
+
+                            // Don't draw out of clipping rect
+                            if (pX > rowRect.getMaxX()) {
+                                break;
+                            } else if (pX + dX < rowRect.getX()) {
+                                continue;
+                            }
+
+                            // Expand narrow width to make more visible
+                            if(dX < 3) {
+                                dX = 3;
+                                pX--;
+                            }
+
+                            g.fillRect(pX, pY, dX, Math.max(1, dY-2));
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     /**
@@ -920,13 +959,29 @@ static int printCount = 0;
                 }
             }
 
-            int dW = (dXi > 4 ? dXi - 1 : dXi);
-
             if (color != null) {
                 g.setColor(color);
                 g.fillRect(pX0i, pY, dXi, dY);
             }
         }
+    }
+
+    private void drawModification(Graphics2D g, Color color, char c, int pX, int pY, int dX, int dY) {
+
+        int pX0i = pX, dXi = dX;
+
+        //  expand the rectangle to make it more visible
+        if (dXi < 3) {
+            int expansion = dXi;
+            pX0i -= expansion;
+            dXi += (2 * expansion);
+        }
+
+        if (color != null) {
+            g.setColor(color);
+            g.fillRect(pX0i, pY, dXi, dY);
+        }
+
     }
 
     private Color getShadedColor(byte qual, Color foregroundColor, Color backgroundColor, IGVPreferences prefs) {
@@ -1113,7 +1168,7 @@ static int printCount = 0;
                                             AlignmentBlock block,
                                             boolean leaveMargin) {
         Graphics2D g = context.getGraphics2D("INSERTIONS");
-        byte[] bases = block.getBases();
+        ByteSubarray bases = block.getBases();
         int padding = block.getPadding();
 
         double locScale = context.getScale();
@@ -1127,7 +1182,7 @@ static int printCount = 0;
         final int size = bases.length + padding;
         for (int p = 0; p < size; p++) {
 
-            char c = p < padding ? '-' : (char) bases[p - padding];
+            char c = p < padding ? '-' : (char) bases.getByte(p - padding);
 
             Color color = SequenceRenderer.nucleotideColors.get(c);
             if (color == null) {
@@ -1174,6 +1229,7 @@ static int printCount = 0;
                 break;
 
             case BISULFITE:
+            case BASE_MODIFICATION:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
                 c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;
@@ -1196,8 +1252,11 @@ static int printCount = 0;
                 }
             case INSERT_SIZE:
                 boolean isPairedAlignment = alignment instanceof PairedAlignment;
-                if ((alignment.isPaired() && alignment.getMate().isMapped()) || isPairedAlignment) {
-                    boolean sameChr = isPairedAlignment || alignment.getMate().getChr().equals(alignment.getChr());
+                ReadMate mate = alignment.getMate();
+                if ((alignment.isPaired() && mate != null && mate.isMapped()) || isPairedAlignment) {
+//                   boolean sameChr = isPairedAlignment || alignment.getMate().getChr().equals(alignment.getChr());
+                    String mateChr = mate == null ? null : mate.getChr();
+                    boolean sameChr = isPairedAlignment || (mateChr != null && mateChr.equals(alignment.getChr()));
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
                         if (readDistance != 0) {

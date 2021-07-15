@@ -36,95 +36,118 @@ public class JsonGenomeLoader extends GenomeLoader {
     @Override
     public Genome loadGenome() throws IOException {
 
-        BufferedReader reader = ParsingUtils.openBufferedReader(genomePath);
-        JsonParser parser = new JsonParser();
-        JsonObject json = parser.parse(reader).getAsJsonObject();
+        BufferedReader reader = null;
 
-        String id = json.get("id").getAsString();
-        String name = json.get("name").getAsString();
-        String fastaPath = json.get("fastaURL").getAsString();
-        JsonElement orderedElement = json.get("ordered");
-        boolean ordered = orderedElement != null && orderedElement.getAsBoolean();
+        try {
+            reader = ParsingUtils.openBufferedReader(genomePath);
+            JsonParser parser = new JsonParser();
+            JsonObject json = parser.parse(reader).getAsJsonObject();
 
-        JsonElement indexPathObject = json.get("indexURL");
-        String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
-        JsonElement aliasURL = json.get("aliasURL");
+            String id = json.get("id").getAsString();
+            String name = json.get("name").getAsString();
 
-        fastaPath = FileUtils.getAbsolutePath(fastaPath, genomePath);
-        if (indexPath != null) {
-            indexPath = FileUtils.getAbsolutePath(indexPath, genomePath);
-        }
+            String fastaPath;
+            String indexPath = null;
+            if (json.has("compressedFastaURL")) {
+                JsonElement fastaElement = json.has("compressedFastaURL") ?
+                        json.get("compressedFastaURL") :
+                        json.get("fastaURL");
+                fastaPath = fastaElement.getAsString();
+                // index path ignored for bgzipped fasta
+            } else {
+                fastaPath = json.get("fastaURL").getAsString();
+                JsonElement indexPathObject = json.get("indexURL");
+                indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
+            }
 
-        FastaIndexedSequence sequence = fastaPath.endsWith(".gz") ?
-                new FastaBlockCompressedSequence(fastaPath, indexPath) :
-                new FastaIndexedSequence(fastaPath, indexPath);
+            fastaPath = FileUtils.getAbsolutePath(fastaPath, genomePath);
+            if (indexPath != null) {
+                indexPath = FileUtils.getAbsolutePath(indexPath, genomePath);
+            }
 
-        ArrayList<ResourceLocator> tracks = new ArrayList<>();
-        ArrayList<ResourceLocator> hiddenTracks = new ArrayList<>();
-        JsonArray annotations = json.getAsJsonArray("tracks");
-        if (annotations == null) {
-            annotations = json.getAsJsonArray("annotations");
-        }
-        if (annotations != null) {
-            annotations.forEach((JsonElement jsonElement) -> {
-                JsonObject obj = jsonElement.getAsJsonObject();
-                String trackPath = obj.get("url").getAsString();
-                JsonElement trackName = obj.get("name");
-                JsonElement trackIndex = obj.get("indexURL");
-                JsonElement indexedElement = obj.get("indexed");
-                JsonElement hiddenElement = obj.get("hidden");
-                boolean hidden = hiddenElement != null && hiddenElement.getAsBoolean();
-                boolean indexed = indexedElement != null && indexedElement.getAsBoolean();
+            FastaIndexedSequence sequence = fastaPath.endsWith(".gz") ?
+                    new FastaBlockCompressedSequence(fastaPath, indexPath) :
+                    new FastaIndexedSequence(fastaPath, indexPath);
 
-                String trackIndexPath = null;
-                if (trackPath != null) {
-                    trackPath = FileUtils.getAbsolutePath(trackPath, genomePath);
-                }
-                if (trackIndex != null) {
-                    trackIndexPath = FileUtils.getAbsolutePath(trackIndex.getAsString(), genomePath);
-                }
+            JsonElement orderedElement = json.get("ordered");
+            boolean ordered = orderedElement != null && orderedElement.getAsBoolean();
+            JsonElement aliasURL = json.get("aliasURL");
 
-                ResourceLocator res = new ResourceLocator(trackPath);
-                if (trackName != null) res.setName(trackName.getAsString());
-                if (trackIndexPath != null) res.setIndexPath(trackIndexPath);
-                if (indexedElement != null) res.setIndexed(indexed);
 
-                if(hidden) {
-                    if(indexed || trackIndex != null) {
-                        log.info("Hidden tracks cannot be indexed.  Ignoring " + trackPath);
-                    } else {
-                        hiddenTracks.add(res);
+            ArrayList<ResourceLocator> tracks = new ArrayList<>();
+            ArrayList<ResourceLocator> hiddenTracks = new ArrayList<>();
+            JsonArray annotations = json.getAsJsonArray("tracks");
+            if (annotations == null) {
+                annotations = json.getAsJsonArray("annotations");
+            }
+            if (annotations != null) {
+                annotations.forEach((JsonElement jsonElement) -> {
+                    JsonObject obj = jsonElement.getAsJsonObject();
+                    String trackPath = obj.get("url").getAsString();
+                    JsonElement trackName = obj.get("name");
+                    JsonElement trackIndex = obj.get("indexURL");
+                    JsonElement indexedElement = obj.get("indexed");
+                    JsonElement hiddenElement = obj.get("hidden");
+                    boolean hidden = hiddenElement != null && hiddenElement.getAsBoolean();
+                    boolean indexed = indexedElement != null && indexedElement.getAsBoolean();
+
+                    String trackIndexPath = null;
+                    if (trackPath != null) {
+                        trackPath = FileUtils.getAbsolutePath(trackPath, genomePath);
                     }
-                } else {
-                    tracks.add(res);
-                }
-            });
-        }
+                    if (trackIndex != null) {
+                        trackIndexPath = FileUtils.getAbsolutePath(trackIndex.getAsString(), genomePath);
+                    }
 
-        Genome newGenome = new Genome(id, name, sequence, ordered);
-        newGenome.setAnnotationResources(tracks);
-        if (aliasURL != null) {
-            newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasURL.getAsString()));
+                    ResourceLocator res = new ResourceLocator(trackPath);
+                    if (trackName != null) res.setName(trackName.getAsString());
+                    if (trackIndexPath != null) res.setIndexPath(trackIndexPath);
+                    if (indexedElement != null) res.setIndexed(indexed);
+
+                    if (hidden) {
+                        if (indexed || trackIndex != null) {
+                            log.info("Hidden tracks cannot be indexed.  Ignoring " + trackPath);
+                        } else {
+                            hiddenTracks.add(res);
+                        }
+                    } else {
+                        tracks.add(res);
+                    }
+                });
+            }
+
+            Genome newGenome = new Genome(id, name, sequence, ordered);
+            newGenome.setAnnotationResources(tracks);
+            if (aliasURL != null) {
+                newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasURL.getAsString()));
+            }
+            if (hiddenTracks.size() > 0) {
+                addToFeatureDB(hiddenTracks, newGenome);
+            }
+            return newGenome;
+        } finally {
+            reader.close();
         }
-        if(hiddenTracks.size() > 0) {
-            addToFeatureDB(hiddenTracks, newGenome);
-        }
-        return newGenome;
     }
 
     public GenomeDescriptor loadDescriptor() throws IOException {
-        BufferedReader reader = ParsingUtils.openBufferedReader(genomePath);
-        JsonParser parser = new JsonParser();
-        JsonObject json = parser.parse(reader).getAsJsonObject();
-        String id = json.get("id").getAsString();
-        String name = json.get("name").getAsString();
-        String fastaPath = json.get("fastaURL").getAsString();
-        return new GenomeDescriptor(id, name, fastaPath);
+        BufferedReader reader = null;
+        try {
+            reader = ParsingUtils.openBufferedReader(genomePath);
+            JsonParser parser = new JsonParser();
+            JsonObject json = parser.parse(reader).getAsJsonObject();
+            String id = json.get("id").getAsString();
+            String name = json.get("name").getAsString();
+            String fastaPath = json.get("fastaURL").getAsString();
+            return new GenomeDescriptor(id, name, fastaPath);
+        } finally {
+            reader.close();
+        }
     }
 
 
     private void addToFeatureDB(List<ResourceLocator> locators, Genome genome) {
-        for(ResourceLocator locator: locators) {
+        for (ResourceLocator locator : locators) {
             try {
                 FeatureReader featureReader = TribbleFeatureSource.getBasicReader(locator, genome);
                 CloseableTribbleIterator<Feature> iter = featureReader.iterator();
@@ -155,9 +178,11 @@ public class JsonGenomeLoader extends GenomeLoader {
         public String getId() {
             return id;
         }
+
         public String getName() {
             return name;
         }
+
         public String getFastaURL() {
             return fastaURL;
         }

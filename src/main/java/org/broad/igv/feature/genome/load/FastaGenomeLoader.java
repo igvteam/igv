@@ -56,10 +56,9 @@ public class FastaGenomeLoader extends GenomeLoader {
             name = file.getName();
         }
 
-        FastaIndexedSequence fastaSequence = fastaPath.endsWith(".gz") ?
+        FastaIndexedSequence sequence = fastaPath.endsWith(".gz") ?
                 new FastaBlockCompressedSequence(fastaPath) :
                 new FastaIndexedSequence(fastaPath);
-        Sequence sequence = new SequenceWrapper(fastaSequence);
         return new Genome(id, name, sequence, true);
     }
 
