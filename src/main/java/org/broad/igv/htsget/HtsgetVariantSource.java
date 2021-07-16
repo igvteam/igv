@@ -117,7 +117,7 @@ public class HtsgetVariantSource implements FeatureSource {
     }
 }
 
-class StringLineReader implements LineReader {
+class  StringLineReader implements LineReader {
 
     String[] lines;
     int lineNumber;

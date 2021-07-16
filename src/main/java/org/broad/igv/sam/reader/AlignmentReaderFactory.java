@@ -81,11 +81,7 @@ public class AlignmentReaderFactory {
             reader = new GeraldReader(samFile, requireIndex);
         } else if (typeString.endsWith(".bam") || (typeString.endsWith(".cram")) || isHtsGet) {
             try {
-                if (isHtsGet) {
-                    reader = new HtsgetBAMReader(locator, requireIndex);
-                } else {
-                    reader = new BAMReader(locator, requireIndex); //, requireIndex);
-                }
+                reader = new BAMReader(locator, requireIndex);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 throw new DataLoadException("Error loading BAM file: " + e.toString(), locator.getPath());

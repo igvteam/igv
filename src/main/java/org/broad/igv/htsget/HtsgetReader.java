@@ -42,6 +42,7 @@ public class HtsgetReader {
         String format = container.get("format").getAsString();
         switch (format) {
             case "VCF":
+            case "BAM":
                 return new HtsgetReader(url, format);
             default:
                 throw new RuntimeException("Unsupported htsget format: " + format);
@@ -52,7 +53,8 @@ public class HtsgetReader {
     HtsgetReader(String url, String format) {
         this.url = url;
         this.format = format.toUpperCase();
-        if (!(this.format.equals("VCF"))) {
+        if (!(this.format.equals("VCF") ||
+              this.format.equals("BAM"))) {
             throw new RuntimeException("Format: " + format + " is not supported");
         }
     }
@@ -113,81 +115,3 @@ public class HtsgetReader {
         return bytes;
     }
 }
-
-//    async readData(chr, start, end) {
-//        const url = `${getUrl(this.config)}?format=${this.format}&referenceName=${chr}&start=${start}&end=${end}`;
-//        const ticket = await igvxhr.loadJson(url, buildOptions(this.config));
-//        return this.loadUrls(ticket.htsget.urls);
-//    }
-//
-//    async loadUrls(urls) {
-//
-//        const promiseArray = [];
-//        for (let urlData of urls) {
-//
-//            if (urlData.url.startsWith('data:')) {
-//                // this is a data-uri
-//                promiseArray.push(Promise.resolve(dataUriToBytes(urlData.url)));
-//
-//            } else {
-//
-//                const options = buildOptions(this.config || {});
-//
-//                if (urlData.headers) {
-//                    options.headers = Object.assign(options.headers || {}, urlData.headers);
-//                }
-//
-//                promiseArray.push(igvxhr.loadArrayBuffer(urlData.url, options));
-//            }
-//        }
-//        const arrayBuffers = await Promise.all(promiseArray);
-//        return concatArrays(arrayBuffers);
-//    }
-//
-//
-//
-//
-//    /**
-//     * Concatenate a list of array buffers, returning an UInt8Array
-//     * @param arrayBuffers
-//     */
-//    function concatArrays(arrayBuffers) {
-//
-//        let len = 0;
-//        for (let a of arrayBuffers) {
-//            len += a.byteLength;
-//        }
-//
-//        let offset = 0;
-//    const newArray = new Uint8Array(len);
-//        for (let buf of arrayBuffers) {
-//        const a = new Uint8Array(buf);
-//            newArray.set(a, offset);
-//            offset += a.length;
-//        }
-//
-//        return newArray;
-//    }
-//
-//    function dataUriToBytes(dataUri) {
-//
-//    const split = dataUri.split(',');
-//    const info = split[0].split(':')[1];
-//        let dataString = split[1];
-//
-//        if (info.indexOf('base64') >= 0) {
-//            dataString = atob(dataString);
-//        } else {
-//            dataString = decodeURI(dataString);
-//        }
-//
-//    const bytes = new Uint8Array(dataString.length);
-//        for (var i = 0; i < dataString.length; i++) {
-//            bytes[i] = dataString.charCodeAt(i);
-//        }
-//
-//        return bytes;
-//    }
-//
-//
-//export default HtsgetReader;

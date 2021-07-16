@@ -25,6 +25,7 @@
 
 package org.broad.igv.track;
 
+import htsjdk.samtools.SAMFileHeader;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
@@ -62,6 +63,7 @@ import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.gwas.*;
+import org.broad.igv.htsget.HtsgetAlignmentSource;
 import org.broad.igv.htsget.HtsgetReader;
 import org.broad.igv.htsget.HtsgetVariantSource;
 import org.broad.igv.lists.GeneList;
@@ -85,6 +87,7 @@ import org.broad.igv.util.*;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
 
+import javax.management.relation.InvalidRelationIdException;
 import java.io.IOException;
 import java.util.*;
 
@@ -156,8 +159,6 @@ public class TrackLoader {
                 // HtsGet URL
             } else if (locator.getTypeString() == "htsgetReads") {
                 loadAlignmentsTrack(locator, newTracks, genome);
-            } else if (locator.getTypeString() == "htsgetVariants" ) {
-                loadVcf(locator, newTracks, genome);
             } else if (typeString.endsWith(".shape") || typeString.endsWith(".map")) {
                 convertLoadShapeFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || typeString.endsWith(".bedgraph") || typeString.endsWith(".bdg") ||
@@ -216,10 +217,16 @@ public class TrackLoader {
                 if(locator.getPath().startsWith("https://")) {
                     try {
                         HtsgetReader reader = HtsgetReader.getReader(locator.getPath());
-                        if(reader != null && reader.getFormat().equals("VCF")) {
+                        if(reader == null) throw new IOException("Null reader");
+                        if(reader.getFormat().equals("VCF")) {
                             isHtsget = true;
                             HtsgetVariantSource source = new HtsgetVariantSource(reader, genome);
                             loadVCFWithSource(locator, source, newTracks);
+                        } else if (reader.getFormat().equals("BAM")) {
+                            isHtsget = true;
+                            //HtsgetAlignmentSource source = new HtsgetAlignmentSource(reader, genome);
+                            loadAlignmentsTrack(locator, newTracks, genome);
+                            //loadAlignmentsWithSource(locator, source, newTracks, genome);
                         }
                     } catch (IOException e) {
                         // Not neccessarily an error, might just indicate its not an htsget server.  Not sure
@@ -270,6 +277,36 @@ public class TrackLoader {
             throw new DataLoadException(e.getMessage());
         }
 
+    }
+//    private void loadVCFWithSource(ResourceLocator locator, FeatureSource src, List<Track> newTracks) {
+//        VCFHeader header = (VCFHeader) src.getHeader();
+//
+//        // Test if the input VCF file contains methylation rate data:
+//
+//        // This is determined by testing for the presence of two sample format fields: MR and GB, used in the
+//        // rendering of methylation rate.
+//        // MR is the methylation rate on a scale of 0 to 100% and GB is the number of bases that pass
+//        // filter for the position. GB is needed to avoid displaying positions for which limited coverage
+//        // prevents reliable estimation of methylation rate.
+//        boolean enableMethylationRateSupport = (header.getFormatHeaderLine("MR") != null &&
+//                header.getFormatHeaderLine("GB") != null);
+//
+//        List<String> allSamples = new ArrayList(header.getGenotypeSamples());
+//
+//        VariantTrack t = new VariantTrack(locator, src, allSamples, enableMethylationRateSupport);
+//
+//        // VCF tracks handle their own margin
+//        t.setMargin(0);
+//        newTracks.add(t);
+//    }
+    private void loadAlignmentsWithSource(ResourceLocator locator, FeatureSource src, List<Track> newTracks, Genome genome) throws IOException {
+        // TODO: Use featuresource?
+        SAMFileHeader header = (SAMFileHeader) src.getHeader();
+        //List<String> allSamples = new ArrayList(header.getReadGroups());
+        AlignmentDataManager aldt = new AlignmentDataManager(locator, genome);
+        AlignmentTrack t = new AlignmentTrack(locator, aldt, genome);
+
+        newTracks.add(t);
     }
 
     public static boolean isAlignmentTrack(String typeString) {
