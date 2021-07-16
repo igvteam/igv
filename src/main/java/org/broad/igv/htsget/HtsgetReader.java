@@ -23,8 +23,10 @@ public class HtsgetReader {
      * @throws IOException
      */
     public static HtsgetReader getReader(final String url) throws IOException {
-
-        String ticket = HttpUtils.getInstance().getContentsAsJSON(new URL(url + "?class=header"));
+        // TODO: This is not correct, htsget server returns "referenceName incompatible with header-only request"
+        // therefore it needs to remove that field & send the request with "&class=header" and not with "?class=header",
+        // which generates yet another error (integer expected, because the URL is not correctly formatted).
+        String ticket = HttpUtils.getInstance().getContentsAsJSON(new URL(url + "&class=header"));
         JsonParser parser = new JsonParser();
         JsonObject json = null;
         try {

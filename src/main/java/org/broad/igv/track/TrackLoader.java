@@ -63,7 +63,6 @@ import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.gwas.*;
-import org.broad.igv.htsget.HtsgetAlignmentSource;
 import org.broad.igv.htsget.HtsgetReader;
 import org.broad.igv.htsget.HtsgetVariantSource;
 import org.broad.igv.lists.GeneList;
@@ -114,7 +113,7 @@ public class TrackLoader {
     public List<Track> load(ResourceLocator locator, Genome genome) throws DataLoadException {
 
         final String path = locator.getPath().trim();
-        final boolean isHtsGet = locator.getAttribute("htsget") != null && (Boolean) locator.getAttribute("htsget");
+//        final boolean isHtsGet = locator.getAttribute("htsget") != null && (Boolean) locator.getAttribute("htsget");
 
         // Check if the AWS credentials are still valid. If not, re-login and renew pre-signed urls
         if (AmazonUtils.isAwsS3Path(path)) {
@@ -155,9 +154,6 @@ public class TrackLoader {
             } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
                 loadBlastMapping(locator, newTracks);
             } else if (isAlignmentTrack(typeString) || (path.startsWith("http") && path.contains("/query.cgi?"))) {
-                loadAlignmentsTrack(locator, newTracks, genome);
-                // HtsGet URL
-            } else if (locator.getTypeString() == "htsgetReads") {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".shape") || typeString.endsWith(".map")) {
                 convertLoadShapeFile(locator, newTracks, genome);
@@ -229,6 +225,7 @@ public class TrackLoader {
                             //loadAlignmentsWithSource(locator, source, newTracks, genome);
                         }
                     } catch (IOException e) {
+                        log.info(e.getMessage());
                         // Not neccessarily an error, might just indicate its not an htsget server.  Not sure
                         // if this should be logged or not.
                     }
