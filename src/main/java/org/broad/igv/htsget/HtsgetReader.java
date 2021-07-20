@@ -4,6 +4,7 @@ import com.google.gson.*;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,7 +16,7 @@ public class HtsgetReader {
     String format;
 
     /**
-     * Factor method to return an htsget reader for the URL.   In the case of an unexpected response, return "null",
+     * Factory method to return an htsget reader for the URL.   In the case of an unexpected response, return "null",
      * this indicates that the URL is not an htsget source.
      *
      * @param url
@@ -24,7 +25,8 @@ public class HtsgetReader {
      */
     public static HtsgetReader getReader(final String url) throws IOException {
 
-        String ticket = HttpUtils.getInstance().getContentsAsJSON(new URL(url + "?class=header"));
+        URL headerURL = addQueryString(url, "class=header");
+        String ticket = HttpUtils.getInstance().getContentsAsJSON(headerURL);
         JsonParser parser = new JsonParser();
         JsonObject json = null;
         try {
@@ -58,16 +60,17 @@ public class HtsgetReader {
     }
 
     public byte [] readHeader() throws IOException {
-        String url = this.url + "?class=header"; // + "&format=" + this.format;
-        String ticketString = HttpUtils.getInstance().getContentsAsJSON(new URL(url));
+        URL headerURL = addQueryString(this.url, "class=header&format=" + this.format);
+        String ticketString = HttpUtils.getInstance().getContentsAsJSON(headerURL);
         JsonParser parser = new JsonParser();
         JsonObject ticket = parser.parse(ticketString).getAsJsonObject();
         return loadURLs(ticket);
     }
 
     public byte[] readData(String chr, int start, int end) throws IOException {
-        String url = this.url + "?format=" + this.format + "&referenceName=" + chr + "&start=" + start + "&end=" + end;
-        String ticketString = HttpUtils.getInstance().getContentsAsJSON(new URL(url));
+        final String queryString = "format=" + this.format + "&referenceName=" + chr + "&start=" + start + "&end=" + end;
+        URL queryURL = addQueryString(this.url, queryString);
+        String ticketString = HttpUtils.getInstance().getContentsAsJSON(queryURL);
         JsonParser parser = new JsonParser();
         JsonObject ticket = parser.parse(ticketString).getAsJsonObject();
         return loadURLs(ticket);
@@ -111,6 +114,11 @@ public class HtsgetReader {
             }
         }
         return bytes;
+    }
+
+    private static URL addQueryString(String urlBase, String queryString) throws MalformedURLException {
+        String separator = urlBase.contains("?") ? "&" : "?";
+        return new URL(urlBase + separator + queryString);
     }
 }
 
