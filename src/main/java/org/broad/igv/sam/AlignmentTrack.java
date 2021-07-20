@@ -812,6 +812,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (alignment != null) {
             StringBuilder buf = new StringBuilder();
             buf.append(alignment.getClipboardString(location, mouseX)
+                    .replace("<b>", "")
+                    .replace("</b>", "")
                     .replace("<br>", "\n")
                     .replace("<br/>", "\n")
                     .replace("<hr>", "\n------------------\n")
@@ -964,7 +966,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             } else {
                 Alignment feature = getAlignmentAt(position, mouseY, frame);
                 if (feature != null) {
-                    return feature.getValueString(position, mouseX, renderOptions);
+                    return feature.getAlignmentValueString(position, mouseX, renderOptions);
                 }
             }
 
