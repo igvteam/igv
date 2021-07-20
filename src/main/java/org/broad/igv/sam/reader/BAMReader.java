@@ -25,26 +25,17 @@
 
 package org.broad.igv.sam.reader;
 
-import htsjdk.samtools.*;
-import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.SamReader;
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
-import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.igv.sam.SAMAlignment;
-import org.broad.igv.sam.cram.IGVReferenceSource;
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.URLUtils;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
-import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 
 /**
@@ -64,10 +55,10 @@ public class BAMReader implements AlignmentReader<SAMAlignment> {
     private SamReaderPool readerPool;
 
     public BAMReader(ResourceLocator locator, boolean requireIndex) throws IOException {
-        this.indexed = requireIndex;
+        this.indexed = requireIndex || locator.isHtsget();
         readerPool = new SamReaderPool(locator, requireIndex);
 
-        SamReader reader = readerPool.getReader();
+        SamReader reader =  readerPool.getReader();
         header = reader.getFileHeader();
         readerPool.freeReader(reader);
     }

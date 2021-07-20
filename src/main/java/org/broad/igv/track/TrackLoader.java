@@ -62,7 +62,7 @@ import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.gwas.*;
-import org.broad.igv.htsget.HtsgetReader;
+import org.broad.igv.htsget.HtsgetUtils;
 import org.broad.igv.htsget.HtsgetVariantSource;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
@@ -129,7 +129,9 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-            if (typeString.endsWith(".gmt")) {
+            if(locator.isHtsget()) {
+                tryHtsget(locator, newTracks, genome);
+            } else if (typeString.endsWith(".gmt")) {
                 loadGMT(locator);
             } else if (typeString.endsWith(".vcf.list")) {
                 loadVCFListFile(locator, newTracks, genome);
@@ -207,20 +209,7 @@ public class TrackLoader {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
             } else {
                 //if a url, try htsget
-                boolean isHtsget = false;
-                if(locator.getPath().startsWith("https://")) {
-                    try {
-                        HtsgetReader reader = HtsgetReader.getReader(locator.getPath());
-                        if(reader != null && reader.getFormat().equals("VCF")) {
-                            isHtsget = true;
-                            HtsgetVariantSource source = new HtsgetVariantSource(reader, genome);
-                            loadVCFWithSource(locator, source, newTracks);
-                        }
-                    } catch (IOException e) {
-                        // Not neccessarily an error, might just indicate its not an htsget server.  Not sure
-                        // if this should be logged or not.
-                    }
-                }
+                boolean isHtsget = tryHtsget(locator, newTracks, genome);
 
                 if(!isHtsget) {
                     if (AttributeManager.isSampleInfoFile(locator)) {
@@ -265,6 +254,45 @@ public class TrackLoader {
             throw new DataLoadException(e.getMessage());
         }
 
+    }
+
+    /**
+     * Try to load as an htsget resource.  As most (all?) htsget endpoints use an https:// scheme URL, there is
+     * no way to detect other than try.
+     *
+     * @param locator
+     * @param newTracks
+     * @param genome
+     * @return
+     */
+    private boolean tryHtsget(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+        boolean isHtsget = false;
+        if(locator.getPath().startsWith("https://") ||
+                locator.getPath().startsWith("http://") ||
+                locator.getPath().startsWith("htsget://")) {
+            try {
+                HtsgetUtils.Metadata htsgetMeta =  HtsgetUtils.getMetadata(locator.getPath());
+                if(htsgetMeta != null) {
+                    isHtsget = true;
+                    if (htsgetMeta.getFormat().equals("VCF")) {
+                        locator.setHtsget(true);
+                        HtsgetVariantSource source = new HtsgetVariantSource(htsgetMeta, genome);
+                        loadVCFWithSource(locator, source, newTracks);
+                    } else if (htsgetMeta.getFormat().equals("BAM") || htsgetMeta.getFormat().equals("CRAM")) {
+                        locator.setHtsget(true);
+                        loadAlignmentsTrack(locator, newTracks, genome);
+                    } else {
+                        throw new RuntimeException("Format: '" + htsgetMeta.getFormat() + "' is not supported for htsget servers.");
+                    }
+                }
+            } catch (IOException e) {
+                // Not neccessarily an error, might just indicate its not an htsget server.  Not sure
+                // if this should be logged or not, it will be a common and expected occurence when loading
+                // sample information, which is checked after htsget
+                return false;
+            }
+        }
+        return isHtsget;
     }
 
     public static boolean isAlignmentTrack(String typeString) {

@@ -1,6 +1,5 @@
 package org.broad.igv.htsget;
 
-import org.broad.igv.feature.genome.Genome;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -11,7 +10,8 @@ public class HtsgetReaderTest {
     public void testReadHeader() throws Exception {
 
         String url = "https://htsget.ga4gh.org/variants/giab.NA12878";
-        HtsgetReader reader = HtsgetReader.getReader(url);
+        HtsgetUtils.Metadata metadata = HtsgetUtils.getMetadata(url);
+        HtsgetReader reader = HtsgetReader.getReader(metadata);
         byte [] headerBytes  = reader.readHeader();
         assertNotNull(headerBytes);
     }
@@ -24,7 +24,8 @@ public class HtsgetReaderTest {
         int start = 128732400 - 1;
         int end = 128770475;
 
-        HtsgetReader reader = HtsgetReader.getReader(url);
+        HtsgetUtils.Metadata metadata =  HtsgetUtils.getMetadata(url);
+        HtsgetReader reader = HtsgetReader.getReader(metadata);
         byte[] data = reader.readData(chr, start, end);
         assertNotNull(data);
 

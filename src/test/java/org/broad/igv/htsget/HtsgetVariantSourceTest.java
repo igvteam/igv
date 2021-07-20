@@ -1,13 +1,11 @@
 package org.broad.igv.htsget;
 
 import htsjdk.tribble.Feature;
-import htsjdk.variant.vcf.VCFContigHeaderLine;
 import htsjdk.variant.vcf.VCFHeader;
 import org.broad.igv.feature.genome.Genome;
 import org.junit.Test;
 
 import java.util.Iterator;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -18,8 +16,8 @@ public class HtsgetVariantSourceTest {
 
         String url = "https://htsget.ga4gh.org/variants/giab.NA12878";
         Genome genome = null;
-        HtsgetReader reader = HtsgetReader.getReader(url);
-        HtsgetVariantSource source = new HtsgetVariantSource(reader, genome);
+        HtsgetUtils.Metadata metadata =  HtsgetUtils.getMetadata(url);
+        HtsgetVariantSource source = new HtsgetVariantSource(metadata, genome);
         VCFHeader header = (VCFHeader) source.getHeader();
         assertNotNull(header);
     }
@@ -33,8 +31,8 @@ public class HtsgetVariantSourceTest {
         int end = 128770475;
         Genome genome = null;
 
-        HtsgetReader reader = HtsgetReader.getReader(url);
-        HtsgetVariantSource source = new HtsgetVariantSource(reader, genome);
+        HtsgetUtils.Metadata metadata =  HtsgetUtils.getMetadata(url);
+        HtsgetVariantSource source = new HtsgetVariantSource(metadata, genome);
         Iterator<Feature> featureIterator = source.getFeatures(chr, start, end);
         int featureCount = 0;
         while (featureIterator.hasNext()) {

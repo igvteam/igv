@@ -16,6 +16,11 @@ import org.broad.igv.track.FeatureSource;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * A "Tribble" like feature source class for htsget variant endpoints.   Currently this only supports VCF format.  It
+ * is anticipated that this class will be replaced when the htsjdk supports variant sources.
+ *
+ */
 public class HtsgetVariantSource implements FeatureSource {
 
     HtsgetReader htsgetReader;
@@ -25,8 +30,8 @@ public class HtsgetVariantSource implements FeatureSource {
     int featureWindowSize;
     Genome genome;
 
-    public HtsgetVariantSource(HtsgetReader htsgetReader, Genome genome) {
-        this.htsgetReader = htsgetReader;
+    public HtsgetVariantSource(HtsgetUtils.Metadata metadata, Genome genome) {
+        this.htsgetReader = HtsgetReader.getReader(metadata);
         this.codec = new VCFCodec();
         this.featureWindowSize = 1000;  // default
         this.chrAliasMap = new HashMap<>();

@@ -116,6 +116,11 @@ public class ResourceLocator {
     private boolean indexed;
     private boolean dataURL;
 
+    /**
+     * True if this is an htsget resource
+     */
+    private boolean htsget;
+
     public static List<ResourceLocator> getLocators(Collection<File> files) {
 
         List<ResourceLocator> locators = new ArrayList<>();
@@ -160,10 +165,12 @@ public class ResourceLocator {
      * @param path
      */
     public ResourceLocator(String path) {
-        this.setPath(path);
 
+        this.setPath(path);
         if (path != null && path.startsWith("https://") && GoogleUtils.isGoogleDrive(path)) {
             this.resolveGoogleDrive(path);
+        } else if (path != null && path.startsWith("htsget://")) {
+            this.htsget = true;
         }
 
     }
@@ -517,6 +524,14 @@ public class ResourceLocator {
         return indexed;
     }
 
+    public boolean isHtsget() {
+        return htsget;
+    }
+
+    public void setHtsget(boolean htsget) {
+        this.htsget = htsget;
+    }
+
     private static boolean isCloudOrDropbox(String path) {
         try {
             if (GoogleUtils.isGoogleDrive(path)) {
@@ -553,7 +568,8 @@ public class ResourceLocator {
         COVERAGE("coverage"),
         MAPPING("mapping"),
         COLOR("color"),
-        INDEX("index");
+        INDEX("index"),
+        HTSGET("htsget");
 
         private String name;
 
