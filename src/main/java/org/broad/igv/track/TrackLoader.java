@@ -274,6 +274,7 @@ public class TrackLoader {
                 HtsgetUtils.Metadata htsgetMeta =  HtsgetUtils.getMetadata(locator.getPath());
                 if(htsgetMeta != null) {
                     isHtsget = true;
+                    locator.setType(htsgetMeta.getFormat().toLowerCase());
                     if (htsgetMeta.getFormat().equals("VCF")) {
                         locator.setHtsget(true);
                         HtsgetVariantSource source = new HtsgetVariantSource(htsgetMeta, genome);
@@ -296,10 +297,10 @@ public class TrackLoader {
     }
 
     public static boolean isAlignmentTrack(String typeString) {
-        return typeString.endsWith(".sam") || typeString.endsWith(".bam") || typeString.endsWith(".cram") ||
-                typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
-                typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
-                typeString.endsWith(".bai") || typeString.endsWith(".csi") || typeString.equals("alist");
+        return typeString.endsWith("sam") || typeString.endsWith("bam") || typeString.endsWith("cram") ||
+                typeString.endsWith("sam.list") || typeString.endsWith("bam.list") ||
+                typeString.endsWith("aligned") || typeString.endsWith("sai") ||
+                typeString.endsWith("bai") || typeString.endsWith("csi") || typeString.equals("alist");
     }
 
     private void loadSMAPFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
