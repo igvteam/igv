@@ -25,6 +25,8 @@
 
 package org.broad.igv.sam;
 
+import org.broad.igv.prefs.PreferencesManager;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -56,6 +58,10 @@ public class ModifiedBaseCounts {
                 for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
                     if (baseModifications.containsKey(i)) {
                         BaseModification mod = baseModifications.get(i);
+                        double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
+                        int l = Byte.toUnsignedInt(mod.likelihood);
+                        if(l < threshold) continue;
+
                         int blockIdx = i - block.getBases().startOffset;
                         int position = block.getStart() + blockIdx;   // genomic position
                         Map<Integer, Integer> modCounts = counts.get(mod.modification);
