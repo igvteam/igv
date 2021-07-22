@@ -230,7 +230,7 @@ public class DirectoryManager {
             directory = new File(cachePref);
         }
 
-        if(directory == null || !directory.exists() || !directory.isDirectory()) {
+        if (directory == null || !directory.exists() || !directory.isDirectory()) {
 
             directory = new File(getGenomeCacheDirectory(), "seq");
             if (!directory.exists()) {
@@ -367,14 +367,7 @@ public class DirectoryManager {
             initializeLog();
 
             // Try to delete the old directory
-            try {
-                deleteDirectory(oldDirectory);
-            } catch (IOException e) {
-                log.error("An error was encountered deleting the previous IGV directory", e);
-                MessageUtils.showMessage("<html>An error was encountered deleting the previous IGV directory (" +
-                        e.getMessage() + "):<br>&nbsp;nbsp;nbsp;" + oldDirectory.getAbsolutePath() +
-                        "<br>Remaining files should be manually deleted.");
-            }
+            org.broad.igv.util.FileUtils.deleteDir(oldDirectory);
 
         }
 
@@ -402,7 +395,7 @@ public class DirectoryManager {
         }
     }
 
-    public static  boolean isChildOf(File base, File child)
+    public static boolean isChildOf(File base, File child)
             throws IOException {
 
         File parent = child.getParentFile();
@@ -413,26 +406,6 @@ public class DirectoryManager {
             parent = parent.getParentFile();
         }
         return false;
-    }
-
-    /**
-     * Delete the directory and all contents recursively.  The apache FileUtils is hanging on Linux.
-     *
-     * @param oldDirectory
-     * @throws IOException
-     */
-    private static void deleteDirectory(File oldDirectory) throws IOException {
-        if (Globals.IS_LINUX || Globals.IS_MAC) {
-            //System.out.println("Deleting: " + oldDirectory);
-            String[] cmd = new String[]{"rm", "-rf", oldDirectory.getAbsolutePath()};
-            String result = RuntimeUtils.executeShellCommand(cmd, null, null);
-            if (result != null && result.trim().length() > 0) {
-                log.info("Response from 'rm -rf': " + result);
-            }
-        } else {
-            // The apache commons FileUtils is not working reliably
-            org.broad.igv.util.FileUtils.deleteDir(oldDirectory);
-        }
     }
 
 
@@ -499,7 +472,7 @@ public class DirectoryManager {
             PatternLayout layout = PatternLayout.newBuilder().withConfiguration(configuration)
                     .withPattern("%p [%d{ISO8601}] [%F:%L]  %m%n").build();
             RolloverStrategy rolloverStrategy = DefaultRolloverStrategy.newBuilder().withConfig(configuration)
-            		.withMax("1").withMin("1").build();
+                    .withMax("1").withMin("1").build();
             RollingFileAppender appender = RollingFileAppender.newBuilder().withName("IGV_ROLLING_APPENDER")
                     .setConfiguration(configuration)
                     .withFileName(logFile.getAbsolutePath()).withAppend(true)

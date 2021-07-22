@@ -122,6 +122,7 @@ SAM.FILTER_URL	URL or path to read group filter file	string	null
 ##Coverage Track Options
 SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2f
 SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
+
 ##Splice Junction Track
 SAM.SHOW_JUNCTION_FLANKINGREGIONS	Show flanking regions	boolean	FALSE
 SAM.JUNCTION_MIN_FLANKING_WIDTH	Minimum flanking width	integer	0
@@ -192,8 +193,8 @@ MASTER_RESOURCE_FILE_KEY	Data registry url	string	https://data.broadinstitute.or
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
-BLAT_SERVER_TYPE	Blat server type	select UCSC|WEB_BLAT	UCSC
-BLAT_URL	Blat url	String	https://genome.cse.ucsc.edu/cgi-bin/hgBlat
+
+BLAT_URL	Blat url	String	https://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=$SEQUENCE&type=DNA&db=$DB&output=json
 ---
 TOOLTIP.INITIAL_DELAY	Tooltip inital delay (ms)	integer	50
 TOOLTIP.RESHOW_DELAY	Tooltip reshow delay (ms)	integer	50

@@ -63,7 +63,6 @@ import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
-import org.broad.igv.util.blat.LegacyBlatClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.extview.ExtendViewClient;
 import org.w3c.dom.Document;
@@ -2093,7 +2092,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             item.addActionListener(aEvt -> {
                 String blatSeq = alignment.getReadStrand() == Strand.NEGATIVE ?
                         SequenceTrack.getReverseComplement(seq) : seq;
-                BlatTrack.createBlatTrack(blatSeq, alignment.getReadName());
+                BlatClient.doBlatQuery(blatSeq, alignment.getReadName());
             });
 
         }
@@ -2119,7 +2118,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     final JMenuItem lcbItem = new JMenuItem("Blat left-clipped sequence");
                     add(lcbItem);
                     lcbItem.addActionListener(aEvt ->
-                            BlatTrack.createBlatTrack(lcSeq, alignment.getReadName() + " - left clip")
+                            BlatClient.doBlatQuery(lcSeq, alignment.getReadName() + " - left clip")
                     );
                 }
             }
@@ -2142,7 +2141,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     final JMenuItem rcbItem = new JMenuItem("Blat right-clipped sequence");
                     add(rcbItem);
                     rcbItem.addActionListener(aEvt ->
-                            BlatTrack.createBlatTrack(rcSeq, alignment.getReadName() + " - right clip")
+                            BlatClient.doBlatQuery(rcSeq, alignment.getReadName() + " - right clip")
                     );
                 }
             }
@@ -2259,7 +2258,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 add(blatItem);
                 blatItem.addActionListener(aEvt -> {
                     String blatSeq = insertion.getBases().getString();
-                    BlatTrack.createBlatTrack(blatSeq, "Blat insert sequence");
+                    BlatClient.doBlatQuery(blatSeq, "Blat insert sequence");
                 });
             }
         }
@@ -2342,7 +2341,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             add(item);
             item.addActionListener(aEvt -> {
                 String blatSeq = insertion.getBases().getString();
-                BlatTrack.createBlatTrack(blatSeq, "Blat insert sequence");
+                BlatClient.doBlatQuery(blatSeq, "Blat insert sequence");
             });
             item.setEnabled(insertion.getBases() != null && insertion.getBases().length >= 10);
         }

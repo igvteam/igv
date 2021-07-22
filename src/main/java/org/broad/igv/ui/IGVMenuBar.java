@@ -43,7 +43,6 @@ import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
-import org.broad.igv.track.BlatTrack;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.commandbar.GenomeComboBox;
@@ -58,6 +57,7 @@ import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 
 import javax.swing.*;
@@ -89,44 +89,26 @@ import static org.broad.igv.ui.UIConstants.*;
 public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private static Logger log = Logger.getLogger(IGVMenuBar.class);
-    public static final String GENOMESPACE_REG_TOOLTIP = "Register for GenomeSpace";
-    public static final String GENOMESPACE_REG_PAGE = "http://www.genomespace.org/register";
+    private static final String LOAD_GENOME_SERVER_TOOLTIP = "Select genomes available on the server to appear in menu.";
+    private static final String CANNOT_LOAD_GENOME_SERVER_TOOLTIP = "Could not reach genome server";
+
+    private static IGVMenuBar instance;
 
     private JMenu extrasMenu;
+    private JMenu toolsMenu;
+    private JMenu googleMenu;
+    private JMenu AWSMenu;
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
-    IGV igv;
-
-    private JMenu toolsMenu;
-
+    private IGV igv;
     /**
      * We store this as a field because we alter it if
      * we can't access genome server list
      */
     private JMenuItem loadFromServerMenuItem;
-
-    private static final String LOAD_GENOME_SERVER_TOOLTIP = "Select genomes available on the server to appear in menu.";
-    private static final String CANNOT_LOAD_GENOME_SERVER_TOOLTIP = "Could not reach genome server";
-
-    private static IGVMenuBar instance;
-    private JMenu googleMenu;
-    private JMenu AWSMenu;
     private JMenuItem encodeMenuItem;
     private JMenuItem reloadSessionItem;
 
-    public void notifyGenomeServerReachable(boolean reachable) {
-        if (loadFromServerMenuItem != null) {
-            UIUtilities.invokeOnEventThread(() -> {
-                loadFromServerMenuItem.setEnabled(reachable);
-                String tooltip = reachable ? LOAD_GENOME_SERVER_TOOLTIP : CANNOT_LOAD_GENOME_SERVER_TOOLTIP;
-                loadFromServerMenuItem.setToolTipText(tooltip);
-            });
-        }
-    }
-
-    public void showAboutDialog() {
-        (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
-    }
 
     static IGVMenuBar createInstance(IGV igv) {
         if (instance != null) {
@@ -162,6 +144,22 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             DesktopIntegration.setQuitHandler();
         }
     }
+
+
+    public void notifyGenomeServerReachable(boolean reachable) {
+        if (loadFromServerMenuItem != null) {
+            UIUtilities.invokeOnEventThread(() -> {
+                loadFromServerMenuItem.setEnabled(reachable);
+                String tooltip = reachable ? LOAD_GENOME_SERVER_TOOLTIP : CANNOT_LOAD_GENOME_SERVER_TOOLTIP;
+                loadFromServerMenuItem.setToolTipText(tooltip);
+            });
+        }
+    }
+
+    public void showAboutDialog() {
+        (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
+    }
+
 
     private List<AbstractButton> createMenus() {
 
@@ -213,9 +211,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     /**
      * Generate the "tools" menu.
-     * This is imperative, it is written to field {@code toolsMenu}.
-     * Reason being, when we add (TODO remove)
-     * a new tool, we need to refresh just this menu
+     * Legacy pattern -- at one times tools could be loaded dynamically as plug-ins
      */
     void refreshToolsMenu() {
         List<JComponent> menuItems = new ArrayList<JComponent>(10);
@@ -1161,10 +1157,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return false;
     }
 
-    public JMenu getViewMenu() {
-        return viewMenu;
-    }
-
     final public void doExitApplication() {
 
         try {
@@ -1217,7 +1209,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 if(blatSequence.length() < 20 || blatSequence.length() > 8000) {
                     MessageUtils.showMessage("Blat sequences must be >= 20 and <= 8000");
                 } else {
-                    BlatTrack.createBlatTrack(blatSequence, "Blat");
+                    BlatClient.doBlatQuery(blatSequence, "Blat");
                 }
             }
         });

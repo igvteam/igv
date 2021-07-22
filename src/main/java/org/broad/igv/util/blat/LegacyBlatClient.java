@@ -33,12 +33,8 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.PSLCodec;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.track.BlatTrack;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -59,14 +55,46 @@ import java.util.Map;
 public class LegacyBlatClient {
 
     private static Logger log = Logger.getLogger(LegacyBlatClient.class);
-    public static final int MINIMUM_BLAT_LENGTH = 20;
 
     static int sleepTime = 15 * 1000;  //	#	milli seconds to wait between requests
 
     static String hgsid;  // cached, not sure what this is for but apparently its best to reuse it.
     static long lastQueryTime = 0;
 
-    public static List<String> blat(String org, String db, String userSeq) throws IOException {
+
+     static List<PSLRecord> blat(final String userSeq) throws IOException {
+
+        String serverType = PreferencesManager.getPreferences().get(Constants.BLAT_SERVER_TYPE);
+        List<String> tokensList;
+        if (serverType.equalsIgnoreCase("web_blat")) {
+            tokensList = webBlat(userSeq);
+
+        } else {
+
+            Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
+            String db = genome.getId();
+            String species = genome.getSpecies();
+            if (species == null) {
+                throw new RuntimeException("Cannot determine species name for genome: " + genome.getDisplayName());
+            }
+            tokensList = ucscBlat(species, db, userSeq);
+        }
+
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        PSLCodec codec = new PSLCodec(genome, true);
+        List<PSLRecord> features = new ArrayList<>(tokensList.size());
+        for (String tokens : tokensList) {
+            PSLRecord f = codec.decode(tokens);
+            if (f != null) {
+                features.add(f);
+            }
+        }
+        return features;
+
+    }
+
+
+    private static List<String> ucscBlat(String org, String db, String userSeq) throws IOException {
 
         String searchType = "DNA";
         String sortOrder = "query,score";
@@ -206,62 +234,6 @@ public class LegacyBlatClient {
 
         return records;
     }
-
-    public static void doBlatQuery(final String userSeq, final String trackLabel) {
-        LongRunningTask.submit(new NamedRunnable() {
-            public String getName() {
-                return "Blat sequence";
-            }
-
-            public void run() {
-                try {
-
-                    String serverType = PreferencesManager.getPreferences().get(Constants.BLAT_SERVER_TYPE);
-                    List<String> tokensList;
-                    if (serverType.equalsIgnoreCase("web_blat")) {
-                        tokensList = LegacyBlatClient.webBlat(userSeq);
-
-                    } else {
-
-                        Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
-
-                        String db = genome.getId();
-                        String species = genome.getSpecies();
-
-                        if (species == null) {
-                            MessageUtils.showMessage("Cannot determine species name for genome: " + genome.getDisplayName());
-                            return;
-                        }
-
-                        tokensList = LegacyBlatClient.blat(species, db, userSeq);
-                    }
-
-                    if (tokensList.isEmpty()) {
-                        MessageUtils.showMessage("No features found");
-                    } else {
-                        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                        PSLCodec codec = new PSLCodec(genome, true);
-                        List<PSLRecord> features = new ArrayList<>(tokensList.size());
-                        for (String tokens : tokensList) {
-                            PSLRecord f = codec.decode(tokens);
-                            if (f != null) {
-                                features.add(f);
-                            }
-                        }
-                        BlatTrack newTrack = new BlatTrack(userSeq, features, trackLabel); //species, userSeq, db, genome, trackLabel);
-                        IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
-                        IGV.getInstance().repaint();
-                        BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), userSeq, newTrack.getFeatures());
-                        win.setVisible(true);
-
-                    }
-                } catch (Exception e1) {
-                    MessageUtils.showErrorMessage("Error running blat", e1);
-                }
-            }
-        });
-    }
-
 
 }
 

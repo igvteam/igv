@@ -31,8 +31,7 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.track.BlatTrack;
-import org.broad.igv.util.blat.LegacyBlatClient;
+import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -199,7 +198,7 @@ public class RegionOfInterestPanel extends JPanel {
 
         item = new JMenuItem("Blat sequence");
         if (roiLength > 20 && roiLength < 8000) {
-            item.addActionListener(e -> BlatTrack.createBlatTrackFromRegion(roi.getChr(), roi.getStart(), roi.getEnd(), Strand.NONE));
+            item.addActionListener(e -> BlatClient.doBlatQueryFromRegion(roi.getChr(), roi.getStart(), roi.getEnd(), Strand.NONE));
         } else {
             item.setEnabled(false);
         }

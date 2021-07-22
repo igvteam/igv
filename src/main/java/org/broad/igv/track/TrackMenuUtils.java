@@ -60,7 +60,7 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
-import org.broad.igv.util.blat.LegacyBlatClient;
+import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.extview.ExtendViewClient;
 
@@ -1368,7 +1368,7 @@ public class TrackMenuUtils {
                 } else {
                     strand = Strand.NONE;
                 }
-                BlatTrack.createBlatTrackFromRegion(f.getChr(), start, end, strand);
+                BlatClient.doBlatQueryFromRegion(f.getChr(), start, end, strand);
             });
         } else {
             item.setEnabled(false);
