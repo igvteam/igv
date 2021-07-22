@@ -95,87 +95,8 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
             }
 
             String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
-            int nTokens = tokens.length;
-            if (nTokens < 21) {
-                // log.info("Skipping line ")
-                return null;
-            }
-            int tSize = Integer.parseInt(tokens[14]);
-            String chrToken = tokens[13];
-            String chr = genome == null ? chrToken : genome.getCanonicalChrName(chrToken);
-            int start = Integer.parseInt(tokens[15]); // IS PSL 1 or ZERO based,  closed or open?
-
-            String strandString = tokens[8];
-            Strand strand = strandString.startsWith("+") ? Strand.POSITIVE : Strand.NEGATIVE;
-
-            boolean gNeg = false;
-            if (strandString.length() > 1) {
-                gNeg = strandString.charAt(1) == '-';
-            }
-
-            f = new PSLRecord();
-            f.setName(tokens[9]);
-            f.setChr(chr);
-            f.setStart(start);
-            f.setEnd(Integer.parseInt(tokens[16]));
-            f.setStrand(strand);
-
-            int exonCount = Integer.parseInt(tokens[17]);
-            String[] exonSizes = tokens[18].split(",");
-            String[] startsBuffer = tokens[20].split(",");
-
-            if (startsBuffer.length == exonSizes.length && exonCount == startsBuffer.length) {
-                for (int i = 0; i < startsBuffer.length; i++) {
-                    int exonSize = Integer.parseInt(exonSizes[i]);
-                    int exonStart = Integer.parseInt(startsBuffer[i]);
-                    if (gNeg) {
-                        exonStart = tSize - exonStart - exonSize;
-                    }
-                    int exonEnd = exonStart + exonSize;
-                    Exon exon = new Exon(chr, exonStart, exonEnd, strand);
-                    f.addExon(exon);
-                }
-            } else {
-                // TODO -- warn
-            }
-
-            //score = percentId = 100.0 * (match + repMatch)  / (misMatch + match + repMatch + qGapCount + tGapCount)
-            int match = Integer.parseInt(tokens[0]);
-            int misMatch = Integer.parseInt(tokens[1]);
-            int repMatch = Integer.parseInt(tokens[2]);
-            int ns = Integer.parseInt(tokens[3]);
-            int qGapCount = Integer.parseInt(tokens[4]);
-            int qGapBases = Integer.parseInt(tokens[5]);
-            int tGapCount = Integer.parseInt(tokens[6]);
-            int tGapBases = Integer.parseInt(tokens[7]);
-            int qSize = Integer.parseInt(tokens[10]);
-
-            float score = (1000.0f * (match + repMatch - misMatch - qGapCount - tGapCount)) / qSize;
-
-            f.setMatch(match);
-            f.setMisMatch(misMatch);
-            f.setRepMatch(repMatch);
-            f.setNs(ns);
-            f.setQGapCount(qGapCount);
-            f.setQGapBases(qGapBases);
-            f.setTGapCount(tGapCount);
-            f.setTGapBases(tGapBases);
-            f.setQSize(qSize);
-
-            f.setScore(score);
-
-            // Build description
-            StringBuffer desc = new StringBuffer();
-            desc.append("matches = " + tokens[0]);
-            desc.append("<br>");
-            desc.append("mismatches = " + tokens[1]);
-            desc.append("<br>");
-            desc.append("repeat matches = " + tokens[2]);
-            desc.append("<br>");
-            desc.append("# inserts in query = " + tokens[4]);
-            desc.append("<br>");
-            desc.append("# inserts in target = " + tokens[6]);
-            f.setDescription(desc.toString());
+            f = getPslRecord(tokens, genome);
+            if (f == null) return null;
 
             if(keepText) {
                 f.setText(line);
@@ -186,6 +107,92 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
         }
 
 
+        return f;
+    }
+
+    public static PSLRecord getPslRecord(String[] tokens, Genome genome) {
+        PSLRecord f;
+        int nTokens = tokens.length;
+        if (nTokens < 21) {
+            // log.info("Skipping line ")
+            return null;
+        }
+        int tSize = Integer.parseInt(tokens[14]);
+        String chrToken = tokens[13];
+        String chr = genome == null ? chrToken : genome.getCanonicalChrName(chrToken);
+        int start = Integer.parseInt(tokens[15]); // IS PSL 1 or ZERO based,  closed or open?
+
+        String strandString = tokens[8];
+        Strand strand = strandString.startsWith("+") ? Strand.POSITIVE : Strand.NEGATIVE;
+
+        boolean gNeg = false;
+        if (strandString.length() > 1) {
+            gNeg = strandString.charAt(1) == '-';
+        }
+
+        f = new PSLRecord();
+        f.setName(tokens[9]);
+        f.setChr(chr);
+        f.setStart(start);
+        f.setEnd(Integer.parseInt(tokens[16]));
+        f.setStrand(strand);
+
+        int exonCount = Integer.parseInt(tokens[17]);
+        String[] exonSizes = tokens[18].split(",");
+        String[] startsBuffer = tokens[20].split(",");
+
+        if (startsBuffer.length == exonSizes.length && exonCount == startsBuffer.length) {
+            for (int i = 0; i < startsBuffer.length; i++) {
+                int exonSize = Integer.parseInt(exonSizes[i]);
+                int exonStart = Integer.parseInt(startsBuffer[i]);
+                if (gNeg) {
+                    exonStart = tSize - exonStart - exonSize;
+                }
+                int exonEnd = exonStart + exonSize;
+                Exon exon = new Exon(chr, exonStart, exonEnd, strand);
+                f.addExon(exon);
+            }
+        } else {
+            // TODO -- warn
+        }
+
+        //score = percentId = 100.0 * (match + repMatch)  / (misMatch + match + repMatch + qGapCount + tGapCount)
+        int match = Integer.parseInt(tokens[0]);
+        int misMatch = Integer.parseInt(tokens[1]);
+        int repMatch = Integer.parseInt(tokens[2]);
+        int ns = Integer.parseInt(tokens[3]);
+        int qGapCount = Integer.parseInt(tokens[4]);
+        int qGapBases = Integer.parseInt(tokens[5]);
+        int tGapCount = Integer.parseInt(tokens[6]);
+        int tGapBases = Integer.parseInt(tokens[7]);
+        int qSize = Integer.parseInt(tokens[10]);
+
+        float score = (1000.0f * (match + repMatch - misMatch - qGapCount - tGapCount)) / qSize;
+
+        f.setMatch(match);
+        f.setMisMatch(misMatch);
+        f.setRepMatch(repMatch);
+        f.setNs(ns);
+        f.setQGapCount(qGapCount);
+        f.setQGapBases(qGapBases);
+        f.setTGapCount(tGapCount);
+        f.setTGapBases(tGapBases);
+        f.setQSize(qSize);
+
+        f.setScore(score);
+
+        // Build description
+        StringBuffer desc = new StringBuffer();
+        desc.append("matches = " + tokens[0]);
+        desc.append("<br>");
+        desc.append("mismatches = " + tokens[1]);
+        desc.append("<br>");
+        desc.append("repeat matches = " + tokens[2]);
+        desc.append("<br>");
+        desc.append("# inserts in query = " + tokens[4]);
+        desc.append("<br>");
+        desc.append("# inserts in target = " + tokens[6]);
+        f.setDescription(desc.toString());
         return f;
     }
 

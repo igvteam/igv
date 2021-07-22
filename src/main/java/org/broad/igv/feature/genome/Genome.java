@@ -378,6 +378,10 @@ public class Genome {
         return id;
     }
 
+    public void setUcscID(String ucscID) {
+        this.ucscID = ucscID;
+    }
+
     public String getUCSCId() {
         return ucscID == null ? id : ucscID;
     }
@@ -608,4 +612,16 @@ public class Genome {
     public ArrayList<ResourceLocator> getAnnotationResources() {
         return annotationResources;
     }
+
+
+    /**
+     * Mock genome for unit tests
+     */
+
+    private Genome(String id) {
+        this.id = id;
+    };
+
+    public static Genome mockGenome = new Genome("hg19");
+
 }

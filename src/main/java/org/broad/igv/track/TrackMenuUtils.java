@@ -60,7 +60,7 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
-import org.broad.igv.util.blat.BlatClient;
+import org.broad.igv.util.blat.LegacyBlatClient;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.extview.ExtendViewClient;
 
@@ -459,7 +459,8 @@ public class TrackMenuUtils {
                     featurePopupMenu.add(getExtendViewItem(featureName, sequenceFeature, r));
                 }
 
-                featurePopupMenu.add(getBlatItem(sequenceFeature));
+                final JMenuItem blatItem = getBlatItem(sequenceFeature);
+                featurePopupMenu.add(blatItem);
             }
 
             if (Globals.isDevelopment() && FrameManager.isGeneListMode() && tracks.size() == 1) {
@@ -1354,9 +1355,12 @@ public class TrackMenuUtils {
 
     public static JMenuItem getBlatItem(final Feature f) {
         JMenuItem item = new JMenuItem("Blat Sequence");
-        item.addActionListener(new ActionListener() {
+        final int start = f.getStart();
+        final int end = f.getEnd();
 
-            public void actionPerformed(ActionEvent evt) {
+        if ((end - start) > 20 && (end - start) < 8000) {
+
+            item.addActionListener(evt -> {
 
                 final Strand strand;
                 if (f instanceof IGVFeature) {
@@ -1364,10 +1368,11 @@ public class TrackMenuUtils {
                 } else {
                     strand = Strand.NONE;
                 }
-
-                BlatClient.doBlatQuery(f.getChr(), f.getStart(), f.getEnd(), strand);
-            }
-        });
+                BlatTrack.createBlatTrackFromRegion(f.getChr(), start, end, strand);
+            });
+        } else {
+            item.setEnabled(false);
+        }
         return item;
     }
 

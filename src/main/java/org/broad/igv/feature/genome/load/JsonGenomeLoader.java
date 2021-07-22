@@ -46,6 +46,9 @@ public class JsonGenomeLoader extends GenomeLoader {
             String id = json.get("id").getAsString();
             String name = json.get("name").getAsString();
 
+            JsonElement ucscIDElement = json.get("ucscID");
+            String ucscID = ucscIDElement == null ? null : ucscIDElement.getAsString();
+
             String fastaPath;
             String indexPath = null;
             if (json.has("compressedFastaURL")) {
@@ -118,6 +121,9 @@ public class JsonGenomeLoader extends GenomeLoader {
 
             Genome newGenome = new Genome(id, name, sequence, ordered);
             newGenome.setAnnotationResources(tracks);
+            if (ucscID != null) {
+                newGenome.setUcscID(ucscID);
+            }
             if (aliasURL != null) {
                 newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasURL.getAsString()));
             }

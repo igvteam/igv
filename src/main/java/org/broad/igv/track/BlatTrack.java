@@ -4,15 +4,21 @@ import org.apache.log4j.Logger;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.PSLRecord;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.PSLCodec;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.blat.BlatClient;
+import org.broad.igv.util.blat.LegacyBlatClient;
 import org.broad.igv.util.blat.BlatQueryWindow;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -30,7 +36,6 @@ import java.util.List;
 public class BlatTrack extends FeatureTrack {
 
     private static Logger log = Logger.getLogger(BlatTrack.class);
-    private List<String> tokensList;
 
     String sequence;
     List<PSLRecord> features;
@@ -40,11 +45,11 @@ public class BlatTrack extends FeatureTrack {
         setColor(Color.DARK_GRAY);
     }
 
-    public BlatTrack(String sequence, List<String> tokensList, String trackLabel) {
+    public BlatTrack(String sequence, List<PSLRecord> features, String trackLabel) {
         super(sequence, trackLabel);
-        this.tokensList = tokensList;
         setDisplayMode(Track.DisplayMode.SQUISHED);
         setColor(Color.DARK_GRAY);
+        this.features = features;
         init();
     }
 
@@ -52,23 +57,15 @@ public class BlatTrack extends FeatureTrack {
 
         setUseScore(true);
 
+
         // Convert tokens to features
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        PSLCodec codec = new PSLCodec(genome, true);
 
-        features = new ArrayList<>(tokensList.size());
-        for (String tokens : tokensList) {
-            PSLRecord f = codec.decode(tokens);
-            if (f != null) {
-                features.add(f);
-            }
-        }
-
-        if (features.isEmpty()) {
+        if (this.features.isEmpty()) {
             MessageUtils.showMessage("No features found");
         }
 
-        this.source = new FeatureCollectionSource(features, genome);
+        this.source = new FeatureCollectionSource(this.features, genome);
 
         this.renderer = new IGVFeatureRenderer();
 
@@ -112,11 +109,7 @@ public class BlatTrack extends FeatureTrack {
 
         super.marshalXML(document, element);
 
-        String tmp = "";
-        for(String t : tokensList) {
-            tmp += (t + "\n");
-        }
-        element.setAttribute("tokensList", tmp);
+        element.setAttribute("sequence", this.sequence);
     }
 
     @Override
@@ -130,18 +123,80 @@ public class BlatTrack extends FeatureTrack {
             String species = element.getAttribute("species");
             String db = element.getAttribute("db");
             try {
-                this.tokensList = BlatClient.blat(species, db, sequence);
+                this.features = BlatClient.blat(db, sequence);
             } catch (IOException e) {
                 MessageUtils.showMessage("Error restoring blat track: " + e.getMessage());
                 log.error("Error restoring blat track", e);
             }
         } else {
             String tmp = element.getAttribute("tokensList");
-            this.tokensList = Arrays.asList(tmp.split("\n"));
+            List<String> tokensList = Arrays.asList(tmp.split("\n"));
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            PSLCodec codec = new PSLCodec(genome, true);
+            this.features = new ArrayList<>(tokensList.size());
+            for (String tokens : tokensList) {
+                PSLRecord f = codec.decode(tokens);
+                if (f != null) {
+                    this.features.add(f);
+                }
+            }
         }
 
         init();
 
+    }
+
+
+    public static void createBlatTrack(final String userSeq, final String trackLabel) {
+
+        String serverType = PreferencesManager.getPreferences().get(Constants.BLAT_SERVER_TYPE);
+        if (serverType.equalsIgnoreCase("web_blat")) {
+
+            LegacyBlatClient.doBlatQuery(userSeq, trackLabel);
+
+        } else {
+
+            LongRunningTask.submit(new NamedRunnable() {
+
+                public String getName() {
+                    return "Blat sequence";
+                }
+
+                public void run() {
+                    try {
+                        Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
+                        String db = genome == null ? "hg19" : genome.getUCSCId();
+                        List<PSLRecord> features = BlatClient.blat(db, userSeq);
+                        BlatTrack newTrack = new BlatTrack(userSeq, features, trackLabel); //species, userSeq, db, genome, trackLabel);
+                        IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
+                        IGV.getInstance().repaint();
+                        BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), userSeq, newTrack.getFeatures());
+                        win.setVisible(true);
+
+                    } catch (Exception e1) {
+                        MessageUtils.showErrorMessage("Error running blat", e1);
+                    }
+                }
+            });
+        }
+    }
+
+    public static void createBlatTrackFromRegion(final String chr, final int start, final int end, Strand strand) {
+
+        if ((end - start) > 8000) {
+            MessageUtils.showMessage("BLAT searches are limited to 8kb.  Please try a shorter sequence.");
+            return;
+        }
+
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        final byte[] seqBytes = genome.getSequence(chr, start, end);
+        String userSeq = new String(seqBytes);
+
+        if (strand == Strand.NEGATIVE) {
+            userSeq = SequenceTrack.getReverseComplement(userSeq);
+        }
+
+        createBlatTrack(userSeq, "Blat");
     }
 
 

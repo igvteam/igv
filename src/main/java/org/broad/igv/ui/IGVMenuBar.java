@@ -43,6 +43,7 @@ import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
+import org.broad.igv.track.BlatTrack;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.commandbar.GenomeComboBox;
@@ -57,7 +58,6 @@ import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.encode.EncodeFileBrowser;
 
 import javax.swing.*;
@@ -237,7 +237,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(MotifFinderPlugin.getMenuItem());
 
         // BLAT
-        menuItems.add(BlatClient.getMenuItem());
+        menuItems.add(createBlatMenuItem());
 
         // Combine data tracks
         JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks");
@@ -1206,5 +1206,22 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     public void disableReloadSession() {
         this.reloadSessionItem.setEnabled(false);
+    }
+
+    public static JMenuItem createBlatMenuItem() {
+        JMenuItem menuItem = new JMenuItem("BLAT ...");
+        menuItem.addActionListener(e -> {
+
+            String blatSequence = MessageUtils.showInputDialog("Enter sequence to blat:");
+            if (blatSequence != null) {
+                if(blatSequence.length() < 20 || blatSequence.length() > 8000) {
+                    MessageUtils.showMessage("Blat sequences must be >= 20 and <= 8000");
+                } else {
+                    BlatTrack.createBlatTrack(blatSequence, "Blat");
+                }
+            }
+        });
+
+        return menuItem;
     }
 }

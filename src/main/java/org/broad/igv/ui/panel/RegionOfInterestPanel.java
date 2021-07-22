@@ -31,7 +31,8 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.util.blat.BlatClient;
+import org.broad.igv.track.BlatTrack;
+import org.broad.igv.util.blat.LegacyBlatClient;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -190,13 +191,18 @@ public class RegionOfInterestPanel extends JPanel {
         });
         popupMenu.add(item);
         // Disable copySequence if region exceeds 1 MB
-        if (roi.getEnd() - roi.getStart() > 1000000) {
+        final int roiLength = roi.getEnd() - roi.getStart();
+        if (roiLength > 1000000) {
             item.setEnabled(false);
         }
         popupMenu.add(item);
 
         item = new JMenuItem("Blat sequence");
-        item.addActionListener(e -> BlatClient.doBlatQuery(roi.getChr(), roi.getStart(), roi.getEnd(), Strand.NONE));
+        if (roiLength > 20 && roiLength < 8000) {
+            item.addActionListener(e -> BlatTrack.createBlatTrackFromRegion(roi.getChr(), roi.getStart(), roi.getEnd(), Strand.NONE));
+        } else {
+            item.setEnabled(false);
+        }
         popupMenu.add(item);
 
 
@@ -259,7 +265,7 @@ public class RegionOfInterestPanel extends JPanel {
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            if(dragging  && selectedRegion != null) {
+            if (dragging && selectedRegion != null) {
                 selectedRegion = null;
                 IGV.getInstance().repaint();
             }
