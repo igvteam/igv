@@ -39,7 +39,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
@@ -573,11 +572,11 @@ public class SAMAlignment implements Alignment {
 
 
     public String getClipboardString(double location, int mouseX) {
-        return getValueString(location, mouseX, (AlignmentTrack.RenderOptions) null);
+        return getAlignmentValueString(location, mouseX, (AlignmentTrack.RenderOptions) null);
     }
 
 
-    public String getValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
+    public String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
 
         boolean truncate = renderOptions != null;
         int basePosition = (int) position;

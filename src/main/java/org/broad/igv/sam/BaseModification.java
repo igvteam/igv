@@ -1,5 +1,7 @@
 package org.broad.igv.sam;
 
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
@@ -134,19 +136,6 @@ public class BaseModification {
         return mods;
     }
 
-    public static class Mod {
-        char base;
-        char strand;
-        byte likelihood;
-
-        public Mod(char base, char strand, byte likelihood) {
-            this.base = base;
-            this.strand = strand;
-            this.likelihood = likelihood;
-        }
-    }
-
-
     public static Color getModColor(String modification, byte likelihood) {
 
         Color baseColor;
@@ -165,11 +154,14 @@ public class BaseModification {
         baseColor = modColorPallete.get(modification);
 
         // Alpha shade by likelihood
+        double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
         int l = Byte.toUnsignedInt(likelihood);
         if (l > 250) {
             return baseColor;
         }
-        l = Math.max(25, l);
+        if (l < threshold) {
+            l = 0;
+        }
         String key = modification + "--" + l;
         if (!modColorMap.containsKey(key)) {
             modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), l));

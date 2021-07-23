@@ -882,7 +882,7 @@ public class AlignmentRenderer {
         if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
             Map<Integer, BaseModification> baseModifications = alignment.getBaseModificationMap();
             if (baseModifications != null) {
-
+                double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
                 for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
                     // Compute bounds
                     int pY = (int) rowRect.getY();
@@ -895,6 +895,9 @@ public class AlignmentRenderer {
                         if (baseModifications.containsKey(i)) {
 
                             BaseModification mod = baseModifications.get(i);
+                            int l = Byte.toUnsignedInt(mod.likelihood);
+                            if(l < threshold) continue;
+
                             Color c = BaseModification.getModColor(mod.modification, mod.likelihood);
                             g.setColor(c);
 
@@ -964,24 +967,6 @@ public class AlignmentRenderer {
                 g.fillRect(pX0i, pY, dXi, dY);
             }
         }
-    }
-
-    private void drawModification(Graphics2D g, Color color, char c, int pX, int pY, int dX, int dY) {
-
-        int pX0i = pX, dXi = dX;
-
-        //  expand the rectangle to make it more visible
-        if (dXi < 3) {
-            int expansion = dXi;
-            pX0i -= expansion;
-            dXi += (2 * expansion);
-        }
-
-        if (color != null) {
-            g.setColor(color);
-            g.fillRect(pX0i, pY, dXi, dY);
-        }
-
     }
 
     private Color getShadedColor(byte qual, Color foregroundColor, Color backgroundColor, IGVPreferences prefs) {

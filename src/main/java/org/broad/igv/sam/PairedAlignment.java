@@ -27,7 +27,6 @@ package org.broad.igv.sam;
 
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
 import java.util.List;
@@ -178,20 +177,20 @@ public class PairedAlignment implements Alignment {
      * does not "know" from what window function it was derived
      *
      * @param mouseX
-     * @param windowFunction
+     * @param renderOptions
      * @return
      */
-    public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
+    public String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
         StringBuffer buf = new StringBuffer();
         if (secondAlignment != null) {
             buf.append("<table><tr><td valign=\"top\">");
         }
         buf.append("<b>Left alignment</b><br/>");
-        buf.append(firstAlignment.getValueString(position, mouseX, windowFunction));
+        buf.append(firstAlignment.getAlignmentValueString(position, mouseX, renderOptions));
         if (secondAlignment != null) {
             buf.append("</td><td valign=\"top\">");
             buf.append("<b>Right alignment</b><br/>");
-            buf.append(secondAlignment.getValueString(position, mouseX, windowFunction));
+            buf.append(secondAlignment.getAlignmentValueString(position, mouseX, renderOptions));
             buf.append("</td></tr></table>");
         }
         return buf.toString();
