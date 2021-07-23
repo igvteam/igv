@@ -70,6 +70,7 @@ public class Genome {
     private FeatureTrack geneTrack;
     private String species;
     private String ucscID;
+    private String blatDB;
     private ArrayList<ResourceLocator> annotationResources;
 
 
@@ -376,6 +377,14 @@ public class Genome {
 
     public String getId() {
         return id;
+    }
+
+    public String getBlatDB() {
+        return blatDB != null ? blatDB : id;
+    }
+
+    public void setBlatDB(String blatDB) {
+        this.blatDB = blatDB;
     }
 
     public void setUcscID(String ucscID) {

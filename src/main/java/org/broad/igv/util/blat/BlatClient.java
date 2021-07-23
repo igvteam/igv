@@ -144,7 +144,7 @@ public class BlatClient {
             public void run() {
                 try {
                     Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
-                    String db = genome == null ? "hg19" : genome.getUCSCId();
+                    String db = genome == null ? "hg19" : genome.getBlatDB();
                     List<PSLRecord> features = blat(db, userSeq);
 
 
