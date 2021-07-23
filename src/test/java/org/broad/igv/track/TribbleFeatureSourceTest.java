@@ -58,24 +58,4 @@ public class TribbleFeatureSourceTest {
     }
 
 
-
-    @Ignore   // Ignored, getting Cannot run program "lsof" error on test server. The test is redundant to testCloseFileHandles()
-    @Test
-    public void testFileHandleNumberNonincreasing() throws Exception {
-        int trials = 100;
-        int maxDiff = 2;
-        Assume.assumeTrue(Globals.IS_LINUX || Globals.IS_MAC);
-        int baseFileHandles = TestUtils.getNumberOpenFileHandles();
-
-        String file = org.broad.igv.util.TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
-        TribbleFeatureSource featuresSource = TribbleFeatureSource.getFeatureSource(new ResourceLocator(file), null, false);
-
-        for (int tri = 0; tri < trials; tri++) {
-            featuresSource.getFeatures("chr2", 178709699, 178711955);
-            int curFileHandles = TestUtils.getNumberOpenFileHandles();
-            String msg = "Number of open file handles deviates too much from base:\n";
-            msg += "base: " + baseFileHandles + " current: " + curFileHandles + " trial number: " + tri;
-            Assert.assertTrue(msg, curFileHandles - baseFileHandles <= maxDiff);
-        }
-    }
 }

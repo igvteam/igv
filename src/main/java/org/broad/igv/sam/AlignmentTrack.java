@@ -2105,7 +2105,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 return;
             }
 
-            int clippingThreshold = BlatClient.MINIMUM_BLAT_LENGTH;
+            int minimumBlatLength = BlatClient.MINIMUM_BLAT_LENGTH;
             int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
 
             /* Add a "BLAT left clipped sequence" item if there is significant left clipping. */
@@ -2116,7 +2116,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 add(lccItem);
                 lccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(lcSeq));
 
-                if (clipping[1] > clippingThreshold) {
+                if (clipping[1] > minimumBlatLength) {
                     final JMenuItem lcbItem = new JMenuItem("Blat left-clipped sequence");
                     add(lcbItem);
                     lcbItem.addActionListener(aEvt ->
@@ -2139,7 +2139,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 add(rccItem);
                 rccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(rcSeq));
 
-                if (clipping[3] > clippingThreshold) {
+                if (clipping[3] > minimumBlatLength) {
                     final JMenuItem rcbItem = new JMenuItem("Blat right-clipped sequence");
                     add(rcbItem);
                     rcbItem.addActionListener(aEvt ->
@@ -2260,7 +2260,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 add(blatItem);
                 blatItem.addActionListener(aEvt -> {
                     String blatSeq = insertion.getBases().getString();
-                    BlatClient.doBlatQuery(blatSeq);
+                    BlatClient.doBlatQuery(blatSeq, "Blat insert sequence");
                 });
             }
         }
@@ -2343,7 +2343,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             add(item);
             item.addActionListener(aEvt -> {
                 String blatSeq = insertion.getBases().getString();
-                BlatClient.doBlatQuery(blatSeq);
+                BlatClient.doBlatQuery(blatSeq, "Blat insert sequence");
             });
             item.setEnabled(insertion.getBases() != null && insertion.getBases().length >= 10);
         }

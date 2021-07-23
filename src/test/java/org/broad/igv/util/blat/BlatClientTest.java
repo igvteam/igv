@@ -1,11 +1,11 @@
 package org.broad.igv.util.blat;
 
-import org.broad.igv.Globals;
-import org.broad.igv.util.TestUtils;
+import org.broad.igv.feature.PSLRecord;
+import org.broad.igv.feature.Strand;
+import org.broad.igv.ui.util.MessageUtils;
 import org.junit.Test;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -13,38 +13,36 @@ import static org.junit.Assert.*;
 public class BlatClientTest {
 
     @Test
-    public void parseUCSCResult() throws Exception {
-        String testPath = TestUtils.DATA_DIR + "blat/UCSC_blat_results.html";
-        String response = new String(Files.readAllBytes(Paths.get(testPath)));
-        List<String> results = BlatClient.parseResult(response);
-        assertEquals(5, results.size());
+    public void blat() throws IOException {
+
+        //https://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=GTCCTCGGAACCAGGACCTCGGCGTGGCCTAGCG&type=DNA&db=hg19&output=json
+       List<PSLRecord> results = BlatClient.blat("hg19", "GTCCTCGGAACCAGGACCTCGGCGTGGCCTAGCG");
+
+       assertEquals(1, results.size());
+       assertEquals("chr21", results.get(0).getChr());
+       assertEquals(Strand.POSITIVE, results.get(0).getStrand());
+       assertEquals(34, results.get(0).getqSize());
     }
 
     @Test
-    public void parseCustomResult() throws Exception {
-        String testPath = TestUtils.DATA_DIR + "blat/CUSTOM_blat_results.html";
-        String response = new String(Files.readAllBytes(Paths.get(testPath)));
-        List<String> results = BlatClient.parseResult(response);
-        assertEquals(8, results.size());
-    }
+    public void blatTooShort() throws IOException {
 
-    @Test
-    public void fixWebBlat() throws Exception {
-        String testPath = TestUtils.DATA_DIR + "blat/CUSTOM_blat_results.html";
-        String response = new String(Files.readAllBytes(Paths.get(testPath)));
-        List<String> results = BlatClient.parseResult(response);
-        List<String> fixed = BlatClient.fixWebBlat(results);
-        assertEquals(8, fixed.size());
+        //https://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=GTCCTCGGAACCAGGACCTCGGCGTGGCCTAGCG&type=DNA&db=hg19&output=json
+        try {
+            List<PSLRecord> results = BlatClient.blat("hg19", "GTCCTCGGA");
+            fail("Exception expected");
+        } catch (Exception e) {
+            // This is expected
+            assertTrue(true);
 
-        for (String t : fixed) {
-            String[] tokens = Globals.singleTabMultiSpacePattern.split(t);
-            String chrName = tokens[13];
-            assertTrue(chrName.startsWith("chr"));
         }
     }
 
-//    public static void main(String [] args) throws Exception {
-//        (new BlatClientTest()).parseUCSCResult();
-//        (new BlatClientTest()).parseCustomResult();
+
+
+//    public static void main(String [] args) throws IOException {
+//        (new BlatClientTest()).blatTooShort();
 //    }
+
+
 }
