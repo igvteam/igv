@@ -70,7 +70,7 @@ public class FileUtils {
         }
         return path.startsWith("http://") || path.startsWith("https://") ||
                 path.startsWith("ftp://") || path.startsWith("gs://") ||
-                path.startsWith("s3://");
+                path.startsWith("s3://") || path.startsWith("htsget://");
     }
 
 

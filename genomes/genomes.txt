@@ -95,3 +95,4 @@ SARS-CoV-2	https://s3.amazonaws.com/igv.org.genomes/SARS-CoV-2/ASM985889v3.genom
 Dog (canFam5)	https://s3.amazonaws.com/igv.org.genomes/canFam5/canFam5.genome	canFam5
 Rat (rn7)	https://s3.amazonaws.com/igv.org.genomes/rn7/rn7.genome	rn7
 Gorilla (Kamilah_GGO_v0/gorGor6)	https://s3.amazonaws.com/igv.org.genomes/gorGor6/gorGor6.genome	gorGor6
+

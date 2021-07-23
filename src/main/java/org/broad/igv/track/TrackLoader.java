@@ -62,6 +62,8 @@ import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.gwas.*;
+import org.broad.igv.htsget.HtsgetUtils;
+import org.broad.igv.htsget.HtsgetVariantSource;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.maf.MultipleAlignmentTrack;
@@ -127,7 +129,9 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-            if (typeString.endsWith(".gmt")) {
+            if(locator.isHtsget()) {
+                tryHtsget(locator, newTracks, genome);
+            } else if (typeString.endsWith(".gmt")) {
                 loadGMT(locator);
             } else if (typeString.endsWith(".vcf.list")) {
                 loadVCFListFile(locator, newTracks, genome);
@@ -203,13 +207,19 @@ public class TrackLoader {
                 loadMutFile(locator, newTracks, genome); // Must be tried before ".maf" test below
             } else if (typeString.endsWith(".maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-            } else if (AttributeManager.isSampleInfoFile(locator)) {
-                // This might be a sample information file.
-                AttributeManager.getInstance().loadSampleInfo(locator);
             } else {
-                MessageUtils.showMessage("<html>Unknown file type: " + path + "<br>Check file extension");
-            }
+                //if a url, try htsget
+                boolean isHtsget = tryHtsget(locator, newTracks, genome);
 
+                if(!isHtsget) {
+                    if (AttributeManager.isSampleInfoFile(locator)) {
+                        // This might be a sample information file.
+                        AttributeManager.getInstance().loadSampleInfo(locator);
+                    } else {
+                        MessageUtils.showMessage("<html>Unknown file type: " + path + "<br>Check file extension");
+                    }
+                }
+            }
 
             // Track line
             if (newTracks.size() > 0) {
@@ -246,11 +256,51 @@ public class TrackLoader {
 
     }
 
+    /**
+     * Try to load as an htsget resource.  As most (all?) htsget endpoints use an https:// scheme URL, there is
+     * no way to detect other than try.
+     *
+     * @param locator
+     * @param newTracks
+     * @param genome
+     * @return
+     */
+    private boolean tryHtsget(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+        boolean isHtsget = false;
+        if(locator.getPath().startsWith("https://") ||
+                locator.getPath().startsWith("http://") ||
+                locator.getPath().startsWith("htsget://")) {
+            try {
+                HtsgetUtils.Metadata htsgetMeta =  HtsgetUtils.getMetadata(locator.getPath());
+                if(htsgetMeta != null) {
+                    isHtsget = true;
+                    locator.setType(htsgetMeta.getFormat().toLowerCase());
+                    if (htsgetMeta.getFormat().equals("VCF")) {
+                        locator.setHtsget(true);
+                        HtsgetVariantSource source = new HtsgetVariantSource(htsgetMeta, genome);
+                        loadVCFWithSource(locator, source, newTracks);
+                    } else if (htsgetMeta.getFormat().equals("BAM") || htsgetMeta.getFormat().equals("CRAM")) {
+                        locator.setHtsget(true);
+                        loadAlignmentsTrack(locator, newTracks, genome);
+                    } else {
+                        throw new RuntimeException("Format: '" + htsgetMeta.getFormat() + "' is not supported for htsget servers.");
+                    }
+                }
+            } catch (IOException e) {
+                // Not neccessarily an error, might just indicate its not an htsget server.  Not sure
+                // if this should be logged or not, it will be a common and expected occurence when loading
+                // sample information, which is checked after htsget
+                return false;
+            }
+        }
+        return isHtsget;
+    }
+
     public static boolean isAlignmentTrack(String typeString) {
-        return typeString.endsWith(".sam") || typeString.endsWith(".bam") || typeString.endsWith(".cram") ||
-                typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
-                typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
-                typeString.endsWith(".bai") || typeString.endsWith(".csi") || typeString.equals("alist");
+        return typeString.endsWith("sam") || typeString.endsWith("bam") || typeString.endsWith("cram") ||
+                typeString.endsWith("sam.list") || typeString.endsWith("bam.list") ||
+                typeString.endsWith("aligned") || typeString.endsWith("sai") ||
+                typeString.endsWith("bai") || typeString.endsWith("csi") || typeString.equals("alist");
     }
 
     private void loadSMAPFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
@@ -285,11 +335,11 @@ public class TrackLoader {
     }
 
     private void loadVCF(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
-
-
         TribbleFeatureSource src = TribbleFeatureSource.getFeatureSource(locator, genome);
+        loadVCFWithSource(locator, src, newTracks);
+    }
 
-
+    private void loadVCFWithSource(ResourceLocator locator, FeatureSource src, List<Track> newTracks) {
         VCFHeader header = (VCFHeader) src.getHeader();
 
         // Test if the input VCF file contains methylation rate data:
@@ -335,7 +385,6 @@ public class TrackLoader {
         t.setMargin(0);
         newTracks.add(t);
     }
-
 
     private void loadBlastMapping(ResourceLocator locator, List<Track> newTracks) {
 
