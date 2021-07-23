@@ -110,6 +110,28 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
         return f;
     }
 
+    /*
+     "matches",
+     "misMatches",
+     "repMatches",
+     "nCount",
+     "qNumInsert",
+     "qBaseInsert",
+     "tNumInsert",
+     "tBaseInsert",
+     "strand",
+     "qName",
+     "qSize",
+     "qStart",
+     "qEnd",
+     "tName",   => chr
+     "tSize",
+     "tEnd",
+     "blockCount",
+     "blockSizes",
+     "qStarts",
+     "tStarts"
+     */
     public static PSLRecord getPslRecord(String[] tokens, Genome genome) {
         PSLRecord f;
         int nTokens = tokens.length;

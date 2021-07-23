@@ -184,10 +184,5 @@ public class BlatClient {
     }
 
 
-    //    public static void main(String [] args) throws IOException {
-//        blat("hg19", "GTCCTCGGAACCAGGACCTCGGCGTGGCCTAGCG");
-//    }
-
-
 }
 
