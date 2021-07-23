@@ -98,6 +98,7 @@ final public class Constants {
     public static final String SAM_ALLELE_USE_QUALITY = "SAM.ALLELE_USE_QUALITY";
     public static final String SAM_QUALITY_THRESHOLD = "SAM.QUALITY_THRESHOLD";
     public static final String SAM_ALIGNMENT_SCORE_THRESHOLD = "SAM.ALIGNMENT_SCORE_THRESHOLD";
+    public static final String SAM_BASEMOD_THRESHOLD = "SAM.BASEMOD_THRESHOLD";
     public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
     public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
@@ -284,7 +285,8 @@ final public class Constants {
             SAM_FILTER_SECONDARY_ALIGNMENTS,
             SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
             SAM_JUNCTION_MIN_FLANKING_WIDTH,
-            SAM_JUNCTION_MIN_COVERAGE
+            SAM_JUNCTION_MIN_COVERAGE,
+            SAM_BASEMOD_THRESHOLD
     );
 
     /**

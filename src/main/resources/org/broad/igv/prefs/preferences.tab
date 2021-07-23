@@ -119,14 +119,18 @@ SAM.MAX_SOFT_CLIP	Soft clip reference extension (reference sequence is extended 
 ---
 SAM.FILTER_ALIGNMENTS	Filter alignments by read group	boolean	FALSE
 SAM.FILTER_URL	URL or path to read group filter file	string	null
+
 ##Coverage Track Options
-SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2f
+SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2
 SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
+SAM.BASEMOD_THRESHOLD	Base modification probability threshold (0-1)	float	0.2
+
 
 ##Splice Junction Track
 SAM.SHOW_JUNCTION_FLANKINGREGIONS	Show flanking regions	boolean	FALSE
 SAM.JUNCTION_MIN_FLANKING_WIDTH	Minimum flanking width	integer	0
 SAM.JUNCTION_MIN_COVERAGE	Minimum junction coverage	integer	1
+
 ##Insert Size Options
 SAM.COMPUTE_ISIZES	Compute insert size thresholds	boolean	TRUE
 SAM.MIN_ISIZE_MIN_PERCENTILE	Minimum (percentile)	float	0.5

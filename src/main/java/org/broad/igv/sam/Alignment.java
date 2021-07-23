@@ -133,7 +133,7 @@ public interface Alignment extends LocusScore {
 
     default Map<Integer, BaseModification> getBaseModificationMap() { return null;}
 
-    default String getValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
+    default String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
         return getValueString(position, mouseX, (WindowFunction) null);
     }
 }
