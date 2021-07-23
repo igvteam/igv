@@ -1061,9 +1061,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             final ReferenceFrame frame = te.getFrame();
             if (frame != null) {
                 selectAlignment(e, frame);
-                if (dataPanel != null) {
-                    dataPanel.repaint();
-                }
+                IGV.getInstance().repaint(this);
                 return true;
             }
         }
