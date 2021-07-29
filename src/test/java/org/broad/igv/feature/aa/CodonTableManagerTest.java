@@ -1,5 +1,6 @@
 package org.broad.igv.feature.aa;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -7,6 +8,7 @@ import static org.junit.Assert.*;
 public class CodonTableManagerTest {
 
     @Test
+    @Ignore
     public void getCodonTable() {
 
         CodonTable table = CodonTableManager.getInstance().getCodonTableForChromosome("hg19", "chr1");

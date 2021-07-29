@@ -33,6 +33,7 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.tribble.UCSCGeneTableCodec;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -201,6 +202,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
      * gene FBXW7)
      */
     @Test
+    @Ignore
     public void testNegativeGeneMidExon2() {
         String expectedSeq = "QLSYV";
         String expectedEndSeq = "GSVVR";
