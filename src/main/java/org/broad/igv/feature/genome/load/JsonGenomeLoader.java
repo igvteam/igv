@@ -71,8 +71,6 @@ public class JsonGenomeLoader extends GenomeLoader {
 
             JsonElement orderedElement = json.get("ordered");
             boolean ordered = orderedElement != null && orderedElement.getAsBoolean();
-            JsonElement aliasURL = json.get("aliasURL");
-
 
             ArrayList<ResourceLocator> tracks = new ArrayList<>();
             ArrayList<ResourceLocator> hiddenTracks = new ArrayList<>();
@@ -118,6 +116,16 @@ public class JsonGenomeLoader extends GenomeLoader {
 
             Genome newGenome = new Genome(id, name, sequence, ordered);
             newGenome.setAnnotationResources(tracks);
+
+            JsonElement ucscIDElement = json.get("ucscID");
+            if (ucscIDElement != null) {
+                newGenome.setUcscID( ucscIDElement.getAsString());
+            }
+            JsonElement blatDB = json.get("blatDB");
+            if (blatDB != null) {
+                newGenome.setUcscID( blatDB.getAsString());
+            }
+            JsonElement aliasURL = json.get("aliasURL");
             if (aliasURL != null) {
                 newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasURL.getAsString()));
             }

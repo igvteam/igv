@@ -360,6 +360,9 @@ public class AlignmentDataManager implements IGVEventObserver {
             if (expandEnds) {
                 adjustedStart = Math.max(0, Math.min(start, center - expand));
                 adjustedEnd = Math.max(end, center + expand);
+                if(adjustedEnd < 0) {
+                    adjustedEnd = Integer.MAX_VALUE;  // Overflow
+                }
             }
 
             AlignmentInterval loadedInterval = loadInterval(chr, adjustedStart, adjustedEnd, renderOptions);

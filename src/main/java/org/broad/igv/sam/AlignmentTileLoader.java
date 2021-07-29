@@ -380,9 +380,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
     @Override
     public void receiveEvent(Object event) {
         if (event instanceof StopEvent) {
-            log.info("Canceled");
             cancel = true;
-
             reader.cancelQuery();
         }
     }

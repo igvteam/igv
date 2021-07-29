@@ -177,7 +177,7 @@ public class AlignmentUtils {
         for (i = 0; i <= lastIndex; i++) {
             out[lastIndex - i] = complement(bases.getByte(i));
         }
-        return new ByteSubarray(out, 0, out.length);
+        return new ByteSubarray(out, 0, out.length, bases.fillByte);
     }
 
     /**
@@ -227,25 +227,6 @@ public class AlignmentUtils {
                                                          int fromIdx,
                                                          int nBases) {
 
-        byte[] blockBases = null;
-        byte[] blockQualities = null;
-
-        if (readBases != null && readBases.length > 0) {
-            blockBases = new byte[nBases];
-            int nBasesAvailable = readBases.length - fromIdx;
-            if (nBasesAvailable < nBases) {
-                Arrays.fill(blockBases, (byte) '?');
-            }
-            System.arraycopy(readBases, fromIdx, blockBases, 0, nBases);
-        }
-        if (readBaseQualities != null && readBaseQualities.length > 0) {
-            blockQualities = new byte[nBases];
-            int nBasesAvailable = readBaseQualities.length - fromIdx;
-            if (nBasesAvailable < nBases) {
-                Arrays.fill(blockQualities, (byte) 126);
-            }
-            System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, nBases);
-        }
         AlignmentBlockImpl block = new AlignmentBlockImpl(blockStart, readBases, readBaseQualities, fromIdx, nBases, operator);
 
         return block;

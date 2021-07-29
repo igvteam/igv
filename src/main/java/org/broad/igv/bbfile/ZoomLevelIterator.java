@@ -161,11 +161,6 @@ public class ZoomLevelIterator {
                 // Note: getDataBlock initializes bed feature index to 0
                 return (zoomRecordList.get(zoomRecordIndex++)); // return 1st Data Block item
             } else {
-                String result = String.format("Failed to find data for zoom region (%d,%d,%d,%d)\n",
-                        hitRegion.getStartChromID(), hitRegion.getStartBase(),
-                        hitRegion.getEndChromID(), hitRegion.getEndBase());
-                log.info(result);
-
                 return null;
                 //throw new NoSuchElementException(result);
             }

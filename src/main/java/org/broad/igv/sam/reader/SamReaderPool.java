@@ -19,6 +19,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
@@ -56,7 +58,7 @@ public class SamReaderPool {
     }
 
     public void close() throws IOException {
-        for(SamReader reader : availableReaders) {
+        for (SamReader reader : availableReaders) {
             reader.close();
         }
         availableReaders.clear();
@@ -72,6 +74,19 @@ public class SamReaderPool {
 
         if (isLocal) {
             resource = SamInputResource.of(new File(locator.getPath()));
+        } else if (locator.isHtsget()) {
+            requireIndex = false;
+            URI uri = null;
+            try {
+                // This looks very hacky, but the htsjdk will not recognize an htsget server with https (or http) scheme
+                String htsgetUriString = locator.getPath()
+                        .replace("https://", "htsget://")
+                        .replace("http://", "htsget://");
+                uri = new URI(htsgetUriString);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+            resource = SamInputResource.of(uri);
         } else {
             URL url = HttpUtils.createURL(locator.getPath());
             if (requireIndex) {

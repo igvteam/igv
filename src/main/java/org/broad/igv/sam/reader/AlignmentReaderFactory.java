@@ -81,7 +81,7 @@ public class AlignmentReaderFactory {
                 || typeString.endsWith("psl")
                 || typeString.endsWith("pslx")) {
             reader = new GeraldReader(samFile, requireIndex);
-        } else if (typeString.endsWith(".bam") || (typeString.endsWith(".cram"))) {
+        } else if (typeString.endsWith(".bam") || (typeString.endsWith(".cram")) || locator.isHtsget()) {
             try {
                 reader = new BAMReader(locator, requireIndex); //, requireIndex);
             } catch (Exception e) {

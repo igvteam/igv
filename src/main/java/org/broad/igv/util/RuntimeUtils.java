@@ -33,6 +33,9 @@ import org.apache.log4j.Logger;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.*;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 /**
  * @author jrobinso
@@ -58,100 +61,58 @@ public class RuntimeUtils {
 
     }
 
-    /**
-     * Start an external process with the provided message.
-     * Also starts a separate thread to read back error stream
-     * <p/>
-     * See {@link Runtime#exec(String, String[], java.io.File)} for explanation of arguments
-     *
-     * @return
-     */
-    public static Process startExternalProcess(String[] msg, String[] envp, File dir) throws IOException {
-        Process pr = Runtime.getRuntime().exec(msg, envp, dir);
-        startErrorReadingThread(pr);
-        return pr;
-    }
+    public static String exec(String command) throws IOException, InterruptedException {
 
-    private static Process startErrorReadingThread(Process pr) {
-        final BufferedReader err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+        List<String> commandArgs = StringUtils.breakQuotedString(command, ' ');
 
-        //Supposed to read error stream on separate thread to prevent blocking
-        Thread runnable = new Thread() {
-
-            private boolean messageDisplayed = false;
-
-            @Override
-            public void run() {
-                String line;
-                try {
-                    while ((line = err.readLine()) != null) {
-                        log.error(line);
-                        if (!messageDisplayed && line.toLowerCase().contains("error")) {
-                            MessageUtils.showMessage(line + "<br>See igv.log for more details");
-                            messageDisplayed = true;
-                        }
-                    }
-                    err.close();
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-        runnable.start();
-        return pr;
-    }
-
-    /**
-     * @param cmd
-     * @param envp
-     * @param dir
-     * @return
-     * @throws java.io.IOException
-     * @deprecated Use {@link #executeShellCommand(String[], String[], java.io.File)}
-     */
-    @Deprecated
-    public static String executeShellCommand(String cmd, String[] envp, File dir) throws IOException {
-        return executeShellCommand(new String[]{cmd}, envp, dir);
-    }
-
-
-    public static String executeShellCommand(String cmd[], String[] envp, File dir) throws IOException {
-        return executeShellCommand(cmd, envp, dir, true);
-    }
-
-    public static String executeShellCommand(String cmd[], String[] envp, File dir, boolean waitFor) throws IOException {
-        Process pr = startExternalProcess(cmd, envp, dir);
-
-        if(waitFor){
-            try {
-                pr.waitFor();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        Process process;
+        if(commandArgs.size() == 1) {
+             process = Runtime.getRuntime().exec(command);
+        } else {
+            String [] args = commandArgs.toArray(new String []{});
+            process = Runtime.getRuntime().exec(args);
         }
 
-        InputStream inputStream = null;
-        String line = "";
+        StringBuilder results = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            results.append(line);
+            results.append('\n');
+        }
+        reader.close();
 
-        try {
-            inputStream = pr.getInputStream();
-            BufferedReader buf = new BufferedReader(new InputStreamReader(inputStream));
-            StringWriter writer = new StringWriter();
-            PrintWriter pw = new PrintWriter(writer);
-            while ((line = buf.readLine()) != null) {
-                pw.println(line);
-            }
-            pw.close();
-            return writer.toString();
-        } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
-            OutputStream os = pr.getOutputStream();
-            if(os != null){
-                os.close();
-            }
+        StringBuilder errors = new StringBuilder();
+        BufferedReader errorReader = new BufferedReader(
+                new InputStreamReader(process.getErrorStream()));
+        while ((line = errorReader.readLine()) != null) {
+            errors.append(line);
+            errors.append('\n');
+        }
+        errorReader.close();
+
+        int exitValue = process.waitFor();
+        if (exitValue != 0) {
+            throw new RuntimeException(errorReader.toString());
+        }
+        process.destroy();
+
+        return results.toString();
+    }
+
+    private static class StreamGobbler implements Runnable {
+        private InputStream inputStream;
+        private Consumer<String> consumer;
+
+        public StreamGobbler(InputStream inputStream, Consumer<String> consumer) {
+            this.inputStream = inputStream;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public void run() {
+            new BufferedReader(new InputStreamReader(inputStream)).lines()
+                    .forEach(consumer);
         }
     }
 }

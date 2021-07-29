@@ -430,7 +430,9 @@ public class IGVDatasetParser {
                     } catch (NumberFormatException numberFormatException) {
                         if(skippedLineCount < 5) {
                             skippedLineCount++;
-                            log.info("Skipping line: " + nextLine + (skippedLineCount < 5 ? "" : " Further skipped lines will not be logged"));
+                            if(skippedLineCount == 5) {
+                                log.info("Skipping line: " + nextLine + (skippedLineCount < 5 ? "" : " Further skipped lines will not be logged"));
+                            }
                         }
                     }
                 }

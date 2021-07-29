@@ -203,21 +203,8 @@ public class HttpUtils {
 
 
     public String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
-
-
-        InputStream is = null;
-
-        HttpURLConnection conn = openConnection(url, headers);
-        try {
-            is = conn.getInputStream();
-            byte[] bytes = is.readAllBytes();
+            byte[] bytes = this.getContentsAsBytes(url, headers);
             return new String(bytes, "UTF-8");
-        } catch (IOException e) {
-            readErrorStream(conn);  // Consume content
-            throw e;
-        } finally {
-            if (is != null) is.close();
-        }
     }
 
     public String getContentsAsGzippedString(URL url) throws IOException {
@@ -226,6 +213,20 @@ public class HttpUtils {
         try {
             is = conn.getInputStream();
             return readContents(new GZIPInputStream(is));
+        } catch (IOException e) {
+            readErrorStream(conn);  // Consume content
+            throw e;
+        } finally {
+            if (is != null) is.close();
+        }
+    }
+
+    public byte [] getContentsAsBytes(URL url, Map<String, String> headers) throws IOException {
+        InputStream is = null;
+        HttpURLConnection conn = openConnection(url, headers);
+        try {
+            is = conn.getInputStream();
+            return is.readAllBytes();
         } catch (IOException e) {
             readErrorStream(conn);  // Consume content
             throw e;

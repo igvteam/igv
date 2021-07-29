@@ -53,6 +53,7 @@ public class Genome {
 
     private static Logger log = Logger.getLogger(Genome.class);
     public static final int MAX_WHOLE_GENOME = 10000;
+    public static final int MAX_WHOLE_GENOME_LONG = 200;
 
     private static Object aliasLock = new Object();
 
@@ -69,6 +70,7 @@ public class Genome {
     private FeatureTrack geneTrack;
     private String species;
     private String ucscID;
+    private String blatDB;
     private ArrayList<ResourceLocator> annotationResources;
 
 
@@ -284,7 +286,7 @@ public class Genome {
      * @return
      */
     public String getHomeChromosome() {
-        if (chromosomeNames.size() == 1 || chromosomeNames.size() > MAX_WHOLE_GENOME) {
+        if (chromosomeNames.size() == 1 || getLongChromosomeNames().size() > MAX_WHOLE_GENOME_LONG) {
             return chromosomeNames.get(0);
         } else {
             return Globals.CHR_ALL;
@@ -375,6 +377,18 @@ public class Genome {
 
     public String getId() {
         return id;
+    }
+
+    public String getBlatDB() {
+        return blatDB != null ? blatDB : id;
+    }
+
+    public void setBlatDB(String blatDB) {
+        this.blatDB = blatDB;
+    }
+
+    public void setUcscID(String ucscID) {
+        this.ucscID = ucscID;
     }
 
     public String getUCSCId() {
@@ -607,4 +621,16 @@ public class Genome {
     public ArrayList<ResourceLocator> getAnnotationResources() {
         return annotationResources;
     }
+
+
+    /**
+     * Mock genome for unit tests
+     */
+
+    private Genome(String id) {
+        this.id = id;
+    };
+
+    public static Genome mockGenome = new Genome("hg19");
+
 }

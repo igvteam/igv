@@ -812,6 +812,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (alignment != null) {
             StringBuilder buf = new StringBuilder();
             buf.append(alignment.getClipboardString(location, mouseX)
+                    .replace("<b>", "")
+                    .replace("</b>", "")
                     .replace("<br>", "\n")
                     .replace("<br/>", "\n")
                     .replace("<hr>", "\n------------------\n")
@@ -964,7 +966,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             } else {
                 Alignment feature = getAlignmentAt(position, mouseY, frame);
                 if (feature != null) {
-                    return feature.getValueString(position, mouseX, renderOptions);
+                    return feature.getAlignmentValueString(position, mouseX, renderOptions);
                 }
             }
 
@@ -1059,9 +1061,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             final ReferenceFrame frame = te.getFrame();
             if (frame != null) {
                 selectAlignment(e, frame);
-                if (dataPanel != null) {
-                    dataPanel.repaint();
-                }
+                IGV.getInstance().repaint(this);
                 return true;
             }
         }
@@ -2103,7 +2103,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 return;
             }
 
-            int clippingThreshold = BlatClient.MINIMUM_BLAT_LENGTH;
+            int minimumBlatLength = BlatClient.MINIMUM_BLAT_LENGTH;
             int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
 
             /* Add a "BLAT left clipped sequence" item if there is significant left clipping. */
@@ -2114,7 +2114,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 add(lccItem);
                 lccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(lcSeq));
 
-                if (clipping[1] > clippingThreshold) {
+                if (clipping[1] > minimumBlatLength) {
                     final JMenuItem lcbItem = new JMenuItem("Blat left-clipped sequence");
                     add(lcbItem);
                     lcbItem.addActionListener(aEvt ->
@@ -2137,7 +2137,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 add(rccItem);
                 rccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(rcSeq));
 
-                if (clipping[3] > clippingThreshold) {
+                if (clipping[3] > minimumBlatLength) {
                     final JMenuItem rcbItem = new JMenuItem("Blat right-clipped sequence");
                     add(rcbItem);
                     rcbItem.addActionListener(aEvt ->
@@ -2258,7 +2258,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 add(blatItem);
                 blatItem.addActionListener(aEvt -> {
                     String blatSeq = insertion.getBases().getString();
-                    BlatClient.doBlatQuery(blatSeq);
+                    BlatClient.doBlatQuery(blatSeq, "Blat insert sequence");
                 });
             }
         }
@@ -2341,7 +2341,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             add(item);
             item.addActionListener(aEvt -> {
                 String blatSeq = insertion.getBases().getString();
-                BlatClient.doBlatQuery(blatSeq);
+                BlatClient.doBlatQuery(blatSeq, "Blat insert sequence");
             });
             item.setEnabled(insertion.getBases() != null && insertion.getBases().length >= 10);
         }

@@ -505,31 +505,6 @@ public class TestUtils {
         return outputFile;
     }
 
-    /**
-     * Note: THIS METHOD IS VERY FRAGILE, NOT GUARANTEED TO WORK ON ALL JVMs
-     * @return
-     */
-    static long getProcessID(){
-        RuntimeMXBean bean = ManagementFactory.getRuntimeMXBean();
-
-        // The name representing the running Java virtual machine.
-        // It returns something like 12345@blah. The value
-        // before the @ symbol is the PID.
-        String jvmName = bean.getName();
-        return Long.valueOf(jvmName.split("@")[0]);
-    }
-
-    /**
-     * Uses lsof, only works on *nix systems
-     *
-     * @return
-     */
-    public static int getNumberOpenFileHandles() throws IOException{
-        long pid = getProcessID();
-        String result = RuntimeUtils.executeShellCommand(new String[]{"lsof", "-p", "" + pid}, null, null, false);
-        return result.split("\n").length;
-    }
-
     public static void resetTestUserDefinedGenomes() throws IOException{
         File userDefinedGenomeListFile = new File(DirectoryManager.getGenomeCacheDirectory(), GenomeListManager.TEST_USER_DEFINED_GENOME_LIST_FILE);
         userDefinedGenomeListFile.delete();

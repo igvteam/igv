@@ -506,9 +506,11 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             case SQUISHED:
                 rowHeight = getSquishedRowHeight();
                 break;
-            default:
+            case EXPANDED:
                 rowHeight = getExpandedRowHeight();
                 break;
+            default:
+                rowHeight = getHeight();
         }
 
         return Math.max(0, (y - this.getY() - this.margin) / rowHeight);
@@ -536,7 +538,14 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             return null;
         }
 
-        List<IGVFeature> possFeatures = rows.get(featureRow).getFeatures();
+        //If features are stacked we look at only the row.
+        //If they are collapsed on top of each other, we get all features in all rows
+        List<IGVFeature> possFeatures;
+        if(getDisplayMode() == DisplayMode.COLLAPSED) {
+            possFeatures = packedFeatures.getFeatures();
+        } else {
+            possFeatures = rows.get(featureRow).getFeatures();
+        }
 
         List<Feature> featureList = null;
         if (possFeatures != null) {
@@ -560,14 +569,16 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         MouseEvent e = te.getMouseEvent();
 
         // Toggle selection of row
-        int i = getFeatureRow(e.getY());
-        if (i == selectedFeatureRowIndex)
-            setSelectedFeatureRowIndex(FeatureTrack.NO_FEATURE_ROW_SELECTED);
-        else {
-            //make this track selected
-            setSelected(true);
-            //select the appropriate row
-            setSelectedFeatureRowIndex(i);
+        if(getDisplayMode() != DisplayMode.COLLAPSED) {
+            int i = getFeatureRow(e.getY());
+            if (i == selectedFeatureRowIndex)
+                setSelectedFeatureRowIndex(FeatureTrack.NO_FEATURE_ROW_SELECTED);
+            else {
+                //make this track selected
+                setSelected(true);
+                //select the appropriate row
+                setSelectedFeatureRowIndex(i);
+            }
         }
 
 
@@ -674,6 +685,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             int delta = (end - start) / 2;
             int expandedStart = start - delta;
             int expandedEnd = end + delta;
+            if(expandedEnd < 0) {
+                expandedEnd = Integer.MAX_VALUE;  // overflow
+            }
 
             //Make sure we are only querying within the chromosome we allow for somewhat pathological cases of start
             //being negative and end being outside, but only if directly queried. Our expansion should not
@@ -845,28 +859,33 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         Renderer renderer = getRenderer();
 
-        List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
-        if (rows != null && rows.size() > 0) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED) {
+            List<Feature> features = packedFeatures.getFeatures();
+            if (features != null) {
+                renderer.render(features, context, inputRect, this);
+            }
+        } else {
+            List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
+            if (rows != null && rows.size() > 0) {
 
-            List<Rectangle> levelRects = new ArrayList();
+                // Divide rectangle into equal height levels
+                double h = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
+                Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
+                int i = 0;
 
-            // Divide rectangle into equal height levels
-            double h = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
-            Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
-            int i = 0;
+                if (renderer instanceof FeatureRenderer) ((FeatureRenderer) renderer).reset();
+                for (PackedFeatures.FeatureRow row : rows) {
 
-            if (renderer instanceof FeatureRenderer) ((FeatureRenderer) renderer).reset();
-            for (PackedFeatures.FeatureRow row : rows) {
+                    renderer.render(row.features, context, new Rectangle(rect), this);
 
-                renderer.render(row.features, context, new Rectangle(rect), this);
+                    if (selectedFeatureRowIndex == i) {
+                        Graphics2D fontGraphics = context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
+                        fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
+                    }
 
-                if (selectedFeatureRowIndex == i) {
-                    Graphics2D fontGraphics = context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
-                    fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
+                    rect.y += h;
+                    i++;
                 }
-
-                rect.y += h;
-                i++;
             }
         }
     }

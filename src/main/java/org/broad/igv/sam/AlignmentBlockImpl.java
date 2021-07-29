@@ -31,7 +31,7 @@ package org.broad.igv.sam;
 
 public class AlignmentBlockImpl implements AlignmentBlock {
 
-    private static ByteSubarray EMPTY_ARRAY = new ByteSubarray(new byte[0], 0, 0);
+    private static ByteSubarray EMPTY_ARRAY = new ByteSubarray(new byte[0], 0, 0, (byte) 0);
     private int start;
     private int offset;
     private ByteSubarray bases;
@@ -51,11 +51,11 @@ public class AlignmentBlockImpl implements AlignmentBlock {
 
         this.start = start;
         this.offset = offset;
-        this.bases = new ByteSubarray(bases, offset, nBases);
+        this.bases = new ByteSubarray(bases, offset, nBases, (byte) '?');
         this.basesLength = nBases;
 
         // qualities are optional in a SAMRecord, we might get null or an array of zero
-        this.qualities = qualities == null || qualities.length == 0 ? EMPTY_ARRAY :  new ByteSubarray(qualities, offset, nBases);
+        this.qualities = qualities == null || qualities.length == 0 ? EMPTY_ARRAY :  new ByteSubarray(qualities, offset, nBases, (byte) 126);
         this.cigarOperator = cigarOperator;
     }
 

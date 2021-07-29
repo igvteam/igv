@@ -31,6 +31,7 @@ import htsjdk.samtools.seekablestream.SeekableStreamFactory;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.batch.CommandListener;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
@@ -110,7 +111,7 @@ public class Main {
             }
 
             DesktopIntegration.verifyJavaPlatform();
-            initApplication();
+            initApplication(igvArgs);
 
             JFrame frame = new JFrame();
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -193,7 +194,7 @@ public class Main {
         }
     }
 
-    private static void initApplication() {
+    private static void initApplication(Main.IGVArgs igvArgs) {
 
         long mem = RuntimeUtils.getAvailableMemory();
         int MB = 1000000;
@@ -226,8 +227,6 @@ public class Main {
         System.setProperty("swing.aatext", "true");
 
         checkVersion();
-
-
     }
 
     public static void updateTooltipSettings() {
@@ -305,6 +304,7 @@ public class Main {
      * @param igvArgs command-line arguments
      */
     public static void open(Frame frame, Main.IGVArgs igvArgs) {
+        final IGVPreferences preferences = PreferencesManager.getPreferences();
 
         // Add a listener for the "close" icon, unless its a JFrame
         if (!(frame instanceof JFrame)) {
@@ -347,7 +347,8 @@ public class Main {
 
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
-        IGV.createInstance(frame).startUp(igvArgs);
+        // Start IGV's UI itself (frame) and other components
+        IGV.createInstance(frame, igvArgs).startUp(igvArgs);
 
         // TODO Should this be done here?  Will this step on other key dispatchers?
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
