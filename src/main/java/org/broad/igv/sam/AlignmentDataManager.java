@@ -41,11 +41,9 @@ import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -128,7 +126,7 @@ public class AlignmentDataManager implements IGVEventObserver {
             // Build a chr size -> name lookup table.   We will assume sizes are unique.  This will be used if no alias
             // is defined for a sequence.
             Map<Long, String> inverseDict = null;
-            Map<String, Long> sequenceDictionary = checkReader().getSequenceDictionary();
+            Map<String, Long> sequenceDictionary = getLoader().getSequenceDictionary();
 
             if (sequenceDictionary != null) {
 
@@ -160,7 +158,7 @@ public class AlignmentDataManager implements IGVEventObserver {
             }
 
 
-            List<String> seqNames = checkReader().getSequenceNames();
+            List<String> seqNames = getLoader().getSequenceNames();
             if (seqNames != null) {
                 for (String seq : seqNames) {
 
@@ -184,7 +182,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public AlignmentTileLoader getLoader() {
-        return checkReader();
+        return loader;
     }
 
     public ResourceLocator getLocator() {
@@ -196,15 +194,15 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public boolean isPairedEnd() {
-        return checkReader().isPairedEnd();
+        return getLoader().isPairedEnd();
     }
 
     public boolean hasYCTags() {
-        return checkReader().hasYCTags();
+        return getLoader().hasYCTags();
     }
 
     public boolean hasIndex() {
-        return checkReader().hasIndex();
+        return getLoader().hasIndex();
     }
 
     public void setAlignmentTrack(AlignmentTrack alignmentTrack) {
@@ -246,11 +244,11 @@ public class AlignmentDataManager implements IGVEventObserver {
      * @return
      */
     public List<String> getSequenceNames() throws IOException {
-        return checkReader().getSequenceNames();
+        return getLoader().getSequenceNames();
     }
 
     public Map<String, Long> getSequenceDictionary() {
-        return checkReader().getSequenceDictionary();
+        return getLoader().getSequenceDictionary();
     }
 
     public AlignmentInterval getLoadedInterval(ReferenceFrame frame) {
@@ -418,7 +416,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
 
-        AlignmentTileLoader.AlignmentTile t = checkReader().loadTile(sequence, start, end, spliceJunctionHelper,
+        AlignmentTileLoader.AlignmentTile t = getLoader().loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, peStats, bisulfiteContext);
       List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
@@ -562,34 +560,19 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public boolean isTenX() {
-        return checkReader().isTenX();
+        return getLoader().isTenX();
     }
 
     public boolean isPhased() {
-        return checkReader().isPhased();
+        return getLoader().isPhased();
     }
 
     public boolean isMoleculo() {
-        return checkReader().isMoleculo();
+        return getLoader().isMoleculo();
     }
 
     public Collection<AlignmentInterval> getLoadedIntervals() {
         return intervalCache;
-    }
-
-    private AlignmentTileLoader checkReader() {
-        try {
-            String aPath = locator.getPath();
-            if (AmazonUtils.isAwsS3Path(aPath) && !AmazonUtils.isS3PresignedValid(aPath)) {
-                loader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return loader;
     }
 
     public static class DownsampleOptions {

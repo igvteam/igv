@@ -37,12 +37,14 @@ import org.broad.igv.feature.tribble.reader.IGVComponentMethods;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.IndexCreatorDialog;
-import org.broad.igv.util.*;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.CollUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.*;
 
 /**
@@ -51,9 +53,6 @@ import java.util.*;
  */
 abstract public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
-    private final ResourceLocator locator;
-    private AbstractFeatureReader abstractReader;
-    private final boolean useIndex;
     IGVFeatureReader reader;
     boolean isVCF;
     Genome genome;
@@ -161,9 +160,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
     private TribbleFeatureSource(ResourceLocator locator, AbstractFeatureReader reader, FeatureCodec codec, Genome genome, boolean useCache, boolean useIndex) throws IOException {
 
-        this.useIndex = useIndex;
-        this.abstractReader = reader;
-        this.locator = locator;
         this.genome = genome;
         this.isVCF = codec.getClass() == VCFWrapperCodec.class;
         this.featureClass = codec.getFeatureType();
@@ -173,44 +169,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 new CachingFeatureReader(reader, 5, featureWindowSize) :
                 new TribbleReaderWrapper(reader);
     }
-
-    IGVFeatureReader checkReader() {
-        try {
-            String aPath = locator.getPath();
-            if (AmazonUtils.isAwsS3Path(aPath) && !AmazonUtils.isS3PresignedValid(aPath)) {
-                if (this.reader instanceof CachingFeatureReader) {
-                    String path = locator.getPath();
-                    if (FileUtils.isRemote(path)) {
-                        path = HttpUtils.mapURL(path);
-                    }
-                    String idxPath = locator.getIndexPath();
-                    if (idxPath != null) {
-                        if (FileUtils.isRemote(idxPath)) {
-                            idxPath = HttpUtils.mapURL(idxPath);
-                        }
-                    } else {
-                        idxPath = ResourceLocator.indexFile(locator);
-                        if (idxPath == null) {
-                        } else {
-                            if (FileUtils.isRemote(idxPath)) {
-                                idxPath = HttpUtils.mapURL(idxPath);
-                            }
-                        }
-                    }
-
-                    abstractReader = AbstractFeatureReader.getFeatureReader(path, idxPath, CodecFactory.getCodec(locator, genome), useIndex);
-                    this.reader = new CachingFeatureReader(abstractReader, 5, featureWindowSize);
-                } else {
-                    this.reader = new TribbleReaderWrapper(abstractReader);
-                }
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        return reader;
-    }
-
 
     protected abstract int estimateFeatureWindowSize(FeatureReader reader);
 
@@ -270,7 +228,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             String seqName = chrNameMap.get(chr);
             if (seqName == null) seqName = chr;
 
-            return checkReader().query(seqName, start, end);
+            return reader.query(seqName, start, end);
         }
 
         /**
@@ -291,7 +249,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         @Override
         protected Collection<String> getSequenceNames() {
-            return checkReader().getSequenceNames();
+            return reader.getSequenceNames();
         }
 
 
