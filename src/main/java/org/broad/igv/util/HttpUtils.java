@@ -27,6 +27,7 @@ package org.broad.igv.util;
 
 import biz.source_code.base64Coder.Base64Coder;
 import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.util.RuntimeIOException;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPStream;
 import org.apache.log4j.Logger;
@@ -131,22 +132,31 @@ public class HttpUtils {
      * @throws MalformedURLException
      */
     public static URL createURL(String urlString) throws MalformedURLException {
-
-        urlString = mapURL(urlString.trim());
-
+        if (AmazonUtils.isAwsS3Path(urlString)) {
+            try {
+                urlString = AmazonUtils.translateAmazonCloudURL(urlString);
+            } catch (IOException e) {
+                log.error("Error translating amazon cloud URL: "  + urlString, e);
+                throw new RuntimeException(e);
+            }
+        } else {
+            urlString = mapURL(urlString.trim());
+        }
         return new URL(urlString);
     }
 
+    /**
+     * Map a URL, for example from a deprecated host or non-http scheme, to a stable newer form. Sort of a pre-request
+     * redirect.  This should be used to map to a stable, long-term URL, not to for example time-limited signed URLs.
+     *
+     * @param urlString
+     * @return
+     * @throws MalformedURLException
+     */
     public static String mapURL(String urlString) throws MalformedURLException {
 
         if (urlString.startsWith("gs://")) {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
-        } else if (AmazonUtils.isAwsS3Path(urlString)) {
-            try {
-                urlString = AmazonUtils.translateAmazonCloudURL(urlString);
-            } catch (IOException e) {
-                log.error(e);
-            }
         }
 
         if (GoogleUtils.isGoogleCloud(urlString)) {
@@ -203,8 +213,8 @@ public class HttpUtils {
 
 
     public String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
-            byte[] bytes = this.getContentsAsBytes(url, headers);
-            return new String(bytes, "UTF-8");
+        byte[] bytes = this.getContentsAsBytes(url, headers);
+        return new String(bytes, "UTF-8");
     }
 
     public String getContentsAsGzippedString(URL url) throws IOException {
@@ -221,7 +231,7 @@ public class HttpUtils {
         }
     }
 
-    public byte [] getContentsAsBytes(URL url, Map<String, String> headers) throws IOException {
+    public byte[] getContentsAsBytes(URL url, Map<String, String> headers) throws IOException {
         InputStream is = null;
         HttpURLConnection conn = openConnection(url, headers);
         try {
@@ -649,7 +659,6 @@ public class HttpUtils {
      * @throws java.io.IOException
      */
     private HttpURLConnection openConnection(
-
             URL url, Map<String, String> requestProperties, String method, int redirectCount, int retries) throws IOException {
 
         // if we're already seen a redirect for this URL, use the updated one
@@ -669,6 +678,16 @@ public class HttpUtils {
         // string to dynamically map url - dwm08
         if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
             url = HttpUtils.createURL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
+        }
+
+        // If a presigned URL, check its validity and update if needed
+        if(AmazonUtils.isPresignedURL(url.toExternalForm())) {
+            url = new URL(AmazonUtils.updatePresignedURL(url.toExternalForm()));
+        }
+
+        // If an S3 url, obtain a signed https url
+        if (AmazonUtils.isAwsS3Path(url.toExternalForm())) {
+            url = new URL(AmazonUtils.translateAmazonCloudURL(url.toExternalForm()));
         }
 
         //Encode query string portions
