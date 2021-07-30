@@ -659,7 +659,6 @@ public class HttpUtils {
      * @throws java.io.IOException
      */
     private HttpURLConnection openConnection(
-
             URL url, Map<String, String> requestProperties, String method, int redirectCount, int retries) throws IOException {
 
         // if we're already seen a redirect for this URL, use the updated one
@@ -679,6 +678,11 @@ public class HttpUtils {
         // string to dynamically map url - dwm08
         if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
             url = HttpUtils.createURL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
+        }
+
+        // If a presigned URL, check its validity and update if needed
+        if(AmazonUtils.isPresignedURL(url.toExternalForm())) {
+            url = new URL(AmazonUtils.updatePresignedURL(url.toExternalForm()));
         }
 
         // If an S3 url, obtain a signed https url

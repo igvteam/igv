@@ -29,7 +29,6 @@ import software.amazon.awssdk.services.sts.model.Credentials;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
@@ -46,7 +45,18 @@ public class AmazonUtils {
     private static List<String> bucketsFinalList = new ArrayList<>();
     private static CognitoIdentityClient cognitoIdentityClient;
     private static Region AWSREGION;
-    private static Map<String, String> locatorTos3PresignedMap = new HashMap<>();
+
+
+    /**
+     * Maps s3:// URLs to presigned URLs
+     */
+    private static Map<String, String> s3ToPresignedMap = new HashMap<>();
+
+    /**
+     * Maps aws presigned URLs to s3://.  This is needed in some cases (e.g. Tribble) to regenerate an expired URL
+     */
+    private static Map<String, String> presignedToS3Map = new HashMap<>();
+
     private static JsonObject CognitoConfig;
 
     public static void setCognitoConfig(JsonObject json) {
@@ -427,7 +437,7 @@ public class AmazonUtils {
         StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
 
         S3Presigner s3Presigner = S3Presigner.builder()
-                .expiration(provider.getExpirationTime())
+                .expiration(provider.getExpirationTime())       // Duration.ofSeconds(30)  // <= for testing
                 .awsCredentials(awsCredsProvider)
                 .region(getAWSREGION())
                 .build();
@@ -436,7 +446,7 @@ public class AmazonUtils {
         String key = getKeyFromS3URL(s3Path);
 
         URI presigned = s3Presigner.presignS3DownloadLink(bucket, key);
-        log.info("AWS presigned URL from translateAmazonCloudURL is: " + presigned);
+        log.debug("AWS presigned URL from translateAmazonCloudURL is: " + presigned);
         return presigned.toString();
     }
 
@@ -447,10 +457,11 @@ public class AmazonUtils {
      */
 
     public static String translateAmazonCloudURL(String s3UrlString) throws IOException {
-        String presignedUrl = locatorTos3PresignedMap.get(s3UrlString);
+        String presignedUrl = s3ToPresignedMap.get(s3UrlString);
         if (presignedUrl == null || !isPresignedURLValid(new URL(presignedUrl))) {
             presignedUrl = createPresignedURL(s3UrlString);
-            locatorTos3PresignedMap.put(s3UrlString, presignedUrl);
+            s3ToPresignedMap.put(s3UrlString, presignedUrl);
+            presignedToS3Map.put(presignedUrl, s3UrlString);
         }
         return presignedUrl;
     }
@@ -458,6 +469,19 @@ public class AmazonUtils {
     public static Boolean isAwsS3Path(String path) {
         // TODO: perhaps add some more checks
         return (path.startsWith("s3://"));
+    }
+
+    public static boolean isPresignedURL(String urlString) {
+        return presignedToS3Map.containsKey(urlString);
+    }
+
+    public static String updatePresignedURL(String urlString) throws IOException {
+        String s3UrlString = presignedToS3Map.get(urlString);
+        if(s3UrlString == null) {
+            throw new RuntimeException("Unrecognized presigned url: " + urlString);
+        } else {
+            return translateAmazonCloudURL(s3UrlString);
+        }
     }
 
     public static void checkLogin() {

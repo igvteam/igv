@@ -451,7 +451,8 @@ public class GenomeListManager {
                         }
 
                         String file = fields[1];
-                        if (!FileUtils.resourceExists(file)) {
+                        // If a local file, see if it exists
+                        if (!FileUtils.isRemote(file) && !FileUtils.resourceExists(file)) {
                             updateClientGenomeListFile = true;
                             continue;
                         }

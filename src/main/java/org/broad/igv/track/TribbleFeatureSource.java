@@ -102,20 +102,24 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             }
 
             // Optionally let the user create an index.
-            final int hundredMB = 100000000;
-            final int oneGB = 1000000000;
-            long size = FileUtils.getLength(locator.getPath());
-            indexRequired = size > 10*oneGB;
-            if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
-                if (size > hundredMB) {
-                    createIndex(locator, indexRequired);   // Note, might return null.
+            if (!FileUtils.isRemote(locator.getPath())) {
+                final int hundredMB = 100000000;
+                final int oneGB = 1000000000;
+                long size = FileUtils.getLength(locator.getPath());
+                indexRequired = size > 10 * oneGB;
+                if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
+                    if (size > hundredMB) {
+                        createIndex(locator, indexRequired);   // Note, might return null.
+                    }
                 }
             }
         }
 
         String path = locator.getPath();
         if (FileUtils.isRemote(path)) {
-            path = HttpUtils.mapURL(path);
+            path = HttpUtils.createURL(path).toExternalForm();
+        } if(idxPath != null && idxPath.length() > 0 && FileUtils.isRemote(idxPath)) {
+            idxPath = HttpUtils.createURL(idxPath).toExternalForm();
         }
         AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
 
