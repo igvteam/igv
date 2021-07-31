@@ -37,7 +37,10 @@ public class GenomeListManager {
 
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
 
-    public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem("Human (hg19)", "http://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg19.genome", "hg19");
+    public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem(
+            "Human (hg19)",
+            "https://s3.amazonaws.com/igv.org.genomes/hg19/hg19.json",
+            "hg19");
 
     private Map<String, GenomeListItem> genomeItemMap;
 
@@ -139,7 +142,7 @@ public class GenomeListManager {
     public GenomeListItem getGenomeListItem(String genomeId) {
 
         GenomeListItem matchingItem = genomeItemMap.get(genomeId);
-        if (matchingItem == null || (System.currentTimeMillis() - matchingItem.getLastModified() > GenomeLoader.ONE_WEEK)) {
+        if (matchingItem == null) {
 
             // If genome archive was not found, check server list
             matchingItem = getServerGenomeMap().get(genomeId);
@@ -256,13 +259,11 @@ public class GenomeListManager {
                     JsonElement name = json.get("name");
                     JsonElement fastaURL = json.get("fastaURL");
                     if (id != null && name != null && fastaURL != null) {
-                        if(cachedGenomes.containsKey(id.getAsString())) {
+                        if (cachedGenomes.containsKey(id.getAsString())) {
                             File prevFile = new File(cachedGenomes.get(id.getAsString()).getPath());
                             prevFile.delete();
                         }
                         GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
-                        long lastModified = file.lastModified();
-                        item.setLastModified(lastModified);
                         cachedGenomes.put(item.getId(), item);
                     }
                 } catch (FileNotFoundException e) {
