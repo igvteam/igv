@@ -1,6 +1,7 @@
 package org.broad.igv.ui.commandbar;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.genome.GenomeListItem;
@@ -18,6 +19,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -254,7 +256,17 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 }
                 if (firstItem != null) {
                     try {
+
                         GenomeManager.getInstance().loadGenome(firstItem.getPath(), null);
+                        // If the user has previously defined this genome, remove it.
+                        GenomeListManager.getInstance().removeUserDefinedGenome(firstItem.getId());
+
+                        // If this is a .json genome, attempt to remove existing .genome files
+                        if(firstItem.getPath().endsWith(".json")) {
+                            removeDotGenomeFile(firstItem.getId());
+                        }
+
+
                     } catch (IOException e) {
                         GenomeListManager.getInstance().removeGenomeListItem(firstItem);
                         MessageUtils.showErrorMessage("Error loading genome " + firstItem.getDisplayableName(), e);
@@ -270,5 +282,18 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
             showDialog.run();
         }
     }
+
+    public static void removeDotGenomeFile(String id) {
+        try {
+            File dotGenomeFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + ".genome");
+            if(dotGenomeFile.exists()) {
+                dotGenomeFile.delete();
+            }
+        } catch (Exception e) {
+            // If anything goes wrong, just log it, this cleanup is not essential
+            log.error("Error deleting .genome file", e);
+        }
+    }
+
 
 }

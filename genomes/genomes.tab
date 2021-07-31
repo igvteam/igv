@@ -21,7 +21,7 @@ Chimp (panTro6)	https://s3.amazonaws.com/igv.org.genomes/panTro6/panTro6.genome	
 Cat (felCat5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/felCat5.genome	felCat5
 Cow (bosTau7)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau7.genome	bosTau7
 Cow (bosTau8)	https://s3.amazonaws.com/igv.org.genomes/json/bosTau8.json	bosTau8
-Cow (bosTau9)	https://s3.amazonaws.com/igv.org.genomes/json/bosTau9.json	bosTau9
+Cow (bosTau9)	https://s3.amazonaws.com/igv.org.genomes/bosTau9/bosTau9.json	bosTau9
 D. melanogaster (dm6)	https://s3.amazonaws.com/igv.org.genomes/json/dm6.json	dm6
 D. melanogaster (dm3)	https://s3.amazonaws.com/igv.org.genomes/dm3/dm3.json	dm3
 D. melanogaster (r5.9)	https://s3.amazonaws.com/igv.org.genomes/dmel_r5.9/dmel_r5.9.json	dmel_r5.9
@@ -97,4 +97,6 @@ S. pombe (ASM294v2)	https://s3.amazonaws.com/igv.org.genomes/json/ASM294v2.json	
 Gorilla (gorGor4)	https://s3.amazonaws.com/igv.org.genomes/json/gorGor4.json	gorGor4
 Bonobo (MPI-EVA panpan1.1/panPan2)	https://s3.amazonaws.com/igv.org.genomes/json/panPan2.json	panPan2
 Pig (SGSC Sscrofa11.1/susScr11)	https://s3.amazonaws.com/igv.org.genomes/json/susScr11.json	susScr11
-Dog (canFam5)	https://s3.amazonaws.com/igv.org.genomes/canFam5/canFam5.genome	canFam5
+Dog (canFam5)	https://s3.amazonaws.com/igv.org.genomes/canFam5/canFam5.json	canFam5
+Rat (rn7)	https://s3.amazonaws.com/igv.org.genomes/rn7/rn7.json	rn7
+Gorilla (Kamilah_GGO_v0/gorGor6)	https://s3.amazonaws.com/igv.org.genomes/gorGor6/gorGor6.json	gorGor6
