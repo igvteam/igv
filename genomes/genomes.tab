@@ -21,7 +21,7 @@ Chimp (panTro6)	https://s3.amazonaws.com/igv.org.genomes/panTro6/panTro6.genome	
 Cat (felCat5)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/felCat5.genome	felCat5
 Cow (bosTau7)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/bosTau7.genome	bosTau7
 Cow (bosTau8)	https://s3.amazonaws.com/igv.org.genomes/json/bosTau8.json	bosTau8
-Cow (bosTau9)	https://s3.amazonaws.com/igv.org.genomes/json/bosTau9.json	bosTau9
+Cow (bosTau9)	https://s3.amazonaws.com/igv.org.genomes/bosTau9/bosTau9.json	bosTau9
 D. melanogaster (dm6)	https://s3.amazonaws.com/igv.org.genomes/json/dm6.json	dm6
 D. melanogaster (dm3)	https://s3.amazonaws.com/igv.org.genomes/dm3/dm3.json	dm3
 D. melanogaster (r5.9)	https://s3.amazonaws.com/igv.org.genomes/dmel_r5.9/dmel_r5.9.json	dmel_r5.9
