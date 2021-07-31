@@ -255,6 +255,8 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 if (firstItem != null) {
                     try {
                         GenomeManager.getInstance().loadGenome(firstItem.getPath(), null);
+                        // If the user has previously defined this genome, remove it.
+                        GenomeListManager.getInstance().removeUserDefinedGenome(firstItem.getId());
                     } catch (IOException e) {
                         GenomeListManager.getInstance().removeGenomeListItem(firstItem);
                         MessageUtils.showErrorMessage("Error loading genome " + firstItem.getDisplayableName(), e);
