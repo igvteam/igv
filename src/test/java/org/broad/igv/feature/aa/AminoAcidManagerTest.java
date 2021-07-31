@@ -51,7 +51,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        //CodonTableManager.getInstance().resetToDefaults();
+        CodonTableManager.getInstance().resetToDefaults();
     }
 
     @Test

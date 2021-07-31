@@ -113,6 +113,7 @@ public class CodonTableManager {
      * @return Instance of AminoAcidManager, for chaining
      */
     public void resetToDefaults() {
+        currentCodonTable = null;
         genomeChromoTable = new HashMap<>();
         allCodonTables = new LinkedHashMap<>(20);
         init();

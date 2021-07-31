@@ -10,7 +10,7 @@ public class CodonTableManagerTest {
 
     @Before
     public void setup() {
-        CodonTableManager.getInstance().setCurrentCodonTable(null);
+        CodonTableManager.getInstance().resetToDefaults();
     }
 
     @Test
