@@ -208,8 +208,6 @@ public class GenomeListManager {
                                     file.getAbsolutePath(),
                                     properties.getProperty(GenomeDescriptor.GENOME_ARCHIVE_ID_KEY));
 
-                    long lastModified = file.lastModified();
-                    item.setLastModified(lastModified);
                     cachedGenomes.put(item.getId(), item);
 
                 } catch (ZipException ex) {
@@ -312,6 +310,10 @@ public class GenomeListManager {
 
         final String id = genomeListItem.getId();
         genomeItemMap.remove(id);
+        removeUserDefinedGenome(id);
+    }
+
+    public void removeUserDefinedGenome(String id) {
         if (userDefinedGenomeMap != null && userDefinedGenomeMap.containsKey(id)) {
             userDefinedGenomeMap.remove(id);
             exportUserDefinedGenomeList();
@@ -404,7 +406,6 @@ public class GenomeListManager {
         }
         return serverGenomeMap;
     }
-
 
     /**
      * Gets a list of all the user-defined genome archive files that

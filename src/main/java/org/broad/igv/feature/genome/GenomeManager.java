@@ -115,7 +115,7 @@ public class GenomeManager {
         if (HttpUtils.isRemoteURL(genomePath.toLowerCase())) {
             // We need a local copy, as there is no http zip file reader
             URL genomeArchiveURL = HttpUtils.createURL(genomePath);
-            final String tmp = URLDecoder.decode(HttpUtils.createURL(genomePath).getFile(), "UTF-8");
+            final String tmp = URLDecoder.decode(genomeArchiveURL.getFile(), "UTF-8");
             String cachedFilename = Utilities.getFileNameFromURL(tmp);
             if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
                 DirectoryManager.getGenomeCacheDirectory().mkdir();
