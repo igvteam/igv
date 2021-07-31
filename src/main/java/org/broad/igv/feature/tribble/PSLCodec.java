@@ -94,7 +94,7 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
                 return null;
             }
 
-            String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
+            String[] tokens = Globals.tabPattern.split(line);
             f = getPslRecord(tokens, genome);
             if (f == null) return null;
 

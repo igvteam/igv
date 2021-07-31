@@ -104,7 +104,7 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
         }
 
         line = line.replaceAll("\"", "");
-        String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
+        String[] tokens = Globals.tabPattern.split(line);
         int tokenCount = tokens.length;
 
         if (tokenCount <= strandColumn) {
