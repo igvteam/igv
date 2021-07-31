@@ -202,7 +202,6 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
      * gene FBXW7)
      */
     @Test
-    @Ignore
     public void testNegativeGeneMidExon2() {
         String expectedSeq = "QLSYV";
         String expectedEndSeq = "GSVVR";
