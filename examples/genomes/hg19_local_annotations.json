@@ -7,12 +7,8 @@
   "aliasURL": "https://s3.amazonaws.com/igv.org.genomes/hg19/hg19_alias.tab",
   "tracks": [
     {
-      "name": "Refseq Genes",
-      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz"
-    },
-    {
-      "url": "https://s3.amazonaws.com/igv.org.genomes/hg19/gencode.v24.genes.gtf.gz",
-      "hidden": true
+      "name": "Gencode v24 genes",
+      "url": "chr22.genes.gtf.gz"
     }
   ]
 }

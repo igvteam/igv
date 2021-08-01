@@ -8,12 +8,7 @@
   "tracks": [
     {
       "name": "Refseq Genes",
-      "format": "refgene",
-      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
-      "indexed": false,
-      "visibilityWindow": -1,
-      "removable": false,
-      "order": 1000000
+      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz"
     }
   ]
 }
