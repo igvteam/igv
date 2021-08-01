@@ -8,6 +8,7 @@ import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureReader;
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
@@ -20,6 +21,8 @@ import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,6 +120,22 @@ public class JsonGenomeLoader extends GenomeLoader {
             Genome newGenome = new Genome(id, name, sequence, ordered);
             newGenome.setAnnotationResources(tracks);
 
+            JsonElement cyobandElement = json.get("cytobandURL");
+            if (cyobandElement != null) {
+                String cytobandPath = FileUtils.getAbsolutePath(cyobandElement.getAsString(), genomePath);
+                BufferedReader br = null;
+                try {
+                    br = ParsingUtils.openBufferedReader(cytobandPath);
+                    newGenome.setCytobands(CytoBandFileParser.loadData(br));
+                } finally {
+                    try {
+                        br.close();
+                    } catch (IOException e) {
+                        // ignore
+                    }
+                }
+            }
+
             JsonElement ucscIDElement = json.get("ucscID");
             if (ucscIDElement != null) {
                 newGenome.setUcscID( ucscIDElement.getAsString());
@@ -127,7 +146,8 @@ public class JsonGenomeLoader extends GenomeLoader {
             }
             JsonElement aliasURL = json.get("aliasURL");
             if (aliasURL != null) {
-                newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasURL.getAsString()));
+                String aliasPath = FileUtils.getAbsolutePath(aliasURL.getAsString(), genomePath);
+                newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
             }
             if (hiddenTracks.size() > 0) {
                 addToFeatureDB(hiddenTracks, newGenome);
