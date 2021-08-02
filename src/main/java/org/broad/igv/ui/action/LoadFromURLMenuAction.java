@@ -121,7 +121,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
                 ResourceLocator rl = new ResourceLocator(url.trim());
-                rl.setType("das");
+                rl.setFormat("das");
                 igv.loadTracks(Arrays.asList(rl));
             }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {

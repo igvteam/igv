@@ -104,7 +104,7 @@ public class LoadFromDatabaseAction extends MenuAction {
 
 //                String query = "select * from cnv";
                 loc1.setDescription(query);
-                loc1.setType(".seg");
+                loc1.setFormat(".seg");
 
 
                 mainFrame.loadTracks(Arrays.asList(loc1, loc2));

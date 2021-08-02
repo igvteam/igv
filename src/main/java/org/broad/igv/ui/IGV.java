@@ -1456,11 +1456,11 @@ public class IGV implements IGVEventObserver {
      */
     public TrackPanel getPanelFor(ResourceLocator locator) {
         String path = locator.getPath().toLowerCase();
-        if ("alist".equals(locator.getType())) {
+        if ("alist".equals(locator.getFormat())) {
             return getVcfBamPanel();
         } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
             return getTrackPanel(DATA_PANEL_NAME);
-        } else if (TrackLoader.isAlignmentTrack(locator.getTypeString())) {
+        } else if (TrackLoader.isAlignmentTrack(locator.getFormat())) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
         } else {
@@ -1498,34 +1498,22 @@ public class IGV implements IGVEventObserver {
 
     private TrackPanel getDefaultPanel(ResourceLocator locator) {
 
-        if (locator.getType() != null && locator.getType().equalsIgnoreCase("das")) {
+        final String format = locator.getFormat();
+        if (format != null && format.equalsIgnoreCase("das")) {
             return getTrackPanel(FEATURE_PANEL_NAME);
         }
-
-        String filename = locator.getPath().toLowerCase();
-
-        if (filename.endsWith(".txt") || filename.endsWith(".tab") || filename.endsWith(
-                ".xls") || filename.endsWith(".gz")) {
-            filename = filename.substring(0, filename.lastIndexOf("."));
-        }
-
-
-        if (isAnnotationFile(filename)) {
+        if (isAnnotationFile(locator.getFormat())) {
             return getTrackPanel(FEATURE_PANEL_NAME);
         } else {
             return getTrackPanel(DATA_PANEL_NAME);
         }
     }
 
-    private boolean isAnnotationFile(String filename) {
-        return filename.contains("refflat") || filename.contains("ucscgene") ||
-                filename.contains("genepred") || filename.contains("ensgene") ||
-                filename.contains("refgene") || filename.contains("ncbirefseq") ||
-                filename.endsWith("gff") || filename.endsWith("gtf") ||
-                filename.endsWith("gff3") || filename.endsWith("embl") ||
-                filename.endsWith("bed") || filename.endsWith("gistic") ||
-                filename.endsWith("bedz") || filename.endsWith("repmask") ||
-                filename.contains("dranger") || filename.endsWith("ucscsnp");
+    private boolean isAnnotationFile(String format) {
+        Set<String> annotationFormats = new HashSet<>(Arrays.asList("refflat", "ucscgene",
+                "genepred", "ensgene", "refgene", "gff", "gtf", "gff3", "embl", "bed", "gistic",
+                "bedz", "repmask", "dranger", "ucscsnp"));
+        return annotationFormats.contains(format);
     }
 
 
@@ -2054,6 +2042,7 @@ public class IGV implements IGVEventObserver {
     /**
      * Enables command port early, otherwise private URLs pointing to custom genomes cannot be accessed.
      * This is because CommandListener (http://localhost:65301) is needed for OAuth's redirect parameter.
+     *
      * @param igvArgs: Used to specify a different port.
      */
     private static void startCommandsServer(Main.IGVArgs igvArgs, IGVPreferences prefMgr) throws InterruptedException {
@@ -2388,7 +2377,6 @@ public class IGV implements IGVEventObserver {
      * Adjust the height of tracks so that all tracks fit in the available
      * height of the panel. This is not possible in all cases as the
      * minimum height for tracks is respected.
-     *
      */
     public void fitTracksToPanel() {
         for (TrackPanel tp : getTrackPanels()) {

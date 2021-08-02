@@ -8,10 +8,12 @@
   "tracks": [
     {
       "name": "Refseq Genes",
+      "format": "refgene",
       "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz"
     },
     {
       "url": "https://s3.amazonaws.com/igv.org.genomes/hg19/gencode.v24.genes.gtf.gz",
+      "format": "gtf",
       "hidden": true
     }
   ]

@@ -136,7 +136,7 @@ public class HttpUtils {
             try {
                 urlString = AmazonUtils.translateAmazonCloudURL(urlString);
             } catch (IOException e) {
-                log.error("Error translating amazon cloud URL: "  + urlString, e);
+                log.error("Error translating amazon cloud URL: " + urlString, e);
                 throw new RuntimeException(e);
             }
         } else {
@@ -155,7 +155,9 @@ public class HttpUtils {
      */
     public static String mapURL(String urlString) throws MalformedURLException {
 
-        if (urlString.startsWith("gs://")) {
+        if (urlString.startsWith("htsget://")) {
+            urlString = urlString.replace("htsget://", "https://");
+        } else if (urlString.startsWith("gs://")) {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
         }
 
@@ -164,7 +166,6 @@ public class HttpUtils {
                 urlString = URLUtils.addParameter(urlString, "alt=media");
             }
         }
-
         String host = URLUtils.getHost(urlString);
         if (host.equals("igv.broadinstitute.org")) {
             urlString = urlString.replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org");
@@ -681,7 +682,7 @@ public class HttpUtils {
         }
 
         // If a presigned URL, check its validity and update if needed
-        if(AmazonUtils.isPresignedURL(url.toExternalForm())) {
+        if (AmazonUtils.isPresignedURL(url.toExternalForm())) {
             url = new URL(AmazonUtils.updatePresignedURL(url.toExternalForm()));
         }
 

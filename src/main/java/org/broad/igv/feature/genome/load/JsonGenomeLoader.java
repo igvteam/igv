@@ -84,26 +84,36 @@ public class JsonGenomeLoader extends GenomeLoader {
             if (annotations != null) {
                 annotations.forEach((JsonElement jsonElement) -> {
                     JsonObject obj = jsonElement.getAsJsonObject();
+
                     String trackPath = obj.get("url").getAsString();
+                    if (trackPath != null) {
+                        trackPath = FileUtils.getAbsolutePath(trackPath, genomePath);
+                    }
+
+                    ResourceLocator res = new ResourceLocator(trackPath);
+
                     JsonElement trackName = obj.get("name");
+                    if (trackName != null) {
+                        res.setName(trackName.getAsString());
+                    }
+
                     JsonElement trackIndex = obj.get("indexURL");
+                    if (trackIndex != null) {
+                        res.setIndexPath(FileUtils.getAbsolutePath(trackIndex.getAsString(), genomePath));
+                    }
+
+                    JsonElement format = obj.get("format");
+                    if (format != null) {
+                        res.setFormat(format.getAsString());
+                    }
+
                     JsonElement indexedElement = obj.get("indexed");
                     JsonElement hiddenElement = obj.get("hidden");
                     boolean hidden = hiddenElement != null && hiddenElement.getAsBoolean();
                     boolean indexed = indexedElement != null && indexedElement.getAsBoolean();
-
-                    String trackIndexPath = null;
-                    if (trackPath != null) {
-                        trackPath = FileUtils.getAbsolutePath(trackPath, genomePath);
+                    if (indexedElement != null) {
+                        res.setIndexed(indexed);
                     }
-                    if (trackIndex != null) {
-                        trackIndexPath = FileUtils.getAbsolutePath(trackIndex.getAsString(), genomePath);
-                    }
-
-                    ResourceLocator res = new ResourceLocator(trackPath);
-                    if (trackName != null) res.setName(trackName.getAsString());
-                    if (trackIndexPath != null) res.setIndexPath(trackIndexPath);
-                    if (indexedElement != null) res.setIndexed(indexed);
 
                     if (hidden) {
                         if (indexed || trackIndex != null) {

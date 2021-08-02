@@ -463,21 +463,21 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText("Remove genomes which appear in the dropdown list");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-
-        menuItems.add(new JSeparator());
-
-        menuAction =
-                new MenuAction("Create .genome File...", null, KeyEvent.VK_D) {
-                    @Override
-                    public void actionPerformed(ActionEvent event) {
-                        javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(IGV.getInstance().getMainPanel(),
-                                "Creating genome", null, 0, 100);
-                        igv.defineGenome(monitor);
-                    }
-                };
-
-        menuAction.setToolTipText(UIConstants.IMPORT_GENOME_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//
+//        menuItems.add(new JSeparator());
+//
+//        menuAction =
+//                new MenuAction("Create .genome File...", null, KeyEvent.VK_D) {
+//                    @Override
+//                    public void actionPerformed(ActionEvent event) {
+//                        javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(IGV.getInstance().getMainPanel(),
+//                                "Creating genome", null, 0, 100);
+//                        igv.defineGenome(monitor);
+//                    }
+//                };
+//
+//        menuAction.setToolTipText(UIConstants.IMPORT_GENOME_TOOLTIP);
+//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         MenuAction genomeMenuAction = new MenuAction("Genomes", null);
         return MenuAndToolbarUtils.createMenu(menuItems, genomeMenuAction);

@@ -28,6 +28,13 @@ package org.broad.igv.util;
 import com.google.gson.JsonObject;
 import htsjdk.tribble.Tribble;
 import org.apache.log4j.Logger;
+import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
+import org.broad.igv.feature.FeatureType;
+import org.broad.igv.feature.dsi.DSICodec;
+import org.broad.igv.feature.tribble.IntervalListCodec;
+import org.broad.igv.feature.tribble.MUTCodec;
+import org.broad.igv.feature.tribble.PAFCodec;
+import org.broad.igv.feature.tribble.UCSCGeneTableCodec;
 import org.broad.igv.google.GoogleUtils;
 
 //import java.awt.*;
@@ -37,6 +44,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+
+import static org.broad.igv.feature.tribble.CodecFactory.ucscSNP;
 
 /**
  * Represents a data file or other resource, which might be local file or remote resource.
@@ -97,7 +106,7 @@ public class ResourceLocator {
     /**
      * The type of resource (generally this refers to the file format)
      */
-    String type;
+    public String format;
 
 
     /**
@@ -128,16 +137,16 @@ public class ResourceLocator {
         Set<String> indexExtensions = new HashSet<>(Arrays.asList("bai", "crai", "sai", "tbi", "tbx"));
         Set<File> indexes = new HashSet<>();
         Map<String, File> indexMap = new HashMap<>();
-        for(File f : files) {
+        for (File f : files) {
             String fn = f.getName();
             int idx = fn.lastIndexOf('.');
-            if(idx > 0) {
+            if (idx > 0) {
                 String ext = fn.substring(idx + 1);
-                if(indexExtensions.contains(ext)) {
+                if (indexExtensions.contains(ext)) {
                     String base = fn.substring(0, idx);
                     if (ext.equals(".bai") && !base.endsWith(".bam")) {
                         base += ".bam";   // Picard convention
-                    } else if(ext.equals(".crai") && !base.endsWith(".cram")) {
+                    } else if (ext.equals(".crai") && !base.endsWith(".cram")) {
                         base += ".cram";  // Possible Picard convention
                     }
                     indexes.add(f);
@@ -146,11 +155,11 @@ public class ResourceLocator {
             }
         }
 
-        for(File f : files) {
-            if(indexes.contains(f)) continue;
+        for (File f : files) {
+            if (indexes.contains(f)) continue;
             ResourceLocator locator = new ResourceLocator(f.getAbsolutePath());
             File indexFile = indexMap.get(f.getName());
-            if(indexFile != null) {
+            if (indexFile != null) {
                 locator.setIndexPath(indexFile.getAbsolutePath());
             }
             locators.add(locator);
@@ -179,7 +188,7 @@ public class ResourceLocator {
 
         JsonObject fileInfo = GoogleUtils.getDriveFileInfo(path);
         this.name = fileInfo.get("name").getAsString();
-        this.type = getTypeString(this.name);
+        this.format = deriveFormat(this.name);
     }
 
     /**
@@ -207,16 +216,8 @@ public class ResourceLocator {
     }
 
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getTypeString() {
-        return this.getTypeString(this.path);
+    public void setFormat(String format) {
+        this.format = format;
     }
 
     /**
@@ -225,45 +226,84 @@ public class ResourceLocator {
      *
      * @return
      */
-    public String getTypeString(String pathOrName) {
-        if (type != null) {
-            return type;
-        } else {
+    public String getFormat() {
+        if (format == null) {
+            format = deriveFormat(this.path);
+        }
+        return format;
+    }
 
-            String typeString = pathOrName.toLowerCase();
-            if (typeString.startsWith("http://") || typeString.startsWith("https://") ||
-                    typeString.startsWith("gs://") || typeString.startsWith("s3://")) {
 
-                try {
-                    URL url = HttpUtils.createURL(pathOrName);
+    private String deriveFormat(String pathOrName) {
 
-                    typeString = url.getPath().toLowerCase();
-                    String query = url.getQuery();
-                    if (query != null) {
-                        Map<String, String> queryMap = URLUtils.parseQueryString(query);
-                        // If type is set explicitly use it
-                        if (queryMap.containsKey("dataformat")) {
-                            String format = queryMap.get("dataformat");
-                            typeString = format;
-                        } else if (queryMap.containsKey("file")) {
-                            typeString = queryMap.get("file");
-                        }
+        String filename;
+        if (FileUtils.isRemote(pathOrName)) {
+            try {
+                URL url = HttpUtils.createURL(pathOrName);
+                filename = url.getPath().toLowerCase();
+                String query = url.getQuery();
+                if (query != null) {
+                    Map<String, String> queryMap = URLUtils.parseQueryString(query);
+                    // If type is set explicitly use it
+                    if (queryMap.containsKey("dataformat")) {
+                        return queryMap.get("dataformat");
+                    } else if (queryMap.containsKey("file")) {
+                        filename = queryMap.get("file");
                     }
-
-                } catch (MalformedURLException e) {
-                    log.error("Error interpreting url: " + pathOrName, e);
-                    typeString = pathOrName;
                 }
+
+            } catch (MalformedURLException e) {
+                log.error("Error interpreting url: " + pathOrName, e);
+                filename = pathOrName;
             }
+        } else {
+            filename = pathOrName.toLowerCase();
+        }
 
-            // Strip .txt, .gz, and .xls extensions.  (So  foo.cn.gz => a .cn file)
-            if ((typeString.endsWith(".txt") || typeString.endsWith(
-                    ".xls") || typeString.endsWith(".gz") || typeString.endsWith(".bgz"))) {
-                typeString = typeString.substring(0, typeString.lastIndexOf(".")).trim();
-            }
+        // Strip .txt, .gz, and .xls extensions.  (So  foo.cn.gz => a cn file)
+        if ((filename.endsWith(".txt") || filename.endsWith(".xls") || filename.endsWith(".gz") ||
+                filename.endsWith(".bgz"))) {
+            filename = filename.substring(0, filename.lastIndexOf(".")).trim();
+        }
 
-            return typeString;
-
+        // Some special cases
+        if (filename.endsWith("fpkm_tracking")) {
+            return "fpkm_tracking";
+        } else if (filename.endsWith("gene_exp.diff")) {
+            return "gene_exp.diff";
+        } else if (filename.endsWith("cds_exp.diff")) {
+            return "cds_exp.diff";
+        } else if (filename.contains("refflat")) {
+            return "reflat";
+        } else if (filename.contains("genepred") || filename.contains("ensgene") ||
+                filename.contains("refgene") || filename.contains("ncbirefseq")) {
+            return "refgene";
+        } else if (filename.contains("ucscgene")) {
+            return "ucscgene";
+        } else if (filename.endsWith(".maf.annotated")) {
+            // TCGA extension
+            return "mut";
+        } else if (filename.endsWith("junctions.bed")) {
+            return "junctions";
+        } else if (filename.matches(ucscSNP)) {
+            return "snp";
+        } else if (filename.endsWith("bam.list")) {
+            return "bam.list";
+        } else if (filename.endsWith("sam.list")) {
+            return "sam.list";
+        } else if (filename.endsWith("vcf.list")) {
+            return "vcf.list";
+        } else if (filename.endsWith("seg.zip")) {
+            return "seg.zip";
+        } else if (filename.endsWith(".ewig.tdf") || (filename.endsWith(".ewig.ibf"))) {
+            return "ewig.tdf";
+        } else if (filename.endsWith(".maf.dict")) {
+            return "maf.dict";
+        } else if (filename.endsWith("_clusters")) {
+            return "bedpe";
+        } else {
+            // Default - return the extension
+            return filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
         }
     }
 
@@ -340,7 +380,7 @@ public class ResourceLocator {
     }
 
     public String getTrackName() {
-        if(name != null) {
+        if (name != null) {
             return name;
         } else {
             return this.getFileName();

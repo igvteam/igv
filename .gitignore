@@ -19,3 +19,4 @@ out/
 *.bam
 *.csi.gz
 *.sai
+/examples/genomes/hg38_session.json

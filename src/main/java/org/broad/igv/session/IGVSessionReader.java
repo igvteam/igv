@@ -585,7 +585,7 @@ public class IGVSessionReader implements SessionReader {
         resourceLocator.setDescription(description);
         // This test added to get around earlier bug in the writer
         if (type != null && !type.equals("local")) {
-            resourceLocator.setType(type);
+            resourceLocator.setFormat(type);
         }
         resourceLocator.setCoverage(coverage);
         resourceLocator.setTrackLine(trackLine);

@@ -363,17 +363,7 @@ Match_Norm_Seq_Allele2
      */
     public static boolean isMutationAnnotationFile(ResourceLocator locator) {
 
-        String ext;
-        {
-            //Only want pathLC when checking extension, so we limit its scope
-            String typeStringLC = locator.getTypeString().toLowerCase();
-            if (typeStringLC.endsWith(".maf.annotated")) {
-                // TCGA extension
-                return true;
-            }
-
-            ext = ParsingUtils.getIGVExtension(typeStringLC);
-        }
+        String ext = locator.getFormat();
 
         if (ext.equals("mut")) {
             return true;

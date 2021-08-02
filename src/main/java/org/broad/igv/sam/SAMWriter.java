@@ -246,7 +246,7 @@ public class SAMWriter {
                                                ReferenceFrame frame, String sequence, int start, int end) throws IOException {
 
         ResourceLocator inlocator = dataManager.getLocator();
-        checkExportableAlignmentFile(inlocator.getTypeString());
+        checkExportableAlignmentFile(inlocator.getFormat());
 
         final SAMFileHeader fileHeader = dataManager.getLoader().getFileHeader();
         //IGV can only load files sorted in coordinate order, but they aren't always
@@ -282,7 +282,7 @@ public class SAMWriter {
     public static int writeAlignmentFilePicard(ResourceLocator inlocator, String outPath,
                                                String sequence, int start, int end) throws IOException {
 
-        checkExportableAlignmentFile(inlocator.getTypeString());
+        checkExportableAlignmentFile(inlocator.getFormat());
 
         AlignmentReader reader = AlignmentReaderFactory.getReader(inlocator);
         CloseableIterator<SAMAlignment> iter = reader.query(sequence, start, end, false);
@@ -295,13 +295,9 @@ public class SAMWriter {
         return count;
     }
 
-    private static void checkExportableAlignmentFile(String typeString) {
-        String[] validExts = new String[]{".cram", ".bam", ".sam", ".bam.list", ".sam.list"};
-        boolean isValidExt = false;
-        for (String validExt : validExts) {
-            isValidExt |= typeString.endsWith(validExt);
-        }
-        if (!isValidExt) {
+    private static void checkExportableAlignmentFile(String format) {
+        Set<String> validExts = new HashSet<>(Arrays.asList("cram", "bam", "sam", "bam.list", "sam.list"));
+        if (!validExts.contains(format)) {
             throw new IllegalArgumentException("Input alignment valid not valid for export");
         }
     }

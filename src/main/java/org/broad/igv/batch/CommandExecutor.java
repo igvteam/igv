@@ -686,7 +686,7 @@ public class CommandExecutor {
                 if (formats != null) {
                     String format = formats.get(fi);
                     if (!("ga4gh".equals(format)) && !format.startsWith(".")) format = "." + format;
-                    rl.setType(format);
+                    rl.setFormat(format);
                 }
 
                 if (params != null) {

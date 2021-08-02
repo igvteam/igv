@@ -84,38 +84,44 @@ public class IGVDatasetParser {
 
     private void setColumnDefaults() {
 
-        String tmp = dataResourceLocator.getTypeString();
+        String format = dataResourceLocator.getFormat();
+        switch (format) {
+            case "igv":
+                chrColumn = 0;
+                startColumn = 1;
+                endColumn = 2;
+                probeColumn = 3;
+                firstDataColumn = 4;
+                hasEndLocations = true;
+                hasCalls = false;
+                break;
+            case "cn":
+            case "snp":
+            case "xcn":
+            case "loh":
+                probeColumn = 0;
+                chrColumn = 1;
+                startColumn = 2;
+                endColumn = -1;
+                firstDataColumn = 3;
+                hasEndLocations = false;
+                hasCalls = format.equals("xcn") || format.equals("snp");
+                break;
+            case ".expr":
+                //gene_id	bundle_id	chr	left	right	FPKM	FPKM_conf_lo	FPKM_conf_hi
+                probeColumn = 0;
+                chrColumn = 2;
+                startColumn = 3;
+                endColumn = 4;
+                startBase = 1;
+                firstDataColumn = 5;
+                lastDataColumn = 5;
+                hasEndLocations = true;
+                break;
+            default:
+                // TODO -- popup dialog and ask user to define columns,  and csv vs tsv?
+                throw new ParserException("Unknown file type: ", 0);
 
-        if (tmp.endsWith(".igv")) {
-            chrColumn = 0;
-            startColumn = 1;
-            endColumn = 2;
-            probeColumn = 3;
-            firstDataColumn = 4;
-            hasEndLocations = true;
-            hasCalls = false;
-        } else if (tmp.endsWith(".xcn") || tmp.endsWith("cn") || tmp.endsWith(".snp") || tmp.endsWith(".loh")) {
-            probeColumn = 0;
-            chrColumn = 1;
-            startColumn = 2;
-            endColumn = -1;
-            firstDataColumn = 3;
-            hasEndLocations = false;
-            hasCalls = tmp.endsWith(".xcn") || tmp.endsWith(".snp");
-        } else if (tmp.endsWith(".expr")) {
-            //gene_id	bundle_id	chr	left	right	FPKM	FPKM_conf_lo	FPKM_conf_hi
-            probeColumn = 0;
-            chrColumn = 2;
-            startColumn = 3;
-            endColumn = 4;
-            startBase = 1;
-            firstDataColumn = 5;
-            lastDataColumn = 5;
-            hasEndLocations = true;
-
-        } else {
-            // TODO -- popup dialog and ask user to define columns,  and csv vs tsv?
-            throw new ParserException("Unknown file type: ", 0);
         }
     }
 
@@ -409,7 +415,7 @@ public class IGVDatasetParser {
 
                             startLocations.add(start);
 
-                            if(tokens.length <= firstDataColumn + (dataHeaders.length - 1)*skipColumns){
+                            if (tokens.length <= firstDataColumn + (dataHeaders.length - 1) * skipColumns) {
                                 String msg = "Line has too few data columns: " + nextLine;
                                 log.error(msg);
                                 throw new RuntimeException(msg);
@@ -428,9 +434,9 @@ public class IGVDatasetParser {
                         }
 
                     } catch (NumberFormatException numberFormatException) {
-                        if(skippedLineCount < 5) {
+                        if (skippedLineCount < 5) {
                             skippedLineCount++;
-                            if(skippedLineCount == 5) {
+                            if (skippedLineCount == 5) {
                                 log.info("Skipping line: " + nextLine + (skippedLineCount < 5 ? "" : " Further skipped lines will not be logged"));
                             }
                         }

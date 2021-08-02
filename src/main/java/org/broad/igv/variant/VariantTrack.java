@@ -87,11 +87,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public static int METHYLATION_MIN_BASE_COUNT = 10;
 
 
-    public static boolean isVCF(String typeString) {
-        return (typeString.endsWith(".vcf3") ||
-                typeString.endsWith(".vcf4") ||
-                typeString.endsWith(".vcf") ||
-                typeString.endsWith(".bcf"));
+    public static boolean isVCF(String format) {
+        return (format.equals("vcf3") ||
+                format.equals("vcf4") ||
+                format.equals("vcf") ||
+                format.equals("bcf"));
     }
 
 
@@ -1416,7 +1416,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
                 }
                 ResourceLocator loc = new ResourceLocator(bamList);
-                loc.setType("alist");
+                loc.setFormat("alist");
                 loc.setName(name);
                 List<Track> tracks = null;
                 try {

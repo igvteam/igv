@@ -8,6 +8,7 @@
   "tracks": [
     {
       "name": "Gencode v24 genes",
+      "format": "gtf",
       "url": "chr22.genes.gtf.gz"
     }
   ]

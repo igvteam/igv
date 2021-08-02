@@ -659,7 +659,7 @@ public class IgvTools {
         }
 
         ResourceLocator locator = new ResourceLocator(ifile);
-        locator.setType(typeString);
+        locator.setFormat(typeString);
         GCTtoIGVConverter.convert(locator, ofile, probefile, maxRecords, tmpDir, genome);
 
     }
