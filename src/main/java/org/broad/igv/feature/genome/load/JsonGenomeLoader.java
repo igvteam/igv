@@ -166,7 +166,15 @@ public class JsonGenomeLoader extends GenomeLoader {
             if (wholeGenomeView != null) {
                 newGenome.setShowWholeGenomeView(wholeGenomeView.getAsBoolean());
             }
-
+            JsonElement chromosomeOrder = json.get("chromosomeOrder");
+            if (chromosomeOrder != null) {
+                JsonArray a = chromosomeOrder.getAsJsonArray();
+                List<String> chrs = new ArrayList<>();
+                for(JsonElement e : a) {
+                    chrs.add(e.getAsString());
+                }
+                newGenome.setLongChromosomeNames(chrs);
+            }
 
             return newGenome;
         } finally {

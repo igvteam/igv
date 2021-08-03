@@ -34,6 +34,7 @@
  */
 package org.broad.igv.feature.genome;
 
+import com.google.gson.JsonElement;
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -60,7 +61,7 @@ public class Genome {
     private String id;
     private String displayName;
     private List<String> chromosomeNames;
-    private ArrayList<String> longChromosomeNames;
+    private List<String> longChromosomeNames;
     private LinkedHashMap<String, Chromosome> chromosomeMap;
     private long totalLength = -1;
     private long nominalLength = -1;
@@ -536,7 +537,8 @@ public class Genome {
             }
 
             else {
-                // Long list, likely many small contigs.  Find the break
+                // Long list, likely many small contigs.  Search for a break between long (presumably assembled)
+                // chromosomes and small contigs.
                 List<Chromosome> allChromosomes = new ArrayList<>(chromosomeMap.values());
                 allChromosomes.sort((c1, c2) -> c2.getLength() - c1.getLength());
 
@@ -545,7 +547,6 @@ public class Genome {
                 for (Chromosome c : allChromosomes) {
                     if (lastChromosome != null) {
                         double delta = lastChromosome.getLength() - c.getLength();
-                        double mean = (lastChromosome.getLength() + c.getLength()) / 2;
                         if (delta / c.getLength() > 0.9) {
                             break;
                         }
@@ -665,5 +666,9 @@ public class Genome {
 
     public boolean getShowWholeGenomeView() {
         return showWholeGenomeView;
+    }
+
+    public void setLongChromosomeNames(List<String> chrNames) {
+        this.longChromosomeNames = chrNames;
     }
 }
