@@ -148,11 +148,11 @@ public class JsonGenomeLoader extends GenomeLoader {
 
             JsonElement ucscIDElement = json.get("ucscID");
             if (ucscIDElement != null) {
-                newGenome.setUcscID( ucscIDElement.getAsString());
+                newGenome.setUcscID(ucscIDElement.getAsString());
             }
             JsonElement blatDB = json.get("blatDB");
             if (blatDB != null) {
-                newGenome.setUcscID( blatDB.getAsString());
+                newGenome.setUcscID(blatDB.getAsString());
             }
             JsonElement aliasURL = json.get("aliasURL");
             if (aliasURL != null) {
@@ -162,6 +162,12 @@ public class JsonGenomeLoader extends GenomeLoader {
             if (hiddenTracks.size() > 0) {
                 addToFeatureDB(hiddenTracks, newGenome);
             }
+            JsonElement wholeGenomeView = json.get("wholeGenomeView");
+            if (wholeGenomeView != null) {
+                newGenome.setShowWholeGenomeView(wholeGenomeView.getAsBoolean());
+            }
+
+
             return newGenome;
         } finally {
             reader.close();
