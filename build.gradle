@@ -312,6 +312,7 @@ task createMacAppDist(type: Copy, dependsOn: createDist) {
     with copySpec {
         from ("scripts/mac.app") {
             exclude "Contents/Info.plist.template"
+            exclude "Contents/MacOS/IGV.sh"
         }
         into "IGV_${version}.app"
     }
