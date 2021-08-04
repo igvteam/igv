@@ -1,7 +1,13 @@
 #!/bin/bash
 
 #This script is intended for launching on Macs
-#It may or may not work on *nix, definitely not on windows
+#It is intended to be compiled be 'shc' on Mac in order to have the
+#launcher be a binary executable rather than a script.  You can obtain
+#'sch' through MacPorts or Homebrew.  Then, the steps to compile look
+#like this:
+#  $ export CFLAGS=-macosx-minimum-version=10.10   # Pass-thru to 'cc' for backward compatibility.
+#  $ shc -r -f IGV.sh  # The '-r' means "relaxed security" and is more portable.
+#  $ mv IGV.sh.x IGV   # Rename the executable to the expected name.
 
 #-Xmx4g indicates 4 gb of memory.
 #To adjust this (or other Java options), edit the "$HOME/.igv/java_arguments" 
