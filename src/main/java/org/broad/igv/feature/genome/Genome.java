@@ -547,7 +547,7 @@ public class Genome {
                 for (Chromosome c : allChromosomes) {
                     if (lastChromosome != null) {
                         double delta = lastChromosome.getLength() - c.getLength();
-                        if (delta / c.getLength() > 0.9) {
+                        if (delta / lastChromosome.getLength() > 0.7) {
                             break;
                         }
                     }

@@ -200,7 +200,10 @@ public class GenomeManager {
                 monitor.fireProgress(25);
             }
 
-            if (IGV.hasInstance()) IGV.getInstance().resetSession(null);
+            final IGV igv = IGV.getInstance();
+            if (igv != null) {
+                igv.resetSession(null);
+            }
 
             GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
             final Set<String> serverGenomeIDs = genomeListManager.getServerGenomeIDs();
@@ -209,19 +212,18 @@ public class GenomeManager {
             genomeListManager.addGenomeItem(genomeListItem, userDefined);
 
             setCurrentGenome(newGenome);
-            if (IGV.hasInstance()) {
+            if (igv != null) {
                 FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();   // Can be null
-                if (IGV.hasInstance()) {
-                    IGV.getInstance().setGenomeTracks(geneFeatureTrack);
-                }
+                igv.setGenomeTracks(geneFeatureTrack);
                 List<ResourceLocator> resources = newGenome.getAnnotationResources();
-                if (resources != null && IGV.hasInstance()) {
-                    IGV.getInstance().loadResources(resources);
+                if (resources != null) {
+                    igv.loadResources(resources);
+                    igv.repaint();
                 }
             }
 
 
-           // log.info("Genome loaded.  id= " + newGenome.getId());
+            // log.info("Genome loaded.  id= " + newGenome.getId());
             return currentGenome;
 
         } catch (SocketException e) {

@@ -8,6 +8,7 @@ import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureReader;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.NamedFeature;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class JsonGenomeLoader extends GenomeLoader {
@@ -168,10 +170,18 @@ public class JsonGenomeLoader extends GenomeLoader {
             }
             JsonElement chromosomeOrder = json.get("chromosomeOrder");
             if (chromosomeOrder != null) {
-                JsonArray a = chromosomeOrder.getAsJsonArray();
-                List<String> chrs = new ArrayList<>();
-                for(JsonElement e : a) {
-                    chrs.add(e.getAsString());
+                List<String> chrs;
+                if(chromosomeOrder.isJsonArray()) {
+                    JsonArray a = chromosomeOrder.getAsJsonArray();
+                    chrs = new ArrayList<>();
+                    for (JsonElement e : a) {
+                        chrs.add(e.getAsString());
+                    }
+                }
+                else {
+                    // Assume string (old style)
+                    String [] c = Globals.commaPattern.split(chromosomeOrder.getAsString());
+                    chrs = Arrays.asList(c);
                 }
                 newGenome.setLongChromosomeNames(chrs);
             }

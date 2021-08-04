@@ -48,7 +48,7 @@ Human Mito (NC_012920)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/N
 Human respiratory synctial virus	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/M74568.genome	M74568
 Macaca fascicularis (CE_1.0)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/CE_1.0.genome	CE_1.0
 Macaca fascicularis (5.0)	https://s3.amazonaws.com/igv.org.genomes/Macaca_fascicularis_5.0/Macaca_fascicularis_5.0.genome	GCF_000364345.1
-Mouse (129S1/SvImJ)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/SvImJ.genome	129S1/SvImJ
+Mouse (129S1/SvImJ)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/SvImJ.genome	SvImJ
 Mouse mm39	https://s3.amazonaws.com/igv.org.genomes/mm39/mm39.genome	mm39
 Mouse mm10	https://s3.amazonaws.com/igv.org.genomes/mm10/mm10.genome	mm10
 Mouse mm8	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/mm8.genome	mm8
@@ -89,10 +89,7 @@ Zea mays (AGPv3.31)	https://s3.amazonaws.com/igv.broadinstitute.org/genomes/AGPv
 C. reinhardtii (CC-503 v5.5)	https://s3.amazonaws.com/igv.org.genomes/Creinhardtii_CC-503_v5.0/2019-03-21_Creinhardtii_CC-503_v5.5.genome	2019-03-21_Creinhardtii_CC-503_v5.5
 C. reinhardtii (CC-503 v5.6)	https://s3.amazonaws.com/igv.org.genomes/C.reinhardtii_CC-503_v5.6+/2019-03-21_Creinhardtii_CC-503_v5.6.genome	2019-03-21_Creinhardtii_CC-503_v5.6
 C. reinhardtii (CC-503 v5.6 Cp+Mt v4.4)	https://s3.amazonaws.com/igv.org.genomes/Creinhardtii_CC-503_v5.6/2019-03-21_Creinhardtii_CC-503_v5.6_Cp%2BMt_v4.4.genome	2019-03-21_Creinhardtii_CC-503_v5.6_Cp+Mt_v4.4
-Ixodes scapularis JCVI_ISG_i3_1.0 (GCA_000208615.1)	https://s3.amazonaws.com/igv.org.genomes/tick/GCA_000208615.1/GCA_000208615.1.genome	GCA_000208615.1
-Ixodes scapularis ISE6_asm2.2_deduplicated (GCA_002892825.2)	https://s3.amazonaws.com/igv.org.genomes/tick/GCA_000208615.1/GCA_000208615.1.genome	GCA_002892825.2
 SARS-CoV-2	https://s3.amazonaws.com/igv.org.genomes/SARS-CoV-2/ASM985889v3.genome	ASM985889v3
 Dog (canFam5)	https://s3.amazonaws.com/igv.org.genomes/canFam5/canFam5.genome	canFam5
 Rat (rn7)	https://s3.amazonaws.com/igv.org.genomes/rn7/rn7.genome	rn7
 Gorilla (Kamilah_GGO_v0/gorGor6)	https://s3.amazonaws.com/igv.org.genomes/gorGor6/gorGor6.genome	gorGor6
-
