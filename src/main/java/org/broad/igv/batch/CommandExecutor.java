@@ -317,6 +317,7 @@ public class CommandExecutor {
                 track.setAutoScale(autoscale);
             }
         }
+        igv.repaint();
         return "OK";
     }
 
