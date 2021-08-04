@@ -78,7 +78,7 @@ public class CommandExecutor {
         List<String> args = new ArrayList(tokens.length);
         for (String s : tokens) {
             if (s.trim().length() > 0) {
-                args.add(s.trim());
+                args.add(StringUtils.stripQuotes(s.trim()));
             }
         }
         return args;
@@ -289,25 +289,32 @@ public class CommandExecutor {
         List<Track> tracks = igv.getAllTracks();
         String[] tokens = dataRangeString.split(",");
         //Min,max or min,baseline,max
-        DataRange range;
-        try {
-            if (tokens.length == 2) {
-                range = new DataRange(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]));
-            } else if (tokens.length == 3) {
-                range = new DataRange(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]));
-            } else {
-                throw new IllegalArgumentException(String.format("ERROR: parsing %s for data range. \n" +
-                        "String must be of form <min,max> or <min,baseline,max>", dataRangeString));
+        DataRange range = null;
+        boolean autoscale =
+                (dataRangeString.trim().equalsIgnoreCase("auto") ||
+                        dataRangeString.trim().equalsIgnoreCase("autoscale"));
+
+        if(!autoscale) {
+            try {
+                if (tokens.length == 2) {
+                    range = new DataRange(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]));
+                } else if (tokens.length == 3) {
+                    range = new DataRange(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]));
+                } else {
+                    throw new IllegalArgumentException(String.format("ERROR: parsing %s for data range. \n" +
+                            "String must be of form <min,max> or <min,baseline,max>", dataRangeString));
+                }
+            } catch (NumberFormatException e) {
+                return "ERROR: Could not parse input string as a Float. " + e.getMessage();
+            } catch (IllegalArgumentException e) {
+                return e.getMessage();
             }
-        } catch (NumberFormatException e) {
-            return "ERROR: Could not parse input string as a Float. " + e.getMessage();
-        } catch (IllegalArgumentException e) {
-            return e.getMessage();
         }
+
         for (Track track : tracks) {
             if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                track.setDataRange(range);
-                track.setAutoScale(false);
+                if(!autoscale) track.setDataRange(range);
+                track.setAutoScale(autoscale);
             }
         }
         return "OK";

@@ -105,7 +105,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
         }
 
     }
-    
+
     @Test
     public void testMultiRetrieve() throws Exception {
         String checkstr = "EGFLAM";
