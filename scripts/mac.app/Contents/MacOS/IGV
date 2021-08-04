@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #This script is intended for launching on Macs
 #It may or may not work on *nix, definitely not on windows
@@ -7,8 +7,6 @@
 #To adjust this (or other Java options), edit the "$HOME/.igv/java_arguments" 
 #file.  For more info, see the README at 
 #https://raw.githubusercontent.com/igvteam/igv/master/scripts/readme.txt 
-#apple.laf.useScreenMenuBar for Macs, to put menu bar at top of screen
-#-Xdock:name again for Macs, sets the name in menu bar
 #Add the flag -Ddevelopment = true to use features still in development
 prefix=`dirname $(readlink $0 || echo $0)`
 
@@ -24,20 +22,13 @@ fi
 
 # Check if there is a user-specified Java arguments file
 if [ -e "$HOME/.igv/java_arguments" ]; then
-    java -showversion --module-path="${prefix}/../Java/lib" -Xmx4g \
-        @"${prefix}/../Java/igv.args" \
-        -Xdock:name="IGV" \
-        -Xdock:icon="${prefix}/../Resources/IGV_64.png" \
-        -Dapple.laf.useScreenMenuBar=true \
-        -Djava.net.preferIPv4Stack=true \
-        @"$HOME/.igv/java_arguments" \
-        --module=org.igv/org.broad.igv.ui.Main
-else
-    java -showversion --module-path="${prefix}/../Java/lib" -Xmx4g \
-        @"${prefix}/../Java/igv.args" \
-        -Xdock:name="IGV" \
-        -Xdock:icon="${prefix}/../Resources/IGV_64.png" \
-        -Dapple.laf.useScreenMenuBar=true \
-        -Djava.net.preferIPv4Stack=true \
-        --module=org.igv/org.broad.igv.ui.Main
+    EXTRA_ARGS_FILE=@"$HOME/.igv/java_arguments"
 fi
+
+exec java -showversion --module-path="${prefix}/../Java/lib" -Xmx4g \
+    @"${prefix}/../Java/igv.args" \
+    -Xdock:name="IGV" \
+    -Xdock:icon="${prefix}/../Resources/IGV_64.png" \
+    -Dapple.laf.useScreenMenuBar=true \
+    -Djava.net.preferIPv4Stack=true ${EXTRA_ARGS_FILE} \
+    --module=org.igv/org.broad.igv.ui.Main
