@@ -425,9 +425,7 @@ public class ResourceLocator {
 
         if (path != null && path.startsWith("file://")) {
             this.path = path.substring("file://".length());
-        } else if (path != null && path.startsWith("gs://")) {
-            this.path = GoogleUtils.translateGoogleCloudURL(path);
-        } else if (path != null && path.startsWith("s3://")) {
+        }  else if (path != null && path.startsWith("s3://")) {
             this.path = path;
             String s3UrlIndexPath = detectIndexPath(path);
             this.setIndexPath(s3UrlIndexPath);
