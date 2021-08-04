@@ -106,11 +106,11 @@ the need for the 'igvtools_gui_hidpi' script.
 Genome
 ---------------------------------------------------------------------------
 
-The genome argument in the tile and count command can be either an id, or
-a full path to an IGV .genome file.  The id for IGV supplied genomes are
-listed below.  Genome definitions corresponding to these files are in the
-"genomes" subdirectory of the igvtools install.  The id is derived by removing
-the .extension from the filename.
+The genome argument in the tile and count command can be either an id (for
+IGV hosted genomes, or a full path to a chrom.sizes, .genome, or genome json file.
+Files for IGV hosted genomes are in the "genomes" subdirectory of the igvtools
+install.  IDs for these genomes are listed in the 3rd column of the 'genomes.tab'
+file located at https://s3.amazonaws.com/igv.org.genomes/genomes.tab
 
 ---------------------------------------------------------------------------
 COMMANDS
