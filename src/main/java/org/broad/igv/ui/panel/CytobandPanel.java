@@ -44,7 +44,6 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.CytobandRenderer;
-import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.IGVMouseInputAdapter;
 
@@ -59,9 +58,7 @@ import java.util.List;
  */
 public class CytobandPanel extends JPanel implements IGVEventObserver {
 
-    private static int fontHeight = 10;
     private static int bandHeight = 10;
-    private static String fontFamilyName = "Lucida Sans";
     private boolean isDragging = false;
 
     /**
@@ -72,19 +69,13 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
     /**
      * right genomic coordinate of region in view (base pairs)
      */
-
     private double viewEnd;
 
     /**
      * Scale in base-pairs per pixel == chromosome length / panel width
      */
     double cytobandScale;
-
     ReferenceFrame frame;
-
-    private Rectangle currentRegionRect;
-
-
     private CytobandRenderer cytobandRenderer;
     private List<Cytoband> currentCytobands;
 
@@ -92,15 +83,12 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
         this(frame, true);
     }
 
-
     public CytobandPanel(ReferenceFrame frame, boolean mouseable) {
 
         this.frame = frame;
         this.viewOrigin = frame.getOrigin();
         this.viewEnd = frame.getEnd();
 
-        FontManager.getFont(fontHeight);
-        setFont(new Font(fontFamilyName, Font.BOLD, fontHeight));
         if (mouseable) {
             initMouseAdapter();
         }
@@ -135,7 +123,7 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
             return;
         }
 
-        cytobandRenderer.draw(currentCytobands, g, cytoRect, frame);
+        cytobandRenderer.drawIdeogram(currentCytobands, g, cytoRect, frame);
 
         int chromosomeLength = getReferenceFrame().getMaxCoordinate();
         cytobandScale = ((double) chromosomeLength) / dataPanelWidth;
@@ -154,7 +142,6 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
             int height = (int) cytoRect.getHeight();
             g.setColor(Color.RED);
             int y = (int) (cytoRect.getY()) + CytobandRenderer.CYTOBAND_Y_OFFSET;
-            currentRegionRect = new Rectangle(pixelStart - 2, y, pixelSpan + 4, height);
             g.drawRect(pixelStart, y, pixelSpan, height);
             g.drawRect(pixelStart - 1, (y - 1), pixelSpan + 2, height + 2);
             g.drawRect(pixelStart - 2, (y - 2), pixelSpan + 4, height + 4);

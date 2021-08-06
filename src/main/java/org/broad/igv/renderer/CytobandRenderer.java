@@ -33,9 +33,9 @@
  */
 package org.broad.igv.renderer;
 
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -54,47 +54,80 @@ public class CytobandRenderer {
     boolean drawLabels = true;
     static final public int CYTOBAND_Y_OFFSET = 5;
     static final public int LABEL_OFFSET = 25;
+    private int fontHeight = 10;
+    private int bandHeight = 10;
+    private String fontFamilyName = "Lucida Sans";
+
     private static Map<Integer, Color> stainColors = new HashMap<Integer, Color>();
 
-    public void draw(List<Cytoband> data, Graphics g2D, Rectangle graphicRect, ReferenceFrame frame) {
+    public void drawIdeogram(List<Cytoband> data, Graphics g2D, Rectangle graphicRect, ReferenceFrame frame) {
 
         if (data.size() > 0) {
+            Graphics g = g2D.create();
+            try {
 
-            // If we are in the process of exporting to an image file
-            // we need to write out the cytoband locus on the image
-            if (SnapshotUtilities.snapshotInProgress) {
-                String locus = frame.getFormattedLocusString();
-                if (locus != null) {
-                    Graphics g2 = g2D.create();
-                    g2.setFont(FontManager.getFont(Font.BOLD, 11));
-                    g2.drawString(locus, 3, 11);
-                    g2.dispose();
+                FontManager.getFont(fontHeight);
+                g.setFont(new Font(fontFamilyName, Font.BOLD, fontHeight));
+
+                // If we are in the process of exporting to an image file
+                // we need to write out the cytoband locus on the image
+                if (SnapshotUtilities.snapshotInProgress) {
+                    String locus = frame.getFormattedLocusString();
+                    if (locus != null) {
+                        Graphics g2 = g2D.create();
+                        g2.setFont(FontManager.getFont(Font.BOLD, 11));
+                        g2.drawString(locus, 3, 11);
+                        g2.dispose();
+                    }
                 }
-            }
 
-            // Draw Cytoband
-            drawBands(data, g2D, graphicRect, frame.getMaxCoordinate());
+                // Draw Cytoband
+                drawBand(data, g, graphicRect, 0, frame.getMaxCoordinate());
 
-            // Draw Cytoband Labels
-            if (drawLabels && !FrameManager.isGeneListMode()) {
-                drawLabels(g2D, graphicRect, data, frame.getMaxCoordinate());
+                // Draw Cytoband Labels
+                if (drawLabels && !FrameManager.isGeneListMode()) {
+                    drawLabels(g, graphicRect, data, 0, frame.getMaxCoordinate());
+                }
+            } finally {
+                g.dispose();
             }
         }
     }
 
-    public void drawBands(List<Cytoband> data, Graphics g2D, Rectangle graphicRect, int chromoLength) {
+    public void drawTrack(List<Cytoband> data, Graphics g2D, Rectangle graphicRect, ReferenceFrame frame) {
+
+        if (data.size() > 0) {
+            Graphics g = g2D.create();
+            try {
+
+                FontManager.getFont(fontHeight);
+                g.setFont(new Font(fontFamilyName, Font.BOLD, fontHeight));
+                Rectangle cytoRect = new Rectangle(0, 0, graphicRect.width, 10);
+
+                double start = frame.getOrigin();
+                double end = frame.getEnd();
+                drawBand(data, g, cytoRect, start, end);
+                drawLabels(g, graphicRect, data, start, end);
+            } finally {
+                g.dispose();
+            }
+        }
+    }
+
+    private void drawBand(List<Cytoband> data, Graphics g2D, Rectangle graphicRect, double start, double end) {
 
         int[] xC = new int[3];
         int[] yC = new int[3];
 
-        double scale = graphicRect.getWidth() / chromoLength;
+        double scale = graphicRect.getWidth() / (end - start);
 
         int lastPX = -1;
         for (Cytoband cytoband : data) {
-
-            int start = (int) (graphicRect.getX() + scale * cytoband.getStart());
-            int end = (int) (graphicRect.getX() + scale * cytoband.getEnd());
-            if (end > lastPX) {
+            if(cytoband.getEnd() < start) continue;
+            if(cytoband.getStart() > end) break;
+            int s = (int) (graphicRect.getX() + scale * (cytoband.getStart() - start));
+            int e = (int) (graphicRect.getX() + scale * (cytoband.getEnd() - start));
+            if (e > lastPX) {
 
                 int y = (int) graphicRect.getY() + CYTOBAND_Y_OFFSET;
                 int height = (int) graphicRect.getHeight();
@@ -103,18 +136,18 @@ public class CytobandRenderer {
 
                     int center = (y + height / 2);
                     if (cytoband.getName().startsWith("p")) {
-                        xC[0] = start;
+                        xC[0] = s;
                         yC[0] = (int) graphicRect.getMaxY() + CYTOBAND_Y_OFFSET;
-                        xC[1] = start;
+                        xC[1] = s;
                         yC[1] = y;
-                        xC[2] = end;
+                        xC[2] = e;
                         yC[2] = center;
                     } else {
-                        xC[0] = end;
+                        xC[0] = e;
                         yC[0] = (int) graphicRect.getMaxY() + CYTOBAND_Y_OFFSET;
-                        xC[1] = end;
+                        xC[1] = e;
                         yC[1] = y;
-                        xC[2] = start;
+                        xC[2] = s;
                         yC[2] = center;
                     }
                     g2D.setColor(Color.RED.darker());
@@ -122,16 +155,16 @@ public class CytobandRenderer {
                 } else {
 
                     g2D.setColor(getCytobandColor(cytoband));
-                    g2D.fillRect(start, y, (end - start), height);
+                    g2D.fillRect(s, y, (e - s), height);
                     g2D.setColor(Color.BLACK);
-                    g2D.drawRect(start, y, (end - start), height);
+                    g2D.drawRect(s, y, (e - s), height);
                 }
             }
-            lastPX = end;
+            lastPX = e;
         }
     }
 
-    private void drawLabels(final Graphics g, Rectangle graphicRect, List<Cytoband> cytobands, int chromoLength) {
+    private void drawLabels(final Graphics g, Rectangle graphicRect, List<Cytoband> cytobands, double start,  double end) {
 
         double width = graphicRect.getWidth();
         int y = (int) graphicRect.getY() + LABEL_OFFSET;
@@ -141,12 +174,14 @@ public class CytobandRenderer {
         FontMetrics fm = g.getFontMetrics();
         int minSpacing = 10;
         int prevEnd = 0;
-        double sc = width / chromoLength;
+        double sc = width / (end - start);
         int adjustedY = y;
         if (cytobands != null) {
             for (Cytoband cytoband : cytobands) {
-                int s = (int) (sc * cytoband.getStart());
-                int e = (int) (sc * cytoband.getEnd());
+                if(cytoband.getEnd() < start) continue;
+                if(cytoband.getStart() > end) break;
+                int s = (int) (sc * (cytoband.getStart() - start));
+                int e = (int) (sc * (cytoband.getEnd() - start));
                 int stringWidth = (int) fm.getStringBounds(cytoband.getName(), g).getWidth();
                 int x = (int) (s + (e - s - stringWidth) / 2);
                 if (x > (prevEnd + minSpacing)) {

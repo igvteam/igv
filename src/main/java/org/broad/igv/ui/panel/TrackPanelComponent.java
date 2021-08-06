@@ -195,7 +195,6 @@ abstract public class TrackPanelComponent extends JPanel {
             menu = track.getPopupMenu(te);
         }
 
-
         // If still no menu, create a generic one with common items
         if (menu == null) {
             String title = getPopupMenuTitle(e.getX(), e.getY());

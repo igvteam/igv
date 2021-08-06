@@ -55,7 +55,7 @@ public class CytoBandFileParser {
      * @param filename
      * @return
      */
-    public static boolean isValid(AsciiLineReader reader, String filename) {
+    public static boolean isValid(BufferedReader reader, String filename) {
 
         if (reader == null) {
             return false;
@@ -72,7 +72,6 @@ public class CytoBandFileParser {
             return true;
 
         } catch (Exception e) {
-            logger.error("Invalid Cytoband file data : file=" + filename, e);
             return false;
         }
     }

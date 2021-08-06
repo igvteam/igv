@@ -45,6 +45,7 @@ import org.broad.igv.bedpe.BedPEParser;
 import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.feature.bionano.SMAPParser;
 import org.broad.igv.feature.bionano.SMAPRenderer;
+import org.broad.igv.feature.cyto.CytobandTrack;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.dsi.DSIRenderer;
 import org.broad.igv.feature.dsi.DSITrack;
@@ -85,7 +86,9 @@ import org.broad.igv.util.*;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -129,7 +132,7 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-            if(locator.isHtsget()) {
+            if (locator.isHtsget()) {
                 tryHtsget(locator, newTracks, genome);
             } else if (format.equals("gmt")) {
                 loadGMT(locator);
@@ -197,7 +200,7 @@ public class TrackLoader {
                 loadSMAPFile(locator, newTracks, genome);
             } else if (format.equals("dsi")) {
                 loadDSIFile(locator, newTracks, genome);
-            } else if (format.equals("bedpe") ) {
+            } else if (format.equals("bedpe")) {
                 loadBedPEFile(locator, newTracks, genome);
             } else if (format.equals("clusters")) {
                 loadClusterFile(locator, newTracks, genome);
@@ -210,9 +213,24 @@ public class TrackLoader {
             } else {
                 //if a url, try htsget
                 boolean isHtsget = tryHtsget(locator, newTracks, genome);
+                if (!isHtsget) {
 
-                if(!isHtsget) {
-                    if (AttributeManager.isSampleInfoFile(locator)) {
+                    // If the file is too large, give up
+                    // TODO -- ftp test
+                    final int tenMB = 10000000;
+                    long fileLength = ParsingUtils.getContentLength(locator.getPath());
+                    if (fileLength > tenMB) {
+                        MessageUtils.confirm("<html>Cannot determine file type of: " + locator.getPath());
+                    }
+
+                    // Read file contents and try to sort it out
+                    String contents = FileUtils.getContents(locator.getPath());
+                    BufferedReader reader = new BufferedReader(new StringReader(contents));
+
+                    if (CytoBandFileParser.isValid(reader, locator.getPath())) {
+                        Track track = new CytobandTrack(locator, new BufferedReader(new StringReader(contents)), genome);
+                        newTracks.add(track);
+                    } else if (AttributeManager.isSampleInfoFile(reader)) {
                         // This might be a sample information file.
                         AttributeManager.getInstance().loadSampleInfo(locator);
                     } else {
@@ -267,12 +285,12 @@ public class TrackLoader {
      */
     private boolean tryHtsget(ResourceLocator locator, List<Track> newTracks, Genome genome) {
         boolean isHtsget = false;
-        if(locator.getPath().startsWith("https://") ||
+        if (locator.getPath().startsWith("https://") ||
                 locator.getPath().startsWith("http://") ||
                 locator.getPath().startsWith("htsget://")) {
             try {
-                HtsgetUtils.Metadata htsgetMeta =  HtsgetUtils.getMetadata(locator.getPath());
-                if(htsgetMeta != null) {
+                HtsgetUtils.Metadata htsgetMeta = HtsgetUtils.getMetadata(locator.getPath());
+                if (htsgetMeta != null) {
                     isHtsget = true;
                     locator.setFormat(htsgetMeta.getFormat().toLowerCase());
                     if (htsgetMeta.getFormat().equals("VCF")) {
@@ -304,7 +322,6 @@ public class TrackLoader {
     }
 
     private void loadSMAPFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-
         List<Feature> features = SMAPParser.parseFeatures(locator, genome);
         FeatureCollectionSource src = new FeatureCollectionSource(features, genome);
         FeatureTrack track = new FeatureTrack(locator, locator.getName(), src);
@@ -436,18 +453,17 @@ public class TrackLoader {
 
             FeatureSource src;
 
-            if(locator.isDataURL()) {
+            if (locator.isDataURL()) {
                 // Simulate a tribble source
                 DataURLParser parser = new DataURLParser();
                 parser.parseFeatures(locator.getPath(), format, genome);
                 src = new FeatureCollectionSource(parser.getFeatures(), genome);
 
                 TrackProperties tp = parser.getTrackProperties();
-                if(tp != null) {
+                if (tp != null) {
                     ((FeatureCollectionSource) src).setHeader(tp);
                 }
-            }
-            else {
+            } else {
                 TribbleFeatureSource tribbleFeatureSource = TribbleFeatureSource.getFeatureSource(locator, genome);
                 if (GFFFeatureSource.isGFF(locator.getPath())) {
                     GFFCodec codec = (GFFCodec) CodecFactory.getCodec(locator, genome);
