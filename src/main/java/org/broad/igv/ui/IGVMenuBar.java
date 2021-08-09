@@ -439,9 +439,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText("Load a FASTA, .json, or .genome file...");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuItems.add(new JSeparator());
         // Download genome from server 
-        menuAction = new MenuAction("Load Genome From Server...", null) {
+        menuAction = new MenuAction("Select Hosted Genome...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
                 GenomeComboBox.loadGenomeFromServer();
