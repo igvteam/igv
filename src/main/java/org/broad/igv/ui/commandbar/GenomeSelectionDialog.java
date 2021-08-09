@@ -172,7 +172,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
         //======== this ========
         setModal(true);
-        setTitle("Genomes to add to list");
+        setTitle("Hosted Genomes");
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
@@ -187,7 +187,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
                 //---- textArea1 ----
-                textArea1.setText("Selected genomes will be downloaded and to the genome dropdown list.");
+                textArea1.setText("Selected genomes will be downloaded and added to the genome dropdown list.");
                 textArea1.setLineWrap(true);
                 textArea1.setWrapStyleWord(true);
                 textArea1.setBackground(UIManager.getColor("Button.background"));
