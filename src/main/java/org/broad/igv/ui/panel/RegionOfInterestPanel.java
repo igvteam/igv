@@ -196,7 +196,7 @@ public class RegionOfInterestPanel extends JPanel {
         }
         popupMenu.add(item);
 
-        item = new JMenuItem("Blat sequence");
+        item = new JMenuItem("BLAT sequence");
         if (roiLength > 20 && roiLength < 8000) {
             item.addActionListener(e -> BlatClient.doBlatQueryFromRegion(roi.getChr(), roi.getStart(), roi.getEnd(), Strand.NONE));
         } else {

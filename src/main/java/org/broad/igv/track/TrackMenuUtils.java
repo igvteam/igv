@@ -1354,7 +1354,7 @@ public class TrackMenuUtils {
     }
 
     public static JMenuItem getBlatItem(final Feature f) {
-        JMenuItem item = new JMenuItem("Blat Sequence");
+        JMenuItem item = new JMenuItem("BLAT Sequence");
         final int start = f.getStart();
         final int end = f.getEnd();
 

@@ -2073,7 +2073,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         void addBlatItem(final TrackClickEvent te) {
             // Change track height by attribute
-            final JMenuItem item = new JMenuItem("Blat read sequence");
+            final JMenuItem item = new JMenuItem("BLAT read sequence");
             add(item);
 
             final Alignment alignment = getSpecficAlignment(te);
@@ -2115,7 +2115,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 lccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(lcSeq));
 
                 if (clipping[1] > minimumBlatLength) {
-                    final JMenuItem lcbItem = new JMenuItem("Blat left-clipped sequence");
+                    final JMenuItem lcbItem = new JMenuItem("BLAT left-clipped sequence");
                     add(lcbItem);
                     lcbItem.addActionListener(aEvt ->
                             BlatClient.doBlatQuery(lcSeq, alignment.getReadName() + " - left clip")
@@ -2138,7 +2138,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 rccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(rcSeq));
 
                 if (clipping[3] > minimumBlatLength) {
-                    final JMenuItem rcbItem = new JMenuItem("Blat right-clipped sequence");
+                    final JMenuItem rcbItem = new JMenuItem("BLAT right-clipped sequence");
                     add(rcbItem);
                     rcbItem.addActionListener(aEvt ->
                             BlatClient.doBlatQuery(rcSeq, alignment.getReadName() + " - right clip")
@@ -2254,11 +2254,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             item.addActionListener(aEvt -> StringUtils.copyTextToClipboard(insertion.getBases().getString()));
 
             if (insertion.getBases() != null && insertion.getBases().length >= 10) {
-                final JMenuItem blatItem = new JMenuItem("Blat insert sequence");
+                final JMenuItem blatItem = new JMenuItem("BLAT insert sequence");
                 add(blatItem);
                 blatItem.addActionListener(aEvt -> {
                     String blatSeq = insertion.getBases().getString();
-                    BlatClient.doBlatQuery(blatSeq, "Blat insert sequence");
+                    BlatClient.doBlatQuery(blatSeq, "BLAT insert sequence");
                 });
             }
         }
@@ -2337,11 +2337,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         void addBlatItem() {
             // Change track height by attribute
-            final JMenuItem item = new JMenuItem("Blat insert sequence");
+            final JMenuItem item = new JMenuItem("BLAT insert sequence");
             add(item);
             item.addActionListener(aEvt -> {
                 String blatSeq = insertion.getBases().getString();
-                BlatClient.doBlatQuery(blatSeq, "Blat insert sequence");
+                BlatClient.doBlatQuery(blatSeq, "BLAT insert sequence");
             });
             item.setEnabled(insertion.getBases() != null && insertion.getBases().length >= 10);
         }

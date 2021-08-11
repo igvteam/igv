@@ -1215,9 +1215,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             String blatSequence = MessageUtils.showInputDialog("Enter sequence to blat:");
             if (blatSequence != null) {
                 if(blatSequence.length() < 20 || blatSequence.length() > 8000) {
-                    MessageUtils.showMessage("Blat sequences must be >= 20 and <= 8000");
+                    MessageUtils.showMessage("BLAT sequences must be between 20 and 8000 bases in length.");
                 } else {
-                    BlatClient.doBlatQuery(blatSequence, "Blat");
+                    BlatClient.doBlatQuery(blatSequence, "BLAT");
                 }
             }
         });

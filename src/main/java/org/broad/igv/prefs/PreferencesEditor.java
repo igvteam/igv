@@ -214,7 +214,7 @@ public class PreferencesEditor {
                         JLabel label = new JLabel(pref.getLabel());
 
                         String fieldText = preferences.get(pref.getKey());
-                        if (pref.getKey().equals(Constants.PROXY_PW)) {
+                        if (pref.getKey().equals(Constants.PROXY_PW) && fieldText != null && fieldText.length() > 0) {
                             fieldText = Utilities.base64Decode(fieldText);
                         }
                         JTextField field = new JTextField(fieldText);
