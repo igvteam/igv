@@ -1,1 +1,0 @@
-https://s3.amazonaws.com/igv.broadinstitute.org/annotations/WS235/WS235_annotations.xml

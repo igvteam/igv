@@ -1,2 +1,0 @@
-http://s3.amazonaws.com/igv.broadinstitute.org/annotations/galGal5/galGal5_annotations.xml
-

@@ -1,2 +1,0 @@
-http://www.broadinstitute.org/igvdata/annotations/ce6/ce6_annotations.xml
-
