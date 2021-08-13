@@ -118,20 +118,6 @@ public class DirectoryManager {
                 IGV_DIRECTORY = new File(rootDir, "igv");
 
                 if (!IGV_DIRECTORY.exists()) {
-                    // See if a pre-2.1 release directory exists, if so copy it
-                    File legacyDirectory = null;
-                    try {
-                        legacyDirectory = getLegacyIGVDirectory();
-                        if (legacyDirectory.exists()) {
-                            //log.info("Copying " + legacyDirectory + " => " + IGV_DIRECTORY);
-                            FileUtils.copyDirectory(legacyDirectory, IGV_DIRECTORY);
-                        }
-                    } catch (IOException e) {
-                        log.error("Error copying igv directory " + legacyDirectory + " => " + IGV_DIRECTORY, e);
-                    }
-                }
-
-                if (!IGV_DIRECTORY.exists()) {
                     try {
                         boolean wasSuccessful = IGV_DIRECTORY.mkdir();
                         if (!wasSuccessful) {
@@ -414,7 +400,7 @@ public class DirectoryManager {
      *
      * @return
      */
-    private static synchronized File getLegacyPreferencesFile() {
+	private static synchronized File getLegacyPreferencesFile() {
         File rootDir = getLegacyIGVDirectory();
         return new File(rootDir, "prefs.properties");
     }
