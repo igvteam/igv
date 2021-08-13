@@ -179,9 +179,10 @@ public class JsonGenomeLoader extends GenomeLoader {
                     }
                 }
                 else {
-                    // Assume string (old style)
+                    // Assume comma delimited stream
                     String [] c = Globals.commaPattern.split(chromosomeOrder.getAsString());
-                    chrs = Arrays.asList(c);
+                    chrs = new ArrayList<>(c.length);
+                    for(String t : c) chrs.add(t.trim());
                 }
                 newGenome.setLongChromosomeNames(chrs);
             }
