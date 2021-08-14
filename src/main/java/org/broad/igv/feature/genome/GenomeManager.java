@@ -193,8 +193,14 @@ public class GenomeManager {
             setCurrentGenome(newGenome);
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
-            String aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
-            newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
+            try {
+                String aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
+                if((new File(aliasPath)).exists()) {
+                    newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
+                }
+            } catch (Exception e) {
+                log.error("Failed to load user defined alias", e);
+            }
 
             if (monitor != null) {
                 monitor.fireProgress(25);

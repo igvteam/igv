@@ -65,21 +65,18 @@ abstract public class GenomeLoader {
     abstract public Genome loadGenome() throws IOException;
 
     public static Collection<Collection<String>> loadChrAliases(String path) {
-        File aliasFile = new File(path);
-        if (aliasFile.exists()) {
-            BufferedReader br = null;
-            try {
-                br = new BufferedReader(new FileReader(aliasFile));
-                return loadChrAliases(br);
-            } catch (IOException e) {
-                log.error("Error loading chr alias table", e);
-                MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be avaliable<br>" +
-                        e.toString());
-            } finally {
-                closeSilently(br);
-            }
+        BufferedReader br = null;
+        try {
+            br = ParsingUtils.openBufferedReader(path);
+            return loadChrAliases(br);
+        } catch (IOException e) {
+            log.error("Error loading chr alias table", e);
+            MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be avaliable<br>" +
+                    e.toString());
+            return null;
+        } finally {
+            closeSilently(br);
         }
-        return null;
     }
 
     static Collection<Collection<String>> loadChrAliases(BufferedReader br) throws IOException {
