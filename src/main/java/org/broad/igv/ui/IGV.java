@@ -1512,7 +1512,7 @@ public class IGV implements IGVEventObserver {
     private boolean isAnnotationFile(String format) {
         Set<String> annotationFormats = new HashSet<>(Arrays.asList("refflat", "ucscgene",
                 "genepred", "ensgene", "refgene", "gff", "gtf", "gff3", "embl", "bed", "gistic",
-                "bedz", "repmask", "dranger", "ucscsnp"));
+                "bedz", "repmask", "dranger", "ucscsnp", "genepredext"));
         return annotationFormats.contains(format);
     }
 

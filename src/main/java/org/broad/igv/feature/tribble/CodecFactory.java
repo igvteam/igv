@@ -135,6 +135,8 @@ public class CodecFactory {
                 return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED, genome);
             case "ucscgene":
                 return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
+            case "genepredext":
+                return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED_EXT, genome);
             default:
                 if (MUTCodec.isMutationAnnotationFile(locator)) {
                     return new MUTCodec(path, genome);

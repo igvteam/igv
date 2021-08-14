@@ -273,6 +273,8 @@ public class ResourceLocator {
             return "gene_exp.diff";
         } else if (filename.endsWith("cds_exp.diff")) {
             return "cds_exp.diff";
+        } else if (filename.endsWith("genepredext")) {
+            return "genepredext";
         } else if (filename.contains("refflat")) {
             return "reflat";
         } else if (filename.contains("genepred") || filename.contains("ensgene") ||
@@ -425,7 +427,7 @@ public class ResourceLocator {
 
         if (path != null && path.startsWith("file://")) {
             this.path = path.substring("file://".length());
-        }  else if (path != null && path.startsWith("s3://")) {
+        } else if (path != null && path.startsWith("s3://")) {
             this.path = path;
             String s3UrlIndexPath = detectIndexPath(path);
             this.setIndexPath(s3UrlIndexPath);
