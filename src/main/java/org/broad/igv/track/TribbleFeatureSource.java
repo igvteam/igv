@@ -163,7 +163,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     }
 
 
-    private TribbleFeatureSource(ResourceLocator locator, AbstractFeatureReader reader, FeatureCodec codec, Genome genome, boolean useCache, boolean useIndex) throws IOException {
+    private TribbleFeatureSource(AbstractFeatureReader reader, FeatureCodec codec, Genome genome) throws IOException {
 
         this.genome = genome;
         this.isVCF = codec.getClass() == VCFWrapperCodec.class;
@@ -198,8 +198,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         private IndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator,
                                      Genome genome, boolean useCache, boolean useIndex) throws IOException {
-            super(locator, basicReader, codec, genome, useCache, useIndex);
-
+            super(basicReader, codec, genome);
 
             if (genome != null) {
                 Collection<String> seqNames = reader.getSequenceNames();
@@ -326,7 +325,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         private NonIndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator, Genome genome) throws IOException {
 
-            super(locator, basicReader, codec, genome, false, false);
+            super(basicReader, codec, genome);
 
             featureMap = new HashMap<>(25);
             Iterator<Feature> iter = null;
