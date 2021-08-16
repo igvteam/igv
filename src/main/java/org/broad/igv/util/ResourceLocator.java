@@ -130,6 +130,8 @@ public class ResourceLocator {
      */
     private boolean htsget;
 
+    private Integer visibilityWindow;
+
     public static List<ResourceLocator> getLocators(Collection<File> files) {
 
         List<ResourceLocator> locators = new ArrayList<>();
@@ -233,6 +235,14 @@ public class ResourceLocator {
         return format;
     }
 
+
+    public Integer getVisibilityWindow() {
+        return visibilityWindow;
+    }
+
+    public void setVisibilityWindow(Integer visibilityWindow) {
+        this.visibilityWindow = visibilityWindow;
+    }
 
     private String deriveFormat(String pathOrName) {
 

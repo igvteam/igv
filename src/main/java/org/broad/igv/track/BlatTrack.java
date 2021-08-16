@@ -46,7 +46,7 @@ public class BlatTrack extends FeatureTrack {
     }
 
     public BlatTrack(String sequence, List<PSLRecord> features, String trackLabel) {
-        super(sequence, trackLabel);
+        super(null, sequence, trackLabel);
         setDisplayMode(Track.DisplayMode.SQUISHED);
         setColor(Color.DARK_GRAY);
         this.features = features;

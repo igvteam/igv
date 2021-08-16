@@ -776,6 +776,10 @@ public class HttpUtils {
         if (requestProperties != null) {
             for (Map.Entry<String, String> prop : requestProperties.entrySet()) {
                 conn.setRequestProperty(prop.getKey(), prop.getValue());
+
+                System.out.println(url.toExternalForm() + "   " + prop.getKey() + "   " + prop.getValue());
+
+
             }
         }
 
@@ -785,7 +789,7 @@ public class HttpUtils {
                 String[] kv = h.split(":");
                 if (kv.length == 2) {
                     conn.setRequestProperty(kv[0], kv[1]);
-                }
+                 }
             }
         }
 

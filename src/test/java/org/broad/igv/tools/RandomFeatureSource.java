@@ -81,13 +81,4 @@ public class RandomFeatureSource implements FeatureSource<Locus> {
         return null;
     }
 
-    @Override
-    public int getFeatureWindowSize() {
-        return 0;
-    }
-
-    @Override
-    public void setFeatureWindowSize(int size) {
-
-    }
 }

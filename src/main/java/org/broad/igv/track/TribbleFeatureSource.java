@@ -54,6 +54,7 @@ import java.util.*;
 abstract public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
     IGVFeatureReader reader;
+    FeatureReader wrappedReader;
     boolean isVCF;
     Genome genome;
 
@@ -61,7 +62,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
      * Map of IGV chromosome name -> source name
      */
     Map<String, String> chrNameMap = new HashMap<String, String>();
-    private int featureWindowSize;
+    private Integer featureWindowSize;
     Object header;
     Class featureClass;
 
@@ -168,10 +169,8 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         this.isVCF = codec.getClass() == VCFWrapperCodec.class;
         this.featureClass = codec.getFeatureType();
         this.header = reader.getHeader();
-        this.featureWindowSize = estimateFeatureWindowSize(reader);
-        this.reader = useCache ?
-                new CachingFeatureReader(reader, 5, featureWindowSize) :
-                new TribbleReaderWrapper(reader);
+        this.reader =new TribbleReaderWrapper(reader);
+        this.wrappedReader = reader;
     }
 
     protected abstract int estimateFeatureWindowSize(FeatureReader reader);
@@ -185,16 +184,11 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     }
 
     public int getFeatureWindowSize() {
+        if(featureWindowSize == null) {
+            this.featureWindowSize = estimateFeatureWindowSize(this.wrappedReader);
+        }
         return featureWindowSize;
     }
-
-    public void setFeatureWindowSize(int size) {
-        this.featureWindowSize = size;
-        if (reader instanceof CachingFeatureReader) {
-            ((CachingFeatureReader) reader).setBinSize(size);
-        }
-    }
-
     public Object getHeader() {
         return header;
     }
@@ -415,7 +409,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         @Override
         protected int estimateFeatureWindowSize(FeatureReader reader) {
-            return 0;
+            return -1;
         }
 
         protected void sampleGenomeFeatures() {

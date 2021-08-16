@@ -142,11 +142,6 @@ public class TribbleListFeatureSource implements FeatureSource {
         return windowSize;
     }
 
-    @Override
-    public void setFeatureWindowSize(int size) {
-        this.windowSize = size;
-    }
-
     public Object getHeader()  {
         if (header == null) {
             // Arbitrarily get the first source

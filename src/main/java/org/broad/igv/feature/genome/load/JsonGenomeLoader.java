@@ -109,6 +109,14 @@ public class JsonGenomeLoader extends GenomeLoader {
                         res.setFormat(format.getAsString());
                     }
 
+                    JsonElement vizwindow = obj.get("visibilityWindow");
+                    if (vizwindow != null) {
+                        res.setVisibilityWindow(obj.get("visibilityWindow").getAsInt());
+                    } else {
+                        // If not explicitly set, assume whole chromosome viz window for annotations
+                        res.setVisibilityWindow(-1);
+                    }
+
                     JsonElement indexedElement = obj.get("indexed");
                     JsonElement hiddenElement = obj.get("hidden");
                     boolean hidden = hiddenElement != null && hiddenElement.getAsBoolean();

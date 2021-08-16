@@ -83,11 +83,6 @@ public class CachingFeatureSource extends AbstractCacher implements FeatureSourc
         return source.getFeatureWindowSize();
     }
 
-    @Override
-    public void setFeatureWindowSize(int size) {
-        source.setFeatureWindowSize(size);
-    }
-
     /**
      * Return the source which backs this CachingFeatureSource
      * @return

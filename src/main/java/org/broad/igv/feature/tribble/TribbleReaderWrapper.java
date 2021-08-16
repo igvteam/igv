@@ -56,7 +56,7 @@ public class TribbleReaderWrapper  implements IGVFeatureReader {
         // Tribble iterators must be closed, so we need to copy the features and insure closure before exiting.
         CloseableTribbleIterator<Feature> iter = null;
         try {
-            iter = wrappedReader.query(chr, start, end);
+            iter = wrappedReader.query(chr, start + 1, end);
             List<Feature> featureList = new ArrayList<Feature>();
             while (iter.hasNext()) {
                 Feature f = iter.next();

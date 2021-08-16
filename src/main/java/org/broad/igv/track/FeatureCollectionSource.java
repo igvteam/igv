@@ -103,14 +103,6 @@ public class FeatureCollectionSource implements FeatureSource {
         return featureMap.get(chr);
     }
 
-    public int getFeatureWindowSize() {
-        return 0;
-    }
-
-    public void setFeatureWindowSize(int size) {
-        // ignored
-    }
-
     private void initFeatures(Iterable<? extends Feature> allFeatures) {
         // Separate features by chromosome
 

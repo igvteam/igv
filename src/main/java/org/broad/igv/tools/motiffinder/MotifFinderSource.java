@@ -172,12 +172,6 @@ public class MotifFinderSource implements FeatureSource<Feature>, Persistable {
     }
 
     @Override
-    public void setFeatureWindowSize(int size) {
-        this.featureWindowSize = size;
-    }
-
-
-    @Override
     public void marshalXML(Document document, Element element) {
         element.setAttribute("pattern", this.pattern);
         element.setAttribute("strand", this.strand.toString());
