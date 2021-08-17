@@ -33,6 +33,7 @@ import org.broad.igv.ui.IGV;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.lang.reflect.Method;
 
@@ -73,8 +74,13 @@ public class FileDialogUtils {
     }
 
     public static File chooseDirectory(String title, File initialDirectory) {
-        return chooseNative(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
+        if (Globals.IS_MAC) {
+            return chooseNative(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
+        } else {
+            return chooseSwing(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
+        }
     }
+
 
     public static File[] chooseMultiple(String title, File initialDirectory, final FilenameFilter filter) {
 
@@ -129,6 +135,68 @@ public class FileDialogUtils {
             return null;
         }
     }
+
+
+    private static File chooseSwing(String title, File initialDirectory, File initialFile, final FilenameFilter filter,
+                                    int directoryMode, int mode) {
+
+        UIManager.put("FileChooser.readOnly", Boolean.FALSE);
+        JFileChooser fileChooser = getJFileChooser(title, initialDirectory, initialFile, filter, directoryMode);
+        Frame parentFrame = getParentFrame();
+        boolean approve;
+        if (mode == LOAD) {
+            approve = fileChooser.showOpenDialog(parentFrame) == JFileChooser.APPROVE_OPTION;
+        } else {
+
+            approve = fileChooser.showSaveDialog(parentFrame) == JFileChooser.APPROVE_OPTION;
+        }
+
+        if (approve) {
+            return fileChooser.getSelectedFile();
+        } else {
+            return null;
+        }
+
+    }
+
+    /**
+     * @param title
+     * @param initialDirectory
+     * @param initialFile
+     * @param filter
+     * @param directoryMode    either JFileChooser.DIRECTORIES_ONLY, JFileChooser.FILES_ONLY, or
+     *                         JFileChooser.DIRECTORIES_ONLY : JFileChooser.FILES_AND_DIRECTORIES
+     * @return
+     */
+    private static JFileChooser getJFileChooser(String title, File initialDirectory, File initialFile,
+                                                final FilenameFilter filter, int directoryMode) {
+        JFileChooser fileChooser = new JFileChooser();
+        if (initialDirectory != null) {
+            fileChooser.setCurrentDirectory(initialDirectory);
+        }
+        if (initialFile != null) {
+            fileChooser.setSelectedFile(initialFile);
+        }
+        if (filter != null) {
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                @Override
+                public boolean accept(File file) {
+                    return filter.accept(file.getParentFile(), file.getName());
+                }
+
+                @Override
+                public String getDescription() {
+                    return "";
+                }
+            });
+        }
+
+        fileChooser.setDialogTitle(title);
+        fileChooser.setFileSelectionMode(directoryMode);
+
+        return fileChooser;
+    }
+
 
     /**
      * Reflectively call FileDialog.setMultipleMode.
