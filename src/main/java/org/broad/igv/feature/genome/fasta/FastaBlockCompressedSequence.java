@@ -22,16 +22,17 @@ public class FastaBlockCompressedSequence extends FastaIndexedSequence {
 
     public FastaBlockCompressedSequence(String path) throws IOException {
 
-        this(path, null);
+        this(path, null, null);
     }
 
-    public FastaBlockCompressedSequence(String path, String indexPath) throws IOException {
+    public FastaBlockCompressedSequence(String path, String gziIndexPath, String indexPath) throws IOException {
 
-        super(path);
+        super(path, indexPath);
 
-        if (indexPath == null) indexPath = path + ".gzi";
-
-        readGziMappings(indexPath);
+        if (gziIndexPath == null) {
+            gziIndexPath = path + ".gzi";
+        }
+        readGziMappings(gziIndexPath);
     }
 
     @Override

@@ -52,26 +52,23 @@ public class JsonGenomeLoader extends GenomeLoader {
             String name = json.get("name").getAsString();
 
             String fastaPath;
-            String indexPath = null;
-            if (json.has("compressedFastaURL")) {
-                JsonElement fastaElement = json.has("compressedFastaURL") ?
-                        json.get("compressedFastaURL") :
-                        json.get("fastaURL");
-                fastaPath = fastaElement.getAsString();
-                // index path ignored for bgzipped fasta
-            } else {
-                fastaPath = json.get("fastaURL").getAsString();
-                JsonElement indexPathObject = json.get("indexURL");
-                indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
-            }
+            fastaPath = json.get("fastaURL").getAsString();
+
+            JsonElement indexPathObject = json.get("indexURL");
+            String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
+
+            JsonElement gziObject = json.get("gziIndexURL");
+            String gziIndexPath = gziObject == null ? null : gziObject.getAsString();
 
             fastaPath = FileUtils.getAbsolutePath(fastaPath, genomePath);
             if (indexPath != null) {
                 indexPath = FileUtils.getAbsolutePath(indexPath, genomePath);
+            } if (gziIndexPath != null) {
+                gziIndexPath = FileUtils.getAbsolutePath(gziIndexPath, genomePath);
             }
 
             FastaIndexedSequence sequence = fastaPath.endsWith(".gz") ?
-                    new FastaBlockCompressedSequence(fastaPath, indexPath) :
+                    new FastaBlockCompressedSequence(fastaPath, gziIndexPath, indexPath) :
                     new FastaIndexedSequence(fastaPath, indexPath);
 
             JsonElement orderedElement = json.get("ordered");
@@ -179,18 +176,17 @@ public class JsonGenomeLoader extends GenomeLoader {
             JsonElement chromosomeOrder = json.get("chromosomeOrder");
             if (chromosomeOrder != null) {
                 List<String> chrs;
-                if(chromosomeOrder.isJsonArray()) {
+                if (chromosomeOrder.isJsonArray()) {
                     JsonArray a = chromosomeOrder.getAsJsonArray();
                     chrs = new ArrayList<>();
                     for (JsonElement e : a) {
                         chrs.add(e.getAsString());
                     }
-                }
-                else {
+                } else {
                     // Assume comma delimited stream
-                    String [] c = Globals.commaPattern.split(chromosomeOrder.getAsString());
+                    String[] c = Globals.commaPattern.split(chromosomeOrder.getAsString());
                     chrs = new ArrayList<>(c.length);
-                    for(String t : c) chrs.add(t.trim());
+                    for (String t : c) chrs.add(t.trim());
                 }
                 newGenome.setLongChromosomeNames(chrs);
             }
