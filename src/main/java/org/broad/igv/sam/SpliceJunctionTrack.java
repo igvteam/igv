@@ -282,22 +282,6 @@ public class SpliceJunctionTrack extends FeatureTrack {
                 packedFeaturesMap.clear();
                 return false;
             } else {
-
-//                AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
-//
-//                if (packedFeaturesMap.get(frame.getChrName()) == null) {
-//
-//                    SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
-//                    List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption);
-//                    if (features == null) {
-//                        features = Collections.emptyList();
-//                    }
-//                    int intervalStart = loadedInterval.getStart();
-//                    int intervalEnd = loadedInterval.getEnd();
-//                    PackedFeatures pf = new PackedFeaturesSpliceJunctions(frame.getChrName(), intervalStart, intervalEnd, features.iterator(), getName());
-//                    packedFeaturesMap.put(frame.getName(), pf);
-//                }
-
                 return true;
             }
         }
