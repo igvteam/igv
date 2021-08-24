@@ -1423,11 +1423,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             addSeparator();
             addShowItems();
 
-
-            if (getPreferences().get(Constants.EXTVIEW_URL) != null) {
-                addSeparator();
-                addExtViewItem(e);
-            }
+//
+//            if (getPreferences().get(Constants.EXTVIEW_URL) != null) {
+//                addSeparator();
+//                addExtViewItem(e);
+//            }
 
         }
 
