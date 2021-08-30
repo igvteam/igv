@@ -232,7 +232,7 @@ public class ResourceTree {
         if (xmlNode.getTagName().equalsIgnoreCase("Resource")) {
 
             String resourceType = getAttribute(xmlNode, RESOURCE_TYPE.getText());
-            locator.setType(resourceType);
+            locator.setFormat(resourceType);
 
             String sampleId = getAttribute(xmlNode, SAMPLE_ID.getText());
             if (sampleId == null) {

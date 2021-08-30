@@ -1,6 +1,0 @@
-https://s3.amazonaws.com/igv.org.genomes/hg19/hg19_annotations.xml
-https://data.broadinstitute.org/igvdata/tcga/gdac_stddata__2016_01_28/tcga_stddata__2016_01_28.xml
-https://data.broadinstitute.org/igvdata/encode/hg19/hg19_encode.xml
-https://data.broadinstitute.org/igvdata/1KG/b37/1KG.s3.xml
-https://data.broadinstitute.org/igvdata/1KG/platinum_genomes_hg19.xml
-https://data.broadinstitute.org/igvdata/tutorials/tutorials.hg19.xml

@@ -37,12 +37,14 @@ import org.broad.igv.feature.tribble.reader.IGVComponentMethods;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.IndexCreatorDialog;
-import org.broad.igv.util.*;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.CollUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.*;
 
 /**
@@ -51,10 +53,8 @@ import java.util.*;
  */
 abstract public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
-    private final ResourceLocator locator;
-    private AbstractFeatureReader abstractReader;
-    private final boolean useIndex;
     IGVFeatureReader reader;
+    FeatureReader wrappedReader;
     boolean isVCF;
     Genome genome;
 
@@ -62,7 +62,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
      * Map of IGV chromosome name -> source name
      */
     Map<String, String> chrNameMap = new HashMap<String, String>();
-    private int featureWindowSize;
+    private Integer featureWindowSize;
     Object header;
     Class featureClass;
 
@@ -103,20 +103,24 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             }
 
             // Optionally let the user create an index.
-            final int hundredMB = 100000000;
-            final int oneGB = 1000000000;
-            long size = FileUtils.getLength(locator.getPath());
-            indexRequired = size > 10*oneGB;
-            if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
-                if (size > hundredMB) {
-                    createIndex(locator, indexRequired);   // Note, might return null.
+            if (!FileUtils.isRemote(locator.getPath())) {
+                final int hundredMB = 100000000;
+                final int oneGB = 1000000000;
+                long size = FileUtils.getLength(locator.getPath());
+                indexRequired = size > 10 * oneGB;
+                if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
+                    if (size > hundredMB) {
+                        createIndex(locator, indexRequired);   // Note, might return null.
+                    }
                 }
             }
         }
 
         String path = locator.getPath();
         if (FileUtils.isRemote(path)) {
-            path = HttpUtils.mapURL(path);
+            path = HttpUtils.createURL(path).toExternalForm();
+        } if(idxPath != null && idxPath.length() > 0 && FileUtils.isRemote(idxPath)) {
+            idxPath = HttpUtils.createURL(idxPath).toExternalForm();
         }
         AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
 
@@ -159,58 +163,15 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     }
 
 
-    private TribbleFeatureSource(ResourceLocator locator, AbstractFeatureReader reader, FeatureCodec codec, Genome genome, boolean useCache, boolean useIndex) throws IOException {
+    private TribbleFeatureSource(AbstractFeatureReader reader, FeatureCodec codec, Genome genome) throws IOException {
 
-        this.useIndex = useIndex;
-        this.abstractReader = reader;
-        this.locator = locator;
         this.genome = genome;
         this.isVCF = codec.getClass() == VCFWrapperCodec.class;
         this.featureClass = codec.getFeatureType();
         this.header = reader.getHeader();
-        this.featureWindowSize = estimateFeatureWindowSize(reader);
-        this.reader = useCache ?
-                new CachingFeatureReader(reader, 5, featureWindowSize) :
-                new TribbleReaderWrapper(reader);
+        this.reader =new TribbleReaderWrapper(reader);
+        this.wrappedReader = reader;
     }
-
-    IGVFeatureReader checkReader() {
-        try {
-            String aPath = locator.getPath();
-            if (AmazonUtils.isAwsS3Path(aPath) && !AmazonUtils.isS3PresignedValid(aPath)) {
-                if (this.reader instanceof CachingFeatureReader) {
-                    String path = locator.getPath();
-                    if (FileUtils.isRemote(path)) {
-                        path = HttpUtils.mapURL(path);
-                    }
-                    String idxPath = locator.getIndexPath();
-                    if (idxPath != null) {
-                        if (FileUtils.isRemote(idxPath)) {
-                            idxPath = HttpUtils.mapURL(idxPath);
-                        }
-                    } else {
-                        idxPath = ResourceLocator.indexFile(locator);
-                        if (idxPath == null) {
-                        } else {
-                            if (FileUtils.isRemote(idxPath)) {
-                                idxPath = HttpUtils.mapURL(idxPath);
-                            }
-                        }
-                    }
-
-                    abstractReader = AbstractFeatureReader.getFeatureReader(path, idxPath, CodecFactory.getCodec(locator, genome), useIndex);
-                    this.reader = new CachingFeatureReader(abstractReader, 5, featureWindowSize);
-                } else {
-                    this.reader = new TribbleReaderWrapper(abstractReader);
-                }
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        return reader;
-    }
-
 
     protected abstract int estimateFeatureWindowSize(FeatureReader reader);
 
@@ -223,16 +184,11 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     }
 
     public int getFeatureWindowSize() {
+        if(featureWindowSize == null) {
+            this.featureWindowSize = estimateFeatureWindowSize(this.wrappedReader);
+        }
         return featureWindowSize;
     }
-
-    public void setFeatureWindowSize(int size) {
-        this.featureWindowSize = size;
-        if (reader instanceof CachingFeatureReader) {
-            ((CachingFeatureReader) reader).setBinSize(size);
-        }
-    }
-
     public Object getHeader() {
         return header;
     }
@@ -242,8 +198,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         private IndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator,
                                      Genome genome, boolean useCache, boolean useIndex) throws IOException {
-            super(locator, basicReader, codec, genome, useCache, useIndex);
-
+            super(basicReader, codec, genome);
 
             if (genome != null) {
                 Collection<String> seqNames = reader.getSequenceNames();
@@ -270,7 +225,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             String seqName = chrNameMap.get(chr);
             if (seqName == null) seqName = chr;
 
-            return checkReader().query(seqName, start, end);
+            return reader.query(seqName, start, end);
         }
 
         /**
@@ -291,7 +246,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         @Override
         protected Collection<String> getSequenceNames() {
-            return checkReader().getSequenceNames();
+            return reader.getSequenceNames();
         }
 
 
@@ -370,7 +325,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         private NonIndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator, Genome genome) throws IOException {
 
-            super(locator, basicReader, codec, genome, false, false);
+            super(basicReader, codec, genome);
 
             featureMap = new HashMap<>(25);
             Iterator<Feature> iter = null;
@@ -453,7 +408,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         @Override
         protected int estimateFeatureWindowSize(FeatureReader reader) {
-            return 0;
+            return -1;
         }
 
         protected void sampleGenomeFeatures() {

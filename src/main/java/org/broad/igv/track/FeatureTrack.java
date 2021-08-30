@@ -123,16 +123,12 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     // TODO -- there are WAY too many constructors for this class
 
     /**
-     * Construct with no feature source.  Currently this is only used for the SpliceJunctionTrack subclass.
+     * Constructor used by SpliceJunctionTrack, BlatTrack, and MotifTrack
      *
+     * @param locator -- For splice junctions, ResourceLocator for associated alignment track.  Null otherwise
      * @param id
      * @param name
      */
-    public FeatureTrack(String id, String name) {
-        super(null, id, name);
-        setSortable(false);
-    }
-
     public FeatureTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
         setSortable(false);
@@ -140,19 +136,13 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     /**
      * Constructor with no ResourceLocator.  Note:  tracks using this constructor will not be recorded in the
-     * "Resources" section of session files.
-     *
-     * @param id
-     * @param name
-     * @param source
-     * @api
+     * "Resources" section of session files.  This method is used by ".genome" and gbk genome loaders.
      */
     public FeatureTrack(String id, String name, FeatureSource source) {
         super(null, id, name);
-        init(source, null);
+        init(null, source);
         setSortable(false);
     }
-
 
     /**
      * Constructor specifically for BigWig data source
@@ -164,50 +154,54 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     public FeatureTrack(ResourceLocator locator, String id, String name, FeatureSource source) {
         super(locator, id, name);
-        init(source, locator.getPath());
+        init(locator, source);
         setSortable(false);
     }
-
 
     public FeatureTrack(ResourceLocator locator, FeatureSource source) {
         super(locator);
-        init(source, locator != null ? locator.getPath() : null);
+        init(locator, source);
         setSortable(false);
     }
 
 
+    /**
+     * SMap files (bionano), MutationTrack
+     */
     public FeatureTrack(ResourceLocator locator, String id, FeatureSource source) {
         super(locator, id, locator.getTrackName());
-        init(source, locator.getPath());
+        init(locator, source);
     }
 
     /**
-     * Create a new track which is a shallow copy of this one
-     *
-     * @param featureTrack
+     * Create a new track which is a shallow copy of this one.  Currently used by SashimiPlot.
      */
     public FeatureTrack(FeatureTrack featureTrack) {
         this(featureTrack.getId(), featureTrack.getName(), featureTrack.source);
     }
 
-    protected void init(FeatureSource source, String path) {
+    protected void init(ResourceLocator locator, FeatureSource source) {
 
         this.source = source;
         setMinimumHeight(10);
 
         coverageRenderer = new BarChartRenderer();
 
-        int sourceFeatureWindowSize = source.getFeatureWindowSize();
-        if (sourceFeatureWindowSize > 0) {  // Only apply a default if the feature source supports visibility window.
+        Integer vizWindow = locator == null ? null : locator.getVisibilityWindow();
+
+        if (vizWindow != null) {
+            visibilityWindow = vizWindow;
+        } else {
+            int sourceFeatureWindowSize = source.getFeatureWindowSize();
             int defVisibilityWindow = PreferencesManager.getPreferences().getAsInt(Constants.DEFAULT_VISIBILITY_WINDOW);
-            if (defVisibilityWindow > 0) {
-                setVisibilityWindow(defVisibilityWindow * 1000);
+            if (sourceFeatureWindowSize > 0 && defVisibilityWindow > 0) {  // Only apply a default if the feature source supports visibility window.
+                visibilityWindow = defVisibilityWindow * 1000;
             } else {
                 visibilityWindow = sourceFeatureWindowSize;
             }
         }
 
-        this.renderer = path != null && path.endsWith("junctions.bed") ?
+        this.renderer = locator != null && locator.getPath().endsWith("junctions.bed") ?
                 new SpliceJunctionRenderer() : new IGVFeatureRenderer();
 
         IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
@@ -264,10 +258,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     public void setSquishedRowHeight(int squishedRowHeight) {
         this.squishedRowHeight = squishedRowHeight;
-    }
-
-    public int getFeatureWindowSize() {
-        return source.getFeatureWindowSize();
     }
 
     public void setRendererClass(Class rc) {
@@ -541,7 +531,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         //If features are stacked we look at only the row.
         //If they are collapsed on top of each other, we get all features in all rows
         List<IGVFeature> possFeatures;
-        if(getDisplayMode() == DisplayMode.COLLAPSED) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED) {
             possFeatures = packedFeatures.getFeatures();
         } else {
             possFeatures = rows.get(featureRow).getFeatures();
@@ -569,7 +559,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         MouseEvent e = te.getMouseEvent();
 
         // Toggle selection of row
-        if(getDisplayMode() != DisplayMode.COLLAPSED) {
+        if (getDisplayMode() != DisplayMode.COLLAPSED) {
             int i = getFeatureRow(e.getY());
             if (i == selectedFeatureRowIndex)
                 setSelectedFeatureRowIndex(FeatureTrack.NO_FEATURE_ROW_SELECTED);
@@ -668,7 +658,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public void load(ReferenceFrame frame) {
-        loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame);
+        loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame.getName());
     }
 
     /**
@@ -678,14 +668,14 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @param start
      * @param end
      */
-    protected void loadFeatures(final String chr, final int start, final int end, final ReferenceFrame frame) {
+    protected void loadFeatures(final String chr, final int start, final int end, final String frame) {
 
         try {
 
             int delta = (end - start) / 2;
             int expandedStart = start - delta;
             int expandedEnd = end + delta;
-            if(expandedEnd < 0) {
+            if (expandedEnd < 0) {
                 expandedEnd = Integer.MAX_VALUE;  // overflow
             }
 
@@ -706,17 +696,17 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
             if (iter == null) {
                 PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
-                packedFeaturesMap.put(frame.getName(), pf);
+                packedFeaturesMap.put(frame, pf);
             } else {
                 PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, this.getDisplayMode(), groupByStrand);
-                packedFeaturesMap.put(frame.getName(), pf);
+                packedFeaturesMap.put(frame, pf);
                 //log.info("Loaded " + chr + " " + expandedStart + "-" + expandedEnd);
             }
 
         } catch (Exception e) {
             // Mark the interval with an empty feature list to prevent an endless loop of load attempts.
             PackedFeatures pf = new PackedFeatures(chr, start, end);
-            packedFeaturesMap.put(frame.getName(), pf);
+            packedFeaturesMap.put(frame, pf);
             String msg = "Error loading features for interval: " + chr + ":" + start + "-" + end + " <br>" + e.toString();
             MessageUtils.showMessage(msg);
             log.error(msg, e);
@@ -909,10 +899,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         if (packedFeatures != null && packedFeatures.containsInterval(chr, (int) center - 1, (int) center + 1)) {
             if (packedFeatures.getFeatures().size() > 0 && canScroll) {
-                f = (forward ? FeatureUtils.getFeatureAfter(center, packedFeatures.getFeatures()) :
+                f = (forward ?
+                        FeatureUtils.getFeatureAfter(center, packedFeatures.getFeatures()) :
                         FeatureUtils.getFeatureBefore(center, packedFeatures.getFeatures()));
             }
-
             if (f == null) {
                 FeatureSource rawSource = source;
                 if (source instanceof CachingFeatureSource) {
@@ -925,10 +915,11 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         return f;
     }
 
+
+
     public void setVisibilityWindow(int windowSize) {
         super.setVisibilityWindow(windowSize);
         packedFeaturesMap.clear();
-        source.setFeatureWindowSize(visibilityWindow);
     }
 
     public int getSelectedFeatureRowIndex() {

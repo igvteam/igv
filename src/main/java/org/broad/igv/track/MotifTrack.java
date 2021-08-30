@@ -29,7 +29,7 @@ public class MotifTrack extends FeatureTrack {
 
         MotifFinderSource src = new MotifFinderSource(pattern, strand, GenomeManager.getInstance().getCurrentGenome());
         CachingFeatureSource source = new CachingFeatureSource(src);
-        super.init(source, null);
+        super.init(null, source);
         setSortable(false);
     }
 

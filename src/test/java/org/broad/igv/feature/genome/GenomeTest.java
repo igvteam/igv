@@ -67,7 +67,7 @@ public class GenomeTest extends AbstractHeadlessTest {
     @Test
     public void testAlias_02() throws Exception {
         // NCBI genome, test an auto-generated alias
-        String genomeURL = "http://igvdata.broadinstitute.org/genomes/NC_000964.genome";
+        String genomeURL = "https://igvdata.broadinstitute.org/genomes/NC_000964.genome";
         Genome genome = loadGenomeAssumeSuccess(genomeURL);
         assertEquals("gi|255767013|ref|NC_000964.3|", genome.getCanonicalChrName("NC_000964.3"));
     }
@@ -114,16 +114,40 @@ public class GenomeTest extends AbstractHeadlessTest {
             assertEquals(expName, actName);
             counter++;
         }
-
     }
 
+    @Test
+    public void testGetLongChromosomeNames() throws Exception {
+        String mockIndexPath = TestUtils.DATA_DIR + "fasta/bosTau9.fa.fai";
+        Sequence sequence = new MockSequence(mockIndexPath);
+        Genome genome = new Genome("bosTau9", "bosTau9", sequence, true);
+        List<String> longChrs = genome.getLongChromosomeNames();
+        assertEquals(30, longChrs.size());
+    }
+
+    @Test
+    public void testGetLongChromosomeNames2() throws Exception {
+        String mockIndexPath = TestUtils.DATA_DIR + "fasta/hg19.fa.fai";
+        Sequence sequence = new MockSequence(mockIndexPath);
+        Genome genome = new Genome("hg19", "hg19", sequence, true);
+        List<String> longChrs = genome.getLongChromosomeNames();
+        assertEquals(24, longChrs.size());
+    }
+
+    @Test
+    public void testGetLongChromosomeNames3() throws Exception {
+        String mockIndexPath = TestUtils.DATA_DIR + "fasta/musa_pseudochromosome.fa.fai";
+        Sequence sequence = new MockSequence(mockIndexPath);
+        Genome genome = new Genome("musa_pseudochromosome", "musa_pseudochromosome", sequence, true);
+        List<String> longChrs = genome.getLongChromosomeNames();
+        assertEquals(12, longChrs.size());
+    }
 
     @Test
     public void testGetLongChromosomeNames_manySmall() throws Exception {
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/mock_many_small.fa.fai";
         Sequence sequence = new MockSequence(mockIndexPath);
         Genome genome = new Genome("mock_many_small", "mock_many_small", sequence, true);
-
         assertNotNull(genome.getLongChromosomeNames());
         assertTrue("No 'Long' chromosome names found", genome.getLongChromosomeNames().size() > 0);
     }

@@ -51,7 +51,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        //CodonTableManager.getInstance().resetToDefaults();
+        CodonTableManager.getInstance().resetToDefaults();
     }
 
     @Test
@@ -202,7 +202,6 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
      * gene FBXW7)
      */
     @Test
-    @Ignore
     public void testNegativeGeneMidExon2() {
         String expectedSeq = "QLSYV";
         String expectedEndSeq = "GSVVR";

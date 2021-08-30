@@ -71,22 +71,6 @@ public class LoadFromURLMenuAction extends MenuAction {
         this.igv = igv;
     }
 
-    private void isAwsS3LoadURL(String url) {
-        try {
-            // If AWS support is active, check if objects are in accessible tiers via Load URL menu...
-            if (AmazonUtils.isAwsS3Path(url)) {
-                String bucket = AmazonUtils.getBucketFromS3URL(url);
-                String key = AmazonUtils.getKeyFromS3URL(url);
-
-                AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucket, key);
-                if (!res.isObjectAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
-            }
-        } catch (NullPointerException npe) {
-            // User has not yet done Amazon->Login sequence
-            AmazonUtils.checkLogin();
-        }
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
 
@@ -113,8 +97,8 @@ public class LoadFromURLMenuAction extends MenuAction {
                         } catch (Exception ex) {
                             MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                         }
-                    } else if(url.startsWith("s3://")) {
-                        isAwsS3LoadURL(url);
+                    } else if (url.startsWith("s3://")) {
+                        checkAWSAccessbility(url);
                     } else {
                         ResourceLocator rl = new ResourceLocator(url.trim());
 
@@ -137,25 +121,25 @@ public class LoadFromURLMenuAction extends MenuAction {
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
                 ResourceLocator rl = new ResourceLocator(url.trim());
-                rl.setType("das");
+                rl.setFormat("das");
                 igv.loadTracks(Arrays.asList(rl));
             }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
             String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL to .genome or FASTA file",
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
-                if(url.startsWith("s3://")) {
-                    isAwsS3LoadURL(url);
+                if (url.startsWith("s3://")) {
+                    checkAWSAccessbility(url);
                 } else if (url.startsWith("ftp://")) {
                     MessageUtils.showMessage("FTP protocol is not supported");
-                } else {
-                    try {
-                        url = mapURL(url);
-                        GenomeManager.getInstance().loadGenome(url.trim(), null);
-                    } catch (Exception e1) {
-                        MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
-                    }
                 }
+                try {
+                    url = mapURL(url);
+                    GenomeManager.getInstance().loadGenome(url.trim(), null);
+                } catch (Exception e1) {
+                    MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
+                }
+
             }
         }
     }
@@ -188,6 +172,24 @@ public class LoadFromURLMenuAction extends MenuAction {
         }
     }
 
+
+    private void checkAWSAccessbility(String url) {
+        try {
+            // If AWS support is active, check if objects are in accessible tiers via Load URL menu...
+            if (AmazonUtils.isAwsS3Path(url)) {
+                String bucket = AmazonUtils.getBucketFromS3URL(url);
+                String key = AmazonUtils.getKeyFromS3URL(url);
+                AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucket, key);
+                if (!res.isObjectAvailable()) {
+                    MessageUtils.showErrorMessage(res.getErrorReason(), null);
+                    return;
+                }
+            }
+        } catch (NullPointerException npe) {
+            // User has not yet done Amazon->Login sequence
+            AmazonUtils.checkLogin();
+        }
+    }
 
     private boolean ping(String url) {
         InputStream is = null;

@@ -46,7 +46,7 @@ public class BlatTrack extends FeatureTrack {
     }
 
     public BlatTrack(String sequence, List<PSLRecord> features, String trackLabel) {
-        super(sequence, trackLabel);
+        super(null, sequence, trackLabel);
         setDisplayMode(Track.DisplayMode.SQUISHED);
         setColor(Color.DARK_GRAY);
         this.features = features;
@@ -113,7 +113,7 @@ public class BlatTrack extends FeatureTrack {
             String db = element.getAttribute("db");
             try {
                 this.features = BlatClient.blat(db, sequence);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 MessageUtils.showMessage("Error restoring blat track: " + e.getMessage());
                 log.error("Error restoring blat track", e);
             }

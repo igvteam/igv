@@ -106,55 +106,6 @@ public class FeatureDBTest extends AbstractHeadlessTest {
 
     }
 
-    /**
-     * Test thread safety by trying to read the map and clear it at the same time.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testThreadSafety() throws Exception {
-
-        final Map<Integer, AssertionFailedError> map = new HashMap<Integer, AssertionFailedError>();
-        List<NamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
-        final int expected = features.size();
-
-        Thread read = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    List<NamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
-                    for (NamedFeature f : features) {
-                        //Check for data corruption
-                        assertTrue(f.getName().startsWith(CHECK_STR));
-                    }
-                    assertEquals(expected, features.size());
-                } catch (AssertionFailedError e) {
-                    map.put(0, e);
-                }
-            }
-        });
-
-        Thread write = new Thread(new Runnable() {
-            public void run() {
-                FeatureDB.clearFeatures();
-            }
-        });
-
-        read.start();
-        write.start();
-        read.join();
-
-        write.join();
-
-        features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
-        assertEquals(0, features.size());
-
-        if (map.containsKey(0)) {
-            AssertionFailedError e = map.get(0);
-            throw e;
-        }
-
-    }
-
     @Test
     public void testMultiRetrieve() throws Exception {
         String checkstr = "EGFLAM";

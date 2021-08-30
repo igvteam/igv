@@ -30,7 +30,6 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.StringUtils;
 
 import java.util.List;
 
@@ -52,10 +51,11 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
     private int startsBufferColumn = 9;
     private int endsBufferColumn = 10;
     private int frameBufferColumn = 15;
+    private int scoreColumn = -1;
 
     public enum Type {
 
-        REFFLAT, GENEPRED, UCSCGENE
+        REFFLAT, GENEPRED, UCSCGENE, GENEPRED_EXT
     }
 
     private Genome genome;
@@ -83,6 +83,21 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
                 endsBufferColumn = 9;
                 nameColumn = 10;
                 break;
+            case GENEPRED_EXT:
+                idColumn = 0;
+                chrColumn = 1;
+                strandColumn = 2;
+                startColumn = 3;
+                endColumn = 4;
+                cdStartColumn = 5;
+                cdEndColumn = 6;
+                exonCountColumn = 7;
+                startsBufferColumn = 8;
+                endsBufferColumn = 9;
+                scoreColumn = 10;
+                nameColumn = 11;
+                frameBufferColumn = 14;
+                break;
             case GENEPRED:
                 nameColumn = 12;
         }
@@ -104,7 +119,7 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
         }
 
         line = line.replaceAll("\"", "");
-        String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
+        String[] tokens = Globals.tabPattern.split(line);
         int tokenCount = tokens.length;
 
         if (tokenCount <= strandColumn) {
@@ -145,6 +160,10 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
         if (tokenCount > 7) {
             gene.setThickStart(Integer.parseInt(tokens[6]));
             gene.setThickEnd(Integer.parseInt(tokens[7]));
+        }
+
+        if(scoreColumn > 0 && tokenCount > scoreColumn) {
+            gene.setScore((float) Double.parseDouble(tokens[scoreColumn]));
         }
 
         // Coding information is optional

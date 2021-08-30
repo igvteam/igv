@@ -50,6 +50,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.DataPanelTool;
+import org.broad.igv.ui.util.MessageUtils;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -130,7 +131,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
     @Override
     public void paintComponent(final Graphics g) {
-        
+
         super.paintComponent(g);
         RenderContext context = null;
         try {
@@ -168,8 +169,10 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             long dt = System.currentTimeMillis() - lastPaintTime;
             PanTool.repaintTime(dt);
 
+        } catch (Exception e) {
+            MessageUtils.showMessage("Unexpected error repainting view.  See igv.log for details.");
+            log.error("Error painting DataPanel", e);
         } finally {
-
             if (context != null) {
                 context.dispose();
             }
@@ -242,7 +245,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
             drawAllRegions(g);
 
-            borderGraphics.drawRect(0, rect.y, rect.width-1, rect.height-1);
+            borderGraphics.drawRect(0, rect.y, rect.width - 1, rect.height - 1);
 
         } finally {
             if (context != null) {

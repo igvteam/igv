@@ -1,0 +1,16 @@
+{
+  "id": "hg18.unittest",
+  "name": "Human hg18 (unit test)",
+  "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg18/hg18.fasta",
+  "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg18/hg18.fasta.fai",
+  "cytobandURL": "hg18_cytoBand.txt",
+  "aliasURL": "hg18_refGene.txt",
+  "tracks": [
+    {
+      "name": "Refseq Genes",
+      "format": "refgene",
+      "url": "hg18_refGene.txt",
+      "indexed": false
+    }
+  ]
+}

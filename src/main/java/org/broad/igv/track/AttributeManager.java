@@ -54,6 +54,7 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -295,26 +296,12 @@ public class AttributeManager {
 
     /**
      * Test to see if this file could be a sample information file.  Some characteristics are (1) is tab delimited
-     * with at least 2 columns,  (2) is ascii,  (3) is not too large
+     * with at least 2 columns
      *
-     * @param locator
      * @return
      */
-    public static boolean isSampleInfoFile(ResourceLocator locator) throws IOException {
-
-        if (!FileUtils.isTabDelimited(locator, 2)) {
-            return false;
-        }
-
-        // If the file is too large, ask user
-        // TODO -- ftp test
-        final int oneMB = 1000000;
-        long fileLength = ParsingUtils.getContentLength(locator.getPath());
-        if (fileLength > oneMB) {
-            return MessageUtils.confirm("<html>Cannot determine file type of: " + locator.getPath() +
-                    "<br>Is this a sample information file?");
-        }
-        return true;
+    public static boolean isSampleInfoFile(BufferedReader reader) throws IOException {
+        return FileUtils.isTabDelimited(reader, 2);
     }
 
     /**

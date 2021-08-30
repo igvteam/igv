@@ -47,7 +47,10 @@ import java.util.Iterator;
  */
 class FeatureTrackUtils {
 
-    private static volatile boolean isSearching;
+    /**
+     * Attempt to load in very small chunks, we're looking for a single feature.
+     */
+    static int binSize = 1000;
 
     /**
      * Find the next/previous feature which lies outside chr:initStart-initEnd
@@ -60,8 +63,8 @@ class FeatureTrackUtils {
      * @throws IOException
      */
     public static Feature nextFeature(FeatureSource source, String chr, int initStart, int initEnd, boolean forward) throws IOException {
+
         Feature f = null;
-        int binSize = source.getFeatureWindowSize();
 
         final Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (forward) {
@@ -71,7 +74,7 @@ class FeatureTrackUtils {
             while (nextChr != null) {
                 int chrLength = genome.getChromosome(nextChr).getLength();
                 while (nextStart < chrLength) {
-                    int nextEnd = binSize > 0 ? nextStart + source.getFeatureWindowSize() : chrLength;
+                    int nextEnd = binSize > 0 ? nextStart + binSize : chrLength;
                     Iterator<Feature> iter = source.getFeatures(nextChr, nextStart, nextEnd);
                     if (iter != null) {
                         // The check on position should not be necessary, but not all implementations of getFeatures
@@ -94,7 +97,7 @@ class FeatureTrackUtils {
             String nextChr = chr;
             while (nextChr != null) {
                 while (nextEnd > 0) {
-                    int nextStart = binSize > 0 ? Math.max(0, nextEnd - source.getFeatureWindowSize()) : 0;
+                    int nextStart = binSize > 0 ? Math.max(0, nextEnd - binSize) : 0;
                     Iterator<Feature> iter = source.getFeatures(nextChr, nextStart, nextEnd);
                     if (iter != null && iter.hasNext()) {
                         // The check on position should not be necessary, but not all implementations of getFeatures
@@ -120,67 +123,6 @@ class FeatureTrackUtils {
         }
 
         return f;
-    }
-
-    /**
-     * Find the next/previous feature, using FeatureSearcher. A cancellable dialog will be displayed so the user can cancel the
-     * search, null will be returned in that case.
-     * @param source
-     * @param chr
-     * @param initStart
-     * @param initEnd
-     * @param forward
-     * @param foundHandler Callback to invoke when searching is complete. Does not get called if search returns no result
-     * @return
-     * @throws IOException
-     */
-    public static void nextFeatureSearch(FeatureSource source, String chr, int initStart, int initEnd, boolean forward,
-                                         final FeatureSearcher.IFeatureFound foundHandler) throws IOException{
-
-        //Only allow one to be shown at a time
-        if(isSearching()){
-            return;
-        }
-
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-
-        //We search backwards by setting a negative searchIncrement
-        int searchIncrement = (initEnd - initStart) * (forward ? +1 : -1);
-        int start = initStart + searchIncrement;
-
-        IndefiniteProgressMonitor monitor = new IndefiniteProgressMonitor();
-
-        final FeatureSearcher searcher = new FeatureSearcher(source, genome, chr, start, monitor);
-        searcher.setSearchIncrement(searchIncrement);
-
-        final ActionListener cancelListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                FeatureTrackUtils.isSearching = false;
-                searcher.cancel();
-            }
-        };
-
-        final CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", cancelListener, true, monitor);
-        dialog.getProgressBar().setIndeterminate(true);
-
-        monitor.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals(ProgressMonitor.PROGRESS_PROPERTY) &&  (Integer) evt.getNewValue() >= 100){
-                    FeatureTrackUtils.isSearching = false;
-                    Iterator<? extends Feature> result = searcher.getResult();
-                    if(result != null) foundHandler.processResult(result);
-                }
-            }
-        });
-
-        FeatureTrackUtils.isSearching = true;
-        LongRunningTask.submit(searcher);
-    }
-
-    private static boolean isSearching() {
-        return isSearching;
     }
 
 }

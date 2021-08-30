@@ -334,8 +334,8 @@ public class SessionWriter {
                     if (resourceLocator.getDescription() != null) {
                         dataFileElement.setAttribute(SessionAttribute.DESCRIPTION, resourceLocator.getDescription());
                     }
-                    if (resourceLocator.getType() != null) {
-                        dataFileElement.setAttribute(SessionAttribute.TYPE, resourceLocator.getType());
+                    if (resourceLocator.format != null) {
+                        dataFileElement.setAttribute(SessionAttribute.TYPE, resourceLocator.format);
                     }
                     if (resourceLocator.getIndexPath() != null) {
                         dataFileElement.setAttribute(SessionAttribute.INDEX, resourceLocator.getIndexPath());

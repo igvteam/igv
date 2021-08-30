@@ -118,15 +118,6 @@ public class FeatureDirSource implements FeatureSource {
         return null;
     }
 
-    public int getFeatureWindowSize() {
-        return 0;
-    }
-
-    public void setFeatureWindowSize(int size) {
-        // ignored
-    }
-
-
     public Iterator<Feature> getFeatures(String chr, int start, int end) {
         List<Feature> features = getFeatures(chr);
         return features == null ? Collections.<Feature>emptyList().iterator() : features.iterator();

@@ -489,14 +489,16 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
          */
         public void parseAttributes(String description, MultiMap<String, String> kvalues) {
 
-            List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');
+            //List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');
+            String [] kvPairs = Globals.semicolonPattern.split(description.trim());
             for (String kv : kvPairs) {
                 //int nValues = ParsingUtils.split(kv, tmp, '=');
-                List<String> tmp = StringUtils.breakQuotedString(kv, '=');
-                int nValues = tmp.size();
+                //List<String> tmp = StringUtils.breakQuotedString(kv, '=');
+                String [] tmp = Globals.equalPattern.split(kv);
+                int nValues = tmp.length;
                 if (nValues > 0) {
-                    String key = tmp.get(0).trim();
-                    String value = ((nValues == 1) ? "" : tmp.get(1).trim());
+                    String key = tmp[0].trim();
+                    String value = ((nValues == 1) ? "" : tmp[1].trim());
 
                     if (useUrlDecoding) {
                         key = StringUtils.decodeURL(key);

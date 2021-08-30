@@ -135,8 +135,8 @@ public class WiggleParser {
      * @return
      */
     public static boolean isWiggle(ResourceLocator file) {
-        String ts = file.getTypeString().toLowerCase();
-        return (ts.endsWith("cpg.txt") || ts.endsWith(".expr") || ts.endsWith(".wig"));
+        String ts = file.getFormat();
+        return (ts.equals("cpg") || ts.equals("expr") || ts.equals("wig"));
     }
 
     public WiggleDataset parse() {

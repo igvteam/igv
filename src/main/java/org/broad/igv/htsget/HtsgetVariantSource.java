@@ -97,11 +97,6 @@ public class HtsgetVariantSource implements FeatureSource {
     }
 
     @Override
-    public void setFeatureWindowSize(int size) {
-        this.featureWindowSize = size;
-    }
-
-    @Override
     public Object getHeader() {
         try {
             if (header == null) {

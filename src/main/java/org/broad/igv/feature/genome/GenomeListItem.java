@@ -36,8 +36,6 @@ public class GenomeListItem {
     private String displayableName;
     private String path;
     private String id;
-    private boolean hasDownloadedSequence = false;
-    private long lastModified = 0;
 
     public static final GenomeListItem DOWNLOAD_ITEM;
 
@@ -60,7 +58,6 @@ public class GenomeListItem {
     public static GenomeListItem fromString(String str) {
         String[] tokens = str.split("\t");
         GenomeListItem item = new GenomeListItem(tokens[1], tokens[2], tokens[0]);
-        item.hasDownloadedSequence = Boolean.parseBoolean(tokens[3]);
         return item;
     }
 
@@ -103,12 +100,4 @@ public class GenomeListItem {
         return Objects.hash(path, id);
     }
 
-
-    public void setLastModified(long lastModified) {
-        this.lastModified = lastModified;
-    }
-
-    public long getLastModified() {
-        return lastModified;
-    }
 }

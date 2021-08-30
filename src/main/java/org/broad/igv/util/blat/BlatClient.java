@@ -42,6 +42,7 @@ import org.broad.igv.util.*;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -72,10 +73,11 @@ public class BlatClient {
 
         } else {
 
-            urlpref = urlpref.replace("$SEQUENCE", userSeq).replace("$DB", db);
+            String dbEncoded = URLEncoder.encode(db, "UTF-8");
+            urlpref = urlpref.replace("$SEQUENCE", userSeq).replace("$DB", dbEncoded);
 
             //Strip leading "file://" protocol, if any
-            if(urlpref.startsWith("file://")) {
+            if (urlpref.startsWith("file://")) {
                 urlpref = urlpref.substring("file://".length() + 1);
             }
 
@@ -86,17 +88,25 @@ public class BlatClient {
                 // If urlpref is not a URL, assume it is a command line program.  An example might be
                 // blat.sh $SEQUENCE $DB
 
-                if(URLUtils.isURL(urlpref)) {
+                if (URLUtils.isURL(urlpref)) {
                     jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(urlpref));
                 } else {
                     jsonString = RuntimeUtils.exec(urlpref);
                 }
 
-
                 JsonObject obj = (new JsonParser()).parse(jsonString).getAsJsonObject();
+
+                // If response includes "genome" property, verify against DB argument
+                if (obj.has("genome")) {
+                    String responseGenome = obj.get("genome").getAsString();
+                    if (!(responseGenome.equalsIgnoreCase(db) || responseGenome.equalsIgnoreCase(dbEncoded))) {
+                        throw new BlatException("Genome '" + db + "' not supported by BLAT server.");
+                    }
+                }
+
+                // Collect PSL lines, stripping quotes from individual tokens in the process.
                 JsonArray arr = obj.get("blat").getAsJsonArray();
                 Iterator<JsonElement> iter = arr.iterator();
-
                 List<String[]> results = new ArrayList<>();
                 while (iter.hasNext()) {
                     JsonArray row = iter.next().getAsJsonArray();
@@ -108,6 +118,7 @@ public class BlatClient {
                     results.add(tokens);
                 }
 
+                // Parse PSL lines into features.  The genome, if defined, is used to substitute chromosome aliases
                 Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
                 List<PSLRecord> features = new ArrayList<>(results.size());
                 for (String[] tokens : results) {
@@ -116,54 +127,37 @@ public class BlatClient {
 
                 return features;
             } catch (JsonSyntaxException e) {
-                // This might be an html page, extract body as message.
-                String error = jsonString;
-                int idx1 = jsonString.indexOf("<BODY");
-                if (idx1 > 0) {
-                    int idx2 = jsonString.indexOf(">", idx1);
-                    int idx3 = jsonString.indexOf("</BODY", idx2);
-                    if (idx3 > 0) {
-                        error = jsonString.substring(idx2 + 1, idx3);
-                    }
-                }
-                throw new RuntimeException(error);
+                // This might be an html page, extract body text.
+                String error = htmlToString(jsonString);
+                throw new BlatException(error);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                // Thrown from command line option
+                throw new BlatException("Error executing blat command: " + e.getMessage(), e);
             }
         }
     }
 
     public static void doBlatQuery(final String userSeq, final String trackLabel) {
 
-        LongRunningTask.submit(new NamedRunnable() {
-
-            public String getName() {
-                return "Blat sequence";
+        try {
+            Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
+            String db = genome == null ? "hg19" : genome.getBlatDB();
+            List<PSLRecord> features = blat(db, userSeq);
+            if (features.isEmpty()) {
+                MessageUtils.showMessage("No features found");
+            } else {
+                BlatTrack newTrack = new BlatTrack(userSeq, features, trackLabel); //species, userSeq, db, genome, trackLabel);
+                IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
+                IGV.getInstance().repaint();
+                BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), userSeq, newTrack.getFeatures());
+                win.setVisible(true);
             }
-
-            public void run() {
-                try {
-                    Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
-                    String db = genome == null ? "hg19" : genome.getBlatDB();
-                    List<PSLRecord> features = blat(db, userSeq);
-
-
-                    if (features.isEmpty()) {
-                        MessageUtils.showMessage("No features found");
-                    } else {
-                        BlatTrack newTrack = new BlatTrack(userSeq, features, trackLabel); //species, userSeq, db, genome, trackLabel);
-                        IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
-                        IGV.getInstance().repaint();
-                        BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), userSeq, newTrack.getFeatures());
-                        win.setVisible(true);
-                    }
-                } catch (Exception e1) {
-                    MessageUtils.showErrorMessage("Error running blat", e1);
-                }
-            }
-        });
-
+        } catch (Exception e1) {
+            log.error("BLAT error.", e1);
+            MessageUtils.showMessage(e1.getLocalizedMessage());
+        }
     }
+
 
     public static void doBlatQueryFromRegion(final String chr, final int start, final int end, Strand strand) {
 
@@ -180,9 +174,25 @@ public class BlatClient {
             userSeq = SequenceTrack.getReverseComplement(userSeq);
         }
 
-        doBlatQuery(userSeq, "Blat");
+        doBlatQuery(userSeq, "BLAT");
     }
 
+    private static String htmlToString (String str) {
+
+        // Remove script tags
+        int idx1;
+        int count = 0;
+        while((idx1 = str.indexOf("<script")) >= 0 && count < 10) {
+            int idx2 = str.indexOf("</script>", idx1);
+            if(idx1 > 0 && idx2 > idx1) {
+                str = str.substring(0, idx1) + str.substring(idx2 + 9);
+            }
+            count++;
+        }
+        str = str.replaceAll("\\<.*?>","").replace('\n', ' ');
+        return str;
+
+    }
 
 }
 

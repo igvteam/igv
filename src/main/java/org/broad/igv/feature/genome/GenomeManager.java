@@ -115,7 +115,7 @@ public class GenomeManager {
         if (HttpUtils.isRemoteURL(genomePath.toLowerCase())) {
             // We need a local copy, as there is no http zip file reader
             URL genomeArchiveURL = HttpUtils.createURL(genomePath);
-            final String tmp = URLDecoder.decode(HttpUtils.createURL(genomePath).getFile(), "UTF-8");
+            final String tmp = URLDecoder.decode(genomeArchiveURL.getFile(), "UTF-8");
             String cachedFilename = Utilities.getFileNameFromURL(tmp);
             if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
                 DirectoryManager.getGenomeCacheDirectory().mkdir();
@@ -193,8 +193,14 @@ public class GenomeManager {
             setCurrentGenome(newGenome);
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
-            String aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
-            newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
+            try {
+                String aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
+                if((new File(aliasPath)).exists()) {
+                    newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
+                }
+            } catch (Exception e) {
+                log.error("Failed to load user defined alias", e);
+            }
 
             if (monitor != null) {
                 monitor.fireProgress(25);
@@ -217,11 +223,12 @@ public class GenomeManager {
                 List<ResourceLocator> resources = newGenome.getAnnotationResources();
                 if (resources != null && IGV.hasInstance()) {
                     IGV.getInstance().loadResources(resources);
+                    IGV.getInstance().repaint();
                 }
             }
 
 
-           // log.info("Genome loaded.  id= " + newGenome.getId());
+            // log.info("Genome loaded.  id= " + newGenome.getId());
             return currentGenome;
 
         } catch (SocketException e) {

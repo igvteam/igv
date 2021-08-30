@@ -659,7 +659,7 @@ public class IgvTools {
         }
 
         ResourceLocator locator = new ResourceLocator(ifile);
-        locator.setType(typeString);
+        locator.setFormat(typeString);
         GCTtoIGVConverter.convert(locator, ofile, probefile, maxRecords, tmpDir, genome);
 
     }
@@ -1164,11 +1164,11 @@ public class IgvTools {
 
         File genomeFile = new File(genomeFileOrID);
         if (!genomeFile.exists()) {
-            genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID + ".genome");
-
+            String pre = genomeFileOrID.replace("/", "_");
+            genomeFile = new File(rootDir, "genomes" + File.separator + pre + ".chrom.sizes");
         }
         if (!genomeFile.exists()) {
-            genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID + ".chrom.sizes");
+            genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID + ".genome");
         }
         if (!genomeFile.exists()) {
             genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID);

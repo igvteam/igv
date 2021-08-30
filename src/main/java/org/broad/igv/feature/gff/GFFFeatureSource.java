@@ -109,9 +109,4 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
         return wrappedSource.getFeatureWindowSize();
     }
 
-    @Override
-    public void setFeatureWindowSize(int size) {
-        wrappedSource.setFeatureWindowSize(size);
-    }
-
 }

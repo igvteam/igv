@@ -86,6 +86,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         if (reader.isBigWigFile()) initMinMax();
 
         // Assume 1000 pixel screen, pick visibility level to be @ highest resolution zoom.
+        // NOTE: this is only used by feature tracks (bigbed sources)
         // TODO -- something smarter, like scaling by actual density
         if (levels != null && levels.getZoomHeaderCount() > 0) {
             BBZoomLevelHeader firstLevel = levels.getZoomLevelHeaders().get(0); // Highest res
@@ -105,6 +106,10 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         bedCodec = new IGVBEDCodec(genome);
     }
 
+    @Override
+    public int getFeatureWindowSize() {
+        return featureVisiblityWindow;
+    }
 
     /**
      * Set the "min" and "max" from 1MB resolutiond data.  Read a maximum of 10,000 points for this
@@ -162,7 +167,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     public TrackType getTrackType() {
         return TrackType.OTHER;
     }
-
 
     public boolean isLogNormalized() {
         return false;
@@ -389,14 +393,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         String tmp = chrNameMap.get(chr);
         String querySeq = tmp == null ? chr : tmp;
         return this.getSummaryScoresForRange(querySeq, start, end, zoom);
-    }
-
-    public int getFeatureWindowSize() {
-        return this.featureVisiblityWindow;
-    }
-
-    public void setFeatureWindowSize(int size) {
-        this.featureVisiblityWindow = size;
     }
 
     public Class getFeatureClass() {

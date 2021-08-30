@@ -160,33 +160,20 @@ public class ExpressionFileParser {
     }
 
     public static FileType determineType(ResourceLocator dataFileLocator) {
-        String fn = dataFileLocator.getPath().toLowerCase();
-        if (fn.endsWith(".gz")) {
-            int l = fn.length() - 3;
-            fn = fn.substring(0, l);
-        }
-        if (fn.endsWith(".txt")) {
-            int l = fn.length() - 4;
-            fn = fn.substring(0, l);
-        }
-
-        //TODO genomespace hack
-        if (dataFileLocator.getPath().contains("?") && dataFileLocator.getPath().contains("dataformat/gct")) {
-            fn = ".gct";
-        }
+        String format = dataFileLocator.getFormat();
         FileType type;
 
-        if (fn.endsWith("res")) {
+        if (format.equals("res")) {
             type = FileType.RES;
-        } else if (fn.endsWith("gct")) {
+        } else if (format.equals("gct")) {
             type = FileType.GCT;
-        } else if (fn.endsWith("mapped")) {
+        } else if (format.equals("mapped")) {
             type = FileType.MAPPED;
-        } else if (fn.endsWith("met")) {
+        } else if (format.equals("met")) {
             type = FileType.MET;
-        } else if (fn.endsWith("dchip")) {
+        } else if (format.equals("dchip")) {
             type = FileType.DCHIP;
-        } else if ("mage-tab".equals(dataFileLocator.getType()) || "MAGE_TAB".equals(dataFileLocator.getDescription())) {
+        } else if ("mage-tab".equals(format) || "MAGE_TAB".equals(dataFileLocator.getDescription())) {
             type = FileType.MAGE_TAB;
         } else {
             type = FileType.TAB;

@@ -100,10 +100,21 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
      * @param iter TabixLineReader wrapping the collection of alignments
      */
     List<FeatureRow> packFeatures(Iterator iter) {
-        IteratorSplitterByCharge iterSplitter = new IteratorSplitterByCharge(iter);
 
-        List<FeatureRow> posRows = packFeaturesOneStrand(iterSplitter.getPosIter());
-        List<FeatureRow> negativeRows = packFeaturesOneStrand(iterSplitter.getNegIter());
+        // Split features by strand
+        List<SpliceJunctionFeature> posFeatures = new ArrayList<>();
+        List<SpliceJunctionFeature> negFeatures = new ArrayList<>();
+        while(iter.hasNext()) {
+            SpliceJunctionFeature f = (SpliceJunctionFeature) iter.next();
+            if(f.getStrand() == Strand.NEGATIVE) {
+                negFeatures.add(f);
+            } else {
+                posFeatures.add(f);
+            }
+        }
+
+        List<FeatureRow> posRows = packFeaturesOneStrand(posFeatures.iterator());
+        List<FeatureRow> negativeRows = packFeaturesOneStrand(negFeatures.iterator());
 
         Comparator startComparator = new Comparator<Feature>() {
             public int compare(Feature row1, Feature row2) {
@@ -235,95 +246,6 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
         }
 
         return rows;
-    }
-
-    /**
-     * Takes in an iterator of Features and creates two new iterators, one that gives the neg-strand features
-     * and one that gives the pos-strand features.  Does this by buffering features of the opposite strand
-     * when a feature of a particular strand is requested.
-     */
-    protected class IteratorSplitterByCharge {
-        Iterator origIter;
-
-        List<Feature> posBuffer = new ArrayList<Feature>();
-        List<Feature> negBuffer = new ArrayList<Feature>();
-
-        PerStrandIter posIter;
-        PerStrandIter negIter;
-
-        public IteratorSplitterByCharge(Iterator origIter) {
-            this.origIter = origIter;
-
-            posIter = new PerStrandIter(posBuffer, negBuffer, Strand.POSITIVE);
-            negIter = new PerStrandIter(negBuffer, posBuffer, Strand.NEGATIVE);
-        }
-
-        public PerStrandIter getPosIter() {
-            return posIter;
-        }
-
-        public PerStrandIter getNegIter() {
-            return negIter;
-        }
-
-        /**
-         * An iterator of Features for a single strand. Polls the original iterator for new features and
-         * either returns them or buffers them in the other strand's buffer, accordingly
-         */
-        protected class PerStrandIter implements Iterator<Feature> {
-            List<Feature> buffer;
-            List<Feature> otherBuffer;
-            Strand strand;
-
-
-            public PerStrandIter(List<Feature> buffer, List<Feature> otherBuffer, Strand strand) {
-                this.buffer = buffer;
-                this.otherBuffer = otherBuffer;
-                this.strand = strand;
-            }
-
-            /**
-             * Burn through the original iterator until we either hit the end or find a feature of the
-             * appropriate strand, buffering the other strand features as we go
-             * @return
-             */
-            public boolean hasNext() {
-                while (buffer.isEmpty() && origIter.hasNext())
-                {
-                    BasicFeature feature = (BasicFeature) origIter.next();
-                    if (feature.getStrand() == strand)
-                        buffer.add(feature);
-                    else
-                        otherBuffer.add(feature);
-                }
-                return !buffer.isEmpty();
-            }
-
-            /**
-             * Burn through the original iterator until we either hit the end or find a feature of the
-             * appropriate strand, buffering the other strand features as we go
-             * @return
-             */
-            public Feature next() {
-                while (buffer.isEmpty() && origIter.hasNext())
-                {
-                    BasicFeature feature = (BasicFeature) origIter.next();
-                    if (feature.getStrand() == strand)
-                        buffer.add(feature);
-                    else
-                        otherBuffer.add(feature);
-                }
-                if (buffer.isEmpty())
-                    return null;
-                Feature result = buffer.get(0);
-                buffer.remove(0);
-                return result;
-            }
-
-            public void remove() {
-                //not implemented
-            }
-        }
     }
 
 }

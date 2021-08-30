@@ -8,6 +8,8 @@ import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureReader;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
+import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
@@ -20,7 +22,10 @@ import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class JsonGenomeLoader extends GenomeLoader {
@@ -47,26 +52,23 @@ public class JsonGenomeLoader extends GenomeLoader {
             String name = json.get("name").getAsString();
 
             String fastaPath;
-            String indexPath = null;
-            if (json.has("compressedFastaURL")) {
-                JsonElement fastaElement = json.has("compressedFastaURL") ?
-                        json.get("compressedFastaURL") :
-                        json.get("fastaURL");
-                fastaPath = fastaElement.getAsString();
-                // index path ignored for bgzipped fasta
-            } else {
-                fastaPath = json.get("fastaURL").getAsString();
-                JsonElement indexPathObject = json.get("indexURL");
-                indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
-            }
+            fastaPath = json.get("fastaURL").getAsString();
+
+            JsonElement indexPathObject = json.get("indexURL");
+            String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
+
+            JsonElement gziObject = json.get("gziIndexURL");
+            String gziIndexPath = gziObject == null ? null : gziObject.getAsString();
 
             fastaPath = FileUtils.getAbsolutePath(fastaPath, genomePath);
             if (indexPath != null) {
                 indexPath = FileUtils.getAbsolutePath(indexPath, genomePath);
+            } if (gziIndexPath != null) {
+                gziIndexPath = FileUtils.getAbsolutePath(gziIndexPath, genomePath);
             }
 
             FastaIndexedSequence sequence = fastaPath.endsWith(".gz") ?
-                    new FastaBlockCompressedSequence(fastaPath, indexPath) :
+                    new FastaBlockCompressedSequence(fastaPath, gziIndexPath, indexPath) :
                     new FastaIndexedSequence(fastaPath, indexPath);
 
             JsonElement orderedElement = json.get("ordered");
@@ -81,26 +83,44 @@ public class JsonGenomeLoader extends GenomeLoader {
             if (annotations != null) {
                 annotations.forEach((JsonElement jsonElement) -> {
                     JsonObject obj = jsonElement.getAsJsonObject();
+
                     String trackPath = obj.get("url").getAsString();
+                    if (trackPath != null) {
+                        trackPath = FileUtils.getAbsolutePath(trackPath, genomePath);
+                    }
+
+                    ResourceLocator res = new ResourceLocator(trackPath);
+
                     JsonElement trackName = obj.get("name");
+                    if (trackName != null) {
+                        res.setName(trackName.getAsString());
+                    }
+
                     JsonElement trackIndex = obj.get("indexURL");
+                    if (trackIndex != null) {
+                        res.setIndexPath(FileUtils.getAbsolutePath(trackIndex.getAsString(), genomePath));
+                    }
+
+                    JsonElement format = obj.get("format");
+                    if (format != null) {
+                        res.setFormat(format.getAsString());
+                    }
+
+                    JsonElement vizwindow = obj.get("visibilityWindow");
+                    if (vizwindow != null) {
+                        res.setVisibilityWindow(obj.get("visibilityWindow").getAsInt());
+                    } else {
+                        // If not explicitly set, assume whole chromosome viz window for annotations
+                        res.setVisibilityWindow(-1);
+                    }
+
                     JsonElement indexedElement = obj.get("indexed");
                     JsonElement hiddenElement = obj.get("hidden");
                     boolean hidden = hiddenElement != null && hiddenElement.getAsBoolean();
                     boolean indexed = indexedElement != null && indexedElement.getAsBoolean();
-
-                    String trackIndexPath = null;
-                    if (trackPath != null) {
-                        trackPath = FileUtils.getAbsolutePath(trackPath, genomePath);
+                    if (indexedElement != null) {
+                        res.setIndexed(indexed);
                     }
-                    if (trackIndex != null) {
-                        trackIndexPath = FileUtils.getAbsolutePath(trackIndex.getAsString(), genomePath);
-                    }
-
-                    ResourceLocator res = new ResourceLocator(trackPath);
-                    if (trackName != null) res.setName(trackName.getAsString());
-                    if (trackIndexPath != null) res.setIndexPath(trackIndexPath);
-                    if (indexedElement != null) res.setIndexed(indexed);
 
                     if (hidden) {
                         if (indexed || trackIndex != null) {
@@ -117,21 +137,60 @@ public class JsonGenomeLoader extends GenomeLoader {
             Genome newGenome = new Genome(id, name, sequence, ordered);
             newGenome.setAnnotationResources(tracks);
 
+            JsonElement cyobandElement = json.get("cytobandURL");
+            if (cyobandElement != null) {
+                String cytobandPath = FileUtils.getAbsolutePath(cyobandElement.getAsString(), genomePath);
+                BufferedReader br = null;
+                try {
+                    br = ParsingUtils.openBufferedReader(cytobandPath);
+                    newGenome.setCytobands(CytoBandFileParser.loadData(br));
+                } finally {
+                    try {
+                        br.close();
+                    } catch (IOException e) {
+                        // ignore
+                    }
+                }
+            }
+
             JsonElement ucscIDElement = json.get("ucscID");
             if (ucscIDElement != null) {
-                newGenome.setUcscID( ucscIDElement.getAsString());
+                newGenome.setUcscID(ucscIDElement.getAsString());
             }
             JsonElement blatDB = json.get("blatDB");
             if (blatDB != null) {
-                newGenome.setUcscID( blatDB.getAsString());
+                newGenome.setUcscID(blatDB.getAsString());
             }
             JsonElement aliasURL = json.get("aliasURL");
             if (aliasURL != null) {
-                newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasURL.getAsString()));
+                String aliasPath = FileUtils.getAbsolutePath(aliasURL.getAsString(), genomePath);
+                newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
             }
             if (hiddenTracks.size() > 0) {
                 addToFeatureDB(hiddenTracks, newGenome);
             }
+            JsonElement wholeGenomeView = json.get("wholeGenomeView");
+            if (wholeGenomeView != null) {
+                newGenome.setShowWholeGenomeView(wholeGenomeView.getAsBoolean());
+            }
+            JsonElement chromosomeOrder = json.get("chromosomeOrder");
+            if (chromosomeOrder != null) {
+                List<String> chrs;
+                if (chromosomeOrder.isJsonArray()) {
+                    JsonArray a = chromosomeOrder.getAsJsonArray();
+                    chrs = new ArrayList<>();
+                    for (JsonElement e : a) {
+                        chrs.add(e.getAsString());
+                    }
+                } else {
+                    // Assume comma delimited stream
+                    String[] c = Globals.commaPattern.split(chromosomeOrder.getAsString());
+                    chrs = new ArrayList<>(c.length);
+                    for (String t : c) chrs.add(t.trim());
+                }
+                newGenome.setLongChromosomeNames(chrs);
+            }
+
             return newGenome;
         } finally {
             reader.close();

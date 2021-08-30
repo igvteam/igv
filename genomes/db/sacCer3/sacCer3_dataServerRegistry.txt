@@ -1,1 +1,0 @@
-https://s3.amazonaws.com/igv.org.genomes/sacCer3/sacCer3_annotations.xml

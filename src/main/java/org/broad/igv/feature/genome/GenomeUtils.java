@@ -44,7 +44,7 @@ public class GenomeUtils {
 
     public static void main(String[] args) throws IOException {
 
-        String genomeListFile =  "genomes/genomes.txt";
+        String genomeListFile =  "genomes/genomes.tab";
         String outputDirectory = "genomes/sizes";
         String outputFile = "nonFastas.txt";
 
@@ -82,8 +82,8 @@ public class GenomeUtils {
                 String[] tokens = nextLine.split("\t");
                 if (tokens.length > 2) {
                     String genomeID = tokens[2];
-
-                    File outputFile = new File(directory, genomeID + ".chrom.sizes");
+                    String pre = genomeID.replace("/", "_");
+                    File outputFile = new File(directory, pre + ".chrom.sizes");
                     if (outputFile.exists()) {
                         continue;
                     }
@@ -92,6 +92,7 @@ public class GenomeUtils {
                     String genomePath = tokens[1];
                     try {
                         Genome genome = GenomeManager.getInstance().loadGenome(genomePath, null);
+                        System.out.println(genome.getId());
                         exportChromSizes(directory, genome);
 
                     } catch (Exception e) {
@@ -99,6 +100,7 @@ public class GenomeUtils {
                     }
                 }
             }
+            System.out.println("Done");
         } finally {
             if (br != null) br.close();
         }
@@ -115,8 +117,8 @@ public class GenomeUtils {
      */
     public static void exportChromSizes(File directory, Genome genome) throws FileNotFoundException {
 
-
-        String fn = genome.getId() + ".chrom.sizes";
+        String pre = genome.getId().replace("/", "_");
+        String fn = pre + ".chrom.sizes";
         File file = new File(directory, fn);
         PrintWriter pw = null;
 

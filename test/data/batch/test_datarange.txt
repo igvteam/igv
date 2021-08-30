@@ -1,0 +1,9 @@
+new
+genome hg19
+goto myc
+load http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H2azDex100nmSig.bigWig
+load http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me2Dex100nmSig.bigWig
+load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
+setDataRange 0,50 wgEncodeBroadHistoneA549H2azDex100nmSig.bigWig
+setDataRange auto wgEncodeBroadHistoneA549H3k04me2Dex100nmSig.bigWig
+setDataRange 0,25 "NA12877_S1.bam Coverage"

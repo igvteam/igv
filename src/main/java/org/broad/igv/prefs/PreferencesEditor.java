@@ -212,7 +212,12 @@ public class PreferencesEditor {
 
                     } else {
                         JLabel label = new JLabel(pref.getLabel());
-                        JTextField field = new JTextField(preferences.get(pref.getKey()));
+
+                        String fieldText = preferences.get(pref.getKey());
+                        if (pref.getKey().equals(Constants.PROXY_PW) && fieldText != null && fieldText.length() > 0) {
+                            fieldText = Utilities.base64Decode(fieldText);
+                        }
+                        JTextField field = new JTextField(fieldText);
                         Dimension d = field.getPreferredSize();
                         d.width = 300;
                         field.setPreferredSize(d);
@@ -220,11 +225,9 @@ public class PreferencesEditor {
                         field.addActionListener(event -> {
                             String text = field.getText();
                             if (validate(text, pref.getType())) {
-                                // TODO -- make base64 an explicit type
                                 if (pref.getKey().equals(Constants.PROXY_PW)) {
                                     text = Utilities.base64Encode(text);
                                 }
-
                                 updatedPrefs.put(pref.getKey(), text);
                             } else {
                                 field.setText(preferences.get(pref.getKey()));

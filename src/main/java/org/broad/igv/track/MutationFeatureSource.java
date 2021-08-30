@@ -71,17 +71,6 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
         return null;  //Not supported for mutation tracks
     }
 
-    @Override
-    public int getFeatureWindowSize() {
-        return -1;  // Load all features for a given chromosome
-    }
-
-    @Override
-    public void setFeatureWindowSize(int size) {
-        // Ignored
-    }
-
-
     static public class MutationDataManager {
 
         Range currentRange;

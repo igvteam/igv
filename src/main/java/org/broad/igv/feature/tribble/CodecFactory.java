@@ -32,7 +32,6 @@ import htsjdk.variant.bcf2.BCF2Codec;
 import htsjdk.variant.vcf.VCF3Codec;
 import htsjdk.variant.vcf.VCFCodec;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
 import org.broad.igv.feature.FeatureType;
 import org.broad.igv.feature.dsi.DSICodec;
@@ -48,9 +47,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * A factory class for Tribble codecs.  implements a single, static, public method to return a codec given a
@@ -67,11 +64,8 @@ public class CodecFactory {
     /**
      * @param path
      * @param genome
-     * @return
-     * @deprecated Use {@link #getCodec(org.broad.igv.util.ResourceLocator, org.broad.igv.feature.genome.Genome)}
      * This won't handle URLs with query strings properly for all codecs
      */
-    @Deprecated
     public static FeatureCodec getCodec(String path, Genome genome) {
         return getCodec(new ResourceLocator(path), genome);
     }
@@ -84,65 +78,71 @@ public class CodecFactory {
     public static FeatureCodec getCodec(ResourceLocator locator, Genome genome) {
 
         String path = locator.getPath();
-        String fn = locator.getTypeString().toLowerCase();
+        String format = locator.getFormat();
 
-        if (fn.endsWith(".vcf3")) {
-            return new VCFWrapperCodec(new VCF3Codec(), genome);
-        }
-        if (fn.endsWith(".vcf4")) {
-            return new VCFWrapperCodec(new VCFCodec(), genome);
-        } else if (fn.endsWith(".vcf")) {
-            return new VCFWrapperCodec(getVCFCodec(locator), genome);
-        } else if (fn.endsWith(".bcf")) {
-            return new BCF2WrapperCodec(new BCF2Codec(), genome);
-        } else if (fn.endsWith(".bed")) {
-            final IGVBEDCodec codec = new IGVBEDCodec(genome);
-            if (fn.endsWith("junctions.bed")) {
+        switch (format) {
+            case "vcf3":
+                return new VCFWrapperCodec(new VCF3Codec(), genome);
+            case "vcf4":
+                return new VCFWrapperCodec(new VCFCodec(), genome);
+            case "vcf":
+                return new VCFWrapperCodec(getVCFCodec(locator), genome);
+            case "bcf":
+                return new BCF2WrapperCodec(new BCF2Codec(), genome);
+            case "bed":
+                return new IGVBEDCodec(genome);
+            case "junctions":
+                final IGVBEDCodec codec = new IGVBEDCodec(genome);
                 codec.setFeatureType(FeatureType.SPLICE_JUNCTION);
-            }
-            return codec;
-        } else if (fn.endsWith(".gappedpeak")) {
-            return new IGVBEDCodec(genome, FeatureType.GAPPED_PEAK);
-        } else if (fn.endsWith(".dgv")) {
-            return new DGVCodec(genome);
-        } else if (fn.endsWith(".rmask") || (fn.endsWith(".repmask"))) {
-            return new REPMaskCodec(genome);
-        } else if (fn.endsWith(".gff3") || fn.endsWith(".gvf")) {
-            return new GFFCodec(GFFCodec.Version.GFF3, genome);
-        } else if (fn.endsWith(".gff")) {
-            return new GFFCodec(genome);
-        } else if (fn.endsWith(".gtf")) {
-            return new GFFCodec(GFFCodec.Version.GTF, genome);
-        } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
-            return new PSLCodec(genome);
-        }  else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak") || fn.endsWith(".regionpeak")) {
-            return new EncodePeakCodec(genome);
-        } else if (fn.endsWith(".snp") || fn.endsWith(".ucscsnp") || fn.matches(ucscSNP)) {
-            return new UCSCSnpCodec(genome);
-        } else if (fn.endsWith(".eqtl")) {
-            return new EQTLCodec(genome);
-        } else if (fn.endsWith("fpkm_tracking")) {
-            return new FPKMTrackingCodec(path);
-            //} else if (fn.endsWith("gene_exp.diff") || fn.endsWith("cds_exp.diff")) {
-            //    return new ExpDiffCodec(path);
-        } else if (fn.endsWith(".dsi")) {
-            return new DSICodec(genome);
-        } else if (fn.endsWith(".paf")) {
-            return new PAFCodec(path, genome);
-        } else if (fn.endsWith(".interval_list")) {
-            return new IntervalListCodec(genome);
-        } else if (MUTCodec.isMutationAnnotationFile(locator)) {
-            return new MUTCodec(path, genome);
-        }else if (fn.contains("refflat")) {
-            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.REFFLAT, genome);
-        } else if (fn.contains("genepred") || fn.contains("ensgene") || fn.contains("refgene") || fn.contains("ncbirefseq")) {
-            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED, genome);
-        } else if (fn.contains("ucscgene")) {
-            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
-        }
-
-        else {
-            return null;
+                return codec;
+            case "gappedpeak":
+                return new IGVBEDCodec(genome, FeatureType.GAPPED_PEAK);
+            case "dgv":
+                return new DGVCodec(genome);
+            case "rmask":
+            case "repmask":
+                return new REPMaskCodec(genome);
+            case "gff3":
+            case "gvf":
+                return new GFFCodec(GFFCodec.Version.GFF3, genome);
+            case "gff":
+                return new GFFCodec(genome);
+            case "gtf":
+                return new GFFCodec(GFFCodec.Version.GTF, genome);
+            case "psl":
+            case "pslx":
+                return new PSLCodec(genome);
+            case "narrowpeak":
+            case "broadpeak":
+            case "regionpeak":
+                return new EncodePeakCodec(genome);
+            case "snp":
+            case "ucscsnp":
+                return new UCSCSnpCodec(genome);
+            case "eqtl":
+                return new EQTLCodec(genome);
+            case "fpkm_tracking":
+                return new FPKMTrackingCodec(path);
+            case "dsi":
+                return new DSICodec(genome);
+            case "paf":
+                return new PAFCodec(path, genome);
+            case "interval_list":
+                return new IntervalListCodec(genome);
+            case "refflat":
+                return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.REFFLAT, genome);
+            case "refgene":
+                return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED, genome);
+            case "ucscgene":
+                return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
+            case "genepredext":
+                return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED_EXT, genome);
+            default:
+                if (MUTCodec.isMutationAnnotationFile(locator)) {
+                    return new MUTCodec(path, genome);
+                } else {
+                    return null;
+                }
         }
 
     }
@@ -160,7 +160,7 @@ public class CodecFactory {
 
         String path = locator.getPath();
 
-        if(FileUtils.isRemote(path)) {
+        if (FileUtils.isRemote(path)) {
             try {
                 path = HttpUtils.createURL(path).toString();
             } catch (MalformedURLException e) {
@@ -223,14 +223,10 @@ public class CodecFactory {
      */
     public static boolean hasCodec(ResourceLocator locator, Genome genome) {
 
-        String fn = locator.getTypeString();
-        if (fn.endsWith(".gz")) {
-            int l = fn.length() - 3;
-            fn = fn.substring(0, l);
-        }
-        // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
-        // are indexable.
-        return fn.endsWith(".vcf") || fn.endsWith(".bcf") || getCodec(locator, genome) != null;
+        String format = locator.getFormat();
+
+        // The vcf extension is for performance, instantiating a vcf codec is expensive
+        return format.equals("vcf") || format.equals("bcf") || getCodec(locator, genome) != null;
 
 
     }

@@ -29,7 +29,6 @@ import software.amazon.awssdk.services.sts.model.Credentials;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
@@ -46,7 +45,18 @@ public class AmazonUtils {
     private static List<String> bucketsFinalList = new ArrayList<>();
     private static CognitoIdentityClient cognitoIdentityClient;
     private static Region AWSREGION;
-    private static Map<String, String> locatorTos3PresignedMap = new HashMap<>();
+
+
+    /**
+     * Maps s3:// URLs to presigned URLs
+     */
+    private static Map<String, String> s3ToPresignedMap = new HashMap<>();
+
+    /**
+     * Maps aws presigned URLs to s3://.  This is needed in some cases (e.g. Tribble) to regenerate an expired URL
+     */
+    private static Map<String, String> presignedToS3Map = new HashMap<>();
+
     private static JsonObject CognitoConfig;
 
     public static void setCognitoConfig(JsonObject json) {
@@ -415,6 +425,9 @@ public class AmazonUtils {
     private static String createPresignedURL(String s3Path) throws IOException {
         // TODO: Ideally the presigned URL should be generated without any of the Cognito being involved first?
         // Make sure access token are valid (refreshes token internally)
+
+        System.out.println("Creating signed URL: " + s3Path);
+
         OAuthProvider provider = OAuthUtils.getInstance().getProvider("Amazon");
         provider.getAccessToken();
 
@@ -425,7 +438,7 @@ public class AmazonUtils {
         StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
 
         S3Presigner s3Presigner = S3Presigner.builder()
-                .expiration(provider.getExpirationTime())
+                .expiration(provider.getExpirationTime())       // Duration.ofSeconds(30)  // <= for testing
                 .awsCredentials(awsCredsProvider)
                 .region(getAWSREGION())
                 .build();
@@ -445,13 +458,12 @@ public class AmazonUtils {
      */
 
     public static String translateAmazonCloudURL(String s3UrlString) throws IOException {
-        String presignedUrl = locatorTos3PresignedMap.get(s3UrlString);
-
+        String presignedUrl = s3ToPresignedMap.get(s3UrlString);
         if (presignedUrl == null || !isPresignedURLValid(new URL(presignedUrl))) {
             presignedUrl = createPresignedURL(s3UrlString);
-            locatorTos3PresignedMap.put(s3UrlString, presignedUrl);
+            s3ToPresignedMap.put(s3UrlString, presignedUrl);
+            presignedToS3Map.put(presignedUrl, s3UrlString);
         }
-
         return presignedUrl;
     }
 
@@ -460,16 +472,23 @@ public class AmazonUtils {
         return (path.startsWith("s3://"));
     }
 
+    public static boolean isPresignedURL(String urlString) {
+        return presignedToS3Map.containsKey(urlString);
+    }
+
+    public static String updatePresignedURL(String urlString) throws IOException {
+        String s3UrlString = presignedToS3Map.get(urlString);
+        if(s3UrlString == null) {
+            throw new RuntimeException("Unrecognized presigned url: " + urlString);
+        } else {
+            return translateAmazonCloudURL(s3UrlString);
+        }
+    }
+
     public static void checkLogin() {
         if (!OAuthUtils.getInstance().getProvider("Amazon").isLoggedIn()) {
             OAuthUtils.getInstance().getProvider("Amazon").doSecureLogin();
         }
-    }
-
-    public static boolean isS3PresignedValid(String url) throws MalformedURLException {
-        String s3Mapping = locatorTos3PresignedMap.get(url);
-
-        return s3Mapping != null && isPresignedURLValid(new URL(s3Mapping));
     }
 
     /**
@@ -489,6 +508,9 @@ public class AmazonUtils {
         try {
             long presignedTime = signedURLValidity(url);
             isValidSignedUrl = presignedTime - System.currentTimeMillis() - Globals.TOKEN_EXPIRE_GRACE_TIME > 0; // Duration in milliseconds
+            if(!isValidSignedUrl) {
+                System.out.println("URL expired: " + url.toExternalForm());
+            }
         } catch (ParseException e) {
             log.error("The AWS signed URL date parameter X-Amz-Date has incorrect formatting");
             isValidSignedUrl = false;

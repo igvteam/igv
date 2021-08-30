@@ -2,13 +2,18 @@ package org.broad.igv.feature.aa;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.Before;
 
 import static org.junit.Assert.*;
 
 public class CodonTableManagerTest {
 
+    @Before
+    public void setup() {
+        CodonTableManager.getInstance().resetToDefaults();
+    }
+
     @Test
-    @Ignore
     public void getCodonTable() {
 
         CodonTable table = CodonTableManager.getInstance().getCodonTableForChromosome("hg19", "chr1");

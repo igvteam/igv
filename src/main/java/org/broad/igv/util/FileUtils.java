@@ -222,30 +222,22 @@ public class FileUtils {
      * Test to see if the first non-comment line (first line not starting with #) is tab-delimited with the
      * given number of minimum columns.  Limit the test to the first 1,000 lines.
      */
-    public static boolean isTabDelimited(ResourceLocator loc, int minColumnCount) throws IOException {
+    public static boolean isTabDelimited(BufferedReader reader, int minColumnCount) throws IOException {
 
-        BufferedReader reader = null;
-
-        try {
-            reader = ParsingUtils.openBufferedReader(loc.getPath());
-            int nLinesTested = 0;
-            String nextLine;
-            while ((nextLine = reader.readLine()) != null && nLinesTested < 1000) {
-                if (nextLine.startsWith("#")) {
-                    continue;
-                }
-                nLinesTested++;
-                String[] tokens = nextLine.split("\t");
-                if (tokens.length >= minColumnCount) {
-                    return true;
-                }
+        int nLinesTested = 0;
+        String nextLine;
+        while ((nextLine = reader.readLine()) != null && nLinesTested < 1000) {
+            if (nextLine.startsWith("#")) {
+                continue;
             }
-            return false;
-        } finally {
-            if (reader != null) {
-                reader.close();
+            nLinesTested++;
+            String[] tokens = nextLine.split("\t");
+            if (tokens.length >= minColumnCount) {
+                return true;
             }
         }
+        return false;
+
     }
 
     /**

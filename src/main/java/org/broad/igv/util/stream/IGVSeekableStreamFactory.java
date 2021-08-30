@@ -28,6 +28,7 @@ package org.broad.igv.util.stream;
 import htsjdk.samtools.seekablestream.ISeekableStreamFactory;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.File;
@@ -61,9 +62,7 @@ public class IGVSeekableStreamFactory implements ISeekableStreamFactory {
         } else {
             path = mapPath(path);
             SeekableStream is = null;
-            if (path.toLowerCase().startsWith("http://") || path.toLowerCase().startsWith("https://") ||
-                    path.toLowerCase().startsWith("gs://")) {
-
+            if (FileUtils.isRemote(path) ) {
                 final URL url = HttpUtils.createURL(path);
                 boolean useByteRange = HttpUtils.getInstance().useByteRange(url);
                 if (useByteRange) {

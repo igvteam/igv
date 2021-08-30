@@ -119,7 +119,7 @@ public class Globals {
         Properties properties = new Properties();
         try {
             properties.load(Globals.class.getResourceAsStream("/resources/about.properties"));
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("*** Error retrieving version and build information! ***", e);
         }
         VERSION = properties.getProperty("version", "???");

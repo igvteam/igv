@@ -36,6 +36,7 @@ import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.GenomeUtils;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.google.OAuthUtils;
@@ -438,9 +439,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText("Load a FASTA, .json, or .genome file...");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuItems.add(new JSeparator());
         // Download genome from server 
-        menuAction = new MenuAction("Load Genome From Server...", null) {
+        menuAction = new MenuAction("Select Hosted Genome...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
                 GenomeComboBox.loadGenomeFromServer();
@@ -463,21 +463,21 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText("Remove genomes which appear in the dropdown list");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-
-        menuItems.add(new JSeparator());
-
-        menuAction =
-                new MenuAction("Create .genome File...", null, KeyEvent.VK_D) {
-                    @Override
-                    public void actionPerformed(ActionEvent event) {
-                        javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(IGV.getInstance().getMainPanel(),
-                                "Creating genome", null, 0, 100);
-                        igv.defineGenome(monitor);
-                    }
-                };
-
-        menuAction.setToolTipText(UIConstants.IMPORT_GENOME_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//
+//        menuItems.add(new JSeparator());
+//
+//        menuAction =
+//                new MenuAction("Create .genome File...", null, KeyEvent.VK_D) {
+//                    @Override
+//                    public void actionPerformed(ActionEvent event) {
+//                        javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(IGV.getInstance().getMainPanel(),
+//                                "Creating genome", null, 0, 100);
+//                        igv.defineGenome(monitor);
+//                    }
+//                };
+//
+//        menuAction.setToolTipText(UIConstants.IMPORT_GENOME_TOOLTIP);
+//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         MenuAction genomeMenuAction = new MenuAction("Genomes", null);
         return MenuAndToolbarUtils.createMenu(menuItems, genomeMenuAction);
@@ -961,9 +961,17 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
         menu.add(lfMenu);
 
+        JMenuItem updateCS = new JMenuItem("Update chrom sizes");
+        updateCS.addActionListener(e -> {
+            try {
+                GenomeUtils.main(new String [] {});
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
+        menu.add(updateCS);
+
         menu.setVisible(false);
-
-
         return menu;
     }
 
@@ -1207,9 +1215,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             String blatSequence = MessageUtils.showInputDialog("Enter sequence to blat:");
             if (blatSequence != null) {
                 if(blatSequence.length() < 20 || blatSequence.length() > 8000) {
-                    MessageUtils.showMessage("Blat sequences must be >= 20 and <= 8000");
+                    MessageUtils.showMessage("BLAT sequences must be between 20 and 8000 bases in length.");
                 } else {
-                    BlatClient.doBlatQuery(blatSequence, "Blat");
+                    BlatClient.doBlatQuery(blatSequence, "BLAT");
                 }
             }
         });

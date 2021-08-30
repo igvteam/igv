@@ -81,13 +81,9 @@ public interface FeatureSource<T extends Feature> {
      *
      * @return the feature window threshold in base-pairs
      */
-    int getFeatureWindowSize();
-
-    /**
-     * @param size the feature window size in base-pairs
-     */
-
-    void setFeatureWindowSize(int size);
+    default int getFeatureWindowSize() {
+        return -1;
+    }
 
     default void dispose() {
       // Do nothing by default

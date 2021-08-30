@@ -65,30 +65,30 @@ public class AlignmentReaderFactory {
         AlignmentReader reader = null;
 
         String samFile = locator.getPath();
-        String typeString = locator.getTypeString();
+        String format = locator.getFormat();
 
-        if ("alist".equals(locator.getType())) {
+        if ("alist".equals(format)) {
             reader = getMergedReader(locator.getPath(), true);
         } else if (pathLowerCase.startsWith("http") && pathLowerCase.contains("/query.cgi?")) {
             reader = new CGIAlignmentReader(samFile);
-        } else if (typeString.endsWith(".sam")) {
+        } else if (format.equals("sam")) {
             reader = new SAMReader(samFile, requireIndex);
 
-        } else if (typeString.endsWith(".aligned")
-                || typeString.endsWith(".aligned.txt")
-                || typeString.endsWith("bedz")
-                || typeString.endsWith("bed")
-                || typeString.endsWith("psl")
-                || typeString.endsWith("pslx")) {
+        } else if (format.equals("aligned")
+                || format.equals("aligned.txt")
+                || format.equals("bedz")
+                || format.equals("bed")
+                || format.equals("psl")
+                || format.equals("pslx")) {
             reader = new GeraldReader(samFile, requireIndex);
-        } else if (typeString.endsWith(".bam") || (typeString.endsWith(".cram")) || locator.isHtsget()) {
+        } else if (format.equals("bam") || (format.equals("cram")) || locator.isHtsget()) {
             try {
                 reader = new BAMReader(locator, requireIndex); //, requireIndex);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 throw new DataLoadException("Error loading BAM file: " + e.toString(), locator.getPath());
             }
-        } else if (typeString.endsWith(".bam.list") || pathLowerCase.endsWith(".sam.list")) {
+        } else if (format.equals("bam.list") || pathLowerCase.equals("sam.list")) {
             reader = getBamListReader(locator.getPath(), requireIndex);
         } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
             try {
