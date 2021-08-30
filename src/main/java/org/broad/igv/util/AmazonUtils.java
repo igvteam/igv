@@ -106,7 +106,6 @@ public class AmazonUtils {
         JsonObject igv_oauth_conf = GetCognitoConfig();
         JsonObject response = provider.getResponse();
 
-        // user-defined-genomes.txt, probably behind S3 urls?
         // Handle non-user initiated S3 auth (IGV early startup), i.e user-specified GenomesLoader
         if (response == null) {
             // Go back to auth flow, not auth'd yet
