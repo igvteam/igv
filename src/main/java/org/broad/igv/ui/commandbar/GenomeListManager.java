@@ -252,19 +252,22 @@ public class GenomeListManager {
                 try {
                     BufferedReader reader = new BufferedReader(new FileReader(file));
                     JsonParser parser = new JsonParser();
-                    JsonObject json = parser.parse(reader).getAsJsonObject();
-                    JsonElement id = json.get("id");
-                    JsonElement name = json.get("name");
-                    JsonElement fastaURL = json.get("fastaURL");
-                    if (id != null && name != null && fastaURL != null) {
-                        if (cachedGenomes.containsKey(id.getAsString())) {
-                            File prevFile = new File(cachedGenomes.get(id.getAsString()).getPath());
-                            prevFile.delete();
+                    JsonElement rootElement = parser.parse(reader);
+                    if (rootElement.isJsonObject()) {
+                        JsonObject json = rootElement.getAsJsonObject();
+                        JsonElement id = json.get("id");
+                        JsonElement name = json.get("name");
+                        JsonElement fastaURL = json.get("fastaURL");
+                        if (id != null && name != null && fastaURL != null) {
+                            if (cachedGenomes.containsKey(id.getAsString())) {
+                                File prevFile = new File(cachedGenomes.get(id.getAsString()).getPath());
+                                prevFile.delete();
+                            }
+                            GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
+                            cachedGenomes.put(item.getId(), item);
                         }
-                        GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
-                        cachedGenomes.put(item.getId(), item);
                     }
-                } catch (FileNotFoundException e) {
+                } catch (Exception e) {
                     log.error("Error parsing genome json: " + file.getAbsolutePath(), e);
                 }
             }
