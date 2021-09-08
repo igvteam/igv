@@ -670,6 +670,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     protected void loadFeatures(final String chr, final int start, final int end, final String frame) {
 
+        if(source == null) {
+            return;
+        }
+
         try {
 
             int delta = (end - start) / 2;
