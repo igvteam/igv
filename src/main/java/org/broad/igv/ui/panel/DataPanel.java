@@ -180,6 +180,11 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     }
 
     @Override
+    public Dimension getMaximumSize() {
+        return new Dimension(Short.MAX_VALUE, Integer.MAX_VALUE);
+    }
+
+    @Override
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds(x, y, width, height);
         Insets insets = this.getInsets();
