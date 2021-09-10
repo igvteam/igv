@@ -42,6 +42,8 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.session.Session;
+import org.broad.igv.session.SessionWriter;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.RegionScoreType;
@@ -115,6 +117,9 @@ public class CommandExecutor {
             } else if (cmd.equalsIgnoreCase("snapshot")) {
                 String filename = param1;
                 result = createSnapshot(filename, param2);
+            } else if (cmd.equalsIgnoreCase("saveSession")) {
+                String filename = param1;
+                result = saveSession(filename);
             } else if ((cmd.equalsIgnoreCase("loadfile") || cmd.equalsIgnoreCase("load")) && param1 != null) {
                 result = load(param1, param2, param3, param4);
             } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
@@ -1006,6 +1011,26 @@ public class CommandExecutor {
         } catch (Exception e) {
             log.error(e);
             return e.getMessage();
+        }
+    }
+
+    private String saveSession(String filename) {
+        Session currentSession = igv.getSession();
+        if(!filename.endsWith(".xml")) {
+            filename = filename + ".xml";
+        }
+        File targetFile = new File(filename);
+        if(targetFile.getParentFile().exists()) {
+            currentSession.setPath(targetFile.getAbsolutePath());
+            try {
+                (new SessionWriter()).saveSession(currentSession, targetFile);
+                return "OK";
+            } catch (Exception e) {
+                return "Error writingin sesssion: " + e.getMessage();
+            }
+        }
+        else {
+            return "Error: directory not found: " + targetFile.getParentFile().getAbsolutePath();
         }
     }
 
