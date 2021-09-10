@@ -89,6 +89,14 @@ public class Main {
 
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
 
+        final Main.IGVArgs igvArgs = new Main.IGVArgs(args);
+
+        // Do this early
+        if (igvArgs.igvDirectory != null) {
+            setIgvDirectory(igvArgs);
+        }
+        checkDotIgvDirectory();
+
         htsjdk.tribble.util.ParsingUtils.setURLHelperFactory(IGVUrlHelperFactory.getInstance());
 
         try {
@@ -97,13 +105,6 @@ public class Main {
             log.error("Warning: Error fetching oAuth properties: " + e.getMessage());
         }
 
-        final Main.IGVArgs igvArgs = new Main.IGVArgs(args);
-
-        // Do this early
-        if (igvArgs.igvDirectory != null) {
-            setIgvDirectory(igvArgs);
-        }
-        checkDotIgvDirectory();
 
         Runnable runnable = () -> {
             if (Globals.IS_WINDOWS && System.getProperty("os.name").contains("10")) {
