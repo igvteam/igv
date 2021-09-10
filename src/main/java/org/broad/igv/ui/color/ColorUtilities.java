@@ -197,7 +197,7 @@ public class ColorUtilities {
         }
     }
 
-    private static Color stringToColorNoDefault(String string) throws NumberFormatException {
+    public static Color stringToColorNoDefault(String string) throws NumberFormatException {
         // Excel will quote color strings, strip all quotes
         string = string.replace("\"", "").replace("'", "");
 

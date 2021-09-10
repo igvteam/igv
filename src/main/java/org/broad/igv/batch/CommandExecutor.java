@@ -49,6 +49,7 @@ import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -166,6 +167,10 @@ public class CommandExecutor {
                 result = this.setDataRange(param1, param2);
             } else if (cmd.equalsIgnoreCase("setLogScale")) {
                 result = this.setLogScale(param1, param2);
+            } else if (cmd.equalsIgnoreCase("setColor")) {
+                result = this.setColor(param1, param2, false);
+            } else if (cmd.equalsIgnoreCase("setAltColor")) {
+                result = this.setColor(param1, param2, true);
             } else if (cmd.equalsIgnoreCase("maxpanelheight") && param1 != null) {
                 return setMaxPanelHeight(param1);
             } else if (cmd.equalsIgnoreCase("tofront")) {
@@ -299,7 +304,7 @@ public class CommandExecutor {
                 (dataRangeString.trim().equalsIgnoreCase("auto") ||
                         dataRangeString.trim().equalsIgnoreCase("autoscale"));
 
-        if(!autoscale) {
+        if (!autoscale) {
             try {
                 if (tokens.length == 2) {
                     range = new DataRange(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]));
@@ -318,7 +323,7 @@ public class CommandExecutor {
 
         for (Track track : tracks) {
             if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                if(!autoscale) track.setDataRange(range);
+                if (!autoscale) track.setDataRange(range);
                 track.setAutoScale(autoscale);
             }
         }
@@ -350,6 +355,32 @@ public class CommandExecutor {
         }
         igv.repaint(affectedTracks);
         return "OK";
+    }
+
+    private String setColor(String colorString, String trackName, boolean alt) {
+
+        try {
+            Color color = ColorUtilities.stringToColorNoDefault(colorString);
+            if (color == null) {
+                return "Error: unrecognized color value " + colorString;
+            }
+            List<Track> tracks = igv.getAllTracks();
+            List<Track> affectedTracks = new ArrayList<>();
+            for (Track track : tracks) {
+                if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
+                    if (alt) track.setAltColor(color);
+                } else {
+                    track.setColor(color);
+                }
+                affectedTracks.add(track);
+            }
+            igv.repaint(affectedTracks);
+            return "OK";
+        } catch (Exception e) {
+            return "Error setting track color: " + e.getMessage();
+        }
+
+
     }
 
     private String setViewAsPairs(String vAPString, String trackName) {
@@ -687,7 +718,7 @@ public class CommandExecutor {
 
                 if (names != null) {
                     rl.setName(names.get(fi));
-                } else if(isDataURL) {
+                } else if (isDataURL) {
                     rl.setName("Data");
                 }
                 if (indexFiles != null) {
@@ -1016,11 +1047,11 @@ public class CommandExecutor {
 
     private String saveSession(String filename) {
         Session currentSession = igv.getSession();
-        if(!filename.endsWith(".xml")) {
+        if (!filename.endsWith(".xml")) {
             filename = filename + ".xml";
         }
         File targetFile = new File(filename);
-        if(targetFile.getParentFile().exists()) {
+        if (targetFile.getParentFile().exists()) {
             currentSession.setPath(targetFile.getAbsolutePath());
             try {
                 (new SessionWriter()).saveSession(currentSession, targetFile);
@@ -1028,8 +1059,7 @@ public class CommandExecutor {
             } catch (Exception e) {
                 return "Error writingin sesssion: " + e.getMessage();
             }
-        }
-        else {
+        } else {
             return "Error: directory not found: " + targetFile.getParentFile().getAbsolutePath();
         }
     }
