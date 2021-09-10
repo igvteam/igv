@@ -953,32 +953,33 @@ public class TrackLoader {
 
             alignmentTrack.setCoverageTrack(covTrack);
 
-            // Search for precalculated coverage data
-            // Skip for GA4GH & SU2C resources
-            if (!locator.getPath().contains("dataformat=.bam") ||
-                    GoogleUtils.isGoogleCloud(locator.getPath())) {
+            //  Precalculated coverage data (can be null)
+            String covPath = locator.getCoverage();
 
-                String covPath = locator.getCoverage();
-                if (covPath == null) {
-                    boolean bypassFileAutoDiscovery = PreferencesManager.getPreferences().getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY);
-                    String path = locator.getPath();
-                    if (!bypassFileAutoDiscovery && !path.contains("/query.cgi?")) {
-                        covPath = path + ".tdf";
-                    }
-
+            // Search for precalculated coverage data by naming convention.  Bypass for certain cloud resources
+            if (covPath == null || covPath.equals(".")) {
+                String path = locator.getPath();
+                boolean bypassFileAutoDiscovery =
+                        PreferencesManager.getPreferences().getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY) ||
+                                GoogleUtils.isGoogleCloud(locator.getPath()) ||
+                                path.contains("dropbox.com") ||
+                                path.contains("dataformat=.bam") ||
+                                path.contains("/query.cgi?");
+                if (!bypassFileAutoDiscovery) {
+                    covPath = path + ".tdf";
                 }
-                if (covPath != null && !covPath.equals(".")) {
-                    if (FileUtils.resourceExists(covPath)) {
-                        log.debug("Loading TDF for coverage: " + covPath);
-                        try {
-                            TDFReader reader = TDFReader.getReader(covPath);
-                            TDFDataSource ds = new TDFDataSource(reader, 0, dsName + " coverage", genome);
-                            covTrack.setDataSource(ds);
-                        } catch (Exception e) {
-                            log.error("Error loading coverage TDF file", e);
-                        }
-                    }
+            }
 
+            if (covPath != null && !covPath.equals(".")) {
+                if (FileUtils.resourceExists(covPath)) {
+                    log.debug("Loading TDF for coverage: " + covPath);
+                    try {
+                        TDFReader reader = TDFReader.getReader(covPath);
+                        TDFDataSource ds = new TDFDataSource(reader, 0, dsName + " coverage", genome);
+                        covTrack.setDataSource(ds);
+                    } catch (Exception e) {
+                        log.error("Error loading coverage TDF file", e);
+                    }
                 }
             }
 
