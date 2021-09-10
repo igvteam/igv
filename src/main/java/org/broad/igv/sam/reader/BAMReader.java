@@ -33,6 +33,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.igv.sam.SAMAlignment;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.IOException;
@@ -53,12 +54,15 @@ public class BAMReader implements AlignmentReader<SAMAlignment> {
     private boolean indexed;
     private Map<String, Long> sequenceDictionary;
     private SamReaderPool readerPool;
+    private int errorCount = 0;
+    private String filename;
 
     public BAMReader(ResourceLocator locator, boolean requireIndex) throws IOException {
-        this.indexed = requireIndex || locator.isHtsget();
-        readerPool = new SamReaderPool(locator, requireIndex);
 
-        SamReader reader =  readerPool.getReader();
+        indexed = requireIndex || locator.isHtsget();
+        readerPool = new SamReaderPool(locator, requireIndex);
+        filename = locator.getFileName();
+        SamReader reader = readerPool.getReader();
         header = reader.getFileHeader();
         readerPool.freeReader(reader);
     }
@@ -136,6 +140,10 @@ public class BAMReader implements AlignmentReader<SAMAlignment> {
                 SamReader samReader = getSamReader();
                 return new PicardIterator(samReader, sequence, start + 1, end, contained);
             } catch (Exception e) {
+                if (errorCount == 0) {
+                    MessageUtils.showMessage("Error querying alignments for: " + filename + "<br/>Error message: " + e.getMessage());
+                }
+                errorCount++;
                 log.error("Error querying for sequence: " + sequence, e);
                 return new EmptyAlignmentIterator();
             }
