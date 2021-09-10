@@ -566,7 +566,7 @@ public class IGVPreferences {
      */
     public void override(String key, String value) {
         userPreferences.put(key, value);
-        overrideKeys.add(key);
+        overrideKeys.add(key);    // <= order here is important, must be after userPreferences statement
         Map<String, String> updatedPrefs = new HashMap<String, String>();
         updatedPrefs.put(key, value);
         checkForAlignmentChanges(updatedPrefs);
@@ -927,9 +927,11 @@ public class IGVPreferences {
 
     public void print(PrintWriter pw) {
         for (Map.Entry<String, String> entry : userPreferences.entrySet()) {
-            pw.print(entry.getKey());
-            pw.print("=");
-            pw.println(entry.getValue());
+            if(!overrideKeys.contains(entry.getKey())) {
+                pw.print(entry.getKey());
+                pw.print("=");
+                pw.println(entry.getValue());
+            }
         }
     }
 
