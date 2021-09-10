@@ -97,8 +97,8 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
     public int _read(byte[] buffer, int offset, int len) throws IOException {
 
-        String stats = "Offset=" + offset + ",len=" + len + ",buflen=" + buffer.length;
         if (offset < 0 || len < 0 || (offset + len) > buffer.length) {
+            String stats = "Offset=" + offset + ",len=" + len + ",buflen=" + buffer.length;
             throw new IndexOutOfBoundsException(stats);
         }
         if (len == 0) {

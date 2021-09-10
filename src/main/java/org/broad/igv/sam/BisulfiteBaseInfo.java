@@ -280,7 +280,7 @@ public class BisulfiteBaseInfo {
     }
 
     public DisplayStatus getDisplayStatus(int idx) {
-        return displayStatus[idx];
+        return (idx >= displayStatus.length || displayStatus[idx] == null) ? DisplayStatus.NOTHING : displayStatus[idx];
     }
 
 
@@ -300,7 +300,7 @@ public class BisulfiteBaseInfo {
         double offset = 0.0;
         // This gets CpGs on opposite strands to line up. Only do it for meth values though, not snps
 
-        if (getDisplayStatus(idx).equals(DisplayStatus.COLOR)) {
+        if (DisplayStatus.COLOR == getDisplayStatus(idx)) {
             double baseOffset = getBisulfiteSymmetricCytosineShift(myContext);
             offset = offset + ((flipRead ? -1 : 1) * baseOffset);
         }

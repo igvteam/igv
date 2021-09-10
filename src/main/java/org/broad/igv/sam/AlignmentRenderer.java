@@ -828,7 +828,7 @@ public class AlignmentRenderer {
 
                         // if base is modified paint rectangle
                         if (showAllBases || (!bisulfiteMode && misMatch) ||
-                                (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
+                                (bisulfiteMode && (DisplayStatus.NOTHING != bisinfo.getDisplayStatus(idx)))) {
                             char c = (char) blockBases.getByte(idx);
 
                             Color color = null;

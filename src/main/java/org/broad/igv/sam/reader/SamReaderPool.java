@@ -90,6 +90,7 @@ public class SamReaderPool {
         } else {
             URL url = HttpUtils.createURL(locator.getPath());
             if (requireIndex) {
+                // If using an index need a seekable stream
                 resource = SamInputResource.of(IGVSeekableStreamFactory.getInstance().getStreamFor(url));
             } else {
                 resource = SamInputResource.of(new BufferedInputStream(HttpUtils.getInstance().openConnectionStream(url)));
