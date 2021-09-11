@@ -42,6 +42,7 @@ import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.SpliceJunctionTrack;
@@ -922,6 +923,17 @@ public class IGVSessionReader implements SessionReader {
                         if (className.contains("MergedTracks")) {
                             List<DataTrack> memberTracks = processChildTracks(session, element, additionalInformation, rootPath);
                             ((MergedTracks) track).setMemberTracks(memberTracks);
+
+                            NodeList nodeList = element.getElementsByTagName("DataRange");
+                            if (nodeList != null && nodeList.getLength() > 0) {
+                                Element dataRangeElement = (Element) nodeList.item(0);
+                                try {
+                                    DataRange dataRange = new DataRange(dataRangeElement, version);
+                                    ((MergedTracks) track).setDataRange(dataRange);
+                                } catch (Exception e) {
+                                    log.error("Unrecognized DataRange");
+                                }
+                            }
 
                         }
 
