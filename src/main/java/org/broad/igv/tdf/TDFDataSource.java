@@ -439,21 +439,20 @@ public class TDFDataSource implements CoverageDataSource {
                 tileWidth = chromosome.getLength() / ((int) Math.pow(2.0, zoom));
             }
         }
-        if (tileWidth == 0) {
-            return null;
-        }
 
-        int startTile = (startLocation / tileWidth);
-        int endTile = ((endLocation - 1) / tileWidth);
+        if (tileWidth > 0) {
+            int startTile = (startLocation / tileWidth);
+            int endTile = ((endLocation - 1) / tileWidth);
 
-        for (int t = startTile; t <= endTile; t++) {
-            List<LocusScore> cachedScores = getCachedSummaryScores(querySeq, zoom, t, tileWidth);
-            if (cachedScores != null) {
-                for (LocusScore s : cachedScores) {
-                    if (s.getEnd() >= startLocation) {
-                        scores.add(s);
-                    } else if (s.getStart() > endLocation) {
-                        break;
+            for (int t = startTile; t <= endTile; t++) {
+                List<LocusScore> cachedScores = getCachedSummaryScores(querySeq, zoom, t, tileWidth);
+                if (cachedScores != null) {
+                    for (LocusScore s : cachedScores) {
+                        if (s.getEnd() >= startLocation) {
+                            scores.add(s);
+                        } else if (s.getStart() > endLocation) {
+                            break;
+                        }
                     }
                 }
             }
