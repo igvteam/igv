@@ -785,7 +785,7 @@ public class HttpUtils {
                 String[] kv = h.split(":");
                 if (kv.length == 2) {
                     conn.setRequestProperty(kv[0], kv[1]);
-                 }
+                }
             }
         }
 
@@ -971,35 +971,11 @@ public class HttpUtils {
         // We can test byte-range success for hosts we can reach.
         synchronized (byteRangeTestMap) {
             final String host = url.getHost();
-
             if (byteRangeTestMap.containsKey(host)) {
                 return byteRangeTestMap.get(host);
             } else {
-                SeekableStream str = null;
-                try {
-
-                    boolean byteRangeTestSuccess = testByteRange(url);
-
-                    if (byteRangeTestSuccess) {
-                        //log.info("Range-byte request succeeded");
-                    } else {
-                        log.info("Range-byte test failed -- Host: " + host +
-                                " does not support range-byte requests or there is a problem with client network environment.");
-                    }
-
-                    byteRangeTestMap.put(host, byteRangeTestSuccess);
-                    return byteRangeTestSuccess;
-
-
-                } finally {
-                    if (str != null) try {
-                        str.close();
-                    } catch (IOException e) {
-                        log.error("Error closing stream (" + url.toExternalForm() + ")", e);
-                    }
-                }
+                return true;  // Let's be optimistic
             }
-
         }
     }
 

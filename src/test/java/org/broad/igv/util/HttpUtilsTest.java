@@ -69,33 +69,6 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
         }
     }
 
-    /**
-     * Test of the "byte range" test for a Broad URL.  Note if running this test behind proxies that strip
-     * range headers the assertion should be "false".
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testBroadURL() throws Exception {
-        assertTrue(HttpUtils.getInstance().useByteRange(HttpUtils.createURL(broadURLString)));
-    }
-
-
-    /**
-     * Test of the Range test for a non-Broad URL.  Note if running this test behind proxies that strip
-     * range headers the assertion should be false.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testGenericURL() throws Exception {
-        final URL url = HttpUtils.createURL(genericURLString);
-        String acceptsRangesValue = HttpUtils.getInstance().getHeaderField(url, "Accept-Ranges");
-        boolean acceptsRanges = acceptsRangesValue != null && acceptsRangesValue.contains("bytes");
-        assertEquals(acceptsRanges, HttpUtils.getInstance().useByteRange(url));
-    }
-
-
     @Ignore
     @Test
     public void testReadByBlob() throws Exception {
