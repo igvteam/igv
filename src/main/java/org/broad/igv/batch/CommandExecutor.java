@@ -368,11 +368,13 @@ public class CommandExecutor {
             List<Track> affectedTracks = new ArrayList<>();
             for (Track track : tracks) {
                 if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                    if (alt) track.setAltColor(color);
-                } else {
-                    track.setColor(color);
+                    if (alt) {
+                        track.setAltColor(color);
+                    } else {
+                        track.setColor(color);
+                    }
+                    affectedTracks.add(track);
                 }
-                affectedTracks.add(track);
             }
             igv.repaint(affectedTracks);
             return "OK";
