@@ -216,15 +216,7 @@ public class GenomeManager {
 
             setCurrentGenome(newGenome);
             if (IGV.hasInstance()) {
-                FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();   // Can be null
-                if (IGV.hasInstance()) {
-                    IGV.getInstance().setGenomeTracks(geneFeatureTrack);
-                }
-                List<ResourceLocator> resources = newGenome.getAnnotationResources();
-                if (resources != null && IGV.hasInstance()) {
-                    IGV.getInstance().loadResources(resources);
-                    IGV.getInstance().repaint();
-                }
+                loadGenomeAnnotations(newGenome);
             }
 
 
@@ -233,6 +225,18 @@ public class GenomeManager {
 
         } catch (SocketException e) {
             throw new RuntimeException("Server connection error", e);
+        }
+    }
+
+    public void loadGenomeAnnotations(Genome newGenome) {
+        FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();   // Can be null
+        if (IGV.hasInstance()) {
+            IGV.getInstance().setGenomeTracks(geneFeatureTrack);
+        }
+        List<ResourceLocator> resources = newGenome.getAnnotationResources();
+        if (resources != null && IGV.hasInstance()) {
+            IGV.getInstance().loadResources(resources);
+            IGV.getInstance().repaint();
         }
     }
 
