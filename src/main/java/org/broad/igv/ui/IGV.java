@@ -941,7 +941,7 @@ public class IGV implements IGVEventObserver {
         resetSession(null);
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         if (currentGenome != null) {
-            setGenomeTracks(currentGenome.getGeneTrack());
+            GenomeManager.getInstance().loadGenomeAnnotations(currentGenome);
         }
         this.menuBar.disableReloadSession();
         goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
