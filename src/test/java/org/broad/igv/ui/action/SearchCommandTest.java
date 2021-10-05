@@ -205,7 +205,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
             SearchCommand.SearchResult result = results.get(ii);
             try {
                 assertEquals(types[ii], result.type);
-                assertEquals(tokens[ii].toLowerCase(), result.getLocus().toLowerCase());
+                assertEquals(tokens[ii].toLowerCase(), result.getShortName().toLowerCase());
             } catch (AssertionFailedError e) {
                 System.out.println(searchStr + " :" + result.getMessage());
                 throw e;

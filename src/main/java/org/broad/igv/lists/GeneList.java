@@ -42,7 +42,6 @@ public class GeneList {
     private String description;
     private List<String> loci;
     private boolean showName = true;
-    private static Comparator<String> POSITION_COMPARATOR;
 
     public GeneList(String name, String description, String group, List<String> loci) {
         init(name, description, group, loci);

@@ -74,7 +74,7 @@ public class Session implements IGVEventObserver {
     private int version;
     private String path;
     private String groupTracksBy;
-    public  boolean expandInsertions = false; //false;
+    public boolean expandInsertions = false; //false;
     private int nextAutoscaleGroup;
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
     private TrackFilter filter;
@@ -172,6 +172,7 @@ public class Session implements IGVEventObserver {
 
     /**
      * Set a preference value for this session only
+     *
      * @param key
      * @param value
      */
@@ -406,26 +407,6 @@ public class Session implements IGVEventObserver {
 
         if (frameReset) {
             FrameManager.resetFrames(currentGeneList);
-        }
-    }
-
-    public GeneListMode getGeneListMode() {
-        return geneListMode;
-    }
-
-    public void setGeneListMode(GeneListMode geneListMode) {
-        this.geneListMode = geneListMode;
-    }
-
-    /**
-     * Add a gene to the current list.  This is a transient change (not saved to disk)
-     *
-     * @param gene
-     */
-    public void addGene(String gene) {
-        if (getCurrentGeneList() != null) {
-            getCurrentGeneList().add(gene);
-            setCurrentGeneList(getCurrentGeneList());
         }
     }
 
