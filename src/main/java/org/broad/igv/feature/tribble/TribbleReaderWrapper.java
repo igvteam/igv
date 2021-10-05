@@ -51,7 +51,7 @@ public class TribbleReaderWrapper  implements IGVFeatureReader {
     }
 
     @Override
-    public Iterator<Feature> query(String chr, int start, int end) throws IOException {
+    public synchronized Iterator<Feature> query(String chr, int start, int end) throws IOException {
 
         // Tribble iterators must be closed, so we need to copy the features and insure closure before exiting.
         CloseableTribbleIterator<Feature> iter = null;
