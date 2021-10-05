@@ -537,7 +537,6 @@ public class SearchCommand {
         private String locus;
         private String message;
         private NamedFeature feature;
-        private String coords;
 
         public SearchResult() {
             this(ResultType.ERROR, null, -1, -1);
@@ -548,14 +547,13 @@ public class SearchCommand {
             this.chr = chr;
             this.start = start;
             this.end = end;
-            this.coords = Locus.getFormattedLocusString(chr, start, end);
-            this.locus = this.coords;
+            this.locus = Locus.getFormattedLocusString(chr, start, end);
         }
 
         public SearchResult(NamedFeature feature) {
             this(ResultType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd());
             this.feature = feature;
-            this.locus = this.feature.getName();
+            this.locus = Locus.getFormattedLocusString(chr, start, end);
         }
 
         void setMessage(String message) {
@@ -564,16 +562,6 @@ public class SearchCommand {
 
         public String getMessage() {
             return this.message;
-        }
-
-        /**
-         * Always a coordinate string.
-         * eg chr1:1-100
-         *
-         * @return
-         */
-        private String getCoordinates() {
-            return this.coords;
         }
 
         /**
@@ -589,7 +577,7 @@ public class SearchCommand {
             if (this.type == ResultType.FEATURE) {
                 return this.feature.getName();
             } else {
-                return this.getLocus();
+                return this.locus;
             }
         }
 
@@ -604,9 +592,9 @@ public class SearchCommand {
          */
         String getLongName() {
             if (this.type == ResultType.FEATURE) {
-                return feature.getName() + " (" + this.getCoordinates() + ")";
+                return feature.getName() + " (" + this.locus + ")";
             } else {
-                return this.getLocus();
+                return this.locus;
             }
         }
 
