@@ -503,6 +503,7 @@ public class TrackPanel extends IGVPanel {
         g.translate(mainPanel.getNamePanelX(), 0);
 
         Rectangle nameRect = new Rectangle(children[0].getBounds());
+        nameRect.y = rect.y;
         nameRect.height = h;
         if (nameRect.width > 0) {
             Graphics2D nameGraphics = (Graphics2D) g.create();
@@ -513,7 +514,7 @@ public class TrackPanel extends IGVPanel {
 
         int dx = mainPanel.getAttributePanelX() - mainPanel.getNamePanelX();
         g.translate(dx, 0);
-        Rectangle attRect = new Rectangle(0, 0, children[1].getWidth(), h);
+        Rectangle attRect = new Rectangle(0, rect.y, children[1].getWidth(), h);
         if (attRect.width > 0) {
             Graphics2D attGraphics = (Graphics2D) g.create();
             attGraphics.setClip(attRect);
@@ -523,7 +524,7 @@ public class TrackPanel extends IGVPanel {
 
         dx = mainPanel.getDataPanelX() - mainPanel.getAttributePanelX();
         g.translate(dx, 0);
-        Rectangle dataRect = new Rectangle(0, 0, mainPanel.getDataPanelWidth(), h);
+        Rectangle dataRect = new Rectangle(0, rect.y, mainPanel.getDataPanelWidth(), h);
         Graphics2D dataGraphics = (Graphics2D) g.create();
         dataGraphics.setClip(dataRect);
         ((Paintable) children[2]).paintOffscreen(dataGraphics, dataRect, batch);

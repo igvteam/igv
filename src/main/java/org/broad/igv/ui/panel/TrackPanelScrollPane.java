@@ -127,6 +127,9 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
 
     @Override
     public void paintOffscreen(Graphics2D g, Rectangle tspRect, boolean batch) {
+        int yOffset = getViewport().getViewPosition().y;
+        tspRect.y = yOffset;
+        g.translate(0, -yOffset);
         trackPanel.paintOffscreen(g, tspRect, batch);
     }
 

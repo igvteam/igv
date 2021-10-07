@@ -138,6 +138,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
             if (c instanceof DataPanel) {
                 Graphics2D g2d = (Graphics2D) g.create();
                 Rectangle clipRect = new Rectangle(c.getBounds());
+                clipRect.y = rect.y;
                 clipRect.height = rect.height;
                 g2d.setClip(clipRect);
                 g2d.translate(c.getX(), 0);
