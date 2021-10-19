@@ -23,7 +23,7 @@ fi
 
 # Check if there is a user-specified Java arguments file
 if [ -e "$HOME/.igv/java_arguments" ]; then
-    java -showversion --module-path="${prefix}/lib" -Xmx4g \
+    java -showversion --module-path="${prefix}/lib" -Xmx8g \
         @"${prefix}/igv.args" \
         -Xdock:name="IGV" \
         -Xdock:icon="${prefix}/IGV_64.png" \
@@ -32,7 +32,7 @@ if [ -e "$HOME/.igv/java_arguments" ]; then
         @"$HOME/.igv/java_arguments" \
         --module=org.igv/org.broad.igv.ui.Main "$@"
 else
-    java -showversion --module-path="${prefix}/lib" -Xmx4g \
+    java -showversion --module-path="${prefix}/lib" -Xmx8g \
         @"${prefix}/igv.args" \
         -Xdock:name="IGV" \
         -Xdock:icon="${prefix}/IGV_64.png" \

@@ -5,11 +5,11 @@
 #launcher be a binary executable rather than a script.  You can obtain
 #'sch' through MacPorts or Homebrew.  Then, the steps to compile look
 #like this:
-#  $ export CFLAGS=-macosx-minimum-version=10.10   # Pass-thru to 'cc' for backward compatibility.
+#  $ export CFLAGS=-mmacosx-version-min=10.10   # Pass-thru to 'cc' for backward compatibility.
 #  $ shc -r -f IGV.sh  # The '-r' means "relaxed security" and is more portable.
 #  $ mv IGV.sh.x IGV   # Rename the executable to the expected name.
 
-#-Xmx4g indicates 4 gb of memory.
+#-Xmx8g indicates 8 gb of memory.
 #To adjust this (or other Java options), edit the "$HOME/.igv/java_arguments" 
 #file.  For more info, see the README at 
 #https://raw.githubusercontent.com/igvteam/igv/master/scripts/readme.txt 
@@ -31,7 +31,7 @@ if [ -e "$HOME/.igv/java_arguments" ]; then
     EXTRA_ARGS_FILE=@"$HOME/.igv/java_arguments"
 fi
 
-exec java -showversion --module-path="${prefix}/../Java/lib" -Xmx4g \
+exec java -showversion --module-path="${prefix}/../Java/lib" -Xmx8g \
     @"${prefix}/../Java/igv.args" \
     -Xdock:name="IGV" \
     -Xdock:icon="${prefix}/../Resources/IGV_64.png" \
