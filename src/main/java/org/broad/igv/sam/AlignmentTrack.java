@@ -37,6 +37,7 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
@@ -274,7 +275,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public void init() {
-        if(experimentType == null) {
+        if (experimentType == null) {
             ExperimentType type = dataManager.inferType();
             if (type != null) {
                 setExperimentType(type);
@@ -1385,6 +1386,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             addQuickConsensusModeItem();
 
+            // Paired end items
             addSeparator();
             addViewAsPairsMenuItem();
 
@@ -1394,6 +1396,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
             addInsertSizeMenuItem();
+            if (CircularViewUtilities.ping()) {
+                addCircViewItem(e);
+            }
 
             addSeparator();
             TrackMenuUtils.addDisplayModeItems(tracks, this);
@@ -1431,6 +1436,27 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         }
 
+        private void addCircViewItem(TrackClickEvent e) {
+
+            JMenuItem item = new JMenuItem("Send abberant pairs to JBrowse");
+            add(item);
+            item.addActionListener(ae -> {
+                ReferenceFrame frame = e.getFrame();
+                AlignmentInterval interval = AlignmentTrack.this.getDataManager().getLoadedInterval(frame);
+                Iterator<Alignment> iter = interval.getAlignmentIterator();
+                Range r = frame.getCurrentRange();
+                List<Alignment> inView = new ArrayList<>();
+                while (iter.hasNext()) {
+                    Alignment a = iter.next();
+                    if (a.getEnd() > r.getStart() && a.getStart() < r.getEnd()
+                            && a.isPaired() && a.getMate().isMapped() &&
+                            (!a.getMate().getChr().equals(a.getChr()) || Math.abs(a.getInferredInsertSize()) > 1000000)) {
+                        inView.add(a);
+                    }
+                }
+                CircularViewUtilities.sendAlignmentsToJBrowse(inView);
+            });
+        }
 
         private void addHaplotype(TrackClickEvent e) {
 

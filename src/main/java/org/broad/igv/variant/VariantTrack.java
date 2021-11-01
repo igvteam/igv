@@ -32,7 +32,6 @@ import htsjdk.tribble.Feature;
 import htsjdk.variant.variantcontext.GenotypeType;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
@@ -968,14 +967,14 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     protected Variant getFeatureClosest(double position, int y, String frameName, double maxDistance) {
 
-        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frameName);
+        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frameName);
 
         if (packedFeatures == null) {
             return null;
         }
 
         Feature feature = null;
-        List<IGVFeature> features;
+        List<Feature> features;
 
         //We search only the specified row if y is a meaningful value.
         //Otherwise we search everything
@@ -1257,7 +1256,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (selectedVariant != null) {
             repaint();
         }
-        return new VariantMenu(this, selectedVariant);
+        return new VariantMenu(this, selectedVariant, te);
     }
 
 

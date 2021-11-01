@@ -25,9 +25,12 @@
 
 package org.broad.igv.variant;
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
+import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.GroupTracksMenuAction;
@@ -55,7 +58,7 @@ public class VariantMenu extends IGVPopupMenu {
     static boolean qualitySortingDirection;
 
 
-    public VariantMenu(final VariantTrack variantTrack, final Variant variant) {
+    public VariantMenu(final VariantTrack variantTrack, final Variant variant, TrackClickEvent e) {
         super();
         this.track = variantTrack;
 
@@ -130,6 +133,17 @@ public class VariantMenu extends IGVPopupMenu {
         if (track.hasAlignmentFiles()) {
             addSeparator();
             add(getLoadBamsItem());
+        }
+
+        if (CircularViewUtilities.ping()) {
+            JMenuItem circItem= new JMenuItem("Send SV variants to JBrowse");
+
+            circItem.addActionListener(e1 -> {
+                List<Feature> visibleFeatures = track.getVisibleFeatures(e.getFrame());
+                CircularViewUtilities.sendVariantsToJBrowse(visibleFeatures);
+            });
+            
+            add(circItem);
         }
 
     }

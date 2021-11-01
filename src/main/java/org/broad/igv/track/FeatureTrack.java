@@ -33,6 +33,7 @@ import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
@@ -56,6 +57,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Track which displays features, typically showing regions of the genome
@@ -89,7 +91,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     /**
      * Map of reference frame name -> packed features
      */
-    protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<>());
+    protected Map<String, PackedFeatures<Feature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<>());
 
     protected Renderer renderer;
 
@@ -517,20 +519,20 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     public List<Feature> getFeaturesAtPositionInFeatureRow(double position, int featureRow, ReferenceFrame frame) {
 
-        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
+        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frame.getName());
 
         if (packedFeatures == null) {
             return null;
         }
 
-        List<PackedFeatures<IGVFeature>.FeatureRow> rows = packedFeatures.getRows();
+        List<PackedFeatures<Feature>.FeatureRow> rows = packedFeatures.getRows();
         if (featureRow < 0 || featureRow >= rows.size()) {
             return null;
         }
 
         //If features are stacked we look at only the row.
         //If they are collapsed on top of each other, we get all features in all rows
-        List<IGVFeature> possFeatures;
+        List<Feature> possFeatures;
         if (getDisplayMode() == DisplayMode.COLLAPSED) {
             possFeatures = packedFeatures.getFeatures();
         } else {
@@ -670,7 +672,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     protected void loadFeatures(final String chr, final int start, final int end, final String frame) {
 
-        if(source == null) {
+        if (source == null) {
             return;
         }
 
@@ -920,7 +922,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
-
     public void setVisibilityWindow(int windowSize) {
         super.setVisibilityWindow(windowSize);
         packedFeaturesMap.clear();
@@ -978,8 +979,18 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @return
      */
     public List<Feature> getVisibleFeatures(ReferenceFrame frame) {
-        PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
-        return (packedFeatures == null) ? Collections.emptyList() : packedFeatures.getFeatures();
+        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frame.getName());
+        if (packedFeatures == null) {
+            return Collections.emptyList();
+        } else {
+            Range currentRange = frame.getCurrentRange();
+            return packedFeatures.getFeatures()
+                    .stream().filter(igvFeature ->
+                            igvFeature.getEnd() >= currentRange.getStart() &&
+                                    igvFeature.getStart() <= currentRange.getEnd() &&
+                                    igvFeature.getChr().equals(currentRange.getChr()))
+                    .collect(Collectors.toList());
+        }
     }
 
 

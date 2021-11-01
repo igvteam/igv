@@ -38,9 +38,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.variant.VariantTrack;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

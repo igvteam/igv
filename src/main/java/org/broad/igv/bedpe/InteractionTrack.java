@@ -1,8 +1,10 @@
 package org.broad.igv.bedpe;
 
+import com.google.gson.Gson;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AbstractTrack;
@@ -21,11 +23,20 @@ import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.List;
 
 import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
 /**
  * Created by jrobinso on 6/29/18.
@@ -39,6 +50,9 @@ public class InteractionTrack extends AbstractTrack {
     private JCheckBoxMenuItem autoscaleCB;
     private JMenuItem maxScoreItem;
     private List<BedPE> wgFeatures;
+
+    // TODO -- for jbrowse experiment
+    private List<BedPEFeature> allFeatures;
 
 
     enum Direction {UP, DOWN}
@@ -128,6 +142,8 @@ public class InteractionTrack extends AbstractTrack {
 
         wgFeatures = createWGFeatures(featureList, genome);
 
+        allFeatures = featureList;
+
 
     }
 
@@ -169,7 +185,7 @@ public class InteractionTrack extends AbstractTrack {
 
     private List<BedPE> getFeaturesOverlapping(String chr, double start, double end) {
 
-        if(chr.equals(Globals.CHR_ALL)) {
+        if (chr.equals(Globals.CHR_ALL)) {
             return wgFeatures;
         } else {
             return featureCache.getFeatures(chr, (int) start, (int) end);
@@ -191,7 +207,7 @@ public class InteractionTrack extends AbstractTrack {
             if (features != null && features.size() > 0) {
 
                 if (graphType == GraphType.PROPORTIONAL_ARC) {
-                    if(autoscale || maxScore <= 0) {
+                    if (autoscale || maxScore <= 0) {
                         maxScore = autoscale(features);
                     }
                     drawScale(context, trackRectangle);
@@ -212,11 +228,11 @@ public class InteractionTrack extends AbstractTrack {
 
     /**
      * Draw scale in top left of rectangle
-
+     *
      * @param context
      * @param arect
      */
-    public  void drawScale(RenderContext context, Rectangle arect){
+    public void drawScale(RenderContext context, Rectangle arect) {
         if (context.multiframe == false) {
             Graphics2D g = context.getGraphic2DForColor(Color.black);
             Font font = g.getFont();
@@ -364,6 +380,16 @@ public class InteractionTrack extends AbstractTrack {
 //            InteractionTrack.this.hideLargeFeatures = cbItem.isSelected();
 //            IGV.getInstance().repaint();
 //        });
+
+        // Experimental JBrowse.
+        if(CircularViewUtilities.ping()) {
+            menu.addSeparator();
+            item = new JMenuItem("Send to JBrowse Circ View");
+            item.addActionListener(e -> {
+                CircularViewUtilities.sendBedpeToJBrowse(this.allFeatures);
+            });
+            menu.add(item);
+        }
 //
 
         return menu;
@@ -446,7 +472,90 @@ public class InteractionTrack extends AbstractTrack {
         if (element.hasAttribute("maxScore")) {
             this.maxScore = Double.parseDouble(element.getAttribute("maxScore"));
         }
+    }
+
+    // Experimental jbrowse stuff
+    private void sendToJBrowse(List<BedPEFeature> features) {
+
+        String color = "rgba(0, 0, 255, 0.1)";
+
+        Coord [] chords = new Coord[features.size()];
+        int index = 0;
+        for (BedPEFeature f : features) {
+            chords[index++] = new Coord(f);
+        }
+
+        Gson gson = new Gson();
+        //System.out.println(gson.toJson(chords));
+        SocketSender.send(gson.toJson(chords));
 
     }
 
+
 }
+
+class Mate {
+    String refName;
+    int start;
+    int end;
+    public Mate(String refName, int start, int end) {
+        this.refName = refName;
+        this.start = start;
+        this.end = end;
+    }
+}
+
+class Coord {
+    String uniqueId;
+    String color;
+    String refName;
+    int start;
+    int end;
+    Mate mate;
+    public Coord(BedPEFeature f) {
+        this.uniqueId = f.chr1 + ":" + f.start1 + "-" + f.end1 + "_" + f.chr2 + ":" + f.start2 + "-" + f.end2;
+        this.refName =  f.chr1.startsWith("chr") ? f.chr1.substring(3) : f.chr1;
+        this. start = f.start1;
+        this. end = f.end1;
+        this.mate = new Mate(f.chr2.startsWith("chr") ? f.chr2.substring(3) : f.chr2, f.start2, f.end2);
+        this.color = "rgba(0, 0, 255, 0.1)";
+    }
+}
+
+class SocketSender {
+
+     static void send(String json) {
+        Socket socket = null;
+        PrintWriter out = null;
+        BufferedReader in = null;
+        try {
+            socket = new Socket("127.0.0.1", 1234);
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            out.println(json);
+            out.flush();
+
+            String response = in.readLine();
+            System.out.println(response);
+
+
+        } catch (UnknownHostException e) {
+            System.err.println("Unknown host exception: " + e.getMessage());
+            System.exit(1);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Couldn't get I/O for " + "the connection to IGV");
+            System.exit(1);
+        } finally {
+            try {
+                in.close();
+                out.close();
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
