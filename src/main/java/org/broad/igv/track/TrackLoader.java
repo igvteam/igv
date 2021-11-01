@@ -153,7 +153,7 @@ public class TrackLoader {
                 loadSegFile(locator, newTracks, genome);
             } else if (format.equals("gistic")) {
                 loadGisticFile(locator, newTracks);
-            } else if (format.contains(".tabblastn") || format.equals("orthologs")) {
+            } else if (format.contains("tabblastn") || format.equals("orthologs")) {
                 loadBlastMapping(locator, newTracks);
             } else if (isAlignmentTrack(format) ||
                     (path.startsWith("http") && path.contains("/query.cgi?"))) {

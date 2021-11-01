@@ -53,8 +53,8 @@ public class GWASParser {
     private GWASColumns columns;
 
     public static boolean isGWASFile(String typeString) {
-        return typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
-                typeString.endsWith(".qassoc") || typeString.endsWith(".gwas");
+        return typeString.endsWith("logistic") || typeString.endsWith("linear") || typeString.endsWith("assoc") ||
+                typeString.endsWith("qassoc") || typeString.endsWith("gwas");
     }
 
     public GWASParser(ResourceLocator locator, Genome genome) {
