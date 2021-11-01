@@ -31,10 +31,12 @@
 package org.broad.igv.data;
 
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -60,7 +62,9 @@ public interface DataSource {
 
     public WindowFunction getWindowFunction();
 
-    public Collection<WindowFunction> getAvailableWindowFunctions();
+    public default Collection<WindowFunction> getAvailableWindowFunctions() {
+        return Collections.EMPTY_LIST;
+    }
 
     default boolean isIndexable() {
         return true;
