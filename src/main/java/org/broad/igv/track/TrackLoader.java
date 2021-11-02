@@ -31,7 +31,6 @@ import htsjdk.variant.vcf.VCFHeader;
 import org.apache.log4j.Logger;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
-import org.broad.igv.bigwig.D4ServerSource;
 import org.broad.igv.blast.BlastMapping;
 import org.broad.igv.blast.BlastParser;
 import org.broad.igv.data.*;
@@ -809,18 +808,6 @@ public class TrackLoader {
             trackNumber++;
         }
 
-
-    }
-
-    public void loadD4File(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-
-        String trackName = locator.getTrackName();
-        String trackId = locator.getPath();
-        DataSource d4Source = new D4ServerSource(locator.getPath(), genome);
-        DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, d4Source);
-        track.setTrackType(TrackType.OTHER);
-        track.setAutoScale(true);
-        newTracks.add(track);
 
     }
 
