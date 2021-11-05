@@ -171,57 +171,56 @@ public class CommandListener implements Runnable {
                 String cmd = inputLine;
                 log.info(cmd);
 
-                String result = null;
-                String command = null;
-                Map<String, String> params = null;
+                if (cmd.startsWith("HEAD") || cmd.startsWith("GET")) {
 
-                String[] tokens = inputLine.split(" ");
-                if (tokens.length < 2) {
-                    result = "ERROR unexpected command line: " + inputLine;
-                } else {
-                    String[] parts = tokens[1].split("\\?");
-                    command = parts[0];
-                    params = parts.length < 2 ? new HashMap() : parseParameters(parts[1]);
-                }
-                // Consume the remainder of the request, if any.   This is important to free the connection.
-                Map<String, String> headers = new HashMap<>();
-                String nextLine = in.readLine();
-                while (nextLine != null && nextLine.length() > 0) {
-                    nextLine = in.readLine();
-                    String[] headerTokens = Globals.colonPattern.split(nextLine, 2);
-                    if (headerTokens.length == 2) {
-                        headers.put(headerTokens[0].trim(), headerTokens[1].trim());
+                    String result = null;
+                    String command = null;
+                    Map<String, String> params = null;
+
+                    String[] tokens = inputLine.split(" ");
+                    if (tokens.length < 2) {
+                        result = "ERROR unexpected command line: " + inputLine;
+                    } else {
+                        String[] parts = tokens[1].split("\\?");
+                        command = parts[0];
+                        params = parts.length < 2 ? new HashMap() : parseParameters(parts[1]);
                     }
-                }
-
-
-                if (cmd.startsWith("HEAD")) {
-
-                    sendHTTPResponse(out, result, "text/html", "HEAD");
-
-                } else if (cmd.startsWith("GET")) {
-
-                    if (command != null) {
-
-                        // Detect google oauth callback
-                        if (command.equals("/oauthCallback")) {
-                            if (params.containsKey("code")) {
-                                OAuthUtils.getInstance().setAuthorizationCode(params);
-                            } else if (params.containsKey("token")) {
-                                OAuthUtils.getInstance().setAccessToken(params);
-                            }
-                            result = "OK";
-                        } else {
-                            // Process the request.
-                            result = processGet(command, params, cmdExe);
+                    // Consume the remainder of the request, if any.   This is important to free the connection.
+                    Map<String, String> headers = new HashMap<>();
+                    String nextLine = in.readLine();
+                    while (nextLine != null && nextLine.length() > 0) {
+                        nextLine = in.readLine();
+                        String[] headerTokens = Globals.colonPattern.split(nextLine, 2);
+                        if (headerTokens.length == 2) {
+                            headers.put(headerTokens[0].trim(), headerTokens[1].trim());
                         }
                     }
+                    
+                    if (cmd.startsWith("HEAD")) {
+                        sendHTTPResponse(out, result, "text/html", "HEAD");
+                    } else {
 
-                    // Send no response if result is "OK".
-                    if ("OK".equals(result)) result = null;
+                        if (command != null) {
 
-                    sendTextResponse(out, result);
+                            // Detect google oauth callback
+                            if (command.equals("/oauthCallback")) {
+                                if (params.containsKey("code")) {
+                                    OAuthUtils.getInstance().setAuthorizationCode(params);
+                                } else if (params.containsKey("token")) {
+                                    OAuthUtils.getInstance().setAccessToken(params);
+                                }
+                                result = "OK";
+                            } else {
+                                // Process the request.
+                                result = processGet(command, params, cmdExe);
+                            }
+                        }
 
+                        // Send no response if result is "OK".
+                        if ("OK".equals(result)) result = null;
+
+                        sendTextResponse(out, result);
+                    }
                     // http sockets are used for one request only => return
                     return;
 
@@ -300,7 +299,7 @@ public class CommandListener implements Runnable {
             out.print(CONNECTION_CLOSE);
             out.print(CRLF);
 
-            if (!method.equals("HEAD") && result != null) {
+            if (!method.equals("HEAD")) {
                 out.print(CRLF);
                 out.print(result);
                 out.print(CRLF);
