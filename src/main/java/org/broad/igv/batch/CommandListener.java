@@ -171,7 +171,9 @@ public class CommandListener implements Runnable {
                 String cmd = inputLine;
                 log.info(cmd);
 
-                if (cmd.startsWith("HEAD") || cmd.startsWith("GET")) {
+                if (cmd.startsWith("OPTIONS")) {
+                    sendHTTPOptionsResponse(out);
+                } else if (cmd.startsWith("HEAD") || cmd.startsWith("GET")) {
 
                     String result = null;
                     String command = null;
@@ -195,7 +197,7 @@ public class CommandListener implements Runnable {
                             headers.put(headerTokens[0].trim(), headerTokens[1].trim());
                         }
                     }
-                    
+
                     if (cmd.startsWith("HEAD")) {
                         sendHTTPResponse(out, result, "text/html", "HEAD");
                     } else {
@@ -307,6 +309,19 @@ public class CommandListener implements Runnable {
         }
         out.close();
     }
+
+    private void sendHTTPOptionsResponse(PrintWriter out) {
+
+        out.print(HTTP_NO_RESPONSE);
+        out.print(CRLF);
+        out.print(ACCESS_CONTROL_ALLOW_ORIGIN);
+        out.print(CRLF);
+        out.println("Access-Control-Allow-Methods: HEAD, GET, OPTIONS");
+        out.print(CRLF);
+
+        out.close();
+    }
+
 
     /**
      * Process an http get request.
