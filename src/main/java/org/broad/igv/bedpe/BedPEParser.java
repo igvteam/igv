@@ -153,7 +153,7 @@ public class BedPEParser {
                         feature.type = attributes.get("TYPE");
                     }
 
-                    if (colorColumn > 0) {
+                    if (colorColumn > 0 && tokens.length > colorColumn) {
                         String colorString = tokens[colorColumn];
                         Color c = colorCache.get(colorString);
                         if (c == null) {
@@ -163,7 +163,7 @@ public class BedPEParser {
                         feature.color = c;
                     }
 
-                    if (thicknessColumn > 0) {
+                    if (thicknessColumn > 0 && tokens.length > thicknessColumn) {
                         feature.thickness = Integer.parseInt(tokens[thicknessColumn]);
                     }
 
