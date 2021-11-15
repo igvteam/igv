@@ -7,6 +7,7 @@ import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.VariantRenderer;
+import org.broad.igv.variant.vcf.MateVariant;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -54,7 +55,7 @@ public class CircularViewUtilities {
         int index = 0;
         for (Feature f : variants) {
             if (f instanceof Variant) {
-                Variant v = (Variant) f;
+                Variant v = f instanceof MateVariant ? ((MateVariant) f).mate :  (Variant) f;
                 Map<String, Object> attrs = v.getAttributes();
                 if (attrs.containsKey("CHR2") && attrs.containsKey("END")) {
                     chords[index++] = new Coord(v);
