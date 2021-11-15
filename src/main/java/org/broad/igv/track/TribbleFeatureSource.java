@@ -42,6 +42,8 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.CollUtils;
+import org.broad.igv.variant.Variant;
+import org.broad.igv.variant.vcf.MateVariant;
 
 import java.io.File;
 import java.io.IOException;
@@ -346,6 +348,22 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     }
                     featureList.add(f);
                     if (f instanceof NamedFeature) FeatureDB.addFeature((NamedFeature) f, genome);
+
+                    if(this.isVCF && f instanceof Variant) {
+                        Variant v = (Variant)f;
+                        String chr2 = v.getAttributeAsString("CHR2");
+                        String pos2 = v.getAttributeAsString("END");
+                        if(chr2 != null && pos2 != null) {
+                            String mateChr  = genome == null ? chr2 : genome.getCanonicalChrName(chr2);
+                            MateVariant mate = new MateVariant(mateChr, Integer.parseInt(pos2), v);
+                            featureList = featureMap.get(mateChr);
+                            if (featureList == null) {
+                                featureList = new ArrayList();
+                                featureMap.put(mateChr, featureList);
+                            }
+                            featureList.add(mate);
+                        }
+                    }
                 }
             } finally {
                 if (iter instanceof CloseableTribbleIterator) {
