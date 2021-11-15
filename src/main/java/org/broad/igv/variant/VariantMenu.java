@@ -28,6 +28,7 @@ package org.broad.igv.variant;
 import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.jbrowse.CircularViewUtilities;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
@@ -140,7 +141,7 @@ public class VariantMenu extends IGVPopupMenu {
 
             circItem.addActionListener(e1 -> {
                 List<Feature> visibleFeatures = track.getVisibleFeatures(e.getFrame());
-                CircularViewUtilities.sendVariantsToJBrowse(visibleFeatures);
+                CircularViewUtilities.sendVariantsToJBrowse(visibleFeatures, track.getName(), track.getColor());
             });
             
             add(circItem);

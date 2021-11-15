@@ -1454,7 +1454,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                         inView.add(a);
                     }
                 }
-                CircularViewUtilities.sendAlignmentsToJBrowse(inView);
+                CircularViewUtilities.sendAlignmentsToJBrowse(inView, AlignmentTrack.this.getName(), AlignmentTrack.this.getColor());
             });
         }
 

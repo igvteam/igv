@@ -7,6 +7,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.TrackClickEvent;
@@ -386,7 +387,7 @@ public class InteractionTrack extends AbstractTrack {
             menu.addSeparator();
             item = new JMenuItem("Send to JBrowse Circ View");
             item.addActionListener(e -> {
-                CircularViewUtilities.sendBedpeToJBrowse(this.allFeatures);
+                CircularViewUtilities.sendBedpeToJBrowse(this.allFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
             });
             menu.add(item);
         }

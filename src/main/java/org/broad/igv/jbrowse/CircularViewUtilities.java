@@ -8,6 +8,7 @@ import org.broad.igv.sam.ReadMate;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.VariantRenderer;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,26 +29,26 @@ public class CircularViewUtilities {
         }
     }
 
-    public static void sendBedpeToJBrowse(List<BedPEFeature> features) {
+    public static void sendBedpeToJBrowse(List<BedPEFeature> features, String trackName, Color color) {
         Coord[] chords = new Coord[features.size()];
         int index = 0;
         for (BedPEFeature f : features) {
             chords[index++] = new Coord(f);
         }
-        sendChordsToJBrowse(chords);
+        sendChordsToJBrowse(chords, trackName, color, "0.5");
     }
 
-    public static void sendAlignmentsToJBrowse(List<Alignment> alignments) {
+    public static void sendAlignmentsToJBrowse(List<Alignment> alignments, String trackName, Color color) {
 
         Coord[] chords = new Coord[alignments.size()];
         int index = 0;
         for (Alignment a : alignments) {
             chords[index++] = new Coord(a);
         }
-        sendChordsToJBrowse(chords);
+        sendChordsToJBrowse(chords, trackName, color, "0.02");
     }
 
-    public static void sendVariantsToJBrowse(List<Feature> variants) {
+    public static void sendVariantsToJBrowse(List<Feature> variants, String trackName, Color color) {
 
         Coord[] chords = new Coord[variants.size()];
         int index = 0;
@@ -60,12 +61,16 @@ public class CircularViewUtilities {
                 }
             }
         }
-        sendChordsToJBrowse(chords);
+        sendChordsToJBrowse(chords, trackName, color, "0.5");
     }
 
-    public static void sendChordsToJBrowse(Coord[] chords) {
+    public static void sendChordsToJBrowse(Coord[] chords, String trackName, Color color, String alpha) {
+
+        String colorString = "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + alpha + ")";
+        CircViewTrack t = new CircViewTrack(chords, trackName, colorString);
+        CircViewMessage message = new CircViewMessage("addChords", t);
+
         Gson gson = new Gson();
-        CircViewMessage message = new CircViewMessage("addChords", chords);
         String json = gson.toJson(message);
         SocketSender.send(json);
     }
@@ -75,10 +80,21 @@ public class CircularViewUtilities {
 class CircViewMessage {
     String message;
     Object data;
-
     public CircViewMessage(String message, Object data) {
         this.message = message;
         this.data = data;
+    }
+}
+
+class CircViewTrack {
+    String name;
+    String color;
+    Coord [] chords;
+
+    public CircViewTrack(Coord[] chords, String name, String color) {
+        this.name = name;
+        this.color = color;
+        this.chords = chords;
     }
 }
 
