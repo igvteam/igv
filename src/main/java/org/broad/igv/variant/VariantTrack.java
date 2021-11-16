@@ -85,7 +85,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     // TODO -- this needs to be settable
     public static int METHYLATION_MIN_BASE_COUNT = 10;
 
-
     public static boolean isVCF(String format) {
         return (format.equals("vcf3") ||
                 format.equals("vcf4") ||
@@ -202,7 +201,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         IGVPreferences prefMgr = PreferencesManager.getPreferences();
 
         String path = locator == null ? null : locator.getPath();
-
 
         this.renderer = new VariantRenderer(this);
 
@@ -1169,8 +1167,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         this.showGenotypes = showGenotypes;
     }
 
-    public static enum ColorMode {
-        GENOTYPE, METHYLATION_RATE, ALLELE_FREQUENCY, ALLELE_FRACTION
+    public enum ColorMode {
+        GENOTYPE, METHYLATION_RATE, ALLELE_FREQUENCY, NONE, ALLELE_FRACTION
     }
 
     public static enum BackgroundType {

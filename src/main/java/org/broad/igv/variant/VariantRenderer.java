@@ -51,8 +51,6 @@ public class VariantRenderer { //extends FeatureRenderer {
     private static final int BOTTOM_MARGIN = 0;
     private static final int TOP_MARGIN = 3;
     private static float alphaValue = 0.2f;
-    private static final Color colorAlleleRef = Color.gray;
-    private static Color colorAlleleRefAlpha = ColorUtilities.getCompositeColor(colorAlleleRef, alphaValue);
 
     static Map<Character, Color> nucleotideColors = new HashMap<Character, Color>();
 
@@ -65,9 +63,9 @@ public class VariantRenderer { //extends FeatureRenderer {
         nucleotideColors.put('t', Color.RED);
         nucleotideColors.put('G', new Color(242, 182, 65));
         nucleotideColors.put('g', new Color(242, 182, 65));
-        nucleotideColors.put('N', colorAlleleRef);
-        nucleotideColors.put('n', colorAlleleRef);
-        nucleotideColors.put('.', colorAlleleRef);
+        nucleotideColors.put('N', Color.gray);
+        nucleotideColors.put('n', Color.gray);
+        nucleotideColors.put('.', Color.gray);
         nucleotideColors.put(null, Color.BLACK);
     }
 
@@ -148,8 +146,17 @@ public class VariantRenderer { //extends FeatureRenderer {
         final boolean useAlpha = variant.isFiltered();
         final Color alleleColor;
         final Color refColor;
-        double percent = 0;
-        if (track.getColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
+        double percent;
+
+        Color colorAlleleRef = track.getColor();
+        Color colorAlleleRefAlpha = useAlpha ? ColorUtilities.getCompositeColor(colorAlleleRef, alphaValue) : colorAlleleRef;
+
+        if(track.getColorMode() == VariantTrack.ColorMode.NONE) {
+            refColor = colorAlleleRef;
+            alleleColor = colorAlleleRef;
+            percent = 0;
+        }
+        else if (track.getColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
             alleleColor = this.convertMethylationRateToColor((float) variant.getMethlationRate() / 100);
             percent = variant.getCoveredSampleFraction();
             refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
@@ -163,7 +170,7 @@ public class VariantRenderer { //extends FeatureRenderer {
 
             if (percent <= 0) {
                 percent = 0;
-                refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
+                refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;
             } else {
                 refColor = useAlpha ? colorAlleleBandRefAlpha : colorAlleleBandRef;                      // Blue
             }

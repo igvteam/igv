@@ -27,6 +27,7 @@ package org.broad.igv.variant;
 
 import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
+import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.AttributeManager;
@@ -73,6 +74,19 @@ public class VariantMenu extends IGVPopupMenu {
         popupTitle.setFont(newFont);
         add(popupTitle);
 
+
+        if (CircularViewUtilities.ping()) {
+            JMenuItem circItem = new JMenuItem("Show SV in Circular View");
+
+            circItem.addActionListener(e1 -> {
+                List<Feature> visibleFeatures = track.getVisibleFeatures(e.getFrame());
+                CircularViewUtilities.sendVariantsToJBrowse(visibleFeatures, track.getName(), track.getColor());
+            });
+
+            add(circItem);
+        }
+
+
         //Change Track Settings
         addSeparator();
 
@@ -80,11 +94,18 @@ public class VariantMenu extends IGVPopupMenu {
         add(TrackMenuUtils.getTrackRenameItem(selectedTracks));
         add(TrackMenuUtils.getChangeFontSizeItem(selectedTracks));
 
+        // Color items
+        addSeparator();
+        JMenuItem colorItem = new JMenuItem("Set Track Color...");
+        colorItem.addActionListener(evt -> TrackMenuUtils.changeTrackColor(selectedTracks));
+        add(colorItem);
+
         addSeparator();
         JLabel colorSiteByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT);
         add(colorSiteByItem);
         add(getColorBandByAllelFrequency());
         add(getColorBandByAlleleFraction());
+        add(getColorByNone());
 
         //Hides
         if (track.isEnableMethylationRateSupport()) {
@@ -140,18 +161,6 @@ public class VariantMenu extends IGVPopupMenu {
             addSeparator();
             add(getLoadBamsItem());
         }
-
-        if (CircularViewUtilities.ping()) {
-            JMenuItem circItem = new JMenuItem("Send SV variants to JBrowse");
-
-            circItem.addActionListener(e1 -> {
-                List<Feature> visibleFeatures = track.getVisibleFeatures(e.getFrame());
-                CircularViewUtilities.sendVariantsToJBrowse(visibleFeatures, track.getName(), track.getColor());
-            });
-
-            add(circItem);
-        }
-
     }
 
     private JMenuItem getFeatureVisibilityItem() {
@@ -178,6 +187,15 @@ public class VariantMenu extends IGVPopupMenu {
         final JMenuItem item = new JCheckBoxMenuItem("Allele Fraction", track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FRACTION);
         item.addActionListener(evt -> {
             track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FRACTION);
+            IGV.getInstance().getContentPane().repaint();
+        });
+        return item;
+    }
+
+    private JMenuItem getColorByNone() {
+        final JMenuItem item = new JCheckBoxMenuItem("None", track.getSiteColorMode() == VariantTrack.ColorMode.NONE);
+        item.addActionListener(evt -> {
+            track.setSiteColorMode(VariantTrack.ColorMode.NONE);
             IGV.getInstance().getContentPane().repaint();
         });
         return item;
