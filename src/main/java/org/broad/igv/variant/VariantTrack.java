@@ -108,6 +108,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     private int top;
 
+    private boolean showGenotypes = true;
+
     /**
      * The height of a single row in in squished mode
      */
@@ -225,8 +227,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         int sampleCount = allSamples.size();
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
-        squishedHeight = sampleCount == 0 ? DEFAULT_SQUISHED_GENOTYPE_HEIGHT :
+        squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_GENOTYPE_HEIGHT :
                 Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
+        if(sampleCount == 1) {
+            showGenotypes = false;
+        }
 
         // If sample->bam list file is supplied enable vcfToBamMode.
         String vcfToBamMapping = locator == null ? null : locator.getMappingPath();
@@ -391,7 +396,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     public int getHeight() {
         int sampleCount = allSamples.size();
-        if (getDisplayMode() == DisplayMode.COLLAPSED || sampleCount == 0) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED || sampleCount == 0 || showGenotypes == false) {
             return getVariantsHeight();
         } else {
             final int groupCount = samplesByGroups.size();
@@ -433,7 +438,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         // If height is < expanded height try "squishing" track, otherwise expand it
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
-        int sampleCount = allSamples.size();
+        int sampleCount = showGenotypes == false ? 0 : allSamples.size();
         final int expandedHeight = variantBandHeight + margins + (sampleCount * getGenotypeBandHeight());
         if (height < expandedHeight) {
             setDisplayMode(DisplayMode.SQUISHED);
@@ -443,7 +448,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             }
         }
 
-        squishedHeight = Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
+        squishedHeight = showGenotypes == false ? DEFAULT_SQUISHED_GENOTYPE_HEIGHT :
+                Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
     }
 
 
@@ -531,11 +537,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                         lastEndX = x + w - 1;
                     }
 
-                    renderSamples(g2D, visibleRectangle, variant, context, overallSampleRect, x, w);
-                    boolean isSelected = selectedVariant != null && selectedVariant == variant;
-                    if (isSelected) {
-                        Graphics2D selectionGraphics = context.getGraphic2DForColor(Color.black);
-                        selectionGraphics.drawRect(x, curRowTop, w, getHeight());
+                    if (showGenotypes) {
+                        renderSamples(g2D, visibleRectangle, variant, context, overallSampleRect, x, w);
+                        boolean isSelected = selectedVariant != null && selectedVariant == variant;
+                        if (isSelected) {
+                            Graphics2D selectionGraphics = context.getGraphic2DForColor(Color.black);
+                            selectionGraphics.drawRect(x, curRowTop, w, getHeight());
+                        }
                     }
 
                 }
@@ -677,6 +685,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public void renderAttributes(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle,
                                  List<String> attributeNames, List<MouseableRegion> mouseRegions) {
 
+        if(showGenotypes == false) return;
+
         top = trackRectangle.y;
         Rectangle rect = new Rectangle(trackRectangle);
 
@@ -765,7 +775,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                                 BackgroundType type) {
 
 
-        if (getDisplayMode() == DisplayMode.COLLAPSED) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED || showGenotypes == false) {
             return;
         }
 
@@ -1152,6 +1162,14 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         return selectedSamples;
     }
 
+    public boolean isShowGenotypes() {
+        return showGenotypes;
+    }
+
+    public void setShowGenotypes(boolean showGenotypes) {
+        this.showGenotypes = showGenotypes;
+    }
+
     public static enum ColorMode {
         GENOTYPE, METHYLATION_RATE, ALLELE_FREQUENCY, ALLELE_FRACTION
     }
@@ -1443,7 +1461,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @param center
      * @param forward
      * @return
-     * @throws java.io.IOException
+     * @throws IOException
      */
     @Override
     public Feature nextFeature(String chr, double center, boolean forward, ReferenceFrame frame) throws IOException {
@@ -1486,6 +1504,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         super.marshalXML(document, element);
 
+        boolean defaultShowGenotypes = allSamples.size() == 1 ? false : true;
+        if (showGenotypes != defaultShowGenotypes) {
+            element.setAttribute("showGenotypes", String.valueOf(showGenotypes));
+        }
+
         if (this.squishedHeight != DEFAULT_SQUISHED_GENOTYPE_HEIGHT) {
             element.setAttribute("squishedHeight", String.valueOf(squishedHeight));
         }
@@ -1504,6 +1527,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public void unmarshalXML(Element element, Integer version) {
 
         super.unmarshalXML(element, version);
+
+        if (element.hasAttribute("showGenotypes")) {
+            this.showGenotypes = Boolean.getBoolean(element.getAttribute("showGenotypes"));
+        }
 
         if (element.hasAttribute("squishedHeight")) {
             this.squishedHeight = Integer.parseInt(element.getAttribute("squishedHeight"));

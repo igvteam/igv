@@ -72,7 +72,7 @@ public class VariantMenu extends IGVPopupMenu {
         //Change Track Settings
         addSeparator();
 
-        List<Track> selectedTracks = Arrays.asList((Track) variantTrack);
+        List<Track> selectedTracks = Arrays.asList(variantTrack);
         add(TrackMenuUtils.getTrackRenameItem(selectedTracks));
         add(TrackMenuUtils.getChangeFontSizeItem(selectedTracks));
 
@@ -91,6 +91,11 @@ public class VariantMenu extends IGVPopupMenu {
             add(getColorByMethylationRate());
         }
 
+        // Show genotypes
+        if (track.getAllSamples().size() > 0) {
+            addSeparator();
+            add(getShowGenotypes());
+        }
 
         //Sorter
         addSeparator();
@@ -131,7 +136,6 @@ public class VariantMenu extends IGVPopupMenu {
             addSeparator();
             add(getLoadBamsItem());
         }
-
     }
 
     private JMenuItem getFeatureVisibilityItem() {
@@ -163,6 +167,15 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
+    private JMenuItem getShowGenotypes() {
+        final JMenuItem item = new JCheckBoxMenuItem("Show Genotypes", track.isShowGenotypes());
+        item.addActionListener(evt -> {
+            track.setShowGenotypes(item.isSelected());
+            IGV.getInstance().getContentPane().revalidateTrackPanels();
+            IGV.getInstance().getContentPane().repaint();
+        });
+        return item;
+    }
 
     private JMenuItem getColorByGenotype() {
         final JMenuItem item = new JCheckBoxMenuItem("Genotype", track.getColorMode() == VariantTrack.ColorMode.GENOTYPE);
