@@ -36,7 +36,9 @@ import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.GroupTracksMenuAction;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -76,13 +78,21 @@ public class VariantMenu extends IGVPopupMenu {
 
 
         if (CircularViewUtilities.ping()) {
+            addSeparator();
             JMenuItem circItem = new JMenuItem("Show SV in Circular View");
-
             circItem.addActionListener(e1 -> {
-                List<Feature> visibleFeatures = track.getVisibleFeatures(e.getFrame());
+
+                List<Feature> visibleFeatures;
+                if (e.getFrame() == null) {
+                    visibleFeatures = new ArrayList<>();
+                    for (ReferenceFrame frame : FrameManager.getFrames()) {
+                        visibleFeatures.addAll(track.getVisibleFeatures(frame));
+                    }
+                } else {
+                    visibleFeatures = track.getVisibleFeatures(e.getFrame());
+                }
                 CircularViewUtilities.sendVariantsToJBrowse(visibleFeatures, track.getName(), track.getColor());
             });
-
             add(circItem);
         }
 

@@ -26,6 +26,7 @@
 package org.broad.igv.sam;
 
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.AlignmentTrackEvent;
@@ -1441,17 +1442,23 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             JMenuItem item = new JMenuItem("Send abberant pairs to JBrowse");
             add(item);
             item.addActionListener(ae -> {
-                ReferenceFrame frame = e.getFrame();
-                AlignmentInterval interval = AlignmentTrack.this.getDataManager().getLoadedInterval(frame);
-                Iterator<Alignment> iter = interval.getAlignmentIterator();
-                Range r = frame.getCurrentRange();
+
+                List<ReferenceFrame> frames = e.getFrame() != null ?
+                        Arrays.asList(e.getFrame()) :
+                        FrameManager.getFrames();
+
                 List<Alignment> inView = new ArrayList<>();
-                while (iter.hasNext()) {
-                    Alignment a = iter.next();
-                    if (a.getEnd() > r.getStart() && a.getStart() < r.getEnd()
-                            && a.isPaired() && a.getMate().isMapped() &&
-                            (!a.getMate().getChr().equals(a.getChr()) || Math.abs(a.getInferredInsertSize()) > 1000000)) {
-                        inView.add(a);
+                for(ReferenceFrame frame : frames) {
+                    AlignmentInterval interval = AlignmentTrack.this.getDataManager().getLoadedInterval(frame);
+                    Iterator<Alignment> iter = interval.getAlignmentIterator();
+                    Range r = frame.getCurrentRange();
+                    while (iter.hasNext()) {
+                        Alignment a = iter.next();
+                        if (a.getEnd() > r.getStart() && a.getStart() < r.getEnd()
+                                && a.isPaired() && a.getMate().isMapped() &&
+                                (!a.getMate().getChr().equals(a.getChr()) || Math.abs(a.getInferredInsertSize()) > 1000000)) {
+                            inView.add(a);
+                        }
                     }
                 }
                 CircularViewUtilities.sendAlignmentsToJBrowse(inView, AlignmentTrack.this.getName(), AlignmentTrack.this.getColor());
