@@ -59,11 +59,8 @@ public class AlignmentRenderer {
     private static Logger log = Logger.getLogger(AlignmentRenderer.class);
 
 
-    // Alignment colors
-    private static Color DEFAULT_ALIGNMENT_COLOR = new Color(185, 185, 185); //200, 200, 200);
     private static final Color negStrandColor = new Color(150, 150, 230);
     private static final Color posStrandColor = new Color(230, 150, 150);
-    private static final Color LR_COLOR = DEFAULT_ALIGNMENT_COLOR; // "Normal" alignment color
     private static final Color RL_COLOR = new Color(0, 150, 0);
     private static final Color RR_COLOR = new Color(20, 50, 200);
     private static final Color LL_COLOR = new Color(0, 150, 150);
@@ -201,10 +198,8 @@ public class AlignmentRenderer {
 
         typeToColorMap = new HashMap<>(5);
         typeToColorMap.put(AlignmentTrack.OrientationType.LL, LL_COLOR);
-        typeToColorMap.put(AlignmentTrack.OrientationType.LR, LR_COLOR);
         typeToColorMap.put(AlignmentTrack.OrientationType.RL, RL_COLOR);
         typeToColorMap.put(AlignmentTrack.OrientationType.RR, RR_COLOR);
-        typeToColorMap.put(null, DEFAULT_ALIGNMENT_COLOR);
     }
 
     private static void setNucleotideColors() {
@@ -291,6 +286,7 @@ public class AlignmentRenderer {
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
+        Color defaultColor = track.getColor();
         if ((alignments != null) && (alignments.size() > 0)) {
 
             int lastPixelDrawn = -1;
@@ -317,7 +313,7 @@ public class AlignmentRenderer {
                                 (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
-                    if (pixelEnd <= lastPixelDrawn && alignmentColor == DEFAULT_ALIGNMENT_COLOR) {
+                    if (pixelEnd <= lastPixelDrawn && alignmentColor == defaultColor) {
                         continue;
                     }
                     Graphics2D g = context.getGraphics2D("ALIGNMENT");
@@ -489,7 +485,7 @@ public class AlignmentRenderer {
             return;
         }
 
-        Color lineColor = DEFAULT_ALIGNMENT_COLOR;
+        Color lineColor = track.getColor();
         if (alignmentColor1.equals(alignmentColor2) || pair.secondAlignment == null) {
             lineColor = alignmentColor1;
         }
@@ -1199,7 +1195,8 @@ public class AlignmentRenderer {
         // Set color used to draw the feature.  Highlight features that intersect the
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
 
-        Color c = DEFAULT_ALIGNMENT_COLOR;
+        Color defaultColor = track.getColor();
+        Color c = defaultColor;
         ColorOption colorOption = renderOptions.getColorOption();
         String readNameParts[];
 
@@ -1232,7 +1229,7 @@ public class AlignmentRenderer {
             case UNEXPECTED_PAIR:
             case PAIR_ORIENTATION:
                 c = getOrientationColor(alignment, getPEStats(alignment, renderOptions));
-                if (c != DEFAULT_ALIGNMENT_COLOR || colorOption == ColorOption.PAIR_ORIENTATION) {
+                if (c != defaultColor || colorOption == ColorOption.PAIR_ORIENTATION) {
                     break;
                 }
             case INSERT_SIZE:
@@ -1366,7 +1363,7 @@ public class AlignmentRenderer {
 //                }
 
         }
-        if (c == null) c = DEFAULT_ALIGNMENT_COLOR;
+        if (c == null) c = defaultColor;
 
         if (alignment.getMappingQuality() == 0 && renderOptions.isFlagZeroQualityAlignments()) {
             // Maping Q = 0
@@ -1450,26 +1447,6 @@ public class AlignmentRenderer {
     }
 
     /**
-     * Assuming we want to color a pair of alignments based on their distance,
-     * this returns an appropriate color
-     *
-     * @param pair
-     * @return
-     */
-    private static Color getColorRelDistance(PairedAlignment pair) {
-        if (pair.secondAlignment == null) {
-            return DEFAULT_ALIGNMENT_COLOR;
-        }
-        int dist = Math.abs(pair.getInferredInsertSize());
-        double logDist = Math.log(dist);
-        Color minColor = smallISizeColor;
-        Color maxColor = largeISizeColor;
-        ContinuousColorScale colorScale = new ContinuousColorScale(0, 20, minColor, maxColor);
-        return colorScale.getColor((float) logDist);
-    }
-
-
-    /**
      * Returns a color to flag unexpected pair orientations.  Expected orientations (e.g. FR for Illumina) get the
      * neutral grey color
      *
@@ -1480,7 +1457,7 @@ public class AlignmentRenderer {
     private Color getOrientationColor(Alignment alignment, PEStats peStats) {
         AlignmentTrack.OrientationType type = getOrientationType(alignment, peStats);
         Color c = typeToColorMap.get(type);
-        return c == null ? DEFAULT_ALIGNMENT_COLOR : c;
+        return c == null ? track.getColor() : c;
     }
 
     static AlignmentTrack.OrientationType getOrientationType(Alignment alignment, PEStats peStats) {

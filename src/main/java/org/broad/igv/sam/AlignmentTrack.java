@@ -26,7 +26,6 @@
 package org.broad.igv.sam;
 
 
-import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.AlignmentTrackEvent;
@@ -89,6 +88,9 @@ import static org.broad.igv.prefs.Constants.*;
  */
 
 public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
+
+    // Alignment colors
+    static Color DEFAULT_ALIGNMENT_COLOR = new Color(185, 185, 185); //200, 200, 200);
 
     public enum ColorOption {
         INSERT_SIZE,
@@ -249,6 +251,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         this.genome = genome;
         renderer = new AlignmentRenderer(this);
         renderOptions = new RenderOptions();
+        setColor(DEFAULT_ALIGNMENT_COLOR);
         dataManager.setAlignmentTrack(this);
         dataManager.subscribe(this);
 
@@ -1361,6 +1364,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             //          addExpandInsertions();
 
             addSeparator();
+            JMenuItem item = new JMenuItem("Change Track Color...");
+            item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(tracks));
+            add(item);
+
+            addSeparator();
             addExperimentTypeMenuItem();
 
             if (experimentType == ExperimentType.THIRD_GEN) {
@@ -1802,7 +1810,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             Map<String, ColorOption> mappings = new LinkedHashMap<>();
 
-            mappings.put("no color", ColorOption.NONE);
+            mappings.put("none", ColorOption.NONE);
 
             if (dataManager.hasYCTags()) {
                 mappings.put("YC tag", ColorOption.YC_TAG);
