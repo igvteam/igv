@@ -92,7 +92,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     private DataRenderer dataSourceRenderer;
     private IntervalRenderer intervalRenderer;
     private IGVPreferences prefs;
-    private JMenuItem dataRangeItem;
     private Genome genome;
     private boolean removed = false;
     IGV igv;

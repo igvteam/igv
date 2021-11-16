@@ -272,6 +272,17 @@ public class InteractionTrack extends AbstractTrack {
 
         IGVPopupMenu menu = new IGVPopupMenu();
 
+
+        // Experimental JBrowse.
+        if(CircularViewUtilities.ping()) {
+            menu.addSeparator();
+            JMenuItem item = new JMenuItem("Show Pairs in Ciruclar View");
+            item.addActionListener(e -> {
+                CircularViewUtilities.sendBedpeToJBrowse(this.allFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
+            });
+            menu.add(item);
+        }
+
         menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(InteractionTrack.this)));
 
         JMenuItem item = new JMenuItem("Set Track Height...");
@@ -381,16 +392,6 @@ public class InteractionTrack extends AbstractTrack {
 //            InteractionTrack.this.hideLargeFeatures = cbItem.isSelected();
 //            IGV.getInstance().repaint();
 //        });
-
-        // Experimental JBrowse.
-        if(CircularViewUtilities.ping()) {
-            menu.addSeparator();
-            item = new JMenuItem("Send to JBrowse Circ View");
-            item.addActionListener(e -> {
-                CircularViewUtilities.sendBedpeToJBrowse(this.allFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
-            });
-            menu.add(item);
-        }
 //
 
         return menu;

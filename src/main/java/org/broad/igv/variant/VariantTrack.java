@@ -32,12 +32,14 @@ import htsjdk.tribble.Feature;
 import htsjdk.variant.variantcontext.GenotypeType;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
 
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.GlobalKeyDispatcher;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -226,7 +228,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int margins = (groupCount - 1) * 3;
         squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_GENOTYPE_HEIGHT :
                 Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
-        if(sampleCount == 1) {
+        if (sampleCount == 1) {
             showGenotypes = false;
         }
 
@@ -682,7 +684,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public void renderAttributes(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle,
                                  List<String> attributeNames, List<MouseableRegion> mouseRegions) {
 
-        if(showGenotypes == false) return;
+        if (showGenotypes == false) return;
 
         top = trackRectangle.y;
         Rectangle rect = new Rectangle(trackRectangle);
@@ -1493,6 +1495,19 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         boolean contains(int y) {
             return y >= top && y <= bottom;
         }
+    }
+
+    void sendToCircularView(TrackClickEvent e) {
+        List<Feature> visibleFeatures;
+        if (e.getFrame() == null) {
+            visibleFeatures = new ArrayList<>();
+            for (ReferenceFrame frame : FrameManager.getFrames()) {
+                visibleFeatures.addAll(getVisibleFeatures(frame));
+            }
+        } else {
+            visibleFeatures = getVisibleFeatures(e.getFrame());
+        }
+        CircularViewUtilities.sendVariantsToJBrowse(visibleFeatures, getName(), getColor());
     }
 
 

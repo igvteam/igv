@@ -49,6 +49,7 @@ import org.broad.igv.session.Session;
 import org.broad.igv.tools.PFMExporter;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.GlobalKeyDispatcher;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.color.ColorTable;
@@ -1135,6 +1136,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         repaint();
     }
 
+
     public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN}
 
 
@@ -1300,6 +1302,31 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         setDisplayMode(DisplayMode.EXPANDED);
     }
 
+    private void sendToCircularView(TrackClickEvent e) {
+
+        List<ReferenceFrame> frames = e.getFrame() != null ?
+                Arrays.asList(e.getFrame()) :
+                FrameManager.getFrames();
+
+        List<Alignment> inView = new ArrayList<>();
+        for (ReferenceFrame frame : frames) {
+            AlignmentInterval interval = AlignmentTrack.this.getDataManager().getLoadedInterval(frame);
+            if (interval != null) {
+                Iterator<Alignment> iter = interval.getAlignmentIterator();
+                Range r = frame.getCurrentRange();
+                while (iter.hasNext()) {
+                    Alignment a = iter.next();
+                    if (a.getEnd() > r.getStart() && a.getStart() < r.getEnd()
+                            && a.isPaired() && a.getMate().isMapped() &&
+                            (!a.getMate().getChr().equals(a.getChr()) || Math.abs(a.getInferredInsertSize()) > 1000000)) {
+                        inView.add(a);
+                    }
+                }
+            }
+            Color chordColor = AlignmentTrack.this.getColor() == DEFAULT_ALIGNMENT_COLOR ? Color.BLUE : AlignmentTrack.this.getColor();
+            CircularViewUtilities.sendAlignmentsToJBrowse(inView, AlignmentTrack.this.getName(), chordColor);
+        }
+    }
 
     /**
      * Listener for deselecting one component when another is selected
@@ -1356,6 +1383,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             Font newFont = getFont().deriveFont(Font.BOLD, 12);
             popupTitle.setFont(newFont);
             add(popupTitle);
+
+
+            if (CircularViewUtilities.ping()) {
+                addSeparator();
+                JMenuItem item = new JMenuItem("Show discordant pairs in circular view");
+                add(item);
+                item.addActionListener(ae -> AlignmentTrack.this.sendToCircularView(e));
+            }
+
             addSeparator();
             add(TrackMenuUtils.getTrackRenameItem(tracks));
             addCopyToClipboardItem(e, clickedAlignment);
@@ -1405,9 +1441,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
             addInsertSizeMenuItem();
-            if (CircularViewUtilities.ping()) {
-                addCircViewItem(e);
-            }
 
             addSeparator();
             TrackMenuUtils.addDisplayModeItems(tracks, this);
@@ -1445,33 +1478,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         }
 
-        private void addCircViewItem(TrackClickEvent e) {
-
-            JMenuItem item = new JMenuItem("Send abberant pairs to JBrowse");
-            add(item);
-            item.addActionListener(ae -> {
-
-                List<ReferenceFrame> frames = e.getFrame() != null ?
-                        Arrays.asList(e.getFrame()) :
-                        FrameManager.getFrames();
-
-                List<Alignment> inView = new ArrayList<>();
-                for(ReferenceFrame frame : frames) {
-                    AlignmentInterval interval = AlignmentTrack.this.getDataManager().getLoadedInterval(frame);
-                    Iterator<Alignment> iter = interval.getAlignmentIterator();
-                    Range r = frame.getCurrentRange();
-                    while (iter.hasNext()) {
-                        Alignment a = iter.next();
-                        if (a.getEnd() > r.getStart() && a.getStart() < r.getEnd()
-                                && a.isPaired() && a.getMate().isMapped() &&
-                                (!a.getMate().getChr().equals(a.getChr()) || Math.abs(a.getInferredInsertSize()) > 1000000)) {
-                            inView.add(a);
-                        }
-                    }
-                }
-                CircularViewUtilities.sendAlignmentsToJBrowse(inView, AlignmentTrack.this.getName(), AlignmentTrack.this.getColor());
-            });
-        }
 
         private void addHaplotype(TrackClickEvent e) {
 

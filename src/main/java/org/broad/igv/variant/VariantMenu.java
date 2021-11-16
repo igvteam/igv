@@ -79,20 +79,8 @@ public class VariantMenu extends IGVPopupMenu {
 
         if (CircularViewUtilities.ping()) {
             addSeparator();
-            JMenuItem circItem = new JMenuItem("Show SV in Circular View");
-            circItem.addActionListener(e1 -> {
-
-                List<Feature> visibleFeatures;
-                if (e.getFrame() == null) {
-                    visibleFeatures = new ArrayList<>();
-                    for (ReferenceFrame frame : FrameManager.getFrames()) {
-                        visibleFeatures.addAll(track.getVisibleFeatures(frame));
-                    }
-                } else {
-                    visibleFeatures = track.getVisibleFeatures(e.getFrame());
-                }
-                CircularViewUtilities.sendVariantsToJBrowse(visibleFeatures, track.getName(), track.getColor());
-            });
+            JMenuItem circItem = new JMenuItem("Show SVs in Circular View");
+            circItem.addActionListener(e1 -> track.sendToCircularView(e));
             add(circItem);
         }
 
