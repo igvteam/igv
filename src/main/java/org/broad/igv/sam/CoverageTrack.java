@@ -76,18 +76,16 @@ import static org.broad.igv.prefs.Constants.*;
 public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     private static Logger log = Logger.getLogger(CoverageTrack.class);
+
     public static final int TEN_MB = 10000000;
     static DecimalFormat locationFormatter = new DecimalFormat();
 
     char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
-    public static Color lightBlue = new Color(0, 0, 150);
-    private static Color coverageGrey = new Color(175, 175, 175);
-    public static final Color negStrandColor = new Color(140, 140, 160);
-    public static final Color posStrandColor = new Color(160, 140, 140);
+    public static Color DEFAULT_COVERAGE_COLOR = new Color(175, 175, 175);
 
     public static final boolean DEFAULT_AUTOSCALE = true;
-    public static final boolean DEFAULT_SHOW_REFERENCE = false;
 
+    private Color _color = null;   // Explicit color setting
     private float snpThreshold;
     private AlignmentTrack alignmentTrack;
     private AlignmentDataManager dataManager;
@@ -130,11 +128,23 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         this.genome = genome;
         intervalRenderer = new IntervalRenderer();
         setMaximumHeight(40);
-        setColor(coverageGrey);
         prefs = PreferencesManager.getPreferences();
         snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
         autoScale = DEFAULT_AUTOSCALE;
         this.igv = IGV.hasInstance() ? IGV.getInstance() : null;
+    }
+
+    @Override
+    public Color getColor() {
+        return _color == null ?
+                (alignmentTrack.getColor() == AlignmentTrack.DEFAULT_ALIGNMENT_COLOR ?
+                        DEFAULT_COVERAGE_COLOR : alignmentTrack.getColor().darker()) :
+                _color;
+    }
+
+    @Override
+    public void setColor(Color color) {
+        _color = color;
     }
 
     @Override
@@ -988,8 +998,10 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     public void marshalXML(Document document, Element element) {
 
         super.marshalXML(document, element);
-
         element.setAttribute("snpThreshold", String.valueOf(snpThreshold));
+        if (_color != null) {
+            element.setAttribute("_color", ColorUtilities.colorToString(_color));
+        }
 
     }
 
@@ -998,6 +1010,9 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         super.unmarshalXML(element, version);
         if (element.hasAttribute("snpThreshold")) {
             snpThreshold = Float.parseFloat(element.getAttribute("snpThreshold"));
+        }
+        if (element.hasAttribute("_color")) {
+            _color = ColorUtilities.stringToColor(element.getAttribute("_color"));
         }
 
     }
