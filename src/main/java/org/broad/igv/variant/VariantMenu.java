@@ -26,6 +26,7 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
+
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackMenuUtils;
@@ -76,11 +77,18 @@ public class VariantMenu extends IGVPopupMenu {
         add(TrackMenuUtils.getTrackRenameItem(selectedTracks));
         add(TrackMenuUtils.getChangeFontSizeItem(selectedTracks));
 
+        // Color items
+        addSeparator();
+        JMenuItem colorItem = new JMenuItem("Set Track Color...");
+        colorItem.addActionListener(evt -> TrackMenuUtils.changeTrackColor(selectedTracks));
+        add(colorItem);
+
         addSeparator();
         JLabel colorSiteByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT);
         add(colorSiteByItem);
         add(getColorBandByAllelFrequency());
         add(getColorBandByAlleleFraction());
+        add(getColorByNone());
 
         //Hides
         if (track.isEnableMethylationRateSupport()) {
@@ -162,6 +170,15 @@ public class VariantMenu extends IGVPopupMenu {
         final JMenuItem item = new JCheckBoxMenuItem("Allele Fraction", track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FRACTION);
         item.addActionListener(evt -> {
             track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FRACTION);
+            IGV.getInstance().getContentPane().repaint();
+        });
+        return item;
+    }
+
+    private JMenuItem getColorByNone() {
+        final JMenuItem item = new JCheckBoxMenuItem("None", track.getSiteColorMode() == VariantTrack.ColorMode.NONE);
+        item.addActionListener(evt -> {
+            track.setSiteColorMode(VariantTrack.ColorMode.NONE);
             IGV.getInstance().getContentPane().repaint();
         });
         return item;

@@ -1181,7 +1181,7 @@ public class TrackMenuUtils {
         Color currentSelection = selectedTracks.iterator().next().getColor();
 
         Color color = UIUtilities.showColorChooserDialog(
-                "Select Track Color (Positive Values)",
+                "Select Track Color",
                 currentSelection);
 
         if (color == null) {
