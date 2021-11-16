@@ -47,16 +47,14 @@ public class ColorUtilities {
 
     private static Logger log = Logger.getLogger(ColorUtilities.class);
 
-    public static ObjectCache<Object, Color> colorCache = new ObjectCache<Object, Color>(1000);
-
-    private static float[] whiteComponents = Color.white.getRGBColorComponents(null);
-
+    public static ObjectCache<Object, Color> colorCache = new ObjectCache<>(1000);
+    private static ObjectCache<Color, Color> slightlyDarkerCache = new ObjectCache<>(1000);
     private static Map<Integer, Color> grayscaleColors = new HashMap();
 
     // HTML 4.1 color table,  + orange and magenta
     static Map<String, String> colorSymbols = new HashMap();
     private static Map<String, ColorPalette> palettes;
-    public static Map<Color, float[]> componentsCache = Collections.synchronizedMap(new HashMap<Color, float[]>());
+    public static Map<Color, float[]> componentsCache = Collections.synchronizedMap(new HashMap<>());
 
     static {
         colorSymbols.put("white", "FFFFFF");
@@ -182,7 +180,7 @@ public class ColorUtilities {
 
     public static Color stringToColor(String string, Color defaultColor) {
 
-        if(string == null) return defaultColor;
+        if (string == null) return defaultColor;
 
         try {
             Color c = stringToColorNoDefault(string);
@@ -203,7 +201,7 @@ public class ColorUtilities {
 
         Color c = null;
         if (string.contains(",")) {
-            if(string.contains(".")) {
+            if (string.contains(".")) {
                 String[] rgb = string.split(",");
                 int red = (int) (255 * Double.parseDouble(rgb[0]));
                 int green = (int) (255 * Double.parseDouble(rgb[1]));
@@ -247,7 +245,6 @@ public class ColorUtilities {
 
     }
 
-
     public static float[] getRGBColorComponents(Color color) {
         float[] comps = componentsCache.get(color);
         if (comps == null) {
@@ -255,7 +252,17 @@ public class ColorUtilities {
             componentsCache.put(color, comps);
         }
         return comps;
+    }
 
+    public static Color slightlyDarker(Color color) {
+        Color d = slightlyDarkerCache.get(color);
+        if(d == null) {
+            float [] comps = color.getRGBColorComponents(null);
+            float factor = 0.95f;
+            d = new Color(factor*comps[0], factor*comps[1], factor*comps[2]);
+            slightlyDarkerCache.put(color, d);
+        }
+        return d;
     }
 
 
@@ -472,7 +479,6 @@ public class ColorUtilities {
 //
 //        return new int[]{r, g, b};
     }
-
 
 
 }
