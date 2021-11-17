@@ -112,6 +112,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
 
         // Next feature
+        final KeyStroke nextKey0 = KeyStroke.getKeyStroke(KeyEvent.VK_F, 0, false);
         final KeyStroke nextKey = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK, false);
         final Action nextAction = new EnableWrappedAction(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -119,10 +120,12 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             }
         });
         inputMap.put(nextKey, "nextFeature");
+        inputMap.put(nextKey0, "nextFeature");
         actionMap.put("nextFeature", nextAction);
 
         // Previous feature
         final KeyStroke prevKey = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK, false);
+        final KeyStroke prevKey0 = KeyStroke.getKeyStroke(KeyEvent.VK_B, 0, false);
         final Action prevAction = new EnableWrappedAction(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -130,20 +133,24 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             }
         });
         inputMap.put(prevKey, "prevFeature");
+        inputMap.put(prevKey0, "prevFeature");
         actionMap.put("prevFeature", prevAction);
 
         // Next exon
         final KeyStroke nextExonKey = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK, false);
+        final KeyStroke nextExonKey0 = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.SHIFT_MASK, false);
         final Action nextExonAction = new EnableWrappedAction(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 nextExon(true);
             }
         });
         inputMap.put(nextExonKey, "nextExon");
+        inputMap.put(nextExonKey0, "nextExon");
         actionMap.put("nextExon", nextExonAction);
 
         // Previous exon
         final KeyStroke prevExonKey = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK, false);
+        final KeyStroke prevExonKey0 = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.SHIFT_MASK, false);
         final Action prevExonAction = new EnableWrappedAction(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -151,6 +158,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             }
         });
         inputMap.put(prevExonKey, "prevExon");
+        inputMap.put(prevExonKey0, "prevExon");
         actionMap.put("prevExon", prevExonAction);
 
         // Set the focus to the "search" box

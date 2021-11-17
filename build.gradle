@@ -118,7 +118,7 @@ dependencies {
         [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'],
         [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'],
         [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
-        [group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],
+        //[group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],  // no longer in Maven Central
         [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],
         [group: 'org.campagnelab.goby', name: 'goby-io', version: '3.3.1'],
         [group: 'org.campagnelab.icb', name: 'icb-utils', version: '2.0.2'],
@@ -431,7 +431,7 @@ task createWinWithJavaExeDist(type: Exec, dependsOn: createWinWithJavaDist) {
 
 task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
     standardInput = new ByteArrayInputStream( keyPassword.getBytes() );
-    commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha1",
+    commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha512",
                 "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
                 "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-dist/IGV_Win_${version}-installer.exe")
     doLast {

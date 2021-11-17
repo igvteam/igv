@@ -145,10 +145,6 @@ public class Genome {
         } else if (chrAliasTable.containsKey(str)) {
             return chrAliasTable.get(str);
         } else {
-            // Add entry, which effectively interns the string
-            synchronized (aliasLock) {
-                chrAliasTable.put(str, str);
-            }
             return str;
         }
     }

@@ -100,13 +100,14 @@ public class CommandListener implements Runnable {
         listenerThread = new Thread(this);
     }
 
-    
+
     /**
      * Return true if the listener is currently enabled
+     *
      * @return state of listener
      */
     public static boolean isListening() {
-    	return CommandListener.isListening;
+        return CommandListener.isListening;
     }
 
     /**
@@ -144,7 +145,7 @@ public class CommandListener implements Runnable {
             log.error(e);
             isListening = false;
         } catch (IOException e) {
-        	isListening = false;
+            isListening = false;
             if (!halt) {
                 log.error("IO Error on port socket ", e);
             }
@@ -165,67 +166,70 @@ public class CommandListener implements Runnable {
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             String inputLine;
 
-
             while (!halt && (inputLine = in.readLine()) != null) {
 
                 String cmd = inputLine;
-                if (cmd.startsWith("GET")) {
+                log.info(cmd);
 
-                    // Consume the remainder of the request, if any.   This is important to free the connection.
-                    Map<String, String> headers = new HashMap<String, String>();
-                    String nextLine = in.readLine();
-                    while (nextLine != null && nextLine.length() > 0) {
-                        nextLine = in.readLine();
-                        String[] tokens = Globals.colonPattern.split(nextLine, 2);
-                        if (tokens.length == 2) {
-                            headers.put(tokens[0].trim(), tokens[1].trim());
-                        }
-                    }
-                    //log.info(cmd);
+                boolean isHTTP = cmd.startsWith("OPTIONS") || cmd.startsWith("HEAD") || cmd.startsWith("GET");
 
-                    String command = null;
-                    Map<String, String> params = null;
-                    String[] tokens = inputLine.split(" ");
-                    if (tokens.length < 2) {
-                        sendTextResponse(out, "ERROR unexpected command line: " + inputLine);
-                        return;
-                    } else {
-                        String[] parts = tokens[1].split("\\?");
-                        command = parts[0];
-                        params = parts.length < 2 ? new HashMap() : parseParameters(parts[1]);
-                    }
-
-                    // Detect google oauth callback
-                    if (command.equals("/oauthCallback")) {
-                        if (params.containsKey("code")) {
-                            OAuthUtils.getInstance().setAuthorizationCode(params);
-                        } else if (params.containsKey("token")) {
-                            OAuthUtils.getInstance().setAccessToken(params);
-                        }
-                        sendTextResponse(out, "OK");
+                if (isHTTP) {
+                    if (cmd.startsWith("OPTIONS")) {
+                        sendHTTPOptionsResponse(out);
                     } else {
 
-                        // If a callback (javascript) function is specified write it back immediately.  This function
-                        // is used to cancel a timeout handler
-                        String callback = params.get("callback");
-                        if (callback != null) {
-                            sendJavascriptResponse(out, callback);
+                        String result = null;
+                        String command = null;
+                        Map<String, String> params = null;
+
+                        String[] tokens = inputLine.split(" ");
+                        if (tokens.length < 2) {
+                            result = "ERROR unexpected command line: " + inputLine;
+                        } else {
+                            String[] parts = tokens[1].split("\\?");
+                            command = parts[0];
+                            params = parts.length < 2 ? new HashMap() : parseParameters(parts[1]);
+                        }
+                        // Consume the remainder of the request, if any.   This is important to free the connection.
+                        Map<String, String> headers = new HashMap<>();
+                        String nextLine = in.readLine();
+                        while (nextLine != null && nextLine.length() > 0) {
+                            nextLine = in.readLine();
+                            String[] headerTokens = Globals.colonPattern.split(nextLine, 2);
+                            if (headerTokens.length == 2) {
+                                headers.put(headerTokens[0].trim(), headerTokens[1].trim());
+                            }
                         }
 
-                        // Process the request.
-                        String result = processGet(command, params, cmdExe);
+                        if (cmd.startsWith("HEAD")) {
+                            sendHTTPResponse(out, result, "text/html", "HEAD");
+                        } else {
 
-                        // If no callback was specified write back response now
-                        if (callback == null) {
-                            // We send no response if result is "ok".
-                            if (result.equals(OK)) result = null;
+                            if (command != null) {
+
+                                // Detect google oauth callback
+                                if (command.equals("/oauthCallback")) {
+                                    if (params.containsKey("code")) {
+                                        OAuthUtils.getInstance().setAuthorizationCode(params);
+                                    } else if (params.containsKey("token")) {
+                                        OAuthUtils.getInstance().setAccessToken(params);
+                                    }
+                                    result = "OK";
+                                } else {
+                                    // Process the request.
+                                    result = processGet(command, params, cmdExe);
+                                }
+                            }
+
+                            // Send no response if result is "OK".
+                            if ("OK".equals(result)) result = null;
+
                             sendTextResponse(out, result);
                         }
                     }
-
-                    // http sockets are used for one request only
+                    // http sockets are used for one request only => return will close the socket
                     return;
-                    // }
+
 
                 } else {
                     // Port command
@@ -282,16 +286,11 @@ public class CommandListener implements Runnable {
     private static final String NO_CACHE = "Cache-Control: no-cache, no-store";
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin: *";
 
-    private void sendJavascriptResponse(PrintWriter out, String result) {
-        sendHTTPResponse(out, result, "application/javascript");
-
-    }
-
     private void sendTextResponse(PrintWriter out, String result) {
-        sendHTTPResponse(out, result, "text/html");
+        sendHTTPResponse(out, result, "text/html", "GET");
     }
 
-    private void sendHTTPResponse(PrintWriter out, String result, String contentType) {
+    private void sendHTTPResponse(PrintWriter out, String result, String contentType, String method) {
 
         out.print(result == null ? HTTP_NO_RESPONSE : HTTP_RESPONSE);
         out.print(CRLF);
@@ -306,12 +305,28 @@ public class CommandListener implements Runnable {
             out.print(CRLF);
             out.print(CONNECTION_CLOSE);
             out.print(CRLF);
-            out.print(CRLF);
-            out.print(result);
-            out.print(CRLF);
+
+            if (!method.equals("HEAD")) {
+                out.print(CRLF);
+                out.print(result);
+                out.print(CRLF);
+            }
         }
         out.close();
     }
+
+    private void sendHTTPOptionsResponse(PrintWriter out) {
+
+        out.print(HTTP_NO_RESPONSE);
+        out.print(CRLF);
+        out.print(ACCESS_CONTROL_ALLOW_ORIGIN);
+        out.print(CRLF);
+        out.println("Access-Control-Allow-Methods: HEAD, GET, OPTIONS");
+        out.print(CRLF);
+
+        out.close();
+    }
+
 
     /**
      * Process an http get request.
