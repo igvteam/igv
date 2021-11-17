@@ -692,9 +692,6 @@ public class TrackMenuUtils {
 
                 //Can't trust FeatureTrack.getFeatures to limit itself, so we filter
                 List<Feature> features = fTrack.getVisibleFeatures(frame);
-                Range range = frame.getCurrentRange();
-                Predicate<Feature> pred = FeatureUtils.getOverlapPredicate(range.getChr(), range.getStart(), range.getEnd());
-                features = CollUtils.filter(features, pred);
                 IGVBEDCodec codec = new IGVBEDCodec();
                 for (Feature feat : features) {
                     String featString = codec.encode(feat);

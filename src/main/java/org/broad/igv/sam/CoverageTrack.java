@@ -81,7 +81,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     static DecimalFormat locationFormatter = new DecimalFormat();
 
     char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
-    public static Color DEFAULT_COVERAGE_COLOR = new Color(175, 175, 175);
 
     public static final boolean DEFAULT_AUTOSCALE = true;
 
@@ -93,7 +92,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     private DataRenderer dataSourceRenderer;
     private IntervalRenderer intervalRenderer;
     private IGVPreferences prefs;
-    private JMenuItem dataRangeItem;
     private Genome genome;
     private boolean removed = false;
     IGV igv;
@@ -137,8 +135,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     @Override
     public Color getColor() {
         return _color == null ?
-                (alignmentTrack.getColor() == AlignmentTrack.DEFAULT_ALIGNMENT_COLOR ?
-                        DEFAULT_COVERAGE_COLOR : alignmentTrack.getColor().darker()) :
+                ColorUtilities.slightlyDarker(alignmentTrack.getColor()) :
                 _color;
     }
 

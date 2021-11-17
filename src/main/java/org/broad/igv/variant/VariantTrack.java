@@ -32,13 +32,14 @@ import htsjdk.tribble.Feature;
 import htsjdk.variant.variantcontext.GenotypeType;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
 
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.GlobalKeyDispatcher;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -227,7 +228,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int margins = (groupCount - 1) * 3;
         squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_GENOTYPE_HEIGHT :
                 Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
-        if(sampleCount == 1) {
+        if (sampleCount == 1) {
             showGenotypes = false;
         }
 
@@ -569,8 +570,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     private void drawVariantBandBorder(Graphics2D g2D, Rectangle visibleRectangle, int variantBandY, int left, int right) {
-        if (allSamples.size() > 0) {
-            drawLineIfVisible(g2D, visibleRectangle, Color.black, variantBandY, left, right);
+        if (allSamples.size() > 0 && showGenotypes) {
+            drawLineIfVisible(g2D, visibleRectangle, Color.lightGray, variantBandY, left, right);
         }
     }
 
@@ -613,22 +614,24 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int right = (int) trackRectangle.getMaxX();
 
         //Top line
-        drawLineIfVisible(g2D, visibleRectangle, Color.black, top + 1, left, right);
+       // drawLineIfVisible(g2D, visibleRectangle, Color.black, top + 1, left, right);
 
         // Bottom border
         int bottomY = trackRectangle.y + trackRectangle.height;
         drawLineIfVisible(g2D, visibleRectangle, borderGray, bottomY, left, right);
 
         // Variant / Genotype border
-        int variantGenotypeBorderY = trackRectangle.y + getVariantsHeight();
-        drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
+        if (allSamples.size() > 0 && showGenotypes) {
+            int variantGenotypeBorderY = trackRectangle.y + getVariantsHeight();
+            drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
 
-        if (grouped) {
-            g2D.setColor(Color.black);
-            int y = trackRectangle.y + getVariantsHeight();
-            for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
-                y += entry.getValue().size() * getGenotypeBandHeight() + GROUP_BORDER_WIDTH;
-                g2D.drawLine(trackRectangle.x, y, trackRectangle.x + trackRectangle.width, y);
+            if (grouped) {
+                g2D.setColor(Color.black);
+                int y = trackRectangle.y + getVariantsHeight();
+                for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
+                    y += entry.getValue().size() * getGenotypeBandHeight() + GROUP_BORDER_WIDTH;
+                    g2D.drawLine(trackRectangle.x, y, trackRectangle.x + trackRectangle.width, y);
+                }
             }
         }
     }
@@ -683,7 +686,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public void renderAttributes(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle,
                                  List<String> attributeNames, List<MouseableRegion> mouseRegions) {
 
-        if(showGenotypes == false) return;
+        if (showGenotypes == false) return;
 
         top = trackRectangle.y;
         Rectangle rect = new Rectangle(trackRectangle);
@@ -976,14 +979,14 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     protected Variant getFeatureClosest(double position, int y, String frameName, double maxDistance) {
 
-        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frameName);
+        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frameName);
 
         if (packedFeatures == null) {
             return null;
         }
 
         Feature feature = null;
-        List<IGVFeature> features;
+        List<Feature> features;
 
         //We search only the specified row if y is a meaningful value.
         //Otherwise we search everything
@@ -1273,7 +1276,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (selectedVariant != null) {
             repaint();
         }
-        return new VariantMenu(this, selectedVariant);
+        return new VariantMenu(this, selectedVariant, te);
     }
 
 
@@ -1494,6 +1497,19 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         boolean contains(int y) {
             return y >= top && y <= bottom;
         }
+    }
+
+    void sendToCircularView(TrackClickEvent e) {
+        List<Feature> visibleFeatures;
+        if (e.getFrame() == null) {
+            visibleFeatures = new ArrayList<>();
+            for (ReferenceFrame frame : FrameManager.getFrames()) {
+                visibleFeatures.addAll(getVisibleFeatures(frame));
+            }
+        } else {
+            visibleFeatures = getVisibleFeatures(e.getFrame());
+        }
+        CircularViewUtilities.sendVariantsToJBrowse(visibleFeatures, getName(), getColor());
     }
 
 

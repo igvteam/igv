@@ -37,6 +37,7 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
@@ -48,6 +49,7 @@ import org.broad.igv.session.Session;
 import org.broad.igv.tools.PFMExporter;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.GlobalKeyDispatcher;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.color.ColorTable;
@@ -278,7 +280,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public void init() {
-        if(experimentType == null) {
+        if (experimentType == null) {
             ExperimentType type = dataManager.inferType();
             if (type != null) {
                 setExperimentType(type);
@@ -1134,6 +1136,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         repaint();
     }
 
+
     public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN}
 
 
@@ -1299,6 +1302,31 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         setDisplayMode(DisplayMode.EXPANDED);
     }
 
+    private void sendToCircularView(TrackClickEvent e) {
+
+        List<ReferenceFrame> frames = e.getFrame() != null ?
+                Arrays.asList(e.getFrame()) :
+                FrameManager.getFrames();
+
+        List<Alignment> inView = new ArrayList<>();
+        for (ReferenceFrame frame : frames) {
+            AlignmentInterval interval = AlignmentTrack.this.getDataManager().getLoadedInterval(frame);
+            if (interval != null) {
+                Iterator<Alignment> iter = interval.getAlignmentIterator();
+                Range r = frame.getCurrentRange();
+                while (iter.hasNext()) {
+                    Alignment a = iter.next();
+                    if (a.getEnd() > r.getStart() && a.getStart() < r.getEnd()
+                            && a.isPaired() && a.getMate().isMapped() &&
+                            (!a.getMate().getChr().equals(a.getChr()) || Math.abs(a.getInferredInsertSize()) > 1000000)) {
+                        inView.add(a);
+                    }
+                }
+            }
+            Color chordColor = AlignmentTrack.this.getColor() == DEFAULT_ALIGNMENT_COLOR ? Color.BLUE : AlignmentTrack.this.getColor();
+            CircularViewUtilities.sendAlignmentsToJBrowse(inView, AlignmentTrack.this.getName(), chordColor);
+        }
+    }
 
     /**
      * Listener for deselecting one component when another is selected
@@ -1355,6 +1383,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             Font newFont = getFont().deriveFont(Font.BOLD, 12);
             popupTitle.setFont(newFont);
             add(popupTitle);
+
+
+            if (PreferencesManager.getPreferences().getAsBoolean(CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+                addSeparator();
+                JMenuItem item = new JMenuItem("Show discordant pairs in circular view");
+                add(item);
+                item.addActionListener(ae -> AlignmentTrack.this.sendToCircularView(e));
+            }
+
             addSeparator();
             add(TrackMenuUtils.getTrackRenameItem(tracks));
             addCopyToClipboardItem(e, clickedAlignment);
@@ -1394,6 +1431,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             addQuickConsensusModeItem();
 
+            // Paired end items
             addSeparator();
             addViewAsPairsMenuItem();
 

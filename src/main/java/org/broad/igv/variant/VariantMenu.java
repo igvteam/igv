@@ -25,14 +25,22 @@
 
 package org.broad.igv.variant;
 
+import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
-
+import org.broad.igv.bedpe.InteractionTrack;
+import org.broad.igv.jbrowse.CircularViewUtilities;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.GroupTracksMenuAction;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -56,7 +64,7 @@ public class VariantMenu extends IGVPopupMenu {
     static boolean qualitySortingDirection;
 
 
-    public VariantMenu(final VariantTrack variantTrack, final Variant variant) {
+    public VariantMenu(final VariantTrack variantTrack, final Variant variant, TrackClickEvent e) {
         super();
         this.track = variantTrack;
 
@@ -69,6 +77,15 @@ public class VariantMenu extends IGVPopupMenu {
         Font newFont = getFont().deriveFont(Font.BOLD, 12);
         popupTitle.setFont(newFont);
         add(popupTitle);
+
+
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+            addSeparator();
+            JMenuItem circItem = new JMenuItem("Show SVs in Circular View");
+            circItem.addActionListener(e1 -> track.sendToCircularView(e));
+            add(circItem);
+        }
+
 
         //Change Track Settings
         addSeparator();

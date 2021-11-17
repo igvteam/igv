@@ -8,12 +8,12 @@ import java.util.Map;
  */
 public class BedPEFeature implements BedPE {
 
-    String chr1;
-    int start1;
-    int end1;
-    String chr2;
-    int start2;
-    int end2;
+    public String chr1;
+    public int start1;
+    public int end1;
+    public String chr2;
+    public int start2;
+    public int end2;
     String name;
     String scoreString = "";
     double score;
