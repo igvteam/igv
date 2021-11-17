@@ -570,8 +570,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     private void drawVariantBandBorder(Graphics2D g2D, Rectangle visibleRectangle, int variantBandY, int left, int right) {
-        if (allSamples.size() > 0) {
-            drawLineIfVisible(g2D, visibleRectangle, Color.black, variantBandY, left, right);
+        if (allSamples.size() > 0 && showGenotypes) {
+            drawLineIfVisible(g2D, visibleRectangle, Color.lightGray, variantBandY, left, right);
         }
     }
 
@@ -614,22 +614,24 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int right = (int) trackRectangle.getMaxX();
 
         //Top line
-        drawLineIfVisible(g2D, visibleRectangle, Color.black, top + 1, left, right);
+       // drawLineIfVisible(g2D, visibleRectangle, Color.black, top + 1, left, right);
 
         // Bottom border
         int bottomY = trackRectangle.y + trackRectangle.height;
         drawLineIfVisible(g2D, visibleRectangle, borderGray, bottomY, left, right);
 
         // Variant / Genotype border
-        int variantGenotypeBorderY = trackRectangle.y + getVariantsHeight();
-        drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
+        if (allSamples.size() > 0 && showGenotypes) {
+            int variantGenotypeBorderY = trackRectangle.y + getVariantsHeight();
+            drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
 
-        if (grouped) {
-            g2D.setColor(Color.black);
-            int y = trackRectangle.y + getVariantsHeight();
-            for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
-                y += entry.getValue().size() * getGenotypeBandHeight() + GROUP_BORDER_WIDTH;
-                g2D.drawLine(trackRectangle.x, y, trackRectangle.x + trackRectangle.width, y);
+            if (grouped) {
+                g2D.setColor(Color.black);
+                int y = trackRectangle.y + getVariantsHeight();
+                for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
+                    y += entry.getValue().size() * getGenotypeBandHeight() + GROUP_BORDER_WIDTH;
+                    g2D.drawLine(trackRectangle.x, y, trackRectangle.x + trackRectangle.width, y);
+                }
             }
         }
     }

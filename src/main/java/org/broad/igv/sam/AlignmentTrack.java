@@ -1385,7 +1385,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             add(popupTitle);
 
 
-            if (CircularViewUtilities.ping()) {
+            if (PreferencesManager.getPreferences().getAsBoolean(CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
                 addSeparator();
                 JMenuItem item = new JMenuItem("Show discordant pairs in circular view");
                 add(item);

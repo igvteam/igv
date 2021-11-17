@@ -274,7 +274,7 @@ public class InteractionTrack extends AbstractTrack {
 
 
         // Experimental JBrowse.
-        if(CircularViewUtilities.ping()) {
+        if(PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
             menu.addSeparator();
             JMenuItem item = new JMenuItem("Show Pairs in Ciruclar View");
             item.addActionListener(e -> {

@@ -262,7 +262,7 @@ final public class Constants {
 
     // Experimental
     public static final String SCORE_VARIANTS = "SCORE_VARIANTS";
-
+    public static final String CIRC_VIEW_ENABLED = "CIRC_VIEW_ENABLED";
 
 
 

@@ -29,6 +29,8 @@ import htsjdk.tribble.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.jbrowse.CircularViewUtilities;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
@@ -77,7 +79,7 @@ public class VariantMenu extends IGVPopupMenu {
         add(popupTitle);
 
 
-        if (CircularViewUtilities.ping()) {
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
             addSeparator();
             JMenuItem circItem = new JMenuItem("Show SVs in Circular View");
             circItem.addActionListener(e1 -> track.sendToCircularView(e));
