@@ -1,12 +1,15 @@
 package org.broad.igv.jbrowse;
 
-import com.google.gson.Gson;
 import htsjdk.tribble.Feature;
 import org.broad.igv.bedpe.BedPEFeature;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
+import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.util.ChromosomeColors;
 import org.broad.igv.variant.Variant;
-import org.broad.igv.variant.VariantRenderer;
 import org.broad.igv.variant.vcf.MateVariant;
 
 import java.awt.*;
@@ -31,74 +34,197 @@ public class CircularViewUtilities {
     }
 
     public static void sendBedpeToJBrowse(List<BedPEFeature> features, String trackName, Color color) {
-        Coord[] chords = new Coord[features.size()];
+        Chord[] chords = new Chord[features.size()];
         int index = 0;
         for (BedPEFeature f : features) {
-            chords[index++] = new Coord(f);
+            chords[index++] = new Chord(f);
         }
         sendChordsToJBrowse(chords, trackName, color, "0.5");
     }
 
     public static void sendAlignmentsToJBrowse(List<Alignment> alignments, String trackName, Color color) {
 
-        Coord[] chords = new Coord[alignments.size()];
+        Chord[] chords = new Chord[alignments.size()];
         int index = 0;
         for (Alignment a : alignments) {
-            chords[index++] = new Coord(a);
+            chords[index++] = new Chord(a);
         }
         sendChordsToJBrowse(chords, trackName, color, "0.02");
     }
 
     public static void sendVariantsToJBrowse(List<Feature> variants, String trackName, Color color) {
 
-        Coord[] chords = new Coord[variants.size()];
+        Chord[] chords = new Chord[variants.size()];
         int index = 0;
         for (Feature f : variants) {
             if (f instanceof Variant) {
-                Variant v = f instanceof MateVariant ? ((MateVariant) f).mate :  (Variant) f;
+                Variant v = f instanceof MateVariant ? ((MateVariant) f).mate : (Variant) f;
                 Map<String, Object> attrs = v.getAttributes();
                 if (attrs.containsKey("CHR2") && attrs.containsKey("END")) {
-                    chords[index++] = new Coord(v);
+                    chords[index++] = new Chord(v);
                 }
             }
         }
         sendChordsToJBrowse(chords, trackName, color, "0.5");
     }
 
-    public static void sendChordsToJBrowse(Coord[] chords, String trackName, Color color, String alpha) {
+
+    public static void sendChordsToJBrowse(Chord[] chords, String trackName, Color color, String alpha) {
+
+        // We can't know if an assembly has been set, or if it has its the correct one.
+        changeGenome(GenomeManager.getInstance().getCurrentGenome());
 
         String colorString = "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + alpha + ")";
         CircViewTrack t = new CircViewTrack(chords, trackName, colorString);
         CircViewMessage message = new CircViewMessage("addChords", t);
 
-        Gson gson = new Gson();
-        String json = gson.toJson(message);
+
+        String json = message.toJson();
+        System.out.println(json);
         SocketSender.send(json);
+    }
+
+    public static void changeGenome(Genome genome) {
+        List<String> wgChrNames = genome.getLongChromosomeNames();
+        CircViewRegion[] regions = new CircViewRegion[wgChrNames.size()];
+        int idx = 0;
+        for (String chr : wgChrNames) {
+            Chromosome c = genome.getChromosome(chr);
+            int length = c.getLength();
+            Color color = ChromosomeColors.getColor(chr);
+            String colorString = "rgb(" + ColorUtilities.colorToString(color) + ")";
+            regions[idx++] = new CircViewRegion(chr, length, colorString);
+        }
+        CircViewAssembly assm = new CircViewAssembly(genome.getId(), genome.getDisplayName(), regions);
+        CircViewMessage message = new CircViewMessage("setAssembly", assm);
+
+        String json = message.toJson();
+        System.out.println();
+        SocketSender.send(json);
+
     }
 }
 
-
 class CircViewMessage {
     String message;
-    Object data;
-    public CircViewMessage(String message, Object data) {
+    CircViewAssembly assembly;
+    CircViewTrack track;
+
+    public CircViewMessage(String message, CircViewAssembly data) {
         this.message = message;
-        this.data = data;
+        this.assembly = data;
+    }
+
+    public CircViewMessage(String message, CircViewTrack data) {
+        this.message = message;
+        this.track = data;
+    }
+
+    public String toJson() {
+
+        StringBuffer buf = new StringBuffer();
+        buf.append("{");
+        buf.append(JsonUtils.toJson("message", message));
+        buf.append(",\"data\":");
+        if(this.assembly != null) {
+            buf.append(assembly.toJson());
+        } else if(this.track != null) {
+            buf.append(track.toJson());
+        }
+        buf.append("}");
+        return buf.toString();
+    }
+
+}
+
+class CircViewAssembly {
+    String id;
+    String name;
+    CircViewRegion [] chromosomes;
+
+    public CircViewAssembly(String id, String name, CircViewRegion[] regions) {
+        this.id = id;
+        this.name = name;
+        this.chromosomes = regions;
+    }
+
+    public String toJson() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("{");
+        buf.append(JsonUtils.toJson("id", id));
+        buf.append(",");
+        buf.append(JsonUtils.toJson("name", name));
+        buf.append(",\"chromosomes\":");
+        buf.append("[");
+        boolean first = true;
+        for(CircViewRegion c : this.chromosomes) {
+            if(!first) {
+                buf.append(",");
+            }
+            buf.append(c.toJson());
+            first = false;
+        }
+        buf.append("]");
+        buf.append("}");
+        return buf.toString();
+    }
+}
+
+class CircViewRegion {
+    String name;
+    int bpLength;
+    String color;
+    public CircViewRegion(String name, int bpLength, String color) {
+        this.name = name;
+        this.bpLength = bpLength;
+        this.color = color;
+    }
+
+    public String toJson() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("{");
+        buf.append(JsonUtils.toJson("name", name));
+        buf.append(",");
+        buf.append(JsonUtils.toJson("color", color));
+        buf.append(",");
+        buf.append(JsonUtils.toJson("bpLength", bpLength));
+        buf.append("}");
+        return buf.toString();
     }
 }
 
 class CircViewTrack {
     String name;
     String color;
-    Coord [] chords;
+    Chord[] chords;
 
-    public CircViewTrack(Coord[] chords, String name, String color) {
+    public CircViewTrack(Chord[] chords, String name, String color) {
         this.name = name;
         this.color = color;
         this.chords = chords;
     }
-}
 
+    public String toJson() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("{");
+        buf.append(JsonUtils.toJson("name", name));
+        buf.append(",");
+        buf.append(JsonUtils.toJson("color", color));
+        buf.append(",\"chords\":");
+        buf.append("[");
+        boolean first = true;
+        for(Chord c : chords) {
+            if(!first) {
+                buf.append(",");
+            }
+            buf.append(c.toJson());
+            first = false;
+        }
+        buf.append("]");
+        buf.append("}");
+        return buf.toString();
+    }
+}
 
 class Mate {
     String refName;
@@ -110,9 +236,20 @@ class Mate {
         this.start = start;
         this.end = end;
     }
+    public String toJson() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("{");
+        buf.append(JsonUtils.toJson("refName", refName));
+        buf.append(",");
+        buf.append(JsonUtils.toJson("start", start));
+        buf.append(",");
+        buf.append(JsonUtils.toJson("end", end));
+        buf.append("}");
+        return buf.toString();
+    }
 }
 
-class Coord {
+class Chord {
     String uniqueId;
     String color;
     String refName;
@@ -120,7 +257,7 @@ class Coord {
     int end;
     Mate mate;
 
-    public Coord(BedPEFeature f) {
+    public Chord(BedPEFeature f) {
         this.uniqueId = f.chr1 + ":" + f.start1 + "-" + f.end1 + "_" + f.chr2 + ":" + f.start2 + "-" + f.end2;
         this.refName = f.chr1.startsWith("chr") ? f.chr1.substring(3) : f.chr1;
         this.start = f.start1;
@@ -129,7 +266,7 @@ class Coord {
         this.color = "rgba(0, 0, 255, 0.1)";
     }
 
-    public Coord(Alignment a) {
+    public Chord(Alignment a) {
         ReadMate mate = a.getMate();
         this.uniqueId = a.getReadName();
         this.refName = a.getChr().startsWith("chr") ? a.getChr().substring(3) : a.getChr();
@@ -140,7 +277,7 @@ class Coord {
         this.color = "rgba(0, 0, 255, 0.02)";
     }
 
-    public Coord(Variant v) {
+    public Chord(Variant v) {
 
         Map<String, Object> attrs = v.getAttributes();
         String chr2 = shortName(attrs.get("CHR2").toString());
@@ -158,11 +295,43 @@ class Coord {
         this.color = "rgb(0,0,255)";
     }
 
+    public String toJson() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("{");
+        buf.append(JsonUtils.toJson("uniqueId", uniqueId));
+        buf.append(",");
+        buf.append(JsonUtils.toJson("color", color));
+        buf.append(",");
+        buf.append(JsonUtils.toJson("refName", refName));
+        buf.append(",");
+        buf.append(JsonUtils.toJson("start", start));
+        buf.append(",");
+        buf.append(JsonUtils.toJson("end", end));
+        buf.append(",");
+        buf.append("\"mate\":");
+        buf.append(mate.toJson());
+        buf.append("}");
+        return buf.toString();
+    }
+
     static String shortName(String chr) {
         return chr.startsWith("chr") ? chr.substring(3) : chr;
     }
 
 }
+
+class JsonUtils {
+
+    public static String toJson(String name, String value) {
+        return "\"" + name + "\": \"" + value + "\"";
+    }
+
+    public static String toJson(String name, int value) {
+        return "\"" + name + "\": " + value;
+    }
+}
+
+
 
 class SocketSender {
 

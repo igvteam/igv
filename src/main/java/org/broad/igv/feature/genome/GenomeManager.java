@@ -44,6 +44,7 @@ import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.feature.genome.load.GenomeLoader;
 import org.broad.igv.feature.genome.load.JsonGenomeLoader;
+import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.FeatureTrack;
@@ -219,6 +220,9 @@ public class GenomeManager {
                 loadGenomeAnnotations(newGenome);
             }
 
+            if(PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+                CircularViewUtilities.changeGenome(newGenome);
+            }
 
             // log.info("Genome loaded.  id= " + newGenome.getId());
             return currentGenome;
