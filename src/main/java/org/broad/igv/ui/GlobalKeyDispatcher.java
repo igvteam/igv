@@ -374,7 +374,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
 
         } else {
-            MessageUtils.showMessage("To use track panning you must first select a single feature track.");
+            //MessageUtils.showMessage("To use track panning you must first select a single feature track.");
         }
     }
 
@@ -427,7 +427,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
             }
         } else {
-            MessageUtils.showMessage("To use track panning you must first select a single feature track.");
+            //MessageUtils.showMessage("To use track panning you must first select a single feature track.");
         }
 
 
