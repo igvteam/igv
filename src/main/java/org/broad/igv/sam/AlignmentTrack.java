@@ -1384,10 +1384,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             popupTitle.setFont(newFont);
             add(popupTitle);
 
-
             if (PreferencesManager.getPreferences().getAsBoolean(CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
                 addSeparator();
-                JMenuItem item = new JMenuItem("Show discordant pairs in circular view");
+                JMenuItem item = new JMenuItem("Show discordant pairs in Circular View");
+                item.setEnabled(dataManager.isPairedEnd());
                 add(item);
                 item.addActionListener(ae -> AlignmentTrack.this.sendToCircularView(e));
             }
@@ -1410,7 +1410,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (experimentType == ExperimentType.THIRD_GEN) {
                 addHaplotype(e);
             }
-
 
             addLinkedReadItems();
 
