@@ -48,7 +48,9 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.*;
+import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
@@ -1174,6 +1176,10 @@ public class IGV implements IGVEventObserver {
                 getRecentSessionList().addFirst(sessionPath);
             }
             this.menuBar.enableReloadSession();
+        }
+
+        if(PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+            CircularViewUtilities.clearAll();
         }
 
         repaint();

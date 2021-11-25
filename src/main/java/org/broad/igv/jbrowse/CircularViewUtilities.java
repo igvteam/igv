@@ -6,19 +6,13 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.ReadMate;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ChromosomeColors;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.vcf.MateVariant;
 
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +20,7 @@ public class CircularViewUtilities {
 
     public static boolean ping() {
         try {
-            String response = SocketSender.send("{\"message\": \"ping\"}", true);
+            String response = CircviewSocketWriter.send("{\"message\": \"ping\"}", true);
             return "OK".equals(response);
         } catch (Exception e) {
             return false;
@@ -37,20 +31,27 @@ public class CircularViewUtilities {
         Chord[] chords = new Chord[features.size()];
         int index = 0;
         for (BedPEFeature f : features) {
-            chords[index++] = new Chord(f);
+            chords[index++] = Chord.fromBedPE(f);
         }
         sendChordsToJBrowse(chords, trackName, color, "0.5");
     }
 
     public static void sendAlignmentsToJBrowse(List<Alignment> alignments, String trackName, Color color) {
 
-        Chord[] chords = new Chord[alignments.size()];
-        int index = 0;
+        List<Chord> chords = new ArrayList<>();
         for (Alignment a : alignments) {
-            chords[index++] = new Chord(a);
+            if(a.isPaired() && a.getMate().isMapped()) {
+                chords.add(Chord.fromPEAlignment(a));
+            }
+            if(a.getAttribute("SA") != null) {
+                chords.addAll(Chord.fromSAString(a));
+            }
         }
-        sendChordsToJBrowse(chords, trackName, color, "0.02");
+        Chord [] chordsArray = new Chord[chords.size()];  // Java is so (%$&$ verbose
+        chordsArray = chords.toArray(chordsArray);
+        sendChordsToJBrowse(chordsArray, trackName, color, "0.02");
     }
+
 
     public static void sendVariantsToJBrowse(List<Feature> variants, String trackName, Color color) {
 
@@ -61,7 +62,7 @@ public class CircularViewUtilities {
                 Variant v = f instanceof MateVariant ? ((MateVariant) f).mate : (Variant) f;
                 Map<String, Object> attrs = v.getAttributes();
                 if (attrs.containsKey("CHR2") && attrs.containsKey("END")) {
-                    chords[index++] = new Chord(v);
+                    chords[index++] = Chord.fromVariant(v);
                 }
             }
         }
@@ -80,8 +81,8 @@ public class CircularViewUtilities {
 
 
         String json = message.toJson();
-        System.out.println(json);
-        SocketSender.send(json);
+        //System.out.println(json);
+        CircviewSocketWriter.send(json);
     }
 
     public static void changeGenome(Genome genome) {
@@ -99,9 +100,13 @@ public class CircularViewUtilities {
         CircViewMessage message = new CircViewMessage("setAssembly", assm);
 
         String json = message.toJson();
-        System.out.println();
-        SocketSender.send(json);
+        //System.out.println();
+        CircviewSocketWriter.send(json);
 
+    }
+
+    public static void clearAll() {
+        CircviewSocketWriter.send("{\"message\": \"clearChords\"}", true);
     }
 }
 
@@ -136,245 +141,6 @@ class CircViewMessage {
     }
 
 }
-
-class CircViewAssembly {
-    String id;
-    String name;
-    CircViewRegion [] chromosomes;
-
-    public CircViewAssembly(String id, String name, CircViewRegion[] regions) {
-        this.id = id;
-        this.name = name;
-        this.chromosomes = regions;
-    }
-
-    public String toJson() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("{");
-        buf.append(JsonUtils.toJson("id", id));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("name", name));
-        buf.append(",\"chromosomes\":");
-        buf.append("[");
-        boolean first = true;
-        for(CircViewRegion c : this.chromosomes) {
-            if(!first) {
-                buf.append(",");
-            }
-            buf.append(c.toJson());
-            first = false;
-        }
-        buf.append("]");
-        buf.append("}");
-        return buf.toString();
-    }
-}
-
-class CircViewRegion {
-    String name;
-    int bpLength;
-    String color;
-    public CircViewRegion(String name, int bpLength, String color) {
-        this.name = name;
-        this.bpLength = bpLength;
-        this.color = color;
-    }
-
-    public String toJson() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("{");
-        buf.append(JsonUtils.toJson("name", name));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("color", color));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("bpLength", bpLength));
-        buf.append("}");
-        return buf.toString();
-    }
-}
-
-class CircViewTrack {
-    String name;
-    String color;
-    Chord[] chords;
-
-    public CircViewTrack(Chord[] chords, String name, String color) {
-        this.name = name;
-        this.color = color;
-        this.chords = chords;
-    }
-
-    public String toJson() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("{");
-        buf.append(JsonUtils.toJson("name", name));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("color", color));
-        buf.append(",\"chords\":");
-        buf.append("[");
-        boolean first = true;
-        for(Chord c : chords) {
-            if(!first) {
-                buf.append(",");
-            }
-            buf.append(c.toJson());
-            first = false;
-        }
-        buf.append("]");
-        buf.append("}");
-        return buf.toString();
-    }
-}
-
-class Mate {
-    String refName;
-    int start;
-    int end;
-
-    public Mate(String refName, int start, int end) {
-        this.refName = refName;
-        this.start = start;
-        this.end = end;
-    }
-    public String toJson() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("{");
-        buf.append(JsonUtils.toJson("refName", refName));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("start", start));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("end", end));
-        buf.append("}");
-        return buf.toString();
-    }
-}
-
-class Chord {
-    String uniqueId;
-    String color;
-    String refName;
-    int start;
-    int end;
-    Mate mate;
-
-    public Chord(BedPEFeature f) {
-        this.uniqueId = f.chr1 + ":" + f.start1 + "-" + f.end1 + "_" + f.chr2 + ":" + f.start2 + "-" + f.end2;
-        this.refName = f.chr1.startsWith("chr") ? f.chr1.substring(3) : f.chr1;
-        this.start = f.start1;
-        this.end = f.end1;
-        this.mate = new Mate(f.chr2.startsWith("chr") ? f.chr2.substring(3) : f.chr2, f.start2, f.end2);
-        this.color = "rgba(0, 0, 255, 0.1)";
-    }
-
-    public Chord(Alignment a) {
-        ReadMate mate = a.getMate();
-        this.uniqueId = a.getReadName();
-        this.refName = a.getChr().startsWith("chr") ? a.getChr().substring(3) : a.getChr();
-        this.start = a.getStart();
-        this.end = a.getEnd();
-        this.mate = new Mate(mate.getChr().startsWith("chr") ? mate.getChr().substring(3) : mate.getChr(),
-                mate.getStart(), mate.getStart() + 1);
-        this.color = "rgba(0, 0, 255, 0.02)";
-    }
-
-    public Chord(Variant v) {
-
-        Map<String, Object> attrs = v.getAttributes();
-        String chr2 = shortName(attrs.get("CHR2").toString());
-        int end2 = Integer.parseInt(attrs.get("END").toString());
-        int start2 = end2 - 1;
-        String chr1 = shortName(v.getChr());
-        int start1 = v.getStart();
-        int end1 = v.getEnd();
-
-        this.uniqueId = chr1 + "_" + start1 + ":" + end1 + "-" + chr2 + "_" + start2 + ":" + end2;
-        this.refName = chr1;
-        this.start = start1;
-        this.end = end1;
-        this.mate = new Mate(chr2, start2, end2);
-        this.color = "rgb(0,0,255)";
-    }
-
-    public String toJson() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("{");
-        buf.append(JsonUtils.toJson("uniqueId", uniqueId));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("color", color));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("refName", refName));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("start", start));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("end", end));
-        buf.append(",");
-        buf.append("\"mate\":");
-        buf.append(mate.toJson());
-        buf.append("}");
-        return buf.toString();
-    }
-
-    static String shortName(String chr) {
-        return chr.startsWith("chr") ? chr.substring(3) : chr;
-    }
-
-}
-
-class JsonUtils {
-
-    public static String toJson(String name, String value) {
-        return "\"" + name + "\": \"" + value + "\"";
-    }
-
-    public static String toJson(String name, int value) {
-        return "\"" + name + "\": " + value;
-    }
-}
-
-
-
-class SocketSender {
-
-    static String send(String json) {
-        return send(json, false);
-    }
-
-    static String send(String json, boolean suppressErrors) {
-        Socket socket = null;
-        PrintWriter out = null;
-        BufferedReader in = null;
-        try {
-            socket = new Socket("127.0.0.1", 1234);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            out.println(json);
-            out.flush();
-            String response = in.readLine();
-            return response;
-        } catch (UnknownHostException e) {
-            String err = "Unknown host exception: " + e.getMessage();
-            if (!suppressErrors) System.err.println(err);
-            return err;
-
-        } catch (IOException e) {
-            String message = "IO Exception: " + e.getMessage();
-            if (!suppressErrors) System.err.println(message);
-            return message;
-        } finally {
-            try {
-                in.close();
-                out.close();
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-}
-
-
-
 
 /*
 

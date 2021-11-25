@@ -7,7 +7,8 @@ import java.util.Arrays;
  */
 final public class Constants {
 
-    private Constants() {}  // Prevent instantiation
+    private Constants() {
+    }  // Prevent instantiation
 
     // Preference sets
     public static final String NULL_CATEGORY = "NULL";
@@ -260,10 +261,13 @@ final public class Constants {
     // OAuth provisioning
     public static final String PROVISIONING_URL = "PROVISIONING.URL";
 
+    // JBrowse circular view integration
+    public static final String CIRC_VIEW_ENABLED = "CIRC_VIEW_ENABLED";
+    public static final String CIRC_VIEW_PORT = "CIRC_VIEW_PORT";
+    public static final String CIRC_VIEW_HOST = "CIRC_VIEW_HOST";
+
     // Experimental
     public static final String SCORE_VARIANTS = "SCORE_VARIANTS";
-    public static final String CIRC_VIEW_ENABLED = "CIRC_VIEW_ENABLED";
-
 
 
     /**

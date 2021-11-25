@@ -49,7 +49,6 @@ import org.broad.igv.session.Session;
 import org.broad.igv.tools.PFMExporter;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.GlobalKeyDispatcher;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.color.ColorTable;
@@ -1302,7 +1301,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         setDisplayMode(DisplayMode.EXPANDED);
     }
 
-    private void sendToCircularView(TrackClickEvent e) {
+    private void sendPairsToCircularView(TrackClickEvent e) {
 
         List<ReferenceFrame> frames = e.getFrame() != null ?
                 Arrays.asList(e.getFrame()) :
@@ -1316,14 +1315,40 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 Range r = frame.getCurrentRange();
                 while (iter.hasNext()) {
                     Alignment a = iter.next();
-                    if (a.getEnd() > r.getStart() && a.getStart() < r.getEnd()
-                            && a.isPaired() && a.getMate().isMapped() &&
-                            (!a.getMate().getChr().equals(a.getChr()) || Math.abs(a.getInferredInsertSize()) > 1000000)) {
+                    if (a.getEnd() > r.getStart() && a.getStart() < r.getEnd()) {
+                        final boolean isDiscordantPair = a.isPaired() && a.getMate().isMapped() &&
+                                (!a.getMate().getChr().equals(a.getChr()) || Math.abs(a.getInferredInsertSize()) > 10000);
+                        if (isDiscordantPair) {
+                            inView.add(a);
+                        }
+                    }
+                }
+            }
+            Color chordColor = AlignmentTrack.this.getColor().equals(DEFAULT_ALIGNMENT_COLOR) ? Color.BLUE : AlignmentTrack.this.getColor();
+            CircularViewUtilities.sendAlignmentsToJBrowse(inView, AlignmentTrack.this.getName(), chordColor);
+        }
+    }
+
+    private void sendSplitToCircularView(TrackClickEvent e) {
+
+        List<ReferenceFrame> frames = e.getFrame() != null ?
+                Arrays.asList(e.getFrame()) :
+                FrameManager.getFrames();
+
+        List<Alignment> inView = new ArrayList<>();
+        for (ReferenceFrame frame : frames) {
+            AlignmentInterval interval = AlignmentTrack.this.getDataManager().getLoadedInterval(frame);
+            if (interval != null) {
+                Iterator<Alignment> iter = interval.getAlignmentIterator();
+                Range r = frame.getCurrentRange();
+                while (iter.hasNext()) {
+                    Alignment a = iter.next();
+                    if (a.getEnd() > r.getStart() && a.getStart() < r.getEnd() && a.getAttribute("SA") != null) {
                         inView.add(a);
                     }
                 }
             }
-            Color chordColor = AlignmentTrack.this.getColor() == DEFAULT_ALIGNMENT_COLOR ? Color.BLUE : AlignmentTrack.this.getColor();
+            Color chordColor = AlignmentTrack.this.getColor().equals(DEFAULT_ALIGNMENT_COLOR) ? Color.BLUE : AlignmentTrack.this.getColor();
             CircularViewUtilities.sendAlignmentsToJBrowse(inView, AlignmentTrack.this.getName(), chordColor);
         }
     }
@@ -1386,10 +1411,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             if (PreferencesManager.getPreferences().getAsBoolean(CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
                 addSeparator();
-                JMenuItem item = new JMenuItem("Show discordant pairs in Circular View");
-                item.setEnabled(dataManager.isPairedEnd());
+                JMenuItem item = new JMenuItem("Show discordant pairs in circular view");
+                //item.setEnabled(dataManager.isPairedEnd());
                 add(item);
-                item.addActionListener(ae -> AlignmentTrack.this.sendToCircularView(e));
+                item.addActionListener(ae -> AlignmentTrack.this.sendPairsToCircularView(e));
+
+                JMenuItem item2 = new JMenuItem("Show split reads in circular view");
+                //item.setEnabled(dataManager.isPairedEnd());
+                add(item2);
+                item2.addActionListener(ae -> AlignmentTrack.this.sendSplitToCircularView(e));
             }
 
             addSeparator();

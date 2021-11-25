@@ -152,6 +152,12 @@ public class PreferencesEditor {
 
                         currentGroup = pref.group;
                         group.setBorder(BorderFactory.createTitledBorder(currentGroup));
+                    } else if (pref.group == null && currentGroup != null) {
+                        group = new JPanel();
+                        grid = new GridBagLayout();
+                        group.setLayout(grid);
+                        contentGrid.addLayoutComponent(group, new GridBagConstraints(0, contentRow++, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
+                        content.add(group);
                     }
 
                     if (pref.getType().equals("boolean")) {
@@ -299,8 +305,15 @@ public class PreferencesEditor {
                 final JLabel currentDirectoryLabel = new JLabel("IGV Directory: " + currentDirectory);
                 final JButton moveButton = new JButton("Move...");
                 row++;
+
+                group = new JPanel();
+                grid = new GridBagLayout();
                 grid.addLayoutComponent(currentDirectoryLabel, new GridBagConstraints(0, row, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(3, 5, 2, 5), 2, 2));
                 grid.addLayoutComponent(moveButton, new GridBagConstraints(1, row, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 5, 2, 5), 2, 2));
+                group.setLayout(grid);
+                contentGrid.addLayoutComponent(group, new GridBagConstraints(0, contentRow++, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
+                content.add(group);
+
                 group.add(currentDirectoryLabel);
                 group.add(moveButton);
 
