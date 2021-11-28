@@ -1,5 +1,6 @@
 package org.broad.igv.jbrowse;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 
@@ -11,6 +12,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 class CircviewSocketWriter {
+
+    static Logger log = Logger.getLogger(CircviewSocketWriter.class);
 
     static String send(String json) {
         return send(json, false);
@@ -33,12 +36,16 @@ class CircviewSocketWriter {
             return response;
         } catch (UnknownHostException e) {
             String err = "Unknown host exception: " + e.getMessage();
-            if (!suppressErrors) System.err.println(err);
+            if (!suppressErrors) {
+                log.error(e);
+            }
             return err;
 
         } catch (IOException e) {
             String message = "IO Exception: " + e.getMessage();
-            if (!suppressErrors) System.err.println(message);
+            if (!suppressErrors) {
+                log.error(message, e);
+            }
             return message;
         } finally {
             try {
@@ -46,7 +53,7 @@ class CircviewSocketWriter {
                 out.close();
                 socket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e);
             }
         }
     }

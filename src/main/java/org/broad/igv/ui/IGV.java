@@ -1154,9 +1154,10 @@ public class IGV implements IGVEventObserver {
 
         String searchText = locus == null ? session.getLocus() : locus;
 
-        // NOTE: Nothing to do if chr == all
+        // NOTE: Nothing to do if chr == all as that is the default
         if (!FrameManager.isGeneListMode() && searchText != null &&
-                !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
+                !searchText.equals(Globals.CHR_ALL) &&
+                searchText.trim().length() > 0) {
             goToLocus(searchText);
         }
 

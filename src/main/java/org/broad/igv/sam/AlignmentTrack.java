@@ -1411,12 +1411,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             if (PreferencesManager.getPreferences().getAsBoolean(CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
                 addSeparator();
-                JMenuItem item = new JMenuItem("Show discordant pairs in circular view");
+                JMenuItem item = new JMenuItem("Add Discordant Pairs to Circular View");
                 //item.setEnabled(dataManager.isPairedEnd());
                 add(item);
                 item.addActionListener(ae -> AlignmentTrack.this.sendPairsToCircularView(e));
 
-                JMenuItem item2 = new JMenuItem("Show split reads in circular view");
+                JMenuItem item2 = new JMenuItem("Add Split Reads to Circular View");
                 //item.setEnabled(dataManager.isPairedEnd());
                 add(item2);
                 item2.addActionListener(ae -> AlignmentTrack.this.sendSplitToCircularView(e));

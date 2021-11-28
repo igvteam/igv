@@ -81,7 +81,7 @@ public class VariantMenu extends IGVPopupMenu {
 
         if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
             addSeparator();
-            JMenuItem circItem = new JMenuItem("Show SVs in Circular View");
+            JMenuItem circItem = new JMenuItem("Add SVs to Circular View");
             circItem.addActionListener(e1 -> track.sendToCircularView(e));
             add(circItem);
         }

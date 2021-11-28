@@ -49,7 +49,7 @@ public class CircularViewUtilities {
         }
         Chord [] chordsArray = new Chord[chords.size()];  // Java is so (%$&$ verbose
         chordsArray = chords.toArray(chordsArray);
-        sendChordsToJBrowse(chordsArray, trackName, color, "0.02");
+        sendChordsToJBrowse(chordsArray, trackName, color, "0.1");
     }
 
 

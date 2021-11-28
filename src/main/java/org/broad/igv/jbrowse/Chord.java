@@ -32,7 +32,6 @@ class Chord {
         c.start = f.start1;
         c.end = f.end1;
         c.mate = new Mate(chr2, f.start2, f.end2);
-        c.color = "rgba(0, 0, 255, 0.1)";
         return c;
     }
 
@@ -46,7 +45,6 @@ class Chord {
         c.mate = new Mate(shortName(readMate.getChr()),
                 readMate.getStart(),
                 readMate.getStart() + 1);
-        c.color = "rgba(0, 0, 255, 0.02)";
         return c;
     }
 
@@ -85,7 +83,6 @@ class Chord {
         c.start = start1;
         c.end = end1;
         c.mate = new Mate(chr2, start2, end2);
-        c.color = "rgb(0,0,255)";
         return c;
     }
 
