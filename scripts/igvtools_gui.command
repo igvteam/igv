@@ -1,6 +1,6 @@
 #!/bin/sh
 cd `dirname $0`
-prefix=`dirname $(readlink $0 || echo $0)`
+prefix=`dirname $(readlink -f $0 || echo $0)`
 
 # Check whether or not to use the bundled JDK
 if [ -d "${prefix}/jdk-11" ]; then

@@ -10,7 +10,7 @@
 #apple.laf.useScreenMenuBar for Macs, to put menu bar at top of screen
 #-Xdock:name again for Macs, sets the name in menu bar
 #Add the flag -Ddevelopment = true to use features still in development
-prefix=`dirname $(readlink $0 || echo $0)`
+prefix=`dirname $(readlink -f $0 || echo $0)`
 
 # Check whether or not to use the bundled JDK
 if [ -d "${prefix}/jdk-11" ]; then
