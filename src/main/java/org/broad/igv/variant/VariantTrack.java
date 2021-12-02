@@ -31,22 +31,21 @@ package org.broad.igv.variant;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.variantcontext.GenotypeType;
 import org.apache.log4j.Logger;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.event.TrackGroupEvent;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
-
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.GlobalKeyDispatcher;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.event.TrackGroupEvent;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
+import org.broad.igv.variant.vcf.MateVariant;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -56,8 +55,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -614,7 +614,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int right = (int) trackRectangle.getMaxX();
 
         //Top line
-       // drawLineIfVisible(g2D, visibleRectangle, Color.black, top + 1, left, right);
+        // drawLineIfVisible(g2D, visibleRectangle, Color.black, top + 1, left, right);
 
         // Bottom border
         int bottomY = trackRectangle.y + trackRectangle.height;
@@ -1509,7 +1509,18 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         } else {
             visibleFeatures = getVisibleFeatures(e.getFrame());
         }
-        CircularViewUtilities.sendVariantsToJBrowse(visibleFeatures, getName(), getColor());
+
+        List<Feature> svFeatures = visibleFeatures.stream().filter(f -> {
+            Variant v = f instanceof MateVariant ? ((MateVariant) f).mate : (Variant) f;
+            Map<String, Object> attrs = v.getAttributes();
+            return  attrs.containsKey("CHR2") && attrs.containsKey("END");
+        }).collect(Collectors.toList());
+
+        if(svFeatures.isEmpty()) {
+            MessageUtils.showMessage("No structural variants found.");
+        } else {
+            CircularViewUtilities.sendVariantsToJBrowse(svFeatures, getName(), getColor());
+        }
     }
 
 

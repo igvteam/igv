@@ -14,7 +14,6 @@ import org.broad.igv.variant.vcf.MateVariant;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class CircularViewUtilities {
 
@@ -40,14 +39,14 @@ public class CircularViewUtilities {
 
         List<Chord> chords = new ArrayList<>();
         for (Alignment a : alignments) {
-            if(a.isPaired() && a.getMate().isMapped()) {
+            if (a.isPaired() && a.getMate().isMapped()) {
                 chords.add(Chord.fromPEAlignment(a));
             }
-            if(a.getAttribute("SA") != null) {
+            if (a.getAttribute("SA") != null) {
                 chords.addAll(Chord.fromSAString(a));
             }
         }
-        Chord [] chordsArray = new Chord[chords.size()];  // Java is so (%$&$ verbose
+        Chord[] chordsArray = new Chord[chords.size()];   
         chordsArray = chords.toArray(chordsArray);
         sendChordsToJBrowse(chordsArray, trackName, color, "0.1");
     }
@@ -60,10 +59,7 @@ public class CircularViewUtilities {
         for (Feature f : variants) {
             if (f instanceof Variant) {
                 Variant v = f instanceof MateVariant ? ((MateVariant) f).mate : (Variant) f;
-                Map<String, Object> attrs = v.getAttributes();
-                if (attrs.containsKey("CHR2") && attrs.containsKey("END")) {
-                    chords[index++] = Chord.fromVariant(v);
-                }
+                chords[index++] = Chord.fromVariant(v);
             }
         }
         sendChordsToJBrowse(chords, trackName, color, "0.5");
@@ -131,9 +127,9 @@ class CircViewMessage {
         buf.append("{");
         buf.append(JsonUtils.toJson("message", message));
         buf.append(",\"data\":");
-        if(this.assembly != null) {
+        if (this.assembly != null) {
             buf.append(assembly.toJson());
-        } else if(this.track != null) {
+        } else if (this.track != null) {
             buf.append(track.toJson());
         }
         buf.append("}");
