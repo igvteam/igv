@@ -26,8 +26,6 @@
 package org.broad.igv.util;
 
 import biz.source_code.base64Coder.Base64Coder;
-import htsjdk.samtools.seekablestream.SeekableStream;
-import htsjdk.samtools.util.RuntimeIOException;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPStream;
 import org.apache.log4j.Logger;
@@ -711,56 +709,37 @@ public class HttpUtils {
             url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
         }
 
-        Proxy sysProxy = null;
-        boolean igvProxySettingsExist = proxySettings != null && proxySettings.useProxy;
-        boolean checkSystemProxy =
-                !PreferencesManager.getPreferences().getAsBoolean("PROXY.DISABLE_CHECK") && !igvProxySettingsExist;
+        HttpURLConnection conn = null;
+        if (proxySettings != null && proxySettings.isProxyDefined()) {
 
-        //Only check for system proxy if igv proxy settings not found
-        if (checkSystemProxy) {
-            sysProxy = getSystemProxy(url.toExternalForm());
+            // NOTE: setting disabledSchemes to "" through System.setProperty does not work !!! Use ProxiedHttpsConnection
+            // System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+            // System.setProperty("jdk.http.auth.proxying.disabledSchemes", "");
+
+            if (url.getProtocol().equals("https") && proxySettings.isUserPwDefined()) {
+                conn = new ProxiedHttpsConnection(url, proxySettings.proxyHost, proxySettings.proxyPort,
+                        proxySettings.user, proxySettings.pw);
+            } else {
+                Proxy proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
+                conn = (HttpURLConnection) url.openConnection(proxy);
+                if (proxySettings.isUserPwDefined()) {
+                    byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
+                    String encodedUserPwd = String.valueOf(Base64Coder.encode(bytes));
+                    conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
+                }
+            }
+        }
+        if (conn == null && !PreferencesManager.getPreferences().getAsBoolean("PROXY.DISABLE_CHECK")) {
+            Proxy sysProxy = getSystemProxy(url.toExternalForm());
+            if (sysProxy != null && sysProxy.type() != Proxy.Type.DIRECT) {
+                conn = (HttpURLConnection) url.openConnection(sysProxy);
+            }
         }
 
-        boolean useProxy =
-                (sysProxy != null && sysProxy.type() != Proxy.Type.DIRECT) ||
-                        (igvProxySettingsExist && !proxySettings.getWhitelist().contains(url.getHost()));
-
-        HttpURLConnection conn;
-        if (useProxy) {
-            Proxy proxy = sysProxy;
-            if (igvProxySettingsExist) {
-                if (proxySettings.type == Proxy.Type.DIRECT) {
-
-                    if (PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
-                        log.info("NO_PROXY");
-                    }
-
-                    proxy = Proxy.NO_PROXY;
-                } else {
-                    if (PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
-                        log.info("PROXY " + proxySettings.proxyHost + "  " + proxySettings.proxyPort);
-                    }
-
-                    proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
-                }
-            }
-            conn = (HttpURLConnection) url.openConnection(proxy);
-            if (igvProxySettingsExist && proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
-                byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
-
-                String encodedUserPwd = String.valueOf(Base64Coder.encode(bytes));
-                conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
-            }
-        } else {
-            if (PreferencesManager.getPreferences().getAsBoolean("DEBUG.PROXY")) {
-                log.info("PROXY NOT USED ");
-                if (proxySettings.getWhitelist().contains(url.getHost())) {
-                    //log.info(url.getHost() + " is whitelisted");
-                }
-            }
+        // If connection is still null no proxy is used
+        if (conn == null) {
             conn = (HttpURLConnection) url.openConnection();
         }
-
 
         if (!"HEAD".equals(method)) {
             conn.setRequestProperty("Accept", "text/plain");
@@ -1047,6 +1026,14 @@ public class HttpUtils {
             this.user = user;
             this.type = proxyType;
             this.whitelist = whitelist;
+        }
+
+        public boolean isProxyDefined() {
+            return useProxy && proxyHost != null && proxyPort > 0;
+        }
+
+        public boolean isUserPwDefined() {
+            return this.auth && this.user != null && this.pw != null;
         }
 
         public Set<String> getWhitelist() {
