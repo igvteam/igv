@@ -303,6 +303,7 @@ public class IGVPreferences {
             }
         }
         clearCaches();
+        checkForProxyChanges(updatedPrefs);
         checkForAlignmentChanges(updatedPrefs);   // TODO replace with event
         IGVEventBus.getInstance().post(new PreferencesChangeEvent());
 
@@ -342,6 +343,17 @@ public class IGVPreferences {
             }
         }
 
+    }
+
+    private void checkForProxyChanges(Map<String, String> updatedPreferenceMap) {
+        if (HttpUtils.getInstance() != null) {
+            for (String key : PROXY_KEYS) {
+                if (updatedPreferenceMap.containsKey(key)) {
+                    HttpUtils.getInstance().updateProxySettings();
+                    return;
+                }
+            }
+        }
     }
 
 

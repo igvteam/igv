@@ -307,4 +307,18 @@ final public class Constants {
             SAM_GROUP_BY_TAG
     );
 
+    /**
+     * List of keys that affect proxy usage
+     */
+    static java.util.List<String> PROXY_KEYS = Arrays.asList(
+            USE_PROXY,
+            PROXY_AUTHENTICATE,
+            PROXY_HOST,
+            PROXY_PORT,
+            PROXY_PW,
+            PROXY_TYPE,
+            PROXY_USER,
+            PROXY_WHITELIST
+    );
+
 }
