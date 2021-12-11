@@ -114,9 +114,9 @@ dependencies {
         [group: 'org.apache.commons', name: 'commons-jexl', version: '2.1.1'],
         [group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'],
         [group: 'com.github.samtools', name: 'htsjdk', version: '2.24.1'],
-        [group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.11.0'],
-        [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'],
-        [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'],
+        [group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.15.0'],
+        [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.15.0'],
+        [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.15.0'],
         [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
         //[group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],  // no longer in Maven Central
         [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],
