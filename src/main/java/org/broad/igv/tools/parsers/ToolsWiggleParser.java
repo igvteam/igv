@@ -27,7 +27,7 @@ package org.broad.igv.tools.parsers;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.data.WiggleParser;
@@ -52,7 +52,7 @@ import java.util.Map;
  */
 public class ToolsWiggleParser extends WiggleParser{
 
-    static private Logger log = Logger.getLogger(ToolsWiggleParser.class);
+    static private Logger log = LogManager.getLogger(ToolsWiggleParser.class);
     private DataConsumer dataConsumer;
 
     // State variables.  This is a serial type parser,  these variables are used to hold temporary

@@ -27,7 +27,7 @@
 package org.broad.igv.ui.color;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.util.ObjectCache;
 
 import java.awt.*;
@@ -45,7 +45,7 @@ import java.util.*;
  */
 public class ColorUtilities {
 
-    private static Logger log = Logger.getLogger(ColorUtilities.class);
+    private static Logger log = LogManager.getLogger(ColorUtilities.class);
 
     public static ObjectCache<Object, Color> colorCache = new ObjectCache<>(1000);
     private static ObjectCache<Color, Color> slightlyDarkerCache = new ObjectCache<>(1000);

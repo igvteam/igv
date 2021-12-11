@@ -25,7 +25,7 @@
 
 package org.broad.igv.batch;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -40,7 +40,7 @@ import java.io.IOException;
 
 public class BatchRunner implements NamedRunnable {
 
-    private static Logger log = Logger.getLogger(BatchRunner.class);
+    private static Logger log = LogManager.getLogger(BatchRunner.class);
 
     private String inputFile;
     private IGV igv;

@@ -29,7 +29,7 @@
  */
 package org.broad.igv.renderer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.IGVFeature;
 import htsjdk.tribble.Feature;
 
@@ -41,7 +41,7 @@ public abstract class FeatureRenderer implements Renderer<IGVFeature> {
     /**
      * Return the pixel position corresponding to the chromosomal position.
      */
-    private static Logger log = Logger.getLogger(FeatureRenderer.class);
+    private static Logger log = LogManager.getLogger(FeatureRenderer.class);
 
     private Feature highlightFeature = null;
 

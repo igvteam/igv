@@ -1,7 +1,7 @@
 package org.broad.igv.util;
 
 import com.google.gson.JsonObject;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.google.OAuthProvider;
@@ -38,7 +38,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class AmazonUtils {
-    private static Logger log = Logger.getLogger(AmazonUtils.class);
+    private static Logger log = LogManager.getLogger(AmazonUtils.class);
 
     // AWS specific objects
     private static S3Client s3Client;

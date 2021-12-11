@@ -28,7 +28,7 @@ package org.broad.igv.track;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.util.ParsingUtils;
 
 import java.awt.*;
@@ -44,7 +44,7 @@ import java.util.Map;
  */
 public class TrackProperties {
 
-    private static Logger log = Logger.getLogger(TrackProperties.class);
+    private static Logger log = LogManager.getLogger(TrackProperties.class);
     private String trackLine;
 
     public enum BaseCoord {

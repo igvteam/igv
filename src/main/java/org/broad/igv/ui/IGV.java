@@ -37,7 +37,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -95,7 +95,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class IGV implements IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(IGV.class);
+    private static Logger log = LogManager.getLogger(IGV.class);
     private static IGV theInstance;
 
     // Window components

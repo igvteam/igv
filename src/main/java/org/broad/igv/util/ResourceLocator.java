@@ -27,7 +27,7 @@ package org.broad.igv.util;
 
 import com.google.gson.JsonObject;
 import htsjdk.tribble.Tribble;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
 import org.broad.igv.feature.FeatureType;
 import org.broad.igv.feature.dsi.DSICodec;
@@ -54,7 +54,7 @@ import static org.broad.igv.feature.tribble.CodecFactory.ucscSNP;
  */
 public class ResourceLocator {
 
-    private static Logger log = Logger.getLogger(ResourceLocator.class);
+    private static Logger log = LogManager.getLogger(ResourceLocator.class);
 
     /**
      * Display name

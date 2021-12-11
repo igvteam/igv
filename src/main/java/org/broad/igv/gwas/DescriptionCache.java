@@ -25,7 +25,7 @@
 
 package org.broad.igv.gwas;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
@@ -43,7 +43,7 @@ import java.util.ArrayList;
  */
 public class DescriptionCache {
 
-    private static final Logger log = Logger.getLogger(DescriptionCache.class);
+    private static final Logger log = LogManager.getLogger(DescriptionCache.class);
 
 
     // Maximum amount of values stored in the cache

@@ -29,7 +29,7 @@ import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.readers.AsciiLineReader;
 import htsjdk.tribble.readers.LineIterator;
 import htsjdk.tribble.readers.LineIteratorImpl;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Mutation;
@@ -53,7 +53,7 @@ import java.util.HashSet;
  */
 public class MUTCodec extends AsciiFeatureCodec<Mutation> {
 
-    private static Logger log = Logger.getLogger(MUTCodec.class);
+    private static Logger log = LogManager.getLogger(MUTCodec.class);
 
     private String path;  // for error messages
     private boolean isMAF;

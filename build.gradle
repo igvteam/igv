@@ -26,6 +26,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'application'
 
 import org.apache.tools.ant.filters.ReplaceTokens
+
 //import proguard.gradle.ProGuardTask
 
 mainClassName = 'org.broad.igv.ui.Main'
@@ -102,57 +103,57 @@ configurations {
 }
 
 dependencies {
-    implementation (
-        fileTree(dir: 'lib', include: '*.jar'), // first search on disk (old behavior), then maven repos
-        [group: 'org.apache.ant', name: 'ant', version: '1.10.5'],
-        [group: 'com.google.code.gson', name: 'gson', version: '2.8.5'],
-        [group: 'com.google.protobuf', name: 'protobuf-java', version: '3.7.0-rc1'],
-        [group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'],
-        [group: 'commons-io', name: 'commons-io', version: '2.6'],
-        [group: 'org.apache.commons', name: 'commons-compress', version: '1.18'],
-        [group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.7.3'], 
-        [group: 'org.apache.commons', name: 'commons-jexl', version: '2.1.1'],
-        [group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'],
-        [group: 'com.github.samtools', name: 'htsjdk', version: '2.24.1'],
-        [group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.11.0'],
-        [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'],
-        [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'],
-        [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
-        //[group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],  // no longer in Maven Central
-        [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],
-        [group: 'org.campagnelab.goby', name: 'goby-io', version: '3.3.1'],
-        [group: 'org.campagnelab.icb', name: 'icb-utils', version: '2.0.2'],
-        [group: 'org.campagnelab.ext', name: 'jsap', version: '3.0.0'],
-        [group: 'org.apache.xmlgraphics', name: 'batik-dom', version: '1.11'],
-        [group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: '1.11'],
-        [group: 'org.apache.xmlgraphics', name: 'batik-codec', version: '1.11'],
-        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'],
-        [group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.26'],
-        [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
+    implementation(
+            fileTree(dir: 'lib', include: '*.jar'), // first search on disk (old behavior), then maven repos
+            [group: 'org.apache.ant', name: 'ant', version: '1.10.5'],
+            [group: 'com.google.code.gson', name: 'gson', version: '2.8.5'],
+            [group: 'com.google.protobuf', name: 'protobuf-java', version: '3.7.0-rc1'],
+            [group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'],
+            [group: 'commons-io', name: 'commons-io', version: '2.6'],
+            [group: 'org.apache.commons', name: 'commons-compress', version: '1.18'],
+            [group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.7.3'],
+            [group: 'org.apache.commons', name: 'commons-jexl', version: '2.1.1'],
+            [group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'],
+            [group: 'com.github.samtools', name: 'htsjdk', version: '2.24.1'],
+            [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.15.0'],
+            [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.15.0'],
+            [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
+            //[group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],  // no longer in Maven Central
+            [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],
+            [group: 'org.campagnelab.goby', name: 'goby-io', version: '3.3.1'],
+            [group: 'org.campagnelab.icb', name: 'icb-utils', version: '2.0.2'],
+            [group: 'org.campagnelab.ext', name: 'jsap', version: '3.0.0'],
+            [group: 'org.apache.xmlgraphics', name: 'batik-dom', version: '1.11'],
+            [group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: '1.11'],
+            [group: 'org.apache.xmlgraphics', name: 'batik-codec', version: '1.11'],
+            [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'],
+            [group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.26'],
+            [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
 
-        // Amazon deps
-        [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.16.7'],
-        [group: 'software.amazon.awssdk', name: 'sts', version: '2.16.7'],
-        [group: 'software.amazon.awssdk', name: 's3', version: '2.16.7']
+            // Amazon deps
+            [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.16.7'],
+            [group: 'software.amazon.awssdk', name: 'sts', version: '2.16.7'],
+            [group: 'software.amazon.awssdk', name: 's3', version: '2.16.7']
     )
 
     testImplementation(
-        [group: 'junit', name: 'junit', version: '4.12'],
-        [group: 'com.sparkjava', name: 'spark-core', version: '2.2'],
-        [group: 'org.glassfish.jersey.core', name: 'jersey-common', version: '2.22.4']
+            [group: 'junit', name: 'junit', version: '4.12'],
+            [group: 'com.sparkjava', name: 'spark-core', version: '2.2'],
+            [group: 'org.glassfish.jersey.core', name: 'jersey-common', version: '2.22.4']
     )
 }
 
 
-
 processResources {
     // Set the current timestamp for release builds; pass in a blank property to enable (i.e. -Ptimestamp="" at CLI)
-    if (timestamp == "") { timestamp = new Date().format("MM/dd/yyyy hh:mm aa") }
+    if (timestamp == "") {
+        timestamp = new Date().format("MM/dd/yyyy hh:mm aa")
+    }
 
     filesMatching('resources/about.properties') {
-        filter (ReplaceTokens,
-                tokens: [ VERSION: version, BUILD: buildNumber, DEFAULT_MASTER_RESOURCE_URL: dataServerUrl,
-                          TIMESTAMP: timestamp, DEVELOPMENT: development ])
+        filter(ReplaceTokens,
+                tokens: [VERSION  : version, BUILD: buildNumber, DEFAULT_MASTER_RESOURCE_URL: dataServerUrl,
+                         TIMESTAMP: timestamp, DEVELOPMENT: development])
     }
 }
 
@@ -160,10 +161,10 @@ jar {
     archiveFileName = 'igv.jar'
     manifest {
         attributes(
-            "Permissions": "all-permissions",
-            "Application-Name": "IGV",
-            "Built-By": System.getProperty('user.name'),
-            "Main-Class": mainClassName,
+                "Permissions": "all-permissions",
+                "Application-Name": "IGV",
+                "Built-By": System.getProperty('user.name'),
+                "Main-Class": mainClassName,
         )
     }
 }
@@ -172,7 +173,7 @@ compileJava {
     inputs.property("moduleName", moduleName)
     doFirst {
         options.compilerArgs = [
-            '--module-path', classpath.asPath,
+                '--module-path', classpath.asPath,
         ]
         classpath = files()
     }
@@ -193,9 +194,9 @@ compileTestJava {
     inputs.property("moduleName", moduleName)
     doFirst {
         options.compilerArgs = [
-            '--module-path',  classpath.asPath,
-            '--add-modules', 'junit',
-            '--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath,
+                '--module-path', classpath.asPath,
+                '--add-modules', 'junit',
+                '--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath,
         ]
         classpath = files()
     }
@@ -206,21 +207,21 @@ test {
 
     doFirst {
         jvmArgs = [
-            '-Dcom.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize',
-            '--module-path',  classpath.asPath,
-            '--add-modules', 'junit',
-            '--add-modules', 'ALL-MODULE-PATH',
-            '--add-reads', "$moduleName=junit",
-            '@scripts/test_suite.args',
-            '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath,
+                '-Dcom.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize',
+                '--module-path', classpath.asPath,
+                '--add-modules', 'junit',
+                '--add-modules', 'ALL-MODULE-PATH',
+                '--add-reads', "$moduleName=junit",
+                '@scripts/test_suite.args',
+                '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath,
         ]
         classpath = files()
     }
 }
 
-task createDist(type: Copy, dependsOn: jar)  {
-    from ("web/IGV_64.png")
-    from ("scripts") {
+task createDist(type: Copy, dependsOn: jar) {
+    from("web/IGV_64.png")
+    from("scripts") {
         include '*.bat'
         include '*.sh'
         include 'igv.command'
@@ -229,8 +230,8 @@ task createDist(type: Copy, dependsOn: jar)  {
         include 'igvtools*'
     }
     with copySpec {
-        from ("${buildDir}/libs")
-        from ("lib") { include '*.jar' }
+        from("${buildDir}/libs")
+        from("lib") { include '*.jar' }
         into "lib"
     }
     // Copies all Maven-fetched dependency jars
@@ -238,7 +239,7 @@ task createDist(type: Copy, dependsOn: jar)  {
         from configurations.default
         into "lib"
     }
-    with copySpec { from ("genomes/sizes") { } into "lib/genomes" }
+    with copySpec { from("genomes/sizes") {} into "lib/genomes" }
 
     into "${buildDir}/IGV-dist"
 }
@@ -255,7 +256,7 @@ task createDistZip(type: Zip, dependsOn: createDist) {
 
 task createLinuxDistZip(type: Zip, dependsOn: createDist) {
     archiveName = "IGV_Linux_${version}.zip"
-    from ("${buildDir}/IGV-dist") {
+    from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*.command"
         exclude 'igvtools*'
@@ -267,7 +268,7 @@ task createLinuxDistZip(type: Zip, dependsOn: createDist) {
 task createLinuxWithJavaDistZip(type: Zip, dependsOn: createDist) {
     archiveName = "IGV_Linux_${version}_WithJava.zip"
     with copySpec { from jdkBundleLinux into "jdk-11" }
-    from ("${buildDir}/IGV-dist") {
+    from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*.command"
         exclude 'igvtools*'
@@ -283,7 +284,7 @@ task createLinuxWithJavaDistZip(type: Zip, dependsOn: createDist) {
 
 task createMacDistZip(type: Zip, dependsOn: createDist) {
     archiveName = "IGV_Mac_${version}.zip"
-    from ("${buildDir}/IGV-dist") {
+    from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*_hidpi*"
         exclude "igvtools*"
@@ -295,7 +296,7 @@ task createMacDistZip(type: Zip, dependsOn: createDist) {
 task createMacWithJavaDistZip(type: Zip, dependsOn: createDist) {
     archiveName = "IGV_Mac_${version}_WithJava.zip"
     with copySpec { from jdkBundleMac into "jdk-11" }
-    from ("${buildDir}/IGV-dist") {
+    from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*_hidpi*"
         exclude "igvtools*"
@@ -311,43 +312,43 @@ task createMacWithJavaDistZip(type: Zip, dependsOn: createDist) {
 
 task createMacAppDist(type: Copy, dependsOn: createDist) {
     with copySpec {
-        from ("scripts/mac.app") {
+        from("scripts/mac.app") {
             exclude "Contents/Info.plist.template"
             exclude "Contents/MacOS/IGV.sh"
         }
         into "IGV_${version}.app"
     }
     with copySpec {
-        from ("scripts/mac.app/Contents/Info.plist.template")
-        filter (ReplaceTokens, tokens: [ VERSION: version ])
+        from("scripts/mac.app/Contents/Info.plist.template")
+        filter(ReplaceTokens, tokens: [VERSION: version])
         rename "Info.plist.template", "Info.plist"
         into "IGV_${version}.app/Contents"
     }
     with copySpec {
-        from ("web/IGV_64.png")
+        from("web/IGV_64.png")
         into "IGV_${version}.app/Contents/Resources"
     }
     with copySpec {
-        from ("${buildDir}/IGV-dist/") include 'igv.args'
+        from("${buildDir}/IGV-dist/") include 'igv.args'
         into "IGV_${version}.app/Contents/Java/"
     }
     with copySpec {
-        from ("${buildDir}/IGV-dist/lib") include '*.jar'
+        from("${buildDir}/IGV-dist/lib") include '*.jar'
         into "IGV_${version}.app/Contents/Java/lib"
     }
     into "${buildDir}/IGV-MacApp-dist"
 
     doLast {
-        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-MacApp-dist/IGV_${version}.app" ) }
+        project.exec { commandLine('chmod', '775', "${buildDir}/IGV-MacApp-dist/IGV_${version}.app") }
     }
 }
 
 task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
     archiveName = "IGV_MacApp_${version}.zip"
     from("${buildDir}/IGV-MacApp-dist")
-    
+
     doLast {
-        project.exec { commandLine('chmod', '775', createMacAppDistZip.archivePath ) }
+        project.exec { commandLine('chmod', '775', createMacAppDistZip.archivePath) }
     }
 }
 
@@ -355,12 +356,12 @@ task createMacAppWithJavaDistZip(type: Zip, dependsOn: createMacAppDist) {
     archiveName = "IGV_MacApp_${version}_WithJava.zip"
     with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-11" }
     from("${buildDir}/IGV-MacApp-dist")
-    
+
     doLast {
         if (jdkBundleMac == "") {
             throw new GradleException("Required property not set: jdkBundleMac");
         }
-        project.exec { commandLine('chmod', '775', createMacAppWithJavaDistZip.archivePath ) }
+        project.exec { commandLine('chmod', '775', createMacAppWithJavaDistZip.archivePath) }
     }
 }
 
@@ -374,29 +375,29 @@ task createWinDist(type: Copy, dependsOn: createDist) {
             exclude "igvtools_gui_hidpi"
             exclude 'lib/genomes'
         }
-        from ("resources") { include "IGV_64.ico" }
+        from("resources") { include "IGV_64.ico" }
         into "IGV_${version}"
     }
     with copySpec {
         // Create a build-specific NSIS installer script.
-        from ("scripts/nsis/installer.nsi")
-        filter (ReplaceTokens, tokens: [ VERSION: version, JVM_INCL: '' ])
+        from("scripts/nsis/installer.nsi")
+        filter(ReplaceTokens, tokens: [VERSION: version, JVM_INCL: ''])
     }
-    from ("scripts/nsis") { include "license_win.txt" }
+    from("scripts/nsis") { include "license_win.txt" }
     into "${buildDir}/IGV-WinExe-dist"
 }
 
 task createWinWithJavaDist(type: Copy, dependsOn: createWinDist) {
     with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-11" }
     with copySpec {
-        from ("${buildDir}/IGV-WinExe-dist/IGV_${version}") { exclude 'installer.nsi' }
+        from("${buildDir}/IGV-WinExe-dist/IGV_${version}") { exclude 'installer.nsi' }
         into "IGV_${version}"
     }
     with copySpec {
-        from ("scripts/nsis/installer.nsi")
-        filter (ReplaceTokens, tokens: [ VERSION: version, JVM_INCL: '-WithJava' ])
+        from("scripts/nsis/installer.nsi")
+        filter(ReplaceTokens, tokens: [VERSION: version, JVM_INCL: '-WithJava'])
     }
-    from ("scripts/nsis") { include "license_win.txt" }
+    from("scripts/nsis") { include "license_win.txt" }
     into "${buildDir}/IGV-WinExe-WithJava-dist"
 
     doLast {
@@ -408,7 +409,7 @@ task createWinWithJavaDist(type: Copy, dependsOn: createWinDist) {
 
 task createWinExeDist(type: Exec, dependsOn: createWinDist) {
     commandLine(makensisCommand, "-O${buildDir}/tmp/nsis-WithJava-build.log",
-                "${buildDir}/IGV-WinExe-dist/installer.nsi")
+            "${buildDir}/IGV-WinExe-dist/installer.nsi")
     doLast {
         if (makensisCommand == "") {
             throw new GradleException("Required property not set: makensisCommand");
@@ -418,7 +419,7 @@ task createWinExeDist(type: Exec, dependsOn: createWinDist) {
 
 task createWinWithJavaExeDist(type: Exec, dependsOn: createWinWithJavaDist) {
     commandLine(makensisCommand, "-O${buildDir}/tmp/nsis-build.log",
-                "${buildDir}/IGV-WinExe-WithJava-dist/installer.nsi")
+            "${buildDir}/IGV-WinExe-WithJava-dist/installer.nsi")
     doLast {
         if (makensisCommand == "") {
             throw new GradleException("Required property not set: makensisCommand");
@@ -430,10 +431,10 @@ task createWinWithJavaExeDist(type: Exec, dependsOn: createWinWithJavaDist) {
 }
 
 task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
-    standardInput = new ByteArrayInputStream( keyPassword.getBytes() );
+    standardInput = new ByteArrayInputStream(keyPassword.getBytes());
     commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha512",
-                "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
-                "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-dist/IGV_Win_${version}-installer.exe")
+            "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
+            "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-dist/IGV_Win_${version}-installer.exe")
     doLast {
         if (signcodeCommand == "") {
             throw new GradleException("Required property not set: signcodeCommand");
@@ -442,10 +443,10 @@ task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
 }
 
 task signWinExeWithJavaDist(type: Exec, dependsOn: createWinWithJavaExeDist) {
-    standardInput = new ByteArrayInputStream( keyPassword.getBytes() );
+    standardInput = new ByteArrayInputStream(keyPassword.getBytes());
     commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha512",
-                "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
-                "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-WithJava-dist/IGV_Win_${version}-WithJava-installer.exe")
+            "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
+            "-t", tsaurl, "-tr", "10", "${buildDir}/IGV-WinExe-WithJava-dist/IGV_Win_${version}-WithJava-installer.exe")
     doLast {
         if (signcodeCommand == "") {
             throw new GradleException("Required property not set: signcodeCommand");

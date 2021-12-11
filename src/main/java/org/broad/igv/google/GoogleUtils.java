@@ -2,7 +2,7 @@ package org.broad.igv.google;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
@@ -21,7 +21,7 @@ import static org.broad.igv.prefs.Constants.SAVE_GOOGLE_CREDENTIALS;
  */
 public class GoogleUtils {
 
-    private static Logger log = Logger.getLogger(GoogleUtils.class);
+    private static Logger log = LogManager.getLogger(GoogleUtils.class);
 
     private static String ProjectID;
     public static final String GOOGLE_API_HOST = "www.googleapis.com";

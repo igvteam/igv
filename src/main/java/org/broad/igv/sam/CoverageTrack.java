@@ -29,7 +29,7 @@
  */
 package org.broad.igv.sam;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
@@ -75,7 +75,7 @@ import static org.broad.igv.prefs.Constants.*;
 
 public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
-    private static Logger log = Logger.getLogger(CoverageTrack.class);
+    private static Logger log = LogManager.getLogger(CoverageTrack.class);
 
     public static final int TEN_MB = 10000000;
     static DecimalFormat locationFormatter = new DecimalFormat();

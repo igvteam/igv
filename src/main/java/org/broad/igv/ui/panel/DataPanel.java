@@ -34,7 +34,7 @@
 package org.broad.igv.ui.panel;
 
 import com.google.common.base.Objects;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventObserver;
@@ -76,7 +76,7 @@ import java.util.stream.Collectors;
  */
 public class DataPanel extends JComponent implements Paintable, IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(DataPanel.class);
+    private static Logger log = LogManager.getLogger(DataPanel.class);
 
     private DataPanelTool defaultTool;
     private DataPanelTool currentTool;

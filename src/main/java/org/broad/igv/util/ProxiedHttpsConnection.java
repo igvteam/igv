@@ -195,7 +195,7 @@ public class ProxiedHttpsConnection extends HttpURLConnection {
                 this.inputStream.close();
             }
         } catch (IOException ex) {
-            //Logger.getLogger(ProxiedHttpsConnection.class.getName()).log(Level.SEVERE, null, ex);
+            //LogManager.getLogger(ProxiedHttpsConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

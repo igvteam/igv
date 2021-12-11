@@ -30,7 +30,7 @@
 package org.broad.igv.tdf;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.Genome;
@@ -53,7 +53,7 @@ import java.util.*;
  */
 public class TDFReader {
 
-    static final Logger log = Logger.getLogger(TDFReader.class);
+    static final Logger log = LogManager.getLogger(TDFReader.class);
     public static final int GZIP_FLAG = 0x1;
 
     private SeekableStream seekableStream = null;

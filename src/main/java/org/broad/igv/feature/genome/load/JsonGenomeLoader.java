@@ -7,7 +7,7 @@ import com.google.gson.JsonParser;
 import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureReader;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.feature.FeatureDB;
@@ -30,7 +30,7 @@ import java.util.List;
 
 public class JsonGenomeLoader extends GenomeLoader {
 
-    private static Logger log = Logger.getLogger(JsonGenomeLoader.class);
+    private static Logger log = LogManager.getLogger(JsonGenomeLoader.class);
 
     private String genomePath;
 

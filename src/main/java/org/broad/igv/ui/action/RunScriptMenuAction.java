@@ -25,7 +25,7 @@
 
 package org.broad.igv.ui.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -39,7 +39,7 @@ import java.io.File;
 
 public class RunScriptMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(LoadFilesMenuAction.class);
+    static Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
     IGV igv;
 
     public RunScriptMenuAction(String label, int mnemonic, IGV igv) {

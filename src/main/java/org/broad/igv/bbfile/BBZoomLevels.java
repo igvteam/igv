@@ -26,7 +26,7 @@
 package org.broad.igv.bbfile;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.util.stream.IGVSeekableBufferedStream;
 
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ import java.util.ArrayList;
 * */
 public class BBZoomLevels {
 
-    private static Logger log = Logger.getLogger(BBZoomLevels.class);
+    private static Logger log = LogManager.getLogger(BBZoomLevels.class);
 
     // defines the zoom headers access
     //private SeekableStream fis;       // BBFile handle

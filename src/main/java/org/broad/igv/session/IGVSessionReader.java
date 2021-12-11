@@ -25,7 +25,7 @@
 
 package org.broad.igv.session;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.data.CombinedDataSource;
@@ -77,7 +77,7 @@ import java.util.*;
  */
 public class IGVSessionReader implements SessionReader {
 
-    private static Logger log = Logger.getLogger(IGVSessionReader.class);
+    private static Logger log = LogManager.getLogger(IGVSessionReader.class);
     private static String INPUT_FILE_KEY = "INPUT_FILE_KEY";
 
     private static Map<String, String> attributeSynonymMap = new HashMap();

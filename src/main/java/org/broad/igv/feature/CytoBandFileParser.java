@@ -28,7 +28,7 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.BufferedReader;
@@ -45,7 +45,7 @@ import java.util.List;
  */
 public class CytoBandFileParser {
 
-    private static Logger logger = Logger.getLogger(CytoBandFileParser.class);
+    private static Logger logger = LogManager.getLogger(CytoBandFileParser.class);
 
 
     /**

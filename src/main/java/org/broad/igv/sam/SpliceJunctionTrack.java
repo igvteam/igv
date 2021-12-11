@@ -26,7 +26,7 @@
 
 package org.broad.igv.sam;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.prefs.Constants;
@@ -57,7 +57,7 @@ import java.util.List;
  */
 public class SpliceJunctionTrack extends FeatureTrack {
 
-    private static Logger log = Logger.getLogger(SpliceJunctionTrack.class);
+    private static Logger log = LogManager.getLogger(SpliceJunctionTrack.class);
 
     public enum StrandOption {COMBINE, FORWARD, REVERSE, BOTH}
 

@@ -1,6 +1,6 @@
 package org.broad.igv.feature.genome.load;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
@@ -26,7 +26,7 @@ import java.util.*;
 abstract public class GenomeLoader {
 
     public static final long ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-    private static Logger log = Logger.getLogger(GenomeLoader.class);
+    private static Logger log = LogManager.getLogger(GenomeLoader.class);
 
     public static Map<String, File> localSequenceMap;
 

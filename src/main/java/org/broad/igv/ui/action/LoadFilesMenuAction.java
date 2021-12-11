@@ -29,7 +29,7 @@
  */
 package org.broad.igv.ui.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
@@ -49,7 +49,7 @@ import java.util.List;
  */
 public class LoadFilesMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(LoadFilesMenuAction.class);
+    static Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
     IGV igv;
 
     public LoadFilesMenuAction(String label, int mnemonic, IGV igv) {

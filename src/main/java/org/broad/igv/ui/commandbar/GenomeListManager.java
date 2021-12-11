@@ -3,7 +3,7 @@ package org.broad.igv.ui.commandbar;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
@@ -31,7 +31,7 @@ import java.util.zip.ZipInputStream;
  */
 public class GenomeListManager {
 
-    private static Logger log = Logger.getLogger(GenomeManager.class);
+    private static Logger log = LogManager.getLogger(GenomeManager.class);
 
     private static GenomeListManager theInstance;
 

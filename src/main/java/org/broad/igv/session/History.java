@@ -25,7 +25,7 @@
 
 package org.broad.igv.session;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.ui.IGV;
@@ -42,7 +42,7 @@ import java.util.List;
  */
 public class History {
 
-    private static Logger log = Logger.getLogger(History.class);
+    private static Logger log = LogManager.getLogger(History.class);
 
     int maxEntries = 100;
     int currPos = 0;

@@ -45,7 +45,7 @@ import java.util.*;
  */
 public class OverlayTracksMenuAction extends MenuAction {
 
-    //static Logger log = Logger.getLogger(GroupTracksMenuAction.class);
+    //static Logger log = LogManager.getLogger(GroupTracksMenuAction.class);
     IGV igv;
 
     public OverlayTracksMenuAction(String label, int mnemonic, IGV igv) {

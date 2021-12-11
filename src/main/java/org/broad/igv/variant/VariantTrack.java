@@ -30,7 +30,7 @@ package org.broad.igv.variant;
 
 import htsjdk.tribble.Feature;
 import htsjdk.variant.variantcontext.GenotypeType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.TrackGroupEvent;
@@ -67,7 +67,7 @@ import static org.broad.igv.prefs.Constants.*;
 
 public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(VariantTrack.class);
+    private static Logger log = LogManager.getLogger(VariantTrack.class);
 
     static final DecimalFormat numFormat = new DecimalFormat("#.###");
 

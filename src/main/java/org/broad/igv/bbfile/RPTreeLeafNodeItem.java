@@ -25,7 +25,7 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 
 /**
  * @author Martin Decautis
@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
  */
 public class RPTreeLeafNodeItem extends RPTreeNodeItem {
 
-    private static Logger log = Logger.getLogger(RPTreeLeafNodeItem.class);
+    private static Logger log = LogManager.getLogger(RPTreeLeafNodeItem.class);
 
     private long dataOffset;      // file offset to data item
     private long dataSize;        // size of data item

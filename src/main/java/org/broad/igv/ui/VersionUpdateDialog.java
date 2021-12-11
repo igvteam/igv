@@ -26,7 +26,7 @@
 
 package org.broad.igv.ui;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.util.BrowserLauncher;
 
@@ -44,7 +44,7 @@ import static org.broad.igv.ui.UIConstants.SERVER_BASE_URL;
  */
 public class VersionUpdateDialog extends JDialog {
 
-    private static Logger log = Logger.getLogger(VersionUpdateDialog.class);
+    private static Logger log = LogManager.getLogger(VersionUpdateDialog.class);
 
 
     boolean skipVersion;

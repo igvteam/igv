@@ -25,7 +25,7 @@
 
 package org.broad.igv.tools.sort;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.util.collections.SortingCollection;
 
 import java.io.*;
@@ -35,7 +35,7 @@ import java.io.*;
  */
 public class SortableRecordCodec implements SortingCollection.Codec<SortableRecord> {
 
-    private static Logger log = Logger.getLogger(SortableRecordCodec.class);
+    private static Logger log = LogManager.getLogger(SortableRecordCodec.class);
     DataOutputStream outputStream;
     DataInputStream inputStream;
 

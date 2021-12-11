@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class SortTracksMenuAction extends MenuAction {
 
-    //static Logger log = Logger.getLogger(SortTracksMenuAction.class);
+    //static Logger log = LogManager.getLogger(SortTracksMenuAction.class);
     IGV mainFrame;
 
     public SortTracksMenuAction(String label, int mnemonic, IGV mainFrame) {

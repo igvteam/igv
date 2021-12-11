@@ -1,6 +1,6 @@
 package org.broad.igv.jbrowse;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 
@@ -13,7 +13,7 @@ import java.net.UnknownHostException;
 
 class CircviewSocketWriter {
 
-    static Logger log = Logger.getLogger(CircviewSocketWriter.class);
+    static Logger log = LogManager.getLogger(CircviewSocketWriter.class);
 
     static String send(String json) {
         return send(json, false);

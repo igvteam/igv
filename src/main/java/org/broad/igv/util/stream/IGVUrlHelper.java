@@ -1,7 +1,7 @@
 package org.broad.igv.util.stream;
 
 import htsjdk.tribble.util.URLHelper;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class IGVUrlHelper implements URLHelper {
 
-    static Logger log = Logger.getLogger(IGVUrlHelperFactory.class);
+    static Logger log = LogManager.getLogger(IGVUrlHelperFactory.class);
 
     URL url;
 

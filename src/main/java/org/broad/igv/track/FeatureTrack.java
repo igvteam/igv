@@ -27,7 +27,7 @@ package org.broad.igv.track;
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.TribbleException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -70,7 +70,7 @@ import java.util.stream.Collectors;
 
 public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(FeatureTrack.class);
+    private static Logger log = LogManager.getLogger(FeatureTrack.class);
 
 
     public static final int MINIMUM_FEATURE_SPACING = 5;

@@ -25,7 +25,7 @@
 
 package org.broad.igv.tools;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.util.FileDialogUtils;
 
@@ -43,7 +43,7 @@ import java.util.Collection;
 
 public class IgvToolsGui extends JDialog {
 
-    private static Logger log = Logger.getLogger(IgvToolsGui.class);
+    private static Logger log = LogManager.getLogger(IgvToolsGui.class);
 
     public enum Tool {
         COUNT("Count"),

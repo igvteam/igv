@@ -25,7 +25,7 @@
 
 package org.broad.igv.ui;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.LinkCheckBox;
@@ -57,7 +57,7 @@ public class ResourceTree {
 
     private StringBuffer buffer = new StringBuffer();
     private static String FAILED_TO_CREATE_RESOURCE_TREE_DIALOG = "Failure while creating the resource tree dialog";
-    private static Logger log = Logger.getLogger(ResourceTree.class);
+    private static Logger log = LogManager.getLogger(ResourceTree.class);
     private static String XML_ROOT = "Global";
     private List<CheckableResource> leafResources = new ArrayList();
     private HashMap<String, TreeNode> leafNodeMap = new HashMap();

@@ -30,7 +30,7 @@
 package org.broad.igv.tdf;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.collections.DownsampledDoubleArrayList;
 
@@ -46,7 +46,7 @@ import java.util.Set;
  */
 public class Accumulator {
 
-    private static Logger log = Logger.getLogger(Accumulator.class);
+    private static Logger log = LogManager.getLogger(Accumulator.class);
 
     private static int MAX_VALUE_COUNT = 100000;
 

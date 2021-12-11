@@ -25,7 +25,7 @@
 
 package org.broad.igv.feature.genome.load;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.*;
@@ -53,7 +53,7 @@ public class GenomeDescriptor {
     public final static String COMPRESSED_SEQUENCE_PATH = "compressedSequencePath";
     public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
     public static final String SEQUENCE_MAP_FILE = "sequenceMap.txt";
-    private static Logger log = Logger.getLogger(GenomeDescriptor.class);
+    private static Logger log = LogManager.getLogger(GenomeDescriptor.class);
 
     private Map<String, ZipEntry> zipEntries;
     private ZipFile genomeZipFile;

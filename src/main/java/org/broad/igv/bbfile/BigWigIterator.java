@@ -26,7 +26,7 @@
 package org.broad.igv.bbfile;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.util.CompressionUtils;
 
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public class BigWigIterator implements Iterator<WigItem> {
 
-    private static Logger log = Logger.getLogger(BigWigIterator.class);
+    private static Logger log = LogManager.getLogger(BigWigIterator.class);
 
     boolean empty = false;
 

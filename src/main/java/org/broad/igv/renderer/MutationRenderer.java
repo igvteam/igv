@@ -25,7 +25,7 @@
 
 package org.broad.igv.renderer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
@@ -37,7 +37,7 @@ import java.util.List;
 
 public class MutationRenderer extends FeatureRenderer {
 
-    private static Logger log = Logger.getLogger(MutationRenderer.class);
+    private static Logger log = LogManager.getLogger(MutationRenderer.class);
 
     public String getDisplayName() {
         return "Mutation";

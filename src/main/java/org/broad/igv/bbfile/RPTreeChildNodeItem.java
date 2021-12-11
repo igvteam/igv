@@ -25,7 +25,7 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
  */
 public class RPTreeChildNodeItem extends RPTreeNodeItem {
 
-    private static Logger log = Logger.getLogger(RPTreeChildNodeItem.class);
+    private static Logger log = LogManager.getLogger(RPTreeChildNodeItem.class);
 
     private RPTreeNode childNode;  // child node assigned to node item
     private RPTreeNodeProxy childNodeProxy;

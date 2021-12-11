@@ -25,7 +25,7 @@
 
 package org.broad.igv.track;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -49,7 +49,7 @@ import java.util.*;
  */
 public class TribbleListFeatureSource implements FeatureSource {
 
-    private static Logger log = Logger.getLogger(TribbleListFeatureSource.class);
+    private static Logger log = LogManager.getLogger(TribbleListFeatureSource.class);
 
     Map<String, String> pathMap;
     Map<String, TribbleFeatureSource> featureSourceMap;

@@ -25,7 +25,7 @@
 
 package org.broad.igv.feature.genome.load;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.util.ParsingUtils;
@@ -42,7 +42,7 @@ import java.util.List;
  */
 public class GenbankParser {
 
-    private static Logger log = Logger.getLogger(GenbankParser.class);
+    private static Logger log = LogManager.getLogger(GenbankParser.class);
 
     private String path;
     private String accession;

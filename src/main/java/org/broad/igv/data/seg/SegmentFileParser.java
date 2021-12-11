@@ -27,7 +27,7 @@ package org.broad.igv.data.seg;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.exceptions.ParserException;
@@ -52,7 +52,7 @@ public class SegmentFileParser implements SegFileParser {
         SEG, BIRDSUITE, NEXUS
     }
 
-    private static Logger log = Logger.getLogger(SegmentFileParser.class);
+    private static Logger log = LogManager.getLogger(SegmentFileParser.class);
 
     boolean birdsuite = false;
     int sampleColumn = 0;

@@ -25,7 +25,7 @@
 
 package org.broad.igv.feature.genome.fasta;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeImporter;
 import org.broad.igv.util.ParsingUtils;
@@ -44,7 +44,7 @@ import java.util.Set;
  */
 public class FastaIndex {
 
-    static Logger log = Logger.getLogger(FastaIndex.class);
+    static Logger log = LogManager.getLogger(FastaIndex.class);
 
     /**
      * Store the entries.  Use a LinkedHashMap for consistent iteration in insertion order.

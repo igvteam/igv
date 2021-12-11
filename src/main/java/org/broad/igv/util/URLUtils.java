@@ -1,6 +1,6 @@
 package org.broad.igv.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 public class URLUtils {
 
-    private static Logger log = Logger.getLogger(URLUtils.class);
+    private static Logger log = LogManager.getLogger(URLUtils.class);
 
     private static Pattern URLmatcher = Pattern.compile(".{1,8}://.*");
 

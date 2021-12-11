@@ -25,7 +25,7 @@
 
 package org.broad.igv.gwas;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
@@ -45,7 +45,7 @@ import static java.lang.Math.log10;
  */
 public class GWASParser {
 
-    private static final Logger log = Logger.getLogger(GWASParser.class);
+    private static final Logger log = LogManager.getLogger(GWASParser.class);
 
     private ResourceLocator locator;
 

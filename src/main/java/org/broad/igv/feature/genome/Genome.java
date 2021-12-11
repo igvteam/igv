@@ -36,7 +36,7 @@ package org.broad.igv.feature.genome;
 
 import com.google.gson.JsonElement;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
@@ -53,7 +53,7 @@ import java.util.*;
  */
 public class Genome {
 
-    private static Logger log = Logger.getLogger(Genome.class);
+    private static Logger log = LogManager.getLogger(Genome.class);
     public static final int MAX_WHOLE_GENOME_LONG = 100;
 
     private static Object aliasLock = new Object();

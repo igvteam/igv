@@ -31,7 +31,7 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
@@ -53,7 +53,7 @@ import java.util.List;
  */
 abstract public class TrackPanelComponent extends JPanel {
 
-    private static Logger log = Logger.getLogger(TrackPanelComponent.class);
+    private static Logger log = LogManager.getLogger(TrackPanelComponent.class);
     List<MouseableRegion> mouseRegions;
 
     private TrackPanel trackPanel;

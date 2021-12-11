@@ -30,7 +30,7 @@ import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.ui.util.MessageUtils;
@@ -47,7 +47,7 @@ import java.util.*;
  */
 public class BAMReader implements AlignmentReader<SAMAlignment> {
 
-    static Logger log = Logger.getLogger(BAMReader.class);
+    static Logger log = LogManager.getLogger(BAMReader.class);
 
     private SAMFileHeader header;
     private List<String> sequenceNames;

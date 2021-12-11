@@ -1,7 +1,7 @@
 package org.broad.igv.bedpe;
 
 import com.google.gson.Gson;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.jbrowse.CircularViewUtilities;
@@ -44,7 +44,7 @@ import com.google.gson.JsonSyntaxException;
  */
 public class InteractionTrack extends AbstractTrack {
 
-    private static Logger log = Logger.getLogger(InteractionTrack.class);
+    private static Logger log = LogManager.getLogger(InteractionTrack.class);
 
     protected static final int AXIS_AREA_WIDTH = 60;
     protected static Color axisLineColor = new Color(255, 180, 180);

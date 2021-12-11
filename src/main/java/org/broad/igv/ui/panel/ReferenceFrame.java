@@ -29,7 +29,7 @@
  */
 package org.broad.igv.ui.panel;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.ViewChange;
@@ -52,7 +52,7 @@ import org.broad.igv.ui.util.MessageUtils;
  */
 public class ReferenceFrame {
 
-    private static Logger log = Logger.getLogger(ReferenceFrame.class);
+    private static Logger log = LogManager.getLogger(ReferenceFrame.class);
 
     IGVEventBus eventBus;
 

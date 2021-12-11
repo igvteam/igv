@@ -30,7 +30,7 @@
 package org.broad.igv.feature.aa;
 
 import com.google.gson.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.ParsingUtils;
 
@@ -45,7 +45,7 @@ import java.util.*;
  */
 public class CodonTableManager {
 
-    private static final Logger log = Logger.getLogger(CodonTableManager.class);
+    private static final Logger log = LogManager.getLogger(CodonTableManager.class);
 
     /**
      * The genetic codes, mapping codons -> amino acides

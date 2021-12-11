@@ -31,7 +31,7 @@ package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionWriter;
 import org.broad.igv.ui.IGV;
@@ -47,7 +47,7 @@ import java.io.InputStream;
  */
 public class ReloadTracksMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(SaveSessionMenuAction.class);
+    static Logger log = LogManager.getLogger(SaveSessionMenuAction.class);
     IGV igv;
 
     /**

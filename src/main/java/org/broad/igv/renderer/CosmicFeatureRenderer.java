@@ -25,7 +25,7 @@
 
 package org.broad.igv.renderer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
@@ -37,7 +37,7 @@ import java.awt.*;
 
 public class CosmicFeatureRenderer extends FeatureRenderer {
 
-    private static Logger log = Logger.getLogger(CosmicFeatureRenderer.class);
+    private static Logger log = LogManager.getLogger(CosmicFeatureRenderer.class);
     ColorTable colorScheme;
 
     public CosmicFeatureRenderer() {

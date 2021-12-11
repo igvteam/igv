@@ -29,7 +29,7 @@
  */
 package org.broad.igv.tools.parsers;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
@@ -45,7 +45,7 @@ import java.util.Set;
  */
 public class CNParser extends AbstractParser {
 
-    static private Logger log = Logger.getLogger(CNParser.class);
+    static private Logger log = LogManager.getLogger(CNParser.class);
 
     private static int PROBE_COL = 0;
     int skipColumns;

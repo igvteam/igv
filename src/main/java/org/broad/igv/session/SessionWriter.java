@@ -25,7 +25,7 @@
 
 package org.broad.igv.session;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
@@ -60,7 +60,7 @@ import java.util.List;
  */
 public class SessionWriter {
 
-    static Logger log = Logger.getLogger(SessionWriter.class);
+    static Logger log = LogManager.getLogger(SessionWriter.class);
 
     private Session session;
     private static int CURRENT_VERSION = 8;

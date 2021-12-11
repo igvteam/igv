@@ -40,7 +40,7 @@ import htsjdk.tribble.index.Index;
 import htsjdk.tribble.index.IndexFactory;
 import htsjdk.tribble.util.LittleEndianOutputStream;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
@@ -93,7 +93,7 @@ public class IgvTools {
     public static final String CMD_VCFTOBED = "vcftobed";
     public static final String CMD_DENSITIESTOBEDGRAPH = "densitiestobedgraph";
     public static final String CMD_GEN_GENOME_LIST = "genGenomeList";
-    static private Logger log = Logger.getLogger(IgvTools.class);
+    static private Logger log = LogManager.getLogger(IgvTools.class);
 
     static final String CMD_TILE = "tile";
     static final String CMD_TOTDF = "totdf";
@@ -223,7 +223,7 @@ public class IgvTools {
         Configuration configuration = context.getConfiguration();
         LoggerConfig rootLogger = configuration.getRootLogger();
 
-        if (Logger.getRootLogger().getAppender(CONSOLE_APPENDER_NAME) == null) {
+        //if (LogManager.getRootLogger().getAppender(CONSOLE_APPENDER_NAME) == null) {
             PatternLayout layout = PatternLayout.newBuilder().withConfiguration(configuration)
                     .withPattern("%m%n").build();
             ConsoleAppender consoleAppender = ConsoleAppender.newBuilder().withName(CONSOLE_APPENDER_NAME)
@@ -235,7 +235,7 @@ public class IgvTools {
             configuration.addAppender(consoleAppender);
             rootLogger.addAppender(consoleAppender, Level.INFO, null);
             context.updateLoggers();
-        }
+       // }
     }
 
 

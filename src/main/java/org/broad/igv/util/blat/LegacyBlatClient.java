@@ -25,7 +25,7 @@
 
 package org.broad.igv.util.blat;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.genome.Genome;
@@ -54,7 +54,7 @@ import java.util.Map;
  */
 public class LegacyBlatClient {
 
-    private static Logger log = Logger.getLogger(LegacyBlatClient.class);
+    private static Logger log = LogManager.getLogger(LegacyBlatClient.class);
 
     static int sleepTime = 15 * 1000;  //	#	milli seconds to wait between requests
 

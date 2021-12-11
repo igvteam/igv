@@ -25,7 +25,7 @@
 
 package org.broad.igv.tools;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
@@ -49,7 +49,7 @@ import java.util.*;
  */
 public class Preprocessor implements DataConsumer {
 
-    private static Logger log = Logger.getLogger(Preprocessor.class);
+    private static Logger log = LogManager.getLogger(Preprocessor.class);
 
     boolean compressed = true;
     private boolean skipZeroes = false;

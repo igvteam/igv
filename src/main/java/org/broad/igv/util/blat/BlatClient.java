@@ -26,7 +26,7 @@
 package org.broad.igv.util.blat;
 
 import com.google.gson.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -56,7 +56,7 @@ import java.util.List;
  */
 public class BlatClient {
 
-    private static Logger log = Logger.getLogger(BlatClient.class);
+    private static Logger log = LogManager.getLogger(BlatClient.class);
     public static final int MINIMUM_BLAT_LENGTH = 20;
 
 

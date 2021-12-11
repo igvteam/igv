@@ -26,7 +26,7 @@
 package org.broad.igv.tools.converters;
 
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.data.expression.GeneToLocusHelper;
 import org.broad.igv.feature.Locus;
@@ -50,7 +50,7 @@ import java.util.List;
 public class GCTtoIGVConverter {
 
 
-    private static Logger log = Logger.getLogger(GCTtoIGVConverter.class);
+    private static Logger log = LogManager.getLogger(GCTtoIGVConverter.class);
 
 
 

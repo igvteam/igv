@@ -5,7 +5,7 @@ import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.cram.IGVReferenceSource;
 import org.broad.igv.ui.util.MessageUtils;
@@ -33,7 +33,7 @@ import java.util.*;
  */
 public class SamReaderPool {
 
-    private static Logger log = Logger.getLogger(SamReaderPool.class);
+    private static Logger log = LogManager.getLogger(SamReaderPool.class);
 
     private ResourceLocator locator;
     private boolean requireIndex;

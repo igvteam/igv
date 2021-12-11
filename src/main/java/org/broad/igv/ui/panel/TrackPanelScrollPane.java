@@ -30,7 +30,7 @@
 package org.broad.igv.ui.panel;
 
 import com.jidesoft.swing.JideScrollPane;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.ui.util.SnapshotUtilities;
 
 import javax.swing.*;
@@ -45,7 +45,7 @@ import java.awt.event.MouseWheelListener;
  */
 public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
 
-    private static Logger log = Logger.getLogger(TrackPanelScrollPane.class);
+    private static Logger log = LogManager.getLogger(TrackPanelScrollPane.class);
 
     TrackPanel trackPanel;
     boolean isScrolling = false;

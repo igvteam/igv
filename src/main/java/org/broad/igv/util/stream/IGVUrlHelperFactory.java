@@ -28,7 +28,7 @@ package org.broad.igv.util.stream;
 import htsjdk.tribble.util.URLHelper;
 //import htsjdk.tribble.util.URLHelperFactory;
 import htsjdk.tribble.util.URLHelperFactory;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.IOException;

@@ -30,7 +30,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import htsjdk.tribble.Feature;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.CombinedDataSource;
@@ -77,7 +77,7 @@ import java.util.*;
  */
 public class TrackMenuUtils {
 
-    static Logger log = Logger.getLogger(TrackMenuUtils.class);
+    static Logger log = LogManager.getLogger(TrackMenuUtils.class);
     final static String LEADING_HEADING_SPACER = "  ";
 
     private static List<TrackMenuItemBuilder> trackMenuItems = new ArrayList<TrackMenuItemBuilder>();

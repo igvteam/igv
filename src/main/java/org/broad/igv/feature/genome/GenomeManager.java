@@ -34,7 +34,7 @@
 package org.broad.igv.feature.genome;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeChangeEvent;
@@ -76,7 +76,7 @@ import java.util.Set;
  */
 public class GenomeManager {
 
-    private static Logger log = Logger.getLogger(GenomeManager.class);
+    private static Logger log = LogManager.getLogger(GenomeManager.class);
 
     private static GenomeManager theInstance;
 

@@ -40,7 +40,7 @@ import java.awt.event.ActionEvent;
  */
 public class GroupTracksMenuAction extends MenuAction {
 
-    //static Logger log = Logger.getLogger(GroupTracksMenuAction.class);
+    //static Logger log = LogManager.getLogger(GroupTracksMenuAction.class);
     IGV igv;
 
     public GroupTracksMenuAction(String label, int mnemonic, IGV igv) {

@@ -26,7 +26,7 @@
 package org.broad.igv.batch;
 
 import biz.source_code.base64Coder.Base64Coder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.google.OAuthUtils;
@@ -53,7 +53,7 @@ public class CommandListener implements Runnable {
 
     public static int currentListenerPort = -1;
 
-    private static Logger log = Logger.getLogger(CommandListener.class);
+    private static Logger log = LogManager.getLogger(CommandListener.class);
 
     private static CommandListener listener;
     private static final String CRLF = "\r\n";

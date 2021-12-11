@@ -25,7 +25,7 @@
 
 package org.broad.igv.ui;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -89,7 +89,7 @@ import static org.broad.igv.ui.UIConstants.*;
  */
 public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(IGVMenuBar.class);
+    private static Logger log = LogManager.getLogger(IGVMenuBar.class);
     private static final String LOAD_GENOME_SERVER_TOOLTIP = "Select genomes available on the server to appear in menu.";
     private static final String CANNOT_LOAD_GENOME_SERVER_TOOLTIP = "Could not reach genome server";
 

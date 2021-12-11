@@ -26,7 +26,7 @@
 package org.broad.igv.sam;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -154,7 +154,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         RR, LL, RL, LR, UNKNOWN
     }
 
-    private static Logger log = Logger.getLogger(AlignmentTrack.class);
+    private static Logger log = LogManager.getLogger(AlignmentTrack.class);
     private static final int GROUP_LABEL_HEIGHT = 10;
     private static final int GROUP_MARGIN = 5;
     private static final int TOP_MARGIN = 20;

@@ -50,7 +50,7 @@ import java.util.List;
  */
 public class FilterTracksMenuAction extends MenuAction {
 
-    //static Logger log = Logger.getLogger(FilterTracksMenuAction.class);
+    //static Logger log = LogManager.getLogger(FilterTracksMenuAction.class);
     IGV igv;
 
     private JCheckBox showAllTracksFilterCheckBox = new JCheckBox();

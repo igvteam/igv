@@ -32,7 +32,7 @@ import org.campagnelab.goby.counts.CountsReader;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.exceptions.DataLoadException;
@@ -60,7 +60,7 @@ import java.util.Vector;
  *         Time: 3:18 PM
  */
 public class GobyCountArchiveDataSource implements CoverageDataSource {
-    static final Logger LOG = Logger.getLogger(TDFReader.class);
+    static final Logger LOG = LogManager.getLogger(TDFReader.class);
 
     CachingCountsArchiveReader counts;
     private double currentMax = 4;

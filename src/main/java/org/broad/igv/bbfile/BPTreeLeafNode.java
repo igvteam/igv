@@ -25,7 +25,7 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 
 import java.util.ArrayList;
 
@@ -45,7 +45,7 @@ import java.util.ArrayList;
 * */
 public class BPTreeLeafNode implements BPTreeNode{
 
-    private static Logger log = Logger.getLogger(BPTreeLeafNode.class);
+    private static Logger log = LogManager.getLogger(BPTreeLeafNode.class);
     private final boolean isLeafNode = true;
 
     private long nodeIndex;    // index for node in B+ tree organization

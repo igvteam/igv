@@ -35,7 +35,7 @@ package org.broad.igv.ui.util;
 
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.ui.panel.Paintable;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -56,7 +56,7 @@ import static org.broad.igv.ui.util.ImageFileTypes.Type.SVG;
  */
 public class SnapshotUtilities {
 
-    private static Logger log = Logger.getLogger(SnapshotUtilities.class);
+    private static Logger log = LogManager.getLogger(SnapshotUtilities.class);
 
     /**
      * The maximum height in pixels for snapshots of a panel.

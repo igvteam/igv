@@ -25,7 +25,7 @@
 
 package org.broad.igv.renderer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -43,7 +43,7 @@ import static org.broad.igv.prefs.Constants.CHART_SHOW_ALL_HEATMAP;
  */
 public class HeatmapRenderer extends DataRenderer {
 
-    private static Logger log = Logger.getLogger(HeatmapRenderer.class);
+    private static Logger log = LogManager.getLogger(HeatmapRenderer.class);
 
     public String getDisplayName() {
         return "Heatmap";

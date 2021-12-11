@@ -27,7 +27,7 @@
 package org.broad.igv.event;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 
 import java.util.*;
 
@@ -36,7 +36,7 @@ import java.util.*;
  */
 public class IGVEventBus {
 
-    static final Logger log = Logger.getLogger(IGVEventBus.class);
+    static final Logger log = LogManager.getLogger(IGVEventBus.class);
 
     Map<Class, Set<IGVEventObserver>> observerMap;
 

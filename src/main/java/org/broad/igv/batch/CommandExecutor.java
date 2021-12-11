@@ -30,7 +30,7 @@
 
 package org.broad.igv.batch;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
@@ -66,7 +66,7 @@ import java.util.*;
 
 public class CommandExecutor {
 
-    private static Logger log = Logger.getLogger(CommandExecutor.class);
+    private static Logger log = LogManager.getLogger(CommandExecutor.class);
 
     private File snapshotDirectory;
     private IGV igv;

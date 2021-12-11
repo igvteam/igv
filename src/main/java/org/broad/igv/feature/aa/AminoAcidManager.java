@@ -32,7 +32,7 @@ package org.broad.igv.feature.aa;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 import com.google.gson.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.SequenceTrack;
@@ -49,7 +49,7 @@ import java.util.*;
  */
 public class AminoAcidManager {
 
-    private static final Logger log = Logger.getLogger(AminoAcidManager.class);
+    private static final Logger log = LogManager.getLogger(AminoAcidManager.class);
 
     /**
      * File which contains listing of amino acid names.

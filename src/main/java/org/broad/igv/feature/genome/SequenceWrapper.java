@@ -29,7 +29,7 @@
  */
 package org.broad.igv.feature.genome;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ObjectCache;
 
@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class SequenceWrapper implements Sequence  {
 
-    private static Logger log = Logger.getLogger(SequenceWrapper.class);
+    private static Logger log = LogManager.getLogger(SequenceWrapper.class);
     private static boolean cacheSequences = true;
     private static int tileSize = 1000000;
 

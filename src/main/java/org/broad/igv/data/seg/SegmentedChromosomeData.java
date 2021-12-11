@@ -29,7 +29,7 @@
  */
 package org.broad.igv.data.seg;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.data.CharArrayList;
 
 import java.io.*;
@@ -47,7 +47,7 @@ import java.util.Map;
  */
 public class SegmentedChromosomeData {
 
-    private static Logger log = Logger.getLogger(SegmentedChromosomeData.class);
+    private static Logger log = LogManager.getLogger(SegmentedChromosomeData.class);
 
     private String[] sampleNames;
 

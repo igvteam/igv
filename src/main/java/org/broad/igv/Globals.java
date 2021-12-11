@@ -25,7 +25,7 @@
 
 package org.broad.igv;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.renderer.SequenceRenderer;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * Date: Feb 3, 2010
  */
 public class Globals {
-    private static Logger log = Logger.getLogger(Globals.class);
+    private static Logger log = LogManager.getLogger(Globals.class);
 
     public static final int DESIGN_DPI = 96;
     public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();

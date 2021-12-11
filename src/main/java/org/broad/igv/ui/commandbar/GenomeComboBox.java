@@ -1,6 +1,6 @@
 package org.broad.igv.ui.commandbar;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
-    private static Logger log = Logger.getLogger(GenomeComboBox.class);
+    private static Logger log = LogManager.getLogger(GenomeComboBox.class);
 
     public GenomeComboBox() {
 

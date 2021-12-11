@@ -33,7 +33,7 @@
  */
 package org.broad.igv.track;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -68,7 +68,7 @@ import java.util.List;
 
 public abstract class DataTrack extends AbstractTrack implements ScalableTrack, IGVEventObserver {
 
-    private static Logger log = Logger.getLogger(DataTrack.class);
+    private static Logger log = LogManager.getLogger(DataTrack.class);
 
     private DataRenderer renderer;
 

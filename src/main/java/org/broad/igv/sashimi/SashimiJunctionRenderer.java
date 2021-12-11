@@ -28,7 +28,7 @@ package org.broad.igv.sashimi;
 //~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.Feature;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
@@ -61,7 +61,7 @@ import static org.broad.igv.prefs.Constants.SASHIMI_SHOW_COVERAGE;
  */
 public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
-    private static Logger log = Logger.getLogger(SashimiJunctionRenderer.class);
+    private static Logger log = LogManager.getLogger(SashimiJunctionRenderer.class);
 
     public enum ShapeType {
         CIRCLE,

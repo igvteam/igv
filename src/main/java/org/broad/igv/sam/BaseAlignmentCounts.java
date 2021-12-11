@@ -26,7 +26,7 @@
 package org.broad.igv.sam;
 
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -46,7 +46,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
-    private static Logger log = Logger.getLogger(BaseAlignmentCounts.class);
+    private static Logger log = LogManager.getLogger(BaseAlignmentCounts.class);
 
     public static final char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
     private static Map<String, Set<Integer>> knownSnps;

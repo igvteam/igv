@@ -25,7 +25,7 @@
 
 package org.broad.igv.ui.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
@@ -46,7 +46,7 @@ public class FileDialogUtils {
     public static int LOAD = FileDialog.LOAD;
     public static int SAVE = FileDialog.SAVE;
 
-    private static Logger log = Logger.getLogger(FileDialogUtils.class);
+    private static Logger log = LogManager.getLogger(FileDialogUtils.class);
 
 
     public static File chooseFile(String title, File initialDirectory, int mode) {

@@ -25,7 +25,7 @@
 
 package org.broad.igv.feature.genome;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -49,7 +49,7 @@ import java.util.Set;
  */
 public class GenomeBuilderPane extends javax.swing.JPanel implements Serializable {
 
-    private static Logger logger = Logger.getLogger(GenomeBuilderPane.class);
+    private static Logger logger = LogManager.getLogger(GenomeBuilderPane.class);
     private String genomeArchiveLocation;
     private String genomeFilename;
     GenomeImporter importer;

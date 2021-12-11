@@ -25,7 +25,7 @@
 
 package org.broad.igv.variant;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
@@ -46,7 +46,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class VariantRenderer { //extends FeatureRenderer {
 
-    private static Logger log = Logger.getLogger(VariantRenderer.class);
+    private static Logger log = LogManager.getLogger(VariantRenderer.class);
 
     private static final int BOTTOM_MARGIN = 0;
     private static final int TOP_MARGIN = 3;

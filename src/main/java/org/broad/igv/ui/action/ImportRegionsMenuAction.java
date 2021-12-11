@@ -29,7 +29,7 @@
  */
 package org.broad.igv.ui.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -49,7 +49,7 @@ import java.io.FileReader;
  */
 public class ImportRegionsMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(ImportRegionsMenuAction.class);
+    static Logger log = LogManager.getLogger(ImportRegionsMenuAction.class);
     IGV igv;
 
     public ImportRegionsMenuAction(String label, int mnemonic, IGV igv) {

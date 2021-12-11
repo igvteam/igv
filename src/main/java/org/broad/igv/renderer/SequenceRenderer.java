@@ -29,7 +29,7 @@
  */
 package org.broad.igv.renderer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.aa.*;
 import org.broad.igv.prefs.IGVPreferences;
@@ -56,7 +56,7 @@ import static org.broad.igv.prefs.Constants.*;
 public class SequenceRenderer {
 
 
-    private static Logger log = Logger.getLogger(SequenceRenderer.class);
+    private static Logger log = LogManager.getLogger(SequenceRenderer.class);
 
     private static final int AMINO_ACID_RESOLUTION = 5;
 

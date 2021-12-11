@@ -25,7 +25,7 @@
 
 package org.broad.igv.ui.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
@@ -49,7 +49,7 @@ import java.util.Map;
  */
 public class BrowseEncodeAction extends MenuAction {
 
-    private static Logger log = Logger.getLogger(BrowseEncodeAction.class);
+    private static Logger log = LogManager.getLogger(BrowseEncodeAction.class);
 
     private static Map<String, Color> colors;
 

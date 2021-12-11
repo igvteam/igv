@@ -26,7 +26,7 @@
 package org.broad.igv.feature.genome;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.util.FileUtils;
@@ -45,7 +45,7 @@ import java.util.*;
 
 public class IGVSequence implements Sequence {
 
-    private static Logger log = Logger.getLogger(IGVSequence.class);
+    private static Logger log = LogManager.getLogger(IGVSequence.class);
 
     private String dirPath;
     private Map<String, String> chrFileNameCache = new HashMap();

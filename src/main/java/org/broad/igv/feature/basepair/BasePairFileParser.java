@@ -1,6 +1,6 @@
 package org.broad.igv.feature.basepair;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
@@ -15,7 +15,7 @@ import java.util.*;
 
 public class BasePairFileParser {
 
-    static Logger log = Logger.getLogger(BasePairFileParser.class);
+    static Logger log = LogManager.getLogger(BasePairFileParser.class);
 
     public static void loadData(ResourceLocator locator,
                                 Genome genome,

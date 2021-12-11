@@ -26,7 +26,7 @@
 
 package org.broad.igv.feature.bionano;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.AbstractFeature;
 import org.broad.igv.track.WindowFunction;
 
@@ -36,7 +36,7 @@ import org.broad.igv.track.WindowFunction;
  */
 public class SMAPPairedFeature extends AbstractFeature {
 
-    private static Logger log = Logger.getLogger(SMAPPairedFeature.class);
+    private static Logger log = LogManager.getLogger(SMAPPairedFeature.class);
 
     SMAPFeature feature1;
     SMAPFeature feature2;

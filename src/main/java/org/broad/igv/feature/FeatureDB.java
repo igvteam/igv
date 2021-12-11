@@ -28,7 +28,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import com.jidesoft.utils.SortedList;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.aa.AminoAcidManager;
 import org.broad.igv.feature.aa.Codon;
@@ -50,7 +50,7 @@ import java.util.*;
  */
 public class FeatureDB {
 
-    private static Logger log = Logger.getLogger(FeatureDB.class);
+    private static Logger log = LogManager.getLogger(FeatureDB.class);
     /**
      * Map for all features other than genes.
      */

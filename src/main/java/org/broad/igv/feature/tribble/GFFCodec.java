@@ -25,7 +25,7 @@
 
 package org.broad.igv.feature.tribble;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.BasicFeature;
@@ -66,7 +66,7 @@ import java.util.*;
  */
 public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
-    private static Logger log = Logger.getLogger(GFFCodec.class);
+    private static Logger log = LogManager.getLogger(GFFCodec.class);
 
 
     static HashSet<String> ignoredTypes = new HashSet();

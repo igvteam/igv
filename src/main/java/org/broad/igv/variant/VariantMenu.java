@@ -26,7 +26,7 @@
 package org.broad.igv.variant;
 
 import htsjdk.tribble.Feature;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.prefs.Constants;
@@ -55,7 +55,7 @@ import java.util.List;
  */
 public class VariantMenu extends IGVPopupMenu {
 
-    private static Logger log = Logger.getLogger(VariantMenu.class);
+    private static Logger log = LogManager.getLogger(VariantMenu.class);
     private VariantTrack track;
     private Collection<String> selectedSamples;
     static boolean depthSortingDirection;

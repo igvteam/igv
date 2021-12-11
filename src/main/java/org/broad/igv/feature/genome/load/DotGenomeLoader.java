@@ -1,7 +1,7 @@
 package org.broad.igv.feature.genome.load;
 
 import htsjdk.tribble.Feature;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.Sequence;
@@ -23,7 +23,7 @@ import java.util.List;
 
 public class DotGenomeLoader extends GenomeLoader {
 
-    private static Logger log = Logger.getLogger(DotGenomeLoader.class);
+    private static Logger log = LogManager.getLogger(DotGenomeLoader.class);
 
     File archiveFile;
 

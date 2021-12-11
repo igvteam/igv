@@ -31,7 +31,7 @@ package org.broad.igv.track;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
@@ -50,7 +50,7 @@ import java.util.List;
  */
 public class TrackGroup {
 
-    private static Logger log = Logger.getLogger(TrackGroup.class);
+    private static Logger log = LogManager.getLogger(TrackGroup.class);
 
     /**
      * Key used to group tracks (e.g. SAMPLE_ID).

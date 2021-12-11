@@ -47,7 +47,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.NumberFormatter;
 
 import com.jidesoft.swing.JideBoxLayout;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.Pair;
@@ -58,7 +58,7 @@ import org.broad.igv.util.ResourceLocator;
  */
 public class EncodeFileBrowser extends JDialog {
 
-    private static Logger log = Logger.getLogger(EncodeFileBrowser.class);
+    private static Logger log = LogManager.getLogger(EncodeFileBrowser.class);
 
     private static Map<String, EncodeFileBrowser> instanceMap = Collections.synchronizedMap(new HashMap<String, EncodeFileBrowser>());
     private static NumberFormatter numberFormatter = new NumberFormatter();

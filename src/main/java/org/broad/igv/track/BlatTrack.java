@@ -1,6 +1,6 @@
 package org.broad.igv.track;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.PSLRecord;
@@ -35,7 +35,7 @@ import java.util.List;
 
 public class BlatTrack extends FeatureTrack {
 
-    private static Logger log = Logger.getLogger(BlatTrack.class);
+    private static Logger log = LogManager.getLogger(BlatTrack.class);
 
     String sequence;
     List<PSLRecord> features;

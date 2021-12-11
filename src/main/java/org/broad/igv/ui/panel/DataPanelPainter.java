@@ -33,7 +33,7 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
@@ -48,7 +48,7 @@ import java.util.List;
 
 public class DataPanelPainter {
 
-    private static Logger log = Logger.getLogger(DataPanelPainter.class);
+    private static Logger log = LogManager.getLogger(DataPanelPainter.class);
 
     public synchronized void paint(Collection<TrackGroup> groups,
                                    RenderContext context,

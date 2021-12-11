@@ -25,7 +25,7 @@
 
 package org.broad.igv.track;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.ui.IGV;
@@ -48,7 +48,7 @@ public class PackedFeatures<T extends Feature> {
     protected int end;
     protected List<T> features;
     protected List<FeatureRow> rows;
-    private static Logger log = Logger.getLogger(PackedFeatures.class);
+    private static Logger log = LogManager.getLogger(PackedFeatures.class);
     protected int maxFeatureLength = 0;
     protected static int maxLevels = 1000000;
     private Track.DisplayMode displayMode;

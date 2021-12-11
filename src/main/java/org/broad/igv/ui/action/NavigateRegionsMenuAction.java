@@ -29,7 +29,7 @@
  */
 package org.broad.igv.ui.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.RegionNavigatorDialog;
@@ -43,7 +43,7 @@ import java.awt.event.ActionEvent;
  */
 public class NavigateRegionsMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(NavigateRegionsMenuAction.class);
+    static Logger log = LogManager.getLogger(NavigateRegionsMenuAction.class);
     IGV mainFrame;
 
 

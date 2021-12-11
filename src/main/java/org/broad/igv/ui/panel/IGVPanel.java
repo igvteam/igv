@@ -29,7 +29,7 @@
  */
 package org.broad.igv.ui.panel;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,7 +40,7 @@ import java.awt.*;
  */
 public class IGVPanel extends JPanel implements Paintable {
 
-    Logger log = Logger.getLogger(IGVPanel.class);
+    Logger log = LogManager.getLogger(IGVPanel.class);
 
     // Backpointer to parent
     MainPanel mainPanel;

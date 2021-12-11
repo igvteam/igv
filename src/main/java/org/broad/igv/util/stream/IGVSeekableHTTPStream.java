@@ -26,7 +26,7 @@
 package org.broad.igv.util.stream;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.EOFException;
@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public class IGVSeekableHTTPStream extends SeekableStream {
 
-    static Logger log = Logger.getLogger(IGVSeekableHTTPStream.class);
+    static Logger log = LogManager.getLogger(IGVSeekableHTTPStream.class);
 
     private long position = 0;
     private URL url;

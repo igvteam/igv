@@ -1,6 +1,6 @@
 package org.broad.igv.prefs;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.google.OAuthUtils;
@@ -29,7 +29,7 @@ import static org.broad.igv.prefs.Constants.PROVISIONING_URL;
 
 public class PreferencesEditor {
 
-    private static Logger log = Logger.getLogger(PreferencesEditor.class);
+    private static Logger log = LogManager.getLogger(PreferencesEditor.class);
 
     private static final Font labelFont = new Font("Lucida Grande", Font.BOLD, 14);
 

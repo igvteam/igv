@@ -29,7 +29,7 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.Feature;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.feature.*;
@@ -63,7 +63,7 @@ import java.util.*;
  */
 public class SearchCommand {
 
-    private static Logger log = Logger.getLogger(SearchCommand.class);
+    private static Logger log = LogManager.getLogger(SearchCommand.class);
     public static int SEARCH_LIMIT = 10000;
     private boolean askUser = false;
 

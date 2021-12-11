@@ -29,7 +29,7 @@
  */
 package org.broad.igv.tools.sort;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.*;
@@ -39,7 +39,7 @@ import java.io.*;
  */
 public class CNSorter extends AsciiSorter {
 
-    static private Logger log = Logger.getLogger(AsciiSorter.class);
+    static private Logger log = LogManager.getLogger(AsciiSorter.class);
 
     public CNSorter(File inputFile, File outputFile) {
         super(inputFile, outputFile);

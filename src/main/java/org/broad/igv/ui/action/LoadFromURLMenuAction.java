@@ -29,7 +29,7 @@
  */
 package org.broad.igv.ui.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.google.GoogleUtils;
@@ -59,7 +59,7 @@ import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
  */
 public class LoadFromURLMenuAction extends MenuAction {
 
-    static Logger log = Logger.getLogger(LoadFilesMenuAction.class);
+    static Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
     public static final String LOAD_FROM_DAS = "Load from DAS...";
     public static final String LOAD_FROM_URL = "Load from URL...";
     public static final String LOAD_FILE_AND_INDEX_FROM_URLS = "Load file and index from URLs...";

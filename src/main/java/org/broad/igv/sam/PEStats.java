@@ -26,7 +26,7 @@
 package org.broad.igv.sam;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.util.collections.DownsampledDoubleArrayList;
 
 /**
@@ -35,7 +35,7 @@ import org.broad.igv.util.collections.DownsampledDoubleArrayList;
  */
 public class PEStats {
 
-    private static Logger log = Logger.getLogger(PEStats.class);
+    private static Logger log = LogManager.getLogger(PEStats.class);
 
     public enum Orientation {FR, RF, F1F2, F2F1}
 

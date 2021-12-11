@@ -27,7 +27,7 @@ package org.broad.igv.google;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -56,7 +56,7 @@ import java.util.Map;
  */
 public class OAuthUtils {
 
-    private static Logger log = Logger.getLogger(OAuthUtils.class);
+    private static Logger log = LogManager.getLogger(OAuthUtils.class);
 
     public static String findString = null;
     public static String replaceString = null;

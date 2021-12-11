@@ -25,7 +25,7 @@
 
 package org.broad.igv.feature.gff;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.feature.*;
 import htsjdk.tribble.Feature;
 import org.broad.igv.feature.tribble.GFFCodec;
@@ -40,7 +40,7 @@ import java.util.*;
  */
 public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
 
-    private static Logger log = Logger.getLogger(GFFFeatureSource.class);
+    private static Logger log = LogManager.getLogger(GFFFeatureSource.class);
     private  GFFCodec.Version gffVersion;
 
     private FeatureSource wrappedSource;

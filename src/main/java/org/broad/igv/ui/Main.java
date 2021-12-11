@@ -28,7 +28,7 @@ package org.broad.igv.ui;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import com.sanityinc.jargs.CmdLineParser;
 import htsjdk.samtools.seekablestream.SeekableStreamFactory;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
@@ -78,7 +78,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class Main {
 
-    private static Logger log = Logger.getLogger(Main.class);
+    private static Logger log = LogManager.getLogger(Main.class);
 
     /**
      * Launch an igv instance as a stand-alone application in its own Frame.
