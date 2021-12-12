@@ -146,7 +146,7 @@ public class BlatClient {
             if (features.isEmpty()) {
                 MessageUtils.showMessage("No features found");
             } else {
-                BlatTrack newTrack = new BlatTrack(userSeq, features, trackLabel); //species, userSeq, db, genome, trackLabel);
+                BlatTrack newTrack = new BlatTrack(db, userSeq, features, trackLabel); //species, userSeq, db, genome, trackLabel);
                 IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
                 IGV.getInstance().repaint();
                 BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), userSeq, newTrack.getFeatures());

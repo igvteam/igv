@@ -1,24 +1,19 @@
 package org.broad.igv.track;
 
-import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.PSLRecord;
-import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.PSLCodec;
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.blat.BlatClient;
-import org.broad.igv.util.blat.LegacyBlatClient;
 import org.broad.igv.util.blat.BlatQueryWindow;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,28 +22,42 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 
 public class BlatTrack extends FeatureTrack {
 
     private static Logger log = LogManager.getLogger(BlatTrack.class);
 
+    private static Random rand = new Random();
+
     String sequence;
+    String db;
     List<PSLRecord> features;
 
+    /**
+     * Restore from session
+     */
     public BlatTrack() {
         setDisplayMode(Track.DisplayMode.SQUISHED);
         setColor(Color.DARK_GRAY);
     }
 
-    public BlatTrack(String sequence, List<PSLRecord> features, String trackLabel) {
-        super(null, sequence, trackLabel);
+    /**
+     * Create new blat track
+     * @param sequence
+     * @param features
+     * @param trackLabel
+     */
+    public BlatTrack(String db, String sequence, List<PSLRecord> features, String trackLabel) {
+        super(null, guid(), trackLabel);
         setDisplayMode(Track.DisplayMode.SQUISHED);
         setColor(Color.DARK_GRAY);
+        this.db = db;
+        this.sequence = sequence;
         this.features = features;
         init();
     }
@@ -98,7 +107,7 @@ public class BlatTrack extends FeatureTrack {
     public void marshalXML(Document document, Element element) {
 
         super.marshalXML(document, element);
-
+        element.setAttribute("db", this.db);
         element.setAttribute("sequence", this.sequence);
     }
 
@@ -108,9 +117,14 @@ public class BlatTrack extends FeatureTrack {
         super.unmarshalXML(element, version);
 
         if (element.hasAttribute("sequence")) {
-            // Legacy tracks
             String sequence = element.getAttribute("sequence");
+            if (sequence == null || sequence.length() == 0) {
+                sequence = element.getAttribute("id");  // Bug in versions < 2.11.5
+            }
             String db = element.getAttribute("db");
+            if (db == null || db.length() == 0) {
+                db = GenomeManager.getInstance().getCurrentGenome().getBlatDB();
+            }
             try {
                 this.features = BlatClient.blat(db, sequence);
             } catch (Exception e) {
@@ -118,6 +132,7 @@ public class BlatTrack extends FeatureTrack {
                 log.error("Error restoring blat track", e);
             }
         } else {
+            // Legacy tracks
             String tmp = element.getAttribute("tokensList");
             List<String> tokensList = Arrays.asList(tmp.split("\n"));
             Genome genome = GenomeManager.getInstance().getCurrentGenome();
@@ -135,5 +150,8 @@ public class BlatTrack extends FeatureTrack {
 
     }
 
+    private static String guid() {
+        return "" + rand.nextInt();
+    }
 
 }
