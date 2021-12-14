@@ -33,6 +33,7 @@ package org.broad.igv.prefs;
 import org.apache.logging.log4j.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.batch.CommandListener;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
@@ -304,7 +305,8 @@ public class IGVPreferences {
         }
         clearCaches();
         checkForProxyChanges(updatedPrefs);
-        checkForAlignmentChanges(updatedPrefs);   // TODO replace with event
+        checkForAlignmentChanges(updatedPrefs);
+        checkForCommandListenerChanges(updatedPrefs);
         IGVEventBus.getInstance().post(new PreferencesChangeEvent());
 
     }
@@ -350,8 +352,17 @@ public class IGVPreferences {
             for (String key : PROXY_KEYS) {
                 if (updatedPreferenceMap.containsKey(key)) {
                     HttpUtils.getInstance().updateProxySettings();
-                    return;
+                    break;
                 }
+            }
+        }
+    }
+
+    private void checkForCommandListenerChanges(Map<String, String> updatedPreferenceMap) {
+        if(updatedPreferenceMap.containsKey(PORT_ENABLED) || updatedPreferenceMap.containsKey(PORT_NUMBER)) {
+            CommandListener.halt();
+            if (getAsBoolean(PORT_ENABLED)) {
+                CommandListener.start(getAsInt(PORT_NUMBER));
             }
         }
     }
