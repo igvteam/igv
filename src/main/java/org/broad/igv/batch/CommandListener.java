@@ -178,7 +178,9 @@ public class CommandListener implements Runnable {
             while (!halt && (inputLine = in.readLine()) != null) {
 
                 String cmd = inputLine;
-                log.info(cmd);
+                if(!cmd.contains("/oauthCallback")) {
+                    log.info(cmd);
+                }
 
                 boolean isHTTP = cmd.startsWith("OPTIONS") || cmd.startsWith("HEAD") || cmd.startsWith("GET");
 
@@ -223,17 +225,20 @@ public class CommandListener implements Runnable {
                                     } else if (params.containsKey("token")) {
                                         OAuthUtils.getInstance().setAccessToken(params);
                                     }
-                                    result = "SUCCESS";
+                                    sendTextResponse(out, "SUCCESS");
+                                    if(PreferencesManager.getPreferences().getAsBoolean(Constants.PORT_ENABLED) == false) {
+                                        // Turn off port
+                                        halt();
+                                    }
                                 } else {
                                     // Process the request.
-                                    result = processGet(command, params, cmdExe);
+                                    result = processGet(command, params, cmdExe); // Send no response if result is "OK".
+                                    if ("OK".equals(result)) result = null;
+                                    sendTextResponse(out, result);
                                 }
                             }
 
-                            // Send no response if result is "OK".
-                            if ("OK".equals(result)) result = null;
 
-                            sendTextResponse(out, result);
                         }
                     }
                     // http sockets are used for one request only => return will close the socket
