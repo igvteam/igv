@@ -306,7 +306,7 @@ public class AlignmentRenderer {
                 // further detail would not be seen and just add to drawing overhead
                 // Does the change for Bisulfite kill some machines?
                 double pixelWidth = pixelEnd - pixelStart;
-                Color alignmentColor = getAlignmentColor(alignment, renderOptions);
+                Color alignmentColor = getAlignmentColor(alignment, track);
                 final boolean leaveMargin = (this.track.getDisplayMode() != Track.DisplayMode.SQUISHED);
                 if ((pixelWidth < 2) &&
                         !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) || renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) &&
@@ -358,7 +358,7 @@ public class AlignmentRenderer {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
-        Color alignmentColor = getAlignmentColor(alignment, renderOptions);
+        Color alignmentColor = getAlignmentColor(alignment, track);
         List<Alignment> barcodedAlignments = alignment.alignments;
 
         if (barcodedAlignments.size() > 0) {
@@ -461,7 +461,7 @@ public class AlignmentRenderer {
 
         double locScale = context.getScale();
 
-        Color alignmentColor1 = getAlignmentColor(pair.firstAlignment, renderOptions);
+        Color alignmentColor1 = getAlignmentColor(pair.firstAlignment, track);
         Color alignmentColor2 = null;
 
         boolean overlapped = pair.secondAlignment != null && (pair.firstAlignment.getChr().equals(pair.secondAlignment.getChr())) &&
@@ -476,7 +476,7 @@ public class AlignmentRenderer {
         //However, we get the coordinates from the first alignment
         if (pair.secondAlignment != null) {
             if (alignmentColor2 == null) {
-                alignmentColor2 = getAlignmentColor(pair.secondAlignment, renderOptions);
+                alignmentColor2 = getAlignmentColor(pair.secondAlignment, track);
             }
             g.setColor(alignmentColor2);
 
@@ -1190,13 +1190,14 @@ public class AlignmentRenderer {
     }
 
 
-    private Color getAlignmentColor(Alignment alignment, AlignmentTrack.RenderOptions renderOptions) {
+    private Color getAlignmentColor(Alignment alignment, AlignmentTrack track) {
 
         // Set color used to draw the feature.  Highlight features that intersect the
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
 
         Color defaultColor = track.getColor();
         Color c = defaultColor;
+        AlignmentTrack.RenderOptions renderOptions = track.renderOptions;
         ColorOption colorOption = renderOptions.getColorOption();
         String readNameParts[];
 
@@ -1239,22 +1240,24 @@ public class AlignmentRenderer {
 //                   boolean sameChr = isPairedAlignment || alignment.getMate().getChr().equals(alignment.getChr());
                     String mateChr = mate == null ? null : mate.getChr();
                     boolean sameChr = isPairedAlignment || (mateChr != null && mateChr.equals(alignment.getChr()));
-                    if (sameChr) {
-                        int readDistance = Math.abs(alignment.getInferredInsertSize());
-                        if (readDistance != 0) {
+                    if (sameChr ) {
+                        if( track.getExperimentType() != AlignmentTrack.ExperimentType.RNA) {
+                            int readDistance = Math.abs(alignment.getInferredInsertSize());
+                            if (readDistance != 0) {
 
-                            int minThreshold = renderOptions.getMinInsertSize();
-                            int maxThreshold = renderOptions.getMaxInsertSize();
-                            PEStats peStats = getPEStats(alignment, renderOptions);
-                            if (renderOptions.isComputeIsizes() && peStats != null) {
-                                minThreshold = peStats.getMinThreshold();
-                                maxThreshold = peStats.getMaxThreshold();
-                            }
+                                int minThreshold = renderOptions.getMinInsertSize();
+                                int maxThreshold = renderOptions.getMaxInsertSize();
+                                PEStats peStats = getPEStats(alignment, renderOptions);
+                                if (renderOptions.isComputeIsizes() && peStats != null) {
+                                    minThreshold = peStats.getMinThreshold();
+                                    maxThreshold = peStats.getMaxThreshold();
+                                }
 
-                            if (readDistance < minThreshold) {
-                                c = smallISizeColor;
-                            } else if (readDistance > maxThreshold) {
-                                c = largeISizeColor;
+                                if (readDistance < minThreshold) {
+                                    c = smallISizeColor;
+                                } else if (readDistance > maxThreshold) {
+                                    c = largeISizeColor;
+                                }
                             }
                         }
                         //return renderOptions.insertSizeColorScale.getColor(readDistance);

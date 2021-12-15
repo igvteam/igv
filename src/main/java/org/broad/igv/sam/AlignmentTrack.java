@@ -26,7 +26,8 @@
 package org.broad.igv.sam;
 
 
-import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -1852,11 +1853,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
             if (dataManager.isPairedEnd()) {
-
-                mappings.put("insert size", ColorOption.INSERT_SIZE);
+                if (getExperimentType() != ExperimentType.RNA) {
+                    mappings.put("insert size", ColorOption.INSERT_SIZE);
+                }
                 mappings.put("pair orientation", ColorOption.PAIR_ORIENTATION);
-                mappings.put("insert size and pair orientation", ColorOption.UNEXPECTED_PAIR);
-
+                if (getExperimentType() != ExperimentType.RNA) {
+                    mappings.put("insert size and pair orientation", ColorOption.UNEXPECTED_PAIR);
+                }
             }
 
             mappings.put("read strand", ColorOption.READ_STRAND);
