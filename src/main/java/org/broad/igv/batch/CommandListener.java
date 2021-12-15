@@ -90,12 +90,12 @@ public class CommandListener implements Runnable {
         try {
             listener = new CommandListener(port);
             listener.listenerThread.start();
-            isListening = true;
         } catch (Exception e) {
-            e.printStackTrace();
+            listener.closeSockets();
+            listener = null;
+            log.error(e);
         }
     }
-
 
     public static synchronized void halt() {
         if (listener != null) {
@@ -103,7 +103,6 @@ public class CommandListener implements Runnable {
             listener.listenerThread.interrupt();
             listener.closeSockets();
             listener = null;
-            isListening = false;
         }
     }
 
@@ -119,7 +118,7 @@ public class CommandListener implements Runnable {
      * @return state of listener
      */
     public static boolean isListening() {
-        return CommandListener.isListening;
+        return listener != null;
     }
 
     /**
@@ -134,7 +133,6 @@ public class CommandListener implements Runnable {
             serverSocket = new ServerSocket(port);
             log.info("Listening on port " + port);
             currentListenerPort = port;
-            isListening = true;
             while (!halt) {
                 clientSocket = serverSocket.accept();
                 processClientSession(cmdExe);
@@ -145,19 +143,18 @@ public class CommandListener implements Runnable {
                         // We do NOT set isListening = false here, otherwise logout/login state change falls back to OOB
                     } catch (IOException e) {
                         log.error("Error in client socket loop", e);
-                        isListening = false;
                     }
                 }
             }
         } catch (java.net.BindException e) {
             log.error(e);
             currentListenerPort = -1;
-            isListening = false;
+            listener = null;
         } catch (ClosedByInterruptException e) {
             log.error(e);
-            isListening = false;
+            listener = null;
         } catch (IOException e) {
-            isListening = false;
+            listener = null;
             if (!halt) {
                 log.error("IO Error on port socket ", e);
             }
