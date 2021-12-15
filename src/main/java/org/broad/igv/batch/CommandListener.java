@@ -26,10 +26,13 @@
 package org.broad.igv.batch;
 
 import biz.source_code.base64Coder.Base64Coder;
-import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.StringUtils;
@@ -79,10 +82,18 @@ public class CommandListener implements Runnable {
         indexParams = new HashSet<String>(Arrays.asList("index"));
     }
 
+    public static synchronized void start() {
+        start(PreferencesManager.getPreferences().getAsInt(Constants.PORT_NUMBER));
+    }
+
     public static synchronized void start(int port) {
-        listener = new CommandListener(port);
-        listener.listenerThread.start();
-        isListening = true;
+        try {
+            listener = new CommandListener(port);
+            listener.listenerThread.start();
+            isListening = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -92,6 +103,7 @@ public class CommandListener implements Runnable {
             listener.listenerThread.interrupt();
             listener.closeSockets();
             listener = null;
+            isListening = false;
         }
     }
 
@@ -214,7 +226,7 @@ public class CommandListener implements Runnable {
                                     } else if (params.containsKey("token")) {
                                         OAuthUtils.getInstance().setAccessToken(params);
                                     }
-                                    result = "OK";
+                                    result = "SUCCESS";
                                 } else {
                                     // Process the request.
                                     result = processGet(command, params, cmdExe);

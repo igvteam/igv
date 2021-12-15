@@ -118,6 +118,11 @@ public class OAuthProvider {
         String url;
         String redirect = oobURI;
 
+        // If the port listener is not on, try starting it
+        if(!CommandListener.isListening()) {
+            CommandListener.start();
+        }
+
         // if the listener is active, then set the redirect URI.  dwm08
         if (CommandListener.isListening()) {
             redirect = redirectURI;
