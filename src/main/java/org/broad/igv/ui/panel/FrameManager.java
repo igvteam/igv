@@ -25,24 +25,25 @@
 
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.event.GenomeChangeEvent;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.Range;
+import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.session.Session;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
-import org.broad.igv.event.GenomeChangeEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.ui.util.MessageUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -60,9 +61,9 @@ public class FrameManager implements IGVEventObserver {
     }
 
     public static String getCurrentLocusString() {
-        if(isGeneListMode()) {
+        if (isGeneListMode()) {
             String name = frames.get(0).getName();
-            for(int i=1; i<frames.size(); i++) {
+            for (int i = 1; i < frames.size(); i++) {
                 name += " | " + frames.get(i).getName();
             }
             return name;
@@ -272,6 +273,63 @@ public class FrameManager implements IGVEventObserver {
         } else {
             getDefaultFrame().doZoomIncrement(zoom);
         }
+    }
+
+    public static void addFrames(List<String> newLoci) {
+
+        List<String> loci = new ArrayList<>();
+        final List<ReferenceFrame> currentFrames =
+                isGeneListMode() ? frames :
+                        defaultFrame.chrName.equals("All") ?
+                                Arrays.asList() :
+                                Arrays.asList(defaultFrame);
+
+
+        Set<ReferenceFrame> usedFrames = new HashSet<>();
+
+        for (String l : newLoci) {
+            boolean found = false;
+            Locus locus = Locus.fromString(l);
+            locus.chr = GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(locus.chr);
+            for (ReferenceFrame ref : currentFrames) {
+                if (locus != null && ref.getChrName().equals(locus.chr) && ref.getCurrentRange().overlaps(locus)) {
+                    Range union = ref.getCurrentRange().union(locus);
+                    loci.add(Locus.getFormattedLocusString(union.getChr(), union.getStart(), union.getEnd()));
+                    found = true;
+                    usedFrames.add(ref);
+                    break;
+                }
+            }
+            if (!found) {
+                loci.add(Locus.getFormattedLocusString(locus.getChr(), locus.getStart(), locus.getEnd()));
+            }
+        }
+
+        for (ReferenceFrame ref : currentFrames) {
+            if (!usedFrames.contains(ref)) {
+                loci.add(ref.getFormattedLocusString());
+            }
+        }
+
+        GeneList geneList = new GeneList("Current frames", loci, false);
+        Session currentSession = IGV.getInstance().getSession();
+        currentSession.setCurrentGeneList(geneList);
+
+        // sort the frames by position
+        currentSession.sortGeneList((n0, n1) -> {
+            ReferenceFrame f0 = getFrame(n0);
+            ReferenceFrame f1 = getFrame(n1);
+
+            String chr0 = f0 == null ? "" : f0.getChrName();
+            String chr1 = f1 == null ? "" : f1.getChrName();
+            int s0 = f0 == null ? 0 : f0.getCurrentRange().getStart();
+            int s1 = f1 == null ? 0 : f1.getCurrentRange().getStart();
+
+            int chrComp = ChromosomeNameComparator.get().compare(chr0, chr1);
+            if (chrComp != 0) return chrComp;
+            return s0 - s1;
+        });
+        IGV.getInstance().resetFrames();
     }
 
 

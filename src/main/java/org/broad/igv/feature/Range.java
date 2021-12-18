@@ -46,7 +46,7 @@ public class Range implements Feature {
     public int start = -1;
     protected int end = -1;
 
-    public Range(String chr, int start, int end){
+    public Range(String chr, int start, int end) {
         this.chr = chr;
         this.start = start;
         this.end = end;
@@ -70,14 +70,14 @@ public class Range implements Feature {
         return end;
     }
 
-    public int getLength(){
+    public int getLength() {
         return end - start;
     }
 
     /**
      * Determine whether this interval fully contains the specified
      * input interval.
-     *
+     * <p>
      * A negative input start position has special meaning.  It is considered within the interval if the interval
      * contains position "0".
      *
@@ -94,8 +94,9 @@ public class Range implements Feature {
 
     /**
      * Determine whether there is any overlap between this interval and the specified interval
-     *
+     * <p>
      * Negative positions have no special meaning
+     *
      * @param chr
      * @param start
      * @param end
@@ -111,6 +112,12 @@ public class Range implements Feature {
 
     public boolean contains(Range range) {
         return this.contains(range.chr, range.start, range.end);
+    }
+
+    public Range union(Range other) {
+        if (!chr.equals(other.chr))
+            throw new RuntimeException("Incompatible ranges - different chrs (" + chr + " " + other.chr);
+        return new Range(chr, Math.min(start, other.start), Math.max(end, other.end));
     }
 
     public String toString() {
@@ -134,8 +141,8 @@ public class Range implements Feature {
 
     public static Range fromString(String str) {
 
-        String [] t1 = str.split(":");
-        String [] t2 = t1[1].split("-");
+        String[] t1 = str.split(":");
+        String[] t2 = t1[1].split("-");
         String chr = t1[0];
         int start = Integer.parseInt(t2[0].replace(",", ""));
         int end = Integer.parseInt(t2[1].replace(",", ""));
