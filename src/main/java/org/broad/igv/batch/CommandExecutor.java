@@ -110,6 +110,8 @@ public class CommandExecutor {
                 result = cmd;
             } else if (cmd.equalsIgnoreCase("gotoimmediate") || cmd.equalsIgnoreCase("goto")) {
                 result = goto1(args);
+            } else if (cmd.equalsIgnoreCase("addframes")) {
+                result = addFrames(args);
             } else if (cmd.equalsIgnoreCase("scrolltotrack") || cmd.equalsIgnoreCase("gototrack")) {
                 boolean res = this.igv.scrollToTrack(param1);
                 result = res ? "OK" : String.format("Error: Track %s not found", param1);
@@ -898,6 +900,14 @@ public class CommandExecutor {
             locus += (" " + args.get(i));
         }
         igv.goToLocus(locus);
+        return "OK";
+    }
+
+    private String addFrames(List<String> args) {
+        if (args == null || args.size() < 2) {
+            return "ERROR: missing locus parameter";
+        }
+        FrameManager.addFrames(args.subList(1, args.size()));
         return "OK";
     }
 

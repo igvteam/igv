@@ -106,7 +106,6 @@ public class Locus extends Range implements NamedFeature {
         String startStr = NUMBER_FORMAT.format(start + 1);
         String endStr = NUMBER_FORMAT.format(end);
         String position = chr + ":" + startStr + "-" + endStr;
-
         return position;
     }
 
