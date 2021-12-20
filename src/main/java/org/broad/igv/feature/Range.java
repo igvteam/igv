@@ -44,7 +44,7 @@ public class Range implements Feature {
 
     public String chr = null;
     public int start = -1;
-    protected int end = -1;
+    public int end = -1;
 
     public Range(String chr, int start, int end) {
         this.chr = chr;

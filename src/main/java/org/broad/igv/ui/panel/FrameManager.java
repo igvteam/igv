@@ -44,6 +44,7 @@ import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author jrobinso
@@ -275,9 +276,36 @@ public class FrameManager implements IGVEventObserver {
         }
     }
 
-    public static void addFrames(List<String> newLoci) {
+    /**
+     * Add a new list of loci (frames).  First, a check is made for overlap with current frames, any any loci overlap
+     * the current frame is expanded.  If no overlaps are found a new frame is created.
+     * <p>
+     * This method was added so support "circular view" interactions.
+     *
+     * @param newLociStrings
+     */
+    public static void addFrames(List<String> newLociStrings) {
 
-        List<String> loci = new ArrayList<>();
+        if (newLociStrings.size() != 2) {
+            throw new RuntimeException("Unexpected list size: " + newLociStrings.size());
+        }
+
+        // Convert loci strings to locus objects
+        List<Locus> newLoci = newLociStrings.stream()
+                .map(s -> {
+                    Locus locus = Locus.fromString(s);
+                    locus.chr = GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(locus.chr);
+                    return locus;
+                })
+                .collect(Collectors.toList());
+
+        // If new loci overlap combine
+        if(newLoci.get(0).overlaps(newLoci.get(1))) {
+            newLoci.get(0).start = Math.min(newLoci.get(0).start, newLoci.get(1).start);
+            newLoci.get(0).end = Math.max(newLoci.get(0).end, newLoci.get(1).end);
+            newLoci.remove(1);
+        }
+
         final List<ReferenceFrame> currentFrames =
                 isGeneListMode() ? frames :
                         defaultFrame.chrName.equals("All") ?
@@ -287,10 +315,9 @@ public class FrameManager implements IGVEventObserver {
 
         Set<ReferenceFrame> usedFrames = new HashSet<>();
 
-        for (String l : newLoci) {
+        List<String> loci = new ArrayList<>();
+        for (Locus locus : newLoci) {
             boolean found = false;
-            Locus locus = Locus.fromString(l);
-            locus.chr = GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(locus.chr);
             for (ReferenceFrame ref : currentFrames) {
                 if (locus != null && ref.getChrName().equals(locus.chr) && ref.getCurrentRange().overlaps(locus)) {
                     Range union = ref.getCurrentRange().union(locus);

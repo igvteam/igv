@@ -904,7 +904,7 @@ public class CommandExecutor {
     }
 
     private String addFrames(List<String> args) {
-        if (args == null || args.size() < 2) {
+        if (args == null || args.size() < 3) {
             return "ERROR: missing locus parameter";
         }
         FrameManager.addFrames(args.subList(1, args.size()));
