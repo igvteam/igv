@@ -129,7 +129,7 @@ public class BAMReader implements AlignmentReader<SAMAlignment> {
 
 
     public CloseableIterator<SAMAlignment> iterator() throws IOException {
-        return new WrappedIterator(getSamReader().iterator());
+        return new WrappedIterator(readerPool.getReaderIterator().iterator());
     }
 
     public CloseableIterator<SAMAlignment> query(String sequence, int start, int end, boolean contained) {

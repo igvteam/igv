@@ -425,19 +425,11 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public AlignmentTrack.ExperimentType inferType() {
         ReadStats readStats = new ReadStats();
-        List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 1000);
+        List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 100);
         for(Alignment a : sample) {
             readStats.addAlignment(a);
         }
-        readStats.compute();
-        if (readStats.readCount < 100) return null; // Not enough reads
-        if (readStats.readLengthStdDev > 100 || readStats.medianReadLength > 1000) {
-            return AlignmentTrack.ExperimentType.THIRD_GEN;  // Could also use fracReadsWithIndels
-        } else if (readStats.medianRefToReadRatio > 10 || readStats.fracReadsWithNs > 0.2) {
-            return AlignmentTrack.ExperimentType.RNA;
-        } else {
-            return AlignmentTrack.ExperimentType.OTHER;
-        }
+        return readStats.inferType();
     }
 
     private AlignmentTrack.ExperimentType getExperimentType() {

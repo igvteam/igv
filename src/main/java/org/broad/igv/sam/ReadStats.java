@@ -29,6 +29,7 @@ package org.broad.igv.sam;
 import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.util.collections.DoubleArrayList;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -107,7 +108,6 @@ public class ReadStats {
         return false;
     }
 
-
     private double[] downsample(DoubleArrayList list, int size) {
 
         if (list.size() < size) return list.toArray();
@@ -129,5 +129,17 @@ public class ReadStats {
 
     }
 
+    public AlignmentTrack.ExperimentType inferType() {
+        compute();
+        if (readCount < 100) return null; // Not enough reads
+        if (readLengthStdDev > 100 || medianReadLength > 1000) {
+            return AlignmentTrack.ExperimentType.THIRD_GEN;  // Could also use fracReadsWithIndels
+        } else if (medianRefToReadRatio > 10 || fracReadsWithNs > 0.2) {
+            return AlignmentTrack.ExperimentType.RNA;
+        } else {
+            return AlignmentTrack.ExperimentType.OTHER;
+        }
+
+    }
 
 }
