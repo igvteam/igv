@@ -2,7 +2,7 @@ package org.broad.igv.feature.basepair;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.basepair.BasePairTrack.*;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.color.ColorUtilities;

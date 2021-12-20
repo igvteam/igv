@@ -26,7 +26,7 @@
 package org.broad.igv.data.expression;
 
 import htsjdk.tribble.Feature;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;

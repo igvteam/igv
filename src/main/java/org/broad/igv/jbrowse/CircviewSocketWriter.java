@@ -1,6 +1,6 @@
 package org.broad.igv.jbrowse;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 

@@ -26,7 +26,7 @@
 package org.broad.igv.bbfile;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.util.CompressionUtils;
 
 import java.util.ArrayList;

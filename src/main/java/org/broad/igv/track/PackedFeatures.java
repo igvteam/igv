@@ -25,7 +25,7 @@
 
 package org.broad.igv.track;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.ui.IGV;

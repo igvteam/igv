@@ -27,7 +27,7 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.GeneTrackRenderer;
 import org.broad.igv.track.FeatureCollectionSource;

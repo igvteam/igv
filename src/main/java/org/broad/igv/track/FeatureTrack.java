@@ -27,7 +27,7 @@ package org.broad.igv.track;
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.TribbleException;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;

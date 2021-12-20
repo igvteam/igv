@@ -30,7 +30,7 @@
 package org.broad.igv.tdf;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.collections.DownsampledDoubleArrayList;
 

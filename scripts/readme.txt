@@ -68,35 +68,6 @@ this specification to the java_arguments file instead of editing the launcher sc
 Doing so will allow the standard 'igv.sh' to work properly on HiDPI screens without
 the need for the 'igv_hidpi.sh' script.
 
-IGV logging can be adjusted to include more or less information by overriding the usual Log4j2 
-configuration.  The default setting will log at INFO level (informational messages, errors, and
-fatal conditions), which is a reasonable balance under normal use.  We provide the following
-alternative configurations:
-
-   https://raw.githubusercontent.com/igvteam/igv/master/src/main/resources/log4j2_none.xml
-      - Turn off all logging.  Note that you should revert to normal logging when reporting
-        any bugs or issues back to the IGV team.
-   https://raw.githubusercontent.com/igvteam/igv/master/src/main/resources/log4j2_debug.xml
-      - Log at DEBUG level.  This is similar to INFO but also includes developer level
-        debugging messages.
-   https://raw.githubusercontent.com/igvteam/igv/master/src/main/resources/log4j2_all.xml
-      - Log everything.  No logging messages will be suppressed.  In practice, however,
-        this is likely to be very similar to DEBUG.
-
-Further configuration is possible through the standard Log4J2 settings.  This is for advanced
-users only and is beyond the scope of this document.
-
-To enable the "no logging" configuration, for example, download a copy from the above URL into
-$HOME/.igv (Mac or Linux) or %USERPROFILE%/.igv (Windows) and then add a line like the following 
-to the java_arguments file: 
-
-   -Dlog4j.configurationFile=/Users/igv_user/.igv/log4j2-none.xml
-
-Here, '/Users/igv_user' represents the user's home directory ($HOME or %USERPROFILE%). Adjust 
-this file path according to your own local circumstances.  We recommend a fully-specified 
-*absolute* path to avoid issues with (for example) tilde or environment variable expansion.
-
-
 Java command-line usage
 
 We don't recommend running IGV directly as a Java command-line launch as this has become more complex

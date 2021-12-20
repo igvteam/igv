@@ -31,7 +31,7 @@ import htsjdk.tribble.FeatureCodec;
 import htsjdk.variant.bcf2.BCF2Codec;
 import htsjdk.variant.vcf.VCF3Codec;
 import htsjdk.variant.vcf.VCFCodec;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
 import org.broad.igv.feature.FeatureType;
 import org.broad.igv.feature.dsi.DSICodec;

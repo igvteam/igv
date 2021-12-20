@@ -1,7 +1,7 @@
 package org.broad.igv.ui.commandbar;
 
 import com.jidesoft.hints.ListDataIntelliHints;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.ui.IGV;

@@ -26,7 +26,7 @@
 package org.broad.igv.sam.reader;
 
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;

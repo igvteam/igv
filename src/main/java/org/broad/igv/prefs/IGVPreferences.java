@@ -30,7 +30,7 @@
 package org.broad.igv.prefs;
 
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;

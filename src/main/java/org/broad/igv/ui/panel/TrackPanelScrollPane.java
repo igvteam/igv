@@ -30,7 +30,7 @@
 package org.broad.igv.ui.panel;
 
 import com.jidesoft.swing.JideScrollPane;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.ui.util.SnapshotUtilities;
 
 import javax.swing.*;

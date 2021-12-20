@@ -28,7 +28,7 @@ package org.broad.igv.tools.motiffinder;
 import com.google.common.collect.Iterators;
 import htsjdk.samtools.util.SequenceUtil;
 import htsjdk.tribble.Feature;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;

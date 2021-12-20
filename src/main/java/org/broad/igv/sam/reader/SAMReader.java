@@ -32,7 +32,7 @@ package org.broad.igv.sam.reader;
 import htsjdk.samtools.*;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.sam.cram.IGVReferenceSource;

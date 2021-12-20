@@ -28,7 +28,7 @@ package org.broad.igv.ui.util;
 
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.event.IGVEventBus;

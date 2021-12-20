@@ -40,14 +40,14 @@ import htsjdk.tribble.index.Index;
 import htsjdk.tribble.index.IndexFactory;
 import htsjdk.tribble.util.LittleEndianOutputStream;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.*;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.ConsoleAppender;
-import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.broad.igv.logging.*;
+//import org.broad.igv.logging.Level;
+//import org.broad.igv.logging.core.LoggerContext;
+//import org.broad.igv.logging.core.appender.ConsoleAppender;
+//import org.broad.igv.logging.core.appender.ConsoleAppender.Target;
+//import org.broad.igv.logging.core.config.Configuration;
+//import org.broad.igv.logging.core.config.LoggerConfig;
+//import org.broad.igv.logging.core.layout.PatternLayout;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureFileUtils;
@@ -219,23 +219,23 @@ public class IgvTools {
     }
 
     private static void initLogger() {
-        LoggerContext context = LoggerContext.getContext(false);
-        Configuration configuration = context.getConfiguration();
-        LoggerConfig rootLogger = configuration.getRootLogger();
-
-        //if (LogManager.getRootLogger().getAppender(CONSOLE_APPENDER_NAME) == null) {
-            PatternLayout layout = PatternLayout.newBuilder().withConfiguration(configuration)
-                    .withPattern("%m%n").build();
-            ConsoleAppender consoleAppender = ConsoleAppender.newBuilder().withName(CONSOLE_APPENDER_NAME)
-                    .setConfiguration(configuration)
-                    .setFollow(true)
-                    .withLayout(layout)
-                    .build();
-            consoleAppender.start();
-            configuration.addAppender(consoleAppender);
-            rootLogger.addAppender(consoleAppender, Level.INFO, null);
-            context.updateLoggers();
-       // }
+//        LoggerContext context = LoggerContext.getContext(false);
+//        Configuration configuration = context.getConfiguration();
+//        LoggerConfig rootLogger = configuration.getRootLogger();
+//
+//        //if (LogManager.getRootLogger().getAppender(CONSOLE_APPENDER_NAME) == null) {
+//            PatternLayout layout = PatternLayout.newBuilder().withConfiguration(configuration)
+//                    .withPattern("%m%n").build();
+//            ConsoleAppender consoleAppender = ConsoleAppender.newBuilder().withName(CONSOLE_APPENDER_NAME)
+//                    .setConfiguration(configuration)
+//                    .setFollow(true)
+//                    .withLayout(layout)
+//                    .build();
+//            consoleAppender.start();
+//            configuration.addAppender(consoleAppender);
+//            rootLogger.addAppender(consoleAppender, Level.INFO, null);
+//            context.updateLoggers();
+//       // }
     }
 
 
@@ -524,8 +524,7 @@ public class IgvTools {
     }
 
     /**
-     * if ofile.equals(STDOUT_FILE_STR), write output to stdout. This also means redirecting log statements
-     * to someplace other than stdout, we use stderr
+     * if ofile.equals(STDOUT_FILE_STR), write output to stdout. This also means redirecting user messages to stderr
      *
      * @param ofile
      * @return Whether output will be written to stdout
@@ -534,28 +533,7 @@ public class IgvTools {
         //Output will be written to stdout instead of file,
         //need to redirect user messages
         if (ofile.equals(STDOUT_FILE_STR)) {
-
             userMessageWriter = System.err;
-
-            LoggerContext context = LoggerContext.getContext(false);
-            Configuration configuration = context.getConfiguration();
-            LoggerConfig rootLogger = configuration.getRootLogger();
-            PatternLayout layout = PatternLayout.newBuilder().withConfiguration(configuration)
-                    .withPattern("%m%n").build();
-            ConsoleAppender consoleAppender = ConsoleAppender.newBuilder().withName(CONSOLE_APPENDER_NAME)
-                    .setConfiguration(configuration)
-                    .setFollow(true)
-                    .setTarget(Target.SYSTEM_ERR)
-                    .withLayout(layout)
-                    .build();
-            consoleAppender.start();
-            rootLogger.removeAppender(CONSOLE_APPENDER_NAME);
-            configuration.addAppender(consoleAppender);
-            rootLogger.addAppender(consoleAppender, Level.INFO, null);
-            
-            //See log4j2.xml file
-            rootLogger.removeAppender("stdout");
-            context.updateLoggers();
             return true;
         }
         return false;

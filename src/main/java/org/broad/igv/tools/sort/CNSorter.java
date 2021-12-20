@@ -29,7 +29,7 @@
  */
 package org.broad.igv.tools.sort;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import htsjdk.tribble.readers.AsciiLineReader;
 
 import java.io.*;

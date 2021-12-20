@@ -25,7 +25,7 @@
 
 package org.broad.igv.feature.gff;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.*;
 import htsjdk.tribble.Feature;
 import org.broad.igv.feature.tribble.GFFCodec;

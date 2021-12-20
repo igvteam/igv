@@ -33,7 +33,7 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;

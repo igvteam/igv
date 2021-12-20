@@ -25,7 +25,7 @@
 
 package org.broad.igv;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.renderer.SequenceRenderer;
 
 import java.io.IOException;

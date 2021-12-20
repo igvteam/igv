@@ -29,7 +29,7 @@
  */
 package org.broad.igv.ui;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 
 import javax.swing.*;
 import java.awt.*;

@@ -32,7 +32,7 @@ package org.broad.igv.ui.legend;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;

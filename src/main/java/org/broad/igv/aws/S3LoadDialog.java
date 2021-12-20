@@ -25,7 +25,7 @@
 
 package org.broad.igv.aws;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.apache.commons.lang3.tuple.Triple;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;

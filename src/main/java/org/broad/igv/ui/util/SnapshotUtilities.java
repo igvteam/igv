@@ -35,7 +35,7 @@ package org.broad.igv.ui.util;
 
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.ui.panel.Paintable;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;

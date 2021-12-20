@@ -32,7 +32,7 @@
 package org.broad.igv.ui.util;
 
 import com.jidesoft.swing.JideButton;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.util.BrowserLauncher;
 
 import java.awt.*;

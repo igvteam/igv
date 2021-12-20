@@ -28,7 +28,7 @@ package org.broad.igv.tools.sort;
 
 import htsjdk.samtools.*;
 import htsjdk.samtools.util.CloserUtil;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.ui.IGV;
 
 import java.io.File;

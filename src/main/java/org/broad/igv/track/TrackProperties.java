@@ -28,7 +28,7 @@ package org.broad.igv.track;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.util.ParsingUtils;
 
 import java.awt.*;

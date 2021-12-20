@@ -27,7 +27,7 @@
 package org.broad.igv.ui.color;
 
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.util.ObjectCache;
 
 import java.awt.*;

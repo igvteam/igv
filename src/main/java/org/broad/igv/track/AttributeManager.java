@@ -31,7 +31,7 @@
 package org.broad.igv.track;
 
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.prefs.Constants;

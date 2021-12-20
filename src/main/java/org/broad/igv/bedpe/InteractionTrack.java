@@ -1,7 +1,7 @@
 package org.broad.igv.bedpe;
 
 import com.google.gson.Gson;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.jbrowse.CircularViewUtilities;

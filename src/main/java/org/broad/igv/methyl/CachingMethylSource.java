@@ -25,7 +25,7 @@
 
 package org.broad.igv.methyl;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.util.collections.LRUCache;
 
 import java.util.ArrayList;

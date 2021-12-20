@@ -3,7 +3,7 @@ package org.broad.igv.google;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.IGVEventBus;

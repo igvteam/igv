@@ -29,7 +29,7 @@ import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.readers.AsciiLineReader;
 import htsjdk.tribble.readers.LineIterator;
 import htsjdk.tribble.readers.LineIteratorImpl;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Mutation;

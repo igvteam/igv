@@ -27,7 +27,7 @@ package org.broad.igv.tools;
 
 import htsjdk.samtools.util.CloseableIterator;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentReader;

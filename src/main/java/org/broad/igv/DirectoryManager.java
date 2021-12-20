@@ -26,23 +26,14 @@
 package org.broad.igv;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.*;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.RollingFileAppender;
-import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
-import org.apache.logging.log4j.core.appender.rolling.RolloverStrategy;
-import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.logging.LogFileHandler;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.RuntimeUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
@@ -162,8 +153,6 @@ public class DirectoryManager {
             } else if (!canWrite(IGV_DIRECTORY)) {
                 throw new DataLoadException("Cannot write to user directory", IGV_DIRECTORY.getAbsolutePath());
             }
-
-            log.info("IGV Directory: " + IGV_DIRECTORY.getAbsolutePath());
         }
         return IGV_DIRECTORY;
     }
@@ -315,15 +304,18 @@ public class DirectoryManager {
      * is successfully moved, irrespective of any errors that might occur later (e.g. when attempting to
      * remove the old directory).
      *
-     * @param newIGVDirectory
+     * @param newIGVDirectoryParent -- parent directory for "igv" folder
      * @return True if the directory is successfully moved, false otherwise
      */
 
-    public static Boolean moveIGVDirectory(final File newIGVDirectory) {
+    public static Boolean moveIGVDirectory(final File newIGVDirectoryParent) {
+
+        File newIGVDirectory = new File(newIGVDirectoryParent, "igv");
 
         if (newIGVDirectory.equals(IGV_DIRECTORY)) {
             return false; // Nothing to do
         }
+
 
         if (IGV_DIRECTORY != null && IGV_DIRECTORY.exists()) {
 
@@ -332,6 +324,7 @@ public class DirectoryManager {
             try {
                 log.info("Moving igv directory from " + oldDirectory.getParent() + " to " +
                         newIGVDirectory.getAbsolutePath());
+
                 FileUtils.copyDirectory(IGV_DIRECTORY, newIGVDirectory);
                 IGV_DIRECTORY = newIGVDirectory;
 
@@ -400,7 +393,7 @@ public class DirectoryManager {
      *
      * @return
      */
-	private static synchronized File getLegacyPreferencesFile() {
+    private static synchronized File getLegacyPreferencesFile() {
         File rootDir = getLegacyIGVDirectory();
         return new File(rootDir, "prefs.properties");
     }
@@ -446,35 +439,7 @@ public class DirectoryManager {
     }
 
     public static void initializeLog() {
-
-        // Create a log file that is ready to have text appended to it
-        try {
-            File logFile = getLogFile();
-            LoggerContext context = LoggerContext.getContext(false);
-            Configuration configuration = context.getConfiguration();
-            LoggerConfig rootLogger = configuration.getRootLogger();
-
-            rootLogger.removeAppender("IGV_ROLLING_APPENDER");
-            PatternLayout layout = PatternLayout.newBuilder().withConfiguration(configuration)
-                    .withPattern("%p [%d{ISO8601}] [%F:%L]  %m%n").build();
-            RolloverStrategy rolloverStrategy = DefaultRolloverStrategy.newBuilder().withConfig(configuration)
-                    .withMax("1").withMin("1").build();
-            RollingFileAppender appender = RollingFileAppender.newBuilder().withName("IGV_ROLLING_APPENDER")
-                    .setConfiguration(configuration)
-                    .withFileName(logFile.getAbsolutePath()).withAppend(true)
-                    .withFilePattern(getIgvDirectory().getAbsolutePath() + File.separator + "igv-backup-%i.log")
-                    .withLayout(layout)
-                    .withPolicy(SizeBasedTriggeringPolicy.createPolicy("500K"))
-                    .withStrategy(rolloverStrategy)
-                    .build();
-            appender.start();
-            configuration.addAppender(appender);
-            rootLogger.addAppender(appender, Level.ALL, null);
-            context.updateLoggers();
-        } catch (IOException e) {
-            // Can't create log file, just log to console as set in log4j2.xml
-            log.error("Error creating log file", e);
-        }
+        LogFileHandler.getInstance().updateHandler();
     }
 
 }

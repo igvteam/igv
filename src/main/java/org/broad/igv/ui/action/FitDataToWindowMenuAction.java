@@ -29,7 +29,7 @@
  */
 package org.broad.igv.ui.action;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.IGV;

@@ -26,7 +26,7 @@
 package org.broad.igv.sam;
 
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;

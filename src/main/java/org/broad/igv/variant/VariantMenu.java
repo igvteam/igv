@@ -26,7 +26,7 @@
 package org.broad.igv.variant;
 
 import htsjdk.tribble.Feature;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.prefs.Constants;

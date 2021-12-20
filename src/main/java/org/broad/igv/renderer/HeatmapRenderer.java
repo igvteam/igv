@@ -25,7 +25,7 @@
 
 package org.broad.igv.renderer;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;

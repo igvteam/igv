@@ -26,7 +26,7 @@
 package org.broad.igv.feature.genome.fasta;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Sequence;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;

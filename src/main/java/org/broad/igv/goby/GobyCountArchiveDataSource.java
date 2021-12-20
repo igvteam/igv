@@ -32,7 +32,7 @@ import org.campagnelab.goby.counts.CountsReader;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.exceptions.DataLoadException;

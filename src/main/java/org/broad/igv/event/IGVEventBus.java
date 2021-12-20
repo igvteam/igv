@@ -27,7 +27,7 @@
 package org.broad.igv.event;
 
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 
 import java.util.*;
 

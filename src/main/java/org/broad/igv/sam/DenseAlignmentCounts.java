@@ -25,7 +25,7 @@
 
 package org.broad.igv.sam;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 
 /**
  * @author jrobinso

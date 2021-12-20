@@ -1,6 +1,6 @@
 package org.broad.igv.feature.sprite;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;

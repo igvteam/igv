@@ -28,7 +28,7 @@ package org.broad.igv.track;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.blast.BlastMapping;

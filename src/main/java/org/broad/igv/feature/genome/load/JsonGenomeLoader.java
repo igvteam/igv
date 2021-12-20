@@ -7,7 +7,7 @@ import com.google.gson.JsonParser;
 import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureReader;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.feature.FeatureDB;

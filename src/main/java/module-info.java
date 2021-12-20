@@ -3,6 +3,7 @@ module org.igv {
     exports org.broad.igv.tools;
     exports org.broad.igv.ui;
     exports org.broad.igv.jbrowse;
+    exports org.broad.igv.logging;
 
     requires com.google.common;
     requires protobuf.java;
@@ -17,8 +18,6 @@ module org.igv {
     requires java.sql;
     requires java.xml;
     requires jdk.xml.dom;
-    requires org.apache.logging.log4j;
-    requires org.apache.logging.log4j.core;
     requires swing.layout;
     requires jide.common;
     requires org.apache.commons.io;

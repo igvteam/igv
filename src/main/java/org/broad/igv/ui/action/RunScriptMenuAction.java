@@ -25,7 +25,7 @@
 
 package org.broad.igv.ui.action;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;

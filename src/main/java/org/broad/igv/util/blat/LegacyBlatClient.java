@@ -25,7 +25,7 @@
 
 package org.broad.igv.util.blat;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.genome.Genome;

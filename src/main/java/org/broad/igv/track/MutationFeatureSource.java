@@ -29,7 +29,7 @@ import htsjdk.tribble.Tribble;
 import htsjdk.tribble.index.Index;
 import htsjdk.tribble.index.IndexFactory;
 import htsjdk.tribble.util.ParsingUtils;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Mutation;

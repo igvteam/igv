@@ -30,7 +30,7 @@ import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.ui.util.MessageUtils;

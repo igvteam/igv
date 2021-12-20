@@ -29,7 +29,7 @@ package org.broad.igv.sam.cram;
 
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;

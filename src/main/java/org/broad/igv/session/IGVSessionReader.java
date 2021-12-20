@@ -25,7 +25,7 @@
 
 package org.broad.igv.session;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.data.CombinedDataSource;

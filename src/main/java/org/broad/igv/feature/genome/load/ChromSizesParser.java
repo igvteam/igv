@@ -25,7 +25,7 @@
 
 package org.broad.igv.feature.genome.load;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.util.ParsingUtils;

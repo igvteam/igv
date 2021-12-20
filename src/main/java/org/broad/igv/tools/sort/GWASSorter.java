@@ -25,7 +25,7 @@
 
 package org.broad.igv.tools.sort;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.gwas.GWASParser;
 import htsjdk.tribble.readers.AsciiLineReader;
 

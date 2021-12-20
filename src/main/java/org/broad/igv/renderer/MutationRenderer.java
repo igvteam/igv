@@ -25,7 +25,7 @@
 
 package org.broad.igv.renderer;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;

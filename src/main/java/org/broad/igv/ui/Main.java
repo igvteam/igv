@@ -28,7 +28,7 @@ package org.broad.igv.ui;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import com.sanityinc.jargs.CmdLineParser;
 import htsjdk.samtools.seekablestream.SeekableStreamFactory;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
@@ -214,9 +214,10 @@ public class Main {
         log.info("JVM: " + System.getProperty("java.vm.name", "")
                 + " " + System.getProperty("java.vendor.version", "")
                 + "   " + System.getProperty("java.compiler", ""));
-        log.info("Default User Directory: " + DirectoryManager.getUserDirectory());
-        log.info("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version")
+         log.info("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version")
                 + " " + System.getProperty("os.arch"));
+        log.info("IGV Directory: " + DirectoryManager.getIgvDirectory().getAbsolutePath());
+
         System.setProperty("http.agent", Globals.applicationString());
 
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());

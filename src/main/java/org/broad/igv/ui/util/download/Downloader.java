@@ -1,7 +1,7 @@
 package org.broad.igv.ui.util.download;
 
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;

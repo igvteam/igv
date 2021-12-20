@@ -27,7 +27,7 @@ package org.broad.igv.util;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.util.ftp.FTPUtils;
 
 import java.io.*;

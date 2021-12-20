@@ -26,7 +26,7 @@
 package org.broad.igv.tools;
 
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Strand;

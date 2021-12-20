@@ -25,7 +25,7 @@
 
 package org.broad.igv.variant;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;

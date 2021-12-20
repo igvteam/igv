@@ -30,7 +30,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import htsjdk.tribble.Feature;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.CombinedDataSource;

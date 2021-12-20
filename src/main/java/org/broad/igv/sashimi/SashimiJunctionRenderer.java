@@ -28,7 +28,7 @@ package org.broad.igv.sashimi;
 //~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.Feature;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;

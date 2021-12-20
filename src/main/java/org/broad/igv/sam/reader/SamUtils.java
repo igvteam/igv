@@ -34,7 +34,7 @@ import htsjdk.samtools.CigarElement;
 import htsjdk.samtools.CigarOperator;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.util.StringUtil;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;

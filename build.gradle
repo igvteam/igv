@@ -74,7 +74,6 @@ configurations {
         exclude group: 'org.codehaus.mojo', module: 'animal-sniffer-annotations'
         exclude group: 'org.checkerframework', module: 'checker-qual'
         exclude group: 'com.ibm.icu', module: 'icu4j'
-        exclude group: 'log4j', module: 'log4j'
 
         exclude group: 'xmlpull', module: 'xmlpull'
         exclude group: 'xpp3', module: 'xpp3_min'
@@ -115,8 +114,6 @@ dependencies {
             [group: 'org.apache.commons', name: 'commons-jexl', version: '2.1.1'],
             [group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'],
             [group: 'com.github.samtools', name: 'htsjdk', version: '2.24.1'],
-            [group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.16.0'],
-            [group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.16.0'],
             [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
             //[group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],  // no longer in Maven Central
             [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],

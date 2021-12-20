@@ -34,7 +34,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.sam.Alignment;
 
 import java.io.IOException;

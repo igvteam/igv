@@ -25,7 +25,7 @@
 
 package org.broad.igv.feature.tribble;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.vcf.VCFVariant;

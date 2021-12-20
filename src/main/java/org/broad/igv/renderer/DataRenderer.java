@@ -37,7 +37,7 @@ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.prefs.IGVPreferences;

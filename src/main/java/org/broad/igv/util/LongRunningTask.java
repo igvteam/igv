@@ -25,7 +25,7 @@
 
 package org.broad.igv.util;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;

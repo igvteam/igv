@@ -25,7 +25,7 @@
 
 package org.broad.igv.feature.genome.load;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.*;

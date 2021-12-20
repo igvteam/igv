@@ -51,7 +51,7 @@ package org.broad.igv.util;
  * THE SOFTWARE.
  */
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

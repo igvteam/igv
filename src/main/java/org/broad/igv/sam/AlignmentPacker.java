@@ -29,7 +29,7 @@
  */
 package org.broad.igv.sam;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
 

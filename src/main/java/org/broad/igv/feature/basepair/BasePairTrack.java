@@ -1,6 +1,6 @@
 package org.broad.igv.feature.basepair;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.Persistable;

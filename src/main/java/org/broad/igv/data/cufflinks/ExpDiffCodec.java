@@ -25,7 +25,7 @@
 
 package org.broad.igv.data.cufflinks;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.util.ParsingUtils;
 

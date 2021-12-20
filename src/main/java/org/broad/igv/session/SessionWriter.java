@@ -25,7 +25,7 @@
 
 package org.broad.igv.session;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;

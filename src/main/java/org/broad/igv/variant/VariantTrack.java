@@ -30,7 +30,7 @@ package org.broad.igv.variant;
 
 import htsjdk.tribble.Feature;
 import htsjdk.variant.variantcontext.GenotypeType;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.TrackGroupEvent;

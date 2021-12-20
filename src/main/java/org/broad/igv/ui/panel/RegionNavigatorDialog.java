@@ -26,7 +26,7 @@
 
 package org.broad.igv.ui.panel;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;

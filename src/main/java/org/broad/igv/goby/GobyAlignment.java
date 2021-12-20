@@ -33,7 +33,7 @@ import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.data.CharArrayList;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;

@@ -26,7 +26,7 @@
 package org.broad.igv.ui.panel;
 
 import com.jidesoft.swing.JideSplitPane;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
@@ -494,13 +494,13 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
     static class SplitPane extends JideSplitPane {
-        @Override
-        public void doLayout() {
-            if (log.isTraceEnabled()) {
-                log.trace("Layout");
-            }
-            super.doLayout();    //To change body of overridden methods use File | Settings | File Templates.
-        }
+//        @Override
+//        public void doLayout() {
+//            if (log.isTraceEnabled()) {
+//                log.trace("Layout");
+//            }
+//            super.doLayout();    //To change body of overridden methods use File | Settings | File Templates.
+//        }
     }
 
 

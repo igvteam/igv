@@ -25,7 +25,7 @@
 
 package org.broad.igv.sam;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.util.collections.IntArrayList;
 
 import java.util.ArrayList;

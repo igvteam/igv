@@ -29,7 +29,7 @@
 
 package org.broad.igv.lists;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;

@@ -29,7 +29,7 @@
  */
 package org.broad.igv.feature.genome;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ObjectCache;
 

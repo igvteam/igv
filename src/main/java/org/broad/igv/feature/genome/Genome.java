@@ -36,7 +36,7 @@ package org.broad.igv.feature.genome;
 
 import com.google.gson.JsonElement;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;

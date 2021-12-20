@@ -26,7 +26,7 @@
 package org.broad.igv.data;
 
 import com.google.common.collect.Iterators;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.track.DataTrack;

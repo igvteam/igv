@@ -29,7 +29,7 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.util.FileUtils;

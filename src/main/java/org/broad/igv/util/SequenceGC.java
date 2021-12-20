@@ -31,7 +31,7 @@
 package org.broad.igv.util;
 
 import com.sanityinc.jargs.CmdLineParser;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.exceptions.DataLoadException;
 import static org.broad.igv.util.ParsingUtils.openBufferedReader;
 

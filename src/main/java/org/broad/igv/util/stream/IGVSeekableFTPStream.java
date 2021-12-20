@@ -28,7 +28,7 @@ package org.broad.igv.util.stream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPReply;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.util.UserPasswordInputImpl;
 import org.broad.igv.util.ftp.FTPUtils;
 

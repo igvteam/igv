@@ -1,6 +1,6 @@
 package org.broad.igv.util;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 
 import java.net.MalformedURLException;
 import java.net.URL;

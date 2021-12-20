@@ -1,7 +1,7 @@
 package org.broad.igv.util;
 
 import com.google.gson.JsonObject;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.google.OAuthProvider;
@@ -143,7 +143,7 @@ public class AmazonUtils {
 
         // https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html
         // Basic (Classic) Authflow
-        // Uses AssumeRoleWithWebIdentity and facilitates CloudTrail logging. Uses one more request but provides user traceability.
+        // Uses AssumeRoleWithWebIdentity and facilitates CloudTrail org.broad.igv.logging. Uses one more request but provides user traceability.
         GetIdRequest.Builder idrequest = GetIdRequest.builder().identityPoolId(federatedPoolId)
                 .logins(logins);
         GetIdResponse idResult = cognitoIdentityClient.getId(idrequest.build());

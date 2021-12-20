@@ -26,7 +26,7 @@
 package org.broad.igv.tools.converters;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 
 import java.io.*;

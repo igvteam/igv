@@ -25,7 +25,7 @@
 
 package org.broad.igv.ui;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.ui.commandbar.IGVCommandBar;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.TrackPanel;

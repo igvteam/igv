@@ -31,7 +31,7 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;

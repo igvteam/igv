@@ -1,7 +1,7 @@
 package org.broad.igv.track;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.PSLRecord;

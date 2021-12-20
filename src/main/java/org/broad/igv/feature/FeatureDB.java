@@ -28,7 +28,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import com.jidesoft.utils.SortedList;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.aa.AminoAcidManager;
 import org.broad.igv.feature.aa.Codon;

@@ -31,7 +31,7 @@ package org.broad.igv.util.index;
  */
 
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

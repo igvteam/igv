@@ -27,7 +27,7 @@ package org.broad.igv.sam.reader;
 
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.EmptyAlignmentIterator;

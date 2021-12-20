@@ -28,7 +28,7 @@ package org.broad.igv.util;
 import biz.source_code.base64Coder.Base64Coder;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPStream;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;

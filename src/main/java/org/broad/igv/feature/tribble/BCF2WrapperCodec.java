@@ -26,7 +26,7 @@
 package org.broad.igv.feature.tribble;
 
 import htsjdk.samtools.util.LocationAware;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.variant.vcf.VCFVariant;
 import htsjdk.tribble.Feature;

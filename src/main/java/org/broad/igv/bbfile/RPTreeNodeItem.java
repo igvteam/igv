@@ -25,7 +25,7 @@
 
 package org.broad.igv.bbfile;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 
 /**
  * Created by IntelliJ IDEA.

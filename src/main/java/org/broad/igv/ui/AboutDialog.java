@@ -30,7 +30,7 @@
  */
 package org.broad.igv.ui;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 
 /**

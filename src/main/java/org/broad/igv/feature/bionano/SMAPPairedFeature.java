@@ -26,7 +26,7 @@
 
 package org.broad.igv.feature.bionano;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.AbstractFeature;
 import org.broad.igv.track.WindowFunction;
 

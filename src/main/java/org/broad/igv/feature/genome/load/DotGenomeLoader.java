@@ -1,7 +1,7 @@
 package org.broad.igv.feature.genome.load;
 
 import htsjdk.tribble.Feature;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.Sequence;

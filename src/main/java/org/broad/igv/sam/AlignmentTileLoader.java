@@ -27,7 +27,7 @@ package org.broad.igv.sam;
 
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;

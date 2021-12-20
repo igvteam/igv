@@ -34,7 +34,7 @@
 package org.broad.igv.ui.panel;
 
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;

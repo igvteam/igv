@@ -27,7 +27,7 @@ package org.broad.igv.google;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;

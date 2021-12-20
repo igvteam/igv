@@ -3,7 +3,7 @@ package org.broad.igv.ui.commandbar;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;

@@ -2,7 +2,7 @@ package org.broad.igv.sam.cram;
 
 import com.google.common.io.LittleEndianDataInputStream;
 import com.google.common.io.LittleEndianDataOutputStream;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.Constants;

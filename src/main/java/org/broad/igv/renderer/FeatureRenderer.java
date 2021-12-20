@@ -29,7 +29,7 @@
  */
 package org.broad.igv.renderer;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.IGVFeature;
 import htsjdk.tribble.Feature;
 

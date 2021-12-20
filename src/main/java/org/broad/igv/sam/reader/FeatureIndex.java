@@ -26,7 +26,7 @@
 package org.broad.igv.sam.reader;
 
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;

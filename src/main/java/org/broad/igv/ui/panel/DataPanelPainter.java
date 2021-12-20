@@ -33,7 +33,7 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;

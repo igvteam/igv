@@ -25,7 +25,7 @@
 
 package org.broad.igv.gwas;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;

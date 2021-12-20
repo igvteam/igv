@@ -31,7 +31,7 @@ package org.broad.igv.track;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;

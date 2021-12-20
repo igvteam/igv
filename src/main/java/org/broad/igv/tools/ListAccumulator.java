@@ -31,7 +31,7 @@ package org.broad.igv.tools;
 
 import org.broad.igv.util.collections.DoubleArrayList;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.track.WindowFunction;
 
 import java.util.*;

@@ -47,7 +47,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.NumberFormatter;
 
 import com.jidesoft.swing.JideBoxLayout;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.Pair;

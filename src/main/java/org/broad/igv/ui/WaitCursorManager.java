@@ -28,7 +28,7 @@ package org.broad.igv.ui;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.ui.util.UIUtilities;
 
 import java.util.Collections;

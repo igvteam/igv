@@ -29,7 +29,7 @@
  */
 package org.broad.igv.tdf;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.CompositeScore;

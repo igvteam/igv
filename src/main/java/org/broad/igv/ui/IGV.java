@@ -37,7 +37,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;

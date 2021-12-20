@@ -33,7 +33,7 @@ package org.broad.igv.ui.commandbar;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideToggleButton;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.*;
 import org.broad.igv.feature.genome.Genome;

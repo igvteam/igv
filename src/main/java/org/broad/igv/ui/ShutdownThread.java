@@ -25,15 +25,10 @@
 
 package org.broad.igv.ui;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.batch.CommandListener;
-import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
-
-import java.io.File;
-import java.io.PrintWriter;
-import java.util.Collection;
 
 /**
  * This thread is registered upon startup and will get executed upon exit.
@@ -53,6 +48,7 @@ public class ShutdownThread extends Thread {
                 t.dispose();
             }
         }
+        LogFileHandler.getInstance().closeHandler();
     }
 
     @Override

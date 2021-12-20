@@ -26,7 +26,7 @@
 package org.broad.igv.feature.tribble;
 
 import htsjdk.samtools.util.LocationAware;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;

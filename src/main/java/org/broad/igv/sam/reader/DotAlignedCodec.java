@@ -31,7 +31,7 @@ package org.broad.igv.sam.reader;
 
 import org.broad.igv.util.collections.SortingCollection;
 import org.broad.igv.util.collections.SortingCollection.Codec;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.sam.DotAlignedAlignment;
 
 import java.io.*;

@@ -25,7 +25,7 @@
 
 package org.broad.igv.ui.action;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;

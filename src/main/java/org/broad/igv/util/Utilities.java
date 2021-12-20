@@ -28,7 +28,7 @@ package org.broad.igv.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import biz.source_code.base64Coder.Base64Coder;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

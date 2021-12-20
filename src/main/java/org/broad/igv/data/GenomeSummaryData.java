@@ -29,7 +29,7 @@
  */
 package org.broad.igv.data;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.Accumulator;
 import org.broad.igv.track.WindowFunction;

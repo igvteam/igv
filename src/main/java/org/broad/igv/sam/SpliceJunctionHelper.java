@@ -28,7 +28,7 @@ package org.broad.igv.sam;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;

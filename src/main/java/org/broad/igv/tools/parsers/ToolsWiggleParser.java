@@ -27,7 +27,7 @@ package org.broad.igv.tools.parsers;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.data.WiggleParser;

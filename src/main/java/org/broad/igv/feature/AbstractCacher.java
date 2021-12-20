@@ -26,7 +26,7 @@
 
 package org.broad.igv.feature;
 
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.util.collections.LRUCache;
 import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;

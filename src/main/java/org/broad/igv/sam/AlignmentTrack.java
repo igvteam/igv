@@ -26,8 +26,8 @@
 package org.broad.igv.sam;
 
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -331,19 +331,25 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             boolean showJunction = getPreferences(type).getAsBoolean(Constants.SAM_SHOW_JUNCTION_TRACK);
             if (showJunction != spliceJunctionTrack.isVisible()) {
                 spliceJunctionTrack.setVisible(showJunction);
-                IGV.getInstance().revalidateTrackPanels();
+                if(IGV.hasInstance()) {
+                    IGV.getInstance().revalidateTrackPanels();
+                }
             }
 
             boolean showCoverage = getPreferences(type).getAsBoolean(SAM_SHOW_COV_TRACK);
             if (showCoverage != coverageTrack.isVisible()) {
                 coverageTrack.setVisible(showCoverage);
-                IGV.getInstance().revalidateTrackPanels();
+                if(IGV.hasInstance()) {
+                    IGV.getInstance().revalidateTrackPanels();
+                }
             }
 
             boolean showAlignments = getPreferences(type).getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK);
             if (showAlignments != isVisible()) {
                 setVisible(showAlignments);
-                IGV.getInstance().revalidateTrackPanels();
+                if(IGV.hasInstance()) {
+                    IGV.getInstance().revalidateTrackPanels();
+                }
             }
             //ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, experimentType);
             //IGVEventBus.getInstance().post(event);

@@ -30,7 +30,7 @@
 package org.broad.igv.feature.aa;
 
 import com.google.gson.*;
-import org.apache.logging.log4j.*;
+import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.ParsingUtils;
 
