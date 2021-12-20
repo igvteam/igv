@@ -6,7 +6,4 @@ public class LogManager {
         return new Logger(classz.getSimpleName());
     }
 
-    public static void shutdown() {
-        LogFileHandler.getInstance().closeHandler();
-    }
 }

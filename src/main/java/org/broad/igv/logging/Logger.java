@@ -6,18 +6,27 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.ConsoleHandler;
 
+/**
+ * Emulates some aspects of the log4j Logger API (the aspects IGV actually uses).
+ */
 public class Logger {
 
 
     java.util.logging.Logger wrappedLogger;
 
+    /**
+     * Instantiate a logger and add console and file handlers
+     *
+     * @param name
+     */
     public Logger(String name) {
+
         wrappedLogger = java.util.logging.Logger.getLogger(name);
         wrappedLogger.setUseParentHandlers(false);
+
         ConsoleHandler handler = new ConsoleHandler();
         handler.setFormatter(new LogFormatter());
         wrappedLogger.addHandler(handler);
-
         wrappedLogger.addHandler(LogFileHandler.getInstance());
 
     }
@@ -36,7 +45,7 @@ public class Logger {
     }
 
     public void error(Throwable e) {
-       logThrowable(e);
+        logThrowable(e);
     }
 
     public void log(Level level, String message) {
@@ -44,6 +53,9 @@ public class Logger {
         switch (level) {
             case ERROR:
                 error(message);
+                break;
+            case WARN:
+                warn(message);
                 break;
             default:
                 info(message);
@@ -67,24 +79,28 @@ public class Logger {
     }
 
     public void debug(List<String> message) {
-        StringBuffer buf = new StringBuffer();
-        for (String m : message) {
-            if (buf.length() > 0) buf.append(", ");
-            buf.append(m);
-        }
         if (isDebugEnabled()) {
+            StringBuffer buf = new StringBuffer();
+            for (String m : message) {
+                if (buf.length() > 0) buf.append(", ");
+                buf.append(m);
+            }
             wrappedLogger.fine(buf.toString());
         }
     }
 
     public void trace(Object message) {
-        wrappedLogger.finest(message.toString());
+        if(isTraceEnabled()) {
+            wrappedLogger.finest(message.toString());
+        }
     }
 
+    // TODO -- implement if needed
     public boolean isDebugEnabled() {
         return false;
     }
 
+    // TODO -- implement if needed
     public boolean isTraceEnabled() {
         return false;
     }

@@ -295,7 +295,6 @@ public class PreferencesEditor {
                         }
                     });
                 });
-
             }
 
 

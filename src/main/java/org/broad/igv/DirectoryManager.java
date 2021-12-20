@@ -308,16 +308,16 @@ public class DirectoryManager {
      * @return True if the directory is successfully moved, false otherwise
      */
 
-    public static Boolean moveIGVDirectory(final File newIGVDirectoryParent) {
+    public static void moveIGVDirectory(final File newIGVDirectoryParent) {
 
         File newIGVDirectory = new File(newIGVDirectoryParent, "igv");
 
         if (newIGVDirectory.equals(IGV_DIRECTORY)) {
-            return false; // Nothing to do
+            return; // Nothing to do
         }
 
 
-        if (IGV_DIRECTORY != null && IGV_DIRECTORY.exists()) {
+        if (IGV_DIRECTORY != null) {
 
             File oldDirectory = IGV_DIRECTORY;
 
@@ -338,11 +338,9 @@ public class DirectoryManager {
             } catch (IOException e) {
                 log.error("Error copying IGV directory", e);
                 MessageUtils.showMessage("<html>Error moving IGV directory:<br/>&nbsp;nbsp;" + e.getMessage());
-                return false;
+                return;
             }
 
-            // Restart the log
-            LogManager.shutdown();
             initializeLog();
 
             // Try to delete the old directory
@@ -353,8 +351,6 @@ public class DirectoryManager {
         GENOME_CACHE_DIRECTORY = null;
         GENE_LIST_DIRECTORY = null;
         BAM_CACHE_DIRECTORY = null;
-        return true;
-
     }
 
     public static void moveDirectoryContents(File oldDirectory, File newDirectory) {
