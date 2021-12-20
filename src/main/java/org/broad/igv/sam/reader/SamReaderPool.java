@@ -4,8 +4,10 @@ import htsjdk.samtools.SamInputResource;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.seekablestream.ByteArraySeekableStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.cram.IGVReferenceSource;
 import org.broad.igv.ui.util.MessageUtils;
@@ -16,13 +18,17 @@ import org.broad.igv.util.URLUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Simple pool for reusing SamReader instances.  The SamReader query object is not thread safe, so if triggering
@@ -33,11 +39,13 @@ import java.util.*;
  */
 public class SamReaderPool {
 
+    public static final int BUFFER_SIZE = 512000;
     private static Logger log = LogManager.getLogger(SamReaderPool.class);
 
     private ResourceLocator locator;
     private boolean requireIndex;
     private List<SamReader> availableReaders;
+    byte [] indexBytes;
 
     public SamReaderPool(ResourceLocator locator, boolean requireIndex) {
         this.locator = locator;
@@ -53,6 +61,10 @@ public class SamReaderPool {
         }
     }
 
+    public synchronized SamReader getReaderIterator() throws IOException {
+        return createReader(1000000);
+    }
+
     public void freeReader(SamReader reader) {
         availableReaders.add(reader);
     }
@@ -65,6 +77,10 @@ public class SamReaderPool {
     }
 
     private SamReader createReader() throws IOException {
+        return createReader(BUFFER_SIZE);
+    }
+
+    private SamReader createReader(int bufferSize) throws IOException {
 
         boolean isLocal = locator.isLocal();
         final SamReaderFactory factory = SamReaderFactory.makeDefault().
@@ -91,9 +107,12 @@ public class SamReaderPool {
             URL url = HttpUtils.createURL(locator.getPath());
             if (requireIndex) {
                 // If using an index need a seekable stream
-                resource = SamInputResource.of(IGVSeekableStreamFactory.getInstance().getStreamFor(url));
+                SeekableStream ss = IGVSeekableStreamFactory.getInstance().getStreamFor(url);
+                resource = SamInputResource.of(
+                        bufferSize == 0 ? ss :
+                        IGVSeekableStreamFactory.getInstance().getBufferedStream(ss, bufferSize));
             } else {
-                resource = SamInputResource.of(new BufferedInputStream(HttpUtils.getInstance().openConnectionStream(url)));
+                resource = SamInputResource.of(new BufferedInputStream(HttpUtils.getInstance().openConnectionStream(url), 512000));
             }
         }
 
@@ -107,8 +126,12 @@ public class SamReaderPool {
                 File indexFile = new File(indexPath);
                 resource = resource.index(indexFile);
             } else {
-                SeekableStream indexStream = IGVSeekableStreamFactory.getInstance().getStreamFor(HttpUtils.createURL(indexPath));
-                resource = resource.index(indexStream);
+                // Don't use seekable stream for remoted indeces, can result in hundreds of http requests.
+                if(indexBytes == null) {
+                    indexBytes = HttpUtils.getInstance().getContentsAsBytes(HttpUtils.createURL(indexPath), null);
+                }
+                ByteArraySeekableStream stream = new ByteArraySeekableStream(indexBytes);
+                resource = resource.index(stream);
             }
         }
 
