@@ -425,7 +425,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public AlignmentTrack.ExperimentType inferType() {
         ReadStats readStats = new ReadStats();
-        List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 100);
+        List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 1000);
         for(Alignment a : sample) {
             readStats.addAlignment(a);
         }
