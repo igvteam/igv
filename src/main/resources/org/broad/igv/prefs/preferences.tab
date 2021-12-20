@@ -206,13 +206,6 @@ TOOLTIP.INITIAL_DELAY	Tooltip inital delay (ms)	integer	50
 TOOLTIP.RESHOW_DELAY	Tooltip reshow delay (ms)	integer	50
 TOOLTIP.DISMISS_DELAY	Tooltip dismiss delay (ms)	integer	60000
 
-
-## JBrowse Circular View Integration  **EXPERIMENTAL FEATURE**
-CIRC_VIEW_ENABLED	Enable Circview	boolean	FALSE
-CIRC_VIEW_HOST	Circview host (usually localhost)	string	localhost
-CIRC_VIEW_PORT	Circview port	integer	60152
-
-
 ##
 
 
