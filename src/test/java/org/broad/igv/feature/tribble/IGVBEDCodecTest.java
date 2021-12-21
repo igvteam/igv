@@ -25,27 +25,11 @@
 
 package org.broad.igv.feature.tribble;
 
-import com.google.common.base.Function;
-import com.google.common.base.Supplier;
-import htsjdk.tribble.AsciiFeatureCodec;
-import htsjdk.tribble.Feature;
-import junit.framework.Assert;
-import org.apache.commons.lang.StringUtils;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.Globals;
-import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackLoader;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.TestUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.List;
-
 import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * User: jacob

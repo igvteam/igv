@@ -35,7 +35,6 @@ import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -968,10 +967,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
                     TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
                     TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
-                    setDataSource(ds);
-                    repaint();
-                } else if (path.endsWith(".counts")) {
-                    CoverageDataSource ds = new GobyCountArchiveDataSource(file);
                     setDataSource(ds);
                     repaint();
                 } else {

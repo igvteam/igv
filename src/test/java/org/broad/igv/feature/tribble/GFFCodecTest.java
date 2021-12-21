@@ -25,14 +25,14 @@
 
 package org.broad.igv.feature.tribble;
 
+import htsjdk.tribble.Feature;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.track.FeatureSource;
 import org.broad.igv.feature.gff.GFFFeatureSource;
+import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.util.Iterator;

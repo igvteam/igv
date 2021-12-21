@@ -22,13 +22,9 @@ module org.igv {
     requires jide.common;
     requires org.apache.commons.io;
     requires org.apache.commons.lang3;
-    requires goby.io;
-    requires icb.utils;
-    requires fastutil;
     requires batik.codec;
     requires batik.svggen;
     requires batik.dom;
-    requires dsiutils;
     requires AbsoluteLayout.RELEASE110;
 
     // AWS
