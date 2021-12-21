@@ -230,13 +230,14 @@ task createDist(type: Copy, dependsOn: jar) {
         from("${buildDir}/libs")
         from("lib") {
             include '*.jar' 
-            exclude '*log4j*.jar' 
         }
         into "lib"
     }
     // Copies all Maven-fetched dependency jars
     with copySpec {
-        from configurations.default
+        from configurations.default {
+            exclude '**/*log4j*.jar' 
+        }
         into "lib"
     }
     with copySpec { from("genomes/sizes") {} into "lib/genomes" }
