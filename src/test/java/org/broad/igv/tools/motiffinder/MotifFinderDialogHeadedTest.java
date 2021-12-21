@@ -25,7 +25,7 @@
 
 package org.broad.igv.tools.motiffinder;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
