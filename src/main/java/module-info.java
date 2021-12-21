@@ -6,7 +6,6 @@ module org.igv {
     exports org.broad.igv.logging;
 
     requires com.google.common;
-    requires protobuf.java;
     requires commons.math3;
     requires gson;
     requires htsjdk;
