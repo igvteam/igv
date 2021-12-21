@@ -25,7 +25,6 @@
 
 package org.broad.igv.batch;
 
-import org.apache.commons.lang.StringUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.feature.RegionOfInterest;

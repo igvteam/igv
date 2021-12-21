@@ -28,8 +28,9 @@ package org.broad.igv.track;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
-import org.broad.igv.logging.*;
 import org.broad.igv.bbfile.BBFileReader;
+import org.broad.igv.bedpe.BedPEParser;
+import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.blast.BlastMapping;
 import org.broad.igv.blast.BlastParser;
@@ -41,17 +42,15 @@ import org.broad.igv.data.seg.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.basepair.BasePairTrack;
-import org.broad.igv.bedpe.BedPEParser;
-import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.feature.bionano.SMAPParser;
 import org.broad.igv.feature.bionano.SMAPRenderer;
 import org.broad.igv.feature.cyto.CytobandTrack;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.dsi.DSIRenderer;
 import org.broad.igv.feature.dsi.DSITrack;
-import org.broad.igv.feature.genome.load.GenbankParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.load.GenbankParser;
 import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.feature.sprite.ClusterParser;
 import org.broad.igv.feature.sprite.ClusterTrack;
@@ -59,14 +58,16 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
-import org.broad.igv.goby.GobyAlignmentQueryReader;
-import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.google.GoogleUtils;
-import org.broad.igv.gwas.*;
+import org.broad.igv.gwas.GWASFeature;
+import org.broad.igv.gwas.GWASParser;
+import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.htsget.HtsgetUtils;
 import org.broad.igv.htsget.HtsgetVariantSource;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.prefs.PreferencesManager;
@@ -175,8 +176,6 @@ public class TrackLoader {
                 loadBWFile(locator, newTracks, genome);
             } else if (format.equals("ibf") || format.equals("tdf")) {
                 loadTDFFile(locator, newTracks, genome);
-            } else if (format.equals("counts")) {
-                loadGobyCountsArchive(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
             } else if (format.equals("maf.dict")) {
@@ -191,8 +190,6 @@ public class TrackLoader {
                 loadBasePairFile(locator, newTracks, genome);
             } else if (GWASParser.isGWASFile(format)) {
                 loadGWASFile(locator, newTracks, genome);
-            } else if (GobyAlignmentQueryReader.supportsFileType(path)) {
-                loadAlignmentsTrack(locator, newTracks, genome);
             } else if (format.equals("list")) {
                 // This should be deprecated
                 loadListFile(locator, newTracks, genome);
@@ -793,9 +790,7 @@ public class TrackLoader {
 
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
-            final DataSource dataSource = locator.getPath().endsWith(".counts") ?
-                    new GobyCountArchiveDataSource(locator) :
-                    new TDFDataSource(reader, trackNumber, heading, genome);
+            final DataSource dataSource = new TDFDataSource(reader, trackNumber, heading, genome);
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
             String displayName = (name == null || multiTrack) ? heading : name;
@@ -842,26 +837,6 @@ public class TrackLoader {
 
         MethylTrack track = new MethylTrack(locator, reader, genome);
         newTracks.add(track);
-    }
-
-
-    private void loadGobyCountsArchive(ResourceLocator locator, List<Track> newTracks, Genome genome) {
-
-
-        if (log.isDebugEnabled()) {
-            log.debug("Loading Goby counts archive: " + locator.toString());
-        }
-
-
-        String trackId = locator.getSampleId() + " coverage";
-        String trackName = locator.getFileName();
-        final DataSource dataSource = new GobyCountArchiveDataSource(locator);
-
-        DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-
-        newTracks.add(track);
-
-
     }
 
     private void loadEwigIBFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {

@@ -31,7 +31,6 @@ import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
 import org.broad.igv.logging.*;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -90,14 +89,7 @@ public class AlignmentReaderFactory {
             }
         } else if (format.equals("bam.list") || pathLowerCase.equals("sam.list")) {
             reader = getBamListReader(locator.getPath(), requireIndex);
-        } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
-            try {
-                reader = new GobyAlignmentQueryReader(locator.getPath());
-            } catch (IOException e) {
-                throw new RuntimeException("Cannot load Goby alignment " + locator.getPath(), e);
-
-            }
-        } else {
+        }  else {
             throw new RuntimeException("Cannot determine file format: " + locator.getPath());
         }
 
