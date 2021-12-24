@@ -129,7 +129,7 @@ public class IGVPreferences {
 
             String value = get(key);
             if (value == null) {
-                log.error("No default value for: " + key);
+                log.warn("No default value for: " + key);
                 return false;
             }
             boolValue = Boolean.valueOf(get(key, value));
@@ -150,7 +150,7 @@ public class IGVPreferences {
         if (value == null) {
             String defValue = get(key);
             if (defValue == null) {
-                log.error("No default value for: " + key);
+                log.warn("No default value for: " + key);
                 return 0;
             }
             value = new Integer(get(key, defValue));
@@ -171,7 +171,7 @@ public class IGVPreferences {
         if (value == null) {
             String defValue = get(key);
             if (defValue == null) {
-                log.error("No default value for: " + key);
+                log.warn("No default value for: " + key);
                 return Color.white;
             }
             value = ColorUtilities.stringToColor(defValue);
@@ -192,7 +192,7 @@ public class IGVPreferences {
         if (value == null) {
             String defValue = get(key);
             if (defValue == null) {
-                log.error("No default value for: " + key);
+                log.warn("No default value for: " + key);
                 return 0;
             }
             value = new Float(get(key, defValue));

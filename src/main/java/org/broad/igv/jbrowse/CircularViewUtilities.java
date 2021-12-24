@@ -1,6 +1,7 @@
 package org.broad.igv.jbrowse;
 
 import htsjdk.tribble.Feature;
+import org.broad.igv.bedpe.BedPE;
 import org.broad.igv.bedpe.BedPEFeature;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
@@ -26,10 +27,10 @@ public class CircularViewUtilities {
         }
     }
 
-    public static void sendBedpeToJBrowse(List<BedPEFeature> features, String trackName, Color color) {
+    public static void sendBedpeToJBrowse(List<? extends  BedPE> features, String trackName, Color color) {
         Chord[] chords = new Chord[features.size()];
         int index = 0;
-        for (BedPEFeature f : features) {
+        for (BedPE f : features) {
             chords[index++] = Chord.fromBedPE(f);
         }
         sendChordsToJBrowse(chords, trackName, color, "0.5");

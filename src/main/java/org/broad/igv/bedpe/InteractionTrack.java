@@ -1,19 +1,19 @@
 package org.broad.igv.bedpe;
 
-import com.google.gson.Gson;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.jbrowse.CircularViewUtilities;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
@@ -24,20 +24,11 @@ import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 
 import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 
 /**
  * Created by jrobinso on 6/29/18.
@@ -274,11 +265,20 @@ public class InteractionTrack extends AbstractTrack {
 
 
         // Experimental JBrowse.
-        if(PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
             menu.addSeparator();
             JMenuItem item = new JMenuItem("Add Pairs to Circular View");
             item.addActionListener(e -> {
-                CircularViewUtilities.sendBedpeToJBrowse(this.allFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
+                List<? extends BedPE> visibleFeatures;
+                if (te.getFrame() == null || te.getFrame().getChrName().equals(Globals.CHR_ALL)) {
+                    visibleFeatures = allFeatures;
+                } else {
+                    List<ReferenceFrame> frames = te.getFrame() != null ?
+                            Arrays.asList(te.getFrame()) :
+                            FrameManager.getFrames();
+                    visibleFeatures = getVisibleFeatures(frames);
+                }
+                CircularViewUtilities.sendBedpeToJBrowse(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
             });
             menu.add(item);
         }
@@ -476,88 +476,29 @@ public class InteractionTrack extends AbstractTrack {
         }
     }
 
-    // Experimental jbrowse stuff
-    private void sendToJBrowse(List<BedPEFeature> features) {
 
-        String color = "rgba(0, 0, 255, 0.1)";
+    /**
+     * Return features visible in the supplied frames
+     */
+    public List<BedPE> getVisibleFeatures(List<ReferenceFrame> frames) {
 
-        Coord [] chords = new Coord[features.size()];
-        int index = 0;
-        for (BedPEFeature f : features) {
-            chords[index++] = new Coord(f);
-        }
+        Function<ReferenceFrame, List<BedPE>> frameFeatures = (f) -> {
+            String chr = f.getChrName();
+            Range r = f.getCurrentRange();
+            return getFeaturesOverlapping(chr, r.getStart(), r.getEnd());
+        };
 
-        Gson gson = new Gson();
-        //System.out.println(gson.toJson(chords));
-        SocketSender.send(gson.toJson(chords));
-
-    }
-
-
-}
-
-class Mate {
-    String refName;
-    int start;
-    int end;
-    public Mate(String refName, int start, int end) {
-        this.refName = refName;
-        this.start = start;
-        this.end = end;
-    }
-}
-
-class Coord {
-    String uniqueId;
-    String color;
-    String refName;
-    int start;
-    int end;
-    Mate mate;
-    public Coord(BedPEFeature f) {
-        this.uniqueId = f.chr1 + ":" + f.start1 + "-" + f.end1 + "_" + f.chr2 + ":" + f.start2 + "-" + f.end2;
-        this.refName =  f.chr1.startsWith("chr") ? f.chr1.substring(3) : f.chr1;
-        this. start = f.start1;
-        this. end = f.end1;
-        this.mate = new Mate(f.chr2.startsWith("chr") ? f.chr2.substring(3) : f.chr2, f.start2, f.end2);
-        this.color = "rgba(0, 0, 255, 0.1)";
-    }
-}
-
-class SocketSender {
-
-     static void send(String json) {
-        Socket socket = null;
-        PrintWriter out = null;
-        BufferedReader in = null;
-        try {
-            socket = new Socket("127.0.0.1", 1234);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            out.println(json);
-            out.flush();
-
-            String response = in.readLine();
-            System.out.println(response);
-
-
-        } catch (UnknownHostException e) {
-            System.err.println("Unknown host exception: " + e.getMessage());
-            System.exit(1);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Couldn't get I/O for " + "the connection to IGV");
-            System.exit(1);
-        } finally {
-            try {
-                in.close();
-                out.close();
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+        if (frames.size() == 0) {
+            return Collections.emptyList();
+        } else if (frames.size() == 1) {
+            return frameFeatures.apply(frames.get(0));
+        } else {
+            List<BedPE> inView = new ArrayList<>();
+            for (ReferenceFrame f : frames) {
+                inView.addAll(frameFeatures.apply(f));
             }
+            return inView;
         }
     }
-}
 
+}

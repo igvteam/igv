@@ -1,6 +1,7 @@
 package org.broad.igv.jbrowse;
 
 import org.broad.igv.Globals;
+import org.broad.igv.bedpe.BedPE;
 import org.broad.igv.bedpe.BedPEFeature;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
@@ -22,7 +23,9 @@ class Chord {
     private Chord() {
     }
 
-    public static Chord fromBedPE(BedPEFeature f) {
+    public static Chord fromBedPE(BedPE bedPE) {
+
+        BedPEFeature f = bedPE.get();
 
         Chord c = new Chord();
         String chr1 = shortName(f.chr1);
