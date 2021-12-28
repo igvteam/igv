@@ -25,16 +25,15 @@
 
 package org.broad.igv.ui.panel;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.renderer.DataRange;
-import org.broad.igv.track.*;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
+import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.MessageCollection;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -43,8 +42,10 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
-import java.util.*;
 
 /**
  * @author jrobinso
@@ -216,43 +217,39 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
             event.acceptDrop(DnDConstants.ACTION_COPY);
 
             Transferable transferable = event.getTransferable();
+            DataFlavor[] flavors = transferable.getTransferDataFlavors();
 
             MessageCollection messages = new MessageCollection();
             try {
-                List<File> files = (List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
-                if (files != null && files.size() > 0) {
-                    List<ResourceLocator> locators = ResourceLocator.getLocators(files);
-                    for (ResourceLocator locator : locators) {
-                        try {
-                            IGV.getInstance().load(locator, panel);
-                        } catch (DataLoadException de) {
-                            messages.append(de.getMessage());
+                if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    List<File> files = (List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
+                    if (files != null && files.size() > 0) {
+                        List<ResourceLocator> locators = ResourceLocator.getLocators(files);
+                        for (ResourceLocator locator : locators) {
+                            try {
+                                IGV.getInstance().load(locator, panel);
+                            } catch (DataLoadException de) {
+                                messages.append(de.getMessage());
+                            }
                         }
                     }
-                }
-
-                String obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
-                if (HttpUtils.isRemoteURL(obj)) {
+                } else if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                    String obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
                     IGV.getInstance().load(new ResourceLocator(obj), panel);
-                }
-                if (messages != null && !messages.isEmpty()) {
-                    log.error(messages.getFormattedMessage());
-                    MessageUtils.showMessage(messages.getFormattedMessage());
+                } else {
+                    messages.append("Unknown object type: " + transferable.toString());
                 }
             } catch (Exception e) {
-                String obj = null;
-                try {
-                    obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
-                    if (HttpUtils.isRemoteURL(obj)) {
-                        IGV.getInstance().load(new ResourceLocator(obj), panel);
-                    }
-                } catch (Exception e1) {
-                    log.error(e1);
-                    if (messages != null && !messages.isEmpty()) {
-                        MessageUtils.showMessage(messages.getFormattedMessage());
-                    }
+                log.error(e);
+                if (e.getMessage() != null) {
+                    messages.append(e.getMessage());
                 }
             }
+
+            if (messages != null && !messages.isEmpty()) {
+                MessageUtils.showMessage(messages.getFormattedMessage());
+            }
+
             IGV.getMainFrame().repaint();
             event.dropComplete(true);
         }
