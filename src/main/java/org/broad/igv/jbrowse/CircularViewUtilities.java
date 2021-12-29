@@ -2,13 +2,13 @@ package org.broad.igv.jbrowse;
 
 import htsjdk.tribble.Feature;
 import org.broad.igv.bedpe.BedPE;
-import org.broad.igv.bedpe.BedPEFeature;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ChromosomeColors;
+import org.broad.igv.util.Downsampler;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.vcf.MateVariant;
 
@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CircularViewUtilities {
+
+    static int MAX_CHORDS = 10000;  // Maximum number of chords to send to electron app
 
     public static boolean ping() {
         try {
@@ -71,6 +73,12 @@ public class CircularViewUtilities {
 
         // We can't know if an assembly has been set, or if it has its the correct one.
         changeGenome(GenomeManager.getInstance().getCurrentGenome());
+
+        // Downsample chords if neccessary, otherwise risk crashes in electron app
+        if(chords.length > MAX_CHORDS) {
+            Downsampler<Chord> ds = new Downsampler<>();
+            chords = ds.sample(chords, MAX_CHORDS);
+        }
 
         String colorString = "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + alpha + ")";
         CircViewTrack t = new CircViewTrack(chords, trackName, colorString);

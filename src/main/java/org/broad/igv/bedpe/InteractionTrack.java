@@ -4,6 +4,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.jbrowse.CircularViewUtilities;
+import org.broad.igv.util.Downsampler;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
@@ -35,6 +36,7 @@ import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
  */
 public class InteractionTrack extends AbstractTrack {
 
+    public static final int MAX_WG_COUNT = 1000;
     private static Logger log = LogManager.getLogger(InteractionTrack.class);
 
     protected static final int AXIS_AREA_WIDTH = 60;
@@ -142,9 +144,17 @@ public class InteractionTrack extends AbstractTrack {
 
     private List<BedPE> createWGFeatures(List<BedPEFeature> features, Genome genome) {
 
-        List<BedPE> wgFeatures = new ArrayList<>(features.size());
+        int size = Math.min(features.size(), MAX_WG_COUNT);
+        List<BedPE> wgFeatures = new ArrayList<>(size);
 
-        for (BedPEFeature f : features) {
+        List<BedPEFeature> sampledFeatures;
+        if(features.size() < MAX_WG_COUNT) {
+            sampledFeatures = features;
+        } else {
+            sampledFeatures = Arrays.asList(new Downsampler<BedPEFeature>().sample(features.toArray(BedPEFeature[]::new), MAX_WG_COUNT));
+        }
+
+        for (BedPEFeature f : sampledFeatures) {
 
             int start1 = genome.getGenomeCoordinate(f.chr1, f.start1);
             int end1 = genome.getGenomeCoordinate(f.chr1, f.end1);
@@ -157,7 +167,6 @@ public class InteractionTrack extends AbstractTrack {
             wgFeature.thickness = f.thickness;
             wgFeature.color = f.color;
             wgFeature.attributes = f.attributes;
-
 
             wgFeatures.add(wgFeature);
 
