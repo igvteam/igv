@@ -30,7 +30,6 @@
 
 package org.broad.igv.batch;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
@@ -38,16 +37,15 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionWriter;
-import org.broad.igv.track.AttributeManager;
-import org.broad.igv.track.DataTrack;
-import org.broad.igv.track.RegionScoreType;
-import org.broad.igv.track.Track;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
@@ -61,8 +59,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CommandExecutor {
 
@@ -139,9 +140,9 @@ public class CommandExecutor {
                 result = colorBy(param1, param2);
             } else if (cmd.equalsIgnoreCase("collapse")) {
                 String trackName = parseTrackName(param1);
-                igv.setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
+                setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
             } else if (cmd.equalsIgnoreCase("setSequenceStrand")) {
-                igv.setSequenceTrackStrand(Strand.fromString(param1));
+                setSequenceTrackStrand(Strand.fromString(param1));
             } else if (cmd.equalsIgnoreCase("setSequenceShowTranslation")) {
                 boolean showTranslation;
                 try {
@@ -153,13 +154,13 @@ public class CommandExecutor {
                 } catch (IllegalArgumentException e) {
                     return e.getMessage();
                 }
-                igv.setSequenceShowTranslation(showTranslation);
+                setSequenceShowTranslation(showTranslation);
             } else if (cmd.equalsIgnoreCase("expand")) {
                 String trackName = parseTrackName(param1);
-                igv.setTrackDisplayMode(Track.DisplayMode.EXPANDED, trackName);
+                setTrackDisplayMode(Track.DisplayMode.EXPANDED, trackName);
             } else if (cmd.equalsIgnoreCase("squish")) {
                 String trackName = parseTrackName(param1);
-                igv.setTrackDisplayMode(Track.DisplayMode.SQUISHED, trackName);
+                setTrackDisplayMode(Track.DisplayMode.SQUISHED, trackName);
             } else if (cmd.equalsIgnoreCase("remove")) {
                 String trackName = parseTrackName(param1);
                 result = removeTrack(trackName);
@@ -278,12 +279,13 @@ public class CommandExecutor {
     }
 
     private String removeTrack(String trackName) {
-        if (trackName == null) return "Error: NULL TRACK NAME";
-        for (Track track : igv.getAllTracks()) {
-            if (track.getName().equals(trackName)) {
-                igv.deleteTracks(Arrays.asList(track));
-                return "OK";
-            }
+        if (trackName == null) {
+            return "Error: NULL TRACK NAME";
+        }
+        List<Track> tracks = tracksMatchingName(trackName);
+        if (tracks.size() > 0) {
+            igv.deleteTracks(tracks);
+            return "OK";
         }
         return String.format("Error: Track %s not found", trackName);
     }
@@ -298,7 +300,7 @@ public class CommandExecutor {
     }
 
     private String setDataRange(String dataRangeString, String trackName) {
-        List<Track> tracks = igv.getAllTracks();
+
         String[] tokens = dataRangeString.split(",");
         //Min,max or min,baseline,max
         DataRange range = null;
@@ -322,19 +324,23 @@ public class CommandExecutor {
                 return e.getMessage();
             }
         }
-
+        List<Track> tracks = tracksMatchingName(trackName);
         for (Track track : tracks) {
-            if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                if (!autoscale) track.setDataRange(range);
-                track.setAutoScale(autoscale);
+            if (!autoscale) {
+                if (track.getDataRange().isLog()) {
+                    range.setType(DataRange.Type.LOG);  // Maintain "logness"
+                }
+                track.setDataRange(range);
             }
+            track.setAutoScale(autoscale);
+
         }
         igv.repaint();
         return "OK";
     }
 
     private String setLogScale(String logScaleString, String trackName) {
-        List<Track> tracks = igv.getAllTracks();
+
         boolean logScale;
         try {
             if (logScaleString.equalsIgnoreCase("true") || logScaleString.equalsIgnoreCase("false")) {
@@ -348,14 +354,11 @@ public class CommandExecutor {
         DataRange.Type scaleType = logScale == true ?
                 DataRange.Type.LOG :
                 DataRange.Type.LINEAR;
-        List<Track> affectedTracks = new ArrayList<>();
+        List<Track> tracks = tracksMatchingName(trackName);
         for (Track track : tracks) {
-            if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                track.getDataRange().setType(scaleType);
-                affectedTracks.add(track);
-            }
+            track.getDataRange().setType(scaleType);
         }
-        igv.repaint(affectedTracks);
+        igv.repaint(tracks);
         return "OK";
     }
 
@@ -366,36 +369,43 @@ public class CommandExecutor {
             if (color == null) {
                 return "Error: unrecognized color value " + colorString;
             }
-            List<Track> tracks = igv.getAllTracks();
+            List<Track> tracks = tracksMatchingName(trackName);
             List<Track> affectedTracks = new ArrayList<>();
             for (Track track : tracks) {
-                if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                    if (alt) {
-                        track.setAltColor(color);
-                    } else {
-                        track.setColor(color);
-                    }
-                    affectedTracks.add(track);
+                if (alt) {
+                    track.setAltColor(color);
+                } else {
+                    track.setColor(color);
                 }
+                affectedTracks.add(track);
+
             }
             igv.repaint(affectedTracks);
             return "OK";
         } catch (Exception e) {
             return "Error setting track color: " + e.getMessage();
         }
+    }
 
-
+    private List<Track> tracksMatchingName(String name) {
+        List<Track> tracks = igv.getAllTracks();
+        if (name == null) {
+            return tracks;
+        } else {
+            String altName = URLDecoder.decode(name, Charset.defaultCharset());
+            return tracks.stream()
+                    .filter(t -> name.equalsIgnoreCase(t.getName()) || altName.equalsIgnoreCase(t.getName()))
+                    .collect(Collectors.toList());
+        }
     }
 
     private String setViewAsPairs(String vAPString, String trackName) {
-        List<Track> tracks = igv.getAllTracks();
+        List<Track> tracks = tracksMatchingName(trackName);
         boolean vAP = "false".equalsIgnoreCase(vAPString) ? false : true;
         for (Track track : tracks) {
             if (track instanceof AlignmentTrack) {
-                if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                    AlignmentTrack atrack = (AlignmentTrack) track;
-                    atrack.setViewAsPairs(vAP);
-                }
+                AlignmentTrack atrack = (AlignmentTrack) track;
+                atrack.setViewAsPairs(vAP);
             }
         }
         return "OK";
@@ -424,24 +434,55 @@ public class CommandExecutor {
     }
 
 
-    private String setTrackHeight(String trackName, String value) {
-        if (trackName == null) return "Error: NULL TRACK NAME";
-        trackName = parseTrackName(trackName);
-        int height = Integer.parseInt(value);
-        height = Math.max(0, height);
+    private void setTrackDisplayMode(Track.DisplayMode mode, String trackName) {
+        for (Track t : tracksMatchingName(trackName)) {
+            t.setDisplayMode(mode);
+        }
+    }
 
-        for (Track track : igv.getAllTracks()) {
-            if (track.getName().equals(trackName)) {
-                track.setHeight(height, true);
-                igv.repaint(track);
-                return "OK";
+    private void setSequenceTrackStrand(Strand trackStrand) {
+        for (Track t : igv.getAllTracks()) {
+            if (t instanceof SequenceTrack) {
+                ((SequenceTrack) t).setStrand(trackStrand);
             }
         }
-        return String.format("Error: Track %s not found", trackName);
+    }
+
+    private void setSequenceShowTranslation(boolean shouldShowTranslation) {
+        for (Track t : igv.getAllTracks()) {
+            if (t instanceof SequenceTrack) {
+                ((SequenceTrack) t).setShowTranslation(shouldShowTranslation);
+            }
+        }
+    }
+
+    private String setTrackHeight(String param1, String param2) {
+
+        int height;
+        String trackName;
+        try {
+            height = Integer.parseInt(param1);
+            trackName = parseTrackName(param2);
+        } catch (NumberFormatException e) {
+            height = Integer.parseInt(param2);
+            trackName = parseTrackName(param1);
+        }
+
+        height = Math.max(0, height);
+        List<Track> tracks = tracksMatchingName(trackName);
+        if (tracks.size() > 0) {
+            for (Track track : tracks) {
+                track.setHeight(height, true);
+                igv.repaint(track);
+            }
+            return "OK";
+        } else {
+            return String.format("Error: Track %s not found", trackName);
+        }
     }
 
     private String setShowDataRange(String show, String trackName) {
-        List<Track> tracks = igv.getAllTracks();
+
         boolean showDataRange;
         try {
             if (show.equalsIgnoreCase("true") || show.equalsIgnoreCase("false")) {
@@ -453,8 +494,9 @@ public class CommandExecutor {
             return e.getMessage();
         }
         List<Track> affectedTracks = new ArrayList<>();
+        List<Track> tracks = tracksMatchingName(trackName);
         for (Track track : tracks) {
-            if (track instanceof DataTrack && (trackName == null || trackName.equalsIgnoreCase(track.getName()))) {
+            if (track instanceof DataTrack) {
                 ((DataTrack) track).setShowDataRange(showDataRange);
                 affectedTracks.add(track);
             }

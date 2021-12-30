@@ -1596,35 +1596,6 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    public void setTrackDisplayMode(Track.DisplayMode mode, String trackName) {
-        for (Track t : getAllTracks()) {
-            if (trackName == null || t.getName().equals(trackName)) {
-                t.setDisplayMode(mode);
-            }
-        }
-
-    }
-
-
-    public void setSequenceTrackStrand(Strand trackStrand) {
-        for (Track t : getAllTracks()) {
-            if (t instanceof SequenceTrack) {
-                ((SequenceTrack) t).setStrand(trackStrand);
-            }
-        }
-
-    }
-
-    public void setSequenceShowTranslation(boolean shouldShowTranslation) {
-        for (Track t : getAllTracks()) {
-            if (t instanceof SequenceTrack) {
-                ((SequenceTrack) t).setShowTranslation(shouldShowTranslation);
-            }
-        }
-
-    }
-
-
     /**
      * Reset the overlay tracks collection.  Currently the only overlayable track
      * type is Mutation.  This method finds all mutation tracks and builds a map
@@ -2421,16 +2392,24 @@ public class IGV implements IGVEventObserver {
             // In batch mode everything is done synchronously on the event thread
             UIUtilities.invokeAndWaitOnEventThread(() -> {
 
-                for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    for (Track track : trackList) {
-                        if (track.isReadyToPaint(frame) == false) {
-                            track.load(frame);
+                CursorToken token = WaitCursorManager.showWaitCursor();
+                try {
+                    for (ReferenceFrame frame : FrameManager.getFrames()) {
+                        for (Track track : trackList) {
+                            if (track.isReadyToPaint(frame) == false) {
+                                track.load(frame);
+                            }
                         }
                     }
+                    Autoscaler.autoscale(getAllTracks());
+                    checkPanelLayouts();
+                    component.paintImmediately(component.getBounds());
+                } finally {
+                    WaitCursorManager.removeWaitCursor(token);
+                    synchronized (IGV.getInstance()) {
+                        IGV.getInstance().notifyAll();
+                    }
                 }
-                Autoscaler.autoscale(getAllTracks());
-                checkPanelLayouts();
-                component.paintImmediately(component.getBounds());
             });
 
         } else {

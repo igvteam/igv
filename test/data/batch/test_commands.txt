@@ -7,15 +7,15 @@ load gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
 snapshot loadBams.png
 goto myc
 snapshot myc.png
-collapse platinum-genomes%2Fbam%2FNA12878_S1.bam
+collapse NA12878_S1.bam
 snapshot collapsed.png
-squish platinum-genomes%2Fbam%2FNA12878_S1.bam
+squish NA12878_S1.bam
 snapshot squish.png
-expand platinum-genomes%2Fbam%2FNA12878_S1.bam
+expand NA12878_S1.bam
 snapshot expand.png
-viewAsPairs true platinum-genomes%2Fbam%2FNA12878_S1.bam
+viewAsPairs true NA12878_S1.bam
 snapshot viewAsPairs.png
-viewAsPairs false platinum-genomes%2Fbam%2FNA12878_S1.bam
+viewAsPairs false NA12878_S1.bam
 snapshot viewAsPairsOff.png
 squish
 group STRAND
@@ -30,7 +30,7 @@ setSequenceStrand -
 snapshot minusStrang.png
 setSequenceShowTranslation true
 snapshot showTranslation.png
-
-
-
-
+setTrackHeight 30 NA12878_S1.bam
+setLogScale true NA12878_S1.bam%20Coverage
+setDataRange 0,1000 NA12878_S1.bam%20Coverage
+setColor 0,0,100 NA12878_S1.bam%20Coverage
