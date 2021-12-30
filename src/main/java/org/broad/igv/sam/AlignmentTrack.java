@@ -26,8 +26,6 @@
 package org.broad.igv.sam;
 
 
-import org.broad.igv.logging.LogManager;
-import org.broad.igv.logging.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -40,6 +38,8 @@ import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
@@ -331,7 +331,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             boolean showJunction = getPreferences(type).getAsBoolean(Constants.SAM_SHOW_JUNCTION_TRACK);
             if (showJunction != spliceJunctionTrack.isVisible()) {
                 spliceJunctionTrack.setVisible(showJunction);
-                if(IGV.hasInstance()) {
+                if (IGV.hasInstance()) {
                     IGV.getInstance().revalidateTrackPanels();
                 }
             }
@@ -339,7 +339,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             boolean showCoverage = getPreferences(type).getAsBoolean(SAM_SHOW_COV_TRACK);
             if (showCoverage != coverageTrack.isVisible()) {
                 coverageTrack.setVisible(showCoverage);
-                if(IGV.hasInstance()) {
+                if (IGV.hasInstance()) {
                     IGV.getInstance().revalidateTrackPanels();
                 }
             }
@@ -347,7 +347,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             boolean showAlignments = getPreferences(type).getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK);
             if (showAlignments != isVisible()) {
                 setVisible(showAlignments);
-                if(IGV.hasInstance()) {
+                if (IGV.hasInstance()) {
                     IGV.getInstance().revalidateTrackPanels();
                 }
             }
@@ -1470,7 +1470,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             // Paired end items
             addSeparator();
             addViewAsPairsMenuItem();
-
             if (clickedAlignment != null) {
                 addGoToMate(e, clickedAlignment);
                 showMateRegion(e, clickedAlignment);
@@ -1478,19 +1477,24 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             addInsertSizeMenuItem();
 
+            // Display mode items
             addSeparator();
             TrackMenuUtils.addDisplayModeItems(tracks, this);
 
+            // Select items
             addSeparator();
             addSelectByNameItem();
             addClearSelectionsMenuItem();
 
+            // Copy items
             addSeparator();
-            addCopySequenceItem(e);
+            addCopySequenceItems(e);
+            addConsensusSequence(e);
 
+            // Blat items
+            addSeparator();
             addBlatItem(e);
             addBlatClippingItems(e);
-            addConsensusSequence(e);
 
             AlignmentBlock insertion = getInsertion(clickedAlignment, e.getMouseEvent().getX());
             if (insertion != null) {
@@ -2134,25 +2138,45 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
 
-        void addCopySequenceItem(final TrackClickEvent te) {
-            // Change track height by attribute
+        void addCopySequenceItems(final TrackClickEvent te) {
+
             final JMenuItem item = new JMenuItem("Copy read sequence");
             add(item);
-
             final Alignment alignment = getSpecficAlignment(te);
             if (alignment == null) {
                 item.setEnabled(false);
                 return;
             }
-
             final String seq = alignment.getReadSequence();
             if (seq == null) {
                 item.setEnabled(false);
                 return;
             }
-
             item.addActionListener(aEvt -> StringUtils.copyTextToClipboard(seq));
 
+            /* Add a "Copy left clipped sequence" item if there is  left clipping. */
+            int minimumBlatLength = BlatClient.MINIMUM_BLAT_LENGTH;
+            int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
+            if (clipping[1] > 0) {
+                String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping[1]);
+                final JMenuItem lccItem = new JMenuItem("Copy left-clipped sequence");
+                add(lccItem);
+                lccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(lcSeq));
+            }
+
+            /* Add a "Copy right clipped sequence" item if there is  right clipping. */
+            if (clipping[3] > 0) {
+                int seqLength = seq.length();
+                String rcSeq = getClippedSequence(
+                        alignment.getReadSequence(),
+                        alignment.getReadStrand(),
+                        seqLength - clipping[3],
+                        seqLength);
+
+                final JMenuItem rccItem = new JMenuItem("Copy right-clipped sequence");
+                add(rccItem);
+                rccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(rcSeq));
+            }
         }
 
 
@@ -2192,23 +2216,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
 
             /* Add a "BLAT left clipped sequence" item if there is significant left clipping. */
-            if (clipping[1] > 0) {
+            if (clipping[1] > minimumBlatLength) {
                 String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping[1]);
-
-                final JMenuItem lccItem = new JMenuItem("Copy left-clipped sequence");
-                add(lccItem);
-                lccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(lcSeq));
-
-                if (clipping[1] > minimumBlatLength) {
-                    final JMenuItem lcbItem = new JMenuItem("BLAT left-clipped sequence");
-                    add(lcbItem);
-                    lcbItem.addActionListener(aEvt ->
-                            BlatClient.doBlatQuery(lcSeq, alignment.getReadName() + " - left clip")
-                    );
-                }
+                final JMenuItem lcbItem = new JMenuItem("BLAT left-clipped sequence");
+                add(lcbItem);
+                lcbItem.addActionListener(aEvt ->
+                        BlatClient.doBlatQuery(lcSeq, alignment.getReadName() + " - left clip")
+                );
             }
             /* Add a "BLAT right clipped sequence" item if there is significant right clipping. */
-            if (clipping[3] > 0) {
+            if (clipping[3] > minimumBlatLength) {
 
                 String seq = alignment.getReadSequence();
                 int seqLength = seq.length();
@@ -2218,17 +2235,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                         seqLength - clipping[3],
                         seqLength);
 
-                final JMenuItem rccItem = new JMenuItem("Copy right-clipped sequence");
-                add(rccItem);
-                rccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(rcSeq));
+                final JMenuItem rcbItem = new JMenuItem("BLAT right-clipped sequence");
+                add(rcbItem);
+                rcbItem.addActionListener(aEvt ->
+                        BlatClient.doBlatQuery(rcSeq, alignment.getReadName() + " - right clip")
+                );
 
-                if (clipping[3] > minimumBlatLength) {
-                    final JMenuItem rcbItem = new JMenuItem("BLAT right-clipped sequence");
-                    add(rcbItem);
-                    rcbItem.addActionListener(aEvt ->
-                            BlatClient.doBlatQuery(rcSeq, alignment.getReadName() + " - right clip")
-                    );
-                }
             }
         }
 
