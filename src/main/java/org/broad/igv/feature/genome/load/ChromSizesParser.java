@@ -62,7 +62,7 @@ public class ChromSizesParser {
                     chromosomes.add(new Chromosome(idx, chr, length));
                     idx++;
                 } else {
-                    log.info("Unexpected # of tokens at line: " + nextLine);
+                    log.warn("Unexpected # of tokens at line: " + nextLine);
                 }
 
             }

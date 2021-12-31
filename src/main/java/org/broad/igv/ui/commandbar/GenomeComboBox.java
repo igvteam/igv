@@ -106,7 +106,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
                     if (genomeListItem != null && genomeListItem.getPath() != null) {
 
-                        //log.info("Loading " + genomeListItem.getId());
+                        //log.warn("Loading " + genomeListItem.getId());
 
                         //User selected "more", pull up dialog and revert combo box
                         if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {

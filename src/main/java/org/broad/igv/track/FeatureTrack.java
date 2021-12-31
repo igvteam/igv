@@ -232,7 +232,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 //                IGV.getInstance().layoutMainPanel();
 //            }
         } else {
-            log.info("Unknown event type: " + e.getClass());
+            log.warn("Unknown event type: " + e.getClass());
         }
     }
 
@@ -706,7 +706,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             } else {
                 PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, this.getDisplayMode(), groupByStrand);
                 packedFeaturesMap.put(frame, pf);
-                //log.info("Loaded " + chr + " " + expandedStart + "-" + expandedEnd);
+                //log.warn("Loaded " + chr + " " + expandedStart + "-" + expandedEnd);
             }
 
         } catch (Exception e) {

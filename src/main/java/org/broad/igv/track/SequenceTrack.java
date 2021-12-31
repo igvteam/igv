@@ -144,7 +144,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             loadedIntervalCache = newCache;
 
         } else {
-            log.info("Unknown event type: " + event.getClass());
+            log.warn("Unknown event type: " + event.getClass());
         }
     }
 

@@ -124,7 +124,7 @@ public class JsonGenomeLoader extends GenomeLoader {
 
                     if (hidden) {
                         if (indexed || trackIndex != null) {
-                            log.info("Hidden tracks cannot be indexed.  Ignoring " + trackPath);
+                            log.warn("Hidden tracks cannot be indexed.  Ignoring " + trackPath);
                         } else {
                             hiddenTracks.add(res);
                         }

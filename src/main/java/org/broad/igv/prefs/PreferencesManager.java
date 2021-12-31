@@ -78,7 +78,7 @@ public class PreferencesManager implements IGVEventObserver {
                 String category = group.category == null ? NULL_CATEGORY : group.category;
                 Map<String, String> defs = defaultPreferences.get(category);
                 if (defs == null) {
-                    log.info("Unknown preference category: " + category);
+                    log.warn("Unknown preference category: " + category);
                 }
                 for (Preference pref : group.preferences) {
                     defs.put(pref.getKey(), pref.getDefaultValue());
@@ -199,7 +199,7 @@ public class PreferencesManager implements IGVEventObserver {
                 }
             }
         } catch (IOException e) {
-            log.info("Error loading preferences " + e.getMessage());
+            log.warn("Error loading preferences " + e.getMessage());
         } finally {
             try {
                 if (reader != null) {

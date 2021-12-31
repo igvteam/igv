@@ -97,7 +97,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
 
         } else {
-            log.info("Unknown event type: " + event.getClass());
+            log.warn("Unknown event type: " + event.getClass());
         }
     }
 

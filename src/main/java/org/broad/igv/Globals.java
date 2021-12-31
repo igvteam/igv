@@ -132,7 +132,7 @@ public class Globals {
         final String developmentProperty = System.getProperty("development", properties.getProperty("development", "false"));
         development = Boolean.parseBoolean(developmentProperty);
         if(development){
-            log.warn("Development mode is enabled");
+            log.info("Development mode is enabled");
         }
     }
 

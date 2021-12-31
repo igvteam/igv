@@ -115,7 +115,7 @@ public class HttpUtils {
         try {
             System.setProperty("java.net.useSystemProxies", "true");
         } catch (Exception e) {
-            log.info("Couldn't set useSystemProxies=true");
+            log.warn("Couldn't set useSystemProxies=true");
         }
 
         byteRangeTestMap = Collections.synchronizedMap(new HashMap());

@@ -145,7 +145,7 @@ public class MAFIndex {
                         long offset = Long.parseLong(info[2]);
                         iv.insert(new Interval(start, end, offset));
                     } else {
-                        // log.info("Skipping line " + line);
+                        // log.warn("Skipping line " + line);
                     }
                 }
 

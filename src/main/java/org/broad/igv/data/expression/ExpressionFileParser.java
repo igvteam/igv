@@ -320,9 +320,9 @@ public class ExpressionFileParser {
             }
         } else {
             if (errorCount < MAX_ERROR_COUNT) {
-                log.info("Probe: '" + probeId + "' could not be mapped to a genomic position.");
+                log.warn("Probe: '" + probeId + "' could not be mapped to a genomic position.");
             } else if (errorCount == MAX_ERROR_COUNT) {
-                log.info("Maximum probe mapping warning count exceeded.  Further mapping errors will not be logged");
+                log.warn("Maximum probe mapping warning count exceeded.  Further mapping errors will not be logged");
             }
             errorCount++;
 

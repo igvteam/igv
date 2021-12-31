@@ -198,7 +198,7 @@ public class IGV implements IGVEventObserver {
         try {
             startCommandsServer(igvArgs, preferences);
         } catch (InterruptedException ie) {
-            log.info(ie.getMessage());
+            log.warn(ie.getMessage());
         }
 
         genomeManager = GenomeManager.getInstance();
@@ -829,7 +829,7 @@ public class IGV implements IGVEventObserver {
                 try {
                     fistCursor = createCustomCursor(handImage, new Point(8, 6), "Move", Cursor.HAND_CURSOR);
                 } catch (Exception e) {
-                    log.info("Warning: could not create fistCursor");
+                    log.warn("Warning: could not create fistCursor");
                     fistCursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
                 }
 
@@ -884,7 +884,7 @@ public class IGV implements IGVEventObserver {
         try {
             return mainFrame.getToolkit().createCustomCursor(image, hotspot, name);
         } catch (Exception e) {
-            log.info("Could not create cursor: " + name);
+            log.warn("Could not create cursor: " + name);
             return Cursor.getPredefinedCursor(defaultCursor);
         }
     }
@@ -1330,7 +1330,6 @@ public class IGV implements IGVEventObserver {
      */
     public void loadResources(Collection<ResourceLocator> locators) {
 
-        log.info("Loading " + locators.size() + " resources.");
         final MessageCollection messages = new MessageCollection();
 
         for (final ResourceLocator locator : locators) {
@@ -2317,7 +2316,7 @@ public class IGV implements IGVEventObserver {
         } else if (event instanceof GenomeChangeEvent) {
             repaint();
         } else {
-            log.info("Unknown event type: " + event.getClass());
+            log.warn("Unknown event type: " + event.getClass());
         }
     }
 

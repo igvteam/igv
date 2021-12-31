@@ -115,7 +115,7 @@ public class DotGenomeLoader extends GenomeLoader {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(cytobandStream));
                 newGenome.setCytobands(CytoBandFileParser.loadData(reader));
             } catch (IOException ex) {
-                log.warn("Error loading cytoband file", ex);
+                log.error("Error loading cytoband file", ex);
                 throw new RuntimeException("Error loading cytoband file" + genomeDescriptor.cytoBandFileName);
             } finally {
                 closeSilently(cytobandStream);

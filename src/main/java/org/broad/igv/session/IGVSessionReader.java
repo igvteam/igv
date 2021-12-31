@@ -254,11 +254,7 @@ public class IGVSessionReader implements SessionReader {
                         if (!ParsingUtils.fileExists(genomePath)) {
                             genomePath = getAbsolutePath(genomeId, rootPath);
                         }
-                        if (ParsingUtils.fileExists(genomePath)) {
-                            GenomeManager.getInstance().loadGenome(genomePath, null);
-                        } else {
-                            MessageUtils.showMessage("Warning: Could not locate genome: " + genomeId);
-                        }
+                        GenomeManager.getInstance().loadGenome(genomePath, null);
                     }
                 } catch (IOException e) {
                     MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
@@ -941,7 +937,7 @@ public class IGVSessionReader implements SessionReader {
 
 
                     } else {
-                        log.info("Warning.  No tracks were found with id: " + id + " in session file");
+                        log.warn("Warning.  No tracks were found with id: " + id + " in session file");
                     }
                 } catch (Exception e) {
                     log.error("Error restoring track: " + element.toString(), e);
@@ -1194,7 +1190,7 @@ public class IGVSessionReader implements SessionReader {
         } else if (className.contains("SequenceTrack")) {
             return new SequenceTrack("Reference sequence");
         } else {
-            log.info("Unrecognized class name: " + className);
+            log.warn("Unrecognized class name: " + className);
             try {
                 Class clazz = SessionElement.getClass(className);
                 return (Track) clazz.getConstructor().newInstance();

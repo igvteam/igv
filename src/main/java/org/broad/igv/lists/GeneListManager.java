@@ -94,7 +94,7 @@ public class GeneListManager {
         for (String geneListFile : DEFAULT_GENE_LISTS) {
             InputStream is = GeneListManager.class.getResourceAsStream(geneListFile);
             if (is == null) {
-                log.info("Could not find gene list resource: " + geneListFile);
+                log.warn("Could not find gene list resource: " + geneListFile);
                 return;
             }
             BufferedReader reader = null;

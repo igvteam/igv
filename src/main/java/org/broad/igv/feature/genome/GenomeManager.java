@@ -181,8 +181,6 @@ public class GenomeManager {
     public Genome loadGenome(String genomePath, ProgressMonitor monitor) throws IOException {
 
         try {
-            log.info("Loading genome: " + genomePath);
-
             if (monitor != null) {
                 UIUtilities.invokeAndWaitOnEventThread(() -> monitor.fireProgress(25));
             }
@@ -224,7 +222,7 @@ public class GenomeManager {
                 CircularViewUtilities.changeGenome(newGenome);
             }
 
-            // log.info("Genome loaded.  id= " + newGenome.getId());
+            // log.warn("Genome loaded.  id= " + newGenome.getId());
             return currentGenome;
 
         } catch (SocketException e) {

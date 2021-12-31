@@ -158,7 +158,7 @@ public class GenbankParser {
 
         String[] tokens = Globals.whitespacePattern.split(line);
         if (tokens.length < 2) {
-            log.info("Genbank file missing ACCESSION number.");
+            log.warn("Genbank file missing ACCESSION number.");
         } else {
             accession = tokens[1].trim();
         }
@@ -174,7 +174,7 @@ public class GenbankParser {
     private void readAliases(String line) {
         String[] tokens = Globals.whitespacePattern.split(line);
         if (tokens.length < 2) {
-            //log.info("Genbank file missing ACCESSION number.");
+            //log.warn("Genbank file missing ACCESSION number.");
         } else {
             aliases = Globals.commaPattern.split(tokens[1]);
         }

@@ -118,7 +118,7 @@ public class CGIAlignmentReader implements AlignmentReader {
             header = codec.decode(reader, null);
 
         } catch (Exception ex) {
-            log.info("Error loading header : " + ex.getMessage());
+            log.error("Error loading header : ", ex);
             header = null;
         } finally {
             if (is != null) {

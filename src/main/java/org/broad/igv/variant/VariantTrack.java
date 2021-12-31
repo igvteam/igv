@@ -273,7 +273,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             while ((nextLine = br.readLine()) != null) {
                 String[] tokens = ParsingUtils.TAB_PATTERN.split(nextLine);
                 if (tokens.length < 2) {
-                    log.info("Skipping bam mapping file line: " + nextLine);
+                    log.warn("Skipping bam mapping file line: " + nextLine);
                 } else {
 
                     String alignmentPath = tokens[1];

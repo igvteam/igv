@@ -171,7 +171,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                 if (errorCount > 100) {
                     throw new DataLoadException("Column " + (endColumn + 1) + " must be a numeric value.", path);
                 } else {
-                    log.info("Error parsing line: " + line);
+                    log.warn("Error parsing line: " + line);
                     return null;
                 }
             }

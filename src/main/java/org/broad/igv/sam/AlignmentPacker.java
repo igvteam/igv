@@ -544,7 +544,7 @@ public class AlignmentPacker {
             while (bucketNumber < bucketArray.length) {
 
                 if (bucketNumber < 0) {
-                    log.info("Negative bucket number: " + bucketNumber);
+                    log.warn("Negative bucket number: " + bucketNumber);
                 }
 
                 bucket = bucketArray[bucketNumber];

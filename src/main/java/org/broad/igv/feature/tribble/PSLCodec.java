@@ -136,7 +136,7 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
         PSLRecord f;
         int nTokens = tokens.length;
         if (nTokens < 21) {
-            // log.info("Skipping line ")
+            // log.warn("Skipping line ")
             return null;
         }
         int tSize = Integer.parseInt(tokens[14]);
