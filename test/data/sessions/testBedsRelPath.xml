@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Session genome="hg19" version="8">
     <Resources>
-        <Resource path="bedpe/small_loops.bed"/>
+        <Resource path="bedpe/small_loops.bedpe"/>
     </Resources>
 </Session>

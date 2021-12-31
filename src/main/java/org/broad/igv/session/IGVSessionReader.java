@@ -25,7 +25,6 @@
 
 package org.broad.igv.session;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.data.CombinedDataSource;
@@ -38,6 +37,8 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
@@ -111,9 +112,9 @@ public class IGVSessionReader implements SessionReader {
 
     public List<Track> getTracksById(String trackId) {
         List<Track> tracks = allTracks.get(trackId);
-        if(tracks == null) {
+        if (tracks == null) {
             // ID is usually a full file path or URL.  See if we can find the track with just filename
-            if(!FileUtils.isRemote(trackId)) {
+            if (!FileUtils.isRemote(trackId)) {
                 String fn = (new File(trackId)).getName();
                 tracks = allTracks.get(fn);
             }
@@ -251,11 +252,10 @@ public class IGVSessionReader implements SessionReader {
                     } else {
                         String genomePath = genomeId;
                         if (!ParsingUtils.fileExists(genomePath)) {
-                            genomePath = FileUtils.getAbsolutePath(genomeId, rootPath);
+                            genomePath = getAbsolutePath(genomeId, rootPath);
                         }
                         if (ParsingUtils.fileExists(genomePath)) {
                             GenomeManager.getInstance().loadGenome(genomePath, null);
-
                         } else {
                             MessageUtils.showMessage("Warning: Could not locate genome: " + genomeId);
                         }
@@ -442,9 +442,9 @@ public class IGVSessionReader implements SessionReader {
                                 continue;
                             }
                             // id is often an absolute file path.  Use just the filename if unique
-                            if(!FileUtils.isRemote(id)) {
+                            if (!FileUtils.isRemote(id)) {
                                 String fn = (new File(id)).getName();
-                                if(!allTracks.containsKey(fn)) {
+                                if (!allTracks.containsKey(fn)) {
                                     id = fn;
                                 }
                             }
@@ -542,7 +542,9 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        String absolutePath = (rootPath == null || "ga4gh".equals(type) || ParsingUtils.isDataURL(path)) ? path : FileUtils.getAbsolutePath(path, rootPath);
+        String absolutePath = (rootPath == null || "ga4gh".equals(type) || ParsingUtils.isDataURL(path)) ?
+                path :
+                getAbsolutePath(path, rootPath);
 
         fullToRelPathMap.put(absolutePath, path);
 
@@ -551,12 +553,12 @@ public class IGVSessionReader implements SessionReader {
         if (index != null) resourceLocator.setIndexPath(index);
 
         if (coverage != null) {
-            String absoluteCoveragePath = coverage.equals(".") ? coverage : FileUtils.getAbsolutePath(coverage, rootPath);
+            String absoluteCoveragePath = coverage.equals(".") ? coverage : getAbsolutePath(coverage, rootPath);
             resourceLocator.setCoverage(absoluteCoveragePath);
         }
 
         if (mapping != null) {
-            String absoluteMappingPath = mapping.equals(".") ? mapping : FileUtils.getAbsolutePath(mapping, rootPath);
+            String absoluteMappingPath = mapping.equals(".") ? mapping : getAbsolutePath(mapping, rootPath);
             resourceLocator.setMappingPath(absoluteMappingPath);
         }
 
@@ -891,7 +893,7 @@ public class IGVSessionReader implements SessionReader {
         if (matchedTracks == null) {
             //Try creating an absolute path for the id
             if (id != null) {
-                matchedTracks = allTracks.get(FileUtils.getAbsolutePath(id, rootPath));
+                matchedTracks = allTracks.get(getAbsolutePath(id, rootPath));
             }
         }
 
@@ -1169,7 +1171,7 @@ public class IGVSessionReader implements SessionReader {
             return new FeatureTrack();
         } else if (className.contains("MotifTrack")) {
             return new MotifTrack();
-        }else if (className.contains("GisticTrack")) {
+        } else if (className.contains("GisticTrack")) {
             return new GisticTrack();
         } else if (className.contains("InteractionTrack")) {
             return new InteractionTrack();
@@ -1191,9 +1193,7 @@ public class IGVSessionReader implements SessionReader {
             return new VariantTrack();
         } else if (className.contains("SequenceTrack")) {
             return new SequenceTrack("Reference sequence");
-        }
-
-        else {
+        } else {
             log.info("Unrecognized class name: " + className);
             try {
                 Class clazz = SessionElement.getClass(className);
@@ -1210,6 +1210,17 @@ public class IGVSessionReader implements SessionReader {
         for (TrackPanel trackPanel : panels) {
             trackPanel.removeAllTracks();
         }
+    }
+
+    private String getAbsolutePath(String path, String rootPath) {
+        String absolute = FileUtils.getAbsolutePath(path, rootPath);
+        if (!(new File(absolute)).exists() && path.startsWith("~")) {
+            String tmp = FileUtils.getAbsolutePath(path.replaceFirst("~", System.getProperty("user.home")), rootPath);
+            if ((new File(tmp)).exists()) {
+                absolute = tmp;
+            }
+        }
+        return absolute;
     }
 
 }
