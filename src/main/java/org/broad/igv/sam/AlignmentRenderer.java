@@ -25,6 +25,9 @@
 
 package org.broad.igv.sam;
 
+import org.broad.igv.ext.ExtensionManager;
+import org.broad.igv.ext.render.IColorByTagExtension;
+import org.broad.igv.ext.render.IIndelRenderingExtension;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
@@ -32,7 +35,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
@@ -73,7 +75,7 @@ public class AlignmentRenderer {
 
     // Indel colors
     public static Color purple = new Color(118, 24, 220);
-    private static Color deletionColor = Color.black;
+    public static Color deletionColor = Color.black;
     private static Color skippedColor = new Color(150, 184, 200);
     private static Color unknownGapColor = new Color(0, 150, 0);
 
@@ -623,7 +625,15 @@ public class AlignmentRenderer {
                             h,
                             gapPxEnd - gapPxStart - 2,
                             context.translateX,
-                            null);
+                            null,
+                            alignment,
+                            context);
+                }
+
+                // gap extensions
+                final IIndelRenderingExtension ext = (IIndelRenderingExtension)ExtensionManager.getExtentionFor(IIndelRenderingExtension.class, alignment);
+                if ( ext != null ) {
+                    ext.renderDeletionGap(alignment, gap, y, h, gapPxStart, gapPxEnd - gapPxStart, context, renderOptions);
                 }
             }
         }
@@ -746,14 +756,21 @@ public class AlignmentRenderer {
                                 h,
                                 (int) pxWidthExact,
                                 context.translateX,
-                                aBlock);
+                                aBlock,
+                                alignment,
+                                context);
                     } else {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D ig = context.getGraphics();
                         ig.setColor(purple);
-                        ig.fillRect(x, y, 2, h);
-                        ig.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
-                        ig.fillRect(x - pxWing, y + h - 2, 2 + 2 * pxWing, 2);
+                        final IIndelRenderingExtension ext = (IIndelRenderingExtension)ExtensionManager.getExtentionFor(IIndelRenderingExtension.class, alignment);
+                        if ( ext != null ) {
+                            ext.renderSmallInsertion(alignment, aBlock, context, h, x, y, renderOptions);
+                        } else {
+                            ig.fillRect(x, y, 2, h);
+                            ig.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
+                            ig.fillRect(x - pxWing, y + h - 2, 2 + 2 * pxWing, 2);
+                        }
 
                         x += context.translateX;
                         aBlock.setPixelRange(x - pxWing, x + 2 + pxWing);
@@ -985,7 +1002,7 @@ public class AlignmentRenderer {
     }
 
     private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter,
-                                     int pxTop, int pxH, int pxWmax, int translateX, AlignmentBlock insertionBlock) {
+                                     int pxTop, int pxH, int pxWmax, int translateX, AlignmentBlock insertionBlock, Alignment alignment, RenderContext context) {
 
         final int pxPad = 2;   // text padding in the label
         final int pxWing = (pxH > 10 ? 2 : 1);  // width of the cursor "wing"
@@ -1010,8 +1027,13 @@ public class AlignmentRenderer {
         g.fillRect(pxLeft, pxTop, pxRight - pxLeft, pxH);
 
         if (isInsertion && pxH > 5) {
-            g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
-            g.fillRect(pxLeft - pxWing, pxTop + pxH - 2, pxRight - pxLeft + 2 * pxWing, 2);
+            final IIndelRenderingExtension ext = (IIndelRenderingExtension)ExtensionManager.getExtentionFor(IIndelRenderingExtension.class, alignment);
+            if ( ext != null ) {
+                ext.renderSmallInsertionWings(alignment, insertionBlock, context, pxH, pxTop, pxRight, pxLeft, track.renderOptions);
+            } else {
+                g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
+                g.fillRect(pxLeft - pxWing, pxTop + pxH - 2, pxRight - pxLeft + 2 * pxWing, 2);
+            }
         } // draw "wings" For insertions
 
         if (doesTextFit) {
@@ -1074,14 +1096,22 @@ public class AlignmentRenderer {
                                 h,
                                 (int) pxWidthExact,
                                 context.translateX,
-                                aBlock);
+                                aBlock,
+                                alignment,
+                                context);
                     } else {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D g = context.getGraphics();
                         g.setColor(purple);
-                        g.fillRect(x, y, 2, h);
-                        g.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
-                        g.fillRect(x - pxWing, y + h - 2, 2 + 2 * pxWing, 2);
+
+                        final IIndelRenderingExtension ext = (IIndelRenderingExtension)ExtensionManager.getExtentionFor(IIndelRenderingExtension.class, alignment);
+                        if ( ext != null ) {
+                            ext.renderSmallInsertion(alignment, aBlock, context, h, x, y, renderOptions);
+                        } else {
+                            g.fillRect(x, y, 2, h);
+                            g.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
+                            g.fillRect(x - pxWing, y + h - 2, 2 + 2 * pxWing, 2);
+                        }
 
                         x += context.translateX;
                         aBlock.setPixelRange(x - pxWing, x + 2 + pxWing);
@@ -1319,7 +1349,8 @@ public class AlignmentRenderer {
             case TAG:
                 final String tag = renderOptions.getColorByTag();
                 if (tag != null) {
-                    Object tagValue = alignment.getAttribute(tag);
+                    IColorByTagExtension ext = (IColorByTagExtension) ExtensionManager.getExtentionFor(IColorByTagExtension.class, tag);
+                    Object tagValue = (ext == null) ? alignment.getAttribute(tag) : ext.getValueForColorByTag(alignment, tag);
                     if (tagValue != null) {
 
                         ColorTable ctable;

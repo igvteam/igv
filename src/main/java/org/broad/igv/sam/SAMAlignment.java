@@ -32,6 +32,8 @@ package org.broad.igv.sam;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
+import org.broad.igv.ext.ExtensionManager;
+import org.broad.igv.ext.annotate.IAlignmentBlockAnnotationExtension;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
@@ -602,6 +604,11 @@ public class SAMAlignment implements Alignment {
                             buf.append("Insertion (" + bases.length + " bases): " + new String(bases.copyOfRange(0, 25)) + "..." +
                                     new String(bases.copyOfRange(len - 25, len)));
                         }
+
+                        // extended annotation?
+                        IAlignmentBlockAnnotationExtension ext = (IAlignmentBlockAnnotationExtension) ExtensionManager.getExtentionFor(IAlignmentBlockAnnotationExtension.class, block);
+                        if ( ext != null )
+                            ext.appendBlockQualityAnnotation(this, block, buf);
                     }
                     return buf.toString();
                 }
@@ -758,8 +765,11 @@ public class SAMAlignment implements Alignment {
 
                 byte quality = block.getQuality(offset);
                 buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
-                buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality) + "<br>");
-
+                buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality));
+                IAlignmentBlockAnnotationExtension ext = (IAlignmentBlockAnnotationExtension) ExtensionManager.getExtentionFor(IAlignmentBlockAnnotationExtension.class, block);
+                if ( ext != null )
+                    ext.appendBlockAttrAnnotation(this, block, offset, buf);
+                buf.append("<br>");
                 break;
             }
         }

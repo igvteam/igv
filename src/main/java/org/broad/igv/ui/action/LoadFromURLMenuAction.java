@@ -29,6 +29,8 @@
  */
 package org.broad.igv.ui.action;
 
+import org.broad.igv.ext.ExtensionManager;
+import org.broad.igv.ext.load.ILoadTracksFromUrlExtension;
 import org.broad.igv.logging.*;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -89,7 +91,11 @@ public class LoadFromURLMenuAction extends MenuAction {
 
                     url = mapURL(url.trim());
 
-                    if (url.endsWith(".xml") || url.endsWith(".session")) {
+                    // extension code
+                    ILoadTracksFromUrlExtension ext = (ILoadTracksFromUrlExtension) ExtensionManager.getExtentionFor(ILoadTracksFromUrlExtension.class, url);
+                    if ( ext != null ) {
+                        igv.loadTracks(ext.locatorsForUrl(url, dlg.getIndexURL()));
+                    } else if (url.endsWith(".xml") || url.endsWith(".session")) {
                         try {
                             boolean merge = false;
                             String locus = null;
@@ -144,7 +150,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         }
     }
 
-    private String mapURL(String url) {
+    public static String mapURL(String url) {
 
         url = url.trim();
 
@@ -164,7 +170,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         return url;
     }
 
-    private void enableGoogleMenu() {
+    public static void enableGoogleMenu() {
 
         if (!PreferencesManager.getPreferences().getAsBoolean(Constants.ENABLE_GOOGLE_MENU)) {
             PreferencesManager.getPreferences().put(Constants.ENABLE_GOOGLE_MENU, true);

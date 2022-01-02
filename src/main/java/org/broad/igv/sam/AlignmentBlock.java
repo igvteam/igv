@@ -69,4 +69,5 @@ public interface AlignmentBlock {
 
     char getCigarOperator();
 
+    default int getIndexOnRead() { return 0; }
 }

@@ -1459,6 +1459,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             addSeparator();
             addShadeBaseByMenuItem();
+            addIndelColoringMenuItem();
             JMenuItem misMatchesItem = addShowMismatchesMenuItem();
             JMenuItem showAllItem = addShowAllBasesMenuItem();
 
@@ -2092,6 +2093,18 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             add(item);
         }
 
+        public void addIndelColoringMenuItem() {
+
+            final JMenuItem item = new JCheckBoxMenuItem("Indel coloring (Ultima)");
+            item.setSelected(renderOptions.isInsertQualColoring());
+            item.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
+                renderOptions.setInsertQualColoring(item.isSelected());
+                AlignmentTrack.this.repaint();
+            }));
+
+            add(item);
+        }
+
         void addShowItems() {
 
             if (coverageTrack != null) {
@@ -2457,6 +2470,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean linkedReads;
         private Boolean quickConsensusMode;
         private Boolean showMismatches;
+        private Boolean insertQualColoring;
         private Boolean computeIsizes;
         private Double minInsertSizePercentile;
         private Double maxInsertSizePercentile;
@@ -2566,6 +2580,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.groupByOption = (groupByOption == null) ? GroupOption.NONE : groupByOption;
         }
 
+        void setInsertQualColoring(boolean insertQualColoring) {
+            this.insertQualColoring = insertQualColoring;
+        }
+
         void setShadeBasesOption(boolean shadeBasesOption) {
             this.shadeBasesOption = shadeBasesOption;
         }
@@ -2586,6 +2604,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         public int getMaxInsertSize() {
             return maxInsertSize == null ? prefs.getAsInt(SAM_MAX_INSERT_SIZE_THRESHOLD) : maxInsertSize;
+        }
+
+        public boolean isInsertQualColoring() {
+            return insertQualColoring == null ? prefs.getAsBoolean(SAM_INSERT_QUAL_COLORING) : insertQualColoring;
         }
 
         public boolean isFlagUnmappedPairs() {
