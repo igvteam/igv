@@ -314,7 +314,7 @@ public class IGVSessionReader implements SessionReader {
                     } else if (track.getResourceLocator() != null) {
                         TrackPanel panel = trackPanelCache.get(track.getResourceLocator().getPath());
                         if (panel == null) {
-                            panel = IGV.getInstance().getPanelFor(track.getResourceLocator());
+                            panel = IGV.getInstance().getPanelFor(track);
                             trackPanelCache.put(track.getResourceLocator().getPath(), panel);
                         }
                         panel.addTrack(track);

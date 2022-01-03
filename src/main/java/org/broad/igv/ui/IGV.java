@@ -37,7 +37,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
-import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -50,6 +49,8 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesEditor;
@@ -1179,7 +1180,7 @@ public class IGV implements IGVEventObserver {
             this.menuBar.enableReloadSession();
         }
 
-        if(PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
             CircularViewUtilities.clearAll();
         }
 
@@ -1382,12 +1383,14 @@ public class IGV implements IGVEventObserver {
      * @param locator
      */
     void addTracks(List<Track> tracks, ResourceLocator locator) {
+
         if (tracks.size() > 0) {
             String path = locator.getPath();
+            Track representativeTrack = tracks.get(0);
 
             // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
             // is greater than 10
-            TrackPanel panel = getPanelFor(locator);
+            TrackPanel panel = getPanelFor(representativeTrack);
             if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
                     path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
                 Track t = tracks.get(0);
@@ -1454,14 +1457,32 @@ public class IGV implements IGVEventObserver {
         }
     }
 
+    public TrackPanel getPanelFor(Track track) {
+        ResourceLocator locator = track.getResourceLocator();
+        String path = locator.getPath().toLowerCase();
+        if ("alist".equals(locator.getFormat())) {
+            return getVcfBamPanel();
+        } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
+            return getTrackPanel(DATA_PANEL_NAME);
+        } else if (TrackLoader.isAlignmentTrack(locator.getFormat())) {
+            String newPanelName = "Panel" + System.currentTimeMillis();
+            return addDataPanel(newPanelName).getTrackPanel();
+        } else if (track instanceof FeatureTrack) {
+            return getTrackPanel(FEATURE_PANEL_NAME);
+        } else {
+            return getTrackPanel(DATA_PANEL_NAME);
+        }
+    }
+
     /**
-     * Return a DataPanel appropriate for the resource type
+     * Return a DataPanel appropriate for the resource type.  This method should be considered deprecated in
+     * favor of getPanelFor(Track), however the UCSCSessionReader still uses this form.
      *
      * @param locator
      * @return
      */
     public TrackPanel getPanelFor(ResourceLocator locator) {
-        String path = locator.getPath().toLowerCase();
+
         if ("alist".equals(locator.getFormat())) {
             return getVcfBamPanel();
         } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
