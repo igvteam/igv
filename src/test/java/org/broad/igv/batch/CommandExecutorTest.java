@@ -394,11 +394,13 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         String coverage = null;
         String locus = null;
         boolean merge = true;
-        exec.loadFiles(urlPath, index, coverage, name, format, locus, merge, params);
+        String sort = null;
+        String sortTag = null;
+        exec.loadFiles(urlPath, index, coverage, name, format, locus, merge, params, sort, sortTag);
 
         name = null;
         String localPath = TestUtils.DATA_DIR + "bed/test.bed";
-        exec.loadFiles(localPath, index, coverage, name, format, locus, merge, params);
+        exec.loadFiles(localPath, index, coverage, name, format, locus, merge, params, sort, sortTag);
 
         assertEquals(2, igv.getAllTracks().size() - beginTracks);
     }
@@ -413,7 +415,9 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         String coverage = null;
         String locus = null;
         boolean merge = true;
-        exec.loadFiles(dataFile, index, coverage, name, format, locus, merge, params);
+        String sort = null;
+        String sortTag = null;
+        exec.loadFiles(dataFile, index, coverage, name, format, locus, merge, params, sort, sortTag);
 
         String[] goodArgSet = new String[]{"0,5.0 ", "0,1,5", "-1,0,1", "-1.32,10.21"};
         for (String arg : goodArgSet) {
@@ -440,7 +444,9 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         String coverage = null;
         String locus = null;
         boolean merge = true;
-        exec.loadFiles(dataFile, index, coverage, name, format, locus, merge, params);
+        String sort = null;
+        String sortTag = null;
+        exec.loadFiles(dataFile, index, coverage, name, format, locus, merge, params, sort, sortTag);
 
         String[] goodArgSet = new String[]{"true"};
         for (String arg : goodArgSet) {
@@ -513,7 +519,9 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         String locus = "chr1:155,156,300-155,164,706";  //muc1
         boolean merge = true;
         Map<String, String> params = null;
-        exec.loadFiles(urlPath, index, coverage, name, format, locus, merge, params);
+        String sort = null;
+        String sortTag = null;
+        exec.loadFiles(urlPath, index, coverage, name, format, locus, merge, params, sort, sortTag);
         List<Track> tracks = igv.getAllTracks();
         // Find our alignment track
         boolean foundTrack = false;

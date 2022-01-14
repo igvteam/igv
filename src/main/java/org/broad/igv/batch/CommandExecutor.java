@@ -44,6 +44,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.session.Session;
+import org.broad.igv.session.SessionReader;
 import org.broad.igv.session.SessionWriter;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -125,7 +126,7 @@ public class CommandExecutor {
                 String filename = param1;
                 result = saveSession(filename);
             } else if ((cmd.equalsIgnoreCase("loadfile") || cmd.equalsIgnoreCase("load")) && param1 != null) {
-                result = load(param1, param2, param3, param4);
+                result = load(param1, args.size() > 2 ? args.subList(2, args.size()) : null);
             } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
                 result = genome(param1);
             } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
@@ -600,55 +601,43 @@ public class CommandExecutor {
      * Load function for port and batch script
      *
      * @param fileString path to file
-     * @param param2
-     * @param param3
+     * @param params     optional parameters
      * @return
      * @throws IOException
      */
-    private String load(String fileString, String param2, String param3, String param4) throws IOException {
-
-        // Default for merge is "true" for session files,  "false" otherwise
-        String tmpFile = StringUtils.stripQuotes(fileString);
-        boolean merge = !(tmpFile.endsWith(".xml") || tmpFile.endsWith(".php") || tmpFile.endsWith(".php3"));
+    private String load(String fileString, List<String> params) throws IOException {
 
         // remaining parameters might be "merge", "name", or "index"
         String name = null;
         String index = null;
         String coverage = null;
         String format = null;
-        for (String param : Arrays.asList(param2, param3)) {
-            if (param != null && param.startsWith("name=")) {
-                name = param.substring(5);
-            } else if (param != null && param.startsWith("merge=")) {
-                String mergeString = param.substring(6);
-                merge = mergeString.equalsIgnoreCase("true");
-            } else if (param != null && param.startsWith("index=")) {
-                index = param.substring(6);
-            } else if (param != null && param.startsWith("coverage=")) {
-                coverage = param.substring(9);
-            } else if (param != null && param.startsWith("format=")) {
-                format = param.substring(7);
+        boolean merge = true;
+        if (params != null) {
+            for (String param : params) {
+                if (param != null && param.startsWith("name=")) {
+                    name = param.substring(5);
+                } else if (param != null && param.startsWith("merge=")) {
+                    String mergeString = param.substring(6);
+                    merge = !mergeString.equalsIgnoreCase("false");
+                } else if (param != null && param.startsWith("index=")) {
+                    index = param.substring(6);
+                } else if (param != null && param.startsWith("coverage=")) {
+                    coverage = param.substring(9);
+                } else if (param != null && param.startsWith("format=")) {
+                    format = param.substring(7);
+                }
             }
         }
 
 
         // Locus is not specified from port commands
         String locus = null;
-        Map<String, String> params = null;
-        return loadFiles(fileString, index, coverage, name, format, locus, merge, params);
+        Map<String, String> ignore = null;
+        String sort = null;
+        String sortTag = null;
+        return loadFiles(fileString, index, coverage, name, format, locus, merge, ignore, sort, sortTag);
 
-    }
-
-
-    String loadFiles(final String fileString,
-                     final String indexString,
-                     final String coverageString,
-                     final String nameString,
-                     final String formatString,
-                     final String locus,
-                     final boolean merge,
-                     Map<String, String> params) throws IOException {
-        return loadFiles(fileString, indexString, coverageString, nameString, formatString, locus, merge, params, null, null);
     }
 
     /**
@@ -673,10 +662,7 @@ public class CommandExecutor {
                      final boolean merge,
                      Map<String, String> params,
                      String sort,
-                     String sortTag) throws IOException {
-
-
-        log.debug("Run load files");
+                     String sortTag)  {
 
         boolean isDataURL = ParsingUtils.isDataURL(fileString);
 
@@ -721,24 +707,15 @@ public class CommandExecutor {
             }
         }
 
-        List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
-        List<String> sessionPaths = new ArrayList<String>();
+        List<ResourceLocator> fileLocators = new ArrayList<>();
 
-        if (!merge) {
-            // If this is a session file start fresh without asking, otherwise ask
-            boolean unload = !merge;
-            if (fileString.endsWith(".xml") || fileString.endsWith(".php") || fileString.endsWith(".php3")) {
-                unload = !merge;
-            } else {
-                unload = true;
-            }
-            if (unload) {
-                igv.newSession();
-            }
+        if (!SessionReader.isSessionFile(fileString) && merge == false) {
+            igv.newSession();
         }
 
+
         // Create set of loaded files
-        Set<String> loadedFiles = new HashSet<String>();
+        Set<String> loadedFiles = new HashSet<>();
         for (ResourceLocator rl : igv.getDataResourceLocators()) {
             loadedFiles.add(rl.getPath());
         }
@@ -756,8 +733,8 @@ public class CommandExecutor {
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
 
-            if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3") || f.endsWith(".session")) {
-                sessionPaths.add(f);
+            if (SessionReader.isSessionFile(f)) {
+                igv.restoreSessionSynchronous(f, locus);
             } else {
 
                 ResourceLocator rl = new ResourceLocator(f);
@@ -790,16 +767,14 @@ public class CommandExecutor {
                         throw new Error("Error: " + f + " does not exist.");
                     }
                 }
-
                 fileLocators.add(rl);
             }
         }
 
-        for (String sessionPath : sessionPaths) {
-            igv.restoreSessionSynchronous(sessionPath, locus, merge);
-        }
 
-        igv.loadTracks(fileLocators);
+        if(fileLocators.size() > 0) {
+            igv.loadTracks(fileLocators);
+        }
 
         if (locus != null && !locus.equals("null")) {
             igv.goToLocus(locus);

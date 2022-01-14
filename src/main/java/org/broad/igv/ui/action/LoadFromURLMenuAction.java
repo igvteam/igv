@@ -35,6 +35,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.LoadFromURLDialog;
@@ -89,11 +90,10 @@ public class LoadFromURLMenuAction extends MenuAction {
 
                     url = mapURL(url.trim());
 
-                    if (url.endsWith(".xml") || url.endsWith(".session")) {
+                    if (SessionReader.isSessionFile(url)) {
                         try {
-                            boolean merge = false;
                             String locus = null;
-                            igv.doRestoreSession(url, locus, merge);
+                            igv.doRestoreSession(url, locus);
                         } catch (Exception ex) {
                             MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                         }

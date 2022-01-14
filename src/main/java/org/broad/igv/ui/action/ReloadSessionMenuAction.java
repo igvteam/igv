@@ -64,7 +64,7 @@ public class ReloadSessionMenuAction extends MenuAction {
     public void actionPerformed(ActionEvent e) {
         String currentSessionFilePath = igv.getSession().getPath();
         if (currentSessionFilePath != null) {
-            Runnable runnable = () -> this.igv.restoreSessionSynchronous(currentSessionFilePath, null, false);
+            Runnable runnable = () -> this.igv.restoreSessionSynchronous(currentSessionFilePath, null);
             LongRunningTask.submit(runnable);
         }
     }

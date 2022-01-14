@@ -175,7 +175,7 @@ public class AbstractHeadedTest {
 
     protected static String rewriteRestoreSession(String sessionPath) throws Exception{
         sessionPath = (TestUtils.replaceTestPaths(new File(sessionPath))).getAbsolutePath();
-        IGV.getInstance().doRestoreSession(sessionPath, null, false);
+        IGV.getInstance().doRestoreSession(sessionPath, null);
         return sessionPath;
     }
 }

@@ -472,12 +472,11 @@ public class IGV implements IGVEventObserver {
      */
     public Future loadTracks(final Collection<ResourceLocator> locators) {
 
-        contentPane.getStatusBar().setMessage("Loading ...");
-
-        log.debug("Run loadTracks");
-
         Future toRet = null;
         if (locators != null && !locators.isEmpty()) {
+
+            contentPane.getStatusBar().setMessage("Loading ...");
+            
             NamedRunnable runnable = new NamedRunnable() {
                 public void run() {
                     //Collect size statistics before loading
@@ -1076,7 +1075,7 @@ public class IGV implements IGVEventObserver {
      */
     final public void doRestoreSession(final File sessionFile, final String locus) {
         if (sessionFile.exists()) {
-            doRestoreSession(sessionFile.getAbsolutePath(), locus, false);
+            doRestoreSession(sessionFile.getAbsolutePath(), locus);
         } else {
             String message = "Session file does not exist! : " + sessionFile.getAbsolutePath();
             log.error(message);
@@ -1089,25 +1088,22 @@ public class IGV implements IGVEventObserver {
      *
      * @param sessionPath
      * @param locus
-     * @param merge
      */
-    public void doRestoreSession(final String sessionPath,
-                                 final String locus,
-                                 final boolean merge) {
+    public void doRestoreSession(final String sessionPath,  final String locus) {
 
-        Runnable runnable = () -> restoreSessionSynchronous(sessionPath, locus, merge);
+        Runnable runnable = () -> restoreSessionSynchronous(sessionPath, locus);
         LongRunningTask.submit(runnable);
     }
 
     /**
      * Load a session file in the current thread.  This should not be called from the event dispatch thread.
      *
-     * @param merge
+
      * @param sessionPath
      * @param locus
      * @return true if successful
      */
-    public boolean restoreSessionSynchronous(String sessionPath, String locus, boolean merge) {
+    public boolean restoreSessionSynchronous(String sessionPath, String locus) {
 
         InputStream inputStream = null;
         try {
@@ -1119,10 +1115,8 @@ public class IGV implements IGVEventObserver {
                 return false;
             }
 
-            if (!merge) {
-                // Do this first, it closes all open SeekableFileStreams.
-                resetSession(sessionPath);
-            }
+            // Do this first, it closes all open SeekableFileStreams.
+            resetSession(sessionPath);
 
             setStatusBarMessage("Opening session...");
             return restoreSessionFromStream(sessionPath, locus, inputStream);
@@ -1138,8 +1132,8 @@ public class IGV implements IGVEventObserver {
                 } catch (IOException iOException) {
                     log.error("Error closing session stream", iOException);
                 }
-                resetStatusMessage();
             }
+            resetStatusMessage();
         }
     }
 
@@ -1212,8 +1206,8 @@ public class IGV implements IGVEventObserver {
      * Reset the default status message, which is the number of tracks loaded.
      */
     public void resetStatusMessage() {
-        contentPane.getStatusBar().setMessage("" +
-                getVisibleTrackCount() + " tracks loaded");
+        UIUtilities.invokeAndWaitOnEventThread(() -> contentPane.getStatusBar().setMessage("" +
+                getVisibleTrackCount() + " tracks loaded"));
 
     }
 
@@ -1225,11 +1219,7 @@ public class IGV implements IGVEventObserver {
     }
 
     private void closeWindow(final ProgressBar.ProgressDialog progressDialog) {
-        UIUtilities.invokeOnEventThread(new Runnable() {
-            public void run() {
-                progressDialog.setVisible(false);
-            }
-        });
+        UIUtilities.invokeOnEventThread(() -> progressDialog.setVisible(false));
     }
 
     /**
@@ -1443,9 +1433,8 @@ public class IGV implements IGVEventObserver {
     public void load(final ResourceLocator locator, final TrackPanel panel) throws DataLoadException {
 
         // If this is a session  TODO -- need better "is a session?" test
-        if (locator.getPath().endsWith(".xml") || locator.getPath().endsWith(("session"))) {
-            boolean merge = false;  // TODO -- ask user?
-            this.doRestoreSession(locator.getPath(), null, merge);
+        if (SessionReader.isSessionFile(locator.getPath())) {
+            this.doRestoreSession(locator.getPath(), null);
         } else {
             // Not a session, load into target panel
             Runnable runnable = () -> {
@@ -2154,11 +2143,11 @@ public class IGV implements IGVEventObserver {
                         boolean success = false;
                         if (HttpUtils.isRemoteURL(igvArgs.getSessionFile())) {
                             boolean merge = false;
-                            success = restoreSessionSynchronous(igvArgs.getSessionFile(), igvArgs.getLocusString(), merge);
+                            success = restoreSessionSynchronous(igvArgs.getSessionFile(), igvArgs.getLocusString());
                         } else {
                             File sf = new File(igvArgs.getSessionFile());
                             if (sf.exists()) {
-                                success = restoreSessionSynchronous(sf.getAbsolutePath(), igvArgs.getLocusString(), false);
+                                success = restoreSessionSynchronous(sf.getAbsolutePath(), igvArgs.getLocusString());
                             }
                         }
                         if (!success) {

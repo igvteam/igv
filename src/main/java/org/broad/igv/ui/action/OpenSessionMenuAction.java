@@ -88,7 +88,7 @@ public class OpenSessionMenuAction extends MenuAction {
         if (sessionFile != null) {
             if (FileUtils.isRemote(sessionFile)) {
                 boolean merge = false;
-                igv.doRestoreSession(sessionFile, null, merge);
+                igv.doRestoreSession(sessionFile, null);
             } else {
                 File f = new File(sessionFile);
                 igv.doRestoreSession(f, null);

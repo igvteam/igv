@@ -119,7 +119,7 @@ public class TestUtils {
      * @throws InterruptedException
      */
     public static void loadSession(IGV igv, String sessionPath) throws InterruptedException {
-        igv.doRestoreSession(sessionPath, null, false);
+        igv.doRestoreSession(sessionPath, null);
     }
 
     /**
