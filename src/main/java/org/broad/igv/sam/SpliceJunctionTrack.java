@@ -32,6 +32,7 @@ import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -112,9 +113,19 @@ public class SpliceJunctionTrack extends FeatureTrack {
     }
 
     protected boolean isShowFeatures(ReferenceFrame frame) {
-        float maxRange = PreferencesManager.getPreferences().getAsFloat(Constants.SAM_MAX_VISIBLE_RANGE);
-        float minVisibleScale = (maxRange * 1000) / 700;
-        return frame.getScale() < minVisibleScale;
+        return frame.getCurrentRange().getLength() <= dataManager.getVisibilityWindow();
+    }
+
+    @Override
+    public void render(RenderContext context, Rectangle rect) {
+        if (!isShowFeatures(context.getReferenceFrame())) {
+            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
+            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+            GraphicUtils.drawCenteredText("Zoom in to see features.", visibleRect, g);
+            return;
+        } else {
+            super.render(context, rect);
+        }
     }
 
     public boolean isRemoved() {
