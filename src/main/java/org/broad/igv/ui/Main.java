@@ -363,10 +363,14 @@ public class Main {
             UIManager.setLookAndFeel(lnf);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error setting look and feel", e);
         }
 
         double resolutionScale = Toolkit.getDefaultToolkit().getScreenResolution() / Globals.DESIGN_DPI;
+        if(resolutionScale != 1.0) {
+            log.info("Resoluction scale = " + resolutionScale);
+        }
+
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
         if (resolutionScale > 1.5) {
             if (prefMgr.getAsBoolean(SCALE_FONTS)) {
