@@ -4,7 +4,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.jbrowse.CircularViewUtilities;
-import org.broad.igv.util.Downsampler;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
@@ -18,6 +17,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.Downsampler;
 import org.broad.igv.util.FeatureCache;
 import org.broad.igv.util.ResourceLocator;
 import org.w3c.dom.Document;
@@ -141,38 +141,6 @@ public class InteractionTrack extends AbstractTrack {
 
     }
 
-
-    private List<BedPE> createWGFeatures(List<BedPEFeature> features, Genome genome) {
-
-        int size = Math.min(features.size(), MAX_WG_COUNT);
-        List<BedPE> wgFeatures = new ArrayList<>(size);
-
-        List<BedPEFeature> sampledFeatures;
-        if(features.size() < MAX_WG_COUNT) {
-            sampledFeatures = features;
-        } else {
-            sampledFeatures = Arrays.asList(new Downsampler<BedPEFeature>().sample(features.toArray(BedPEFeature[]::new), MAX_WG_COUNT));
-        }
-
-        for (BedPEFeature f : sampledFeatures) {
-
-            int start1 = genome.getGenomeCoordinate(f.chr1, f.start1);
-            int end1 = genome.getGenomeCoordinate(f.chr1, f.end1);
-            int start2 = genome.getGenomeCoordinate(f.chr2, f.start2);
-            int end2 = genome.getGenomeCoordinate(f.chr2, f.end2);
-            BedPEFeature wgFeature = new BedPEFeature(Globals.CHR_ALL, start1, end1, Globals.CHR_ALL, start2, end2);
-
-            wgFeature.name = f.name;
-            wgFeature.score = f.score;
-            wgFeature.thickness = f.thickness;
-            wgFeature.color = f.color;
-            wgFeature.attributes = f.attributes;
-
-            wgFeatures.add(wgFeature);
-
-        }
-        return wgFeatures;
-    }
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
@@ -510,4 +478,78 @@ public class InteractionTrack extends AbstractTrack {
         }
     }
 
+
+    private List<BedPE> createWGFeatures(List<BedPEFeature> features, Genome genome) {
+
+        int size = Math.min(features.size(), MAX_WG_COUNT);
+        List<BedPE> wgFeatures = new ArrayList<>(size);
+
+        List<BedPEFeature> sampledFeatures;
+        if (features.size() < MAX_WG_COUNT) {
+            sampledFeatures = features;
+        } else {
+            sampledFeatures = downsampleWGFeatures(features);
+        }
+
+        for (BedPEFeature f : sampledFeatures) {
+
+            int start1 = genome.getGenomeCoordinate(f.chr1, f.start1);
+            int end1 = genome.getGenomeCoordinate(f.chr1, f.end1);
+            int start2 = genome.getGenomeCoordinate(f.chr2, f.start2);
+            int end2 = genome.getGenomeCoordinate(f.chr2, f.end2);
+            BedPEFeature wgFeature = new BedPEFeature(Globals.CHR_ALL, start1, end1, Globals.CHR_ALL, start2, end2);
+
+            wgFeature.name = f.name;
+            wgFeature.score = f.score;
+            wgFeature.thickness = f.thickness;
+            wgFeature.color = f.color;
+            wgFeature.attributes = f.attributes;
+
+            wgFeatures.add(wgFeature);
+
+        }
+        return wgFeatures;
+    }
+
+    private List<BedPEFeature> downsampleWGFeatures(List<BedPEFeature> features) {
+
+        // First pass -- find the max score feature
+        BedPEFeature maxScoreFeature = features.get(0);
+        for (BedPEFeature f : features) {
+            if (f.score > maxScoreFeature.score) {
+                maxScoreFeature = f;
+            }
+        }
+
+        int nBins = maxScoreFeature.score > 0 ? 5 : 1;  // TODO make a function of total # of features & maxCount?
+        double binSize = nBins > 1 ? Math.log10(maxScoreFeature.score) / nBins : Integer.MAX_VALUE;
+
+        // Divide features into bins\
+        Object [] binnedFeatures = new Object[nBins];
+        int counts [] = new int[nBins];
+        for(int i=0; i<nBins; i++) {
+            binnedFeatures[i] = new ArrayList<BedPEFeature> ();
+            counts[i] = 0;
+        }
+        for (BedPEFeature f : features) {
+            int bin = (int) Math.min(nBins - 1, Math.floor(Math.log10(f.score) / binSize));
+            ((List<BedPEFeature>) binnedFeatures[bin]).add(f);
+            counts[bin]++;
+        }
+
+        // Add sampled features from each bin
+        int featuresPerBin = MAX_WG_COUNT / nBins;
+        List<BedPEFeature> sampledFeatures = new ArrayList<>(MAX_WG_COUNT);
+        for(int i=0; i<nBins; i++) {
+            List<BedPEFeature> bfs = (List<BedPEFeature>) binnedFeatures[i];
+            sampledFeatures.addAll(Arrays.asList(new Downsampler<BedPEFeature>().sample(bfs.toArray(BedPEFeature[]::new), featuresPerBin)));
+        }
+
+        // Be sure we keep the maximum feature
+        if(maxScoreFeature != null) {
+            sampledFeatures.add(maxScoreFeature);
+        }
+
+        return sampledFeatures;
+    }
 }
