@@ -104,7 +104,7 @@ public class RPTree {
     *       uncompressBuffSize - buffer size for decompression; else 0 for uncompressed data
     * */
 
-    public RPTree(SeekableStream fis, long fileOffset, boolean isLowToHigh, int uncompressBuffSize, boolean forceDescend) {
+    public RPTree(SeekableStream fis, long fileOffset, boolean isLowToHigh, int uncompressBuffSize) {
 
         // save the seekable file handle  and B+ Tree file offset
         // Note: the offset is the file position just after the B+ Tree Header
@@ -133,6 +133,7 @@ public class RPTree {
         RPTreeNode parentNode = null;      // parent node of the root is itself, or null
 
         // start constructing the R+ tree - get the root node
+        boolean forceDescend = false;
         rootNode = readRPTreeNode(fis, nodeOffset, isLowToHigh, forceDescend);
     }
 

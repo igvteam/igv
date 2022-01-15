@@ -183,8 +183,7 @@ public class BBFileReader {
         chromDataTreeOffset = fileHeader.getFullIndexOffset();
         if (chromDataTreeOffset != 0) {
             fileOffset = chromDataTreeOffset;
-            boolean forceDescend = false;
-            chromosomeDataTree = new RPTree(fis, fileOffset, isLowToHigh, uncompressBufSize, forceDescend);
+            chromosomeDataTree = new RPTree(fis, fileOffset, isLowToHigh, uncompressBufSize);
         }
 
 
