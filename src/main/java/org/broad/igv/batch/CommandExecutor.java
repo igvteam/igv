@@ -48,6 +48,7 @@ import org.broad.igv.session.SessionReader;
 import org.broad.igv.session.SessionWriter;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.action.OverlayTracksMenuAction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -90,13 +91,13 @@ public class CommandExecutor {
     }
 
 
-    public String execute(String command) {
+    public String execute(String commandLine) {
 
-        List<String> args = getArgs(StringUtils.breakQuotedString(command, ' ').toArray(new String[]{}));
+        List<String> args = getArgs(StringUtils.breakQuotedString(commandLine, ' ').toArray(new String[]{}));
 
         String result = "OK";
 
-        log.debug("Executing: " + command);
+        log.debug("Executing: " + commandLine);
         try {
             if (args.size() == 0) {
                 return "Empty command string";
@@ -213,9 +214,13 @@ public class CommandExecutor {
                 result = this.setShowDataRange(param1, param2);
             } else if (cmd.equalsIgnoreCase("setTrackHeight")) {
                 result = this.setTrackHeight(param1, param2);
+            } else if (cmd.equalsIgnoreCase("overlay")) {
+                result = this.overlay(commandLine);
+            } else if (cmd.equalsIgnoreCase("separate")) {
+                result = this.separate(param1);
             } else {
-                result = "UNKOWN COMMAND: " + command;
-                log.error(result);
+                result = "UNKOWN COMMAND: " + commandLine;
+                log.warn(result);
                 return result;
             }
 
@@ -225,7 +230,7 @@ public class CommandExecutor {
                 log.debug("Running garbage collection");
                 System.gc();
             }
-            log.debug("Finished execution: " + command + "  sleeping ....");
+            log.debug("Finished execution: " + commandLine + "  sleeping ....");
             if (sleepInterval > 0) try {
                 Thread.sleep(sleepInterval);
             } catch (InterruptedException e) {
@@ -388,6 +393,37 @@ public class CommandExecutor {
         }
     }
 
+    private String overlay(String cmd) {
+        String[] tokens = Globals.whitespacePattern.split(cmd);
+        if (tokens.length > 2) {
+            String name = URLDecoder.decode(tokens[1], Charset.defaultCharset());
+            List<DataTrack> tracks = new ArrayList<>();
+            for (int i = 2; i < tokens.length; i++) {
+                List<Track> tmp = this.tracksMatchingName(tokens[i]);
+                for (Track t : tmp) {
+                    if (t instanceof DataTrack) {
+                        tracks.add((DataTrack) t);
+                    }
+                }
+            }
+            OverlayTracksMenuAction.merge(tracks, name);
+            return "OK";
+        }
+        else {
+            return "overlay command requires at least 2 arguments (trackName track1 track2 ...)";
+        }
+    }
+
+    private String separate(String trackName) {
+        List<Track> tmp = this.tracksMatchingName(trackName);
+        if (tmp != null && tmp.size() > 0) {
+            OverlayTracksMenuAction.unmerge(tmp);
+            return "OK";
+        } else {
+            return "No track found matching " + trackName;
+        }
+    }
+
     private List<Track> tracksMatchingName(String name) {
         List<Track> tracks = igv.getAllTracks();
         if (name == null) {
@@ -395,7 +431,10 @@ public class CommandExecutor {
         } else {
             String altName = URLDecoder.decode(name, Charset.defaultCharset());
             return tracks.stream()
-                    .filter(t -> name.equalsIgnoreCase(t.getName()) || altName.equalsIgnoreCase(t.getName()))
+                    .filter(t -> name.equalsIgnoreCase(t.getName()) || altName.equalsIgnoreCase(t.getName()) ||
+                            t.getResourceLocator() != null && name.equals(t.getResourceLocator().getPath()) ||
+                            t.getResourceLocator() != null && altName.equals(t.getResourceLocator().getPath())
+                    )
                     .collect(Collectors.toList());
         }
     }
