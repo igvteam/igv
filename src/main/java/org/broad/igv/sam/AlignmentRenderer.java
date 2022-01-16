@@ -25,14 +25,14 @@
 
 package org.broad.igv.sam;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
@@ -892,7 +892,7 @@ public class AlignmentRenderer {
 
                             BaseModification mod = baseModifications.get(i);
                             int l = Byte.toUnsignedInt(mod.likelihood);
-                            if(l < threshold) continue;
+                            if (l < threshold) continue;
 
                             Color c = BaseModification.getModColor(mod.modification, mod.likelihood);
                             g.setColor(c);
@@ -908,12 +908,12 @@ public class AlignmentRenderer {
                             }
 
                             // Expand narrow width to make more visible
-                            if(dX < 3) {
+                            if (dX < 3) {
                                 dX = 3;
                                 pX--;
                             }
 
-                            g.fillRect(pX, pY, dX, Math.max(1, dY-2));
+                            g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
                         }
                     }
                 }
@@ -1240,26 +1240,25 @@ public class AlignmentRenderer {
 //                   boolean sameChr = isPairedAlignment || alignment.getMate().getChr().equals(alignment.getChr());
                     String mateChr = mate == null ? null : mate.getChr();
                     boolean sameChr = isPairedAlignment || (mateChr != null && mateChr.equals(alignment.getChr()));
-                    if (sameChr ) {
-                        if( track.getExperimentType() != AlignmentTrack.ExperimentType.RNA) {
-                            int readDistance = Math.abs(alignment.getInferredInsertSize());
-                            if (readDistance != 0) {
+                    if (sameChr) {
+                        int readDistance = Math.abs(alignment.getInferredInsertSize());
+                        if (readDistance != 0) {
 
-                                int minThreshold = renderOptions.getMinInsertSize();
-                                int maxThreshold = renderOptions.getMaxInsertSize();
-                                PEStats peStats = getPEStats(alignment, renderOptions);
-                                if (renderOptions.isComputeIsizes() && peStats != null) {
-                                    minThreshold = peStats.getMinThreshold();
-                                    maxThreshold = peStats.getMaxThreshold();
-                                }
+                            int minThreshold = renderOptions.getMinInsertSize();
+                            int maxThreshold = renderOptions.getMaxInsertSize();
+                            PEStats peStats = getPEStats(alignment, renderOptions);
+                            if (renderOptions.isComputeIsizes() && peStats != null) {
+                                minThreshold = peStats.getMinThreshold();
+                                maxThreshold = peStats.getMaxThreshold();
+                            }
 
-                                if (readDistance < minThreshold) {
-                                    c = smallISizeColor;
-                                } else if (readDistance > maxThreshold) {
-                                    c = largeISizeColor;
-                                }
+                            if (readDistance < minThreshold) {
+                                c = smallISizeColor;
+                            } else if (readDistance > maxThreshold) {
+                                c = largeISizeColor;
                             }
                         }
+
                         //return renderOptions.insertSizeColorScale.getColor(readDistance);
                     } else {
                         c = ChromosomeColors.getColor(alignment.getMate().getChr());

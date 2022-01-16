@@ -32,11 +32,8 @@ import java.util.List;
 
 /**
  * A row of alignments, packed to minimize empty space
- *
- * @author jacob
- * @date 2014-Jan-10
  */
-public class Row implements Comparable<Row> {
+public class Row  {
 
     int nextIdx;
     private double score = 0;
@@ -217,11 +214,6 @@ public class Row implements Comparable<Row> {
 
     public void setScore(double score) {
         this.score = score;
-    }
-
-    @Override
-    public int compareTo(Row o) {
-        return (int) Math.signum(getScore() - o.getScore());
     }
 
 //        @Override

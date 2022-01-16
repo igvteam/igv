@@ -293,7 +293,7 @@ public class AlignmentDataManager implements IGVEventObserver {
                 for (Row row : alignmentRows) {
                     row.updateScore(option, location, interval, tag);
                 }
-                Collections.sort(alignmentRows);
+                Collections.sort(alignmentRows, (o1, o2) -> (int) Math.signum(o1.getScore() - o2.getScore()));
             }
             return true;
         }
@@ -425,11 +425,23 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public AlignmentTrack.ExperimentType inferType() {
         ReadStats readStats = new ReadStats();
-        List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 1000);
+        List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 100);
         for(Alignment a : sample) {
             readStats.addAlignment(a);
         }
-        return readStats.inferType();
+        AlignmentTrack.ExperimentType type = readStats.inferType();
+
+        if(type == AlignmentTrack.ExperimentType.THIRD_GEN) {
+            return type;
+        } else {
+            // Get a larger sample to distinguish RNA-Seq
+            readStats = new ReadStats();
+            sample = AlignmentUtils.firstAlignments(reader, 2000);
+            for(Alignment a : sample) {
+                readStats.addAlignment(a);
+            }
+            return readStats.inferType();
+        }
     }
 
     private AlignmentTrack.ExperimentType getExperimentType() {

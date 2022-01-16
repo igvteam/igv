@@ -125,12 +125,6 @@ SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2
 SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
 SAM.BASEMOD_THRESHOLD	Base modification probability threshold (0-1)	float	0.2
 
-
-##Splice Junction Track
-SAM.SHOW_JUNCTION_FLANKINGREGIONS	Show flanking regions	boolean	FALSE
-SAM.JUNCTION_MIN_FLANKING_WIDTH	Minimum flanking width	integer	0
-SAM.JUNCTION_MIN_COVERAGE	Minimum junction coverage	integer	1
-
 ##Insert Size Options
 SAM.COMPUTE_ISIZES	Compute insert size thresholds	boolean	TRUE
 SAM.MIN_ISIZE_MIN_PERCENTILE	Minimum (percentile)	float	0.5
@@ -152,6 +146,14 @@ SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	300	Range at which a
 SAM.SHOW_JUNCTION_FLANKINGREGIONS	Show flanking regions	boolean	TRUE
 SAM.JUNCTION_MIN_FLANKING_WIDTH	Minimum flanking width	integer	0
 SAM.JUNCTION_MIN_COVERAGE	Minimum junction coverage	integer	1
+
+##Insert Size Options
+SAM.COMPUTE_ISIZES	Compute insert size thresholds	boolean	FALSE
+SAM.MIN_ISIZE_MIN_PERCENTILE	Minimum (percentile)	float	0.5
+SAM.ISIZE_MAX_PERCENTILE	Maximum (percentile)	float	99.5
+SAM.MIN_INSERT_SIZE_THRESHOLD	Default minimum (bp)	float	50
+SAM.INSERT_SIZE_THRESHOLD	Default maximum (bp)	float	100000
+
 
 #Third Gen	THIRD_GEN
 info Settings below override defaults for 3rd-gen (PacBIO, Oxford Nanopore, ...) alignments.
@@ -217,6 +219,11 @@ CIRC_VIEW_PORT	Circview port	integer	60152
 
 
 #Hidden
+
+SAM.SHOW_JUNCTION_FLANKINGREGIONS	FALSE
+SAM.JUNCTION_MIN_FLANKING_WIDTH	0
+SAM.JUNCTION_MIN_COVERAGE	1
+
 
 SCORE_VARIANTS	FALSE
 

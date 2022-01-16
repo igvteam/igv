@@ -58,7 +58,6 @@ public class ReadStats {
 
     private static final Random RAND = new Random();
 
-
     public void addAlignment(Alignment alignment) {
 
         if(readCount > MAX_READ_COUNT) return;
@@ -137,8 +136,8 @@ public class ReadStats {
         compute();
         if (readCount < 100) return null; // Not enough reads
         if ((readLengthStdDev > 100 || medianReadLength > 1000) && averageCigarLength > 100) {
-            return AlignmentTrack.ExperimentType.THIRD_GEN;  
-        } else if (medianRefToReadRatio > 10 || fracReadsWithNs > 0.2) {
+            return AlignmentTrack.ExperimentType.THIRD_GEN;
+        } else if (medianRefToReadRatio > 5 || fracReadsWithNs > 0.01) {
             return AlignmentTrack.ExperimentType.RNA;
         } else {
             return AlignmentTrack.ExperimentType.OTHER;

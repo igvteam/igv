@@ -1863,13 +1863,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
             if (dataManager.isPairedEnd()) {
-                if (getExperimentType() != ExperimentType.RNA) {
-                    mappings.put("insert size", ColorOption.INSERT_SIZE);
-                }
+                mappings.put("insert size", ColorOption.INSERT_SIZE);
                 mappings.put("pair orientation", ColorOption.PAIR_ORIENTATION);
-                if (getExperimentType() != ExperimentType.RNA) {
-                    mappings.put("insert size and pair orientation", ColorOption.UNEXPECTED_PAIR);
-                }
+                mappings.put("insert size and pair orientation", ColorOption.UNEXPECTED_PAIR);
             }
 
             mappings.put("read strand", ColorOption.READ_STRAND);
