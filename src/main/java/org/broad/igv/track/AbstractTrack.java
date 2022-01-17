@@ -28,10 +28,11 @@ package org.broad.igv.track;
 //~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.Feature;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -39,7 +40,6 @@ import org.broad.igv.session.SessionAttribute;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TooltipTextFrame;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.AttributeHeaderPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -70,33 +70,6 @@ public abstract class AbstractTrack implements Track {
     public static final int VISIBILITY_WINDOW = -1;
     public static final boolean DEFAULT_SHOW_FEATURE_NAMES = true;
     private static Logger log = LogManager.getLogger(AbstractTrack.class);
-
-    /**
-     * Classes which we have tried to marshal/unmarshal
-     * and have failed. Since we just use exception catching (slow),
-     * we don't want to repeat failures
-     */
-    public static final Set<Class> knownUnknownTrackClasses = new HashSet<Class>();
-    public static final Class defaultTrackClass = AbstractTrack.class;
-
-    /**
-     * Set default renderer classes by track type.
-     */
-    private static Class defaultRendererClass = BarChartRenderer.class;
-    private static Map<TrackType, Class> defaultRendererMap = new HashMap();
-
-    static {
-        defaultRendererMap.put(TrackType.RNAI, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.COPY_NUMBER, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.CNV, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.ALLELE_SPECIFIC_COPY_NUMBER, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.GENE_EXPRESSION, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.DNA_METHYLATION, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.LOH, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.OTHER, BarChartRenderer.class);
-        defaultRendererMap.put(TrackType.CHIP_CHIP, HeatmapRenderer.class);
-    }
-
 
     protected String id;
 
@@ -421,7 +394,7 @@ public abstract class AbstractTrack implements Track {
      * @return
      */
     private int getDefaultHeight() {
-        if (XYPlotRenderer.class.isAssignableFrom(getDefaultRendererClass())) {
+        if (getDefaultRenderer() instanceof XYPlotRenderer) {
             return PreferencesManager.getPreferences().getAsInt(CHART_TRACK_HEIGHT_KEY);
         } else {
             return PreferencesManager.getPreferences().getAsInt(TRACK_HEIGHT_KEY);
@@ -561,10 +534,20 @@ public abstract class AbstractTrack implements Track {
         this.dataRange = axisDefinition;
     }
 
-
-    protected Class getDefaultRendererClass() {
-        Class def = defaultRendererMap.get(getTrackType());
-        return (def == null) ? defaultRendererClass : def;
+    protected Renderer getDefaultRenderer() {
+        TrackType trackType = getTrackType();
+        switch (trackType) {
+            case RNAI:
+            case COPY_NUMBER:
+            case ALLELE_SPECIFIC_COPY_NUMBER:
+            case GENE_EXPRESSION:
+            case DNA_METHYLATION:
+            case LOH:
+            case CHIP_CHIP:
+                return new HeatmapRenderer();
+            default:
+                return new BarChartRenderer();
+        }
     }
 
     public Collection<WindowFunction> getAvailableWindowFunctions() {
@@ -586,7 +569,7 @@ public abstract class AbstractTrack implements Track {
 
         if (popupText != null) {
             Color color = IGV.getRootPane().getJMenuBar().getForeground();
-            String htmlColor = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()); 
+            String htmlColor = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
             popupText = "<div style=\"color: " + htmlColor + "\">" + popupText + "</div>";
 
             final TooltipTextFrame tf = new TooltipTextFrame(getName(), popupText);

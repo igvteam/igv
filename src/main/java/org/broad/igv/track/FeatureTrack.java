@@ -264,7 +264,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     public void setRendererClass(Class rc) {
         try {
-            renderer = (Renderer) rc.newInstance();
+            renderer = (Renderer) rc.getDeclaredConstructor().newInstance();
         } catch (Exception ex) {
             log.error("Error instatiating renderer ", ex);
         }

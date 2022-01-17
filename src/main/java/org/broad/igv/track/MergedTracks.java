@@ -211,15 +211,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     public LoadedDataInterval<List<LocusScore>> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
         return null;
     }
-
-    @Override
-    public void setRendererClass(Class rc) {
-        super.setRendererClass(rc);
-        for (Track track : memberTracks) {
-            track.setRendererClass(rc);
-        }
-    }
-
+    
     @Override
     public boolean getAutoScale() {
         boolean autoScale = true;
