@@ -530,8 +530,8 @@ public class AlignmentRenderer {
         IGVPreferences prefs = this.track.getPreferences();
         boolean flagLargeIndels = prefs.getAsBoolean(SAM_FLAG_LARGE_INDELS);
         int largeInsertionsThreshold = prefs.getAsInt(SAM_LARGE_INDELS_THRESHOLD);
-        boolean hideSmallIndelsBP = prefs.getAsBoolean(SAM_HIDE_SMALL_INDEL);
-        int indelThresholdBP = prefs.getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+        boolean hideSmallIndelsBP = renderOptions.isHideSmallIndels();
+        int indelThresholdBP = renderOptions.getSmallIndelThreshold();
         boolean quickConsensus = renderOptions.isQuickConsensusMode();
         final float snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
 
@@ -1043,8 +1043,8 @@ public class AlignmentRenderer {
             InsertionMarker expandedInsertion = InsertionManager.getInstance().getSelectedInsertion(context.getReferenceFrame().getChrName());
             int expandedPosition = expandedInsertion == null ? -1 : expandedInsertion.position;
 
-            boolean hideSmallIndelsBP = prefs.getAsBoolean(SAM_HIDE_SMALL_INDEL);
-            int indelThresholdBP = prefs.getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+            boolean hideSmallIndelsBP = renderOptions.isHideSmallIndels();
+            int indelThresholdBP = renderOptions.getSmallIndelThreshold();
 
             for (AlignmentBlock aBlock : insertions) {
 

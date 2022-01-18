@@ -646,13 +646,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         int w = (int) ((1.41 * rect.height) / 2);
 
 
-        boolean hideSmallIndex = getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL);
-        int smallIndelThreshold = getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+        boolean hideSmallIndels =  renderOptions.isHideSmallIndels();
+        int smallIndelThreshold =  renderOptions.getSmallIndelThreshold();
 
         List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
         insertionIntervals.clear();
         for (InsertionMarker insertionMarker : intervals) {
-            if (hideSmallIndex && insertionMarker.size < smallIndelThreshold) continue;
+            if (hideSmallIndels && insertionMarker.size < smallIndelThreshold) continue;
 
             final double scale = context.getScale();
             final double origin = context.getOrigin();
@@ -1461,8 +1461,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             misMatchesItem.addActionListener(new Deselector(misMatchesItem, showAllItem));
             showAllItem.addActionListener(new Deselector(showAllItem, misMatchesItem));
 
-            addQuickConsensusModeItem();
-
             // Paired end items
             addSeparator();
             addViewAsPairsMenuItem();
@@ -1470,8 +1468,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 addGoToMate(e, clickedAlignment);
                 showMateRegion(e, clickedAlignment);
             }
-
             addInsertSizeMenuItem();
+
+            // Third gen (primarily) items
+            addSeparator();
+            addQuickConsensusModeItem();
+            addHideSmallIndelsItems();
 
             // Display mode items
             addSeparator();
@@ -2352,6 +2354,31 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
         }
 
+        void addHideSmallIndelsItems() {
+            final JMenuItem thresholdItem = new JMenuItem("Small indel threshold...");
+            thresholdItem.addActionListener(evt -> UIUtilities.invokeOnEventThread(() -> {
+                String sith = MessageUtils.showInputDialog("Small indel threshold: ", String.valueOf(renderOptions.getSmallIndelThreshold()));
+                try {
+                    renderOptions.setSmallIndelThreshold(Integer.parseInt(sith));
+                    AlignmentTrack.this.repaint();
+                } catch(NumberFormatException e) {
+                    log.error("Error setting small indel threshold - not an integer", e);
+                }
+            }));
+            thresholdItem.setEnabled(renderOptions.isHideSmallIndels());
+
+            final JMenuItem item = new JCheckBoxMenuItem("Hide small indels");
+            item.setSelected(renderOptions.isHideSmallIndels());
+            item.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
+                renderOptions.setHideSmallIndels(item.isSelected());
+                thresholdItem.setEnabled(item.isSelected());
+                AlignmentTrack.this.repaint();
+            }));
+            
+            add(item);
+            add(thresholdItem);
+        }
+
 
     }
 
@@ -2469,6 +2496,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean flagZeroQualityAlignments;
         private Range groupByPos;
         private Boolean drawInsertionIntervals;
+        private Boolean hideSmallIndels;
+        private Integer smallIndelThreshold;
 
         BisulfiteContext bisulfiteContext = BisulfiteContext.CG;
         Map<String, PEStats> peStats;
@@ -2484,22 +2513,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         IGVPreferences getPreferences() {
             return this.track != null ? this.track.getPreferences() : AlignmentTrack.getPreferences(ExperimentType.OTHER);
-        }
-
-        private <T extends Enum<T>> T getFromMap(Map<String, String> attributes, String key, Class<T> clazz, T defaultValue) {
-            String value = attributes.get(key);
-            if (value == null) {
-                return defaultValue;
-            }
-            return CollUtils.valueOf(clazz, value, defaultValue);
-        }
-
-        private String getFromMap(Map<String, String> attributes, String key, String defaultValue) {
-            String value = attributes.get(key);
-            if (value == null) {
-                return defaultValue;
-            }
-            return value;
         }
 
         void setShowAllBases(boolean showAllBases) {
@@ -2580,6 +2593,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.drawInsertionIntervals = drawInsertionIntervals;
         }
 
+        public void setHideSmallIndels(boolean hideSmallIndels) {
+            this.hideSmallIndels = hideSmallIndels;
+        }
+
+        public void setSmallIndelThreshold(int smallIndelThreshold) {
+            this.smallIndelThreshold = smallIndelThreshold;
+        }
 
         // getters
         public int getMinInsertSize() {
@@ -2692,6 +2712,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return quickConsensusMode == null ? getPreferences().getAsBoolean(SAM_QUICK_CONSENSUS_MODE) : quickConsensusMode;
         }
 
+        public boolean isHideSmallIndels() {
+            return hideSmallIndels == null ? getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL) : hideSmallIndels;
+        }
+
+        public int getSmallIndelThreshold() {
+            return smallIndelThreshold == null ? getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD) : smallIndelThreshold;
+        }
+
 
         @Override
         public void marshalXML(Document document, Element element) {
@@ -2761,6 +2789,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if (groupByPos != null) {
                 element.setAttribute("groupByPos", groupByPos.toString());
+            }
+            if(hideSmallIndels != null) {
+                element.setAttribute("hideSmallIndels", hideSmallIndels.toString());
+            }
+            if(smallIndelThreshold != null) {
+                element.setAttribute("smallIndelThreshold", smallIndelThreshold.toString());
             }
         }
 
@@ -2837,26 +2871,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (element.hasAttribute("groupByPos")) {
                 groupByPos = Range.fromString(element.getAttribute("groupByPos"));
             }
-        }
-
-        static class DefaultValues {
-            final boolean viewPairs;
-            final boolean pairedArcView;
-            Range groupByPos;
-
-            DefaultValues(IGVPreferences prefs) {
-                String pos = prefs.get(SAM_GROUP_BY_POS);
-                viewPairs = false;
-                pairedArcView = false;
-                if (pos != null) {
-                    String[] posParts = pos.split(" ");
-                    if (posParts.length != 2) {
-                        this.groupByPos = null;
-                    } else {
-                        int posChromStart = Integer.parseInt(posParts[1]);
-                        this.groupByPos = new Range(posParts[0], posChromStart, posChromStart + 1);
-                    }
-                }
+            if (element.hasAttribute("hideSmallIndels")) {
+                hideSmallIndels = Boolean.parseBoolean(element.getAttribute("hideSmallIndels"));
+            }
+            if (element.hasAttribute("smallIndelThreshold")) {
+                smallIndelThreshold = Integer.parseInt(element.getAttribute("smallIndelThreshold"));
             }
         }
     }
