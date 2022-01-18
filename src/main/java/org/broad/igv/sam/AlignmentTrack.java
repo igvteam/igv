@@ -481,7 +481,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         downsampleRect.height = DOWNAMPLED_ROW_HEIGHT;
         renderDownsampledIntervals(context, downsampleRect);
 
-        if (renderOptions.isDrawInsertionIntervals()) {
+        if (renderOptions.isShowInsertionMarkers()) {
             insertionRect = new Rectangle(rect);
             insertionRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0;
             insertionRect.height = INSERTION_ROW_HEIGHT;
@@ -646,8 +646,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         int w = (int) ((1.41 * rect.height) / 2);
 
 
-        boolean hideSmallIndels =  renderOptions.isHideSmallIndels();
-        int smallIndelThreshold =  renderOptions.getSmallIndelThreshold();
+        boolean hideSmallIndels = renderOptions.isHideSmallIndels();
+        int smallIndelThreshold = renderOptions.getSmallIndelThreshold();
 
         List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
         insertionIntervals.clear();
@@ -1472,8 +1472,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             // Third gen (primarily) items
             addSeparator();
-            addQuickConsensusModeItem();
-            addHideSmallIndelsItems();
+            addThirdGenItems();
 
             // Display mode items
             addSeparator();
@@ -2354,14 +2353,22 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
         }
 
-        void addHideSmallIndelsItems() {
+        void addThirdGenItems() {
+
+            final JMenuItem qcItem = new JCheckBoxMenuItem("Quick consensus mode");
+            qcItem.setSelected(renderOptions.isQuickConsensusMode());
+            qcItem.addActionListener(aEvt -> {
+                renderOptions.setQuickConsensusMode(qcItem.isSelected());
+                AlignmentTrack.this.repaint();
+            });
+
             final JMenuItem thresholdItem = new JMenuItem("Small indel threshold...");
             thresholdItem.addActionListener(evt -> UIUtilities.invokeOnEventThread(() -> {
                 String sith = MessageUtils.showInputDialog("Small indel threshold: ", String.valueOf(renderOptions.getSmallIndelThreshold()));
                 try {
                     renderOptions.setSmallIndelThreshold(Integer.parseInt(sith));
                     AlignmentTrack.this.repaint();
-                } catch(NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     log.error("Error setting small indel threshold - not an integer", e);
                 }
             }));
@@ -2374,7 +2381,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 thresholdItem.setEnabled(item.isSelected());
                 AlignmentTrack.this.repaint();
             }));
-            
+
+            final JMenuItem imItem = new JCheckBoxMenuItem("Show insertion markers");
+            imItem.setSelected(renderOptions.isShowInsertionMarkers());
+            imItem.addActionListener(aEvt -> {
+                renderOptions.setShowInsertionMarkers(imItem.isSelected());
+                AlignmentTrack.this.repaint();
+            });
+
+            add(imItem);
+            add(qcItem);
             add(item);
             add(thresholdItem);
         }
@@ -2495,7 +2511,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean pairedArcView;
         private Boolean flagZeroQualityAlignments;
         private Range groupByPos;
-        private Boolean drawInsertionIntervals;
+        private Boolean showInsertionMarkers;
         private Boolean hideSmallIndels;
         private Integer smallIndelThreshold;
 
@@ -2589,8 +2605,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.linkedReads = linkedReads;
         }
 
-        public void setDrawInsertionIntervals(boolean drawInsertionIntervals) {
-            this.drawInsertionIntervals = drawInsertionIntervals;
+        public void setShowInsertionMarkers(boolean drawInsertionIntervals) {
+            this.showInsertionMarkers = drawInsertionIntervals;
         }
 
         public void setHideSmallIndels(boolean hideSmallIndels) {
@@ -2630,8 +2646,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return shadeCenters == null ? getPreferences().getAsBoolean(SAM_SHADE_CENTER) : shadeCenters;
         }
 
-        boolean isDrawInsertionIntervals() {
-            return drawInsertionIntervals == null ? getPreferences().getAsBoolean(SAM_SHOW_INSERTION_MARKERS) : drawInsertionIntervals;
+        boolean isShowInsertionMarkers() {
+            return showInsertionMarkers == null ? getPreferences().getAsBoolean(SAM_SHOW_INSERTION_MARKERS) : showInsertionMarkers;
         }
 
         public boolean isFlagZeroQualityAlignments() {
@@ -2790,11 +2806,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (groupByPos != null) {
                 element.setAttribute("groupByPos", groupByPos.toString());
             }
-            if(hideSmallIndels != null) {
+            if (hideSmallIndels != null) {
                 element.setAttribute("hideSmallIndels", hideSmallIndels.toString());
             }
-            if(smallIndelThreshold != null) {
+            if (smallIndelThreshold != null) {
                 element.setAttribute("smallIndelThreshold", smallIndelThreshold.toString());
+            }
+            if (showInsertionMarkers != null) {
+                element.setAttribute("showInsertionMarkers", showInsertionMarkers.toString());
             }
         }
 
@@ -2876,6 +2895,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if (element.hasAttribute("smallIndelThreshold")) {
                 smallIndelThreshold = Integer.parseInt(element.getAttribute("smallIndelThreshold"));
+            }
+            if (element.hasAttribute("showInsertionMarkers")) {
+                showInsertionMarkers = Boolean.parseBoolean(element.getAttribute("showInsertionMarkers"));
             }
         }
     }
