@@ -31,7 +31,7 @@ import java.util.zip.ZipInputStream;
  */
 public class GenomeListManager {
 
-    private static Logger log = LogManager.getLogger(GenomeManager.class);
+    private static Logger log = LogManager.getLogger(GenomeListManager.class);
 
     private static GenomeListManager theInstance;
 
