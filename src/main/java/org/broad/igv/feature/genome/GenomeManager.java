@@ -34,7 +34,6 @@
 package org.broad.igv.feature.genome;
 
 
-import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeChangeEvent;
@@ -45,6 +44,8 @@ import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.feature.genome.load.GenomeLoader;
 import org.broad.igv.feature.genome.load.JsonGenomeLoader;
 import org.broad.igv.jbrowse.CircularViewUtilities;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.FeatureTrack;
@@ -196,7 +197,7 @@ public class GenomeManager {
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             try {
                 String aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
-                if((new File(aliasPath)).exists()) {
+                if ((new File(aliasPath)).exists()) {
                     newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
                 }
             } catch (Exception e) {
@@ -220,7 +221,7 @@ public class GenomeManager {
                 loadGenomeAnnotations(newGenome);
             }
 
-            if(PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+            if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
                 CircularViewUtilities.changeGenome(newGenome);
             }
 
@@ -239,8 +240,15 @@ public class GenomeManager {
         }
         List<ResourceLocator> resources = newGenome.getAnnotationResources();
         if (resources != null && IGV.hasInstance()) {
+            // TODO -- reset properties of annotation tracks if they are already loaded.  Reloading is wasteful.
             IGV.getInstance().loadResources(resources);
             IGV.getInstance().repaint();
+        }
+    }
+
+    public void restoreGenomeAnnotations() {
+        if (currentGenome != null) {
+            loadGenomeAnnotations(currentGenome);
         }
     }
 

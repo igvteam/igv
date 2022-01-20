@@ -72,6 +72,7 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Class to parse an IGV session file
@@ -80,16 +81,14 @@ public class IGVSessionReader implements SessionReader {
 
     private static Logger log = LogManager.getLogger(IGVSessionReader.class);
     private static String INPUT_FILE_KEY = "INPUT_FILE_KEY";
-
     private static Map<String, String> attributeSynonymMap = new HashMap();
     private static WeakReference<IGVSessionReader> currentReader;
 
-    //package-private for unit testing
-    Collection<ResourceLocator> dataFiles;
-
+    Collection<ResourceLocator> dataFiles; //package-private for unit testing
     private Collection<ResourceLocator> missingDataFiles;
     private boolean panelElementPresent = false;    // Until proven otherwise
     private int version;
+    private String genomePath;
 
     private IGV igv;
 
@@ -234,13 +233,7 @@ public class IGVSessionReader implements SessionReader {
 
         if (genomeId != null && genomeId.length() > 0) {
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
-                // We don't have to reload the genome, but we do need to restore the annotation tracks
-                Track geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-                if (geneTrack != null) {
-                    igv.setGenomeTracks(geneTrack);
-                }
-                // TODO -- json genome annotation tracks
-
+                GenomeManager.getInstance().restoreGenomeAnnotations();
             } else {
                 // Selecting a genome will "reset" the session so we have to
                 // save the path and restore it.
@@ -248,9 +241,10 @@ public class IGVSessionReader implements SessionReader {
                 try {
                     GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
                     if (item != null) {
+                        genomePath = item.getPath();
                         GenomeManager.getInstance().loadGenome(item.getPath(), null);
                     } else {
-                        String genomePath = genomeId;
+                        genomePath = genomeId;
                         if (!ParsingUtils.fileExists(genomePath)) {
                             genomePath = getAbsolutePath(genomeId, rootPath);
                         }
@@ -410,6 +404,13 @@ public class IGVSessionReader implements SessionReader {
 
             MessageUtils.showMessage(message.toString());
         }
+
+        // Filter data files that are included in genome annotations.  This is to work around a bug introduced with
+        // json genomes where the genome annotation resources were (doubly) included as session
+        List<ResourceLocator> genomeResources = GenomeManager.getInstance().getCurrentGenome().getAnnotationResources();
+        Set<String> absoluteGenomeAnnotationPaths = genomeResources == null ? Collections.emptySet() :
+                genomeResources.stream().map(rl -> rl.getPath()).collect(Collectors.toSet());
+
         if (dataFiles.size() > 0) {
 
             final List<String> errors = new ArrayList<String>();
@@ -421,8 +422,12 @@ public class IGVSessionReader implements SessionReader {
             List<Runnable> synchronousLoads = new ArrayList<Runnable>();
 
             for (final ResourceLocator locator : dataFiles) {
-                Runnable runnable = () -> {
 
+                if (absoluteGenomeAnnotationPaths.contains(FileUtils.getAbsolutePath(locator.getPath(), genomePath))) {
+                    continue;
+                }
+
+                Runnable runnable = () -> {
                     try {
                         List<Track> tracks = igv.load(locator);
                         for (Track track : tracks) {
