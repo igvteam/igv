@@ -152,8 +152,8 @@ public class VariantRenderer { //extends FeatureRenderer {
         Color colorAlleleRefAlpha = useAlpha ? ColorUtilities.getCompositeColor(colorAlleleRef, alphaValue) : colorAlleleRef;
 
         if(track.getGenotypeColorMode() == VariantTrack.ColorMode.NONE) {
-            refColor = colorAlleleRef;
-            alleleColor = colorAlleleRef;
+            refColor = track.getColor();
+            alleleColor = track.getColor();
             percent = 0;
         }
         else if (track.getGenotypeColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {

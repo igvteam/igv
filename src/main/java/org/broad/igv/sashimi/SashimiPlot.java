@@ -212,7 +212,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         geneTrack.load(context.getReferenceFrame());
 
 
-        Dimension maxGeneDim = new Dimension(Integer.MAX_VALUE, geneTrack.getNumberOfFeatureLevels() * geneTrack.getSquishedRowHeight() + 10);
+        Dimension maxGeneDim = new Dimension(Integer.MAX_VALUE,  Math.max(1, geneTrack.getNumberOfFeatureLevels()) * geneTrack.getSquishedRowHeight() + 10);
         geneComponent.setMaximumSize(maxGeneDim);
         Dimension prefGeneDim = new Dimension(maxGeneDim);
         prefGeneDim.setSize(prefWidth, prefGeneDim.height);

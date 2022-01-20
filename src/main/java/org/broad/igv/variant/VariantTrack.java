@@ -84,6 +84,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private final static int DEFAULT_EXPANDED_VARIANT_HEIGHT = 25;
     private final static int DEFAULT_SQUISHED_VARIANT_HEIGHT = 6;
     private final static int MAX_FILTER_LINES = 15;
+    private final static int WG_TRACK_HEIGHT = 25;
 
 
     // TODO -- this needs to be settable
@@ -392,13 +393,15 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     public int getHeight() {
         int sampleCount = allSamples.size();
+        int h;
         if (getDisplayMode() == DisplayMode.COLLAPSED || sampleCount == 0 || showGenotypes == false) {
-            return getVariantsHeight();
+            h = getVariantsHeight();
         } else {
             final int groupCount = samplesByGroups.size();
             int margins = groupCount * 3;
-            return getVariantsHeight() + margins + (sampleCount * getGenotypeBandHeight());
+            h = getVariantsHeight() + margins + (sampleCount * getGenotypeBandHeight());
         }
+        return Math.max(WG_TRACK_HEIGHT, h);
     }
 
     public Object getHeader() {
@@ -414,7 +417,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @return
      */
     private int getVariantsHeight() {
-        return getVariantBandHeight() * Math.max(1, getNumberOfFeatureLevels());
+        return getVariantBandHeight() * getNumberOfFeatureLevels();
     }
 
     /**
@@ -880,6 +883,14 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     public void setSiteColorMode(ColorMode siteColorMode) {
         this.siteColorMode = siteColorMode;
+    }
+
+    @Override
+    public void setColor(Color color) {
+        // Setting color implicitly turns of "color by" modes
+        this.genotypeColorMode = ColorMode.NONE;
+        this.siteColorMode = ColorMode.NONE;
+        super.setColor(color);
     }
 
     public String getNameValueString(int y) {
