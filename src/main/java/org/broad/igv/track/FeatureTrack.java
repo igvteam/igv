@@ -649,6 +649,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
         if (!isShowFeatures(frame)) {
+            packedFeaturesMap.clear();
             return true;  // Ready by definition (nothing to paint)
         } else {
             PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());

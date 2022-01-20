@@ -151,12 +151,12 @@ public class VariantRenderer { //extends FeatureRenderer {
         Color colorAlleleRef = track.getColor();
         Color colorAlleleRefAlpha = useAlpha ? ColorUtilities.getCompositeColor(colorAlleleRef, alphaValue) : colorAlleleRef;
 
-        if(track.getColorMode() == VariantTrack.ColorMode.NONE) {
+        if(track.getGenotypeColorMode() == VariantTrack.ColorMode.NONE) {
             refColor = colorAlleleRef;
             alleleColor = colorAlleleRef;
             percent = 0;
         }
-        else if (track.getColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
+        else if (track.getGenotypeColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
             alleleColor = this.convertMethylationRateToColor((float) variant.getMethlationRate() / 100);
             percent = variant.getCoveredSampleFraction();
             refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray

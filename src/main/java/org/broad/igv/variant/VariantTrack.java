@@ -30,6 +30,7 @@ package org.broad.igv.variant;
 
 import htsjdk.tribble.Feature;
 import htsjdk.variant.variantcontext.GenotypeType;
+import org.broad.igv.Globals;
 import org.broad.igv.logging.*;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -79,8 +80,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private static final Color borderGray = new Color(200, 200, 200);
 
     private final static int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
-    private final int DEFAULT_SQUISHED_GENOTYPE_HEIGHT = 4;
-    private final static int DEFAULT_VARIANT_BAND_HEIGHT = 25;
+    private final int DEFAULT_SQUISHED_HEIGHT = 4;
+    private final static int DEFAULT_EXPANDED_VARIANT_HEIGHT = 25;
+    private final static int DEFAULT_SQUISHED_VARIANT_HEIGHT = 6;
     private final static int MAX_FILTER_LINES = 15;
 
 
@@ -113,12 +115,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     /**
      * The height of a single row in in squished mode
      */
-    private int squishedHeight = DEFAULT_SQUISHED_GENOTYPE_HEIGHT;
-
-    /**
-     * The height of the top band representing the variant call
-     */
-    private int variantBandHeight = DEFAULT_VARIANT_BAND_HEIGHT;
+    private int squishedHeight = DEFAULT_SQUISHED_HEIGHT;
 
     /**
      * List of all samples, in the order they appear in the file.
@@ -145,7 +142,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     /**
      * Current coloring option
      */
-    private ColorMode coloring = ColorMode.GENOTYPE;
+    private ColorMode genotypeColorMode = ColorMode.GENOTYPE;
 
 
     private ColorMode siteColorMode;
@@ -209,7 +206,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         this.enableMethylationRateSupport = enableMethylationRateSupport;
         if (enableMethylationRateSupport) {
             // also set the default color mode to Methylation rate:
-            coloring = ColorMode.METHYLATION_RATE;
+            genotypeColorMode = ColorMode.METHYLATION_RATE;
         }
 
         this.siteColorMode = prefMgr.getAsBoolean(VARIANT_COLOR_BY_ALLELE_FREQ) ?
@@ -226,8 +223,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         int sampleCount = allSamples.size();
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
-        squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_GENOTYPE_HEIGHT :
-                Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
+        squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
+                Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (height - getVariantBandHeight() - margins) / sampleCount));
         if (sampleCount == 1) {
             showGenotypes = false;
         }
@@ -417,7 +414,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @return
      */
     private int getVariantsHeight() {
-        return variantBandHeight * Math.max(1, getNumberOfFeatureLevels());
+        return getVariantBandHeight() * Math.max(1, getNumberOfFeatureLevels());
     }
 
     /**
@@ -438,7 +435,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
         int sampleCount = showGenotypes == false ? 0 : allSamples.size();
-        final int expandedHeight = variantBandHeight + margins + (sampleCount * getGenotypeBandHeight());
+        final int expandedHeight = getVariantBandHeight() + margins + (sampleCount * getGenotypeBandHeight());
         if (height < expandedHeight) {
             setDisplayMode(DisplayMode.SQUISHED);
         } else {
@@ -447,8 +444,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             }
         }
 
-        squishedHeight = showGenotypes == false ? DEFAULT_SQUISHED_GENOTYPE_HEIGHT :
-                Math.min(DEFAULT_SQUISHED_GENOTYPE_HEIGHT, Math.max(1, (height - variantBandHeight - margins) / sampleCount));
+        squishedHeight = showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
+                Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (height - getVariantBandHeight() - margins) / sampleCount));
     }
 
 
@@ -490,7 +487,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
             final double pXMin = tmpRect.getMinX();
             final double pXMax = tmpRect.getMaxX();
-            tmpRect.height = variantBandHeight;
+            tmpRect.height = getVariantBandHeight();
 
             int lastEndX = -1;
             int minSpacing = 3;
@@ -547,12 +544,12 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
                 }
 
-                curRowTop += variantBandHeight;
+                curRowTop += getVariantBandHeight();
                 lastEndX = -1;
 
             }
         } else {
-            tmpRect.height = variantBandHeight;
+            tmpRect.height = getVariantBandHeight();
             tmpRect.y = trackRectangle.y;
             g2D.setColor(Color.gray);
             GraphicUtils.drawCenteredText("No Variants Found", trackRectangle, g2D);
@@ -583,7 +580,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
                 for (String sample : entry.getValue()) {
                     if (overallSampleRect.intersects(visibleRectangle)) {
-                        renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, coloring, hideFiltered);
+                        renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, genotypeColorMode, hideFiltered);
                     }
                     tmpRect.y += tmpRect.height;
                 }
@@ -594,7 +591,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             for (String sample : allSamples) {
 
                 if (tmpRect.intersects(visibleRectangle)) {
-                    renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, coloring, hideFiltered);
+                    renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, genotypeColorMode, hideFiltered);
                 }
                 tmpRect.y += tmpRect.height;
             }
@@ -869,12 +866,12 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         this.hideFiltered = value;
     }
 
-    public ColorMode getColorMode() {
-        return coloring;
+    public ColorMode getGenotypeColorMode() {
+        return genotypeColorMode;
     }
 
-    public void setColorMode(ColorMode mode) {
-        this.coloring = mode;
+    public void setGenotypeColorMode(ColorMode mode) {
+        this.genotypeColorMode = mode;
     }
 
     public ColorMode getSiteColorMode() {
@@ -886,7 +883,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     public String getNameValueString(int y) {
-        if (y < top + variantBandHeight) {
+        if (y < top + getVariantBandHeight()) {
             return getName();
         } else {
             String sample = getSampleAtPosition(y);
@@ -990,7 +987,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         //We search only the specified row if y is a meaningful value.
         //Otherwise we search everything
-        int row = ((y - top) / variantBandHeight);
+        int row = ((y - top) / getVariantBandHeight());
         if (y < 0 || row >= getNumberOfFeatureLevels()) {
             features = packedFeatures.getFeatures();
         } else {
@@ -1169,6 +1166,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     public void setShowGenotypes(boolean showGenotypes) {
         this.showGenotypes = showGenotypes;
+    }
+
+    /**
+     * The height of the top band representing the variant call
+     */
+    public int getVariantBandHeight() {
+        return getDisplayMode() == DisplayMode.SQUISHED ? DEFAULT_SQUISHED_VARIANT_HEIGHT : DEFAULT_EXPANDED_VARIANT_HEIGHT;
     }
 
     public enum ColorMode {
@@ -1500,6 +1504,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     void sendToCircularView(TrackClickEvent e) {
+
         List<Feature> visibleFeatures;
         if (e.getFrame() == null) {
             visibleFeatures = new ArrayList<>();
@@ -1523,8 +1528,25 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
     }
 
-
     @Override
+    public List<Feature> getVisibleFeatures(ReferenceFrame frame) {
+        if(frame.getChrName().equals(Globals.CHR_ALL) &&
+        this.source instanceof TribbleFeatureSource.NonIndexedFeatureSource) {
+            try {
+                return ((TribbleFeatureSource.NonIndexedFeatureSource) this.source).getAllFeatures();
+            } catch (IOException e) {
+                return Collections.emptyList();
+            }
+        } else {
+            return super.getVisibleFeatures(frame);
+        }
+    }
+
+
+
+
+
+        @Override
     public void marshalXML(Document document, Element element) {
 
         super.marshalXML(document, element);
@@ -1534,12 +1556,12 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             element.setAttribute("showGenotypes", String.valueOf(showGenotypes));
         }
 
-        if (this.squishedHeight != DEFAULT_SQUISHED_GENOTYPE_HEIGHT) {
+        if (this.squishedHeight != DEFAULT_SQUISHED_HEIGHT) {
             element.setAttribute("squishedHeight", String.valueOf(squishedHeight));
         }
 
-        if (coloring != ColorMode.GENOTYPE) {
-            element.setAttribute("coloring", coloring.toString());
+        if (genotypeColorMode != ColorMode.GENOTYPE) {
+            element.setAttribute("coloring", genotypeColorMode.toString());
         }
 
         if (siteColorMode != null) {
@@ -1562,7 +1584,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
 
         if (element.hasAttribute("coloring")) {
-            this.coloring = ColorMode.valueOf(element.getAttribute("coloring"));
+            this.genotypeColorMode = ColorMode.valueOf(element.getAttribute("coloring"));
         }
 
         if (element.hasAttribute("siteColorMode")) {
