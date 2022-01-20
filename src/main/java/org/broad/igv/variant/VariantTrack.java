@@ -639,7 +639,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     /**
      * Render the name panel.
      * <p/>
-     * NOTE:  The sample names are actually drawn in the drawBackground method!
+     * NOTE:  The sample names are actually drawn in the drawBackground method.
      *
      * @param g2D
      * @param trackRectangle
@@ -658,7 +658,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         g2D.setColor(Color.black);
         rect.height = getVariantsHeight();
         if (rect.intersects(visibleRectangle)) {
-            GraphicUtils.drawWrappedText(getName(), rect, g2D, false);
+            Rectangle intersectedRect = rect.intersection(visibleRectangle);
+            GraphicUtils.drawWrappedText(getName(), intersectedRect, g2D, false);
         }
 
         rect.y += rect.height;
