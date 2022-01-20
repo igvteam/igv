@@ -121,7 +121,8 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         String path = locator.getPath();
         if (FileUtils.isRemote(path)) {
             path = HttpUtils.createURL(path).toExternalForm();
-        } if(idxPath != null && idxPath.length() > 0 && FileUtils.isRemote(idxPath)) {
+        }
+        if (idxPath != null && idxPath.length() > 0 && FileUtils.isRemote(idxPath)) {
             idxPath = HttpUtils.createURL(idxPath).toExternalForm();
         }
         AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
@@ -171,7 +172,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         this.isVCF = codec.getClass() == VCFWrapperCodec.class;
         this.featureClass = codec.getFeatureType();
         this.header = reader.getHeader();
-        this.reader =new TribbleReaderWrapper(reader);
+        this.reader = new TribbleReaderWrapper(reader);
         this.wrappedReader = reader;
     }
 
@@ -186,11 +187,12 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     }
 
     public int getFeatureWindowSize() {
-        if(featureWindowSize == null) {
+        if (featureWindowSize == null) {
             this.featureWindowSize = estimateFeatureWindowSize(this.wrappedReader);
         }
         return featureWindowSize;
     }
+
     public Object getHeader() {
         return header;
     }
@@ -316,7 +318,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     }
 
 
-    static class NonIndexedFeatureSource extends TribbleFeatureSource {
+    public static class NonIndexedFeatureSource extends TribbleFeatureSource {
 
         /**
          * Map containing all features.  Used only when there is no index.
@@ -349,12 +351,12 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     featureList.add(f);
                     if (f instanceof NamedFeature) FeatureDB.addFeature((NamedFeature) f, genome);
 
-                    if(this.isVCF && f instanceof Variant) {
-                        Variant v = (Variant)f;
+                    if (this.isVCF && f instanceof Variant) {
+                        Variant v = (Variant) f;
                         String chr2 = v.getAttributeAsString("CHR2");
                         String pos2 = v.getAttributeAsString("END");
-                        if(chr2 != null && pos2 != null) {
-                            String mateChr  = genome == null ? chr2 : genome.getCanonicalChrName(chr2);
+                        if (chr2 != null && pos2 != null) {
+                            String mateChr = genome == null ? chr2 : genome.getCanonicalChrName(chr2);
                             MateVariant mate = new MateVariant(mateChr, Integer.parseInt(pos2), v);
                             featureList = featureMap.get(mateChr);
                             if (featureList == null) {
@@ -418,6 +420,15 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             return filteredFeatures.iterator();
 
         }
+
+        public List<Feature> getAllFeatures() throws IOException {
+            List<Feature> allFeatures = new ArrayList<>();
+            for (List<Feature> chrFeatures : featureMap.values()) {
+                allFeatures.addAll(chrFeatures);
+            }
+            return allFeatures;
+        }
+
 
         @Override
         protected Collection<String> getSequenceNames() {
