@@ -35,7 +35,8 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.logging.*;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AttributeManager;
@@ -49,8 +50,8 @@ import org.broad.igv.ui.util.Packable;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -83,12 +84,11 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
     @Override
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
-        Graphics borderGraphics = g.create();
-        borderGraphics.setColor(Color.darkGray);
-
-        paintImpl((Graphics2D) g, rect, batch);
-
-        borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
+        paintImpl(g, rect, batch);
+        Graphics2D borderGraphics = (Graphics2D) g.create();
+        borderGraphics.setColor(Color.lightGray);
+        rect.height -=1;
+        borderGraphics.draw(rect);
         borderGraphics.dispose();
     }
 
@@ -156,7 +156,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
                             if (track.isVisible()) {
                                 int border = trackHeight < 5 ? 0 : 1;
                                 if (regionY + trackHeight >= rect.y) {
-                                    Rectangle trackRectangle = new Rectangle(left, regionY+border, getWidth(), trackHeight-border);
+                                    Rectangle trackRectangle = new Rectangle(left, regionY + border, getWidth(), trackHeight - border);
                                     track.renderAttributes(graphics2D, trackRectangle, rect, names, mouseRegions);
                                     //regionY = draw(names, track, regionX, regionY, attributeColumnWidth, track.getHeight(), graphics2D);
                                 }

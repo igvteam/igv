@@ -194,11 +194,12 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
     }
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
+
+        Graphics2D borderGraphics = (Graphics2D) g.create();
         paintComponent(g);
-        Color c = g.getColor();
-        g.setColor(Color.darkGray);
-        g.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
-        g.setColor(c);            //super.paintBorder(g);
+        borderGraphics.setColor(Color.lightGray);
+        borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
+        borderGraphics.dispose();
     }
 
     @Override

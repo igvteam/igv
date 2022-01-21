@@ -26,7 +26,8 @@
 package org.broad.igv.ui.panel;
 
 import com.jidesoft.swing.JideSplitPane;
-import org.broad.igv.logging.*;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
@@ -521,17 +522,17 @@ public class MainPanel extends JPanel implements Paintable {
 
         // Get the components of the center pane and sort by Y position.
         Component[] components = centerSplitPane.getComponents();
-        Arrays.sort(components, (component, component1) -> component.getY() - component1.getY());
+        Arrays.sort(components, Comparator.comparingInt(Component::getY));
 
         int dy = components[0].getY();
-
         for (Component c : components) {
 
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.translate(0, dy);
 
-            if (c instanceof Paintable) {
+            if (c instanceof TrackPanelScrollPane) {
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+
                 //Skip if panel has no tracks
                 if (tsp.getTrackPanel().getTracks().size() == 0) {
                     continue;
@@ -539,10 +540,9 @@ public class MainPanel extends JPanel implements Paintable {
 
                 int panelHeight = tsp.getSnapshotHeight(batch);
 
-                Rectangle tspRect = new Rectangle(tsp.getBounds());
-                tspRect.height = panelHeight;
+                Rectangle tspRect = new Rectangle(0, 0, tsp.getWidth(), panelHeight);
 
-                g2d.setClip(new Rectangle(0, 0, tsp.getWidth(), tspRect.height));
+                g2d.setClip(tspRect);
                 tsp.paintOffscreen(g2d, tspRect, batch);
                 dy += tspRect.height;
 

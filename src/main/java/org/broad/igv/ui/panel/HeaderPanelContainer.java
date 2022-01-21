@@ -107,8 +107,31 @@ public class HeaderPanelContainer extends JPanel implements Paintable {
         invalidate();
     }
 
+//    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
+//       paint(g);
+//    }
+
+    /**
+     * Paint to an offscreen graphic, e.g. a graphic for an image or svg file.
+     *
+     * @param g -- graphics context, translated as neccessary to datapanel origin
+     * @param rect  -- Rectangle in which to draw datapanel container
+     */
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
-       paint(g);
+
+        // Get the components of the sort by X position.
+        Component[] components = contentPanel.getComponents();
+        for (Component c : components) {
+            if (c instanceof HeaderPanel) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                Rectangle panelRect = new Rectangle(0, rect.y, c.getWidth(), rect.height);
+                g2d.translate(c.getX(), 0);
+                g2d.setClip(panelRect);
+                ((HeaderPanel) c).paintOffscreen(g2d, panelRect, batch);
+
+            }
+        }
+        //super.paintBorder(g);
     }
 
     @Override
