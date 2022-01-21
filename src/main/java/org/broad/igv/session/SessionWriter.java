@@ -271,21 +271,18 @@ public class SessionWriter {
 
             Element geneListElement = document.createElement(SessionElement.GENE_LIST);
             geneListElement.setAttribute(SessionAttribute.NAME, geneList.getName());
-
             StringBuffer genes = new StringBuffer();
             for (String gene : geneList.getLoci()) {
                 genes.append(gene);
                 genes.append("\n");
             }
-
             geneListElement.setTextContent(genes.toString());
-
             globalElement.appendChild(geneListElement);
 
 
-            // Now store the list of frames visible
+            // Now store the list of frames visible.  This seems redundant, but frame extent can be changed after
+            // "gene list" definition, for example by zooming out or panning in a frame
             for (ReferenceFrame frame : FrameManager.getFrames()) {
-
                 Element frameElement = document.createElement(SessionElement.FRAME);
                 frameElement.setAttribute(SessionAttribute.NAME, frame.getName());
                 frameElement.setAttribute(SessionAttribute.CHR, frame.getChrName());

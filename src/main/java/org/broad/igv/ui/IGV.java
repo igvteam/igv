@@ -1234,28 +1234,6 @@ public class IGV implements IGVEventObserver {
         contentPane.getCommandBar().searchByLocus(locus);
     }
 
-    /**
-     * To to multiple loci,  creating a new gene list if required.  This method is provided to support control of
-     * multiple panels from a command or external program.
-     *
-     * @param loci
-     */
-    public void goToLociList(List<String> loci) {
-
-        List<ReferenceFrame> frames = FrameManager.getFrames();
-        if (frames.size() == loci.size()) {
-            for (int i = 0; i < loci.size(); i++) {
-                frames.get(i).jumpTo(new Locus(loci.get(i)));
-            }
-            repaint();
-        } else {
-            GeneList geneList = new GeneList("", loci, false);
-            getSession().setCurrentGeneList(geneList);
-            resetFrames();
-        }
-
-    }
-
     public void tweakPanelDivider() {
         contentPane.getMainPanel().tweakPanelDivider();
     }
