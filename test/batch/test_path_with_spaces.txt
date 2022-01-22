@@ -16,4 +16,4 @@ snapshot "%test%2D.png"
 new
 load "../data/folder with spaces/test+wp.wig"
 snapshot "test+wp.png"
-exit
+

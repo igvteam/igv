@@ -1,0 +1,13 @@
+# Test 2 kinds of relative paths
+#    (1) relative to application startup directory (assumed to be repository root), and
+#    (2) relative to this script
+snapshotDirectory ~/igvtest/snapshots/relative_paths
+genome hg19
+new
+load "test/data/folder with spaces/test.wig"
+goto chr1:16270500-16270600
+snapshot "relative-app.png"
+new
+load "../data/folder with spaces/test.wig"
+goto chr1:16270500-16270600
+snapshot "relative-script.png"

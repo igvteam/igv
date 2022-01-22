@@ -749,7 +749,7 @@ public class CommandExecutor {
         for (int fi = 0; fi < files.size(); fi++) {
             String f = files.get(fi);
             if (!FileUtils.isRemote(f)) {
-                File maybeFile = getInputFile(f);
+                File maybeFile = getFile(f);
                 if (maybeFile.exists()) {
                     f = maybeFile.getAbsolutePath();
                 } else {
@@ -919,7 +919,7 @@ public class CommandExecutor {
             return "ERROR: missing directory parameter";
         }
 
-        File snapshotDir = getInputFile(param1);
+        File snapshotDir = getFile(param1);
 
         String result;
         if (snapshotDir.exists()) {
@@ -945,7 +945,7 @@ public class CommandExecutor {
      * @param path
      * @return
      */
-    private File getInputFile(String path) {
+    private File getFile(String path) {
         // Strip trailing & leading quotes
         path = StringUtils.stripQuotes(path);
 
@@ -966,36 +966,6 @@ public class CommandExecutor {
         }
         return new File(path);
     }
-
-    /**
-     * Fetch a file for the given path, which might be absolute, relative to the user home directory, or relative
-     * to the script path
-     *
-     * @param path
-     * @return
-     */
-    private File getOutputFile(String path) {
-        // Strip trailing & leading quotes
-        path = StringUtils.stripQuotes(path);
-
-        // Replace leading ~ with home directory
-        if (path.startsWith("~")) {
-            path = System.getProperty("user.home") + path.substring(1);
-            return new File(path);
-        } else {
-            File maybeFile = new File(path);
-            if (maybeFile.exists()) {
-                return maybeFile;
-            } else if (rootDir != null) {
-                maybeFile = new File(this.rootDir, path);
-                if (maybeFile.exists()) {
-                    return maybeFile;
-                }
-            }
-        }
-        return new File(path);
-    }
-
 
     private String goto1(List<String> args) {
         if (args == null || args.size() < 2) {
@@ -1127,7 +1097,7 @@ public class CommandExecutor {
 
         File file;
         if (snapshotDirectory == null) {
-            file = getInputFile(filename);
+            file = getFile(filename);
             if (!file.getAbsoluteFile().getParentFile().exists()) {
                 createParents(file);
             }
@@ -1161,7 +1131,7 @@ public class CommandExecutor {
         if (!filename.endsWith(".xml")) {
             filename = filename + ".xml";
         }
-        File targetFile = getInputFile(filename);
+        File targetFile = getFile(filename);
         if (targetFile.getParentFile().exists()) {
             currentSession.setPath(targetFile.getAbsolutePath());
             try {
