@@ -24,7 +24,6 @@
 --add-exports org.igv/org.broad.igv.feature.tribble=junit
 --add-exports org.igv/org.broad.igv.feature.tribble.reader=junit
 --add-exports org.igv/org.broad.igv.google=junit
---add-exports org.igv/org.broad.igv.goby=junit
 --add-exports org.igv/org.broad.igv.gwas=junit
 --add-exports org.igv/org.broad.igv.lists=junit
 --add-exports org.igv/org.broad.igv.maf=junit

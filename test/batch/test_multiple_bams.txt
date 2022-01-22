@@ -1,17 +1,16 @@
-new
-snapshotDirectory test/data/batch/snapshots/multiple_bams
+snapshotDirectory ~/igvtest/snapshots/multiple_bams
 genome hg19
-expand
+new
 load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
-#load gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
-#load gs://genomics-public-data/platinum-genomes/bam/NA12889_S1.bam
-#load gs://genomics-public-data/platinum-genomes/bam/NA12890_S1.bam
+load gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
+load gs://genomics-public-data/platinum-genomes/bam/NA12889_S1.bam
+load gs://genomics-public-data/platinum-genomes/bam/NA12890_S1.bam
 snapshot
 goto myc muc1
-snapshot
+snapshot myc_myc1.png
 goto tp53
 zoomin
 zoomin
 zoomin
-snapshot
-snapshot tp53.svg
+squish
+snapshot tp53_squished.png

@@ -1,1 +1,0 @@
-Snapshot directory for the "overlay.txt" batch script

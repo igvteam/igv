@@ -12,12 +12,24 @@
         Load with name</a>
 </p>
 <p>
+    <a href="http://localhost:60151/load?file=https%3A%2F%2Fs3.amazonaws.com%2Figv.org.test%2Fdata%2Fgm12878_loops.bedpe.gz&locus=chr1&name=GM12878%20loops">
+        Load with name - url encoded</a>
+</p>
+<p>
     <a href="http://localhost:60151/load?file=https://s3.amazonaws.com/igv.org.test/data/gm12878_loops.bedpe.gz&amp;locus=chr1&amp;name=GM12878+loops;&merge=false">
         Load with name into new session</a>
 </p>
 <p>
     <a href="http://localhost:60151/load?file=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz&amp;index=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz.tbi&amp;locus=chr1&amp;name=SNPs">
         Load with index</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz,gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam&index=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz.tbi,gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam.bai&locus=chr1&name=SNPs,Alignments&locus=myc">
+        Load with index - multiple files</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https%3A%2F%2Fdata.broadinstitute.org%2Figvdata%2Fannotations%2Fhg19%2FdbSnp%2Fsnp137.hg19.bed.gz%2Cgs%3A%2F%2Fgenomics-public-data%2Fplatinum-genomes%2Fbam%2FNA12877_S1.bam&index=https%3A%2F%2Fdata.broadinstitute.org%2Figvdata%2Fannotations%2Fhg19%2FdbSnp%2Fsnp137.hg19.bed.gz.tbi%2Cgs%3A%2F%2Fgenomics-public-data%2Fplatinum-genomes%2Fbam%2FNA12877_S1.bam.bai&locus=chr1&name=SNPs%2CAlignments&locus=myc">
+        Load with index - multiple files url encoded</a>
 </p>
 <p>
     <a href="http://localhost:60151/load?genome=https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta">
@@ -29,18 +41,20 @@
 </p>
 
 
-
-<h2>IGV web app equivalents</h2>
+<h2>IGV web app links</h2>
 <p>
-    <a target="_blank" href="https://igv.org/app/?file=https://s3.amazonaws.com/igv.org.test/data/gm12878_loops.bedpe.gz&locus=chr1&name=GM12878+loops">
+    <a target="_blank"
+       href="https://igv.org/app/?file=https://s3.amazonaws.com/igv.org.test/data/gm12878_loops.bedpe.gz&locus=chr1&name=GM12878+loops">
         Load with name</a>
 </p>
 <p>
-    <a target="_blank" href="https://igv.org/app/?file=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz&index=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz.tbi&amp;locus=chr1&amp;name=SNPs">
+    <a target="_blank"
+       href="https://igv.org/app/?file=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz&index=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz.tbi&amp;locus=chr1&amp;name=SNPs">
         Load with index</a>
 </p>
 <p>
-    <a target="_blank" href="https://igv.org/app/?genome=https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta">
+    <a target="_blank"
+       href="https://igv.org/app/?genome=https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta">
         Load fasta</a>
 </p>
 

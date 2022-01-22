@@ -1,4 +1,4 @@
-snapshotDirectory test/data/batch/snapshots/multiple_bams
+snapshotDirectory snapshots/multiple_bams
 new
 genome hg19
 preference SAM.SHOW_ALIGNMENT_TRACK false

@@ -1,4 +1,5 @@
-snapshotDirectory test/data/batch/snapshots/overlay
+new
+snapshotDirectory ~/igvtest/snapshots/overlay
 genome hg19
 goto chr1
 load https://www.encodeproject.org/files/ENCFF543IHG/@@download/ENCFF543IHG.bigWig

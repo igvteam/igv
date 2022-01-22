@@ -1,0 +1,5 @@
+new
+goto egfr
+saveSession ~/igvtest/testSession.xml
+new
+load ~/igvtest/testSession.xml

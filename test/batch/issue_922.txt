@@ -1,2 +1,3 @@
 genome hg19
+new
 load https://s3.amazonaws.com/igv.org.test/data/recombRate.igv.txt?foobar=blah

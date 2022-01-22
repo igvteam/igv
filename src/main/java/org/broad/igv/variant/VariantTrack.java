@@ -31,12 +31,13 @@ package org.broad.igv.variant;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.variantcontext.GenotypeType;
 import org.broad.igv.Globals;
-import org.broad.igv.logging.*;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.TrackGroupEvent;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.jbrowse.CircularViewUtilities;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
@@ -1530,10 +1531,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         List<Feature> svFeatures = visibleFeatures.stream().filter(f -> {
             Variant v = f instanceof MateVariant ? ((MateVariant) f).mate : (Variant) f;
             Map<String, Object> attrs = v.getAttributes();
-            return  attrs.containsKey("CHR2") && attrs.containsKey("END");
+            return attrs.containsKey("CHR2") && attrs.containsKey("END");
         }).collect(Collectors.toList());
 
-        if(svFeatures.isEmpty()) {
+        if (svFeatures.isEmpty()) {
             MessageUtils.showMessage("No structural variants found.");
         } else {
             CircularViewUtilities.sendVariantsToJBrowse(svFeatures, getName(), getColor());
@@ -1542,8 +1543,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     @Override
     public List<Feature> getVisibleFeatures(ReferenceFrame frame) {
-        if(frame.getChrName().equals(Globals.CHR_ALL) &&
-        this.source instanceof TribbleFeatureSource.NonIndexedFeatureSource) {
+        if (frame.getChrName().equals(Globals.CHR_ALL) &&
+                this.source instanceof TribbleFeatureSource.NonIndexedFeatureSource) {
             try {
                 return ((TribbleFeatureSource.NonIndexedFeatureSource) this.source).getAllFeatures();
             } catch (IOException e) {
@@ -1555,10 +1556,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
 
-
-
-
-        @Override
+    @Override
     public void marshalXML(Document document, Element element) {
 
         super.marshalXML(document, element);
@@ -1573,7 +1571,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
 
         if (genotypeColorMode != ColorMode.GENOTYPE) {
-            element.setAttribute("coloring", genotypeColorMode.toString());
+            element.setAttribute("genotypeColorMode", genotypeColorMode.toString());
         }
 
         if (siteColorMode != null) {
@@ -1595,7 +1593,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             this.squishedHeight = Integer.parseInt(element.getAttribute("squishedHeight"));
         }
 
-        if (element.hasAttribute("coloring")) {
+        if (element.hasAttribute("genotypeColorMode")) {
+            this.genotypeColorMode = ColorMode.valueOf(element.getAttribute("genotypeColorMode"));
+        } else if (element.hasAttribute("coloring")) {
+            // backward compatibility
             this.genotypeColorMode = ColorMode.valueOf(element.getAttribute("coloring"));
         }
 

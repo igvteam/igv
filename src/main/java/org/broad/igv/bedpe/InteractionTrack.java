@@ -532,7 +532,7 @@ public class InteractionTrack extends AbstractTrack {
             counts[i] = 0;
         }
         for (BedPEFeature f : features) {
-            int bin = (int) Math.min(nBins - 1, Math.floor(Math.log10(f.score) / binSize));
+            int bin = f.score <= 0 ? 0 : (int) Math.min(nBins - 1, Math.floor(Math.log10(f.score) / binSize));
             ((List<BedPEFeature>) binnedFeatures[bin]).add(f);
             counts[bin]++;
         }

@@ -1,4 +1,4 @@
-snapshotDirectory test/data/batch/snapshots/commands
+snapshotDirectory ~/igvtest/snapshots/commands
 version
 new
 genome hg19

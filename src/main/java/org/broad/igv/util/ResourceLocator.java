@@ -218,8 +218,8 @@ public class ResourceLocator {
     }
 
 
-    public void setFormat(String format) {
-        this.format = format;
+    public void setFormat(String formatOrExt) {
+        this.format = formatOrExt.startsWith(".") ? formatOrExt.substring(1) : formatOrExt;
     }
 
     /**

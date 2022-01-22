@@ -59,8 +59,6 @@ import org.broad.igv.util.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -73,18 +71,23 @@ public class CommandExecutor {
 
     private File snapshotDirectory;
     private IGV igv;
+    private String rootDir;
     private int sleepInterval = 0; //2000;
 
-
     public CommandExecutor(IGV igv) {
+        this(igv, null);
+    }
+
+    public CommandExecutor(IGV igv, String rootDir) {
         this.igv = igv;
+        this.rootDir = rootDir;
     }
 
     private List<String> getArgs(String[] tokens) {
         List<String> args = new ArrayList(tokens.length);
         for (String s : tokens) {
             if (s.trim().length() > 0) {
-                args.add(StringUtils.stripQuotes(s.trim()));
+                args.add(s.trim());
             }
         }
         return args;
@@ -116,14 +119,13 @@ public class CommandExecutor {
             } else if (cmd.equalsIgnoreCase("addframes")) {
                 result = addFrames(args);
             } else if (cmd.equalsIgnoreCase("scrolltotrack") || cmd.equalsIgnoreCase("gototrack")) {
-                boolean res = this.igv.scrollToTrack(param1);
+                boolean res = this.igv.scrollToTrack(StringUtils.stripQuotes(param1));
                 result = res ? "OK" : String.format("Error: Track %s not found", param1);
             } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
                 result = setSnapshotDirectory(param1);
             } else if (cmd.equalsIgnoreCase("snapshot")) {
-                String filename = param1;
-                result = createSnapshot(filename, param2);
-            } else if (cmd.equalsIgnoreCase("saveSession")) {
+                result = createSnapshot(param1, param2);
+            } else if (cmd.equalsIgnoreCase("savesession")) {
                 String filename = param1;
                 result = saveSession(filename);
             } else if ((cmd.equalsIgnoreCase("loadfile") || cmd.equalsIgnoreCase("load")) && param1 != null) {
@@ -408,8 +410,7 @@ public class CommandExecutor {
             }
             OverlayTracksMenuAction.merge(tracks, name);
             return "OK";
-        }
-        else {
+        } else {
             return "overlay command requires at least 2 arguments (trackName track1 track2 ...)";
         }
     }
@@ -701,48 +702,32 @@ public class CommandExecutor {
                      final boolean merge,
                      Map<String, String> params,
                      String sort,
-                     String sortTag)  {
+                     String sortTag) {
 
         boolean isDataURL = ParsingUtils.isDataURL(fileString);
 
-        List<String> files = isDataURL ? Arrays.asList(fileString) : StringUtils.breakQuotedString(fileString, ',');
-        List<String> names = StringUtils.breakQuotedString(nameString, ',');
-        List<String> indexFiles = StringUtils.breakQuotedString(indexString, ',');
-        List<String> coverageFiles = StringUtils.breakQuotedString(coverageString, ',');
-        List<String> formats = StringUtils.breakQuotedString(formatString, ',');
-
-        if (files.size() == 1 && !ParsingUtils.isDataURL(files.get(0))) {
-            // String might be URL encoded
-            files = StringUtils.breakQuotedString(fileString.replaceAll("%2C", ","), ',');
-            names = nameString != null ? StringUtils.breakQuotedString(nameString.replaceAll("%2C", ","), ',') : null;
-            indexFiles = indexString != null ? StringUtils.breakQuotedString(indexString.replaceAll("%2C", ","), ',') : null;
-            coverageFiles = coverageString != null ? StringUtils.breakQuotedString(coverageString.replaceAll("%2C", ","), ',') : null;
-            formats = formatString != null ? StringUtils.breakQuotedString(formatString.replaceAll("%2C", ","), ',') : null;
-        }
-
+        List<String> files = isDataURL ? Arrays.asList(fileString) : breakFileString(fileString);
+        List<String> indexFiles = isDataURL ? null : breakFileString(indexString);
+        List<String> coverageFiles = breakFileString(coverageString);
+        List<String> names = breakFileString(nameString);
+        List<String> formats = breakFileString(formatString);
         if (names != null && names.size() != files.size()) {
             return "Error: If file is a comma-separated list, names must also be a comma-separated list of the same length";
         }
-
         if (indexFiles != null && indexFiles.size() != files.size()) {
             return "Error: If file is a comma-separated list, index must also be a comma-separated list of the same length";
         }
+        if (isDataURL && formatString == null) {
+            throw new Error("ERROR: format must be specified for dataURLs");
+        }
 
+        // Fix formats -- backward compatibility
+        if (formats != null) {
+            for (int i = 0; i < formats.size(); i++) {
+                String formatOrExt = decodeFileString(formats.get(i));
+                String format = formatOrExt.startsWith(".") ? formatOrExt.substring(1) : formatOrExt;
+                formats.set(i, format);
 
-        // Must decode URLs (local or remote), but leave local file paths only
-        for (int ii = 0; ii < files.size(); ii++) {
-            files.set(ii, decodeFileString(files.get(ii).replace("\"", "")));
-            if (names != null) {
-                names.set(ii, names.get(ii).replace("\"", ""));
-            }
-            if (indexFiles != null) {
-                indexFiles.set(ii, decodeFileString(indexFiles.get(ii).replace("\"", "")));
-            }
-            if (coverageFiles != null) {
-                coverageFiles.set(ii, decodeFileString(coverageFiles.get(ii).replace("\"", "")));
-            }
-            if (formatString != null) {
-                formats.set(ii, decodeFileString(formats.get(ii).replace("\"", "")));
             }
         }
 
@@ -754,23 +739,33 @@ public class CommandExecutor {
 
 
         // Create set of loaded files
-        Set<String> loadedFiles = new HashSet<>();
-        for (ResourceLocator rl : igv.getDataResourceLocators()) {
-            loadedFiles.add(rl.getPath());
-        }
+//        Set<String> loadedFiles = new HashSet<>();
+//        for (ResourceLocator rl : igv.getDataResourceLocators()) {
+//            loadedFiles.add(rl.getPath());
+//        }
 
         // Loop through files
 
         for (int fi = 0; fi < files.size(); fi++) {
-
             String f = files.get(fi);
+            if (!FileUtils.isRemote(f)) {
+                File maybeFile = getInputFile(f);
+                if (maybeFile.exists()) {
+                    f = maybeFile.getAbsolutePath();
+                } else {
+                    maybeFile = new File(this.rootDir, StringUtils.stripQuotes(f));
+                    if (maybeFile.exists()) {
+                        f = maybeFile.getAbsolutePath();
+                    }
+                }
+            }
 
             if (isDataURL && formats == null) {
                 throw new Error("ERROR: format must be specified for dataURLs");
             }
 
             // Skip already loaded files TODO -- make this optional?  Check for change?
-            if (loadedFiles.contains(f)) continue;
+            //if (loadedFiles.contains(f)) continue;
 
             if (SessionReader.isSessionFile(f)) {
                 igv.restoreSessionSynchronous(f, locus);
@@ -790,9 +785,7 @@ public class CommandExecutor {
                     rl.setCoverage(coverageFiles.get(fi));
                 }
                 if (formats != null) {
-                    String format = formats.get(fi);
-                    if (!("ga4gh".equals(format)) && !format.startsWith(".")) format = "." + format;
-                    rl.setFormat(format);
+                    rl.setFormat(formats.get(fi));
                 }
 
                 if (params != null) {
@@ -811,7 +804,7 @@ public class CommandExecutor {
         }
 
 
-        if(fileLocators.size() > 0) {
+        if (fileLocators.size() > 0) {
             igv.loadTracks(fileLocators);
         }
 
@@ -837,6 +830,30 @@ public class CommandExecutor {
         return CommandListener.OK;
     }
 
+
+    static List<String> breakFileString(String fileString) {
+        if (fileString == null) {
+            return null;
+        }
+        List<String> files = StringUtils.breakQuotedString(fileString, ',');
+        if (files.size() == 1) {
+            // String might be URL encoded
+            List<String> files2 = StringUtils.breakQuotedString(fileString.replaceAll("%2C", ","), ',');
+            if (files2.size() > 1) {
+                files = files2;
+            }
+        }
+
+        // URL decode strings.   This could be problematic as we don't know they were encoded, but its been like this
+        // since 2009
+        for (int ii = 0; ii < files.size(); ii++) {
+            files.set(ii, decodeFileString(files.get(ii)));
+        }
+
+        return files;
+    }
+
+
     /**
      * If {@code fileString} is a URL and can be decoded,
      * return the decoded version. Otherwise return the original.
@@ -845,7 +862,9 @@ public class CommandExecutor {
      * @return
      */
     static String decodeFileString(String fileString) {
-        if (needsDecode(fileString)) {
+        if (StringUtils.isQuoted(fileString)) {
+            return StringUtils.stripQuotes(fileString);
+        } else if (needsDecode(fileString)) {
             return StringUtils.decodeURL(fileString);
         } else {
             return fileString;
@@ -853,6 +872,7 @@ public class CommandExecutor {
     }
 
     static boolean needsDecode(String fileString) {
+
         String decodedString = decodeSafe(fileString);
         return (decodedString != null && (URLUtils.isURL(fileString) || URLUtils.isURL(decodedString)));
     }
@@ -899,25 +919,17 @@ public class CommandExecutor {
             return "ERROR: missing directory parameter";
         }
 
-        param1 = StringUtils.stripQuotes(param1);
-
-        File parentDir = null;
-        try {
-            parentDir = getFile(param1);
-        } catch (URISyntaxException e) {
-            log.error("Error parsing directory path: " + param1, e);
-            return "Error parsing directory path: " + param1;
-        }
+        File snapshotDir = getInputFile(param1);
 
         String result;
-        if (parentDir.exists()) {
-            snapshotDirectory = parentDir;
+        if (snapshotDir.exists()) {
+            snapshotDirectory = snapshotDir;
             result = "OK";
         } else {
-            createParents(parentDir);
-            parentDir.mkdir();
-            if (parentDir.exists()) {
-                snapshotDirectory = parentDir;
+            createParents(snapshotDir);
+            snapshotDir.mkdir();
+            if (snapshotDir.exists()) {
+                snapshotDirectory = snapshotDir;
                 result = "OK";
             } else {
                 result = "ERROR: directory: " + param1 + " does not exist";
@@ -926,26 +938,64 @@ public class CommandExecutor {
         return result;
     }
 
-    private File getFile(String param1) throws URISyntaxException {
-
+    /**
+     * Fetch a file for the given path, which might be absolute, relative to the user home directory, or relative
+     * to the script path
+     *
+     * @param path
+     * @return
+     */
+    private File getInputFile(String path) {
         // Strip trailing & leading quotes
-        if (param1.startsWith("\"")) param1 = param1.substring(1);
-        if (param1.endsWith("\"")) param1 = param1.substring(0, param1.lastIndexOf('"'));
+        path = StringUtils.stripQuotes(path);
 
-        // See if file contains spaces, if not no special treatment is required
-        if (param1.indexOf(' ') < 0) {
-            return new File(param1);
+        // Replace leading ~ with home directory
+        if (path.startsWith("~")) {
+            path = System.getProperty("user.home") + path.substring(1);
+            return new File(path);
         } else {
-            // If file is absolute use a URI,
-            File f = new File(param1);
-            if (f.isAbsolute()) {
-                URI outputURI = new URI(("file://" + param1.replaceAll(" ", "%20")));
-                return new File(outputURI);
-            } else {
-                return f;
+            File maybeFile = new File(path);
+            if (maybeFile.exists()) {
+                return maybeFile;
+            } else if (rootDir != null) {
+                maybeFile = new File(this.rootDir, path);
+                if (maybeFile.exists()) {
+                    return maybeFile;
+                }
             }
         }
+        return new File(path);
     }
+
+    /**
+     * Fetch a file for the given path, which might be absolute, relative to the user home directory, or relative
+     * to the script path
+     *
+     * @param path
+     * @return
+     */
+    private File getOutputFile(String path) {
+        // Strip trailing & leading quotes
+        path = StringUtils.stripQuotes(path);
+
+        // Replace leading ~ with home directory
+        if (path.startsWith("~")) {
+            path = System.getProperty("user.home") + path.substring(1);
+            return new File(path);
+        } else {
+            File maybeFile = new File(path);
+            if (maybeFile.exists()) {
+                return maybeFile;
+            } else if (rootDir != null) {
+                maybeFile = new File(this.rootDir, path);
+                if (maybeFile.exists()) {
+                    return maybeFile;
+                }
+            }
+        }
+        return new File(path);
+    }
+
 
     private String goto1(List<String> args) {
         if (args == null || args.size() < 2) {
@@ -1077,20 +1127,13 @@ public class CommandExecutor {
 
         File file;
         if (snapshotDirectory == null) {
-            try {
-                file = getFile(filename);
-                if (!file.getAbsoluteFile().getParentFile().exists()) {
-                    createParents(file);
-                }
-            } catch (URISyntaxException e) {
-                log.error("Error parsing directory path: " + filename, e);
-                return "Error parsing directory path: " + filename;
+            file = getInputFile(filename);
+            if (!file.getAbsoluteFile().getParentFile().exists()) {
+                createParents(file);
             }
         } else {
             file = new File(snapshotDirectory, filename);
         }
-        System.out.println("Snapshot: " + file.getAbsolutePath());
-
 
         Component target = null;
         if (region == null || region.trim().length() == 0) {
@@ -1118,7 +1161,7 @@ public class CommandExecutor {
         if (!filename.endsWith(".xml")) {
             filename = filename + ".xml";
         }
-        File targetFile = new File(filename);
+        File targetFile = getInputFile(filename);
         if (targetFile.getParentFile().exists()) {
             currentSession.setPath(targetFile.getAbsolutePath());
             try {
