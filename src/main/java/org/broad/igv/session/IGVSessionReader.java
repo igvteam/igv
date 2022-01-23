@@ -32,6 +32,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.dsi.DSITrack;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.sprite.ClusterTrack;
@@ -116,6 +117,18 @@ public class IGVSessionReader implements SessionReader {
             if (!FileUtils.isRemote(trackId)) {
                 String fn = (new File(trackId)).getName();
                 tracks = allTracks.get(fn);
+            }
+            if(tracks == null) {
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                String legacyGeneTrackID = genome.getId() + "_genes";
+                if(trackId.equals(legacyGeneTrackID)) {
+                    for(ResourceLocator rl : genome.getAnnotationResources()) {
+                        if(allTracks.containsKey(rl.getPath())) {
+                            tracks = allTracks.get(rl.getPath());
+                            break;
+                        }
+                    }
+                }
             }
         }
         return tracks;
@@ -1120,7 +1133,7 @@ public class IGVSessionReader implements SessionReader {
         } else {
             if (allTracks == null)
                 throw new IllegalStateException("No session reader and no tracks to search to resolve Track references");
-            matchingTracks = new ArrayList<Track>();
+            matchingTracks = new ArrayList<>();
             for (Track track : allTracks) {
                 if (trackId.equals(track.getId())) {
                     matchingTracks.add(track);
