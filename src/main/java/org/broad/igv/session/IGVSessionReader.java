@@ -119,12 +119,14 @@ public class IGVSessionReader implements SessionReader {
                 tracks = allTracks.get(fn);
             }
             if(tracks == null) {
+                // If still no match search for legacy gene annotation specifier
                 Genome genome = GenomeManager.getInstance().getCurrentGenome();
                 String legacyGeneTrackID = genome.getId() + "_genes";
                 if(trackId.equals(legacyGeneTrackID)) {
                     for(ResourceLocator rl : genome.getAnnotationResources()) {
-                        if(allTracks.containsKey(rl.getPath())) {
-                            tracks = allTracks.get(rl.getPath());
+                        final String path = rl.getPath();
+                        if(allTracks.containsKey(path)) {
+                            tracks = allTracks.get(path);
                             break;
                         }
                     }
@@ -900,8 +902,7 @@ public class IGVSessionReader implements SessionReader {
         String id = getAttribute(element, SessionAttribute.ID);
 
         // Find track matching element id, created earlier from "Resource or File" elements, or during genome load.
-        // Normally this is a single track, but that can't be assumed as uniqueness
-        // of "id" is not enforce.
+        // Normally this is a single track, but that can't be assumed as uniqueness of "id" is not enforced.
         List<Track> matchedTracks = getTracksById(id);
 
         if (matchedTracks == null) {
@@ -917,8 +918,7 @@ public class IGVSessionReader implements SessionReader {
             }
             leftoverTrackDictionary.remove(id);
         } else {
-
-            // No match found, element represents a track not created from "Resource" or genome load.  These included
+            // No match found, element represents a track not created from "Resource" or genome load.  These include
             // reference sequence, combined,  and merged tracks.
             String className = getAttribute(element, "clazz");
             if (className != null) {
@@ -929,7 +929,7 @@ public class IGVSessionReader implements SessionReader {
 
                         track.unmarshalXML(element, version);
                         matchedTracks = Arrays.asList(track);
-                        allTracks.put(track.getId(), matchedTracks);
+                        allTracks.put(track.getId(), matchedTracks);   // Important for second pass
 
                         // Special tracks
                         if (className.contains("CombinedDataTrack")) {
@@ -945,7 +945,7 @@ public class IGVSessionReader implements SessionReader {
                                 Element dataRangeElement = (Element) nodeList.item(0);
                                 try {
                                     DataRange dataRange = new DataRange(dataRangeElement, version);
-                                    ((MergedTracks) track).setDataRange(dataRange);
+                                    track.setDataRange(dataRange);
                                 } catch (Exception e) {
                                     log.error("Unrecognized DataRange");
                                 }
