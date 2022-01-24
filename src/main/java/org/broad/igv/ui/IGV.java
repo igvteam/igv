@@ -36,7 +36,6 @@ package org.broad.igv.ui;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
-import htsjdk.samtools.seekablestream.SeekableFileStream;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -44,8 +43,10 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.*;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.Range;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
@@ -476,7 +477,7 @@ public class IGV implements IGVEventObserver {
         if (locators != null && !locators.isEmpty()) {
 
             contentPane.getStatusBar().setMessage("Loading ...");
-            
+
             NamedRunnable runnable = new NamedRunnable() {
                 public void run() {
                     //Collect size statistics before loading
@@ -888,66 +889,10 @@ public class IGV implements IGVEventObserver {
             return Cursor.getPredefinedCursor(defaultCursor);
         }
     }
-
-    /**
-     * Set the session to the file specified by {@code sessionPath}
-     * If you want to create a new session, consider {@link #newSession()}
-     * as that preserves the gene track.
-     *
-     * @param sessionPath
-     */
-    public void resetSession(String sessionPath) {
-
-        List<Track> oldTracks = getAllTracks();
-        clearAllTracks();
-        AttributeManager.getInstance().clearAllAttributes();
-        String tile = sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath;
-        mainFrame.setTitle(tile);
-        menuBar.resetSessionActions();
-        AttributeManager.getInstance().clearAllAttributes();
-        if (session == null) {
-            session = new Session(sessionPath);
-        } else {
-            session.reset(sessionPath);
-        }
-        getMainPanel().resetPanels();
-
-        groupByAttribute = null;
-        for (TrackPanel sp : getTrackPanels()) {
-            if (DATA_PANEL_NAME.equals(sp.getName())) {
-                sp.reset();
-                break;
-            }
-        }
-
-        getMainPanel().updatePanelDimensions();
-        getMainPanel().revalidateTrackPanels();
-
-        //TODO -- this is a very blunt way to clean up -- change to close files associated with this session
-        SeekableFileStream.closeAllInstances();
-
-    }
-
     private void subscribeToEvents() {
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
         IGVEventBus.getInstance().subscribe(InsertionSelectionEvent.class, this);
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
-    }
-
-    /**
-     * Creates a new IGV session, and restores the gene track afterwards.
-     * For that reason, if one wishes to keep the default gene track, this method
-     * should be used, rather than resetSession
-     */
-    public void newSession() {
-        resetSession(null);
-        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        if (currentGenome != null) {
-            GenomeManager.getInstance().loadGenomeAnnotations(currentGenome);
-        }
-        this.menuBar.disableReloadSession();
-        goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
-        this.repaint();
     }
 
     /**
@@ -1067,43 +1012,58 @@ public class IGV implements IGVEventObserver {
         return session;
     }
 
-    /**
-     * Restore a session from a local file, and optionally go to a locus.  Called upon startup and from user action.
-     *
-     * @param sessionFile
-     * @param locus
-     */
-    final public void doRestoreSession(final File sessionFile, final String locus) {
-        if (sessionFile.exists()) {
-            doRestoreSession(sessionFile.getAbsolutePath(), locus);
-        } else {
-            String message = "Session file does not exist! : " + sessionFile.getAbsolutePath();
-            log.error(message);
-            MessageUtils.showMessage(message);
-        }
-    }
 
     /**
-     * Load a session file, possibly asynchronously (if on the event dispatch thread).
+     * Reset the UI state for a new session,  and associate the sessino object with the given path to a session file.
      *
      * @param sessionPath
-     * @param locus
      */
-    public void doRestoreSession(final String sessionPath,  final String locus) {
+    public void resetSession(String sessionPath) {
 
-        Runnable runnable = () -> restoreSessionSynchronous(sessionPath, locus);
-        LongRunningTask.submit(runnable);
+        if (session == null) {
+            // This should never be the case (session == null)
+            session = new Session(sessionPath);
+        } else {
+            session.reset(sessionPath);
+        }
+
+        AttributeManager.getInstance().clearAllAttributes();
+        mainFrame.setTitle(sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath);
+        menuBar.resetSessionActions();
+
+        getMainPanel().resetPanels();   // Also clears all tracks
+
+        groupByAttribute = null;
+
+        getMainPanel().updatePanelDimensions();
+        getMainPanel().revalidateTrackPanels();
     }
 
-    /**
-     * Load a session file in the current thread.  This should not be called from the event dispatch thread.
-     *
 
+    /**
+     * Creates a new IGV session.
+     */
+    public void newSession() {
+        resetSession(null);
+        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        if (currentGenome != null) {
+            GenomeManager.getInstance().restoreGenomeTracks(currentGenome);
+        }
+        this.menuBar.disableReloadSession();
+        goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
+        this.repaint();
+    }
+
+
+    /**
+     * Load a session file, then jump to the specified locus if supplied.  This runs in the current thread, and should
+     * not be called from the event dispatch thread.
+     *
      * @param sessionPath
      * @param locus
      * @return true if successful
      */
-    public boolean restoreSessionSynchronous(String sessionPath, String locus) {
+    public boolean loadSession(String sessionPath, String locus) {
 
         InputStream inputStream = null;
         try {
@@ -1115,11 +1075,8 @@ public class IGV implements IGVEventObserver {
                 return false;
             }
 
-            // Do this first, it closes all open SeekableFileStreams.
-            resetSession(sessionPath);
-
             setStatusBarMessage("Opening session...");
-            return restoreSessionFromStream(sessionPath, locus, inputStream);
+            return loadSessionFromStream(sessionPath, locus, inputStream);
 
         } catch (Exception e) {
             String message = "Error loading session session : <br>&nbsp;&nbsp;" + sessionPath + "<br>" + e.getMessage();
@@ -1137,13 +1094,28 @@ public class IGV implements IGVEventObserver {
         }
     }
 
-    public boolean restoreSessionFromStream(String sessionPath, String locus, InputStream inputStream) throws IOException {
+    /**
+     * Load a session from the input stream, then jump to the specified locus if supplied.  Currently there are
+     * 2 sources for the input stream (1) a local or remote file, and (2) an in memory byte array.  The latter is
+     * used to support the "reloadTracks" menu function.
+     *
+     * @param sessionPath
+     * @param locus
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
 
-        boolean isUCSC = sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"));
-        boolean isIndexAware = sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"));
-        final SessionReader sessionReader = isUCSC ?
-                new UCSCSessionReader(this) :
-                (isIndexAware ? new IndexAwareSessionReader(this) : new IGVSessionReader(this));
+    public boolean loadSessionFromStream(String sessionPath, String locus, InputStream inputStream) throws IOException {
+
+        final SessionReader sessionReader;
+        if(sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
+            sessionReader = new UCSCSessionReader(this);
+        } else if(sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
+            sessionReader = new IndexAwareSessionReader(this);
+        } else {
+            sessionReader = new IGVSessionReader(this);
+        }
 
         sessionReader.loadSession(inputStream, session, sessionPath);
 
@@ -1181,26 +1153,6 @@ public class IGV implements IGVEventObserver {
         repaint();
         return true;
     }
-
-
-    /**
-     * Uses either current session.getPersistent, or preferences, depending
-     * on if IGV has an instance or not. Generally intended for testing
-     *
-     * @param key
-     * @param def
-     * @return
-     * @see Session#getPersistent(String, String)
-     * @see IGVPreferences#getPersistent(String, String)
-     */
-    public static String getPersistent(String key, String def) {
-        if (IGV.hasInstance()) {
-            return IGV.getInstance().getSession().getPersistent(key, def);
-        } else {
-            return PreferencesManager.getPreferences().getPersistent(key, def);
-        }
-    }
-
 
     /**
      * Reset the default status message, which is the number of tracks loaded.
@@ -1350,7 +1302,7 @@ public class IGV implements IGVEventObserver {
      * @param tracks
      * @param locator
      */
-    void addTracks(List<Track> tracks, ResourceLocator locator) {
+    public void addTracks(List<Track> tracks, ResourceLocator locator) {
 
         if (tracks.size() > 0) {
             String path = locator.getPath();
@@ -1374,7 +1326,7 @@ public class IGV implements IGVEventObserver {
 
     /**
      * Load a resource and return the tracks.
-     * Does not automatically add anything
+     * Does not add tracks to igv instance
      *
      * @param locator
      * @return A list of loaded tracks
@@ -1397,7 +1349,6 @@ public class IGV implements IGVEventObserver {
                 track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
                 track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
                 track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
-
             }
         }
 
@@ -1412,7 +1363,7 @@ public class IGV implements IGVEventObserver {
 
         // If this is a session  TODO -- need better "is a session?" test
         if (SessionReader.isSessionFile(locator.getPath())) {
-            this.doRestoreSession(locator.getPath(), null);
+            LongRunningTask.submit(() -> this.loadSession(locator.getPath(), null));
         } else {
             // Not a session, load into target panel
             Runnable runnable = () -> {
@@ -1677,12 +1628,6 @@ public class IGV implements IGVEventObserver {
         return allTracks;
     }
 
-    public void clearAllTracks() {
-        for (TrackPanel tp : getTrackPanels()) {
-            tp.clearTracks();
-        }
-    }
-
     public List<FeatureTrack> getFeatureTracks() {
         Iterable<FeatureTrack> featureTracksIter = Iterables.filter(getAllTracks(), FeatureTrack.class);
         List<FeatureTrack> featureTracks = Lists.newArrayList(featureTracksIter);
@@ -1796,7 +1741,7 @@ public class IGV implements IGVEventObserver {
             if (t instanceof IGVEventObserver) {
                 IGVEventBus.getInstance().unsubscribe((IGVEventObserver) t);
             }
-            t.dispose();
+            t.unload();
         }
     }
 
@@ -2121,11 +2066,11 @@ public class IGV implements IGVEventObserver {
                         boolean success = false;
                         if (HttpUtils.isRemoteURL(igvArgs.getSessionFile())) {
                             boolean merge = false;
-                            success = restoreSessionSynchronous(igvArgs.getSessionFile(), igvArgs.getLocusString());
+                            success = loadSession(igvArgs.getSessionFile(), igvArgs.getLocusString());
                         } else {
                             File sf = new File(igvArgs.getSessionFile());
                             if (sf.exists()) {
-                                success = restoreSessionSynchronous(sf.getAbsolutePath(), igvArgs.getLocusString());
+                                success = loadSession(sf.getAbsolutePath(), igvArgs.getLocusString());
                             }
                         }
                         if (!success) {

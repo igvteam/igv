@@ -768,7 +768,7 @@ public class CommandExecutor {
             //if (loadedFiles.contains(f)) continue;
 
             if (SessionReader.isSessionFile(f)) {
-                igv.restoreSessionSynchronous(f, locus);
+                igv.loadSession(f, locus);
             } else {
 
                 ResourceLocator rl = new ResourceLocator(f);

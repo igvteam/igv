@@ -118,17 +118,15 @@ public class IGVSessionReader implements SessionReader {
                 String fn = (new File(trackId)).getName();
                 tracks = allTracks.get(fn);
             }
-            if(tracks == null) {
+            if (tracks == null) {
                 // If still no match search for legacy gene annotation specifier
                 Genome genome = GenomeManager.getInstance().getCurrentGenome();
                 String legacyGeneTrackID = genome.getId() + "_genes";
-                if(trackId.equals(legacyGeneTrackID)) {
-                    for(ResourceLocator rl : genome.getAnnotationResources()) {
-                        final String path = rl.getPath();
-                        if(allTracks.containsKey(path)) {
-                            tracks = allTracks.get(path);
-                            break;
-                        }
+                if (trackId.equals(legacyGeneTrackID)) {
+                    if (genome.getGeneTrack() != null) {
+                        return Arrays.asList(genome.getGeneTrack());
+                    } else if (genome.getAnnotationTracks() != null && genome.getAnnotationTracks().size() > 0) {
+                        return genome.getAnnotationTracks().values().iterator().next();
                     }
                 }
             }
@@ -167,9 +165,7 @@ public class IGVSessionReader implements SessionReader {
 
     public void loadSession(InputStream inputStream, Session session, String sessionPath) {
 
-        log.debug("Load session");
-
-        Document document = null;
+        Document document;
         try {
             document = Utilities.createDOMDocumentFromXmlStream(inputStream);
         } catch (Exception e) {
@@ -248,7 +244,8 @@ public class IGVSessionReader implements SessionReader {
 
         if (genomeId != null && genomeId.length() > 0) {
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
-                GenomeManager.getInstance().restoreGenomeAnnotations();
+                igv.resetSession(rootPath);
+                GenomeManager.getInstance().restoreGenomeTracks(GenomeManager.getInstance().getCurrentGenome());
             } else {
                 // Selecting a genome will "reset" the session so we have to
                 // save the path and restore it.

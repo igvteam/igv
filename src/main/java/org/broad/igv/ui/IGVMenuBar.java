@@ -392,7 +392,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             menuItems.add(new JSeparator());
             // Now add menu items
             for (final String session : IGV.getInstance().getRecentSessionList()) {
-                OpenSessionMenuAction osMenuAction = new OpenSessionMenuAction(session, session, IGV.getInstance());
+                OpenSessionMenuAction osMenuAction = new OpenSessionMenuAction(session, IGV.getInstance());
                 menuItems.add(MenuAndToolbarUtils.createMenuItem(osMenuAction));
             }
 

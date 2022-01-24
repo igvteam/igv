@@ -372,7 +372,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     }
 
     @Override
-    public void dispose() {
+    public void close() {
         super.dispose();
         if (reader != null) {
             reader.close();

@@ -946,7 +946,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     @Override
-    public void dispose() {
+    public void unload() {
         if (this instanceof IGVEventObserver) {
             IGVEventBus.getInstance().unsubscribe((IGVEventObserver) this);
         }

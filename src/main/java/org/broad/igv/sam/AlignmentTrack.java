@@ -1216,12 +1216,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
 
     @Override
-    public void dispose() {
-        super.dispose();
+    public void unload() {
+        super.unload();
         if (dataManager != null) {
             dataManager.unsubscribe(this);
         }
-        dataManager = null;
         removed = true;
         setVisible(false);
     }

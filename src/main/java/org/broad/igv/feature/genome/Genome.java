@@ -34,13 +34,13 @@
  */
 package org.broad.igv.feature.genome;
 
-import com.google.gson.JsonElement;
 import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
@@ -72,7 +72,8 @@ public class Genome {
     private String species;
     private String ucscID;
     private String blatDB;
-    private ArrayList<ResourceLocator> annotationResources;
+    private List<ResourceLocator> annotationResources;
+    private Map<ResourceLocator, List<Track>> annotationTracks;
     private boolean showWholeGenomeView = true;
 
 
@@ -635,14 +636,21 @@ public class Genome {
         return sequence.isLoaded(frame);
     }
 
-    public void setAnnotationResources(ArrayList<ResourceLocator> annotationResources) {
+    public void setAnnotationResources(List<ResourceLocator> annotationResources) {
         this.annotationResources = annotationResources;
     }
 
-    public ArrayList<ResourceLocator> getAnnotationResources() {
+    public List<ResourceLocator> getAnnotationResources() {
         return annotationResources;
     }
 
+    public Map<ResourceLocator, List<Track>> getAnnotationTracks() {
+        return annotationTracks;
+    }
+
+    public void setAnnotationTracks(Map<ResourceLocator, List<Track>> annotationTracks) {
+        this.annotationTracks = annotationTracks;
+    }
 
     /**
      * Mock genome for unit tests

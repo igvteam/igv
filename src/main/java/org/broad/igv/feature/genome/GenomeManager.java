@@ -39,6 +39,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.feature.genome.load.GenomeLoader;
@@ -49,6 +50,7 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
@@ -68,6 +70,7 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -233,22 +236,33 @@ public class GenomeManager {
         }
     }
 
-    public void loadGenomeAnnotations(Genome newGenome) {
-        FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();   // Can be null
-        if (IGV.hasInstance()) {
-            IGV.getInstance().setGenomeTracks(geneFeatureTrack);
+    public void loadGenomeAnnotations(Genome genome) {
+        List<ResourceLocator> resources = genome.getAnnotationResources();
+        if (resources != null) {
+            Map<ResourceLocator, List<Track>> annotationTracks = new LinkedHashMap<>();
+            for (ResourceLocator locator : resources) {
+                try {
+                    List<Track> tracks = IGV.getInstance().load(locator);
+                    annotationTracks.put(locator, tracks);
+                } catch (DataLoadException e) {
+                    log.error("Error loading genome annotations", e);
+                }
+            }
+            genome.setAnnotationTracks(annotationTracks);
         }
-        List<ResourceLocator> resources = newGenome.getAnnotationResources();
-        if (resources != null && IGV.hasInstance()) {
-            // TODO -- reset properties of annotation tracks if they are already loaded.  Reloading is wasteful.
-            IGV.getInstance().loadResources(resources);
-            IGV.getInstance().repaint();
-        }
+        restoreGenomeTracks(genome);
+        IGV.getInstance().repaint();
     }
 
-    public void restoreGenomeAnnotations() {
-        if (currentGenome != null) {
-            loadGenomeAnnotations(currentGenome);
+    public void restoreGenomeTracks(Genome genome) {
+        FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Can be null
+        IGV.getInstance().setGenomeTracks(geneFeatureTrack);
+
+        Map<ResourceLocator, List<Track>> annotationTracks = currentGenome.getAnnotationTracks();
+        if (annotationTracks != null) {
+            for (Map.Entry<ResourceLocator, List<Track>> entry : annotationTracks.entrySet()) {
+                IGV.getInstance().addTracks(entry.getValue(), entry.getKey());
+            }
         }
     }
 

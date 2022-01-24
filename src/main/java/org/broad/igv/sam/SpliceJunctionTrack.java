@@ -142,11 +142,6 @@ public class SpliceJunctionTrack extends FeatureTrack {
     }
 
     @Override
-    public void dispose() {
-        // SpliceJunctionTracks are not disposed of,  merely hidden.
-    }
-
-    @Override
     public void setVisible(boolean visible) {
         if (visible != isVisible()) {
             super.setVisible(visible);

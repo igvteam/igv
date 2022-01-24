@@ -160,22 +160,4 @@ public class AbstractHeadedTest {
         }
         org.junit.Assume.assumeTrue(!headless);
     }
-
-
-    public void testTest() throws Exception {
-        java.util.List<Track> tracks = IGV.getInstance().getAllTracks();
-        System.out.println("# tracks: " + tracks.size());
-        for (Track track : tracks) {
-            System.out.println(track.getName());
-        }
-
-        java.util.List<Track> featureTracks = IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).getTracks();
-        System.out.println(featureTracks.size());
-    }
-
-    protected static String rewriteRestoreSession(String sessionPath) throws Exception{
-        sessionPath = (TestUtils.replaceTestPaths(new File(sessionPath))).getAbsolutePath();
-        IGV.getInstance().doRestoreSession(sessionPath, null);
-        return sessionPath;
-    }
 }

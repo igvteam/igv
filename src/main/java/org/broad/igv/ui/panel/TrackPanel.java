@@ -176,12 +176,20 @@ public class TrackPanel extends IGVPanel {
     public void clearTracks() {
 
         final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        Track geneTrack = currentGenome == null ? null : currentGenome.getGeneTrack();
-        for (Track t : getTracks()) {
-            if (t != geneTrack) {
-                t.dispose();
+        Set<Track> genomeAnnotationTracks = new HashSet<>();
+        if (currentGenome != null) {
+            if (currentGenome.getGeneTrack() != null) genomeAnnotationTracks.add(currentGenome.getGeneTrack());
+            if (currentGenome.getAnnotationTracks() != null) {
+                for (List<Track> t : currentGenome.getAnnotationTracks().values()) {
+                    genomeAnnotationTracks.addAll(t);
+                }
             }
         }
+
+        for (Track t : getTracks()) {
+            t.unload();
+        }
+        groupAttribute = null;
         trackGroups.clear();
         trackCountEstimate = 0;
     }
@@ -272,10 +280,6 @@ public class TrackPanel extends IGVPanel {
         }
     }
 
-    public boolean hasTrack(Track track) {
-        return trackGroups.stream().anyMatch(tg -> (new HashSet(tg.getTracks()).contains(track)));
-    }
-
     public void moveGroup(TrackGroup group, int index) {
 
         if (index > trackGroups.indexOf(group)) {
@@ -292,7 +296,7 @@ public class TrackPanel extends IGVPanel {
 
     public void reset() {
         this.groupAttribute = null;
-        trackGroups.clear();
+        clearTracks();
     }
 
     /**

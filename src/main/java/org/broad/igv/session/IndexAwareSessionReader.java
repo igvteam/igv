@@ -81,9 +81,10 @@ public class IndexAwareSessionReader implements SessionReader {
         List<ResourceLocator> aSync = new ArrayList();
 
         // Index aware sessions do not have means to set genome, or if they do we don't use it
+        igv.resetSession(sessionPath);
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        if (genome != null) {
-            IGV.getInstance().setGenomeTracks(genome.getGeneTrack());
+        if (genome != null) {  // Can this ever be null?
+            GenomeManager.getInstance().restoreGenomeTracks(GenomeManager.getInstance().getCurrentGenome());
         }
 
         while ((nextLine = reader.readLine()) != null) {

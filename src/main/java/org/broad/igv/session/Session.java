@@ -99,7 +99,6 @@ public class Session implements IGVEventObserver {
     private String locus;
 
     public Session(String path) {
-        log.debug("New session");
         reset(path);
     }
 

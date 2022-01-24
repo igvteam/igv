@@ -42,6 +42,7 @@ import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -84,16 +85,15 @@ public class LoadFromURLMenuAction extends MenuAction {
 
             if (!dlg.isCanceled()) {
 
-                String url = dlg.getFileURL();
+                String inputURL = dlg.getFileURL();
 
-                if (url != null && url.trim().length() > 0) {
+                if (inputURL != null && inputURL.trim().length() > 0) {
 
-                    url = mapURL(url.trim());
+                    final String url = mapURL(inputURL.trim());
 
                     if (SessionReader.isSessionFile(url)) {
                         try {
-                            String locus = null;
-                            igv.doRestoreSession(url, locus);
+                            LongRunningTask.submit(() -> this.igv.loadSession(url, null));
                         } catch (Exception ex) {
                             MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                         }

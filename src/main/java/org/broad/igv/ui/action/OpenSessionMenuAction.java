@@ -29,11 +29,12 @@
  */
 package org.broad.igv.ui.action;
 
-import org.broad.igv.logging.*;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
-import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.LongRunningTask;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -54,8 +55,13 @@ public class OpenSessionMenuAction extends MenuAction {
     private String sessionFile = null;
     private boolean autoload = false;
 
-    public OpenSessionMenuAction(String label, String sessionFile, IGV igv) {
-        super(label);
+    /**
+     * Constructor for hardcoded session list at bottom of menu.   This convention is odd, legacy thing.
+     * @param sessionFile
+     * @param igv
+     */
+    public OpenSessionMenuAction(String sessionFile, IGV igv) {
+        super(sessionFile);
         this.sessionFile = sessionFile;
         this.igv = igv;
         autoload = true;
@@ -79,22 +85,9 @@ public class OpenSessionMenuAction extends MenuAction {
             sessionFile = tmpFile.getAbsolutePath();
             PreferencesManager.getPreferences().setLastTrackDirectory(tmpFile.getParentFile());
         }
-        doRestoreSession();
-
-
-    }
-
-    final public void doRestoreSession() {
         if (sessionFile != null) {
-            if (FileUtils.isRemote(sessionFile)) {
-                boolean merge = false;
-                igv.doRestoreSession(sessionFile, null);
-            } else {
-                File f = new File(sessionFile);
-                igv.doRestoreSession(f, null);
-            }
+            LongRunningTask.submit(() -> this.igv.loadSession(sessionFile, null));
         }
     }
-
 }
 

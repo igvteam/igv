@@ -394,12 +394,6 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         // Un-marshalling handled in IGVSessionReader
     }
 
-    @Override
-    public void dispose() {
-
-
-    }
-
     private enum ChangeTrackMethod {
         POSITIVE, NEGATIVE
     }

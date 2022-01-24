@@ -266,7 +266,7 @@ public interface Track extends Persistable {
 
     float getYLine();
 
-    void dispose();
+    void unload();
 
     boolean getAutoScale();
 

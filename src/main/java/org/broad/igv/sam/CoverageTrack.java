@@ -49,7 +49,6 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.w3c.dom.Document;
@@ -201,15 +200,12 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     }
 
     @Override
-    public void dispose() {
-        super.dispose();
+    public void unload() {
+        super.unload();
         removed = true;
         if (dataManager != null) {
             dataManager.unsubscribe(this);
         }
-        dataManager = null;
-        dataSource = null;
-        alignmentTrack = null;
         setVisible(false);
     }
 
