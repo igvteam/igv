@@ -262,6 +262,23 @@ public class GenomeManager {
         if (annotationTracks != null) {
             for (Map.Entry<ResourceLocator, List<Track>> entry : annotationTracks.entrySet()) {
                 IGV.getInstance().addTracks(entry.getValue(), entry.getKey());
+                for (Track track : entry.getValue()) {
+                    ResourceLocator locator = track.getResourceLocator();
+                    String fn = "";
+                    if (locator != null) {
+                        fn = locator.getPath();
+                        int lastSlashIdx = fn.lastIndexOf("/");
+                        if (lastSlashIdx < 0) {
+                            lastSlashIdx = fn.lastIndexOf("\\");
+                        }
+                        if (lastSlashIdx > 0) {
+                            fn = fn.substring(lastSlashIdx + 1);
+                        }
+                    }
+                    track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
+                    track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
+                    track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+                }
             }
         }
     }
