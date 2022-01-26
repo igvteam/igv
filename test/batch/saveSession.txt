@@ -1,5 +1,8 @@
+snapshotDirectory $SCRIPT_DIR/snapshots/saveSession
+genome hg19
 new
 goto egfr
-saveSession ~/igvtest/testSession.xml
+saveSession $SCRIPT_DIR/snapshots/testSession.xml
 new
-load ~/igvtest/testSession.xml
+load $SCRIPT_DIR/snapshots/testSession.xml
+snapshot restoreSession.png

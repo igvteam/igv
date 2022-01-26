@@ -1,10 +1,16 @@
-snapshotDirectory snapshots/multiple_bams
+snapshotDirectory $SCRIPT_DIR/snapshots/color_coverage_993
 new
 genome hg19
 preference SAM.SHOW_ALIGNMENT_TRACK false
 load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
 load gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
 goto myc
+# Match tracks by name
 setColor 255,0,0 "NA12877_S1.bam Coverage"
 setColor 255,255,0 "NA12878_S1.bam Coverage"
-snapshot
+snapshot matchByName.png
+# Match tracks by path
+setColor 0,255,0 gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
+setColor 0,0,255 gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
+snapshot matchByPath.png
+

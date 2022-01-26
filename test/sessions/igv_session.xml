@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" hasGeneTrack="false" hasSequenceTrack="true" locus="All" version="8">
+    <Resources>
+        <Resource path="https://s3.amazonaws.com/igv.org.demo/GSM3553630_HF-3177_chiapet.trans.chiasig.itx.ge2.bedpe.gz" type="bedpe"/>
+        <Resource index="https://s3.amazonaws.com/igv.org.genomes/hg19/ncbiRefSeq.sorted.txt.gz.tbi" name="Refseq Genes" path="https://s3.amazonaws.com/igv.org.genomes/hg19/ncbiRefSeq.sorted.txt.gz" type="refgene"/>
+    </Resources>
+    <Panel height="831" name="DataPanel" width="1475">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="true" visible="true"/>
+        <Track attributeKey="Refseq Genes" clazz="org.broad.igv.track.FeatureTrack" featureVisibilityWindow="1179081" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.genomes/hg19/ncbiRefSeq.sorted.txt.gz" name="Refseq Genes" visible="true"/>
+        <Track attributeKey="GSM3553630_HF-3177_chiapet.trans.chiasig.itx.ge2.bedpe.gz" autoscale="true" clazz="org.broad.igv.bedpe.InteractionTrack" color="180,25,137" direction="UP" fontSize="10" graphType="PROPORTIONAL_ARC" height="250" id="https://s3.amazonaws.com/igv.org.demo/GSM3553630_HF-3177_chiapet.trans.chiasig.itx.ge2.bedpe.gz" name="GSM3553630_HF-3177_chiapet.trans.chiasig.itx.ge2.bedpe.gz" showBlocks="false" thickness="1" visible="true"/>
+    </Panel>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>

@@ -1,4 +1,4 @@
-snapshotDirectory ~/igvtest/snapshots/path_with_spaces
+snapshotDirectory $SCRIPT_DIR/snapshots/path_with_spaces
 genome hg19
 new
 load "../data/folder with spaces/test.wig"

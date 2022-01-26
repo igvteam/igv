@@ -71,16 +71,16 @@ public class CommandExecutor {
 
     private File snapshotDirectory;
     private IGV igv;
-    private String rootDir;
+    private String scriptDir;
     private int sleepInterval = 0; //2000;
 
     public CommandExecutor(IGV igv) {
         this(igv, null);
     }
 
-    public CommandExecutor(IGV igv, String rootDir) {
+    public CommandExecutor(IGV igv, String scriptDir) {
         this.igv = igv;
-        this.rootDir = rootDir;
+        this.scriptDir = scriptDir;
     }
 
     private List<String> getArgs(String[] tokens) {
@@ -217,7 +217,7 @@ public class CommandExecutor {
             } else if (cmd.equalsIgnoreCase("setTrackHeight")) {
                 result = this.setTrackHeight(param1, param2);
             } else if (cmd.equalsIgnoreCase("overlay")) {
-                result = this.overlay(commandLine);
+                result = this.overlay(args);
             } else if (cmd.equalsIgnoreCase("separate")) {
                 result = this.separate(param1);
             } else {
@@ -395,13 +395,14 @@ public class CommandExecutor {
         }
     }
 
-    private String overlay(String cmd) {
-        String[] tokens = Globals.whitespacePattern.split(cmd);
-        if (tokens.length > 2) {
-            String name = URLDecoder.decode(tokens[1], Charset.defaultCharset());
+    private String overlay(List<String> args) {
+        if (args.size() > 2) {
+            String name = StringUtils.isQuoted(args.get(1)) ?
+                    StringUtils.stripQuotes(args.get(1)) :
+                    URLDecoder.decode(args.get(1), Charset.defaultCharset());
             List<DataTrack> tracks = new ArrayList<>();
-            for (int i = 2; i < tokens.length; i++) {
-                List<Track> tmp = this.tracksMatchingName(tokens[i]);
+            for (int i = 2; i < args.size(); i++) {
+                List<Track> tmp = this.tracksMatchingName(args.get(i));
                 for (Track t : tmp) {
                     if (t instanceof DataTrack) {
                         tracks.add((DataTrack) t);
@@ -430,11 +431,15 @@ public class CommandExecutor {
         if (name == null) {
             return tracks;
         } else {
-            String altName = URLDecoder.decode(name, Charset.defaultCharset());
+            String altName = StringUtils.isQuoted(name) ?
+                    StringUtils.stripQuotes(name) :
+                    URLDecoder.decode(name, Charset.defaultCharset());
+
             return tracks.stream()
-                    .filter(t -> name.equalsIgnoreCase(t.getName()) || altName.equalsIgnoreCase(t.getName()) ||
-                            t.getResourceLocator() != null && name.equals(t.getResourceLocator().getPath()) ||
-                            t.getResourceLocator() != null && altName.equals(t.getResourceLocator().getPath())
+                    .filter(t ->
+                            name.equalsIgnoreCase(t.getName()) || altName.equalsIgnoreCase(t.getName()) ||
+                                    (t.getResourceLocator() != null && name.equals(t.getResourceLocator().getPath())) ||
+                                    (t.getResourceLocator() != null && altName.equals(t.getResourceLocator().getPath()))
                     )
                     .collect(Collectors.toList());
         }
@@ -753,7 +758,7 @@ public class CommandExecutor {
                 if (maybeFile.exists()) {
                     f = maybeFile.getAbsolutePath();
                 } else {
-                    maybeFile = new File(this.rootDir, StringUtils.stripQuotes(f));
+                    maybeFile = new File(this.scriptDir, StringUtils.stripQuotes(f));
                     if (maybeFile.exists()) {
                         f = maybeFile.getAbsolutePath();
                     }
@@ -953,12 +958,14 @@ public class CommandExecutor {
         if (path.startsWith("~")) {
             path = System.getProperty("user.home") + path.substring(1);
             return new File(path);
+        } else if (path.startsWith("$SCRIPT_DIR") && this.scriptDir != null) {
+            return new File(this.scriptDir + path.substring("$SCRIPT_DIR".length()));
         } else {
             File maybeFile = new File(path);
             if (maybeFile.exists()) {
                 return maybeFile;
-            } else if (rootDir != null) {
-                maybeFile = new File(this.rootDir, path);
+            } else if (scriptDir != null) {
+                maybeFile = new File(this.scriptDir, path);
                 if (maybeFile.exists()) {
                     return maybeFile;
                 }

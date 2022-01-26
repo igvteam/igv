@@ -1,4 +1,4 @@
-snapshotDirectory ~/igvtest/snapshots/multiple_bams
+snapshotDirectory $SCRIPT_DIR/snapshots/multiple_bams
 genome hg19
 new
 load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam

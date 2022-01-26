@@ -1,6 +1,6 @@
-new
-snapshotDirectory ~/igvtest/snapshots/overlay
+snapshotDirectory $SCRIPT_DIR/snapshots/overlay
 genome hg19
+new
 goto chr1
 load https://www.encodeproject.org/files/ENCFF543IHG/@@download/ENCFF543IHG.bigWig
 setColor 150,0,0 ENCFF543IHG.bigWig
@@ -12,5 +12,5 @@ overlay ENCODE%20Merged ENCFF543IHG.bigWig ENCFF039BJP.bigWig ENCFF060LLG.bigWig
 snapshot merged.png
 separate ENCODE%20Merged
 snapshot separate.png
-overlay ENCODE%20Merged%202 https://www.encodeproject.org/files/ENCFF543IHG/@@download/ENCFF543IHG.bigWig https://www.encodeproject.org/files/ENCFF039BJP/@@download/ENCFF039BJP.bigWig https://www.encodeproject.org/files/ENCFF060LLG/@@download/ENCFF060LLG.bigWig
+overlay "ENCODE Merged 2" https://www.encodeproject.org/files/ENCFF543IHG/@@download/ENCFF543IHG.bigWig https://www.encodeproject.org/files/ENCFF039BJP/@@download/ENCFF039BJP.bigWig https://www.encodeproject.org/files/ENCFF060LLG/@@download/ENCFF060LLG.bigWig
 snapshot merged_by_url.png

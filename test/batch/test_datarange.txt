@@ -1,4 +1,4 @@
-snapshotDirectory ~/igvtest/snapshots
+snapshotDirectory $SCRIPT_DIR/snapshots/test_datarange
 genome hg19
 new
 goto myc

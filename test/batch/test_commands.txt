@@ -1,4 +1,5 @@
-snapshotDirectory ~/igvtest/snapshots/commands
+# Test a variety of commands, not comprehensive (yet)
+snapshotDirectory $SCRIPT_DIR/snapshots/commands
 version
 new
 genome hg19
@@ -34,3 +35,5 @@ setTrackHeight 30 NA12878_S1.bam
 setLogScale true NA12878_S1.bam%20Coverage
 setDataRange 0,1000 NA12878_S1.bam%20Coverage
 setColor 0,0,100 NA12878_S1.bam%20Coverage
+snapshot blueCoverage.png
+

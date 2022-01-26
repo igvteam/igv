@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" hasGeneTrack="true" hasSequenceTrack="true" locus="chr8:71760911-71775945" nextAutoscaleGroup="2" version="8">
+    <Resources>
+        <Resource path="https://data.broadinstitute.org/igvdata/MB/tumor.bam" type="bam"/>
+        <Resource path="https://data.broadinstitute.org/igvdata/MB/control.bam" type="bam"/>
+    </Resources>
+    <Panel height="1192" name="Panel1640126590924" width="1423">
+        <Track attributeKey="tumor.bam Coverage" autoScale="false" autoscaleGroup="1" clazz="org.broad.igv.sam.CoverageTrack" colorScale="ContinuousColorScale;0.0;1154.0;255,255,255;176,176,176" fontSize="10" id="https://data.broadinstitute.org/igvdata/MB/tumor.bam_coverage" name="tumor.bam Coverage" snpThreshold="0.2" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="79.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="tumor.bam Junctions" clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="https://data.broadinstitute.org/igvdata/MB/tumor.bam_junctions" name="tumor.bam Junctions" visible="false"/>
+        <Track attributeKey="tumor.bam" clazz="org.broad.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="https://data.broadinstitute.org/igvdata/MB/tumor.bam" name="tumor.bam" visible="true">
+            <RenderOptions/>
+        </Track>
+    </Panel>
+    <Panel height="1192" name="Panel1640126622805" width="1423">
+        <Track attributeKey="control.bam Coverage" autoScale="false" autoscaleGroup="1" clazz="org.broad.igv.sam.CoverageTrack" colorScale="ContinuousColorScale;0.0;80.0;255,255,255;176,176,176" fontSize="10" id="https://data.broadinstitute.org/igvdata/MB/control.bam_coverage" name="control.bam Coverage" snpThreshold="0.2" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="79.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="control.bam Junctions" clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="https://data.broadinstitute.org/igvdata/MB/control.bam_junctions" name="control.bam Junctions" visible="false"/>
+        <Track attributeKey="control.bam" clazz="org.broad.igv.sam.AlignmentTrack" color="153,255,153" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="https://data.broadinstitute.org/igvdata/MB/control.bam" name="control.bam" visible="true">
+            <RenderOptions/>
+        </Track>
+    </Panel>
+    <Panel height="40" name="FeaturePanel" width="1423">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="RefSeq Genes" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;429.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" height="35" id="hg19_genes" name="RefSeq Genes" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.024242424242424242,0.4266666666666667,0.953939393939394"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>
