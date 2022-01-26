@@ -484,7 +484,8 @@ public class IGV implements IGVEventObserver {
                     List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = getTrackPanelAttrs();
                     loadResources(locators);
                     resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
-                    showLoadedTrackCount(); // Visible attributes might have changed
+                    showLoadedTrackCount();
+                    IGV.this.getMainPanel().updatePanelDimensions();  // Visible attributes might have changed
                     UIUtilities.invokeAndWaitOnEventThread(() -> {
                         IGV.this.getMainPanel().applicationHeaderPanel.doLayout();  // Forcing this is neccessary if # of attributes change, not sure why
                         IGV.this.getMainPanel().revalidate();
@@ -667,7 +668,7 @@ public class IGV implements IGVEventObserver {
 
         if (!dlg.isCanceled()) {
             IGV.getInstance().getSession().setHiddenAttributes(dlg.getNonSelections());
-            revalidateTrackPanels();
+            getMainPanel().revalidateTrackPanels();
         }
     }
 
@@ -1027,6 +1028,7 @@ public class IGV implements IGVEventObserver {
 
         groupByAttribute = null;
 
+        getMainPanel().updatePanelDimensions();
         getMainPanel().revalidateTrackPanels();
     }
 
@@ -1100,9 +1102,9 @@ public class IGV implements IGVEventObserver {
     public boolean loadSessionFromStream(String sessionPath, String locus, InputStream inputStream) throws IOException {
 
         final SessionReader sessionReader;
-        if (sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
+        if(sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
             sessionReader = new UCSCSessionReader(this);
-        } else if (sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
+        } else if(sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
             sessionReader = new IndexAwareSessionReader(this);
         } else {
             sessionReader = new IGVSessionReader(this);
@@ -1141,7 +1143,7 @@ public class IGV implements IGVEventObserver {
             CircularViewUtilities.clearAll();
         }
 
-        revalidateTrackPanels();
+        //revalidateTrackPanels();
         repaint();
         return true;
     }
@@ -1343,7 +1345,7 @@ public class IGV implements IGVEventObserver {
                 track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
             }
         }
-        revalidateTrackPanels();
+        //revalidateTrackPanels();
         return newTracks;
     }
 
@@ -2247,7 +2249,8 @@ public class IGV implements IGVEventObserver {
                         tp.createDataPanels();
                     }
                     contentPane.getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
-                    revalidateTrackPanels();
+                    contentPane.getMainPanel().applicationHeaderPanel.revalidate();
+                    contentPane.getMainPanel().validate();
                     repaint(contentPane.getMainPanel());
                 }
         );
