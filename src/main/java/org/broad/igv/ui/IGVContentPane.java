@@ -86,28 +86,16 @@ public class IGVContentPane extends JPanel {
 
     }
 
-    public void addCommandBar(JComponent component) {
-        component.setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
-        component.setAlignmentX(Component.BOTTOM_ALIGNMENT);
-        commandBarPanel.add(component);
-        commandBarPanel.invalidate();
-    }
-
-
     @Override
     public Dimension getPreferredSize() {
         return UIConstants.preferredSize;
     }
 
     public void revalidateTrackPanels() {
+        mainPanel.updatePanelDimensions();
+        mainPanel.applicationHeaderPanel.revalidate();
         for (TrackPanel tp : mainPanel.getTrackPanels()) {
             tp.getScrollPane().getDataPanel().revalidate();
-        }
-    }
-
-    public void validateTrackPanels() {
-        for (TrackPanel tp : mainPanel.getTrackPanels()) {
-            tp.getScrollPane().getDataPanel().validate();
         }
     }
 

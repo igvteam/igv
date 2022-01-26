@@ -79,8 +79,8 @@ public class IGVPanel extends JPanel implements Paintable {
             Component namePanel = children[0];
             Component attributePanel = children[1];
             Component dataPanel = children[2];
-
             namePanel.setBounds(mainPanel.getNamePanelX(), 0, nw, h);
+
             attributePanel.setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);  // Attributes
             dataPanel.setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
 

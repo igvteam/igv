@@ -25,11 +25,15 @@
 
 package org.broad.igv.session;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.ContinuousColorScale;
@@ -38,9 +42,6 @@ import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ObservableForObject;
@@ -55,16 +56,6 @@ import static org.broad.igv.prefs.Constants.*;
 public class Session implements IGVEventObserver {
 
     private static Logger log = LogManager.getLogger(Session.class);
-    private String ucscId;
-
-    public void setUcscId(String ucscId) {
-        this.ucscId = ucscId;
-    }
-
-    public String getUcscId() {
-        return ucscId;
-    }
-
 
     //This doesn't mean genelist or not, the same way it does in FrameManager
     public enum GeneListMode {
@@ -135,11 +126,9 @@ public class Session implements IGVEventObserver {
         }
     }
 
-
     public void clearDividerLocations() {
         dividerFractions = null;
     }
-
 
     public void setDividerFractions(double[] divs) {
         this.dividerFractions = divs;
@@ -431,24 +420,31 @@ public class Session implements IGVEventObserver {
         return this.nextAutoscaleGroup++;
     }
 
+    /**
+     * Return a set containing names of attributes explicitly marked hidden.  If no attributes have been explicitly
+     * marked return the default set.
+     *
+     * @return
+     */
     public Set<String> getHiddenAttributes() {
-
-        Set<String> extendedHiddenAttributes = new HashSet<String>();
-        if (hiddenAttributes != null) {
-            extendedHiddenAttributes.addAll(hiddenAttributes);
+        if (hiddenAttributes == null || hiddenAttributes.isEmpty()) {
+            return (PreferencesManager.getPreferences().getAsBoolean(SHOW_DEFAULT_TRACK_ATTRIBUTES))  ?
+                    Collections.emptySet() :
+                    new HashSet<>(AttributeManager.defaultTrackAttributes);
+        } else {
+            return hiddenAttributes;
         }
-        if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_DEFAULT_TRACK_ATTRIBUTES)) {
-
-            extendedHiddenAttributes.addAll(AttributeManager.defaultTrackAttributes);
-        }
-
-        return extendedHiddenAttributes;
     }
 
     public void setHiddenAttributes(Set<String> attributes) {
         this.hiddenAttributes = attributes;
 
     }
+
+    public void clearHiddenAttributes() {
+        hiddenAttributes = null;
+    }
+
 
     public boolean isRemoveEmptyPanels() {
         return removeEmptyPanels;

@@ -56,7 +56,7 @@ import java.util.*;
 /**
  * @author jrobinso
  */
-public class AttributePanel extends TrackPanelComponent implements Packable, Paintable {
+public class AttributePanel extends TrackPanelComponent implements  Paintable {
 
     private static Logger log = LogManager.getLogger(AttributePanel.class);
 
@@ -66,11 +66,24 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
      */
     public AttributePanel(TrackPanel trackPanel) {
         super(trackPanel);
-        setBackground(Color.lightGray);
-        setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
         init();
     }
 
+    private void init() {
+
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        if (!PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_ATTRIBUTE_VIEWS_KEY)) {
+            setSize(0, getHeight());
+        }
+        setBackground(new java.awt.Color(255, 255, 255));
+        setBorder(javax.swing.BorderFactory.createLineBorder(Color.lightGray));
+        setPreferredSize(new java.awt.Dimension(0, 0));
+        setVerifyInputWhenFocusTarget(false);
+
+        MouseInputAdapter mouseAdapter = new AttributePanelMouseAdapter();
+        addMouseMotionListener(mouseAdapter);
+        addMouseListener(mouseAdapter);
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -120,9 +133,6 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
                 final Graphics2D greyGraphics = (Graphics2D) g.create();
                 greyGraphics.setColor(UIConstants.LIGHT_GREY);
 
-                final Graphics2D borderGraphics = (Graphics2D) g.create();
-                borderGraphics.setColor(Color.lightGray);
-
                 final int left = AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
                 int regionY = 0;
                 final int bottom = rect.y + rect.height;
@@ -170,17 +180,18 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
                     }
                 }
 
-                // Border
-
+                // Border between columns
+                final Graphics2D columnBorderGraphics = (Graphics2D) g.create();
+                columnBorderGraphics.setColor(Color.lightGray);
                 final int colWidth = AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
                 for (int x = 1; x < rect.x + rect.width; x += colWidth) {
-                    borderGraphics.fillRect(x + AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, rect.y,
-                            AttributeHeaderPanel.COLUMN_BORDER_WIDTH, rect.height);
+                    columnBorderGraphics.fillRect(
+                            x + AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, rect.y, AttributeHeaderPanel.COLUMN_BORDER_WIDTH, rect.height);
                 }
 
                 graphics2D.dispose();
                 greyGraphics.dispose();
-                borderGraphics.dispose();
+                columnBorderGraphics.dispose();
 
             }
 
@@ -191,44 +202,6 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
     @Override
     public int getSnapshotHeight(boolean batch) {
         return getHeight();
-    }
-
-    /*private int draw(List<String> names, Track track, int trackX, int trackY, int trackWidth, int trackHeight,
-                     Graphics2D graphics) {
-
-        for (String name : names) {
-
-            String key = name.toUpperCase();
-            String attributeValue = track.getAttributeValue(key);
-
-            if (attributeValue != null) {
-
-                Rectangle trackRectangle = new Rectangle(trackX, trackY, trackWidth, trackHeight);
-                graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
-                graphics.fill(trackRectangle);
-                addMousableRegion(new MouseableRegion(trackRectangle, key, attributeValue));
-            }
-            trackX += trackWidth + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
-        }
-        trackY += trackHeight;
-
-        return trackY;
-    }*/
-
-    private void init() {
-
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        if (!PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_ATTRIBUTE_VIEWS_KEY)) {
-            setSize(0, getHeight());
-        }
-        setBackground(new java.awt.Color(255, 255, 255));
-        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        setPreferredSize(new java.awt.Dimension(0, 0));
-        setVerifyInputWhenFocusTarget(false);
-
-        MouseInputAdapter mouseAdapter = new AttributePanelMouseAdapter();
-        addMouseMotionListener(mouseAdapter);
-        addMouseListener(mouseAdapter);
     }
 
     /**
@@ -271,62 +244,6 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
             }
         }
         return "";
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public int getAttributeColumnWidth() {
-        return AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH;
-    }
-
-    // Packable interface
-
-
-    private int calculatePackWidth() {
-
-        if (!PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_ATTRIBUTE_VIEWS_KEY)) {
-            return 0;
-        }
-
-        HashSet<String> attributeKeys = new HashSet(AttributeManager.getInstance().getAttributeNames());
-        final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
-        if (hiddenAttributes != null) attributeKeys.removeAll(hiddenAttributes);
-
-        int attributeCount = attributeKeys.size();
-        int packWidth = (attributeCount) * (AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH +
-                AttributeHeaderPanel.COLUMN_BORDER_WIDTH) + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
-        return packWidth;
-    }
-
-    /**
-     * Method description
-     *
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     */
-    @Override
-    public void setBounds(int x, int y, int width, int height) {
-        super.setBounds(x, y, calculatePackWidth(), height);
-    }
-
-    /**
-     * Method description
-     */
-    public void packComponent() {
-        int newWidth = calculatePackWidth();
-
-        Dimension dimension = getSize();
-        dimension = new Dimension(newWidth, dimension.height);
-        setMinimumSize(dimension);
-        setMaximumSize(dimension);
-        setSize(dimension);
-        setPreferredSize(dimension);
-
     }
 
     class AttributePanelMouseAdapter extends MouseInputAdapter {

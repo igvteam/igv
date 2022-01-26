@@ -42,8 +42,10 @@ import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.session.Session;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.commandbar.GenomeComboBox;
@@ -286,14 +288,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-//        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, igv);
-//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
         if (PreferencesManager.getPreferences().getAsBoolean(DB_ENABLED)) {
             menuAction = new LoadFromDatabaseAction("Load from Database...", 0, igv);
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
-
 
         encodeMenuItem = MenuAndToolbarUtils.createMenuItem(new BrowseEncodeAction("Load from ENCODE (2012)...", KeyEvent.VK_E, igv));
         menuItems.add(encodeMenuItem);
@@ -609,8 +607,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(panelWidthmenuItem);
 
         // Hide or Show the attribute panels
-        boolean isShow = PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
-        IGV.getInstance().doShowAttributeDisplay(isShow);  // <= WEIRD doing IGV.getInstance() here!
+        //boolean isShow = PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
+        //IGV.getInstance().doShowAttributeDisplay(isShow);
 
         menuAction = new MenuAction("Show Attribute Display", null, KeyEvent.VK_A) {
             @Override
@@ -621,16 +619,15 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 IGV.getInstance().getMainPanel().revalidateTrackPanels();
             }
         };
+        boolean isShow = PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
         menuItem = MenuAndToolbarUtils.createMenuItem(menuAction, isShow);
         menuItems.add(menuItem);
 
 
         menuAction =
                 new MenuAction("Select Attributes to Show...", null, KeyEvent.VK_S) {
-
                     @Override
-                    public void actionPerformed(ActionEvent e) {
-                        IGV.getInstance().doSelectDisplayableAttribute();
+                    public void actionPerformed(ActionEvent e) {IGV.getInstance().doSelectDisplayableAttribute();
                     }
                 };
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);

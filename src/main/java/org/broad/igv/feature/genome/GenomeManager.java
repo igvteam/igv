@@ -281,6 +281,7 @@ public class GenomeManager {
                 }
             }
         }
+        IGV.getInstance().revalidateTrackPanels();
     }
 
 

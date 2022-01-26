@@ -148,9 +148,6 @@ public class SessionWriter {
                 globalElement.setAttribute("removeEmptyTracks", "true");
             }
 
-            globalElement.setAttribute(SessionAttribute.HAS_GENE_TRACK, "" + IGV.getInstance().hasGeneTrack());
-            globalElement.setAttribute(SessionAttribute.HAS_SEQ_TRACK, "" + IGV.getInstance().hasSequenceTrack());
-
             // Resource Files
             writeResources(outputFile, globalElement, document);
 

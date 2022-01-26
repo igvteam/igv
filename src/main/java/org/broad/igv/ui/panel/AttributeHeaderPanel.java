@@ -65,7 +65,8 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
 
 
     public AttributeHeaderPanel() {
-        setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
+        setBackground(new java.awt.Color(255, 255, 255));
+        setBorder(javax.swing.BorderFactory.createLineBorder(Color.lightGray));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         addMouseListener();
     }
@@ -74,7 +75,6 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
     public int getAttributeColumnWidth() {
         return ATTRIBUTE_COLUMN_WIDTH;
     }
-
 
     private String getAttributeHeading(int x) {
         int idx = x / (ATTRIBUTE_COLUMN_WIDTH + COLUMN_BORDER_WIDTH);
@@ -90,7 +90,6 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
     protected void paintComponent(final Graphics graphics) {
 
         super.paintComponent(graphics);
-
 
         List<String> keys = AttributeManager.getInstance().getVisibleAttributes();
 
@@ -184,7 +183,6 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
         addMouseListener(listener);
     }
 
-
     final public void sortTrackByAttribute(String sortKey, boolean isSortAscending) {
 
         if (sortKey != null) {
@@ -207,32 +205,4 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
         return this.getHeight();
     }
 
-    private int calculatePackWidth() {
-
-        if (!PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_ATTRIBUTE_VIEWS_KEY)) {
-            return 0;
-        }
-
-        HashSet<String> attributeKeys = new HashSet(AttributeManager.getInstance().getAttributeNames());
-        final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
-        if (hiddenAttributes != null) attributeKeys.removeAll(hiddenAttributes);
-
-        int attributeCount = attributeKeys.size();
-        int packWidth = (attributeCount) * (AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH +
-                AttributeHeaderPanel.COLUMN_BORDER_WIDTH) + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
-        return packWidth;
-    }
-
-    /**
-     * Method description
-     *
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     */
-    @Override
-    public void setBounds(int x, int y, int width, int height) {
-        super.setBounds(x, y, calculatePackWidth(), height);
-    }
 }

@@ -484,8 +484,7 @@ public class IGV implements IGVEventObserver {
                     List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = getTrackPanelAttrs();
                     loadResources(locators);
                     resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
-                    showLoadedTrackCount();
-                    IGV.this.getMainPanel().updatePanelDimensions();  // Visible attributes might have changed
+                    showLoadedTrackCount(); // Visible attributes might have changed
                     UIUtilities.invokeAndWaitOnEventThread(() -> {
                         IGV.this.getMainPanel().applicationHeaderPanel.doLayout();  // Forcing this is neccessary if # of attributes change, not sure why
                         IGV.this.getMainPanel().revalidate();
@@ -642,7 +641,6 @@ public class IGV implements IGVEventObserver {
             PreferencesManager.getPreferences().remove(RECENT_SESSIONS);
             PreferencesManager.getPreferences().setRecentSessions(recentSessions);
         }
-
     }
 
     final public void doShowAttributeDisplay(boolean enableAttributeView) {
@@ -657,9 +655,9 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    // TODO -- move all of this attribute stuff out of IGV,  perhaps to
-    // some Attribute helper class.
-
+    /**
+     * Set the attributes to show in the attribute panel for this session.
+     */
     final public void doSelectDisplayableAttribute() {
 
         List<String> allAttributes = AttributeManager.getInstance().getAttributeNames();
@@ -668,16 +666,8 @@ public class IGV implements IGVEventObserver {
         dlg.setVisible(true);
 
         if (!dlg.isCanceled()) {
-            // If any "default" attributes are checked turn off hide default option
-            Set<String> selections = dlg.getSelections();
-            for (String att : AttributeManager.defaultTrackAttributes) {
-                if (selections.contains(att)) {
-                    PreferencesManager.getPreferences().put(SHOW_DEFAULT_TRACK_ATTRIBUTES, true);
-                    break;
-                }
-            }
             IGV.getInstance().getSession().setHiddenAttributes(dlg.getNonSelections());
-            getMainPanel().revalidateTrackPanels();
+            revalidateTrackPanels();
         }
     }
 
@@ -889,6 +879,7 @@ public class IGV implements IGVEventObserver {
             return Cursor.getPredefinedCursor(defaultCursor);
         }
     }
+
     private void subscribeToEvents() {
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
         IGVEventBus.getInstance().subscribe(InsertionSelectionEvent.class, this);
@@ -1028,6 +1019,7 @@ public class IGV implements IGVEventObserver {
         }
 
         AttributeManager.getInstance().clearAllAttributes();
+        session.clearHiddenAttributes();
         mainFrame.setTitle(sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath);
         menuBar.resetSessionActions();
 
@@ -1035,7 +1027,6 @@ public class IGV implements IGVEventObserver {
 
         groupByAttribute = null;
 
-        getMainPanel().updatePanelDimensions();
         getMainPanel().revalidateTrackPanels();
     }
 
@@ -1109,9 +1100,9 @@ public class IGV implements IGVEventObserver {
     public boolean loadSessionFromStream(String sessionPath, String locus, InputStream inputStream) throws IOException {
 
         final SessionReader sessionReader;
-        if(sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
+        if (sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
             sessionReader = new UCSCSessionReader(this);
-        } else if(sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
+        } else if (sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
             sessionReader = new IndexAwareSessionReader(this);
         } else {
             sessionReader = new IGVSessionReader(this);
@@ -1150,6 +1141,7 @@ public class IGV implements IGVEventObserver {
             CircularViewUtilities.clearAll();
         }
 
+        revalidateTrackPanels();
         repaint();
         return true;
     }
@@ -1351,7 +1343,7 @@ public class IGV implements IGVEventObserver {
                 track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
             }
         }
-
+        revalidateTrackPanels();
         return newTracks;
     }
 
@@ -1743,6 +1735,7 @@ public class IGV implements IGVEventObserver {
             }
             t.unload();
         }
+        revalidateTrackPanels();
     }
 
     /**
@@ -1756,21 +1749,14 @@ public class IGV implements IGVEventObserver {
         TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
                 getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
         SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
-
         panel.addTrack(newSeqTrack);
+
         if (newGeneTrack != null) {
+            newGeneTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, newGeneTrack.getName());
+            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
+            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, newGeneTrack.getTrackType().toString());
             panel.addTrack(newGeneTrack);
         }
-
-    }
-
-    public boolean hasGeneTrack() {
-        FeatureTrack geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-        if (geneTrack == null) return false;
-        for (Track t : getFeatureTracks()) {
-            if (geneTrack == t) return true;
-        }
-        return false;
     }
 
     public boolean hasSequenceTrack() {
@@ -2261,8 +2247,7 @@ public class IGV implements IGVEventObserver {
                         tp.createDataPanels();
                     }
                     contentPane.getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
-                    contentPane.getMainPanel().applicationHeaderPanel.revalidate();
-                    contentPane.getMainPanel().validate();
+                    revalidateTrackPanels();
                     repaint(contentPane.getMainPanel());
                 }
         );

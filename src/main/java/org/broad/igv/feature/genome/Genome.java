@@ -497,7 +497,7 @@ public class Genome {
     }
 
     /**
-     * Return the annotation track associated with this genome.   Can return null
+     * Return the annotation track associated with this genome.  This is a legacy ".genome" artifact, can return null.
      *
      * @return a FeatureTrack, or null
      */

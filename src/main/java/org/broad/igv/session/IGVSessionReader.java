@@ -270,7 +270,6 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        session.setUcscId(getAttribute(element, SessionAttribute.UCSC_ID));
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY));
 

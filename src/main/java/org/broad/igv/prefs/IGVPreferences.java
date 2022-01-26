@@ -219,24 +219,10 @@ public class IGVPreferences {
         }
     }
 
-
     public boolean hasExplicitValue(String key) {
         key = key.trim();
         return userPreferences.containsKey(key);
     }
-
-    /**
-     * Get the default value for the specified key.
-     * May be null.
-     *
-     * @param key
-     * @return
-     */
-    public String getDefaultValue(String key) {
-        key = key.trim();
-        return parent == null ? get(key) : parent.get(key);
-    }
-
 
     public void addOverrides(Map<String, String> newPrefs) {
         overrideKeys.addAll(newPrefs.keySet());
@@ -252,7 +238,6 @@ public class IGVPreferences {
             return false;
         }
     }
-
 
     /**
      * Update any cached values with the new key/value pair
@@ -309,6 +294,7 @@ public class IGVPreferences {
         checkForProxyChanges(updatedPrefs);
         checkForAlignmentChanges(updatedPrefs);
         checkForCommandListenerChanges(updatedPrefs);
+        checkForAttributePanelChanges(updatedPrefs);
         checkForCircViewChanges(updatedPrefs);
         IGVEventBus.getInstance().post(new PreferencesChangeEvent());
 
@@ -370,10 +356,16 @@ public class IGVPreferences {
         }
     }
 
+    private void checkForAttributePanelChanges(Map<String, String> updatedPreferenceMap) {
+        if (updatedPreferenceMap.containsKey(SHOW_ATTRIBUTE_VIEWS_KEY) || updatedPreferenceMap.containsKey(SHOW_DEFAULT_TRACK_ATTRIBUTES)) {
+           if(IGV.hasInstance()) {
+               IGV.getInstance().revalidateTrackPanels();
+           }
+        }
+    }
+
     /**
      * Enabling circ view requires port listener
-     *
-     * @param updatedPreferenceMap
      */
     private void checkForCircViewChanges(Map<String, String> updatedPreferenceMap) {
         if (updatedPreferenceMap.containsKey(CIRC_VIEW_ENABLED) &&

@@ -31,9 +31,10 @@
 package org.broad.igv.track;
 
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.AbstractColorScale;
@@ -44,7 +45,6 @@ import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -56,8 +56,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -123,14 +123,9 @@ public class AttributeManager {
 
     Map<String, ColorTable> colorTables = new HashMap<String, ColorTable>();
 
-    Map<String, Integer> colorCounter = new HashMap();
 
     private AttributeManager() {
         propertyChangeSupport = new PropertyChangeSupport(this);
-        //hiddenAttributes.add("NAME");
-        //hiddenAttributes.add("DATA FILE");
-        //hiddenAttributes.add("DATA TYPE");
-
     }
 
     static synchronized public AttributeManager getInstance() {

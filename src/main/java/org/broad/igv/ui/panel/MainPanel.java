@@ -165,14 +165,11 @@ public class MainPanel extends JPanel implements Paintable {
 
     @Override
     public void doLayout() {
-
         super.doLayout();
-        layoutFrames();
         applicationHeaderPanel.doLayout();
         for (TrackPanel tp : getTrackPanels()) {
             tp.getScrollPane().doLayout();
         }
-
     }
 
     @Override
@@ -203,8 +200,6 @@ public class MainPanel extends JPanel implements Paintable {
         nameHeaderPanel.setPreferredSize(new java.awt.Dimension(0, 0));
 
         attributeHeaderPanel = new AttributeHeaderPanel();
-        attributeHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
-        attributeHeaderPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         attributeHeaderPanel.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
         attributeHeaderPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         attributeHeaderPanel.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -431,12 +426,6 @@ public class MainPanel extends JPanel implements Paintable {
         }
     }
 
-    public void layoutFrames() {
-        synchronized (getTreeLock()) {
-            updatePanelDimensions();
-        }
-    }
-
     public void updatePanelDimensions() {
         Insets insets = applicationHeaderPanel.getInsets();
         namePanelX = insets.left;
@@ -446,13 +435,11 @@ public class MainPanel extends JPanel implements Paintable {
         dataPanelWidth = applicationHeaderPanel.getWidth() - insets.right - dataPanelX;
     }
 
-
-    private int calculateAttributeWidth() {
+    public int calculateAttributeWidth() {
 
         if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY)) {
             return 0;
         }
-
         Collection<String> attributeKeys = AttributeManager.getInstance().getVisibleAttributes();
         int attributeCount = attributeKeys.size();
         int packWidth = (attributeCount) * (AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH +
