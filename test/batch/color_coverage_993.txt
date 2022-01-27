@@ -13,4 +13,4 @@ snapshot matchByName.png
 setColor 0,255,0 gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
 setColor 0,0,255 gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
 snapshot matchByPath.png
-
+preference SAM.SHOW_ALIGNMENT_TRACK true

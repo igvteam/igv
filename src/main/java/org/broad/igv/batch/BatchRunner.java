@@ -78,6 +78,7 @@ public class BatchRunner implements NamedRunnable {
 
     public void runWithDefaultGenome(String genomeId) {
 
+        log.info("Executing batch script: " + inputFile);
         String inLine;
         setIsBatchMode(true);
 

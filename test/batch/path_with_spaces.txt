@@ -4,16 +4,21 @@ new
 load "../data/folder with spaces/test.wig"
 goto chr1:16270500-16270600
 snapshot "folder with spaces.png"
+goto chr1:16270500-16270600
 new
 load "../data/folder with spaces/test,with,commas.wig"
+goto chr1:16270500-16270600
 snapshot "test,with,commas.png"
 new
+goto chr1:16270500-16270600
 load "../data/folder.with.periods/test.wig"
 snapshot "folder.with.periods.png"
 new
+goto chr1:16270500-16270600
 load "../data/folder with spaces/%test%2D.wig"
 snapshot "%test%2D.png"
 new
+goto chr1:16270500-16270600
 load "../data/folder with spaces/test+wp.wig"
 snapshot "test+wp.png"
 

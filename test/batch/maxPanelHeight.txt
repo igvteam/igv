@@ -1,4 +1,4 @@
-snapshotDirectory $SCRIPT_DIR/snapshots/test_maxPanelHeight
+snapshotDirectory $SCRIPT_DIR/snapshots/maxPanelHeight
 genome hg19
 new
 load https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam
