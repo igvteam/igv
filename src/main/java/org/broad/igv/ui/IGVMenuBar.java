@@ -616,7 +616,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                 JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
                 PreferencesManager.getPreferences().setShowAttributeView(menuItem.getState());
-                IGV.getInstance().getMainPanel().revalidateTrackPanels();
+                IGV.getInstance().revalidateTrackPanels();
             }
         };
         boolean isShow = PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);

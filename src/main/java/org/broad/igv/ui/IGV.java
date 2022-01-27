@@ -485,12 +485,7 @@ public class IGV implements IGVEventObserver {
                     loadResources(locators);
                     resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
                     showLoadedTrackCount();
-                    IGV.this.getMainPanel().updatePanelDimensions();  // Visible attributes might have changed
-                    UIUtilities.invokeAndWaitOnEventThread(() -> {
-                        IGV.this.getMainPanel().applicationHeaderPanel.doLayout();  // Forcing this is neccessary if # of attributes change, not sure why
-                        IGV.this.getMainPanel().revalidate();
-                    });
-                    IGV.this.repaint();
+                    revalidateTrackPanels();
                 }
 
                 public String getName() {
@@ -668,7 +663,7 @@ public class IGV implements IGVEventObserver {
 
         if (!dlg.isCanceled()) {
             IGV.getInstance().getSession().setHiddenAttributes(dlg.getNonSelections());
-            getMainPanel().revalidateTrackPanels();
+            revalidateTrackPanels();
         }
     }
 
@@ -1029,7 +1024,7 @@ public class IGV implements IGVEventObserver {
         groupByAttribute = null;
 
         getMainPanel().updatePanelDimensions();
-        getMainPanel().revalidateTrackPanels();
+        revalidateTrackPanels();
     }
 
 
@@ -1044,7 +1039,7 @@ public class IGV implements IGVEventObserver {
         }
         this.menuBar.disableReloadSession();
         goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
-        this.repaint();
+        revalidateTrackPanels();
     }
 
 
@@ -1102,9 +1097,9 @@ public class IGV implements IGVEventObserver {
     public boolean loadSessionFromStream(String sessionPath, String locus, InputStream inputStream) throws IOException {
 
         final SessionReader sessionReader;
-        if(sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
+        if (sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
             sessionReader = new UCSCSessionReader(this);
-        } else if(sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
+        } else if (sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
             sessionReader = new IndexAwareSessionReader(this);
         } else {
             sessionReader = new IGVSessionReader(this);
@@ -1143,8 +1138,7 @@ public class IGV implements IGVEventObserver {
             CircularViewUtilities.clearAll();
         }
 
-        //revalidateTrackPanels();
-        repaint();
+        revalidateTrackPanels();
         return true;
     }
 
@@ -2244,21 +2238,19 @@ public class IGV implements IGVEventObserver {
 
     public void resetFrames() {
         UIUtilities.invokeOnEventThread(() -> {
-                    contentPane.getMainPanel().headerPanelContainer.createHeaderPanels();
+                    getMainPanel().headerPanelContainer.createHeaderPanels();
                     for (TrackPanel tp : getTrackPanels()) {
                         tp.createDataPanels();
                     }
                     contentPane.getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
-                    contentPane.getMainPanel().applicationHeaderPanel.revalidate();
-                    contentPane.getMainPanel().validate();
-                    repaint(contentPane.getMainPanel());
+                    revalidateTrackPanels();
                 }
         );
     }
 
     public void revalidateTrackPanels() {
         UIUtilities.invokeOnEventThread(() -> {
-            contentPane.revalidateTrackPanels();
+            getMainPanel().revalidateTrackPanels();
             repaint(rootPane);
         });
     }
@@ -2393,7 +2385,7 @@ public class IGV implements IGVEventObserver {
     private void checkPanelLayouts() {
         for (TrackPanel tp : getTrackPanels()) {
             if (tp.isHeightChanged()) {
-                tp.revalidate();
+                UIUtilities.invokeOnEventThread(() -> tp.revalidate());
             }
         }
     }

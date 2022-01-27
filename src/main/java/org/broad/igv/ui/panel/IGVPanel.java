@@ -69,6 +69,7 @@ public class IGVPanel extends JPanel implements Paintable {
 
     @Override
     public void doLayout() {
+
         synchronized (getTreeLock()) {
 
             int h = getHeight(); //getPreferredSize().height;

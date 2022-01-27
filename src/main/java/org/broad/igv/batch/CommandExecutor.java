@@ -475,7 +475,7 @@ public class CommandExecutor {
             hiddenAttributes.remove(attributeName);
         }
         igv.getSession().setHiddenAttributes(hiddenAttributes);
-        igv.getMainPanel().revalidateTrackPanels();
+        igv.revalidateTrackPanels();
         return "OK";
     }
 

@@ -890,7 +890,7 @@ public class TrackMenuUtils {
             }
 
             PreferencesManager.getPreferences().setShowAttributeView(true);
-            IGV.getInstance().getMainPanel().revalidateTrackPanels();
+            IGV.getInstance().revalidateTrackPanels();
             IGV.getInstance().repaint(selectedTracks);
 
         });

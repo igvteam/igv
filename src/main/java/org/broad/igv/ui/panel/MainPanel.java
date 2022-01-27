@@ -145,11 +145,15 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
     public void revalidateTrackPanels() {
-        this.applicationHeaderPanel.invalidate();
-        for (TrackPanel tp : this.getTrackPanels()) {
-            tp.invalidate();
-        }
-        this.revalidate();
+        updatePanelDimensions();
+        UIUtilities.invokeOnEventThread(() -> {
+            this.applicationHeaderPanel.invalidate();
+            for (TrackPanel tp : this.getTrackPanels()) {
+                tp.invalidate();
+            }
+            this.invalidate(); // this should not be neccessary, but is harmless
+            this.validate();
+        });
     }
 
     public void removeHeader() {

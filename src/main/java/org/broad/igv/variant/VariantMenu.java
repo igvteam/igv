@@ -200,7 +200,7 @@ public class VariantMenu extends IGVPopupMenu {
         final JMenuItem item = new JCheckBoxMenuItem("Show Genotypes", track.isShowGenotypes());
         item.addActionListener(evt -> {
             track.setShowGenotypes(item.isSelected());
-            IGV.getInstance().getContentPane().revalidateTrackPanels();
+            IGV.getInstance().revalidateTrackPanels();
             IGV.getInstance().getContentPane().repaint();
         });
         return item;

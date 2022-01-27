@@ -83,20 +83,11 @@ public class IGVContentPane extends JPanel {
         statusBar = new ApplicationStatusBar();
         statusBar.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
         add(statusBar, BorderLayout.SOUTH);
-
     }
 
     @Override
     public Dimension getPreferredSize() {
         return UIConstants.preferredSize;
-    }
-
-    public void revalidateTrackPanels() {
-        mainPanel.updatePanelDimensions();
-        mainPanel.applicationHeaderPanel.revalidate();
-        for (TrackPanel tp : mainPanel.getTrackPanels()) {
-            tp.getScrollPane().getDataPanel().revalidate();
-        }
     }
 
     /**

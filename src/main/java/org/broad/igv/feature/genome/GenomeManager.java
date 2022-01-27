@@ -211,7 +211,9 @@ public class GenomeManager {
                 monitor.fireProgress(25);
             }
 
-            if (IGV.hasInstance()) IGV.getInstance().resetSession(null);
+            if (IGV.hasInstance()) {
+                IGV.getInstance().resetSession(null);
+            }
 
             GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
             final Set<String> serverGenomeIDs = genomeListManager.getServerGenomeIDs();
