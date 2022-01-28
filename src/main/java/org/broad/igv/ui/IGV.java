@@ -994,8 +994,8 @@ public class IGV implements IGVEventObserver {
                 }
 
                 mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-                if (!getRecentSessionList().contains(sessionPath)) {
-                    getRecentSessionList().addFirst(sessionPath);
+                if (!recentSessionList.contains(sessionPath)) {
+                    recentSessionList.addFirst(sessionPath);
                 }
                 this.menuBar.enableReloadSession();
 
@@ -1012,9 +1012,11 @@ public class IGV implements IGVEventObserver {
             return success;
 
         } catch (Exception e) {
-            String message = "Error loading session session : " + sessionPath;
-            log.error(message, e);
-            throw new RuntimeException(e);
+            String message = "Error loading session session: " + e.getMessage();
+            MessageUtils.showMessage(message);
+            recentSessionList.remove(sessionPath);
+            log.error(message);
+            return false;
         } finally {
             if (inputStream != null) {
                 try {
@@ -1074,8 +1076,8 @@ public class IGV implements IGVEventObserver {
         String sessionPath = targetFile.getAbsolutePath();
         session.setPath(sessionPath);
         mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-        if (!getRecentSessionList().contains(sessionPath)) {
-            getRecentSessionList().addFirst(sessionPath);
+        if (!recentSessionList.contains(sessionPath)) {
+            recentSessionList.addFirst(sessionPath);
         }
         this.menuBar.enableReloadSession();
 
