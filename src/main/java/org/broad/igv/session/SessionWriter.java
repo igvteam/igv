@@ -168,7 +168,7 @@ public class SessionWriter {
             }
 
             // Hidden attributes
-            if (session.getHiddenAttributes() != null && session.getHiddenAttributes().size() > 0) {
+            if (session.getHiddenAttributes() != null) {
                 writeHiddenAttributes(session, globalElement, document);
             }
 

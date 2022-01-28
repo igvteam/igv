@@ -126,6 +126,11 @@ public class AttributeManager {
 
     private AttributeManager() {
         propertyChangeSupport = new PropertyChangeSupport(this);
+
+        // The default attributes
+        addAttributeName("NAME");
+        addAttributeName("DATA TYPE");
+        addAttributeName("DATA FILE");
     }
 
     static synchronized public AttributeManager getInstance() {
@@ -203,6 +208,12 @@ public class AttributeManager {
     public void clearAllAttributes() {
         attributeMap.clear();
         attributeNames.clear();
+
+        // The default attributes
+        addAttributeName("NAME");
+        addAttributeName("DATA TYPE");
+        addAttributeName("DATA FILE");
+
         uniqueAttributeValues.clear();
         //hiddenAttributes.clear();
         loadedResources = new HashSet();

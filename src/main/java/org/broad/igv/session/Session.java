@@ -444,7 +444,7 @@ public class Session implements IGVEventObserver {
      * @return
      */
     public Set<String> getHiddenAttributes() {
-        if (hiddenAttributes == null || hiddenAttributes.isEmpty()) {
+        if (hiddenAttributes == null) {
             return (PreferencesManager.getPreferences().getAsBoolean(SHOW_DEFAULT_TRACK_ATTRIBUTES))  ?
                     Collections.emptySet() :
                     new HashSet<>(AttributeManager.defaultTrackAttributes);

@@ -640,18 +640,15 @@ public class IGVSessionReader implements SessionReader {
     }
 
     private void processHiddenAttributes(Session session, Element element, HashMap additionalInformation) {
-
         NodeList elements = element.getChildNodes();
-        if (elements.getLength() > 0) {
-            Set<String> attributes = new HashSet();
-            for (int i = 0; i < elements.getLength(); i++) {
-                Node childNode = elements.item(i);
-                if (childNode.getNodeName().equals("Attribute")) {
-                    attributes.add(((Element) childNode).getAttribute(SessionAttribute.NAME));
-                }
+        Set<String> attributes = new HashSet();
+        for (int i = 0; i < elements.getLength(); i++) {
+            Node childNode = elements.item(i);
+            if (childNode.getNodeName().equals("Attribute")) {
+                attributes.add(((Element) childNode).getAttribute(SessionAttribute.NAME));
             }
-            session.setHiddenAttributes(attributes);
         }
+        session.setHiddenAttributes(attributes);
     }
 
 
