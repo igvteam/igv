@@ -991,16 +991,19 @@ public class TrackLoader {
                 break;
             }
         }
-        message.append("<br>Genome: ");
-        n = 0;
-        for (String cn : genome.getAllChromosomeNames()) {
-            message.append(cn + ", ");
-            n++;
-            if (n > 3) {
-                message.append(" ...");
-                break;
+        if (genome != null && genome.getAllChromosomeNames() != null) {
+            message.append("<br>Genome: ");
+            n = 0;
+            for (String cn : genome.getAllChromosomeNames()) {
+                message.append(cn + ", ");
+                n++;
+                if (n > 3) {
+                    message.append(" ...");
+                    break;
+                }
             }
         }
+
         MessageUtils.showMessage(message.toString());
     }
 
