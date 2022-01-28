@@ -187,7 +187,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
 
         if (sortKey != null) {
             IGV.getInstance().sortAllTracksByAttributes(new String[]{sortKey}, new boolean[]{isSortAscending});
-            IGV.getMainFrame().repaint();
+            IGV.getInstance().getMainFrame().repaint();
         }
     }
 

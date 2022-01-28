@@ -686,16 +686,16 @@ public class RegionNavigatorDialog extends JDialog implements Observer, IGVEvent
         public void actionPerformed(ActionEvent e) {
             String chr = FrameManager.getDefaultFrame().getChrName();
             if (FrameManager.isGeneListMode()) {
-                JOptionPane.showMessageDialog(IGV.getMainFrame(),
+                JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(),
                         "Regions cannot be created in gene list or split-screen views.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
 
             } else if (chr == null || chr.isEmpty()) {
-                JOptionPane.showMessageDialog(IGV.getMainFrame(),
+                JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(),
                         "No chromosome is specified. Can't create a region without a chromosome.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
             } else if (chr.equalsIgnoreCase("All")) {
-                JOptionPane.showMessageDialog(IGV.getMainFrame(),
+                JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(),
                         "Regions cannot be created in the All Chromosomes view.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
             } else {
@@ -724,7 +724,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer, IGVEvent
                 synchRegions();
             } else {
                 //todo dhmay -- I don't fully understand this call.  Clean this up.
-                JOptionPane.showMessageDialog(IGV.getMainFrame(), "No regions have been selected for removal.",
+                JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(), "No regions have been selected for removal.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
             }
             updateButtonsEnabled();

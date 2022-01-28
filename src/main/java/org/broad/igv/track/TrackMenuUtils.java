@@ -772,7 +772,7 @@ public class TrackMenuUtils {
                 if (selectedTracks.size() > 0) {
 
                     ContinuousColorScale colorScale = selectedTracks.iterator().next().getColorScale();
-                    HeatmapScaleDialog dlg = new HeatmapScaleDialog(IGV.getMainFrame(), colorScale);
+                    HeatmapScaleDialog dlg = new HeatmapScaleDialog(IGV.getInstance().getMainFrame(), colorScale);
 
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
@@ -800,7 +800,7 @@ public class TrackMenuUtils {
 
                 // Create a datarange that spans the extent of prev tracks range
                 DataRange prevAxisDefinition = DataRange.getFromTracks(selectedTracks);
-                DataRangeDialog dlg = new DataRangeDialog(IGV.getMainFrame(), prevAxisDefinition);
+                DataRangeDialog dlg = new DataRangeDialog(IGV.getInstance().getMainFrame(), prevAxisDefinition);
                 dlg.setVisible(true);
                 if (!dlg.isCanceled()) {
                     float min = Math.min(dlg.getMax(), dlg.getMin());
@@ -1045,7 +1045,7 @@ public class TrackMenuUtils {
             return;
         }
         Track t = selectedTracks.iterator().next();
-        String newName = JOptionPane.showInputDialog(IGV.getMainFrame(), "Enter new name: ", t.getName());
+        String newName = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), "Enter new name: ", t.getName());
 
         if (newName == null || newName.trim() == "") {
             return;
@@ -1129,7 +1129,7 @@ public class TrackMenuUtils {
         while (true) {
 
             String strValue = JOptionPane.showInputDialog(
-                    IGV.getMainFrame(), parameter + ": ",
+                    IGV.getInstance().getMainFrame(), parameter + ": ",
                     String.valueOf(value));
 
             //strValue will be null if dialog cancelled
@@ -1141,7 +1141,7 @@ public class TrackMenuUtils {
                 value = Integer.parseInt(strValue);
                 return value;
             } catch (NumberFormatException numberFormatException) {
-                JOptionPane.showMessageDialog(IGV.getMainFrame(),
+                JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(),
                         parameter + " must be an integer number.");
             }
         }
@@ -1152,7 +1152,7 @@ public class TrackMenuUtils {
         while (true) {
 
             String strValue = JOptionPane.showInputDialog(
-                    IGV.getMainFrame(), parameter + ": ",
+                    IGV.getInstance().getMainFrame(), parameter + ": ",
                     String.valueOf(value));
 
             //strValue will be null if dialog cancelled

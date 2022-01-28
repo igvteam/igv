@@ -73,7 +73,7 @@ public class BlatTrack extends FeatureTrack {
 
     private void openTableView() {
 
-        BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), sequence, features);
+        BlatQueryWindow win = new BlatQueryWindow(IGV.getInstance().getMainFrame(), sequence, features);
         win.setVisible(true);
     }
 

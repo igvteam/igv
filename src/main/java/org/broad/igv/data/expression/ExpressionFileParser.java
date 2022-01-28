@@ -572,7 +572,7 @@ public class ExpressionFileParser {
             // Let user choose the signal column
             Collections.sort(qColumns);
 
-            MagetabSignalDialog msDialog = new MagetabSignalDialog(IGV.getMainFrame(), qColumns.toArray(new String[0]));
+            MagetabSignalDialog msDialog = new MagetabSignalDialog(IGV.getInstance().getMainFrame(), qColumns.toArray(new String[0]));
             msDialog.setVisible(true);
 
             if (!msDialog.isCanceled()) {

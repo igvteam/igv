@@ -78,7 +78,7 @@ public class MessageUtils {
             UIUtilities.invokeAndWaitOnEventThread(() -> {
                 // Always use HTML for message displays, but first remove any embedded <html> tags.
                 String dlgMessage = "<html>" + message.replaceAll("<html>", "");
-                Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+                Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
                 Color background = parent != null ? parent.getBackground() : Color.lightGray;
 
                 //JEditorPane So users can select text
@@ -119,7 +119,7 @@ public class MessageUtils {
             return true;
         }
 
-        final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+        final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
         return confirm(parent, message);
     }
 
@@ -165,7 +165,7 @@ public class MessageUtils {
 
     public static String showInputDialog(String message, String defaultValue) {
 
-        final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+        final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
         //Pad message with spaces so it's as wide as the defaultValue
         if (defaultValue != null && message.length() < defaultValue.length()) {
             message = String.format("%-" + defaultValue.length() + "s", message);
@@ -197,7 +197,7 @@ public class MessageUtils {
 
     public static String showInputDialog(final String message) {
 
-        final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+        final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
         if (SwingUtilities.isEventDispatchThread()) {
             String val = JOptionPane.showInputDialog(parent, message);
             return val;

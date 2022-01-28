@@ -80,7 +80,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         ta.setPreferredSize(new Dimension(600, 20));
         if (e.getActionCommand().equalsIgnoreCase(LOAD_FROM_URL)) {
 
-            LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getMainFrame());
+            LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame());
             dlg.setVisible(true);
 
             if (!dlg.isCanceled()) {
@@ -117,7 +117,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                 }
             }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_FROM_DAS))) {
-            String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter DAS feature source URL",
+            String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter DAS feature source URL",
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
                 ResourceLocator rl = new ResourceLocator(url.trim());
@@ -125,7 +125,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                 igv.loadTracks(Arrays.asList(rl));
             }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
-            String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL to .genome or FASTA file",
+            String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .genome or FASTA file",
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
                 if (url.startsWith("s3://")) {

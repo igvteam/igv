@@ -239,7 +239,7 @@ public class FileDialogUtils {
 
 
     private static Frame getParentFrame() {
-        return IGV.hasInstance() ? IGV.getMainFrame() : null;
+        return IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
     }
 
 

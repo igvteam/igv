@@ -2055,7 +2055,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             final JMenuItem item = new JCheckBoxMenuItem("Set insert size options ...");
             item.addActionListener(aEvt -> {
 
-                InsertSizeSettingsDialog dlg = new InsertSizeSettingsDialog(IGV.getMainFrame(), renderOptions);
+                InsertSizeSettingsDialog dlg = new InsertSizeSettingsDialog(IGV.getInstance().getMainFrame(), renderOptions);
                 dlg.setModal(true);
                 dlg.setVisible(true);
                 if (!dlg.isCanceled()) {

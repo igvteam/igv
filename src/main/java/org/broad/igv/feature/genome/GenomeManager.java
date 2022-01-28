@@ -126,7 +126,7 @@ public class GenomeManager {
                 DirectoryManager.getGenomeCacheDirectory().mkdir();
             }
             archiveFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedFilename);
-            Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+            Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
             Downloader.download(genomeArchiveURL, archiveFile, parent);
         } else {
             archiveFile = new File(genomePath);
@@ -164,7 +164,7 @@ public class GenomeManager {
             final ProgressMonitor[] monitor = {new ProgressMonitor()};
             final ProgressBar.ProgressDialog[] progressDialog = new ProgressBar.ProgressDialog[1];
             UIUtilities.invokeAndWaitOnEventThread(() -> {
-                progressDialog[0] = ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor[0], false);
+                progressDialog[0] = ProgressBar.showProgressDialog(IGV.getInstance().getMainFrame(), "Loading Genome...", monitor[0], false);
             });
 
             try {
@@ -500,12 +500,12 @@ public class GenomeManager {
         String filename = Utilities.getFileNameFromURL(fastaPath);
 
         File localFile = new File(targetDir, filename);
-        boolean downloaded = Downloader.download(HttpUtils.createURL(fastaPath), localFile, IGV.getMainFrame());
+        boolean downloaded = Downloader.download(HttpUtils.createURL(fastaPath), localFile, IGV.getInstance().getMainFrame());
 
         if (downloaded) {
             URL indexUrl = HttpUtils.createURL(fastaPath + ".fai");
             File localIndexFile = new File(targetDir, filename + ".fai");
-            downloaded = Downloader.download(indexUrl, localIndexFile, IGV.getMainFrame());
+            downloaded = Downloader.download(indexUrl, localIndexFile, IGV.getInstance().getMainFrame());
         }
 
         if (downloaded) {
@@ -513,7 +513,7 @@ public class GenomeManager {
             if (fastaPath.endsWith(".gz")) {
                 URL gziUrl = HttpUtils.createURL(fastaPath + ".gzi");
                 File localGziPath = new File(targetDir, filename + ".gzi");
-                downloaded = Downloader.download(gziUrl, localGziPath, IGV.getMainFrame());
+                downloaded = Downloader.download(gziUrl, localGziPath, IGV.getInstance().getMainFrame());
             }
         }
 

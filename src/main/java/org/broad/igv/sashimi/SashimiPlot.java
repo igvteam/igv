@@ -641,7 +641,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             if (nonJunctionTracks.size() == 1) {
                 geneTrack = nonJunctionTracks.get(0);
             } else {
-                FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getMainFrame(), nonJunctionTracks);
+                FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getInstance().getMainFrame(), nonJunctionTracks);
                 dlg.setTitle("Select Gene Track");
                 dlg.setVisible(true);
                 if (dlg.getIsCancelled()) return;
@@ -657,7 +657,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
             if (alignmentTracks.size() > 1) {
                 TrackSelectionDialog<AlignmentTrack> alDlg =
-                        new TrackSelectionDialog<AlignmentTrack>(IGV.getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, alignmentTracks);
+                        new TrackSelectionDialog<AlignmentTrack>(IGV.getInstance().getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, alignmentTracks);
                 alDlg.setTitle("Select Alignment Tracks");
                 alDlg.setVisible(true);
                 if (alDlg.getIsCancelled()) return;

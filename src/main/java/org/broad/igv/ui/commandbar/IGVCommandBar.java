@@ -327,7 +327,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     public void searchByLocus(final String searchText) {
 
         if ((searchText != null) && (searchText.length() > 0)) {
-            String homeChr = IGV.getInstance().getGenomeManager().getCurrentGenome().getHomeChromosome();
+            String homeChr = GenomeManager.getInstance().getCurrentGenome().getHomeChromosome();
             if (searchText.equalsIgnoreCase("home") || searchText.equalsIgnoreCase(homeChr)) {
                 homeButtonActionPerformed(null);
             } else {

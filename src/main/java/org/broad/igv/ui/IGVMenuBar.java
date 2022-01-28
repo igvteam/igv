@@ -160,7 +160,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
     public void showAboutDialog() {
-        (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
+        (new AboutDialog(igv.getMainFrame(), true)).setVisible(true);
     }
 
 
@@ -227,7 +227,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                IgvToolsGui.launch(false, igv.getGenomeManager().getGenomeId());
+                IgvToolsGui.launch(false, GenomeManager.getInstance().getGenomeId());
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
@@ -243,7 +243,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         combineDataItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                CombinedDataSourceDialog dialog = new CombinedDataSourceDialog(IGV.getMainFrame());
+                CombinedDataSourceDialog dialog = new CombinedDataSourceDialog(igv.getMainFrame());
                 dialog.setVisible(true);
             }
         });
@@ -295,7 +295,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         encodeMenuItem = MenuAndToolbarUtils.createMenuItem(new BrowseEncodeAction("Load from ENCODE (2012)...", KeyEvent.VK_E, igv));
         menuItems.add(encodeMenuItem);
-        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+        String genomeId = GenomeManager.getInstance().getGenomeId();
         encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(genomeId));
 
 
@@ -386,10 +386,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
         }
 
-        if (!IGV.getInstance().getRecentSessionList().isEmpty()) {
+        if (!igv.getRecentSessionList().isEmpty()) {
             menuItems.add(new JSeparator());
             // Now add menu items
-            for (final String session : IGV.getInstance().getRecentSessionList()) {
+            for (final String session : igv.getRecentSessionList()) {
                 OpenSessionMenuAction osMenuAction = new OpenSessionMenuAction(session, IGV.getInstance());
                 menuItems.add(MenuAndToolbarUtils.createMenuItem(osMenuAction));
             }
@@ -454,7 +454,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction = new MenuAction("Remove Genomes...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
-                RemoveGenomesDialog dialog2 = new RemoveGenomesDialog(IGV.getMainFrame());
+                RemoveGenomesDialog dialog2 = new RemoveGenomesDialog(igv.getMainFrame());
                 dialog2.setVisible(true);
             }
         };
@@ -468,7 +468,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 //                new MenuAction("Create .genome File...", null, KeyEvent.VK_D) {
 //                    @Override
 //                    public void actionPerformed(ActionEvent event) {
-//                        javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(IGV.getInstance().getMainPanel(),
+//                        javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(igv.getMainPanel(),
 //                                "Creating genome", null, 0, 100);
 //                        igv.defineGenome(monitor);
 //                    }
@@ -546,7 +546,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     public void actionPerformed(ActionEvent e) {
                         UIUtilities.invokeOnEventThread(new Runnable() {
                             public void run() {
-                                IGV.getInstance().doViewPreferences();
+                                igv.doViewPreferences();
                             }
                         });
                     }
@@ -558,7 +558,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 new MenuAction("Color Legends ...", null, KeyEvent.VK_H) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        (new LegendDialog(IGV.getMainFrame())).setVisible(true);
+                        (new LegendDialog(igv.getMainFrame())).setVisible(true);
                     }
                 };
         menuAction.setToolTipText(SHOW_HEATMAP_LEGEND_TOOLTIP);
@@ -572,13 +572,13 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                 JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
                 if (menuItem.isSelected()) {
-                    IGV.getInstance().getMainPanel().expandNamePanel();
+                    igv.getMainPanel().expandNamePanel();
                 } else {
-                    IGV.getInstance().getMainPanel().collapseNamePanel();
+                    igv.getMainPanel().collapseNamePanel();
                 }
             }
         };
-        boolean isShowing = IGV.getInstance().getMainPanel().isExpanded();
+        boolean isShowing = igv.getMainPanel().isExpanded();
         JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem();
         menuItem.setSelected(isShowing);
         menuItem.setAction(menuAction);
@@ -588,7 +588,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction = new MenuAction("Set Name Panel Width...", null, KeyEvent.VK_A) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MainPanel mainPanel = IGV.getInstance().getMainPanel();
+                MainPanel mainPanel = igv.getMainPanel();
                 String currentValue = String.valueOf(mainPanel.getNamePanelWidth());
                 String newValue = MessageUtils.showInputDialog("Enter track name panel width: ", currentValue);
                 if (newValue != null) {
@@ -608,7 +608,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         // Hide or Show the attribute panels
         //boolean isShow = PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
-        //IGV.getInstance().doShowAttributeDisplay(isShow);
+        //igv.doShowAttributeDisplay(isShow);
 
         menuAction = new MenuAction("Show Attribute Display", null, KeyEvent.VK_A) {
             @Override
@@ -616,7 +616,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                 JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
                 PreferencesManager.getPreferences().setShowAttributeView(menuItem.getState());
-                IGV.getInstance().revalidateTrackPanels();
+                igv.revalidateTrackPanels();
             }
         };
         boolean isShow = PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY);
@@ -627,7 +627,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction =
                 new MenuAction("Select Attributes to Show...", null, KeyEvent.VK_S) {
                     @Override
-                    public void actionPerformed(ActionEvent e) {IGV.getInstance().doSelectDisplayableAttribute();
+                    public void actionPerformed(ActionEvent e) {igv.doSelectDisplayableAttribute();
                     }
                 };
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
@@ -639,11 +639,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                 JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
                 if (menuItem.isSelected()) {
-                    IGV.getInstance().getMainPanel().restoreHeader();
+                    igv.getMainPanel().restoreHeader();
                 } else {
-                    IGV.getInstance().getMainPanel().removeHeader();
+                    igv.getMainPanel().removeHeader();
                 }
-                IGV.getInstance().getMainPanel().revalidate();
+                igv.getMainPanel().revalidate();
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction, true));
@@ -654,7 +654,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        ReorderPanelsDialog dlg = new ReorderPanelsDialog(IGV.getMainFrame());
+                        ReorderPanelsDialog dlg = new ReorderPanelsDialog(igv.getMainFrame());
                         dlg.setVisible(true);
                     }
                 };
@@ -666,7 +666,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         String newPanelName = "Panel" + System.currentTimeMillis();
-                        IGV.getInstance().addDataPanel(newPanelName);
+                        igv.addDataPanel(newPanelName);
                     }
                 };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
@@ -695,7 +695,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 new MenuAction("Gene Lists...", null, KeyEvent.VK_S) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        (GeneListManagerUI.getInstance(IGV.getMainFrame())).setVisible(true);
+                        (GeneListManagerUI.getInstance(igv.getMainFrame())).setVisible(true);
                     }
                 };
         menuAction.setToolTipText("Open gene list manager");
@@ -776,7 +776,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
+                        (new AboutDialog(igv.getMainFrame(), true)).setVisible(true);
                     }
                 };
         menuAction.setToolTipText(ABOUT_TOOLTIP);
@@ -876,7 +876,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                             if (vals.length == 2) {
                                 int w = Integer.parseInt(vals[0]);
                                 int h = Integer.parseInt(vals[1]);
-                                IGV.getMainFrame().setSize(w, h);
+                                igv.getMainFrame().setSize(w, h);
                             }
                         }
                     }
@@ -889,7 +889,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGV.getInstance().saveImage(IGV.getInstance().getContentPane(), "png");
+                        igv.saveImage(igv.getContentPane(), "png");
 
                     }
                 };
@@ -901,7 +901,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGV.getInstance().saveImage(IGV.getInstance().getContentPane(), "svg");
+                        igv.saveImage(igv.getContentPane(), "svg");
 
                     }
                 };
@@ -1003,7 +1003,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             log.debug(buckets);
 
             UIUtilities.invokeOnEventThread(() -> {
-                S3LoadDialog dlg = new S3LoadDialog(IGV.getMainFrame());
+                S3LoadDialog dlg = new S3LoadDialog(igv.getMainFrame());
                 dlg.setModal(true);
                 dlg.setVisible(true);
                 dlg.dispose();
@@ -1165,8 +1165,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     final public void doExitApplication() {
 
         try {
-            IGV.getInstance().saveStateForExit();
-            Frame mainFrame = IGV.getMainFrame();
+            igv.saveStateForExit();
+            Frame mainFrame = igv.getMainFrame();
             PreferencesManager.getPreferences().setApplicationFrameBounds(mainFrame.getBounds());
 
             // Hide and close the application

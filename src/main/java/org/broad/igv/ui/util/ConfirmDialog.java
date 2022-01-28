@@ -173,7 +173,7 @@ public class ConfirmDialog extends JDialog {
         boolean show = PreferencesManager.getPreferences().getAsBoolean(key);
         show &= ( !Globals.isHeadless() && !Globals.isSuppressMessages() );
         if (show) {
-            ConfirmDialog dlg = new ConfirmDialog(IGV.getMainFrame(), message, key);
+            ConfirmDialog dlg = new ConfirmDialog(IGV.getInstance().getMainFrame(), message, key);
             dlg.okButton.setText("OK");
             dlg.cancelButton.setVisible(false);
             dlg.setVisible(true);
@@ -185,7 +185,7 @@ public class ConfirmDialog extends JDialog {
         boolean show = PreferencesManager.getPreferences().getAsBoolean(key);
         show &= !(Globals.isSuppressMessages() || Globals.isHeadless() || Globals.isTesting());
         if (show) {
-            ConfirmDialog dlg = new ConfirmDialog(IGV.getMainFrame(), message, key);
+            ConfirmDialog dlg = new ConfirmDialog(IGV.getInstance().getMainFrame(), message, key);
 
             dlg.setVisible(true);
             return dlg.okPressed;

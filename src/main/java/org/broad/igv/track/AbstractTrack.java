@@ -568,7 +568,7 @@ public abstract class AbstractTrack implements Track {
         String popupText = getValueStringAt(frame.getChrName(), e.getChromosomePosition(), e.getMouseEvent().getX(), e.getMouseEvent().getY(), frame);
 
         if (popupText != null) {
-            Color color = IGV.getRootPane().getJMenuBar().getForeground();
+            Color color = IGV.getInstance().getRootPane().getJMenuBar().getForeground();
             String htmlColor = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
             popupText = "<div style=\"color: " + htmlColor + "\">" + popupText + "</div>";
 

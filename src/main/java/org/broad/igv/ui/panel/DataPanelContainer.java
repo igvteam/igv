@@ -240,7 +240,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 MessageUtils.showMessage(messages.getFormattedMessage());
             }
 
-            IGV.getMainFrame().repaint();
+            IGV.getInstance().getMainFrame().repaint();
             event.dropComplete(true);
         }
 

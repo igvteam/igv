@@ -27,6 +27,7 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.aa.AminoAcidSequence;
 import org.broad.igv.prefs.PreferencesManager;
@@ -101,7 +102,7 @@ public class Mutation implements IGVFeature {
 
     public String getOMAUrl() {
         if (refAllele == null) return null;
-        String genome = IGV.getInstance().getGenomeManager().getGenomeId();
+        String genome = GenomeManager.getInstance().getGenomeId();
         String url = "http://mutationassessor.org/r3/?cm=var&var=" + genome + "," + getOMAName();
         return url;
 
@@ -109,7 +110,7 @@ public class Mutation implements IGVFeature {
 
     public String getCravatLink() {
 
-        String genomeID = IGV.getInstance().getGenomeManager().getGenomeId();
+        String genomeID = GenomeManager.getInstance().getGenomeId();
         if ("hg38".equals(genomeID) || "GRCh38".equals(genomeID)) {
             if(refAllele == null) return null;
             String altAllele = altAllele1;

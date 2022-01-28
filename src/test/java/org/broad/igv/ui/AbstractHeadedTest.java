@@ -74,7 +74,7 @@ public class AbstractHeadedTest {
     @Before
     public void setUp() throws Exception {
         igv.newSession();
-        IGV.getMainFrame().requestFocus();
+        IGV.getInstance().getMainFrame().requestFocus();
 
         TestUtils.resetPrefsFile();
         TestUtils.resetTestUserDefinedGenomes();
@@ -113,7 +113,7 @@ public class AbstractHeadedTest {
         //If IGV is already open, we get the instance.
         if (IGV.hasInstance()) {
             igv = IGV.getInstance();
-            IGV.getMainFrame().setVisible(true);
+            IGV.getInstance().getMainFrame().setVisible(true);
             System.out.println("Using old IGV");
         } else {
             JFrame frame = new JFrame();
@@ -139,8 +139,8 @@ public class AbstractHeadedTest {
             return;
         }
 
-        IGV.getMainFrame().setVisible(false);
-        IGV.getMainFrame().dispose();
+        IGV.getInstance().getMainFrame().setVisible(false);
+        IGV.getInstance().getMainFrame().dispose();
         IGV.destroyInstance();
     }
 

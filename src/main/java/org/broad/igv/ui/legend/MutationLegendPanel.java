@@ -93,7 +93,7 @@ public class MutationLegendPanel extends LegendPanel {
 
         boolean useColors =  IGV.getInstance().getSession().getColorOverlay();
         PaletteColorTable ct = PreferencesManager.getPreferences().getMutationColorScheme();
-        MutationColorMapEditor editor = new MutationColorMapEditor(IGV.getMainFrame(), ct.getColorMap(),useColors);
+        MutationColorMapEditor editor = new MutationColorMapEditor(IGV.getInstance().getMainFrame(), ct.getColorMap(),useColors);
         editor.setVisible(true);
 
         Map<String, Color> changedColors = editor.getChangedColors();

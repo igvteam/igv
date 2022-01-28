@@ -55,7 +55,7 @@ public class MotifFinderPlugin {
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MotifFinderDialog dialog = new MotifFinderDialog(IGV.getMainFrame());
+                MotifFinderDialog dialog = new MotifFinderDialog(IGV.getInstance().getMainFrame());
                 dialog.setVisible(true);
 
                 handleDialogResult(dialog);

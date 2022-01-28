@@ -485,7 +485,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         optionPane.setMessage(new Object[]{"Adjust transparency: ", slider});
         optionPane.setMessageType(JOptionPane.QUESTION_MESSAGE);
         optionPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
-        JDialog dialog = optionPane.createDialog(IGV.getMainFrame(), "Transparency");
+        JDialog dialog = optionPane.createDialog(IGV.getInstance().getMainFrame(), "Transparency");
         return dialog;
     }
 

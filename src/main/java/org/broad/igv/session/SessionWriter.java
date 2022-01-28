@@ -134,7 +134,7 @@ public class SessionWriter {
                 globalElement.setAttribute(SessionAttribute.LOCUS, locus);
             }
 
-            String groupBy = IGV.getInstance().getGroupByAttribute();
+            String groupBy = session.getGroupByAttribute();
             if (groupBy != null) {
                 globalElement.setAttribute(SessionAttribute.GROUP_TRACKS_BY, groupBy);
             }
@@ -179,7 +179,7 @@ public class SessionWriter {
         } catch (Exception e) {
             String message = "Error creating session.";
             log.error(message, e);
-            JOptionPane.showMessageDialog(IGV.getMainFrame(), message);
+            JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(), message);
             throw new RuntimeException(e);
         }
     }

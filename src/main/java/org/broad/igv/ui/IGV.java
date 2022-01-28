@@ -100,12 +100,14 @@ public class IGV implements IGVEventObserver {
     private static Logger log = LogManager.getLogger(IGV.class);
     private static IGV theInstance;
 
+    public static final String DATA_PANEL_NAME = "DataPanel";
+    public static final String FEATURE_PANEL_NAME = "FeaturePanel";
+
     // Window components
     private Frame mainFrame;
     private JRootPane rootPane;
     private IGVContentPane contentPane;
     private IGVMenuBar menuBar;
-
     private StatusWindow statusWindow;
 
     // Glass panes
@@ -118,28 +120,16 @@ public class IGV implements IGVEventObserver {
     public static Cursor zoomOutCursor;
     public static Cursor dragNDropCursor;
 
-    //Session session;
-    Session session;
-
-    private GenomeManager genomeManager;
-
     /**
-     * Attribute used to group tracks.  Normally "null".  Set from the "Tracks" menu.
-     */
-    private String groupByAttribute = null;
-
-
-    private Map<String, List<Track>> overlayTracksMap = new HashMap();
-    private Set<Track> overlaidTracks = new HashSet();
-
-    public static final String DATA_PANEL_NAME = "DataPanel";
-    public static final String FEATURE_PANEL_NAME = "FeaturePanel";
-
+     * Object to hold state that defines a user session.  There is always a user session, even if not initialized
+     * from a "session" file.
+     * */
+    private Session session;
 
     // Misc state
+    private Map<String, List<Track>> overlayTracksMap = new HashMap();
+    private Set<Track> overlaidTracks = new HashSet();
     private LinkedList<String> recentSessionList = new LinkedList<String>();
-
-    private List<JComponent> otherToolMenus = new ArrayList<>();
 
     // Vertical line that follows the mouse
     private boolean rulerEnabled;
@@ -159,31 +149,15 @@ public class IGV implements IGVEventObserver {
         return theInstance;
     }
 
+    public static boolean hasInstance() {
+        return theInstance != null;
+    }
+
     @ForTesting
     static void destroyInstance() {
         IGVMenuBar.destroyInstance();
         theInstance = null;
     }
-
-    public static boolean hasInstance() {
-        return theInstance != null;
-    }
-
-    public static JRootPane getRootPane() {
-        return getInstance().rootPane;
-    }
-
-    /**
-     * The IGV GUI has one master frame containing all other elements.
-     * This method returns that frame.
-     *
-     * @return
-     * @api
-     */
-    public static Frame getMainFrame() {
-        return getInstance().mainFrame;
-    }
-
 
     /**
      * Creates new IGV
@@ -203,7 +177,6 @@ public class IGV implements IGVEventObserver {
             log.warn(ie.getMessage());
         }
 
-        genomeManager = GenomeManager.getInstance();
         mainFrame.addWindowListener(new WindowAdapter() {
 
 
@@ -287,53 +260,13 @@ public class IGV implements IGVEventObserver {
         subscribeToEvents();
     }
 
-    private void consumeEvents(Component glassPane) {
-
-        glassPane.addMouseListener(new IGVMouseInputAdapter() {
-            @Override
-            public void igvMouseClicked(MouseEvent e) {
-
-                Point glassPanePoint = e.getPoint();
-                Container container = IGV.this.contentPane;
-                Point containerPoint = SwingUtilities.convertPoint(glassPane,
-                        glassPanePoint, container);
-
-                Component component = SwingUtilities.getDeepestComponentAt(
-                        container, containerPoint.x, containerPoint.y);
-
-                if (component == IGV.this.contentPane.getStatusBar().stopButton) {
-                    IGVEventBus.getInstance().post(new StopEvent());
-                }
-                e.consume();
-
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
-                e.consume();
-
-            }
-        });
-        glassPane.setFocusable(true);
-        glassPane.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                e.consume();
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                e.consume();
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                e.consume();
-            }
-        });
+    public JRootPane getRootPane() {
+        return rootPane;
     }
 
+    public Frame getMainFrame() {
+        return mainFrame;
+    }
 
     public GhostGlassPane getDnDGlassPane() {
         return dNdGlassPane;
@@ -417,7 +350,7 @@ public class IGV implements IGVEventObserver {
             String genomeDisplayName = genomeBuilderDialog.getGenomeDisplayName();
             String genomeId = genomeBuilderDialog.getGenomeId();
 
-            GenomeListItem genomeListItem = getGenomeManager().defineGenome(
+            GenomeListItem genomeListItem = GenomeManager.getInstance().defineGenome(
                     genomeZipFile, cytobandFileName, geneAnnotFileName,
                     fastaFileName, chrAliasFile, genomeDisplayName,
                     genomeId, monitor);
@@ -1001,35 +934,26 @@ public class IGV implements IGVEventObserver {
 
 
     /**
-     * Reset the UI state for a new session,  and associate the sessino object with the given path to a session file.
+     * Reset session state, and associate the session object with the given path to a session file.
      *
      * @param sessionPath
      */
     public void resetSession(String sessionPath) {
 
-        if (session == null) {
-            // This should never be the case (session == null)
-            session = new Session(sessionPath);
-        } else {
-            session.reset(sessionPath);
-        }
+        session.reset(sessionPath);
 
         AttributeManager.getInstance().clearAllAttributes();
-        session.clearHiddenAttributes();
         mainFrame.setTitle(sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath);
         menuBar.resetSessionActions();
 
         getMainPanel().resetPanels();   // Also clears all tracks
-
-        groupByAttribute = null;
-
         getMainPanel().updatePanelDimensions();
         revalidateTrackPanels();
     }
 
 
     /**
-     * Creates a new IGV session.
+     * Creates a new IGV session
      */
     public void newSession() {
         resetSession(null);
@@ -1201,12 +1125,6 @@ public class IGV implements IGVEventObserver {
     public IGVContentPane getContentPane() {
         return contentPane;
     }
-
-    public GenomeManager getGenomeManager() {
-        return genomeManager;
-    }
-
-    JCheckBoxMenuItem showPeakMenuItem;
 
     public boolean isShowDetailsOnClick() {
         return contentPane != null && contentPane.getCommandBar().getDetailsBehavior() == ShowDetailsBehavior.CLICK;
@@ -1890,12 +1808,12 @@ public class IGV implements IGVEventObserver {
     // Groups
 
     public String getGroupByAttribute() {
-        return groupByAttribute;
+        return session.getGroupByAttribute();
     }
 
 
     public void setGroupByAttribute(String attributeName) {
-        groupByAttribute = attributeName;
+        session.setGroupByAttribute(attributeName);
         resetGroups();
         // Some tracks need to respond to changes in grouping, fire notification event
         IGVEventBus.getInstance().post(new TrackGroupEvent(this));
@@ -1905,7 +1823,7 @@ public class IGV implements IGVEventObserver {
     private void resetGroups() {
         log.debug("Resetting Groups");
         for (TrackPanel trackPanel : getTrackPanels()) {
-            trackPanel.groupTracksByAttribute(groupByAttribute);
+            trackPanel.groupTracksByAttribute(session.getGroupByAttribute());
         }
     }
 
@@ -1951,6 +1869,8 @@ public class IGV implements IGVEventObserver {
             CommandListener.start(port);
         }
     }
+
+
 
     /**
      * Swing worker class to startup IGV
@@ -2171,7 +2091,7 @@ public class IGV implements IGVEventObserver {
 
     public static void copySequenceToClipboard(Genome genome, String chr, int start, int end, Strand strand) {
         try {
-            IGV.getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            IGV.getInstance().getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             byte[] seqBytes = genome.getSequence(chr, start, end);
 
             if (seqBytes == null) {
@@ -2187,7 +2107,7 @@ public class IGV implements IGVEventObserver {
             }
 
         } finally {
-            IGV.getMainFrame().setCursor(Cursor.getDefaultCursor());
+            getInstance().getMainFrame().setCursor(Cursor.getDefaultCursor());
         }
     }
 

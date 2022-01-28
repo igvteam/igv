@@ -161,7 +161,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 "be located. An index is " + (indexRequired ? "required" : "recommended") +
                 " to view files of this size.   Click \"Go\" to create one now or \"Cancel" +
                 " to proceed without an index.";
-        IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getMainFrame(), baseFile, newIdxFile, messageText);
+        IndexCreatorDialog dialog = IndexCreatorDialog.createShowDialog(IGV.getInstance().getMainFrame(), baseFile, newIdxFile, messageText);
         return (Index) dialog.getIndex();
     }
 

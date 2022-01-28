@@ -1086,7 +1086,7 @@ public class HttpUtils {
                 return new PasswordAuthentication(defaultUserName, defaultPassword);
             }
 
-            Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
+            Frame owner = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
 
             LoginDialog dlg = new LoginDialog(owner, urlString, isProxyChallenge);
             dlg.setVisible(true);

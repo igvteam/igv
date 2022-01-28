@@ -74,6 +74,13 @@ public class Session implements IGVEventObserver {
     private boolean removeEmptyPanels = false;
     double[] dividerFractions = null;
 
+    /**
+     * Attribute used to group tracks.  Normally "null".  Set from the "Tracks" menu.
+     */
+    private String groupByAttribute = null;
+
+
+
     private History history;
 
     /**
@@ -97,12 +104,13 @@ public class Session implements IGVEventObserver {
 
         this.path = path;
         this.nextAutoscaleGroup = 1;
-        regionsOfInterest = new LinkedHashMap<>();
-        regionsOfInterestObservable = new ObservableForObject<>(regionsOfInterest);
-
-        preferences = new HashMap<>();
-        colorScales = new HashMap<>();
-        history = new History(100);
+        this.groupByAttribute = null;
+        this.regionsOfInterest = new LinkedHashMap<>();
+        this.regionsOfInterestObservable = new ObservableForObject<>(regionsOfInterest);
+        this.preferences = new HashMap<>();
+        this.colorScales = new HashMap<>();
+        this.hiddenAttributes = null;
+        this.history = new History(100);
 
         boolean resetRequired = FrameManager.getFrames().size() > 1;
         setCurrentGeneList(null);
@@ -152,10 +160,19 @@ public class Session implements IGVEventObserver {
     }
 
     /**
-     * @return the absolute path to the file associated with this session
+     * @return the absolute path to the file associated with this session.  This can be null if session was not
+     * initalized from a file.
      */
     public String getPath() {
         return path;
+    }
+
+    public String getGroupByAttribute() {
+        return groupByAttribute;
+    }
+
+    public void setGroupByAttribute(String groupByAttribute) {
+        this.groupByAttribute = groupByAttribute;
     }
 
     /**
@@ -440,11 +457,6 @@ public class Session implements IGVEventObserver {
         this.hiddenAttributes = attributes;
 
     }
-
-    public void clearHiddenAttributes() {
-        hiddenAttributes = null;
-    }
-
 
     public boolean isRemoveEmptyPanels() {
         return removeEmptyPanels;

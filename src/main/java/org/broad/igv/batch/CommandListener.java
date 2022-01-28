@@ -349,7 +349,7 @@ public class CommandListener implements Runnable {
     private String processGet(String command, Map<String, String> params, CommandExecutor cmdExe) throws IOException {
 
         String result = OK;
-        final Frame mainFrame = IGV.getMainFrame();
+        final Frame mainFrame = IGV.getInstance().getMainFrame();
 
         // Trick to force window to front, the setAlwaysOnTop works on a Mac,  toFront() does nothing.
         mainFrame.toFront();
