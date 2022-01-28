@@ -70,7 +70,8 @@ import org.broad.igv.variant.VariantTrack;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
@@ -123,7 +124,7 @@ public class IGV implements IGVEventObserver {
     /**
      * Object to hold state that defines a user session.  There is always a user session, even if not initialized
      * from a "session" file.
-     * */
+     */
     private Session session;
 
     // Misc state
@@ -941,7 +942,6 @@ public class IGV implements IGVEventObserver {
     public void resetSession(String sessionPath) {
 
         session.reset(sessionPath);
-
         AttributeManager.getInstance().clearAllAttributes();
         mainFrame.setTitle(sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath);
         menuBar.resetSessionActions();
@@ -979,19 +979,41 @@ public class IGV implements IGVEventObserver {
 
         InputStream inputStream = null;
         try {
-            try {
-                inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
-            } catch (IOException e) {
-                log.error("Error loading session", e);
-                MessageUtils.showMessage("Error loading session: " + sessionPath);
-                return false;
+            setStatusBarMessage("Opening session...");
+
+            inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
+            boolean success = loadSessionFromStream(sessionPath, inputStream);
+
+            if (success) {
+
+                session.setPath(sessionPath);
+
+                String searchText = locus == null ? session.getLocus() : locus;
+                if (!FrameManager.isGeneListMode() && searchText != null && searchText.trim().length() > 0) {
+                    goToLocus(searchText);
+                }
+
+                mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+                if (!getRecentSessionList().contains(sessionPath)) {
+                    getRecentSessionList().addFirst(sessionPath);
+                }
+                this.menuBar.enableReloadSession();
+
+                //If there's a RegionNavigatorDialog, kill it.
+                //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
+                RegionNavigatorDialog.destroyInstance();
+
+                if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+                    CircularViewUtilities.clearAll();
+                }
+
             }
 
-            setStatusBarMessage("Opening session...");
-            return loadSessionFromStream(sessionPath, locus, inputStream);
+            return success;
+
 
         } catch (Exception e) {
-            String message = "Error loading session session : <br>&nbsp;&nbsp;" + sessionPath + "<br>" + e.getMessage();
+            String message = "Error loading session session : " + sessionPath;
             log.error(message, e);
             throw new RuntimeException(e);
         } finally {
@@ -1007,18 +1029,17 @@ public class IGV implements IGVEventObserver {
     }
 
     /**
-     * Load a session from the input stream, then jump to the specified locus if supplied.  Currently there are
+     * Load a session from the input stream.  Currently there are
      * 2 sources for the input stream (1) a local or remote file, and (2) an in memory byte array.  The latter is
      * used to support the "reloadTracks" menu function.
      *
      * @param sessionPath
-     * @param locus
      * @param inputStream
      * @return
      * @throws IOException
      */
 
-    public boolean loadSessionFromStream(String sessionPath, String locus, InputStream inputStream) throws IOException {
+    public boolean loadSessionFromStream(String sessionPath, InputStream inputStream) throws IOException {
 
         final SessionReader sessionReader;
         if (sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
@@ -1031,36 +1052,11 @@ public class IGV implements IGVEventObserver {
 
         sessionReader.loadSession(inputStream, session, sessionPath);
 
-        String searchText = locus == null ? session.getLocus() : locus;
-
-        // NOTE: Nothing to do if chr == all as that is the default
-        if (!FrameManager.isGeneListMode() && searchText != null &&
-                !searchText.equals(Globals.CHR_ALL) &&
-                searchText.trim().length() > 0) {
-            goToLocus(searchText);
-        }
-
         double[] dividerFractions = session.getDividerFractions();
         if (dividerFractions != null) {
             contentPane.getMainPanel().setDividerFractions(dividerFractions);
         }
         session.clearDividerLocations();
-
-        //If there's a RegionNavigatorDialog, kill it.
-        //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
-        RegionNavigatorDialog.destroyInstance();
-
-        if (sessionPath != null) {
-            mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-            if (!getRecentSessionList().contains(sessionPath)) {
-                getRecentSessionList().addFirst(sessionPath);
-            }
-            this.menuBar.enableReloadSession();
-        }
-
-        if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
-            CircularViewUtilities.clearAll();
-        }
 
         revalidateTrackPanels();
         return true;
@@ -1869,7 +1865,6 @@ public class IGV implements IGVEventObserver {
             CommandListener.start(port);
         }
     }
-
 
 
     /**

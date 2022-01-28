@@ -247,9 +247,6 @@ public class IGVSessionReader implements SessionReader {
                 igv.resetSession(rootPath);
                 GenomeManager.getInstance().restoreGenomeTracks(GenomeManager.getInstance().getCurrentGenome());
             } else {
-                // Selecting a genome will "reset" the session so we have to
-                // save the path and restore it.
-                String sessionPath = session.getPath();
                 try {
                     GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
                     if (item != null) {
@@ -266,7 +263,6 @@ public class IGVSessionReader implements SessionReader {
                     MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
                     log.error("Error loading genome: " + genomeId, e);
                 }
-                session.setPath(sessionPath);
             }
         }
 
