@@ -76,7 +76,7 @@ public class TrackPanel extends IGVPanel {
 
 
     private void init() {
-
+        setBackground(Color.white);
         namePanel = new TrackNamePanel(this);
         attributePanel = new AttributePanel(this);
         dataPanelContainer = new DataPanelContainer(this);
