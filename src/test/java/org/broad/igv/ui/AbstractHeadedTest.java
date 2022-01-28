@@ -125,7 +125,7 @@ public class AbstractHeadedTest {
         }
         if (genomeFile != null) {
             GenomeManager.getInstance().loadGenome(genomeFile, null);
-            genome = igv.getGenomeManager().getCurrentGenome();
+            genome = GenomeManager.getInstance().getCurrentGenome();
         }
         return igv;
     }
