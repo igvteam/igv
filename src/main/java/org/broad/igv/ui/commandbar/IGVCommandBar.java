@@ -365,8 +365,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         locationPanel.add(Box.createRigidArea(new Dimension(10, 36)), JideBoxLayout.FIX);
 
         genomeComboBox = new GenomeComboBox();
-        genomeComboBox.setMinimumSize(new Dimension(180, 27));
-        genomeComboBox.setPreferredSize(new Dimension(180, 27));
+        genomeComboBox.setMinimumSize(new Dimension(210, 27));
+        genomeComboBox.setPreferredSize(new Dimension(210, 27));
+        genomeComboBox.setMaximumSize(new Dimension(300, 27));
         genomeComboBox.setToolTipText(UIConstants.CHANGE_GENOME_TOOLTIP);
 
         genomeComboBox.addPopupMenuListener(new PopupMenuListener() {
