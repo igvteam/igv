@@ -69,11 +69,12 @@ import static org.broad.igv.prefs.Constants.*;
 
 public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
+
     private static Logger log = LogManager.getLogger(VariantTrack.class);
 
     static final DecimalFormat numFormat = new DecimalFormat("#.###");
 
-    private static final Color GREY_170 = new Color(170, 170, 170);
+    private static final Color CIRC_VIEW_DEFAULT_COLOR = new Color(27,192,249);
     private static final int GROUP_BORDER_WIDTH = 3;
     private static final Color BAND1_COLOR = new Color(245, 245, 245);
     private static final Color BAND2_COLOR = Color.white;
@@ -85,7 +86,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private final static int DEFAULT_EXPANDED_VARIANT_HEIGHT = 25;
     private final static int DEFAULT_SQUISHED_VARIANT_HEIGHT = 6;
     private final static int MAX_FILTER_LINES = 15;
-    private final static int WG_TRACK_HEIGHT = 25;
+    private final static int WG_TRACK_HEIGHT = 40;
 
 
     // TODO -- this needs to be settable
@@ -1537,7 +1538,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (svFeatures.isEmpty()) {
             MessageUtils.showMessage("No structural variants found.");
         } else {
-            CircularViewUtilities.sendVariantsToJBrowse(svFeatures, getName(), getColor());
+            CircularViewUtilities.sendVariantsToJBrowse(svFeatures, getName(), CIRC_VIEW_DEFAULT_COLOR);
         }
     }
 

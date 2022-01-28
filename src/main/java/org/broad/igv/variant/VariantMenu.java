@@ -90,17 +90,17 @@ public class VariantMenu extends IGVPopupMenu {
         add(TrackMenuUtils.getChangeFontSizeItem(selectedTracks));
 
         // Color items
-        addSeparator();
-        JMenuItem colorItem = new JMenuItem("Set Track Color...");
-        colorItem.addActionListener(evt -> TrackMenuUtils.changeTrackColor(selectedTracks));
-        add(colorItem);
+//        addSeparator();
+//        JMenuItem colorItem = new JMenuItem("Set Track Color...");
+//        colorItem.addActionListener(evt -> TrackMenuUtils.changeTrackColor(selectedTracks));
+//        add(colorItem);
 
         addSeparator();
         JLabel colorSiteByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT);
         add(colorSiteByItem);
         add(getColorBandByAllelFrequency());
         add(getColorBandByAlleleFraction());
-        add(getColorByNone());
+        //add(getColorByNone());
 
         //Hides
         if (track.isEnableMethylationRateSupport()) {
