@@ -1011,7 +1011,6 @@ public class IGV implements IGVEventObserver {
 
             return success;
 
-
         } catch (Exception e) {
             String message = "Error loading session session : " + sessionPath;
             log.error(message, e);
@@ -1060,6 +1059,29 @@ public class IGV implements IGVEventObserver {
 
         revalidateTrackPanels();
         return true;
+    }
+
+    /**
+     * Saves current session to {@code targetFile}. As a side effect,
+     * sets the current sessions path (does NOT set the last session directory)
+     *
+     * @param targetFile
+     * @throws IOException
+     */
+    public void saveSession(File targetFile) throws IOException{
+        (new SessionWriter()).saveSession(session, targetFile);
+
+        String sessionPath = targetFile.getAbsolutePath();
+        session.setPath(sessionPath);
+        mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+        if (!getRecentSessionList().contains(sessionPath)) {
+            getRecentSessionList().addFirst(sessionPath);
+        }
+        this.menuBar.enableReloadSession();
+
+        // No errors so save last location
+        PreferencesManager.getPreferences().setLastTrackDirectory(targetFile.getParentFile());
+
     }
 
     /**
