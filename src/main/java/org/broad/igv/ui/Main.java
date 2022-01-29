@@ -306,7 +306,6 @@ public class Main {
      * @param igvArgs command-line arguments
      */
     public static void open(Frame frame, Main.IGVArgs igvArgs) {
-        final IGVPreferences preferences = PreferencesManager.getPreferences();
 
         // Add a listener for the "close" icon, unless its a JFrame
         if (!(frame instanceof JFrame)) {
@@ -350,7 +349,9 @@ public class Main {
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
         // Start IGV's UI itself (frame) and other components
-        IGV.createInstance(frame, igvArgs).startUp(igvArgs);
+       IGV igv = IGV.createInstance(frame, igvArgs);
+
+       igv.startUp(igvArgs);
 
         // TODO Should this be done here?  Will this step on other key dispatchers?
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());

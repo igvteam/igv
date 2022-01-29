@@ -169,17 +169,11 @@ public class IGV implements IGVEventObserver {
 
         final IGVPreferences preferences = PreferencesManager.getPreferences();
 
+        session = new Session(null);
+
         mainFrame = frame;
 
-        // Start CommandsServer **before** loading the initial genome (since that object might be hosted privately)
-        try {
-            startCommandsServer(igvArgs, preferences);
-        } catch (InterruptedException ie) {
-            log.warn(ie.getMessage());
-        }
-
         mainFrame.addWindowListener(new WindowAdapter() {
-
 
             @Override
             public void windowLostFocus(WindowEvent windowEvent) {
@@ -208,9 +202,6 @@ public class IGV implements IGVEventObserver {
 
             }
         });
-
-
-        session = new Session(null);
 
         // Create cursors
         createHandCursor();
@@ -1070,7 +1061,7 @@ public class IGV implements IGVEventObserver {
      * @param targetFile
      * @throws IOException
      */
-    public void saveSession(File targetFile) throws IOException{
+    public void saveSession(File targetFile) throws IOException {
         (new SessionWriter()).saveSession(session, targetFile);
 
         String sessionPath = targetFile.getAbsolutePath();
@@ -1875,7 +1866,7 @@ public class IGV implements IGVEventObserver {
      *
      * @param igvArgs: Used to specify a different port.
      */
-    private static void startCommandsServer(Main.IGVArgs igvArgs, IGVPreferences prefMgr) throws InterruptedException {
+    private static void startCommandsServer(Main.IGVArgs igvArgs, IGVPreferences prefMgr) {
         // Port # can be overriden with "-p" command line switch
         boolean portEnabled = prefMgr.getAsBoolean(PORT_ENABLED);
         String portString = igvArgs.getPort();
@@ -1897,7 +1888,6 @@ public class IGV implements IGVEventObserver {
     public class StartupRunnable implements Runnable {
 
         Main.IGVArgs igvArgs;
-        ProgressBar.ProgressDialog progressDialog;
 
         StartupRunnable(Main.IGVArgs args) {
             this.igvArgs = args;
@@ -1907,6 +1897,10 @@ public class IGV implements IGVEventObserver {
         public void run() {
 
             final IGVPreferences preferences = PreferencesManager.getPreferences();
+
+            // Start CommandsServer **before** loading the initial genome, as credentials might need to be set for
+            // privately hosted genomes.
+            startCommandsServer(igvArgs, preferences);
 
             UIUtilities.invokeAndWaitOnEventThread(() -> {
                 mainFrame.setIconImage(getIconImage());

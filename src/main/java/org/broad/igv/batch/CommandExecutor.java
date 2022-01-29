@@ -113,7 +113,7 @@ public class CommandExecutor {
             String param4 = args.size() > 4 ? args.get(4) : null;
 
             if (cmd.equalsIgnoreCase("echo")) {
-                result = cmd;
+                result = param1 != null ? param1 : cmd;
             } else if (cmd.equalsIgnoreCase("gotoimmediate") || cmd.equalsIgnoreCase("goto")) {
                 result = goto1(args);
             } else if (cmd.equalsIgnoreCase("addframes")) {
