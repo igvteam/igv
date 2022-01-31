@@ -8,13 +8,13 @@ load gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
 snapshot loadBams.png
 goto myc
 snapshot myc.png
-collapse NA12878_S1.bam
-snapshot collapsed.png
-squish NA12878_S1.bam
-snapshot squish.png
-expand NA12878_S1.bam
-snapshot expand.png
-viewAsPairs true NA12878_S1.bam
+ collapse NA12878_S1.bam
+ snapshot collapsed_NA12898.png
+ squish NA12878_S1.bam
+ snapshot squish_NA12878.png
+ expand NA12878_S1.bam
+ snapshot expand.png
+ viewAsPairs true NA12878_S1.bam
 snapshot viewAsPairs.png
 viewAsPairs false NA12878_S1.bam
 snapshot viewAsPairsOff.png
@@ -36,4 +36,3 @@ setLogScale true NA12878_S1.bam%20Coverage
 setDataRange 0,1000 NA12878_S1.bam%20Coverage
 setColor 0,0,100 NA12878_S1.bam%20Coverage
 snapshot blueCoverage.png
-
