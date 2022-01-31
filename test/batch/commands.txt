@@ -7,14 +7,13 @@ load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
 load gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
 snapshot loadBams.png
 goto myc
-snapshot myc.png
- collapse NA12878_S1.bam
- snapshot collapsed_NA12898.png
- squish NA12878_S1.bam
- snapshot squish_NA12878.png
- expand NA12878_S1.bam
- snapshot expand.png
- viewAsPairs true NA12878_S1.bam
+snapshot myc.pngcollapse NA12878_S1.bam
+snapshot collapsed_NA12898.png
+squish NA12878_S1.bam
+snapshot squish_NA12878.png
+expand NA12878_S1.bam
+snapshot expand.png
+viewAsPairs true NA12878_S1.bam
 snapshot viewAsPairs.png
 viewAsPairs false NA12878_S1.bam
 snapshot viewAsPairsOff.png
