@@ -993,11 +993,6 @@ public class IGV implements IGVEventObserver {
                 //If there's a RegionNavigatorDialog, kill it.
                 //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
                 RegionNavigatorDialog.destroyInstance();
-
-                if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
-                    CircularViewUtilities.clearAll();
-                }
-
             }
 
             return success;
