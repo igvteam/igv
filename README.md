@@ -13,7 +13,7 @@ we recommend the pre-built releases available at [http://software.broadinstitute
 
 Builds are executed from the IGV project directory.  Files will be created in the 'build' subdirectory.
 
-IGV is tested on **Java 11**. Previous (versions =< 2.6.3) running on Java8 have been deprecated.
+IGV is tested on **Java 11**. Previous (versions =< 2.6.3) running on Java8 have been deprecated. Make sure you use Java 11+ also for running gradle.
 
 NOTE: If on a Windows platform use ```./gradlew.bat'``` in the instructions below
 
