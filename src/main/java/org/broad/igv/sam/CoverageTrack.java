@@ -123,7 +123,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         this.alignmentTrack = alignmentTrack;
         this.genome = genome;
         intervalRenderer = new IntervalRenderer();
-        setMaximumHeight(40);
         prefs = PreferencesManager.getPreferences();
         snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
         autoScale = DEFAULT_AUTOSCALE;

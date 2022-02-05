@@ -90,8 +90,6 @@ public abstract class AbstractTrack implements Track {
 
     private int top;
     protected int minimumHeight = -1;
-    protected int maximumHeight = 1000;
-
     private TrackType trackType = TrackType.OTHER;
 
     private boolean selected = false;
@@ -421,10 +419,6 @@ public abstract class AbstractTrack implements Track {
         this.minimumHeight = minimumHeight;
     }
 
-    public void setMaximumHeight(int maximumHeight) {
-        this.maximumHeight = maximumHeight;
-    }
-
     /**
      * Return the actual minimum height if one has been set, otherwise get the default for the current renderer.
      *
@@ -432,10 +426,6 @@ public abstract class AbstractTrack implements Track {
      */
     public int getMinimumHeight() {
         return minimumHeight < 0 ? getDefaultMinimumHeight() : minimumHeight;
-    }
-
-    public int getMaximumHeight() {
-        return maximumHeight;
     }
 
     public void setTrackType(TrackType type) {
@@ -505,7 +495,7 @@ public abstract class AbstractTrack implements Track {
         if (force) {
             this.height = preferredHeight;
         } else {
-            this.height = Math.min(Math.max(getMinimumHeight(), preferredHeight), getMaximumHeight());
+            this.height = Math.max(getMinimumHeight(), preferredHeight);
         }
     }
 

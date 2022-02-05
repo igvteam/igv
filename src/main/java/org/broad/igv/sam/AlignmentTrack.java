@@ -55,7 +55,6 @@ import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -233,8 +232,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private ColorTable readNamePalette;
 
     // Dynamic fields
-    // The "DataPanel" containing the track.  This field might be null at any given time.  It is updated each repaint.
-    private JComponent dataPanel;
     protected final HashMap<String, Color> selectedReadNames = new HashMap<>();
 
 
@@ -258,7 +255,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         IGVPreferences prefs = getPreferences();
         minimumHeight = 50;
-        maximumHeight = Integer.MAX_VALUE;
         showGroupLine = prefs.getAsBoolean(SAM_SHOW_GROUP_SEPARATOR);
         try {
             setDisplayMode(DisplayMode.valueOf(prefs.get(SAM_DISPLAY_MODE).toUpperCase()));
@@ -401,20 +397,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public int getHeight() {
 
-        if (dataPanel != null
-                && (dataPanel instanceof DataPanel && ((DataPanel) dataPanel).getFrame().getScale() > dataManager.getMinVisibleScale())) {
-            return minimumHeight;
-        }
-
         int nGroups = dataManager.getMaxGroupCount();
         int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN
                 + DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2);
         //if (insertionRect != null) {   // TODO - replace with expand insertions preference
         h += INSERTION_ROW_HEIGHT + DS_MARGIN_0;
         //}
-
-        h = Math.min(maximumHeight, h);
-        return h;
+        return Math.max(minimumHeight, h);
     }
 
     private int getRowHeight() {
@@ -463,8 +452,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         context.getGraphics2D("LABEL").setFont(FontManager.getFont(GROUP_LABEL_HEIGHT));
-
-        dataPanel = context.getPanel();
 
         // Split track rectangle into sections.
         int seqHeight = sequenceTrack == null ? 0 : sequenceTrack.getHeight();
@@ -551,7 +538,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         Rectangle visibleRect = context.getVisibleRect();
-        maximumHeight = Integer.MAX_VALUE;
 
         // Divide rectangle into equal height levels
         double y = inputRect.getY();
@@ -700,9 +686,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         Rectangle visibleRect = context.getVisibleRect();
-
-
-        maximumHeight = Integer.MAX_VALUE;
 
         // Divide rectangle into equal height levels
         double y = inputRect.getY() - 3;
