@@ -72,6 +72,45 @@ public class Exon extends AbstractFeature implements IExon {
     }
 
     /**
+     * Get coding postion within exon
+     * @param genomeCoordinate
+     * @return
+     */
+    public int getCodingPosition(int genomeCoordinate) {
+        if (genomeCoordinate < getStart() || genomeCoordinate > getEnd()) {
+            throw new IndexOutOfBoundsException();
+        }
+        if (getStrand() == Strand.POSITIVE) {
+            return (genomeCoordinate - codingStart);
+        } else if (getStrand() == Strand.NEGATIVE) {
+            return (codingEnd - 1 - genomeCoordinate);
+        } else {
+            return 0;
+        }
+
+    }
+
+    /**
+     * Returns relative position within an exon
+     * @param genomeCoordinate
+     * @return
+     */
+    public int getPosition(int genomeCoordinate) {
+        if (genomeCoordinate < getStart() || genomeCoordinate > getEnd()) {
+            throw new IndexOutOfBoundsException();
+        }
+        if (getStrand() == Strand.POSITIVE) {
+            return (genomeCoordinate - getStart());
+        } else if (getStrand() == Strand.NEGATIVE) {
+            return (getEnd() - 1 - genomeCoordinate);
+        } else {
+            return 0;
+        }
+    }
+
+
+
+    /**
      * Get amino acid number based on genomic coordinate.
      * Genome coordinate MUST be 0-based
      *
@@ -284,6 +323,11 @@ public class Exon extends AbstractFeature implements IExon {
         StringBuffer buffer = new StringBuffer();
 
         if (number > 0) buffer.append("Exon number: " + number + "<br>");
+        buffer.append("Exon length: " + this.getLength() + "<br>");
+        buffer.append("Exon coding length: " + this.getCodingLength() + "<br>");
+        buffer.append("In exon position: " + (this.getPosition((int)position) + 1)  + "<br>");
+        buffer.append("In exon coding position: " + (this.getCodingPosition((int)position) + 1)  + "<br>");
+
         int aaNumber = this.getAminoAcidNumber((int) position);
         if (aaNumber > 0) {
             buffer.append("Amino acid coding number: " + aaNumber + "<br>");
@@ -300,6 +344,11 @@ public class Exon extends AbstractFeature implements IExon {
     public void setNumber(int number) {
         this.number = number;
     }
+
+    public int getNumber() {
+        return this.number;
+    }
+
 
     public String getURL() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.

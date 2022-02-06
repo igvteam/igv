@@ -174,6 +174,18 @@ public class BasicFeature extends AbstractFeature {
                     if (exonString != null && exonString.length() > 0) {
                         valueString.append("<br>--------------<br>");
                         valueString.append(exonString);
+                        int cdsPosition = Math.max(-1,exon.getCodingPosition((int)position));
+                        int ntPosition = exon.getPosition((int)position);
+                        //Count all previous lengths of exons
+                        for (Exon ex : exons) {
+                            if (ex.getNumber() < exon.getNumber()) {
+                                cdsPosition += ex.getCodingLength();
+                                ntPosition += ex.getLength();
+                            }
+                        }
+
+                        valueString.append("<br>CDS position: " + ( cdsPosition + 1 ) + "<br>");
+                        valueString.append("Nucleotide position: " + ( ntPosition + 1 ) + "<br>");
                     }
                 }
             }
