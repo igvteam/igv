@@ -28,6 +28,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
 
@@ -244,20 +245,16 @@ public class InteractionTrack extends AbstractTrack {
         // Experimental JBrowse.
         if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
             menu.addSeparator();
-            JMenuItem item = new JMenuItem("Add Pairs to Circular View");
+            JMenuItem item = new JMenuItem("Add Features to Circular View");
             item.addActionListener(e -> {
-                List<? extends BedPE> visibleFeatures;
-                if (te.getFrame() == null || te.getFrame().getChrName().equals(Globals.CHR_ALL)) {
-                    visibleFeatures = allFeatures;
-                } else {
-                    List<ReferenceFrame> frames = te.getFrame() != null ?
-                            Arrays.asList(te.getFrame()) :
-                            FrameManager.getFrames();
-                    visibleFeatures = getVisibleFeatures(frames);
-                }
+                List<ReferenceFrame> frames = te.getFrame() != null ?
+                        Arrays.asList(te.getFrame()) :
+                        FrameManager.getFrames();
+                List<? extends BedPE> visibleFeatures = getVisibleFeatures(frames);
                 CircularViewUtilities.sendBedpeToJBrowse(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
             });
             menu.add(item);
+            menu.addSeparator();
         }
 
         menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(InteractionTrack.this)));
@@ -457,12 +454,16 @@ public class InteractionTrack extends AbstractTrack {
     /**
      * Return features visible in the supplied frames
      */
-    public List<BedPE> getVisibleFeatures(List<ReferenceFrame> frames) {
+    public List<? extends BedPE> getVisibleFeatures(List<ReferenceFrame> frames) {
 
-        Function<ReferenceFrame, List<BedPE>> frameFeatures = (f) -> {
+        Function<ReferenceFrame, List<? extends BedPE>> frameFeatures = (f) -> {
             String chr = f.getChrName();
-            Range r = f.getCurrentRange();
-            return getFeaturesOverlapping(chr, r.getStart(), r.getEnd());
+            if (chr.equals(Globals.CHR_ALL)) {
+                return downsampleWGFeatures(allFeatures);
+            } else {
+                Range r = f.getCurrentRange();
+                return getFeaturesOverlapping(chr, r.getStart(), r.getEnd());
+            }
         };
 
         if (frames.size() == 0) {
@@ -525,10 +526,10 @@ public class InteractionTrack extends AbstractTrack {
         double binSize = nBins > 1 ? Math.log10(maxScoreFeature.score) / nBins : Integer.MAX_VALUE;
 
         // Divide features into bins\
-        Object [] binnedFeatures = new Object[nBins];
-        int counts [] = new int[nBins];
-        for(int i=0; i<nBins; i++) {
-            binnedFeatures[i] = new ArrayList<BedPEFeature> ();
+        Object[] binnedFeatures = new Object[nBins];
+        int counts[] = new int[nBins];
+        for (int i = 0; i < nBins; i++) {
+            binnedFeatures[i] = new ArrayList<BedPEFeature>();
             counts[i] = 0;
         }
         for (BedPEFeature f : features) {
@@ -540,13 +541,13 @@ public class InteractionTrack extends AbstractTrack {
         // Add sampled features from each bin
         int featuresPerBin = MAX_WG_COUNT / nBins;
         List<BedPEFeature> sampledFeatures = new ArrayList<>(MAX_WG_COUNT);
-        for(int i=0; i<nBins; i++) {
+        for (int i = 0; i < nBins; i++) {
             List<BedPEFeature> bfs = (List<BedPEFeature>) binnedFeatures[i];
             sampledFeatures.addAll(Arrays.asList(new Downsampler<BedPEFeature>().sample(bfs.toArray(BedPEFeature[]::new), featuresPerBin)));
         }
 
         // Be sure we keep the maximum feature
-        if(maxScoreFeature != null) {
+        if (maxScoreFeature != null) {
             sampledFeatures.add(maxScoreFeature);
         }
 
