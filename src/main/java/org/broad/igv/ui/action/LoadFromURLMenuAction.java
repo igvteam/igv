@@ -97,9 +97,10 @@ public class LoadFromURLMenuAction extends MenuAction {
                         } catch (Exception ex) {
                             MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                         }
-                    } else if (url.startsWith("s3://")) {
-                        checkAWSAccessbility(url);
                     } else {
+                        if (url.startsWith("s3://")) {
+                            checkAWSAccessbility(url);
+                        }
                         ResourceLocator rl = new ResourceLocator(url.trim());
 
                         if (dlg.getIndexURL() != null) {
