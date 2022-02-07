@@ -91,6 +91,10 @@ public class LoadFromURLMenuAction extends MenuAction {
 
                     final String url = mapURL(inputURL.trim());
 
+                    if (url.startsWith("s3://")) {
+                        checkAWSAccessbility(url);
+                    }
+
                     if (SessionReader.isSessionFile(url)) {
                         try {
                             LongRunningTask.submit(() -> this.igv.loadSession(url, null));
@@ -98,9 +102,6 @@ public class LoadFromURLMenuAction extends MenuAction {
                             MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                         }
                     } else {
-                        if (url.startsWith("s3://")) {
-                            checkAWSAccessbility(url);
-                        }
                         ResourceLocator rl = new ResourceLocator(url.trim());
 
                         if (dlg.getIndexURL() != null) {
