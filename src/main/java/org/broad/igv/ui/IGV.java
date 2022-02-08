@@ -1287,20 +1287,21 @@ public class IGV implements IGVEventObserver {
         }
     }
 
+    /**
+     * Return a DataPanel for the given track.
+     * @param track
+     * @return
+     */
     public TrackPanel getPanelFor(Track track) {
         ResourceLocator locator = track.getResourceLocator();
-        String path = locator.getPath().toLowerCase();
-        if ("alist".equals(locator.getFormat())) {
-            return getVcfBamPanel();
-        } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            return getTrackPanel(DATA_PANEL_NAME);
-        } else if (TrackLoader.isAlignmentTrack(locator.getFormat())) {
-            String newPanelName = "Panel" + System.currentTimeMillis();
-            return addDataPanel(newPanelName).getTrackPanel();
-        } else if (track instanceof FeatureTrack) {
-            return getTrackPanel(FEATURE_PANEL_NAME);
+        if(locator != null) {
+            return getPanelFor(locator);
         } else {
-            return getTrackPanel(DATA_PANEL_NAME);
+            if (track instanceof DataTrack || PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ) {
+                return getTrackPanel(DATA_PANEL_NAME);
+            } else {
+                return getTrackPanel(FEATURE_PANEL_NAME);
+            }
         }
     }
 
@@ -1313,15 +1314,23 @@ public class IGV implements IGVEventObserver {
      */
     public TrackPanel getPanelFor(ResourceLocator locator) {
 
-        if ("alist".equals(locator.getFormat())) {
+        final String format = locator.getFormat();
+        if ("alist".equals(format)) {
             return getVcfBamPanel();
         } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
             return getTrackPanel(DATA_PANEL_NAME);
-        } else if (TrackLoader.isAlignmentTrack(locator.getFormat())) {
+        } else if (TrackLoader.isAlignmentTrack(format)) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
         } else {
-            return getDefaultPanel(locator);
+            if (format != null && format.equalsIgnoreCase("das")) {
+                return getTrackPanel(FEATURE_PANEL_NAME);
+            }
+            if (isAnnotationFile(format)) {
+                return getTrackPanel(FEATURE_PANEL_NAME);
+            } else {
+                return getTrackPanel(DATA_PANEL_NAME);
+            }
         }
     }
 

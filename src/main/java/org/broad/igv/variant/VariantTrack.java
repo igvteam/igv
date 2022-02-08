@@ -74,7 +74,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     static final DecimalFormat numFormat = new DecimalFormat("#.###");
 
-    private static final Color CIRC_VIEW_DEFAULT_COLOR = new Color(27,192,249);
+    private static final Color CIRC_VIEW_DEFAULT_COLOR = new Color(27, 192, 249);
     private static final int GROUP_BORDER_WIDTH = 3;
     private static final Color BAND1_COLOR = new Color(245, 245, 245);
     private static final Color BAND2_COLOR = Color.white;
@@ -228,9 +228,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int margins = (groupCount - 1) * 3;
         squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
                 Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (height - getVariantBandHeight() - margins) / sampleCount));
-        if (sampleCount == 1) {
-            showGenotypes = false;
-        }
+        showGenotypes = sampleCount > 0;
+
 
         // If sample->bam list file is supplied enable vcfToBamMode.
         String vcfToBamMapping = locator == null ? null : locator.getMappingPath();

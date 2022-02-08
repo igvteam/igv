@@ -312,10 +312,14 @@ public class TrackLoader {
     }
 
     public static boolean isAlignmentTrack(String typeString) {
-        return typeString.equals("sam") || typeString.equals("bam") || typeString.equals("cram") ||
-                typeString.equals("sam.list") || typeString.equals("bam.list") ||
-                typeString.equals("aligned") || typeString.equals("sai") ||
-                typeString.equals("bai") || typeString.equals("csi") || typeString.equals("alist");
+        if (typeString == null) {
+            return false;
+        } else {
+            return typeString.equals("sam") || typeString.equals("bam") || typeString.equals("cram") ||
+                    typeString.equals("sam.list") || typeString.equals("bam.list") ||
+                    typeString.equals("aligned") || typeString.equals("sai") ||
+                    typeString.equals("bai") || typeString.equals("csi") || typeString.equals("alist");
+        }
     }
 
     private void loadSMAPFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
