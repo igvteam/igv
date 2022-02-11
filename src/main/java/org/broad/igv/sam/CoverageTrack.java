@@ -473,6 +473,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             int nPoints = alignmentCounts.getNumberOfPoints();
             boolean isSparse = alignmentCounts instanceof SparseAlignmentCounts;
 
+            // First pass -- draw gray coverage bars
             for (int idx = 0; idx < nPoints; idx++) {
 
                 int pos = isSparse ? ((SparseAlignmentCounts) alignmentCounts).getPosition(idx) : start + idx * step;
@@ -493,7 +494,29 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                     int bottomY = rect.y + rect.height;
                     int topY = bottomY - barHeight;
                     graphics.fillRect(pX, topY, dX, barHeight);
+                }
+            }
 
+            // Second pass -- potentially overlay mismatches
+            for (int idx = 0; idx < nPoints; idx++) {
+
+                int pos = isSparse ? ((SparseAlignmentCounts) alignmentCounts).getPosition(idx) : start + idx * step;
+                int pX = (int) (rect.x + (pos - origin) / scale);
+                double endX = rect.x + (pos + step - origin) / scale;
+                int dX = (int) ((endX - pX) < 1 ? 1 : (endX - pX) > 3 ? endX - pX - 1 : endX - pX);
+
+                if (pX > rect.x + rect.width) {
+                    break; // We're done,  data is position sorted so we're beyond the right-side of the view
+                } else if (endX < rect.x) {
+                    continue;
+                }
+
+                int totalCount = alignmentCounts.getTotalCount(pos);
+                double tmp = range.isLog() ? Math.log10(totalCount + 1) / maxRange : totalCount / maxRange;
+                int barHeight = (int) Math.min(tmp * rect.height, rect.height - 1);
+                if (barHeight > 0) {
+                    int bottomY = rect.y + rect.height;
+       
                     // Potentially color mismatch
                     if (bisulfiteMode) {
                         BisulfiteCounts.Count bc = bisulfiteCounts != null ? bisulfiteCounts.getCount(pos) : null;
