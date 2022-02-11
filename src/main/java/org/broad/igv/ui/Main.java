@@ -354,7 +354,7 @@ public class Main {
        igv.startUp(igvArgs);
 
         // TODO Should this be done here?  Will this step on other key dispatchers?
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(GlobalKeyDispatcher.getInstance());
     }
 
     private static void initializeLookAndFeel() {

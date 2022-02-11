@@ -66,12 +66,26 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
     private final InputMap inputMap = new InputMap();
     private final ActionMap actionMap = new ActionMap();
+    private boolean enabled;
 
-    public GlobalKeyDispatcher() {
+    private static GlobalKeyDispatcher theInstance;
+
+    public static synchronized GlobalKeyDispatcher getInstance() {
+        if(theInstance == null) {
+            theInstance = new GlobalKeyDispatcher();
+        }
+        return theInstance;
+    }
+
+    private GlobalKeyDispatcher() {
         init();
     }
 
     public boolean dispatchKeyEvent(KeyEvent event) {
+
+        if(!enabled) {
+            return false;
+        }
 
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(event);
         String actionKey = (String) inputMap.get(ks);
@@ -107,6 +121,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
      * Initialize the input and action map.   The indirection here strikes me as odd but it is apparently the standard pattern.
      */
     public void init() {
+
+        enabled = true;
 
         final IGV igv = IGV.getInstance();
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
@@ -431,6 +447,14 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         }
 
 
+    }
+
+    public void disable() {
+        this.enabled = false;
+    }
+
+    public void enable() {
+        this.enabled = true;
     }
 
     /**
