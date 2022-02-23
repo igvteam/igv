@@ -191,7 +191,7 @@ PROXY.PW	Password	string	null
 
 #Advanced
 ---
-PORT_ENABLED	Enable port	boolean	FALSE
+PORT_ENABLED	Enable port	boolean	TRUE
 PORT_NUMBER	Port number	integer	60151
 ---
 IGV.genome.sequence.dir	Genome server URL	string	https://s3.amazonaws.com/igv.org.genomes/genomes.tsv
