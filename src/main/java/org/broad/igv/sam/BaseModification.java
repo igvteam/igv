@@ -164,7 +164,12 @@ public class BaseModification {
         }
         String key = modification + "--" + l;
         if (!modColorMap.containsKey(key)) {
-            modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), l));
+            if (l >= 128) {
+                modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), (l-127)));
+            }
+            else {
+                modColorMap.put(key, new Color(baseColor.getBlue(), baseColor.getGreen(), baseColor.getRed(), (127-l)));
+            }
         }
 
         return modColorMap.get(key);

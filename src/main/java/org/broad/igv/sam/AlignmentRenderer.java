@@ -712,56 +712,6 @@ public class AlignmentRenderer {
             leftmost = false;
         }
 
-
-        // DRAW Insertions
-        AlignmentBlock[] insertions = alignment.getInsertions();
-        if (insertions != null) {
-            InsertionMarker expandedInsertion = InsertionManager.getInstance().getSelectedInsertion(context.getReferenceFrame().getChrName());
-            int expandedPosition = expandedInsertion == null ? -1 : expandedInsertion.position;
-            for (AlignmentBlock aBlock : insertions) {
-
-                if (aBlock.getStart() == expandedPosition) continue;   // Skip, will be drawn expanded
-
-                int x = (int) ((aBlock.getStart() - bpStart) / locScale);
-                int bpWidth = aBlock.getBasesLength();
-                double pxWidthExact = ((double) bpWidth) / locScale;
-                h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
-                y = (int) (rowRect.getY() + (rowRect.getHeight() - h) / 2) - (leaveMargin ? 1 : 0);
-
-                // Don't draw out of clipping rect
-                if (x > rowRect.getMaxX()) {
-                    break;
-                } else if (x < rowRect.getX()) {
-                    continue;
-                }
-
-                if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP)) {
-                    // && (!quickConsensus || alignmentCounts.isConsensusInsertion(aBlock.getStart(), snpThreshold))) {
-                    if (flagLargeIndels && bpWidth > largeInsertionsThreshold) {
-                        drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"),
-                                true,
-                                Globals.DECIMAL_FORMAT.format(bpWidth),
-                                x - 1,
-                                y,
-                                h,
-                                (int) pxWidthExact,
-                                context.translateX,
-                                aBlock);
-                    } else {
-                        int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
-                        Graphics2D ig = context.getGraphics();
-                        ig.setColor(purple);
-                        ig.fillRect(x, y, 2, h);
-                        ig.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
-                        ig.fillRect(x - pxWing, y + h - 2, 2 + 2 * pxWing, 2);
-
-                        x += context.translateX;
-                        aBlock.setPixelRange(x - pxWing, x + 2 + pxWing);
-                    }
-                }
-            }
-        }
-
         // Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
         // that is proportional to the base quality score, or flow signal deviation, whichever is selected.
 
@@ -878,7 +828,7 @@ public class AlignmentRenderer {
         if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
             Map<Integer, BaseModification> baseModifications = alignment.getBaseModificationMap();
             if (baseModifications != null) {
-                double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
+                //double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
                 for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
                     // Compute bounds
                     int pY = (int) rowRect.getY();
@@ -892,7 +842,7 @@ public class AlignmentRenderer {
 
                             BaseModification mod = baseModifications.get(i);
                             int l = Byte.toUnsignedInt(mod.likelihood);
-                            if (l < threshold) continue;
+                            //if (l < threshold) continue;
 
                             Color c = BaseModification.getModColor(mod.modification, mod.likelihood);
                             g.setColor(c);
@@ -915,6 +865,56 @@ public class AlignmentRenderer {
 
                             g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
                         }
+                    }
+                }
+            }
+        }
+
+
+        // DRAW Insertions
+        AlignmentBlock[] insertions = alignment.getInsertions();
+        if (insertions != null) {
+            InsertionMarker expandedInsertion = InsertionManager.getInstance().getSelectedInsertion(context.getReferenceFrame().getChrName());
+            int expandedPosition = expandedInsertion == null ? -1 : expandedInsertion.position;
+            for (AlignmentBlock aBlock : insertions) {
+
+                if (aBlock.getStart() == expandedPosition) continue;   // Skip, will be drawn expanded
+
+                int x = (int) ((aBlock.getStart() - bpStart) / locScale);
+                int bpWidth = aBlock.getBasesLength();
+                double pxWidthExact = ((double) bpWidth) / locScale;
+                h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
+                y = (int) (rowRect.getY() + (rowRect.getHeight() - h) / 2) - (leaveMargin ? 1 : 0);
+
+                // Don't draw out of clipping rect
+                if (x > rowRect.getMaxX()) {
+                    break;
+                } else if (x < rowRect.getX()) {
+                    continue;
+                }
+
+                if ((!hideSmallIndelsBP || bpWidth >= indelThresholdBP)) {
+                    // && (!quickConsensus || alignmentCounts.isConsensusInsertion(aBlock.getStart(), snpThreshold))) {
+                    if (flagLargeIndels && bpWidth > largeInsertionsThreshold) {
+                        drawLargeIndelLabel(context.getGraphics2D("INDEL_LABEL"),
+                                true,
+                                Globals.DECIMAL_FORMAT.format(bpWidth),
+                                x - 1,
+                                y,
+                                h,
+                                (int) pxWidthExact,
+                                context.translateX,
+                                aBlock);
+                    } else {
+                        int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
+                        Graphics2D ig = context.getGraphics();
+                        ig.setColor(purple);
+                        ig.fillRect(x, y, 2, h);
+                        ig.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
+                        ig.fillRect(x - pxWing, y + h - 2, 2 + 2 * pxWing, 2);
+
+                        x += context.translateX;
+                        aBlock.setPixelRange(x - pxWing, x + 2 + pxWing);
                     }
                 }
             }
