@@ -56,7 +56,7 @@ import java.util.List;
 /**
  * @author jacob
  */
-public class CombinedDataSourceDialog extends JDialog {
+public class CombinedDataSourceDialog extends org.broad.igv.ui.IGVDialog  {
 
     private static Logger log = LogManager.getLogger(CombinedDataSourceDialog.class);
 

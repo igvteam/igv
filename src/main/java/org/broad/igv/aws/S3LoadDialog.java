@@ -53,7 +53,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
 
 
-public class S3LoadDialog extends JDialog {
+public class S3LoadDialog extends org.broad.igv.ui.IGVDialog  {
 
     private static Logger log = LogManager.getLogger(S3LoadDialog.class);
 

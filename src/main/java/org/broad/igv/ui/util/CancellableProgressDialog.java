@@ -40,7 +40,7 @@ import java.beans.PropertyChangeListener;
 /**
  * @author Jacob Silterra
  */
-public class CancellableProgressDialog extends JDialog {
+public class CancellableProgressDialog extends org.broad.igv.ui.IGVDialog  {
     public CancellableProgressDialog(Frame owner) {
         super(owner);
         initComponents();

@@ -45,7 +45,7 @@ import java.awt.event.ActionListener;
  *
  * @author Jim Robinson
  */
-public class ConfirmDialog extends JDialog {
+public class ConfirmDialog extends org.broad.igv.ui.IGVDialog  {
 
     String key;
     boolean okPressed = false;

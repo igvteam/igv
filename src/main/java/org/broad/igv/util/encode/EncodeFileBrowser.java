@@ -56,7 +56,7 @@ import org.broad.igv.util.ResourceLocator;
 /**
  * @author Jim Robinson
  */
-public class EncodeFileBrowser extends JDialog {
+public class EncodeFileBrowser extends org.broad.igv.ui.IGVDialog  {
 
     private static Logger log = LogManager.getLogger(EncodeFileBrowser.class);
 

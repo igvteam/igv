@@ -39,7 +39,7 @@ import javax.swing.border.*;
 /**
  * @author James Robinson
  */
-public class LoadFromURLDialog extends JDialog {
+public class LoadFromURLDialog extends org.broad.igv.ui.IGVDialog  {
 
     boolean canceled = false;
     String fileURL;

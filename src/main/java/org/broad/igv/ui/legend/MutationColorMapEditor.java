@@ -42,7 +42,7 @@ import org.broad.igv.ui.color.*;
 /**
  * @author Jim Robinson
  */
-public class MutationColorMapEditor extends JDialog {
+public class MutationColorMapEditor extends org.broad.igv.ui.IGVDialog  {
 
     boolean canceled = false;
 

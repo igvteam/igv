@@ -49,7 +49,7 @@ import javax.swing.border.*;
  *
  * @author Jim Robinson
  */
-public class SimpleFormDialog extends JDialog {
+public class SimpleFormDialog extends org.broad.igv.ui.IGVDialog  {
 
 
     boolean canceled = false;

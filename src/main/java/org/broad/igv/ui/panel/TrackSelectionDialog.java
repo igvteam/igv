@@ -45,7 +45,7 @@ import java.util.List;
  * Dialog used for selecting one or more tracks
  * @author Jacob Silterra
  */
-public class TrackSelectionDialog<T extends Track> extends JDialog {
+public class TrackSelectionDialog<T extends Track> extends org.broad.igv.ui.IGVDialog  {
 
     private boolean isCancelled = false;
     private final SelectionMode mode;

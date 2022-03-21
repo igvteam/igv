@@ -52,15 +52,10 @@ public class MotifFinderPlugin {
      */
     public static JMenuItem getMenuItem() {
         JMenuItem menuItem = new JMenuItem("Find Motif...");
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MotifFinderDialog dialog = new MotifFinderDialog(IGV.getInstance().getMainFrame());
-                dialog.setVisible(true);
-
-                handleDialogResult(dialog);
-
-            }
+        menuItem.addActionListener(e -> {
+            MotifFinderDialog dialog = new MotifFinderDialog(IGV.getInstance().getMainFrame());
+            dialog.setVisible(true);
+            handleDialogResult(dialog);
         });
 
         return menuItem;

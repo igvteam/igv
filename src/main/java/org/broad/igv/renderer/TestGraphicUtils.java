@@ -37,7 +37,7 @@ import java.awt.*;
 /**
  * @author jrobinso
  */
-public class TestGraphicUtils extends javax.swing.JDialog {
+public class TestGraphicUtils extends org.broad.igv.ui.IGVDialog  {
 
     /**
      * Creates new form TestGraphicUtils

@@ -39,7 +39,7 @@ import java.awt.*;
 /**
  * @author jrobinso
  */
-public class DataRangeDialog extends javax.swing.JDialog {
+public class DataRangeDialog extends org.broad.igv.ui.IGVDialog  {
 
     private boolean canceled;
     private float min;

@@ -44,7 +44,7 @@ import java.awt.event.ActionEvent;
  *
  * @author sbusan
  */
-public class ConvertFileDialog extends JDialog {
+public class ConvertFileDialog extends org.broad.igv.ui.IGVDialog  {
 
     ConvertOptions opts = new ConvertOptions();
 

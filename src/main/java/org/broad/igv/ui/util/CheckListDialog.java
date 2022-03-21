@@ -41,7 +41,7 @@ import javax.swing.border.*;
 /**
  * @author Jim Robinson
  */
-public class CheckListDialog extends JDialog {
+public class CheckListDialog extends org.broad.igv.ui.IGVDialog  {
 
     private boolean canceled = true;
     private Set<String> selections;

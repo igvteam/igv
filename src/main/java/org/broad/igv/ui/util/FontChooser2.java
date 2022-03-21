@@ -54,7 +54,7 @@ import javax.swing.JLabel;
  * @author Ian Darwin
  * @version $Id: FontChooser2.java 33567 2012-06-18 08:34:43Z chantal.roth@lifetech.com $
  */
-public class FontChooser2 extends JDialog {
+public class FontChooser2 extends org.broad.igv.ui.IGVDialog  {
 
     // Results:
 

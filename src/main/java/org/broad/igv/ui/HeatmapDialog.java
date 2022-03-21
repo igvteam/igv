@@ -28,7 +28,7 @@ package org.broad.igv.ui;
 import javax.swing.*;
 import java.awt.event.*;
 
-public class HeatmapDialog extends JDialog {
+public class HeatmapDialog extends org.broad.igv.ui.IGVDialog  {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;

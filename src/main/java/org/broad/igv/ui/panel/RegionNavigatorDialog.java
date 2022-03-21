@@ -60,7 +60,7 @@ import java.util.List;
  *         This dialog is not intended to be persistent.  To view one of these, create it.
  *         <p/>
  */
-public class RegionNavigatorDialog extends JDialog implements Observer, IGVEventObserver {
+public class RegionNavigatorDialog extends org.broad.igv.ui.IGVDialog  implements Observer, IGVEventObserver {
 
     private static Logger log = LogManager.getLogger(AttributePanel.class);
 
