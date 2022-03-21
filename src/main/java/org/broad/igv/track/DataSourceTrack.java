@@ -27,12 +27,13 @@
 package org.broad.igv.track;
 
 
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.util.ResourceLocator;
 import org.w3c.dom.Document;
@@ -55,7 +56,10 @@ public class DataSourceTrack extends DataTrack {
 
     public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource) {
         super(locator, id, name);
-        if(dataSource != null) {
+        if(dataSource == null) {
+            log.warn("Null data source for track: " + locator.getTrackName() + "  " + locator.getPath());
+        }
+        if (dataSource != null) {
             setDatasource(dataSource);
         }
     }
@@ -95,7 +99,9 @@ public class DataSourceTrack extends DataTrack {
 
     public LoadedDataInterval<List<LocusScore>> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
 
-        List<LocusScore> tmp = dataSource.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
+        List<LocusScore> tmp = dataSource == null ?
+                Collections.EMPTY_LIST :
+                dataSource.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
         if (tmp == null) tmp = Collections.EMPTY_LIST;
         if (dataRange == null) {
             initScale(dataSource, tmp);
@@ -113,7 +119,7 @@ public class DataSourceTrack extends DataTrack {
     }
 
     public boolean isLogNormalized() {
-        return dataSource.isLogNormalized();
+        return dataSource != null ? dataSource.isLogNormalized() : false;
     }
 
 
@@ -129,7 +135,7 @@ public class DataSourceTrack extends DataTrack {
     }
 
     public void updateTrackReferences(List<Track> allTracks) {
-        if (dataSource instanceof CombinedDataSource) {
+        if (dataSource != null && dataSource instanceof CombinedDataSource) {
             ((CombinedDataSource) dataSource).updateTrackReferences(allTracks);
         }
     }
@@ -138,12 +144,10 @@ public class DataSourceTrack extends DataTrack {
 
         super.marshalXML(document, element);
 
-        if (dataSource != null) {
-            if (dataSource instanceof CoverageDataSource) {
-                boolean normalize = ((CoverageDataSource) dataSource).getNormalize();
-                if (normalize) {
-                    element.setAttribute("normalize", "true");
-                }
+        if (dataSource != null && dataSource instanceof CoverageDataSource){
+            boolean normalize = ((CoverageDataSource) dataSource).getNormalize();
+            if (normalize) {
+                element.setAttribute("normalize", "true");
             }
         }
     }
@@ -154,7 +158,7 @@ public class DataSourceTrack extends DataTrack {
         super.unmarshalXML(element, version);
 
         if (dataSource != null) {
-            if(dataSource instanceof CoverageDataSource && element.hasAttribute("normalize")){
+            if (dataSource instanceof CoverageDataSource && element.hasAttribute("normalize")) {
                 ((CoverageDataSource) dataSource).setNormalize(Boolean.parseBoolean(element.getAttribute("normalize")));
             }
         }
