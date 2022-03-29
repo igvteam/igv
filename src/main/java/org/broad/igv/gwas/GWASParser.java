@@ -89,12 +89,14 @@ public class GWASParser {
                 rowCounter++;
                 GWASFeature f = null;
                 f = parseLine(nextLine, rowCounter);
-                List<GWASFeature> featureList = features.get(f.chr);
-                if (featureList == null) {
-                    featureList = new ArrayList<>();
-                    features.put(f.chr, featureList);
+                if(f != null) {
+                    List<GWASFeature> featureList = features.get(f.chr);
+                    if (featureList == null) {
+                        featureList = new ArrayList<>();
+                        features.put(f.chr, featureList);
+                    }
+                    featureList.add(f);
                 }
-                featureList.add(f);
             }
 
             // Sort features by position
@@ -151,7 +153,8 @@ public class GWASParser {
                     // Transform to -log10
                     p = -log10(p);
                 } catch (NumberFormatException e) {
-                    throw new ParserException("Column " + this.columns.pCol + " must be a positive numeric value. Found " + tokens[this.columns.pCol], lineNumber, nextLine);
+                    log.warn("Error parsing line number " + lineNumber + ". Column " + this.columns.pCol + " must be a positive numeric value. Found " + tokens[this.columns.pCol]);
+                    return null;
                 }
                 return new GWASFeature(chr, position, p, nextLine);
             }
