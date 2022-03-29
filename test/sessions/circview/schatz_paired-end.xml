@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Session genome="hg19" locus="All" version="8">
     <Resources>
-        <Resource path="https://s3.amazonaws.com/igv.org.demo/SKBR3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam.delly_noalt_filtered.vcf.gz" type="vcf"/>
+        <Resource path="https://s3.amazonaws.com/igv.org.demo/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt_filtered.tra.vcf" type="vcf"/>
         <Resource path="https://s3.amazonaws.com/igv.org.demo/SKBR3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam" type="bam"/>
     </Resources>
     <Panel height="64" name="Panel1643653158403" width="1133">
