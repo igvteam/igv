@@ -375,7 +375,7 @@ public class ResourceLocator {
         return dbURL == null && !dataURL && !FileUtils.isRemote(path);
     }
 
-    public void setTrackInforURL(String trackInforURL) {
+    public void setTrackInfoURL(String trackInforURL) {
         this.trackInforURL = trackInforURL;
     }
 

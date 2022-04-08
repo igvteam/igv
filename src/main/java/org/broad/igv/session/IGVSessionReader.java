@@ -580,7 +580,7 @@ public class IGVSessionReader implements SessionReader {
         if (infolink == null) {
             infolink = getAttribute(element, SessionAttribute.INFOLINK);
         }
-        resourceLocator.setTrackInforURL(infolink);
+        resourceLocator.setTrackInfoURL(infolink);
 
 
         // Label is deprecated in favor of name.

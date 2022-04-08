@@ -227,7 +227,7 @@ public class ResourceTree {
         if (infoLink == null) {
             infoLink = getAttribute(xmlNode, INFOLINK.getText());
         }
-        locator.setTrackInforURL(infoLink);
+        locator.setTrackInfoURL(infoLink);
 
         if (xmlNode.getTagName().equalsIgnoreCase("Resource")) {
 
