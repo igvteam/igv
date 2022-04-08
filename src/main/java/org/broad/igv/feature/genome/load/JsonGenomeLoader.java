@@ -16,6 +16,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.track.TribbleFeatureSource;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -103,7 +104,16 @@ public class JsonGenomeLoader extends GenomeLoader {
 
                     JsonElement format = obj.get("format");
                     if (format != null) {
-                        res.setFormat(format.getAsString());
+                        res.setFormat(format.getAsString().toLowerCase());
+                    }
+
+                    JsonElement color = obj.get("color");
+                    if (color != null) {
+                        try {
+                            res.setColor(ColorUtilities.stringToColor(color.toString()));
+                        } catch (Exception e) {
+                            log.error("Error parsing color string: " + color.toString(), e);
+                        }
                     }
 
                     JsonElement vizwindow = obj.get("visibilityWindow");
