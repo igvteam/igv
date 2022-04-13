@@ -723,7 +723,7 @@ public class CommandExecutor {
             return "Error: If file is a comma-separated list, index must also be a comma-separated list of the same length";
         }
         if (isDataURL && formatString == null) {
-            throw new Error("ERROR: format must be specified for dataURLs");
+            return "Error: format must be specified for dataURLs";
         }
 
         // Fix formats -- backward compatibility
@@ -766,7 +766,7 @@ public class CommandExecutor {
             }
 
             if (isDataURL && formats == null) {
-                throw new Error("ERROR: format must be specified for dataURLs");
+                return "Error: format must be specified for dataURLs";
             }
 
             // Skip already loaded files TODO -- make this optional?  Check for change?
@@ -801,7 +801,7 @@ public class CommandExecutor {
                 if (!isDataURL && rl.isLocal()) {
                     File file = new File(rl.getPath());
                     if (!file.exists()) {
-                        throw new Error("Error: " + f + " does not exist.");
+                        return "Error: " + f + " does not exist.";
                     }
                 }
                 fileLocators.add(rl);
