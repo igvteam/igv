@@ -143,6 +143,11 @@ public class LinkedAlignment implements Alignment {
     }
 
     @Override
+    public boolean contains(double location) {
+        return location >= this.alignmentStart && location <= this.alignmentEnd;
+    }
+
+    @Override
     public boolean isMapped() {
         return true;
     }
@@ -205,11 +210,27 @@ public class LinkedAlignment implements Alignment {
         }
     }
 
+
+    @Override
+    public int getMappingQuality() {
+        return 30;    // This is used for coloring.  Not sure what to do here
+    }
+
     /////////////////////////////////////////////////////////////
 
     @Override
     public String getReadName() {
         return "READNAME".equals(tag) ? name : null;
+    }
+
+    @Override
+    public String getReadSequence() {
+        return null;
+    }
+
+    @Override
+    public AlignmentBlock[] getAlignmentBlocks() {
+        return null;
     }
 
     @Override
@@ -230,9 +251,71 @@ public class LinkedAlignment implements Alignment {
         return insertions;
     }
 
+
+    @Override
+    public String getCigarString() {
+        return null;
+    }
+
+    @Override
+    public List<Gap> getGaps() {
+        return null;
+    }
+
+    @Override
+    public int getInferredInsertSize() {
+        return 0;
+    }
+
+    @Override
+    public ReadMate getMate() {
+        return null;
+    }
+
     @Override
     public Strand getReadStrand() {
         return null;
+    }
+
+    @Override
+    public boolean isProperPair() {
+        return false;
+    }
+
+
+    @Override
+    public boolean isPaired() {
+        return false;
+    }
+
+    @Override
+    public boolean isFirstOfPair() {
+        return false;
+    }
+
+    @Override
+    public boolean isSecondOfPair() {
+        return false;
+    }
+
+    @Override
+    public boolean isNegativeStrand() {
+        return strand == Strand.NEGATIVE;
+    }
+
+    @Override
+    public boolean isDuplicate() {
+        return false;
+    }
+
+    @Override
+    public boolean isPrimary() {
+        return false;
+    }
+
+    @Override
+    public boolean isSupplementary() {
+        return false;
     }
 
     @Override
@@ -258,8 +341,63 @@ public class LinkedAlignment implements Alignment {
     }
 
     @Override
+    public byte getPhred(double position) {
+        return 0;
+    }
+
+    @Override
+    public void setMateSequence(String sequence) {
+
+    }
+
+    @Override
+    public String getPairOrientation() {
+        return null;
+    }
+
+    @Override
+    public Strand getFirstOfPairStrand() {
+        return null;
+    }
+
+    @Override
+    public Strand getSecondOfPairStrand() {
+        return null;
+    }
+
+    @Override
+    public boolean isVendorFailedRead() {
+        return false;
+    }
+
+    public Color getYcColor() {
+        return null;
+    }
+
+    @Override
+    public String getSample() {
+        return sample;
+    }
+
+    @Override
+    public String getReadGroup() {
+
+        return null;
+    }
+
+    @Override
+    public String getLibrary() {
+        return null;
+    }
+
+    @Override
     public String getClipboardString(double location, int mouseX) {
         return null;
+    }
+
+    @Override
+    public void finish() {
+        alignments.sort(ALIGNMENT_START_COMPARATOR);
     }
 
     @Override

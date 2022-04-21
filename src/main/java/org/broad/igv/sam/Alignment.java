@@ -43,164 +43,97 @@ public interface Alignment extends LocusScore {
 
     String getReadName();
 
+    String getReadSequence();
+
     String getChr();
 
     int getAlignmentStart();
 
     int getAlignmentEnd();
 
+    boolean contains(double location);
+
+    AlignmentBlock[] getAlignmentBlocks();
+
+    AlignmentBlock[] getInsertions();
+
+    String getCigarString();
+
+    java.util.List<Gap> getGaps();
+
+    int getInferredInsertSize();
+
+    int getMappingQuality();
+
+    ReadMate getMate();
+
     Strand getReadStrand();
 
-    String getClipboardString(double location, int mouseX);
+    boolean isProperPair();
 
-    default boolean isNegativeStrand() {
-        return Strand.NEGATIVE == getReadStrand();
-    }
+    boolean isMapped();
 
-    default String getReadSequence() {
-        return "*";
-    }
+    boolean isPaired();
 
-    default int getReadSequenceLength() {
-        return getReadSequence().length();
-    }
+    boolean isFirstOfPair(); // Ben Berman
 
-    default boolean contains(double location) {
-        return location >= getStart() && location < getEnd();
-    }
+    boolean isSecondOfPair(); // Ben Berman
 
-    default AlignmentBlock[] getAlignmentBlocks() {
-        return null;
-    }
+    boolean isNegativeStrand();
 
-    default AlignmentBlock[] getInsertions() {
-        return null;
-    }
+    boolean isDuplicate();
 
-    default String getCigarString() {
-        return "*";
-    }
+    boolean isPrimary();
 
-    default java.util.List<Gap> getGaps() {
-        return null;
-    }
+    boolean isSupplementary();
 
-    default int getInferredInsertSize() {
-        return 0;
-    }
+    byte getBase(double position);
 
-    default int getMappingQuality() {
-        return 255;
-    }
+    byte getPhred(double position);
 
-    default ReadMate getMate() {
-        return null;
-    }
+    Object getAttribute(String key);
 
-    default boolean isProperPair() {
-        return true;
-    }
+    void setMateSequence(String sequence);
 
-    default boolean isMapped() {
-        return true;
-    }
+    String getPairOrientation();
 
-    default boolean isPaired() {
-        return false;
-    }
+    Strand getFirstOfPairStrand();
 
-    default boolean isFirstOfPair() {
-        return false;
-    }
+    Strand getSecondOfPairStrand();
 
-    default boolean isSecondOfPair() {
-        return false;
-    }
-
-    default boolean isDuplicate() {
-        return false;
-    }
-
-    default boolean isPrimary() {
-        return true;
-    }
-
-    default boolean isSupplementary() {
-        return false;
-    }
-
-    default byte getBase(double position) {
-        return 0;
-    }
-
-    default byte getPhred(double position) {
-        return 0;
-    }
-
-    default Object getAttribute(String key) {
-        return null;
-    }
-
-    default void setMateSequence(String sequence) {}
-
-    default String getPairOrientation() {
-        return null;
-    }
-
-    default Strand getFirstOfPairStrand() {
-        return Strand.NONE;
-    }
-
-    default Strand getSecondOfPairStrand() {
-        return Strand.NONE;
-    }
-
-    default boolean isVendorFailedRead() {
-        return false;
-    }
+    boolean isVendorFailedRead();
 
     /**
      * Return an explicitly set color for this alignment, if any  (typically null).
-     *
      * @return
      */
-    default Color getYcColor() {
-        return null;
-    }
+    Color getYcColor();
 
-    default String getSample() {
-        return null;
-    }
+    String getSample();
 
-    default String getReadGroup() {
-        return null;
-    }
+    String getReadGroup();
 
-    default String getLibrary() {
-        return null;
-    }
+    String getLibrary();
+
+    String getClipboardString(double location, int mouseX);
+
+    void finish();
 
     default AlignmentBlock getInsertionAt(int position) {
         return null;
     }
 
-    default Map<Integer, BaseModification> getBaseModificationMap() {
-        return null;
-    }
+    default void setHaplotypeName(String hap) {}
+
+    default String getHaplotypeName() {return null;}
+
+    default void setHapDistance(int dist) {};
+
+    default int getHapDistance() {return 0;}
+
+    default Map<Integer, BaseModification> getBaseModificationMap() { return null;}
 
     default String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
         return getValueString(position, mouseX, (WindowFunction) null);
     }
-
-    default void finish() {}
-
-
-    // Experimental
-    default void setHaplotypeName(String hap) {
-    }
-
-    default String getHaplotypeName() {
-        return null;
-    }
-
 }

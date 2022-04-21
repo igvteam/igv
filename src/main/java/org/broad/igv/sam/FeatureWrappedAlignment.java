@@ -32,6 +32,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
+import java.util.List;
 
 /**
  * Some alignment formats are parsed as Features.
@@ -73,6 +74,10 @@ public class FeatureWrappedAlignment implements Alignment {
         return readName;
     }
 
+    public String getReadSequence() {
+        return null;
+    }
+
     public String getChromosome() {
         return chr;
     }
@@ -86,14 +91,56 @@ public class FeatureWrappedAlignment implements Alignment {
         return chr;
     }
 
-    @Override
     public int getAlignmentStart() {
         return start;
     }
 
-    @Override
+    public boolean contains(double location) {
+        return location >= start && location <= getEnd();
+    }
+
     public AlignmentBlock[] getAlignmentBlocks() {
         return blocks;
+    }
+
+    public AlignmentBlock[] getInsertions() {
+        return null;
+    }
+
+    public String getCigarString() {
+        return "*";
+    }
+
+    public int getInferredInsertSize() {
+        return 0;
+    }
+
+    public int getMappingQuality() {
+        return 255;
+    }
+
+    public ReadMate getMate() {
+        return null;
+    }
+
+    public boolean isProperPair() {
+        return true;
+    }
+
+    public boolean isMapped() {
+        return true;
+    }
+
+    public boolean isPaired() {
+        return false;
+    }
+
+    public boolean isNegativeStrand() {
+        return strand == Strand.NEGATIVE;
+    }
+
+    public boolean isDuplicate() {
+        return false;
     }
 
     public float getScore() {
@@ -144,11 +191,86 @@ public class FeatureWrappedAlignment implements Alignment {
         this.end = end;
     }
 
+    public byte getBase(double position) {
+        return 0;
+    }
 
+    public byte getPhred(double position) {
+        return 0;
+    }
+
+    public String getSample() {
+        return null;
+    }
+
+    public String getReadGroup() {
+        return null;
+    }
+
+    public String getLibrary() {
+        return null;
+    }
+
+    public Object getAttribute(String key) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void setMateSequence(String sequence) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public String getPairOrientation() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean isSmallInsert() {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean isVendorFailedRead() {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public Color getYcColor() {
+        return null;
+    }
+
+    @Override
+    public List<Gap> getGaps() {
+        return null;
+    }
+
+    public boolean isFirstOfPair() {
+        return false;
+    }
+
+    public boolean isSecondOfPair() {
+        return false;
+    }
+
+    public Strand getFirstOfPairStrand() {
+        return strand;
+    }
+
+    public Strand getSecondOfPairStrand() {
+        return Strand.NONE;
+    }
 
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
 
+    @Override
+    public void finish() {
+    }
 
+    @Override
+    public boolean isPrimary() {
+        return true;
+    }
+
+    @Override
+    public boolean isSupplementary() {
+        return false;
+    }
 }

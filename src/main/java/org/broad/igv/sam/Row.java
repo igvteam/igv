@@ -166,6 +166,10 @@ public class Row  {
                     Object tagValue = centerAlignment.getAttribute(tag);
                     score = tagValue == null ? 0 : tagValue.hashCode();
                     return score;
+                case HAPLOTYPE:
+                    //String hapname = centerAlignment.getHaplotypeName();
+                    //return hapname == null ? 0 : hapname.hashCode();
+                    return centerAlignment.getHapDistance();
                 case READ_NAME:
                     String readName = centerAlignment.getReadName();
                     score = readName == null ? 0 : readName.hashCode();

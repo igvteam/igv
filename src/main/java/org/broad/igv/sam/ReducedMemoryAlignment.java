@@ -124,6 +124,32 @@ public class ReducedMemoryAlignment implements Alignment {
         return null;
     }
 
+    /**
+     * .aligned files do not include sequence
+     *
+     * @return
+     */
+    public String getReadSequence() {
+        return "";
+    }
+
+    public void setMateSequence(String sequnce) {
+        // Ignore
+    }
+
+    public String getPairOrientation() {
+        return "";
+    }
+
+    public boolean isSmallInsert() {
+        return false;
+    }
+
+    public boolean isVendorFailedRead() {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+
     public Color getYcColor() {
         return null;
     }
@@ -133,7 +159,6 @@ public class ReducedMemoryAlignment implements Alignment {
         return chromosome;
     }
 
-    @Override
     public String getChr() {
         return chromosome;
     }
@@ -143,19 +168,36 @@ public class ReducedMemoryAlignment implements Alignment {
         return chromosome;
     }
 
-    @Override
     public int getAlignmentStart() {
         return getStart();
     }
 
-    @Override
+    public boolean contains(double location) {
+        return location >= getStart() && location < getEnd();
+    }
+
     public AlignmentBlock[] getAlignmentBlocks() {
         return blocks;
     }
 
-    @Override
     public AlignmentBlock[] getInsertions() {
         return insertions;
+    }
+
+    public String getCigarString() {
+        return "*";
+    }
+
+    public int getInferredInsertSize() {
+        return 0;
+    }
+
+    public int getMappingQuality() {
+        return 255;
+    }
+
+    public ReadMate getMate() {
+        return null;
     }
 
     public boolean isProperPair() {
@@ -172,6 +214,10 @@ public class ReducedMemoryAlignment implements Alignment {
 
     public boolean isNegativeStrand() {
         return negativeStrand;
+    }
+
+    public boolean isDuplicate() {
+        return false;
     }
 
     public float getScore() {
@@ -241,13 +287,68 @@ public class ReducedMemoryAlignment implements Alignment {
         this.end = end;
     }
 
+    public byte getBase(double position) {
+        return 0;
+    }
+
+    public byte getPhred(double position) {
+        return 0;
+    }
+
+    public String getSample() {
+        return null;
+    }
+
+    public String getReadGroup() {
+        return null;
+    }
+
+    public String getLibrary() {
+        return null;
+    }
+
+    public Object getAttribute(String key) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     @Override
     public List<Gap> getGaps() {
         return gaps;
     }
 
+    public boolean isFirstOfPair() {
+        return false;
+    }
+
+    public boolean isSecondOfPair() {
+        return false;
+    }
+
+    public Strand getFirstOfPairStrand() {
+        return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+    }
+
+
+    public Strand getSecondOfPairStrand() {
+        return Strand.NONE;
+    }
+
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+    }
+
+    @Override
+    public void finish() {
+    }
+
+    @Override
+    public boolean isPrimary() {
+        return true;
+    }
+
+    @Override
+    public boolean isSupplementary() {
+        return false;
     }
 
     public static class ReducedMemoryAlignmentBlock implements AlignmentBlock {
