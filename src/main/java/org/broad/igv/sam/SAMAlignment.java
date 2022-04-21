@@ -289,10 +289,6 @@ public class SAMAlignment implements Alignment {
         return insertions;
     }
 
-    public boolean contains(double location) {
-        return location >= getStart() && location < getEnd();
-    }
-
     public byte getBase(double position) {
         int basePosition = (int) position;
         for (AlignmentBlock block : this.alignmentBlocks) {
@@ -584,7 +580,6 @@ public class SAMAlignment implements Alignment {
 
         if (getHaplotypeName() != null) {
             buf.append("Hap name: " + getHaplotypeName() + "<br>");
-            buf.append("Dist: " + getHapDistance() + "<br>");
         }
 
         // First check insertions.  Position is zero based, block coords 1 based
@@ -1086,16 +1081,5 @@ public class SAMAlignment implements Alignment {
         return haplotypeName;
     }
 
-    int hapDistance;
-
-    @Override
-    public void setHapDistance(int dist) {
-        this.hapDistance = dist;
-    }
-
-    @Override
-    public int getHapDistance() {
-        return hapDistance;
-    }
 
 }
