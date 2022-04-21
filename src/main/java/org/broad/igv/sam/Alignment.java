@@ -43,97 +43,164 @@ public interface Alignment extends LocusScore {
 
     String getReadName();
 
-    String getReadSequence();
-
     String getChr();
 
     int getAlignmentStart();
 
     int getAlignmentEnd();
 
-    boolean contains(double location);
-
-    AlignmentBlock[] getAlignmentBlocks();
-
-    AlignmentBlock[] getInsertions();
-
-    String getCigarString();
-
-    java.util.List<Gap> getGaps();
-
-    int getInferredInsertSize();
-
-    int getMappingQuality();
-
-    ReadMate getMate();
-
     Strand getReadStrand();
-
-    boolean isProperPair();
-
-    boolean isMapped();
-
-    boolean isPaired();
-
-    boolean isFirstOfPair(); // Ben Berman
-
-    boolean isSecondOfPair(); // Ben Berman
-
-    boolean isNegativeStrand();
-
-    boolean isDuplicate();
-
-    boolean isPrimary();
-
-    boolean isSupplementary();
-
-    byte getBase(double position);
-
-    byte getPhred(double position);
-
-    Object getAttribute(String key);
-
-    void setMateSequence(String sequence);
-
-    String getPairOrientation();
-
-    Strand getFirstOfPairStrand();
-
-    Strand getSecondOfPairStrand();
-
-    boolean isVendorFailedRead();
-
-    /**
-     * Return an explicitly set color for this alignment, if any  (typically null).
-     * @return
-     */
-    Color getYcColor();
-
-    String getSample();
-
-    String getReadGroup();
-
-    String getLibrary();
 
     String getClipboardString(double location, int mouseX);
 
-    void finish();
+    default boolean isNegativeStrand() {
+        return Strand.NEGATIVE == getReadStrand();
+    }
+
+    default String getReadSequence() {
+        return "*";
+    }
+
+    default int getReadSequenceLength() {
+        return getReadSequence().length();
+    }
+
+    default boolean contains(double location) {
+        return location >= getStart() && location < getEnd();
+    }
+
+    default AlignmentBlock[] getAlignmentBlocks() {
+        return null;
+    }
+
+    default AlignmentBlock[] getInsertions() {
+        return null;
+    }
+
+    default String getCigarString() {
+        return "*";
+    }
+
+    default java.util.List<Gap> getGaps() {
+        return null;
+    }
+
+    default int getInferredInsertSize() {
+        return 0;
+    }
+
+    default int getMappingQuality() {
+        return 255;
+    }
+
+    default ReadMate getMate() {
+        return null;
+    }
+
+    default boolean isProperPair() {
+        return true;
+    }
+
+    default boolean isMapped() {
+        return true;
+    }
+
+    default boolean isPaired() {
+        return false;
+    }
+
+    default boolean isFirstOfPair() {
+        return false;
+    }
+
+    default boolean isSecondOfPair() {
+        return false;
+    }
+
+    default boolean isDuplicate() {
+        return false;
+    }
+
+    default boolean isPrimary() {
+        return true;
+    }
+
+    default boolean isSupplementary() {
+        return false;
+    }
+
+    default byte getBase(double position) {
+        return 0;
+    }
+
+    default byte getPhred(double position) {
+        return 0;
+    }
+
+    default Object getAttribute(String key) {
+        return null;
+    }
+
+    default void setMateSequence(String sequence) {}
+
+    default String getPairOrientation() {
+        return null;
+    }
+
+    default Strand getFirstOfPairStrand() {
+        return Strand.NONE;
+    }
+
+    default Strand getSecondOfPairStrand() {
+        return Strand.NONE;
+    }
+
+    default boolean isVendorFailedRead() {
+        return false;
+    }
+
+    /**
+     * Return an explicitly set color for this alignment, if any  (typically null).
+     *
+     * @return
+     */
+    default Color getYcColor() {
+        return null;
+    }
+
+    default String getSample() {
+        return null;
+    }
+
+    default String getReadGroup() {
+        return null;
+    }
+
+    default String getLibrary() {
+        return null;
+    }
 
     default AlignmentBlock getInsertionAt(int position) {
         return null;
     }
 
-    default void setHaplotypeName(String hap) {}
-
-    default String getHaplotypeName() {return null;}
-
-    default void setHapDistance(int dist) {};
-
-    default int getHapDistance() {return 0;}
-
-    default Map<Integer, BaseModification> getBaseModificationMap() { return null;}
+    default Map<Integer, BaseModification> getBaseModificationMap() {
+        return null;
+    }
 
     default String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
         return getValueString(position, mouseX, (WindowFunction) null);
     }
+
+    default void finish() {}
+
+
+    // Experimental
+    default void setHaplotypeName(String hap) {
+    }
+
+    default String getHaplotypeName() {
+        return null;
+    }
+
 }

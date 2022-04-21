@@ -25,14 +25,12 @@
 
 package org.broad.igv.sam;
 
-import htsjdk.samtools.SAMRecord;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 import org.junit.Test;
 
 import java.awt.*;
-import java.util.List;
 
 /**
  * @author Jim Robinson
@@ -43,15 +41,14 @@ public class BisulfiteBaseInfoTest {
     @Test
     public void testContextIsMatching() throws Exception {
 
-        AlignmentTrack.BisulfiteContext context =  AlignmentTrack.BisulfiteContext.CG;
-        byte [] ref = {(byte) 'C', (byte) 'G'};
-        byte [] read = {(byte) 'C', (byte) 'G'};
+        AlignmentTrack.BisulfiteContext context = AlignmentTrack.BisulfiteContext.CG;
+        byte[] ref = {(byte) 'C', (byte) 'G'};
+        byte[] read = {(byte) 'C', (byte) 'G'};
         TestAlignment testAlignment = new TestAlignment();
         AlignmentBlock block = new AlignmentBlockImpl(0, read, null);
         BisulfiteBaseInfo bbi = new BisulfiteBaseInfo(ref, testAlignment, block, context);
 
     }
-
 
 
     static class TestAlignment implements Alignment {
@@ -62,10 +59,6 @@ public class BisulfiteBaseInfoTest {
         boolean isNegativeStrand = false;
         private Strand firstOfPairStrand;
         private Strand secondOfPairStrand;
-
-        public String getReadSequence() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
-        }
 
         @Override
         public String getChr() {
@@ -82,32 +75,7 @@ public class BisulfiteBaseInfoTest {
         }
 
         @Override
-        public int getMappingQuality() {
-            return 0;
-        }
-
-        @Override
-        public ReadMate getMate() {
-            return null;
-        }
-
-        @Override
         public Strand getReadStrand() {
-            return null;
-        }
-
-        @Override
-        public int getInferredInsertSize() {
-            return 0;
-        }
-
-        @Override
-        public String getCigarString() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public List<Gap> getGaps() {
             return null;
         }
 
@@ -120,11 +88,6 @@ public class BisulfiteBaseInfoTest {
             return false;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
-        @Override
-        public boolean isPaired() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
         public boolean isFirstOfPair() {
             return false;  //To change body of implemented methods use File | Settings | File Templates.
         }
@@ -133,46 +96,8 @@ public class BisulfiteBaseInfoTest {
             return false;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
-        public boolean isDuplicate() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
         public int getAlignmentEnd() {
             return 0;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public boolean contains(double location) {
-            return false;
-        }
-
-        @Override
-        public AlignmentBlock[] getAlignmentBlocks() {
-            return new AlignmentBlock[0];
-        }
-
-        @Override
-        public AlignmentBlock[] getInsertions() {
-            return new AlignmentBlock[0];
-        }
-
-        public String getSample() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public Object getAttribute(String key) {
-            return null;
-        }
-
-        @Override
-        public void setMateSequence(String sequence) {
-
-        }
-
-        @Override
-        public String getPairOrientation() {
-            return null;
         }
 
         public Strand getFragmentStrand(int read) {
@@ -180,38 +105,8 @@ public class BisulfiteBaseInfoTest {
         }
 
         @Override
-        public boolean isProperPair() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public boolean isSupplementary() {
-            return false;
-        }
-
-        @Override
-        public byte getBase(double position) {
-            return 0;
-        }
-
-        @Override
-        public byte getPhred(double position) {
-            return 0;
-        }
-
-        @Override
-        public boolean isVendorFailedRead() {
-            return false;
-        }
-
-        @Override
         public Color getYcColor() {
             return null;
-        }
-
-        @Override
-        public boolean isPrimary() {
-            return false;
         }
 
         public void setStart(int start) {
@@ -305,7 +200,7 @@ public class BisulfiteBaseInfoTest {
          * @return strand of first-of-pair
          */
         public Strand getFirstOfPairStrand() {
-           return firstOfPairStrand;
+            return firstOfPairStrand;
         }
 
         /**
@@ -316,10 +211,6 @@ public class BisulfiteBaseInfoTest {
          */
         public Strand getSecondOfPairStrand() {
             return secondOfPairStrand;
-        }
-
-        public boolean isNegativeStrand() {
-            return false;
         }
 
         public String getReadGroup() {
@@ -335,9 +226,5 @@ public class BisulfiteBaseInfoTest {
             return null;
         }
 
-        @Override
-        public void finish() {
-
-        }
     }
 }

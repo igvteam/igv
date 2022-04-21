@@ -29,7 +29,6 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 
 import java.awt.*;
-import java.util.List;
 
 /**
  * @author jrobinso
@@ -43,7 +42,6 @@ public class PairedAlignment implements Alignment {
     int end;
     Alignment firstAlignment;
     Alignment secondAlignment;
-
 
 
     public PairedAlignment(Alignment firstAlignment) {
@@ -96,13 +94,9 @@ public class PairedAlignment implements Alignment {
         return true;
     }
 
-
-    public AlignmentBlock[] getAlignmentBlocks() {
-        return new AlignmentBlockImpl[0];  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     AlignmentBlock[] insertions;
 
+    @Override
     public AlignmentBlock[] getInsertions() {
         if (insertions == null) {
             AlignmentBlock[] block1 = firstAlignment.getInsertions();
@@ -119,10 +113,6 @@ public class PairedAlignment implements Alignment {
     }
 
     @Override
-    public List<Gap> getGaps() {
-        return null;
-    }
-
     public int getInferredInsertSize() {
         return Math.abs(firstAlignment.getInferredInsertSize());
     }
@@ -209,57 +199,16 @@ public class PairedAlignment implements Alignment {
     }
     ////////////////////////////////////////////////////////////
 
-    public boolean contains(double location) {
-        return location >= start && location <= end;
-    }
-
-    public String getReadSequence() {
-        return null;
-    }
-
-    public String getCigarString() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public ReadMate getMate() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public boolean isPaired() {
-        return false;  //Counter intuitive, but the pair does not have a mate
-    }
-
-    public boolean isNegativeStrand() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-
     public String getSample() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return firstAlignment.getSample();  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public String getReadGroup() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public Object getAttribute(String key) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public void setMateSequence(String sequence) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public String getPairOrientation() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public boolean isSmallInsert() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return firstAlignment.getReadGroup();  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public boolean isVendorFailedRead() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return firstAlignment.isVendorFailedRead() || (secondAlignment != null && secondAlignment.isVendorFailedRead());
     }
 
     public Color getYcColor() {
@@ -295,14 +244,6 @@ public class PairedAlignment implements Alignment {
         return secondAlignment;
     }
 
-    public boolean isFirstOfPair() {
-        return false;
-    }
-
-    public boolean isSecondOfPair() {
-        return false;
-    }
-
     public Strand getFirstOfPairStrand() {
         return firstAlignment.getFirstOfPairStrand();
     }
@@ -312,13 +253,13 @@ public class PairedAlignment implements Alignment {
     }
 
     public Strand getReadStrand() {
-        return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+        return Strand.NONE;
     }
 
     @Override
     public void finish() {
         firstAlignment.finish();
-        if(secondAlignment != null) {
+        if (secondAlignment != null) {
             secondAlignment.finish();
         }
     }
