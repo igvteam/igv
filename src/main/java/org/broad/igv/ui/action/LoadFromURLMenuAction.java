@@ -181,6 +181,9 @@ public class LoadFromURLMenuAction extends MenuAction {
             if (AmazonUtils.isAwsS3Path(url)) {
                 String bucket = AmazonUtils.getBucketFromS3URL(url);
                 String key = AmazonUtils.getKeyFromS3URL(url);
+                if (AmazonUtils.accessKeyAuthorisationPresent()) {
+                    AmazonUtils.updateS3Client(null);
+                }
                 AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucket, key);
                 if (!res.isObjectAvailable()) {
                     MessageUtils.showErrorMessage(res.getErrorReason(), null);
