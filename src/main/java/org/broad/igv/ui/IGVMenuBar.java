@@ -193,7 +193,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         try {
             AWSMenu = createAWSMenu();
-            AWSMenu.setVisible(AmazonUtils.isAWSProviderPresent());
+            AWSMenu.setVisible(AmazonUtils.isAWSProviderPresent() || AmazonUtils.accessKeyAuthorisationPresent());
             menus.add(AWSMenu);
 
         } catch (IOException e) {
@@ -627,7 +627,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction =
                 new MenuAction("Select Attributes to Show...", null, KeyEvent.VK_S) {
                     @Override
-                    public void actionPerformed(ActionEvent e) {igv.doSelectDisplayableAttribute();
+                    public void actionPerformed(ActionEvent e) {
+                        igv.doSelectDisplayableAttribute();
                     }
                 };
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
@@ -961,7 +962,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenuItem updateCS = new JMenuItem("Update chrom sizes");
         updateCS.addActionListener(e -> {
             try {
-                GenomeUtils.main(new String [] {});
+                GenomeUtils.main(new String[]{});
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
@@ -975,77 +976,79 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenu createAWSMenu() throws IOException {
 
         JMenu menu = new JMenu("Amazon");
-
-        final JMenuItem login = new JMenuItem("Login");
-        login.addActionListener(e -> {
-            try {
-                OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
-                oauth.openAuthorizationPage(); // should trigger and event and UI takes over
-            } catch (Exception ex) {
-                MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
-                log.error("Error fetching oAuth tokens", ex);
-            }
-        });
-        login.setEnabled(false);
-        menu.add(login);
-
-        final JMenuItem logout = new JMenuItem("Logout");
-        logout.addActionListener(e -> {
-            OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
-            oauth.logout();
-        });
-        logout.setEnabled(false);
-        menu.add(logout);
-
         final JMenuItem loadS3 = new JMenuItem("Load from S3 bucket");
-        loadS3.addActionListener(e -> {
-            List<String> buckets = AmazonUtils.ListBucketsForUser();
-            log.debug(buckets);
-
-            UIUtilities.invokeOnEventThread(() -> {
-                S3LoadDialog dlg = new S3LoadDialog(igv.getMainFrame());
-                dlg.setModal(true);
-                dlg.setVisible(true);
-                dlg.dispose();
-            });
-        });
-        loadS3.setEnabled(false);
-        menu.add(loadS3);
-
-        menu.addMenuListener(new MenuListener() {
-            @Override
-            public void menuSelected(MenuEvent e) {
-                Runnable runnable = () -> {
+        if (AmazonUtils.isAWSProviderPresent()) {
+            final JMenuItem login = new JMenuItem("Login");
+            login.addActionListener(e -> {
+                try {
                     OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
-                    boolean loggedIn = false;
-                    loggedIn = oauth.isLoggedIn();
-                    log.debug("MenuBar is user loggedIn?: " + loggedIn);
+                    oauth.openAuthorizationPage(); // should trigger and event and UI takes over
+                } catch (Exception ex) {
+                    MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
+                    log.error("Error fetching oAuth tokens", ex);
+                }
+            });
+            login.setEnabled(false);
+            menu.add(login);
 
-                    if (loggedIn) {
-                        login.setText(oauth.getCurrentUserName());
-                    } else {
-                        login.setText("Login ...");
-                    }
-                    login.setEnabled(!loggedIn);
-                    logout.setEnabled(loggedIn);
-                    loadS3.setEnabled(loggedIn);
-                };
+            final JMenuItem logout = new JMenuItem("Logout");
+            logout.addActionListener(e -> {
+                OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
+                oauth.logout();
+            });
+            logout.setEnabled(false);
+            menu.add(logout);
+            menu.addMenuListener(new MenuListener() {
+                @Override
+                public void menuSelected(MenuEvent e) {
+                    Runnable runnable = () -> {
+                        OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
+                        boolean loggedIn = false;
+                        loggedIn = oauth.isLoggedIn();
+                        log.debug("MenuBar is user loggedIn?: " + loggedIn);
 
-                LongRunningTask.submit(runnable);
+                        if (loggedIn) {
+                            login.setText(oauth.getCurrentUserName());
+                        } else {
+                            login.setText("Login ...");
+                        }
+                        login.setEnabled(!loggedIn);
+                        logout.setEnabled(loggedIn);
+                        loadS3.setEnabled(loggedIn);
+                    };
+
+                    LongRunningTask.submit(runnable);
+                }
+
+                @Override
+                public void menuDeselected(MenuEvent e) {
+
+                }
+
+                @Override
+                public void menuCanceled(MenuEvent e) {
+
+                }
+
+            });
+        }
+        if (AmazonUtils.isAWSProviderPresent() || AmazonUtils.accessKeyAuthorisationPresent()) {
+            loadS3.addActionListener(e -> {
+                List<String> buckets = AmazonUtils.ListBucketsForUser();
+                log.debug(buckets);
+
+                UIUtilities.invokeOnEventThread(() -> {
+                    S3LoadDialog dlg = new S3LoadDialog(igv.getMainFrame());
+                    dlg.setModal(true);
+                    dlg.setVisible(true);
+                    dlg.dispose();
+                });
+            });
+            if (AmazonUtils.isAWSProviderPresent()) {
+                loadS3.setEnabled(false);
             }
-
-            @Override
-            public void menuDeselected(MenuEvent e) {
-
-            }
-
-            @Override
-            public void menuCanceled(MenuEvent e) {
-
-            }
-
-        });
-
+            menu.add(loadS3);
+        }
         return menu;
     }
 
@@ -1211,7 +1214,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
             String blatSequence = MessageUtils.showInputDialog("Enter sequence to blat:");
             if (blatSequence != null) {
-                if(blatSequence.length() < 20 || blatSequence.length() > 8000) {
+                if (blatSequence.length() < 20 || blatSequence.length() > 8000) {
                     MessageUtils.showMessage("BLAT sequences must be between 20 and 8000 bases in length.");
                 } else {
                     BlatClient.doBlatQuery(blatSequence, "BLAT");

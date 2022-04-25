@@ -53,12 +53,15 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
+import static software.amazon.awssdk.profiles.ProfileProperty.AWS_ACCESS_KEY_ID;
+import static software.amazon.awssdk.profiles.ProfileProperty.AWS_SECRET_ACCESS_KEY;
 
 /**
  * Manages user preferences.
  */
 public class IGVPreferences {
 
+    private static final String AWS_REGION = "aws_region";
     private static Logger log = LogManager.getLogger(IGVPreferences.class);
 
     IGVPreferences parent;
@@ -403,6 +406,18 @@ public class IGVPreferences {
 
     public String getProvisioningURL() {
         return get(PROVISIONING_URL);
+    }
+
+    public String getAWSAccessKeyId() {
+        return get(AWS_ACCESS_KEY_ID);
+    }
+
+    public String getAWSSecretAccessKey() {
+        return get(AWS_SECRET_ACCESS_KEY);
+    }
+
+    public String getAWSRegion(){
+        return get(AWS_REGION);
     }
 
     public String getPortNumber() {

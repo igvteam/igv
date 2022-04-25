@@ -6,8 +6,10 @@ import org.broad.igv.Globals;
 import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGVMenuBar;
 import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
@@ -69,6 +71,11 @@ public class AmazonUtils {
         return CognitoConfig;
     }
 
+    public static boolean accessKeyAuthorisationPresent() {
+        return PreferencesManager.getPreferences().getAWSAccessKeyId() != null &&
+                PreferencesManager.getPreferences().getAWSSecretAccessKey() != null;
+    }
+
     public static boolean isAWSProviderPresent() {
         boolean OauthAWSConfigured;
 
@@ -88,6 +95,7 @@ public class AmazonUtils {
     }
 
     private static Region getAWSREGION() {
+        AWSREGION = Region.of(PreferencesManager.getPreferences().getAWSRegion());
         if (AWSREGION == null) {
             AWSREGION = Region.of(GetCognitoConfig().get("aws_region").getAsString());
         }
@@ -187,12 +195,25 @@ public class AmazonUtils {
      * @param credentials AWS credentials
      */
     public static void updateS3Client(Credentials credentials) {
-        AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
-                credentials.secretAccessKey(),
-                credentials.sessionToken());
+        if (!accessKeyAuthorisationPresent()) {
+            AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
+                    credentials.secretAccessKey(),
+                    credentials.sessionToken());
 
-        StaticCredentialsProvider s3CredsProvider = StaticCredentialsProvider.create(creds);
-        s3Client = S3Client.builder().credentialsProvider(s3CredsProvider).region(getAWSREGION()).build();
+            StaticCredentialsProvider s3CredsProvider = StaticCredentialsProvider.create(creds);
+            s3Client = S3Client.builder().credentialsProvider(s3CredsProvider).region(getAWSREGION()).build();
+        } else {
+            if (s3Client == null) {
+                AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
+                        PreferencesManager.getPreferences().getAWSAccessKeyId(),
+                        PreferencesManager.getPreferences().getAWSSecretAccessKey());
+
+                s3Client = S3Client.builder()
+                        .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+                        .build();
+            }
+        }
+
     }
 
 
@@ -203,8 +224,13 @@ public class AmazonUtils {
      */
     public static List<String> ListBucketsForUser() {
         if (bucketsFinalList.isEmpty()) {
-            OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
-            updateS3Client(GetCognitoAWSCredentials());
+            if (isAWSProviderPresent()) {
+                OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
+                updateS3Client(GetCognitoAWSCredentials());
+            } else{
+                updateS3Client(null);
+            }
+
 
             List<String> bucketsList = new ArrayList<>();
 
@@ -221,10 +247,10 @@ public class AmazonUtils {
 
     public static HeadObjectResponse getObjectMetadata(String bucket, String key) {
         HeadObjectRequest HeadObjReq = HeadObjectRequest.builder()
-                                                        .bucket(bucket)
-                                                        .key(key).build();
+                .bucket(bucket)
+                .key(key).build();
         HeadObjectResponse HeadObjRes = s3Client.headObject(HeadObjReq);
-        log.debug("getObjectMetadata(): "+HeadObjRes.toString());
+        log.debug("getObjectMetadata(): " + HeadObjRes.toString());
         return HeadObjRes;
     }
 
@@ -296,7 +322,7 @@ public class AmazonUtils {
                 "For further enquiries about this dataset, please use the following path when communicating with your system administrator: s3://" + bucket + "/" + key;
 
         if (s3ObjectStorageClass.contains("DEEP_ARCHIVE") ||
-            s3ObjectStorageClass.contains("GLACIER")) {
+                s3ObjectStorageClass.contains("GLACIER")) {
             try {
                 s3ObjectStorageStatus = s3Meta.sdkHttpResponse().headers().get("x-amz-restore").toString();
             } catch (NullPointerException npe) {
@@ -361,8 +387,12 @@ public class AmazonUtils {
         ArrayList<IGVS3Object> objects = new ArrayList<>();
         log.debug("Listing objects for bucketName: " + bucketName);
 
-        OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
-        updateS3Client(GetCognitoAWSCredentials());
+        if (isAWSProviderPresent()) {
+            OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
+            updateS3Client(GetCognitoAWSCredentials());
+        }else{
+            updateS3Client(null);
+        }
 
         try {
             // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
@@ -426,22 +456,33 @@ public class AmazonUtils {
         // Make sure access token are valid (refreshes token internally)
 
         System.out.println("Creating signed URL: " + s3Path);
+        S3Presigner s3Presigner;
+        if (isAWSProviderPresent()) {
+            OAuthProvider provider = OAuthUtils.getInstance().getProvider("Amazon");
+            provider.getAccessToken();
 
-        OAuthProvider provider = OAuthUtils.getInstance().getProvider("Amazon");
-        provider.getAccessToken();
 
-        Credentials credentials = GetCognitoAWSCredentials();
-        AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
-                credentials.secretAccessKey(),
-                credentials.sessionToken());
-        StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
+            Credentials credentials = GetCognitoAWSCredentials();
+            AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
+                    credentials.secretAccessKey(),
+                    credentials.sessionToken());
+            StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
 
-        S3Presigner s3Presigner = S3Presigner.builder()
-                .expiration(provider.getExpirationTime())       // Duration.ofSeconds(30)  // <= for testing
-                .awsCredentials(awsCredsProvider)
-                .region(getAWSREGION())
-                .build();
+            s3Presigner = S3Presigner.builder()
+                    .expiration(provider.getExpirationTime())       // Duration.ofSeconds(30)  // <= for testing
+                    .awsCredentials(awsCredsProvider)
+                    .region(getAWSREGION())
+                    .build();
+        } else {
+            AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
+                    PreferencesManager.getPreferences().getAWSAccessKeyId(),
+                    PreferencesManager.getPreferences().getAWSSecretAccessKey());
 
+            s3Presigner = S3Presigner.builder()
+                    .awsCredentials(StaticCredentialsProvider.create(awsCreds))
+                    .region(getAWSREGION())
+                    .build();
+        }
         String bucket = getBucketFromS3URL(s3Path);
         String key = getKeyFromS3URL(s3Path);
 
@@ -477,7 +518,7 @@ public class AmazonUtils {
 
     public static String updatePresignedURL(String urlString) throws IOException {
         String s3UrlString = presignedToS3Map.get(urlString);
-        if(s3UrlString == null) {
+        if (s3UrlString == null) {
             throw new RuntimeException("Unrecognized presigned url: " + urlString);
         } else {
             return translateAmazonCloudURL(s3UrlString);
@@ -507,7 +548,7 @@ public class AmazonUtils {
         try {
             long presignedTime = signedURLValidity(url);
             isValidSignedUrl = presignedTime - System.currentTimeMillis() - Globals.TOKEN_EXPIRE_GRACE_TIME > 0; // Duration in milliseconds
-            if(!isValidSignedUrl) {
+            if (!isValidSignedUrl) {
                 System.out.println("URL expired: " + url.toExternalForm());
             }
         } catch (ParseException e) {

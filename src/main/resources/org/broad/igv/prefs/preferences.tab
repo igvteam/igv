@@ -200,7 +200,10 @@ MASTER_RESOURCE_FILE_KEY	Data registry url	string	https://data.broadinstitute.or
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
-
+aws_access_key_id	AWS access key id	string	null
+aws_secret_access_key	AWS secret access key	string	null
+aws_region	AWS region	string	null
+---
 BLAT_URL	Blat url	String	http://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=$SEQUENCE&type=DNA&db=$DB&output=json
 ---
 

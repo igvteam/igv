@@ -123,7 +123,9 @@ dependencies {
             // Amazon deps
             [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.16.7'],
             [group: 'software.amazon.awssdk', name: 'sts', version: '2.16.7'],
-            [group: 'software.amazon.awssdk', name: 's3', version: '2.16.7']
+            [group: 'software.amazon.awssdk', name: 's3', version: '2.16.7'],
+            [group: 'software.amazon.awssdk', name: 'auth', version: '2.16.7'],
+            [group: 'software.amazon.awssdk', name: 'profiles', version: '2.16.7']
     )
 
     testImplementation(
