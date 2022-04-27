@@ -192,7 +192,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         try {
             AWSMenu = createAWSMenu();
-            AWSMenu.setVisible(AmazonUtils.isAwsCredentialsPresent());
+            AWSMenu.setVisible(AmazonUtils.isAwsProviderPresent());
             menus.add(AWSMenu);
 
         } catch (IOException e) {
@@ -208,7 +208,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
     public void updateAWSMenu() {
-        AWSMenu.setVisible(AmazonUtils.isAwsCredentialsPresent());
+        AWSMenu.setVisible(AmazonUtils.isAwsProviderPresent());
     }
 
     /**
@@ -626,8 +626,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction =
                 new MenuAction("Select Attributes to Show...", null, KeyEvent.VK_S) {
                     @Override
-                    public void actionPerformed(ActionEvent e) {
-                        igv.doSelectDisplayableAttribute();
+                    public void actionPerformed(ActionEvent e) {igv.doSelectDisplayableAttribute();
                     }
                 };
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
@@ -961,7 +960,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenuItem updateCS = new JMenuItem("Update chrom sizes");
         updateCS.addActionListener(e -> {
             try {
-                GenomeUtils.main(new String[]{});
+                GenomeUtils.main(new String [] {});
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
@@ -974,7 +973,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private JMenu createAWSMenu() throws IOException {
 
-        boolean usingCognito = AmazonUtils.getCognitoConfig() != null;
+        boolean usingCognito = AmazonUtils.GetCognitoConfig() != null;
 
         JMenu menu = new JMenu("Amazon");
 
@@ -1022,7 +1021,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
-                if (AmazonUtils.getCognitoConfig() != null) {
+                if (AmazonUtils.GetCognitoConfig() != null) {
                     Runnable runnable = () -> {
                         OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
                         boolean loggedIn = false;
@@ -1219,7 +1218,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
             String blatSequence = MessageUtils.showInputDialog("Enter sequence to blat:");
             if (blatSequence != null) {
-                if (blatSequence.length() < 20 || blatSequence.length() > 8000) {
+                if(blatSequence.length() < 20 || blatSequence.length() > 8000) {
                     MessageUtils.showMessage("BLAT sequences must be between 20 and 8000 bases in length.");
                 } else {
                     BlatClient.doBlatQuery(blatSequence, "BLAT");

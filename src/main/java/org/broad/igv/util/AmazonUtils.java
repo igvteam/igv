@@ -61,18 +61,18 @@ public class AmazonUtils {
      */
     private static Map<String, String> presignedToS3Map = new HashMap<>();
 
-    private static JsonObject cognitoConfig;
+    private static JsonObject CognitoConfig;
 
     public static void setCognitoConfig(JsonObject json) {
-        cognitoConfig = json;
-        awsCredentialsPresent = cognitoConfig.get("auth_provider").getAsString().contains("Amazon");
+        CognitoConfig = json;
+        awsCredentialsPresent = CognitoConfig.get("auth_provider").getAsString().contains("Amazon");
         if (IGVMenuBar.getInstance() != null) {
             IGVMenuBar.getInstance().updateAWSMenu();
         }
     }
 
-    public static JsonObject getCognitoConfig() {
-        return cognitoConfig;
+    public static JsonObject GetCognitoConfig() {
+        return CognitoConfig;
     }
 
 
@@ -82,12 +82,12 @@ public class AmazonUtils {
      *
      * @return
      */
-    public static boolean isAwsCredentialsPresent() {
+    public static boolean isAwsProviderPresent() {
 
         if (awsCredentialsPresent == null) {
-            if (getCognitoConfig() != null) {
+            if (GetCognitoConfig() != null) {
                 try {
-                    if (getCognitoConfig().get("auth_provider").getAsString().contains("Amazon")) {
+                    if (GetCognitoConfig().get("auth_provider").getAsString().contains("Amazon")) {
                         log.info("AWS configuration found. AWS support enabled.");
                         awsCredentialsPresent = true;
                     } else {
@@ -114,8 +114,8 @@ public class AmazonUtils {
     private static Region getAWSREGION() {
 
         if (AWSREGION == null) {
-            if (getCognitoConfig() != null) {
-                AWSREGION = Region.of(getCognitoConfig().get("aws_region").getAsString());
+            if (GetCognitoConfig() != null) {
+                AWSREGION = Region.of(GetCognitoConfig().get("aws_region").getAsString());
             } else {
                 // TODO -- find region in default place
                 try {
@@ -133,11 +133,11 @@ public class AmazonUtils {
      *
      * @return returns the credentials based on the AWS STS access token returned from the AWS Cognito user pool.
      */
-    public static Credentials getCognitoAWSCredentials() {
+    public static Credentials GetCognitoAWSCredentials() {
 
         OAuthProvider provider = OAuthUtils.getInstance().getProvider("Amazon");
 
-        JsonObject igv_oauth_conf = getCognitoConfig();
+        JsonObject igv_oauth_conf = GetCognitoConfig();
         JsonObject response = provider.getResponse();
 
         // Handle non-user initiated S3 auth (IGV early startup), i.e user-specified GenomesLoader
@@ -222,7 +222,9 @@ public class AmazonUtils {
      */
     public static void updateS3Client(Credentials credentials) {
         final Region region = getAWSREGION();
-        if (credentials != null) {
+        if (credentials == null) {
+            s3Client = S3Client.builder().region(region).build();
+        } else {
             AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
                     credentials.secretAccessKey(),
                     credentials.sessionToken());
@@ -230,8 +232,6 @@ public class AmazonUtils {
             StaticCredentialsProvider s3CredsProvider = StaticCredentialsProvider.create(creds);
 
             s3Client = S3Client.builder().credentialsProvider(s3CredsProvider).region(region).build();
-        } else {
-            s3Client = S3Client.builder().region(region).build();
         }
     }
 
@@ -244,9 +244,9 @@ public class AmazonUtils {
     public static List<String> ListBucketsForUser() {
         if (bucketsFinalList.isEmpty()) {
 
-            if (getCognitoConfig() != null) {
+            if (GetCognitoConfig() != null) {
                 OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
-                updateS3Client(getCognitoAWSCredentials());
+                updateS3Client(GetCognitoAWSCredentials());
             } else {
                 updateS3Client(null);
             }
@@ -268,7 +268,7 @@ public class AmazonUtils {
                 .bucket(bucket)
                 .key(key).build();
         HeadObjectResponse HeadObjRes = s3Client.headObject(HeadObjReq);
-        log.debug("getObjectMetadata(): " + HeadObjRes.toString());
+        log.debug("getObjectMetadata(): "+HeadObjRes.toString());
         return HeadObjRes;
     }
 
@@ -405,9 +405,9 @@ public class AmazonUtils {
         ArrayList<IGVS3Object> objects = new ArrayList<>();
         log.debug("Listing objects for bucketName: " + bucketName);
 
-        if (getCognitoConfig() != null) {
+        if (GetCognitoConfig() != null) {
             OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
-            updateS3Client(getCognitoAWSCredentials());
+            updateS3Client(GetCognitoAWSCredentials());
         } else {
             updateS3Client(null);
         }
@@ -475,11 +475,11 @@ public class AmazonUtils {
 
         S3Presigner s3Presigner;
 
-        if (getCognitoConfig() != null) {
+        if (GetCognitoConfig() != null) {
             OAuthProvider provider = OAuthUtils.getInstance().getProvider("Amazon");
             provider.getAccessToken();
 
-            Credentials credentials = getCognitoAWSCredentials();
+            Credentials credentials = GetCognitoAWSCredentials();
             AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
                     credentials.secretAccessKey(),
                     credentials.sessionToken());
@@ -529,7 +529,7 @@ public class AmazonUtils {
 
     public static String updatePresignedURL(String urlString) throws IOException {
         String s3UrlString = presignedToS3Map.get(urlString);
-        if (s3UrlString == null) {
+        if(s3UrlString == null) {
             throw new RuntimeException("Unrecognized presigned url: " + urlString);
         } else {
             return translateAmazonCloudURL(s3UrlString);
@@ -540,7 +540,7 @@ public class AmazonUtils {
      * If using Cognito, check that the use is logged in, and prompt for login if not.
      */
     public static void checkLogin() {
-        if (getCognitoConfig() != null &&
+        if (GetCognitoConfig() != null &&
                 !OAuthUtils.getInstance().getProvider("Amazon").isLoggedIn()) {
             OAuthUtils.getInstance().getProvider("Amazon").doSecureLogin();
         }
@@ -563,7 +563,7 @@ public class AmazonUtils {
         try {
             long presignedTime = signedURLValidity(url);
             isValidSignedUrl = presignedTime - System.currentTimeMillis() - Globals.TOKEN_EXPIRE_GRACE_TIME > 0; // Duration in milliseconds
-            if (!isValidSignedUrl) {
+            if(!isValidSignedUrl) {
                 System.out.println("URL expired: " + url.toExternalForm());
             }
         } catch (ParseException e) {
