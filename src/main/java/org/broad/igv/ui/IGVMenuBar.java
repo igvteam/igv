@@ -25,7 +25,6 @@
 
 package org.broad.igv.ui;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -41,11 +40,11 @@ import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.lists.GeneListManagerUI;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.session.Session;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
-import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.commandbar.GenomeComboBox;
@@ -193,7 +192,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         try {
             AWSMenu = createAWSMenu();
-            AWSMenu.setVisible(AmazonUtils.isAWSProviderPresent());
+            AWSMenu.setVisible(AmazonUtils.isAwsCredentialsPresent());
             menus.add(AWSMenu);
 
         } catch (IOException e) {
@@ -209,7 +208,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
     public void updateAWSMenu() {
-        AWSMenu.setVisible(AmazonUtils.isAWSProviderPresent());
+        AWSMenu.setVisible(AmazonUtils.isAwsCredentialsPresent());
     }
 
     /**
@@ -627,7 +626,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction =
                 new MenuAction("Select Attributes to Show...", null, KeyEvent.VK_S) {
                     @Override
-                    public void actionPerformed(ActionEvent e) {igv.doSelectDisplayableAttribute();
+                    public void actionPerformed(ActionEvent e) {
+                        igv.doSelectDisplayableAttribute();
                     }
                 };
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
@@ -961,7 +961,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenuItem updateCS = new JMenuItem("Update chrom sizes");
         updateCS.addActionListener(e -> {
             try {
-                GenomeUtils.main(new String [] {});
+                GenomeUtils.main(new String[]{});
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
@@ -974,29 +974,36 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private JMenu createAWSMenu() throws IOException {
 
+        boolean usingCognito = AmazonUtils.getCognitoConfig() != null;
+
         JMenu menu = new JMenu("Amazon");
 
+        // Login
         final JMenuItem login = new JMenuItem("Login");
         login.addActionListener(e -> {
             try {
                 OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
-                oauth.openAuthorizationPage(); // should trigger and event and UI takes over
+                oauth.openAuthorizationPage();
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
                 log.error("Error fetching oAuth tokens", ex);
             }
         });
-        login.setEnabled(false);
+        login.setEnabled(usingCognito);
+        login.setVisible(usingCognito);
         menu.add(login);
 
+        // Logout
         final JMenuItem logout = new JMenuItem("Logout");
         logout.addActionListener(e -> {
             OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
             oauth.logout();
         });
         logout.setEnabled(false);
+        logout.setVisible(usingCognito);
         menu.add(logout);
 
+        // Load item, added to menu later
         final JMenuItem loadS3 = new JMenuItem("Load from S3 bucket");
         loadS3.addActionListener(e -> {
             List<String> buckets = AmazonUtils.ListBucketsForUser();
@@ -1009,42 +1016,43 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 dlg.dispose();
             });
         });
-        loadS3.setEnabled(false);
+        loadS3.setEnabled(!usingCognito);  // If using Cognito, disalbe initially
         menu.add(loadS3);
 
         menu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
-                Runnable runnable = () -> {
-                    OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
-                    boolean loggedIn = false;
-                    loggedIn = oauth.isLoggedIn();
-                    log.debug("MenuBar is user loggedIn?: " + loggedIn);
+                if (AmazonUtils.getCognitoConfig() != null) {
+                    Runnable runnable = () -> {
+                        OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
+                        boolean loggedIn = false;
+                        loggedIn = oauth.isLoggedIn();
+                        log.debug("MenuBar is user loggedIn?: " + loggedIn);
 
-                    if (loggedIn) {
-                        login.setText(oauth.getCurrentUserName());
-                    } else {
-                        login.setText("Login ...");
-                    }
-                    login.setEnabled(!loggedIn);
-                    logout.setEnabled(loggedIn);
-                    loadS3.setEnabled(loggedIn);
-                };
-
-                LongRunningTask.submit(runnable);
+                        if (loggedIn) {
+                            login.setText(oauth.getCurrentUserName());
+                        } else {
+                            login.setText("Login ...");
+                        }
+                        login.setVisible(true);
+                        logout.setVisible(true);
+                        login.setEnabled(!loggedIn);
+                        logout.setEnabled(loggedIn);
+                        loadS3.setEnabled(loggedIn);
+                    };
+                    LongRunningTask.submit(runnable);
+                }
             }
 
             @Override
             public void menuDeselected(MenuEvent e) {
-
             }
 
             @Override
             public void menuCanceled(MenuEvent e) {
-
             }
-
         });
+
 
         return menu;
     }
@@ -1211,7 +1219,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
             String blatSequence = MessageUtils.showInputDialog("Enter sequence to blat:");
             if (blatSequence != null) {
-                if(blatSequence.length() < 20 || blatSequence.length() > 8000) {
+                if (blatSequence.length() < 20 || blatSequence.length() > 8000) {
                     MessageUtils.showMessage("BLAT sequences must be between 20 and 8000 bases in length.");
                 } else {
                     BlatClient.doBlatQuery(blatSequence, "BLAT");

@@ -28,6 +28,7 @@ package org.broad.igv.track;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
+import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bedpe.BedPEParser;
 import org.broad.igv.bedpe.InteractionTrack;
