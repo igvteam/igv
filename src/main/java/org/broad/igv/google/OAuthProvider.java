@@ -15,9 +15,6 @@ import org.broad.igv.util.JWTParser;
 import software.amazon.awssdk.services.sts.model.Credentials;
 
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -236,7 +233,7 @@ public class OAuthProvider {
             if (authProvider.equals("Amazon")) {
                 // Get AWS credentials after getting relevant tokens
                 Credentials aws_credentials;
-                aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
+                aws_credentials = AmazonUtils.getCognitoAWSCredentials();
 
                 // Update S3 client with newly acquired token
                 AmazonUtils.updateS3Client(aws_credentials);
