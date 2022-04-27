@@ -233,7 +233,7 @@ public class OAuthProvider {
             if (authProvider.equals("Amazon")) {
                 // Get AWS credentials after getting relevant tokens
                 Credentials aws_credentials;
-                aws_credentials = AmazonUtils.getCognitoAWSCredentials();
+                aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
 
                 // Update S3 client with newly acquired token
                 AmazonUtils.updateS3Client(aws_credentials);
