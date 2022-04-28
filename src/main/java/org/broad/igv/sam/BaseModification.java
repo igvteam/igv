@@ -70,7 +70,10 @@ public class BaseModification {
                 char strand = tokens[0].charAt(1);
                 char base = tokens[0].charAt(0);
 
-                String modificationString = tokens[0].substring(2);
+                boolean newStyle = tokens[0].endsWith(".") || tokens[0].endsWith("?");
+                String modificationString = newStyle?
+                        tokens[0].substring(2, tokens[0].length() - 1) :
+                        tokens[0].substring(2);
                 String[] modifications = null;
 
                 if (modificationString.length() > 1) {
