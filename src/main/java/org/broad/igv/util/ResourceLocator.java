@@ -27,25 +27,20 @@ package org.broad.igv.util;
 
 import com.google.gson.JsonObject;
 import htsjdk.tribble.Tribble;
-import org.broad.igv.logging.*;
-import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
-import org.broad.igv.feature.FeatureType;
-import org.broad.igv.feature.dsi.DSICodec;
-import org.broad.igv.feature.tribble.IntervalListCodec;
-import org.broad.igv.feature.tribble.MUTCodec;
-import org.broad.igv.feature.tribble.PAFCodec;
-import org.broad.igv.feature.tribble.UCSCGeneTableCodec;
 import org.broad.igv.google.GoogleUtils;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 
-//import java.awt.*;
 import java.awt.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static org.broad.igv.feature.tribble.CodecFactory.ucscSNP;
+
+//import java.awt.*;
 
 /**
  * Represents a data file or other resource, which might be local file or remote resource.
@@ -285,20 +280,11 @@ public class ResourceLocator {
             return "cds_exp.diff";
         } else if (filename.endsWith("genepredext")) {
             return "genepredext";
-        } else if (filename.contains("refflat")) {
-            return "reflat";
-        } else if (filename.contains("genepred") || filename.contains("ensgene") ||
-                filename.contains("refgene") || filename.contains("ncbirefseq")) {
-            return "refgene";
-        } else if (filename.contains("ucscgene")) {
-            return "ucscgene";
         } else if (filename.endsWith(".maf.annotated")) {
             // TCGA extension
             return "mut";
         } else if (filename.endsWith("junctions.bed")) {
             return "junctions";
-        } else if (filename.matches(ucscSNP)) {
-            return "snp";
         } else if (filename.endsWith("bam.list")) {
             return "bam.list";
         } else if (filename.endsWith("sam.list")) {
@@ -314,8 +300,21 @@ public class ResourceLocator {
         } else if (filename.endsWith("_clusters")) {
             return "bedpe";
         } else {
-            // Default - return the extension
-            return filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+            // Default - derive format from the extension.  If not a common format check special cases
+            String format = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+            if (!knownFormats.contains(format)) {
+                if (filename.contains("refflat")) {
+                    return "reflat";
+                } else if (filename.contains("genepred") || filename.contains("ensgene") ||
+                        filename.contains("refgene") || filename.contains("ncbirefseq")) {
+                    return "refgene";
+                } else if (filename.contains("ucscgene")) {
+                    return "ucscgene";
+                } else if (filename.matches(ucscSNP)) {
+                    return "snp";
+                }
+            }
+            return format;
         }
     }
 
@@ -637,4 +636,7 @@ public class ResourceLocator {
         }
 
     }
+
+    static Set<String> knownFormats = new HashSet<>(Arrays.asList("gff", "bed", "gtf", "gff3",
+            "seg", "bb", "bigbed", "bigwig", "bam", "cram", "vcf"));
 }
