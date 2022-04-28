@@ -830,7 +830,6 @@ public class TrackLoader {
                 loadMethylTrack(locator, reader, newTracks, genome);
             } else {
                 track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
-                newTracks.add(track);
             }
         } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
