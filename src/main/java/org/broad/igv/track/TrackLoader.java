@@ -28,7 +28,6 @@ package org.broad.igv.track;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
-import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bedpe.BedPEParser;
 import org.broad.igv.bedpe.InteractionTrack;
@@ -819,10 +818,10 @@ public class TrackLoader {
         String path = locator.getPath();
         BBFileReader reader = new BBFileReader(path);
         BigWigDataSource bigwigSource = new BigWigDataSource(reader, genome);
+        Track track = null;
 
         if (reader.isBigWigFile()) {
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
-            newTracks.add(track);
+            track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
 
             if (locator.getPath().contains("RRBS_cpgMethylation") ||
@@ -830,12 +829,17 @@ public class TrackLoader {
                     (reader.getAutoSql() != null && reader.getAutoSql().startsWith("table BisulfiteSeq"))) {
                 loadMethylTrack(locator, reader, newTracks, genome);
             } else {
-                FeatureTrack track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
+                track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
                 newTracks.add(track);
             }
         } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
         }
+
+        if (track != null) {
+            newTracks.add(track);
+        }
+
     }
 
     private void loadMethylTrack(ResourceLocator locator, BBFileReader reader, List<Track> newTracks, Genome genome) throws IOException {

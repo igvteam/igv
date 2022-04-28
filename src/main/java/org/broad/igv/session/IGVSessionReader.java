@@ -110,6 +110,8 @@ public class IGVSessionReader implements SessionReader {
      */
     private final Map<String, List<Track>> allTracks = Collections.synchronizedMap(new LinkedHashMap<>());
 
+    private final Set<String> erroredResources = Collections.synchronizedSet(new HashSet<>());
+
     public List<Track> getTracksById(String trackId) {
         List<Track> tracks = allTracks.get(trackId);
         if (tracks == null) {
@@ -466,6 +468,7 @@ public class IGVSessionReader implements SessionReader {
                             trackList.add(track);
                         }
                     } catch (Exception e) {
+                        erroredResources.add(locator.getPath());
                         log.error("Error loading resource " + locator.getPath(), e);
                         String ms = "<b>" + locator.getPath() + "</b><br>&nbsp;&nbsp;" + e.toString() + "<br>";
                         errors.add(ms);
@@ -907,12 +910,20 @@ public class IGVSessionReader implements SessionReader {
             }
             leftoverTrackDictionary.remove(id);
         } else {
-            // No match found, element represents a track not created from "Resource" or genome load.  These include
+            // No match found, element represents either (1) a track from a file that errored during load, for example
+            // a file that has been deleted, or (2) a track not created from "Resource" or genome load.  These include
             // reference sequence, combined,  and merged tracks.
-            String className = getAttribute(element, "clazz");
-            if (className != null) {
-                try {
 
+            // Check for errors during load
+//            String absPath = getAbsolutePath(id, rootPath);
+//            if (erroredResources.contains(id) || erroredResources.contains(absPath)) {
+//                return Collections.emptyList();
+//            }
+
+            String className = getAttribute(element, "clazz");
+            if (className != null &&
+                    (className.contains("MergedTracks") || className.contains("CombinedDataTrack") || className.contains("SequenceTrack"))) {
+                try {
                     Track track = createTrack(className, element);
                     if (track != null) {
 
@@ -939,10 +950,7 @@ public class IGVSessionReader implements SessionReader {
                                     log.error("Unrecognized DataRange");
                                 }
                             }
-
                         }
-
-
                     } else {
                         log.warn("Warning.  No tracks were found with id: " + id + " in session file");
                     }
