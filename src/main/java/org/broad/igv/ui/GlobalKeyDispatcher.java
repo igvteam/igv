@@ -48,12 +48,16 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.variant.VariantTrack;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -66,7 +70,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
     private final InputMap inputMap = new InputMap();
     private final ActionMap actionMap = new ActionMap();
-    private boolean enabled;
 
     private static GlobalKeyDispatcher theInstance;
 
@@ -83,9 +86,13 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
     public boolean dispatchKeyEvent(KeyEvent event) {
 
-        if(!enabled) {
-            return false;
+        // If the source of this event is a text component don't process it here.
+        final Object source = event.getSource();
+        if(JTextComponent.class.isInstance(source) ||
+                TextComponent.class.isInstance(source)) {
+            return false;   // <= important, returning true will prevent further dispatching of event
         }
+
 
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(event);
         String actionKey = (String) inputMap.get(ks);
@@ -108,7 +115,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             if (action != null && action.isEnabled()) {
                 // I'm not sure about the parameters
                 action.actionPerformed(
-                        new ActionEvent(event.getSource(), event.getID(),
+                        new ActionEvent(source, event.getID(),
                                 actionKey, ((KeyEvent) event).getModifiers()));
                 return true; // consume event
             }
@@ -121,8 +128,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
      * Initialize the input and action map.   The indirection here strikes me as odd but it is apparently the standard pattern.
      */
     public void init() {
-
-        enabled = true;
 
         final IGV igv = IGV.getInstance();
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
@@ -447,14 +452,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         }
 
 
-    }
-
-    public void disable() {
-        this.enabled = false;
-    }
-
-    public void enable() {
-        this.enabled = true;
     }
 
     /**

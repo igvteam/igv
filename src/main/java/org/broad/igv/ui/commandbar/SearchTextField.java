@@ -14,6 +14,8 @@ import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.List;
 
 /**
@@ -27,23 +29,8 @@ public class SearchTextField extends JTextField {
 
         setToolTipText("Enter a gene or locus, e.f. EGFR,   chr1,   or chr1:100,000-200,000");
 
-        this.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                GlobalKeyDispatcher.getInstance().disable();
-                IGV.getInstance().clearSelections();
-                IGV.getInstance().repaintNamePanels();
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                GlobalKeyDispatcher.getInstance().enable();
-            }
-        });
-
         addActionListener(actionevent -> {
             searchByLocus(getText());
-            GlobalKeyDispatcher.getInstance().enable();
         });
 
         new SearchHints(this);  // This has the side-effect, apparently, of enabling hints
