@@ -39,14 +39,4 @@ public class IGVDialog extends JDialog {
         super(owner, title, modal);
     }
 
-    @Override
-    public void setVisible(boolean b) {
-        if (b) {
-            GlobalKeyDispatcher.getInstance().disable();
-        } else {
-            GlobalKeyDispatcher.getInstance().enable();
-        }
-        super.setVisible(b);
-    }
-
 }
