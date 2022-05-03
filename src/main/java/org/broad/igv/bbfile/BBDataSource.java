@@ -50,7 +50,7 @@ import java.util.*;
  * @author jrobinso
  * @date Jun 19, 2011
  */
-public class BigWigDataSource extends AbstractDataSource implements FeatureSource {
+public class BBDataSource extends AbstractDataSource implements FeatureSource {
 
     final int screenWidth = 1000; // TODO use actual screen width
 
@@ -76,7 +76,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     IGVBEDCodec bedCodec;
 
-    public BigWigDataSource(BBFileReader reader, Genome genome) throws IOException {
+    public BBDataSource(BBFileReader reader, Genome genome) throws IOException {
         super(genome);
 
         this.reader = reader;
@@ -368,7 +368,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         } else {
             return null;
         }
-
     }
 
     @Override

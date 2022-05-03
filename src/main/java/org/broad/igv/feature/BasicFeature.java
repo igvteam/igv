@@ -44,8 +44,9 @@ public class BasicFeature extends AbstractFeature {
     private static Logger log = LogManager.getLogger(BasicFeature.class);
 
     String representation;
+
     protected List<Exon> exons;
-    protected int level = 1;
+
     protected float score = Float.NaN;
     protected float confidence;
     String identifier;
@@ -83,7 +84,6 @@ public class BasicFeature extends AbstractFeature {
         this.color = feature.color;
         this.description = feature.description;
         this.exons = feature.exons;
-        this.level = feature.level;
         this.score = feature.score;
         this.identifier = feature.identifier;
         this.type = feature.type;
@@ -133,7 +133,6 @@ public class BasicFeature extends AbstractFeature {
      */
     public String getValueString(double position, int mouseX, WindowFunction ignored) {
         StringBuffer valueString = new StringBuffer();
-
 
         String name = getName();
         if (name != null && name.length() > 0) {

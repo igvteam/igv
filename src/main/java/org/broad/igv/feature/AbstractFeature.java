@@ -42,7 +42,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
 
     private static Logger log = LogManager.getLogger(AbstractFeature.class);
     protected Strand strand = Strand.NONE;
-    protected String chromosome;
+    protected String chr;
     protected int start = -1;
     protected int end = -1;
     protected String type = "";
@@ -67,14 +67,10 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
      * @param strand
      */
     public AbstractFeature(String chr, int start, int end, Strand strand) {
-        this.chromosome = chr;
+        this.chr = chr;
         this.start = start;
         this.end = end;
         this.strand = strand;
-    }
-
-    public String getIdentifier() {
-        return null;
     }
 
     public void setType(String type) {
@@ -89,10 +85,6 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         return name;
     }
 
-    public List<Exon> getExons() {
-        return null;
-    }
-
     public boolean hasExons() {
         return false;
     }
@@ -102,11 +94,11 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
     }
 
     public String getChr() {
-        return chromosome;
+        return chr;
     }
 
     public String getContig() {
-        return chromosome;
+        return chr;
     }
 
     /**
@@ -118,35 +110,8 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         return end;
     }
 
-    public int getLength() {
-        return end - start;
-    }
-
     public int getStart() {
         return start;
-    }
-
-    /**
-     * Return true if the feature is completely contained within the bounds of this
-     * feature. amd is on the same strand..
-     * <p/>
-     *
-     * @param feature
-     * @return
-     */
-    public boolean contains(IGVFeature feature) {
-        if (feature == null) {
-            return false;
-        }
-        if (!this.getChr().equals(feature.getChr()) ||
-                this.getStrand() != feature.getStrand()) {
-            return false;
-        }
-        if ((feature.getStart() >= this.getStart()) && (feature.getEnd() <= this.getEnd())) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public void setEnd(int end) {
@@ -218,14 +183,12 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         attributes.put(key, value);
     }
 
-    public boolean contains(double location) {
-        return location >= getStart() && location < getEnd();
-    }
+
 
     public boolean overlaps(Feature anotherFeature) {
 
         return end >= anotherFeature.getStart() && start <= anotherFeature.getEnd() &&
-                chromosome.equals(anotherFeature.getChr());
+                chr.equals(anotherFeature.getChr());
 
     }
 
@@ -241,7 +204,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
      * @param chromosome the chromosome to set
      */
     public void setChr(String chromosome) {
-        this.chromosome = chromosome;
+        this.chr = chromosome;
     }
 
     /**

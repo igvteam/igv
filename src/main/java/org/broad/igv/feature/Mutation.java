@@ -263,45 +263,6 @@ public class Mutation implements IGVFeature {
         return 0;
     }
 
-    /**
-     * Return true if the feature is completely contained within the bounds of this
-     * featre.
-     *
-     * @param feature
-     * @return
-     */
-    public boolean contains(IGVFeature feature) {
-
-        if (feature == null || !this.getChr().equals(feature.getChr())) {
-            return false;
-        }
-        if ((feature.getStart() >= this.getStart()) && (feature.getEnd() <= this.getEnd())) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean contains(double location) {
-        return location >= start && location <= end;
-    }
-
-    public String getURL() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public Exon getExonAt(double location) {
-        return null;
-    }
-
-    public List<Exon> getExons() {
-        return null;
-    }
-
-    public String getIdentifier() {
-        return null;
-    }
-
     public AminoAcidSequence getAminoAcidSequence(int exonIndex) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -312,14 +273,6 @@ public class Mutation implements IGVFeature {
 
     public int getCdStart() {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public int getLength() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public MultiMap<String, String> getAttributes() {
-        return null;
     }
 
     public void setAttributes(MultiMap<String, String> attributes) {
