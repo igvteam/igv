@@ -31,7 +31,7 @@ import htsjdk.variant.vcf.VCFHeader;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bedpe.BedPEParser;
 import org.broad.igv.bedpe.InteractionTrack;
-import org.broad.igv.bigwig.BigWigDataSource;
+import org.broad.igv.bbfile.BBDataSource;
 import org.broad.igv.blast.BlastMapping;
 import org.broad.igv.blast.BlastParser;
 import org.broad.igv.data.*;
@@ -817,7 +817,7 @@ public class TrackLoader {
 
         String path = locator.getPath();
         BBFileReader reader = new BBFileReader(path);
-        BigWigDataSource bigwigSource = new BigWigDataSource(reader, genome);
+        BBDataSource bigwigSource = new BBDataSource(reader, genome);
         Track track = null;
 
         if (reader.isBigWigFile()) {

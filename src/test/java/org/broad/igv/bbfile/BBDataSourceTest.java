@@ -25,10 +25,11 @@
 
 package org.broad.igv.bbfile;
 
-import org.broad.igv.bigwig.BBDataSource;
+import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
@@ -36,7 +37,7 @@ import static org.junit.Assert.*;
  * @author jrobinso
  * @date Jun 19, 2011
  */
-public class BWSourceTest {
+public class BBDataSourceTest {
 
 
     @Test
@@ -47,27 +48,50 @@ public class BWSourceTest {
         BBFileReader bbReader = new BBFileReader(path);
         BBDataSource bbSource = new BBDataSource(bbReader, null);
 
-        BBFileHeader bbFileHdr = bbReader.getBBFileHeader();
-        assertTrue(bbFileHdr.isBigBed());
-
-        String autoSql = bbReader.getAutoSql();
-System.out.println(autoSql);
         String chr = "chr21";
         int start = 26490012;
         int end = 42182827;
 
+       Iterator<Feature> iter =  bbSource.getFeatures(chr, start, end);
 
-        BigBedIterator iter = bbReader.getBigBedIterator(chr, start, chr, end, false);
-        int count = 0;
+       int count = 0;
         while (iter.hasNext()) {
-            BedFeature f = iter.next();
-            assertEquals(chr, f.getChromosome());
-            assertTrue(f.getStartBase() <= end && f.getEndBase() >= start);
+            Feature f = iter.next();
+            assertEquals(chr, f.getChr());
+            assertTrue(f.getStart() <= end && f.getEnd() >= start);
             count++;
         }
-        assertEquals("Feature count", 225, count);
+        assertTrue(count > 0);
+        System.out.println(count);
 
     }
+
+    @Test
+    public void testBigNarrowpeak() throws IOException {
+
+        String path = "https://www.encodeproject.org/files/ENCFF154CVA/@@download/ENCFF154CVA.bigBed";
+
+        BBFileReader bbReader = new BBFileReader(path);
+        BBDataSource bbSource = new BBDataSource(bbReader, null);
+
+        String chr = "chr21";
+        int start = 26490012;
+        int end = 42182827;
+
+        Iterator<Feature> iter =  bbSource.getFeatures(chr, start, end);
+
+        int count = 0;
+        while (iter.hasNext()) {
+            Feature f = iter.next();
+            assertEquals(chr, f.getChr());
+            assertTrue(f.getStart() <= end && f.getEnd() >= start);
+            count++;
+        }
+        assertTrue(count > 0);
+        System.out.println(count);
+
+    }
+
 
 
 }

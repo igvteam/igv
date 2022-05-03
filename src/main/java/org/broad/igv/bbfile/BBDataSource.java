@@ -23,11 +23,13 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.bigwig;
+package org.broad.igv.bbfile;
 
 import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.bbfile.*;
+import org.broad.igv.bbfile.codecs.BBCodec;
+import org.broad.igv.bbfile.codecs.BBCodecFactory;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataTile;
@@ -74,7 +76,7 @@ public class BBDataSource extends AbstractDataSource implements FeatureSource {
     private double dataMin = 0;
     private double dataMax = 100;
 
-    IGVBEDCodec bedCodec;
+    BBCodec bedCodec;
 
     public BBDataSource(BBFileReader reader, Genome genome) throws IOException {
         super(genome);
@@ -103,7 +105,11 @@ public class BBDataSource extends AbstractDataSource implements FeatureSource {
             }
         }
 
-        bedCodec = new IGVBEDCodec(genome);
+        if(reader.isBigBedFile()) {
+            String autosql = reader.getAutoSql();
+            int definedFieldCount = reader.getBBFileHeader().getDefinedFieldCount();
+            bedCodec = BBCodecFactory.getCodec(autosql, definedFieldCount);
+        }
     }
 
     @Override
@@ -412,14 +418,7 @@ public class BBDataSource extends AbstractDataSource implements FeatureSource {
 
         public Feature next() {
             BedFeature feat = bedIterator.next();
-            String[] restOfFields = feat.getRestOfFields();
-            String[] tokens = new String[restOfFields.length + 3];
-            tokens[0] = feat.getChromosome();
-            tokens[1] = String.valueOf(feat.getStartBase());
-            tokens[2] = String.valueOf(feat.getEndBase());
-            System.arraycopy(restOfFields, 0, tokens, 3, restOfFields.length);
-
-            BasicFeature feature = bedCodec.decode(tokens);
+            BasicFeature feature = bedCodec.decode(feat);
             return feature;
 
         }
