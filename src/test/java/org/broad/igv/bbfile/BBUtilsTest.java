@@ -25,47 +25,72 @@
 
 package org.broad.igv.bbfile;
 
-import org.broad.igv.bigwig.BBDataSource;
 import org.junit.Test;
 
-import java.io.IOException;
+import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jrobinso
  * @date Jun 19, 2011
  */
-public class BWSourceTest {
+public class BBUtilsTest {
 
 
     @Test
-    public void testBigGenePred() throws IOException {
+    public void testAutosql()  {
 
-        String path = "https://hgdownload.soe.ucsc.edu/hubs/GCA/009/914/755/GCA_009914755.4/bbi/GCA_009914755.4_T2T-CHM13v2.0.catLiftOffGenesV1/catLiftOffGenesV1.bb";
+        String autosql = "table bigCat\n" +
+                "\"bigCat gene models\"\n" +
+                "    (\n" +
+                "    string chrom;       \"Reference sequence chromosome or scaffold\"\n" +
+                "    uint   chromStart;  \"Start position in chromosome\"\n" +
+                "    uint   chromEnd;    \"End position in chromosome\"\n" +
+                "    string name;        \"Name\"\n" +
+                "    uint score;         \"Score (0-1000)\"\n" +
+                "    char[1] strand;     \"+ or - for strand\"\n" +
+                "    uint thickStart;    \"Start of where display should be thick (start codon)\"\n" +
+                "    uint thickEnd;      \"End of where display should be thick (stop codon)\"\n" +
+                "    uint reserved;       \"RGB value (use R,G,B string in input file)\"\n" +
+                "    int blockCount;     \"Number of blocks\"\n" +
+                "    int[blockCount] blockSizes; \"Comma separated list of block sizes\"\n" +
+                "    int[blockCount] chromStarts; \"Start positions relative to chromStart\"\n" +
+                "    string name2;       \"Gene name\"\n" +
+                "    string cdsStartStat; \"Status of CDS start annotation\"\n" +
+                "    string cdsEndStat;   \"Status of CDS end annotation\"\n" +
+                "    int[blockCount] exonFrames; \"Exon frame {0,1,2}, or -1 if no frame for exon\"\n" +
+                "    string txId; \"Transcript ID\"\n" +
+                "    string type;        \"Transcript type\"\n" +
+                "    string geneName;    \"Gene ID\"\n" +
+                "    string geneType;    \"Gene type\"\n" +
+                "    string sourceGene;    \"Source gene ID\"\n" +
+                "    string sourceTranscript;    \"Source transcript ID\"\n" +
+                "    string alignmentId;  \"Alignment ID\"\n" +
+                "    lstring alternativeSourceTranscripts;    \"Alternative source transcripts\"\n" +
+                "    lstring Paralogy;    \"Paralogous alignment IDs\"\n" +
+                "    lstring UnfilteredParalogy;   \"Unfiltered paralogous alignment IDs\"\n" +
+                "    lstring collapsedGeneIds;   \"Collapsed Gene IDs\"\n" +
+                "    lstring collapsedGeneNames;  \"Collapsed Gene Names\"\n" +
+                "    string frameshift;  \"Frameshifted relative to source?\"\n" +
+                "    lstring exonAnnotationSupport;   \"Exon support in reference annotation\"\n" +
+                "    lstring intronAnnotationSupport;   \"Intron support in reference annotation\"\n" +
+                "    string transcriptClass;    \"Transcript class\"\n" +
+                "    string transcriptModes;    \"Transcript mode(s)\"\n" +
+                "    string validStart;         \"Valid start codon\"\n" +
+                "    string validStop;          \"Valid stop codon\"\n" +
+                "    string properOrf;           \"Proper multiple of 3 ORF\"\n" +
+                "    string extra_paralog;   \"Extra paralog of gene?\"\n" +
+                "    )";
 
-        BBFileReader bbReader = new BBFileReader(path);
-        BBDataSource bbSource = new BBDataSource(bbReader, null);
 
-        BBFileHeader bbFileHdr = bbReader.getBBFileHeader();
-        assertTrue(bbFileHdr.isBigBed());
+        BBUtils.ASTable asTable = BBUtils.parseAutosql(autosql);
+        List<BBUtils.ASField> fiels = asTable.fields;
+        assertEquals("name2", fiels.get(12).name);
+        assertEquals("cdsStartStat", fiels.get(13).name);
+        assertEquals("exonFrames", fiels.get(15).name);
 
-        String autoSql = bbReader.getAutoSql();
-System.out.println(autoSql);
-        String chr = "chr21";
-        int start = 26490012;
-        int end = 42182827;
-
-
-        BigBedIterator iter = bbReader.getBigBedIterator(chr, start, chr, end, false);
-        int count = 0;
-        while (iter.hasNext()) {
-            BedFeature f = iter.next();
-            assertEquals(chr, f.getChromosome());
-            assertTrue(f.getStartBase() <= end && f.getEndBase() >= start);
-            count++;
-        }
-        assertEquals("Feature count", 225, count);
 
     }
 
