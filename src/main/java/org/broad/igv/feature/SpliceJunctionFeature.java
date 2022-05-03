@@ -29,7 +29,6 @@ package org.broad.igv.feature;
 import org.broad.igv.track.WindowFunction;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -218,7 +217,7 @@ public class SpliceJunctionFeature extends BasicFeature {
         }
 
         valueString.append("<br>");
-        valueString.append(chromosome + ":" + junctionStart + "-" + junctionEnd);
+        valueString.append(chr + ":" + junctionStart + "-" + junctionEnd);
 
         valueString.append("<br>Strand: " + (getStrand().equals(Strand.POSITIVE) ? "+" : "-"));
         valueString.append("<br>Depth = " + junctionDepth + ", Flanking Widths: (" +

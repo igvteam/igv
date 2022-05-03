@@ -84,12 +84,7 @@ public class DRangerFeature extends AbstractFeature {
         this.str2 = str2;
     }
 
-    public String getURL() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     // Score calibrated to = ~ 1,000 if 1/2 the reads support the rearrangment
-
     @Override
     public float getScore() {
         return score;

@@ -158,49 +158,8 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
     }
 
     @Override
-    public int getLength() {
-        return end - start;
-    }
-
-    @Override
-    public MultiMap<String, String> getAttributes() {
-        return null;
-    }
-
-    @Override
-    public boolean contains(IGVFeature feature) {
-        if (feature == null) {
-            return false;
-        }
-        if (!this.getChr().equals(feature.getChr()) ||
-                this.getStrand() != feature.getStrand()) {
-            return false;
-        }
-        if ((feature.getStart() >= this.getStart()) && (feature.getEnd() <= this.getEnd())) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public boolean contains(double location) {
-        return location >= start && location <= end;
-    }
-
-    @Override
-    public List<Exon> getExons() {
-        return null;
-    }
-
-    @Override
     public Color getColor() {
         return Color.black;
-    }
-
-    @Override
-    public String getURL() {
-        return null;
     }
 
 }
