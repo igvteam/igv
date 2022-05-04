@@ -52,9 +52,9 @@ public class BBDataSourceTest {
         int start = 26490012;
         int end = 42182827;
 
-       Iterator<Feature> iter =  bbSource.getFeatures(chr, start, end);
+        Iterator<Feature> iter = bbSource.getFeatures(chr, start, end);
 
-       int count = 0;
+        int count = 0;
         while (iter.hasNext()) {
             Feature f = iter.next();
             assertEquals(chr, f.getChr());
@@ -62,7 +62,6 @@ public class BBDataSourceTest {
             count++;
         }
         assertTrue(count > 0);
-        System.out.println(count);
 
     }
 
@@ -78,7 +77,7 @@ public class BBDataSourceTest {
         int start = 26490012;
         int end = 42182827;
 
-        Iterator<Feature> iter =  bbSource.getFeatures(chr, start, end);
+        Iterator<Feature> iter = bbSource.getFeatures(chr, start, end);
 
         int count = 0;
         while (iter.hasNext()) {
@@ -88,10 +87,33 @@ public class BBDataSourceTest {
             count++;
         }
         assertTrue(count > 0);
-        System.out.println(count);
 
     }
 
+    // NOTE:  bigInteract is not yet supported in IGV desktop, bigInteract is treated as a plain bed file.
+    @Test
+    public void testBigInteract() throws IOException {
+
+        String path = "https://s3.amazonaws.com/igv.org.demo/interactExample3.inter.bb";
+
+        BBFileReader bbReader = new BBFileReader(path);
+        BBDataSource bbSource = new BBDataSource(bbReader, null);
+
+        String chr = "chr3";
+        int start = 63081504;
+        int end = 64501215;
+
+        Iterator<Feature> iter = bbSource.getFeatures(chr, start, end);
+
+        int count = 0;
+        while (iter.hasNext()) {
+            Feature f = iter.next();
+            assertEquals(chr, f.getChr());
+            assertTrue(f.getStart() <= end && f.getEnd() >= start);
+            count++;
+        }
+        assertTrue(count > 0);
+    }
 
 
 }
