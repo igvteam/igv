@@ -17,7 +17,7 @@ public class BBBedCodec implements BBCodec {
     public BasicFeature decode(BedFeature feat) {
 
         String[] restOfFields = feat.getRestOfFields();
-        String[] tokens = new String[restOfFields.length + 3];
+        String[] tokens = new String[this.standardFieldCount];
         tokens[0] = feat.getChromosome();
         tokens[1] = String.valueOf(feat.getStartBase());
         tokens[2] = String.valueOf(feat.getEndBase());
