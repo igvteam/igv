@@ -1289,19 +1289,28 @@ public class IGV implements IGVEventObserver {
 
     /**
      * Return a DataPanel for the given track.
+     *
      * @param track
      * @return
      */
     public TrackPanel getPanelFor(Track track) {
+
+        if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
+            return getTrackPanel(DATA_PANEL_NAME);
+        }
+
         ResourceLocator locator = track.getResourceLocator();
-        if(locator != null) {
-            return getPanelFor(locator);
-        } else {
-            if (track instanceof DataTrack || PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ) {
-                return getTrackPanel(DATA_PANEL_NAME);
-            } else {
-                return getTrackPanel(FEATURE_PANEL_NAME);
+        if (locator != null) {
+            TrackPanel panel = getPanelFor(locator);
+            if (panel != null) {
+                return panel;
             }
+        }
+
+        if (track instanceof DataTrack || PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
+            return getTrackPanel(DATA_PANEL_NAME);
+        } else {
+            return getTrackPanel(FEATURE_PANEL_NAME);
         }
     }
 
@@ -1329,7 +1338,7 @@ public class IGV implements IGVEventObserver {
             if (isAnnotationFile(format)) {
                 return getTrackPanel(FEATURE_PANEL_NAME);
             } else {
-                return getTrackPanel(DATA_PANEL_NAME);
+                return null;  // Can't determine from locator
             }
         }
     }
@@ -1361,24 +1370,10 @@ public class IGV implements IGVEventObserver {
         }
     }
 
-
-    private TrackPanel getDefaultPanel(ResourceLocator locator) {
-
-        final String format = locator.getFormat();
-        if (format != null && format.equalsIgnoreCase("das")) {
-            return getTrackPanel(FEATURE_PANEL_NAME);
-        }
-        if (isAnnotationFile(locator.getFormat())) {
-            return getTrackPanel(FEATURE_PANEL_NAME);
-        } else {
-            return getTrackPanel(DATA_PANEL_NAME);
-        }
-    }
-
     private boolean isAnnotationFile(String format) {
         Set<String> annotationFormats = new HashSet<>(Arrays.asList("refflat", "ucscgene",
                 "genepred", "ensgene", "refgene", "gff", "gtf", "gff3", "embl", "bed", "gistic",
-                "bedz", "repmask", "dranger", "ucscsnp", "genepredext"));
+                "bedz", "repmask", "dranger", "ucscsnp", "genepredext", "bigbed"));
         return annotationFormats.contains(format);
     }
 
