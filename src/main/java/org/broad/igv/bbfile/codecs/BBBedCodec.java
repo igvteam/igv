@@ -22,8 +22,7 @@ public class BBBedCodec implements BBCodec {
         tokens[1] = String.valueOf(feat.getStartBase());
         tokens[2] = String.valueOf(feat.getEndBase());
 
-
-        System.arraycopy(restOfFields, 0, tokens, 3, this.standardFieldCount);
+        System.arraycopy(restOfFields, 0, tokens, 3, this.standardFieldCount - 3);
         BasicFeature feature = igvBedCodec.decode(tokens);
         return feature;
 
