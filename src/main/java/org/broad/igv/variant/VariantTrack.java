@@ -113,7 +113,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     private int top;
 
-    private boolean showGenotypes = true;
+    private boolean showGenotypes;
 
     /**
      * The height of a single row in in squished mode
@@ -228,7 +228,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int margins = (groupCount - 1) * 3;
         squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
                 Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (height - getVariantBandHeight() - margins) / sampleCount));
-        showGenotypes = sampleCount > 0;
+        showGenotypes = defaultShowGenotypes();
 
 
         // If sample->bam list file is supplied enable vcfToBamMode.
@@ -260,6 +260,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         IGVEventBus.getInstance().subscribe(TrackGroupEvent.class, this);
 
+    }
+
+    private boolean defaultShowGenotypes() {
+        return allSamples.size() > 0;
     }
 
     private void loadAlignmentMappings(String bamListPath) {
@@ -1561,8 +1565,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         super.marshalXML(document, element);
 
-        boolean defaultShowGenotypes = allSamples.size() == 1 ? false : true;
-        if (showGenotypes != defaultShowGenotypes) {
+        if (showGenotypes != defaultShowGenotypes()) {
             element.setAttribute("showGenotypes", String.valueOf(showGenotypes));
         }
 
@@ -1586,7 +1589,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         super.unmarshalXML(element, version);
 
         if (element.hasAttribute("showGenotypes")) {
-            this.showGenotypes = Boolean.getBoolean(element.getAttribute("showGenotypes"));
+            this.showGenotypes = Boolean.parseBoolean(element.getAttribute("showGenotypes"));
         }
 
         if (element.hasAttribute("squishedHeight")) {
