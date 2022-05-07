@@ -903,20 +903,23 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         boolean canScroll = (forward && !frame.windowAtEnd()) || (!forward && frame.getOrigin() > 0);
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
 
-        if (packedFeatures != null && packedFeatures.containsInterval(chr, (int) center - 1, (int) center + 1)) {
+        if (packedFeatures != null
+                && packedFeatures.containsInterval(chr, (int) center - 1, (int) center + 1)) {
             if (packedFeatures.getFeatures().size() > 0 && canScroll) {
+                FeatureUtils.sortFeatureList(packedFeatures.getFeatures());
                 f = (forward ?
                         FeatureUtils.getFeatureAfter(center, packedFeatures.getFeatures()) :
                         FeatureUtils.getFeatureBefore(center, packedFeatures.getFeatures()));
             }
-            if (f == null) {
-                FeatureSource rawSource = source;
-                if (source instanceof CachingFeatureSource) {
-                    rawSource = ((CachingFeatureSource) source).getSource();
-                }
-                f = FeatureTrackUtils.nextFeature(rawSource, chr, packedFeatures.getStart(), packedFeatures.getEnd(), forward);
-            }
         }
+        if (f == null) {
+            FeatureSource rawSource = source;
+            if (source instanceof CachingFeatureSource) {
+                rawSource = ((CachingFeatureSource) source).getSource();
+            }
+            f = FeatureTrackUtils.nextFeature(rawSource, chr, packedFeatures.getStart(), packedFeatures.getEnd(), forward);
+        }
+
 
         return f;
     }

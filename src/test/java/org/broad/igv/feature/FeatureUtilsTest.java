@@ -109,9 +109,6 @@ public class FeatureUtilsTest {
         VCFVariant a_6321740 = (VCFVariant) FeatureUtils.getFeatureClosest(6321740.4, features);
         assertEquals("variant closest to 6321739.4 must be found with position=6321739", 6321739, a_6321739.getStart());
         assertEquals("variant closest to 6321740.4 must be found with position=6321740", 6321740, a_6321740.getStart());
-
-
-
     }
 
     /**
@@ -129,15 +126,13 @@ public class FeatureUtilsTest {
         for (Feature f : result) {
             assertTrue(position >= f.getStart() && position <= f.getEnd());
         }
-
-
     }
 
     /**
-     * Test of getIndexAfter method, of class FeatureUtils.
+     * Test of getIndexBefore method, of class FeatureUtils.
      */
     @Test
-    public void testGetIndexAfter() {
+    public void testIndexBefore() {
 
         List<LocusScore> features = new ArrayList();
         for (int i = 0; i <= 10000; i += 5) {
@@ -145,7 +140,6 @@ public class FeatureUtilsTest {
             int end = start + 10;
             features.add(new TestFeature(start, end));
         }
-
 
         int expResult = 99;
         int result = FeatureUtils.getIndexBefore(499, features);

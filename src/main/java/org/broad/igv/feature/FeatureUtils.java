@@ -44,68 +44,9 @@ public class FeatureUtils {
 
 
     public static Predicate<Feature> getOverlapPredicate(final String chr, final int start, final int end) {
-        Predicate<Feature> overlapPredicate = new Predicate<Feature>() {
-            @Override
-            public boolean apply(Feature object) {
-                return chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() > start;
-            }
-        };
-        return overlapPredicate;
+        return object -> chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() > start;
     }
 
-    public static Map<String, List<IGVFeature>> divideByChromosome(List<IGVFeature> features) {
-        Map<String, List<IGVFeature>> featureMap = new LinkedHashMap();
-        for (IGVFeature f : features) {
-            List<IGVFeature> flist = featureMap.get(f.getChr());
-            if (flist == null) {
-                flist = new ArrayList();
-                featureMap.put(f.getChr(), flist);
-            }
-            flist.add(f);
-        }
-        return featureMap;
-    }
-
-    /**
-     * Segregate a list of possibly overlapping features into a list of
-     * non-overlapping lists of features.
-     */
-    public static List<List<IGVFeature>> segregateFeatures(List<IGVFeature> features, double scale) {
-
-        // Create a list to hold the lists of non-overlapping features
-        List<List<IGVFeature>> segmentedLists = new ArrayList();
-
-        // Make a working copy of the original list.
-        List<IGVFeature> workingList = new LinkedList(features);
-        sortFeatureList(workingList);
-
-        // Loop until all features have been allocated to non-overlapping lists
-        while (workingList.size() > 0) {
-
-            List<IGVFeature> nonOverlappingFeatures = new LinkedList();
-            List<IGVFeature> overlappingFeatures = new LinkedList();
-
-            // Prime the loop with the first feature, it can't overlap itself
-            IGVFeature f1 = workingList.remove(0);
-            nonOverlappingFeatures.add(f1);
-            while (workingList.size() > 0) {
-                IGVFeature f2 = workingList.remove(0);
-                int scaledStart = (int) (f2.getStart() / scale);
-                int scaledEnd = (int) (f1.getEnd() / scale);
-                if (scaledStart > scaledEnd) {
-                    nonOverlappingFeatures.add(f2);
-                    f1 = f2;
-                } else {
-                    overlappingFeatures.add(f2);
-                }
-            }
-
-            // Add the list of non-overlapping features and start again with whats left
-            segmentedLists.add(nonOverlappingFeatures);
-            workingList = overlappingFeatures;
-        }
-        return segmentedLists;
-    }
 
     /**
      * Sort the feature list by ascending start value
@@ -114,75 +55,8 @@ public class FeatureUtils {
         Collections.sort(features, FEATURE_START_COMPARATOR);
     }
 
-
     /**
-     * Null safe version of {@linkplain #combineSortedFeatureListsNoDups(java.util.Iterator, java.util.Iterator, int, int)}
-     * If BOTH self and other are null, returns null. If only one is null,
-     * returns the other
-     *
-     * @param self
-     * @param other
-     * @param start
-     * @param end
-     * @return
-     */
-    public static <T extends Feature> List<T> combineSortedFeatureListsNoDups(List<T> self, List<T> other, int start, int end) {
-        if (self == null && other == null) {
-            return null;
-        } else if (self == null) {
-            return other;
-        } else if (other == null) {
-            return self;
-        }
-
-        return combineSortedFeatureListsNoDups(self.iterator(), other.iterator(), start, end);
-    }
-
-    /**
-     * Features are sorted by start position. The interval being merged
-     * will have some features on the left or right that the current
-     * interval does not have. Both are sorted by start position.
-     * So we first add at the beginning, and then the end,
-     * only those features which don't overlap the original interval.
-     *
-     * @param selfIter  iterator of features belonging to this interval
-     * @param otherIter iterator of features belonging to some other interval
-     * @param start     the beginning of the interval from which selfIter was derived
-     * @param end       the end of the interval from which selfIter was derived
-     * @return Combined sorted list.
-     * @throws ClassCastException If the elements of an iterator cannot be cast
-     *                            to a Feature.
-     */
-    public static <T extends Feature> List<T> combineSortedFeatureListsNoDups(Iterator<T> selfIter, Iterator<T> otherIter, int start, int end) {
-        List<T> allFeatures = new ArrayList<T>();
-        T otherFeat = null;
-
-        while (otherIter.hasNext()) {
-            otherFeat = otherIter.next();
-            if (otherFeat.getEnd() > start) break;
-            allFeatures.add(otherFeat);
-        }
-
-        while (selfIter.hasNext()) {
-            allFeatures.add(selfIter.next());
-        }
-
-        while (otherIter.hasNext()) {
-            if (otherFeat.getStart() >= end) {
-                allFeatures.add(otherFeat);
-            }
-            otherFeat = otherIter.next();
-        }
-
-        if (otherFeat != null && otherFeat.getStart() >= end) {
-            allFeatures.add(otherFeat);
-        }
-
-        return allFeatures;
-    }
-
-    /**
-     * Return a feature from the supplied list at the given position.
+     * Return a feature from the supplied list whose extent, expanded by "buffer", contains the given position.
      *
      * @param position 0-based genomic position to which to search for feature
      * @param buffer   search region. The first feature which contains the start position, (expanded by buffer, inclusive)
@@ -222,45 +96,23 @@ public class FeatureUtils {
     }
 
     /**
-     * Get the index of the feature just to the right of the given position.
-     * If there is no feature to the right return -1;
+     * Return the first feature whose start is > position
      *
      * @param position
      * @param features
      * @return
      */
     public static Feature getFeatureAfter(double position, List<? extends Feature> features) {
-
         if (features.size() == 0 ||
                 features.get(features.size() - 1).getStart() <= position) {
             return null;
         }
-
-        int startIdx = 0;
-        int endIdx = features.size();
-
-        // Narrow the list to ~ 10
-        while (startIdx != endIdx) {
-            int idx = (startIdx + endIdx) / 2;
-            double distance = features.get(idx).getStart() - position;
-            if (distance <= 0) {
-                startIdx = idx;
-            } else {
-                endIdx = idx;
-            }
-            if (endIdx - startIdx < 10) {
-                break;
-            }
+        int idxBefore = getIndexBefore(position, features);
+        if(idxBefore < 0 || idxBefore >= features.size() - 1) {
+            return null;
+        } else {
+            return features.get(idxBefore + 1);
         }
-
-        // Now find feature
-        for (int idx = startIdx; idx < features.size(); idx++) {
-            if (features.get(idx).getStart() > position) {
-                return features.get(idx);
-            }
-        }
-
-        return null;
 
     }
 
@@ -269,7 +121,7 @@ public class FeatureUtils {
         int index = getIndexBefore(position, features);
         while (index >= 0) {
             htsjdk.tribble.Feature f = features.get(index);
-            if (f.getStart() < position) {
+            if (f.getEnd() < position) {
                 return f;
             }
             index--;
@@ -369,10 +221,11 @@ public class FeatureUtils {
     }
 
     /**
-     * Return a feature from the supplied list at the given position.
+     * Return all features from the supplied list who's extent, expanded to "minWidth" if needed,  contains the given position
      *
      * @param position
-     * @param maxLength
+     * @param maxLength -- the distance back from position at which to start search (the maximum feature length)
+     * @param minWidth -- the minimum effective width of the feature
      * @param features
      * @return
      */
@@ -403,87 +256,6 @@ public class FeatureUtils {
 
         return returnList;
     }
-
-
-    /**
-     * Export a gene in "edx" format
-     * LYZ
-     * hg19 12	+	69742133	69748013	69742188	69746999
-     * 4
-     * 69742133	69742324	0
-     * 69743887	69744052	1
-     * 69745999	69746078	1
-     * 69746932	69748013	2
-     * 69742083	69742374	AAGGGTGGAGCC
-     *
-     * @param feature
-     */
-    public static void exportEDX(IGVFeature feature) {
-
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-
-        System.out.println(feature.getName());
-        System.out.print(genome.getId() + "\t");
-        String str = feature.getStrand() == Strand.POSITIVE ? "+" : "-";
-        System.out.print(feature.getChr() + "\t" + str + "\t" + feature.getStart() + "\t" + feature.getEnd() + "\t");
-
-        List<Exon> exons = feature.getExons();
-
-        // Find coding start & end
-        int cdStart = 0;
-        int cdEnd = 0;
-        for (Exon ex : exons) {
-            if (ex.getCdStart() > ex.getStart()) {
-                cdStart = ex.getCdStart();
-                break;
-            }
-        }
-        for (int i = 0; i < exons.size(); i++) {
-            Exon ex = exons.get(i);
-            if (ex.getCdEnd() < ex.getEnd()) {
-                cdEnd = ex.getCdEnd();
-                break;
-            }
-        }
-        System.out.println(cdStart + "\t" + cdEnd);
-        System.out.println(exons.size());
-
-        for(Exon ex : exons) {
-            int rs = ex.getReadingFrame();
-            int fs = rs == 0 ? 0 : 3 - rs;
-            System.out.println(ex.getStart() + "\t" + ex.getEnd() + "\t" + fs);
-        }
-
-
-        // Sequence
-        int buffer = 10;
-        for(int i=0; i<exons.size(); i++) {
-            Exon ex = exons.get(i);
-            // Buffer -- 50 bp by default but can be smaller
-
-            int seqStart = ex.getStart() - buffer;
-
-            int nextExonStart = (i < exons.size() - 1 ? exons.get(i+1).getStart() : Integer.MAX_VALUE);
-            buffer = Math.min(50, (nextExonStart - ex.getEnd()) / 2);
-            int seqEnd = ex.getEnd() + buffer;
-
-            byte [] sequence = genome.getSequence(feature.getChr(), seqStart, seqEnd);
-            String seqString = new String(sequence);
-            System.out.println(seqStart + "\t" + seqEnd + "\t" + seqString);
-        }
-
-    }
-
-
-    private static final Comparator<Feature> FEATURE_CONTAINS_COMPARATOR = (o1, o2) -> {
-        int genomeStart2 = o2.getStart();
-        int genomeStart1 = o1.getEnd();
-        if (genomeStart2 >= genomeStart1 && o2.getEnd() <= o1.getEnd()) {
-            return 0;
-        } else {
-            return genomeStart1 - genomeStart2;
-        }
-    };
 
     public static final Comparator<Feature> FEATURE_START_COMPARATOR = (o1, o2) -> o1.getStart() - o2.getStart();
 
