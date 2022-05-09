@@ -59,6 +59,8 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.broad.igv.feature.FeatureUtils.FEATURE_CENTER_COMPARATOR;
+
 /**
  * Track which displays features, typically showing regions of the genome
  * in a qualitative way. Features are rendered using the specified FeatureRenderer.
@@ -903,13 +905,13 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         boolean canScroll = (forward && !frame.windowAtEnd()) || (!forward && frame.getOrigin() > 0);
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
 
-        if (packedFeatures != null
-                && packedFeatures.containsInterval(chr, (int) center - 1, (int) center + 1)) {
+        if (packedFeatures != null && packedFeatures.containsInterval(chr, (int) center - 1, (int) center + 1)) {
             if (packedFeatures.getFeatures().size() > 0 && canScroll) {
-                FeatureUtils.sortFeatureList(packedFeatures.getFeatures());
+                List<Feature> centerSortedFeatures = new ArrayList<>(packedFeatures.getFeatures());
+                Collections.sort(centerSortedFeatures, FEATURE_CENTER_COMPARATOR);
                 f = (forward ?
-                        FeatureUtils.getFeatureAfter(center, packedFeatures.getFeatures()) :
-                        FeatureUtils.getFeatureBefore(center, packedFeatures.getFeatures()));
+                        FeatureUtils.getFeatureStartsAfter(center, packedFeatures.getFeatures()) :
+                        FeatureUtils.getFeatureEndsBefore(center, packedFeatures.getFeatures()));
             }
         }
         if (f == null) {

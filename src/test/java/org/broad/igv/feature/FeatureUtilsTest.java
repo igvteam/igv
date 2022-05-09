@@ -41,12 +41,13 @@ import htsjdk.tribble.FeatureCodec;
 import htsjdk.variant.vcf.VCFCodec;
 import org.junit.*;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Please create tests!!
@@ -55,32 +56,16 @@ import static org.junit.Assert.assertTrue;
  */
 public class FeatureUtilsTest {
 
-    static List<Feature> features;
+    private static List<Feature> featureList;
 
     public FeatureUtilsTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        String dataFile = TestUtils.DATA_DIR + "bed/featureUtilsTest.bed";
+        featureList = parseTestData(dataFile);
 
-        features = new ArrayList();
-
-        for (int i = 0; i < 1000; i++) {
-            features.add(new TestFeature(i, i + 5));
-        }
-
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test
@@ -99,7 +84,7 @@ public class FeatureUtilsTest {
             VCFVariant next = (VCFVariant) it.next();
             features.add(next);
         }
-       // Test the first feature in the file -- this one was failing
+        // Test the first feature in the file -- this one was failing
         VCFVariant a_6321732 = (VCFVariant) FeatureUtils.getFeatureClosest(6321732.4, features);
         assertEquals("variant closest to 6321732 must be found with position=6321732", 6321732, a_6321732.getStart());
 
@@ -118,33 +103,63 @@ public class FeatureUtilsTest {
      */
     @Test
     public void testGetAllFeaturesAt() {
-        int position = 500;
-        int maxLength = 100;
 
-        List<Feature> result = FeatureUtils.getAllFeaturesAt(position, maxLength, 0, features);
-        assertEquals(6, result.size());
+        int position = 56078756;
+        int maxLength = 100000;
+
+
+        List<Feature> result = FeatureUtils.getAllFeaturesAt(position, maxLength, 0, featureList);
+        assertEquals(21, result.size());
         for (Feature f : result) {
             assertTrue(position >= f.getStart() && position <= f.getEnd());
         }
     }
 
-    /**
-     * Test of getIndexBefore method, of class FeatureUtils.
-     */
     @Test
-    public void testIndexBefore() {
+    public void testIndexBefore()  {
 
-        List<LocusScore> features = new ArrayList();
-        for (int i = 0; i <= 10000; i += 5) {
-            int start = i;
-            int end = start + 10;
-            features.add(new TestFeature(start, end));
+        // Actual feature starts at expectedValue + 1:
+        // <, 55086709, 55086713, 55955148, 56182373, >, >
+        double[] positions = new double[]{1, 55086709, 55086712, 55955146, 56182372.8, 56182373, Integer.MAX_VALUE};
+        int[] expectedValue = new int[]{-1, -1, 5, 29, 74, 75, 75};
+        for (int i = 0; i < positions.length; i++) {
+            int idx = FeatureUtils.getIndexBefore(positions[i], featureList);
+            assertEquals(expectedValue[i], idx);
         }
+    }
 
-        int expResult = 99;
-        int result = FeatureUtils.getIndexBefore(499, features);
-        assertEquals(expResult, result);
+    @Test
+    public void testGetFeatureAfter() {
 
+        //chr7	56078756	56119137
+        Feature f = FeatureUtils.getFeatureStartsAfter(56078756 - 1, featureList);
+        assertEquals(56078756, f.getStart());
+
+        //chr7	55086709	55236328
+        f = FeatureUtils.getFeatureStartsAfter(0, featureList);
+        assertEquals(55086709, f.getStart());
+
+        // last feature
+        // chr7	56182373	56184110
+        f = FeatureUtils.getFeatureStartsAfter(56182373, featureList);
+        assertNull(f);
+    }
+
+    @Test
+    public void testGetFeatureBefore() {
+
+        //chr7	56078756	56119137
+        Feature f = FeatureUtils.getFeatureEndsBefore(56078756 - 1, featureList);
+        assertNull(f);
+
+        //chr7	55086709	55236328
+        f = FeatureUtils.getFeatureStartsAfter(0, featureList);
+        assertEquals(55086709, f.getStart());
+
+        // last feature
+        // chr7	56182373	56184110
+        f = FeatureUtils.getFeatureStartsAfter(56182373, featureList);
+        assertNull(f);
     }
 
     static class TestFeature implements LocusScore {
@@ -206,5 +221,18 @@ public class FeatureUtilsTest {
         public void setEnd(int end) {
             this.end = end;
         }
+    }
+
+    static List<Feature> parseTestData(String file) throws IOException {
+
+        List<Feature> featureList = new ArrayList<>();
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] tokens = line.split("\t");
+            featureList.add(new TestFeature(Integer.parseInt(tokens[1]), Integer.parseInt(tokens[2])));
+        }
+        return featureList;
+
     }
 }

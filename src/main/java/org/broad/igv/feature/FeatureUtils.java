@@ -31,8 +31,6 @@
 package org.broad.igv.feature;
 
 import com.google.common.base.Predicate;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import htsjdk.tribble.Feature;
 
 import java.util.*;
@@ -102,31 +100,46 @@ public class FeatureUtils {
      * @param features
      * @return
      */
-    public static Feature getFeatureAfter(double position, List<? extends Feature> features) {
+    public static Feature getFeatureStartsAfter(double position, List<? extends Feature> features) {
         if (features.size() == 0 ||
                 features.get(features.size() - 1).getStart() <= position) {
             return null;
         }
         int idxBefore = getIndexBefore(position, features);
-        if(idxBefore < 0 || idxBefore >= features.size() - 1) {
+        if (idxBefore >= features.size() - 1) {
             return null;
         } else {
-            return features.get(idxBefore + 1);
+            for(Feature f : features) {
+                if(f.getStart() > position) return f;
+            }
         }
-
+        return null;
     }
 
-    public static Feature getFeatureBefore(double position, List<? extends Feature> features) {
+    public static Feature getFeatureEndsBefore(double position, List<? extends Feature> features) {
 
         int index = getIndexBefore(position, features);
+        Feature prevFeature = null;
         while (index >= 0) {
-            htsjdk.tribble.Feature f = features.get(index);
+            Feature f = features.get(index);
             if (f.getEnd() < position) {
-                return f;
+                if (prevFeature == null) {
+                    prevFeature = f;
+                } else {
+                    if (f.getStart() == prevFeature.getStart()) {
+                        // Prefer smallest feature
+                        if (f.getEnd() < prevFeature.getEnd()) {
+                            prevFeature = f;
+                        }
+                    } else {
+                        // Done
+                        break;
+                    }
+                }
             }
             index--;
         }
-        return null;
+        return prevFeature;
 
     }
 
@@ -137,8 +150,8 @@ public class FeatureUtils {
             return f0;
         }
         // otherwise look for features on either side and return the closest:
-        htsjdk.tribble.Feature f1 = getFeatureBefore(position, features);
-        htsjdk.tribble.Feature f2 = getFeatureAfter(position, features);
+        htsjdk.tribble.Feature f1 = getFeatureEndsBefore(position, features);
+        htsjdk.tribble.Feature f2 = getFeatureStartsAfter(position, features);
 
         double d1 = f1 == null ? Double.MAX_VALUE : Math.abs(position - f1.getEnd());
         double d2 = f2 == null ? Double.MAX_VALUE : Math.abs(f2.getStart() - position);
@@ -167,6 +180,80 @@ public class FeatureUtils {
         }
     }
 
+    /**
+     * Return the index to the last feature in the list with a start < the given position.  It is assumed
+     * the list is sorted by start position.
+     *
+     * @param position
+     * @param features
+     * @return
+     */
+    public static int getIndexBefore(double position, List<? extends Feature> features) {
+
+        if (features == null || features.size() == 0) {
+            return -1;
+        }
+        if (features.get(features.size() - 1).getStart() <= position) {
+            return features.size() - 1;
+        }
+        if (features.get(0).getStart() >= position) {
+            return -1;
+        }
+
+        KeyClass key = new KeyClass(position);
+        int idx = Collections.binarySearch(features, key, FEATURE_START_COMPARATOR);
+        if (idx < 0) idx = -1 * idx;
+        idx = Math.min(features.size() - 1, idx);
+        while (idx > 0) {
+            if (features.get(idx).getStart() < position) {
+                break;
+            } else {
+                idx--;
+            }
+        }
+        return idx;
+    }
+
+    /**
+     * Return the index to the first feature in the list with a center > the given position.  It is assumed
+     * the list is sorted by center position.
+     *
+     * @param position
+     * @param features
+     * @return
+     */
+    public static int getIndexCenterAfter(double position, List<? extends Feature> features) {
+
+        if (features == null || features.size() == 0) {
+            return -1;
+        }
+
+        Feature first = features.get(0);
+        Feature last = features.get(features.size()-1);
+        if (center(first) > position) {
+            return 0;
+        }
+        if (center(last) <= position) {
+            return features.size();
+        }
+
+        KeyClass key = new KeyClass(position);
+        int idx = Collections.binarySearch(features, key, FEATURE_CENTER_COMPARATOR);
+        if (idx < 0) idx = -1 * idx;
+        idx = Math.min(features.size() - 1, idx);
+//        while (idx > 0) {
+//            if (features.get(idx).getStart() < position) {
+//                break;
+//            } else {
+//                idx--;
+//            }
+//        }
+        return idx;
+    }
+
+    private static double center(Feature f) {
+        return (f.getStart() + f.getEnd()) / 2.0;
+    }
 
     /**
      * Return the index to the last feature in the list with a start < the given position
@@ -175,7 +262,7 @@ public class FeatureUtils {
      * @param features
      * @return
      */
-    public static int getIndexBefore(double position, List<? extends Feature> features) {
+    public static int getIndexBeforeOld(double position, List<? extends Feature> features) {
 
         if (features == null || features.size() == 0) {
             return -1;
@@ -220,12 +307,13 @@ public class FeatureUtils {
         return -1;
     }
 
+
     /**
      * Return all features from the supplied list who's extent, expanded to "minWidth" if needed,  contains the given position
      *
      * @param position
      * @param maxLength -- the distance back from position at which to start search (the maximum feature length)
-     * @param minWidth -- the minimum effective width of the feature
+     * @param minWidth  -- the minimum effective width of the feature
      * @param features
      * @return
      */
@@ -258,6 +346,8 @@ public class FeatureUtils {
     }
 
     public static final Comparator<Feature> FEATURE_START_COMPARATOR = (o1, o2) -> o1.getStart() - o2.getStart();
+    public static final Comparator<Feature> FEATURE_END_COMPARATOR = (o1, o2) -> o1.getEnd() - o2.getEnd();
+    public static final Comparator<Feature> FEATURE_CENTER_COMPARATOR = (o1, o2) -> o1.getEnd() + o1.getStart() - o2.getStart() + o1.getEnd() - o2.getEnd();
 
     /**
      * Compute reading frames
@@ -288,5 +378,29 @@ public class FeatureUtils {
                 cds += exon.getCodingLength();
             }
         }
+    }
+}
+
+class KeyClass implements Feature {
+
+    double position;
+
+    public KeyClass(double position) {
+        this.position = position;
+    }
+
+    @Override
+    public String getContig() {
+        return null;
+    }
+
+    @Override
+    public int getStart() {
+        return (int) (position);
+    }
+
+    @Override
+    public int getEnd() {
+        return (int) position + 1;
     }
 }
