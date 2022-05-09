@@ -124,7 +124,6 @@ SAM.FILTER_URL	URL or path to read group filter file	string	null
 SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2
 SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
 SAM.BASEMOD_THRESHOLD	Base modification probability threshold (0-1)	float	0.2
-SAM.COUNT_DELETED_BASES_COVERED	Include deletions in total count	boolean	FALSE
 
 ##Insert Size Options
 SAM.COMPUTE_ISIZES	Compute insert size thresholds	boolean	TRUE
@@ -235,6 +234,7 @@ SAM.SHOW_REF_SEQ	FALSE
 SAM.BISULFITE_CONTEXT	CG
 SAM.FLAG_ZERO_QUALITY	TRUE
 SAM.NOMESEQ_ENABLED	FALSE
+SAM.COUNT_DELETED_BASES_COVERED	FALSE
 SAM.SORT_OPTION	NUCLEOTIDE
 SAM.GROUP_OPTION	NONE
 SAM.COLOR_BY	UNEXPECTED_PAIR
