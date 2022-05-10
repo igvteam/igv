@@ -1307,10 +1307,10 @@ public class IGV implements IGVEventObserver {
             }
         }
 
-        if (track instanceof DataTrack || PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            return getTrackPanel(DATA_PANEL_NAME);
-        } else {
+        if(track.getClass() == FeatureTrack.class && !PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY))
             return getTrackPanel(FEATURE_PANEL_NAME);
+        else {
+            return getTrackPanel(DATA_PANEL_NAME);
         }
     }
 
