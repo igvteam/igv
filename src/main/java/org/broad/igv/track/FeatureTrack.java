@@ -915,21 +915,20 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         boolean canScroll = (forward && !frame.windowAtEnd()) || (!forward && frame.getOrigin() > 0);
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
 
+        // Compute a buffer to define "next"
+        double buffer = Math.max(1, frame.getScale());
+
         if (packedFeatures != null && packedFeatures.containsInterval(chr, (int) center - 1, (int) center + 1)) {
             if (packedFeatures.getFeatures().size() > 0 && canScroll) {
-                List<Feature> centerSortedFeatures = new ArrayList<>(packedFeatures.getFeatures());
-                Collections.sort(centerSortedFeatures, FEATURE_CENTER_COMPARATOR);
+                List<Feature> centerSortedFeatures = packedFeatures.getCenterSortedFeatures();
                 f = (forward ?
-                        FeatureUtils.getFeatureStartsAfter(center, packedFeatures.getFeatures()) :
-                        FeatureUtils.getFeatureEndsBefore(center, packedFeatures.getFeatures()));
+                        FeatureUtils.getFeatureCenteredAfter(center + buffer, centerSortedFeatures) :
+                        FeatureUtils.getFeatureCenteredBefore(center - buffer, centerSortedFeatures));
             }
         }
         if (f == null) {
-            FeatureSource rawSource = source;
-            if (source instanceof CachingFeatureSource) {
-                rawSource = ((CachingFeatureSource) source).getSource();
-            }
-            f = FeatureTrackUtils.nextFeature(rawSource, chr, packedFeatures.getStart(), packedFeatures.getEnd(), forward);
+            int searchBuferSize = (int) (frame.getScale() * 1000);
+            f = FeatureTrackUtils.nextFeature(source, chr, packedFeatures.getStart(), packedFeatures.getEnd(), center, searchBuferSize, forward);
         }
 
 

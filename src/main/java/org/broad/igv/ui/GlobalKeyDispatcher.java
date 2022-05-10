@@ -432,7 +432,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
                 if (f != null) {
                     String chr = GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(f.getChr());
-                    double newCenter = f.getStart();
+                    double newCenter = (f.getStart() + f.getEnd()) / 2.0;
                     if (!chr.equals(frame.getChrName())) {
                         // Switch chromosomes.  We have to do some tricks to maintain the same resolution scale.
                         double range = frame.getEnd() - frame.getOrigin();

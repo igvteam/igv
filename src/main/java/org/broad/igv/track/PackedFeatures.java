@@ -34,6 +34,8 @@ import htsjdk.tribble.Feature;
 
 import java.util.*;
 
+import static org.broad.igv.feature.FeatureUtils.FEATURE_CENTER_COMPARATOR;
+
 /**
  * Represents a table of features, packed so there is no overlap.
  * Features are packed into rows, accessible via {@link #getRows}
@@ -53,6 +55,11 @@ public class PackedFeatures<T extends Feature> {
     protected static int maxLevels = 1000000;
     private Track.DisplayMode displayMode;
     private boolean groupByStrand;
+
+    /**
+     * Cache for storing features sorted by center position.   This is used for hotkey feature jumping.
+     */
+    private List<T> centerSortedFeatures;
 
 
     /**
@@ -280,6 +287,18 @@ public class PackedFeatures<T extends Feature> {
 
     public int getMaxFeatureLength() {
         return maxFeatureLength;
+    }
+
+    public List<T> getCenterSortedFeatures() {
+        if(centerSortedFeatures == null && features != null) {
+            centerSortedFeatures = new ArrayList<>(features);
+            Collections.sort(centerSortedFeatures, FEATURE_CENTER_COMPARATOR);
+        }
+        return centerSortedFeatures;
+    }
+
+    public void setCenterSortedFeatures(List<T> centerSortedFeatures) {
+        this.centerSortedFeatures = centerSortedFeatures;
     }
 
     public class FeatureRow {

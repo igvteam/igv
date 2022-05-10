@@ -116,7 +116,7 @@ public class FeatureUtilsTest {
     }
 
     @Test
-    public void testIndexBefore()  {
+    public void testIndexBefore() {
 
         // Actual feature starts at expectedValue + 1:
         // <, 55086709, 55086713, 55955148, 56182373, >, >
@@ -131,11 +131,52 @@ public class FeatureUtilsTest {
     @Test
     public void testGetFeatureAfter() {
 
+        //chr7	55086709	55236328
+        Feature f = FeatureUtils.getFeatureStartsAfter(0, featureList);
+        assertEquals(55086709, f.getStart());
+
         //chr7	56078756	56119137
-        Feature f = FeatureUtils.getFeatureStartsAfter(56078756 - 1, featureList);
+        f = FeatureUtils.getFeatureStartsAfter(56078756 - 1, featureList);
+        assertEquals(56078756, f.getStart());
+
+
+        //chr7	55955148	56009918
+        //chr7	56019569	56024193
+        f = FeatureUtils.getFeatureStartsAfter((55955148 + 56009918) / 2, featureList);
+        assertEquals(56019569, f.getStart());
+
+        // last feature
+        // chr7	56182373	56184110
+        f = FeatureUtils.getFeatureStartsAfter(56182373, featureList);
+        assertNull(f);
+    }
+
+    @Test
+    public void testGetFeatureCenterAfter() {
+
+        //chr7	56078756	56119137
+        Feature f = FeatureUtils.getFeatureCenteredAfter(56078756 - 1, featureList);
         assertEquals(56078756, f.getStart());
 
         //chr7	55086709	55236328
+        f = FeatureUtils.getFeatureCenteredAfter(0, featureList);
+        assertEquals(55086709, f.getStart());
+
+        // last feature
+        // chr7	56182373	56184110
+        f = FeatureUtils.getFeatureCenteredAfter(56184110, featureList);
+        assertNull(f);
+    }
+
+    @Test
+    public void testGetFeatureBefore() {
+
+        // feature
+        // chr7	56078756	56119137
+        Feature f = FeatureUtils.getFeatureEndsBefore(56119137 + 1, featureList);
+        assertEquals(56078756, f.getStart());
+
+        // chr7	55086709	55236328
         f = FeatureUtils.getFeatureStartsAfter(0, featureList);
         assertEquals(55086709, f.getStart());
 
@@ -146,20 +187,20 @@ public class FeatureUtilsTest {
     }
 
     @Test
-    public void testGetFeatureBefore() {
+    public void testGetFeatureCenterBefore() {
 
-        //chr7	56078756	56119137
-        Feature f = FeatureUtils.getFeatureEndsBefore(56078756 - 1, featureList);
+        // chr7 55955148	56009918
+        Feature f = FeatureUtils.getFeatureCenteredBefore(56009918 + 1, featureList);
+        assertEquals(55955148, f.getStart());
+
+
+        f = FeatureUtils.getFeatureCenteredBefore(0, featureList);
         assertNull(f);
-
-        //chr7	55086709	55236328
-        f = FeatureUtils.getFeatureStartsAfter(0, featureList);
-        assertEquals(55086709, f.getStart());
 
         // last feature
         // chr7	56182373	56184110
-        f = FeatureUtils.getFeatureStartsAfter(56182373, featureList);
-        assertNull(f);
+        f = FeatureUtils.getFeatureCenteredBefore(56184110 + 1, featureList);
+        assertEquals(56182373, f.getStart());
     }
 
     static class TestFeature implements LocusScore {

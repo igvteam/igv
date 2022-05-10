@@ -109,8 +109,8 @@ public class FeatureUtils {
         if (idxBefore >= features.size() - 1) {
             return null;
         } else {
-            for(Feature f : features) {
-                if(f.getStart() > position) return f;
+            for (Feature f : features) {
+                if (f.getStart() > position) return f;
             }
         }
         return null;
@@ -141,6 +141,62 @@ public class FeatureUtils {
         }
         return prevFeature;
 
+    }
+
+    /**
+     * Return the first feature whose center is > the given position.  If no features satisfy the criteria
+     * return null;
+     *
+     * @param position
+     * @param features
+     * @return
+     */
+    public static Feature getFeatureCenteredAfter(double position, List<? extends Feature> features) {
+
+        if (features.size() == 0 ||
+                center(features.get(features.size() - 1)) <= position) {
+            return null;
+        }
+
+        int idx = getIndexCenterAfter(position, features);
+        if (idx < 0 || idx > features.size()-1) {
+            return null;
+        } else {
+            return features.get(idx);
+        }
+    }
+
+    /**
+     * Return the first feature whose center is < the given position.  If no features satisfy the criteria
+     * return null;
+     *
+     * @param position
+     * @param features
+     * @return
+     */
+    public static Feature getFeatureCenteredBefore(double position, List<? extends Feature> features) {
+
+        if (features.size() == 0) {
+            return null;
+        }
+        if (center(features.get(0)) >= position) {
+            return null;
+        }
+
+
+        int idx = getIndexCenterAfter(position, features);
+        if (idx < 0) {
+            return null;
+        } else {
+            idx--;
+            while (idx >= 0) {
+                if (center(features.get(idx)) < position) {
+                    return features.get(idx);
+                }
+                idx--;
+            }
+        }
+        return null;
     }
 
     public static Feature getFeatureClosest(double position, List<? extends htsjdk.tribble.Feature> features) {
@@ -222,18 +278,40 @@ public class FeatureUtils {
      * @param features
      * @return
      */
-    public static int getIndexCenterAfter(double position, List<? extends Feature> features) {
+     private static int getIndexCenterAfter(double position, List<? extends Feature> features) {
+
+        Feature first = features.get(0);
+        Feature last = features.get(features.size() - 1);
+        if (center(first) > position) {
+            return 0;
+        }
+
+        KeyClass key = new KeyClass(position);
+        int idx = Collections.binarySearch(features, key, FEATURE_CENTER_COMPARATOR);
+        if (idx < 0) idx = -1 * idx - 1;
+        return idx;
+    }
+
+    /**
+     * Return the index to the first feature in the list with a center < the given position.  It is assumed
+     * the list is sorted by center position.  If no features satisfies the criteria return -1
+     *
+     * @param position
+     * @param features
+     * @return
+     */
+    public static int getIndexCenterBefore(double position, List<? extends Feature> features) {
 
         if (features == null || features.size() == 0) {
             return -1;
         }
 
         Feature first = features.get(0);
-        Feature last = features.get(features.size()-1);
-        if (center(first) > position) {
+        Feature last = features.get(features.size() - 1);
+        if (center(first) < position) {
             return 0;
         }
-        if (center(last) <= position) {
+        if (center(last) >= position) {
             return features.size();
         }
 
@@ -241,13 +319,6 @@ public class FeatureUtils {
         int idx = Collections.binarySearch(features, key, FEATURE_CENTER_COMPARATOR);
         if (idx < 0) idx = -1 * idx;
         idx = Math.min(features.size() - 1, idx);
-//        while (idx > 0) {
-//            if (features.get(idx).getStart() < position) {
-//                break;
-//            } else {
-//                idx--;
-//            }
-//        }
         return idx;
     }
 
@@ -347,7 +418,7 @@ public class FeatureUtils {
 
     public static final Comparator<Feature> FEATURE_START_COMPARATOR = (o1, o2) -> o1.getStart() - o2.getStart();
     public static final Comparator<Feature> FEATURE_END_COMPARATOR = (o1, o2) -> o1.getEnd() - o2.getEnd();
-    public static final Comparator<Feature> FEATURE_CENTER_COMPARATOR = (o1, o2) -> o1.getEnd() + o1.getStart() - o2.getStart() + o1.getEnd() - o2.getEnd();
+    public static final Comparator<Feature> FEATURE_CENTER_COMPARATOR = (o1, o2) -> o1.getStart() - o2.getStart() + o1.getEnd() - o2.getEnd();
 
     /**
      * Compute reading frames
