@@ -680,12 +680,22 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         try {
 
-            int delta = (end - start) / 2;
-            int expandedStart = start - delta;
-            int expandedEnd = end + delta;
-            if (expandedEnd < 0) {
-                expandedEnd = Integer.MAX_VALUE;  // overflow
+            int expandedStart;
+            int expandedEnd;
+            int vw = getVisibilityWindow();
+            if (vw > 0) {
+                int delta = Math.max(end - start, vw) / 2;
+                int center = start / 2 + end / 2;
+                expandedStart = center - delta;
+                expandedEnd = center + delta;
+                if (expandedEnd < 0) {
+                    expandedEnd = Integer.MAX_VALUE;  // overflow
+                }
+            } else {
+                expandedStart = 0;
+                expandedEnd = Integer.MAX_VALUE;
             }
+
 
             //Make sure we are only querying within the chromosome we allow for somewhat pathological cases of start
             //being negative and end being outside, but only if directly queried. Our expansion should not
