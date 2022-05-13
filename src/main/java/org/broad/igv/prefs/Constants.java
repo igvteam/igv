@@ -57,9 +57,13 @@ final public class Constants {
     public static final String CRAM_CACHE_DIRECTORY = "CRAM.CACHE_DIRECTORY";
     public static final String CRAM_CACHE_SIZE = "CRAM.CACHE_SIZE";
 
-    // Search ("go to") options
+    // Search ("go to") and next feature ("F" and "B") options
     public static final String SEARCH_ZOOM = "SEARCH_ZOOM";
     public static final String FLANKING_REGION = "FLANKING_REGION";
+
+    public static final String NEXT_FIT_TO_WINDOW = "NEXT_FIT_TO_WINDOW";
+
+    public static final String NEXT_FLANKING_REGION = "NEXT_FLANKING_REGION";
 
     // Generic track options
     public static final String BYPASS_FILE_AUTO_DISCOVERY = "BYPASS_FILE_AUTO_DISCOVERY";
