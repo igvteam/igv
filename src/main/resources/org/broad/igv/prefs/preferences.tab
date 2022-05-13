@@ -6,7 +6,7 @@ SHOW_DEFAULT_TRACK_ATTRIBUTES	Show default track attributes	boolean	FALSE
 SHOW_REGION_BARS	Show region-of-interest boundaries	boolean	FALSE
 ENABLE_GOOGLE_MENU	Enable Google access	boolean	FALSE	Enable loading from Google apis.
 FLANKING_REGION	"Go to feature" padding region in bp, < 0 is interpreted as a percentage.	integer	2000	
-DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases). < 0 disables visibility window	float	-1	
+DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases), < 0 disables visibility window.	float	-1	
 
 ##Jump To Next Feature Options (F/B Keys)
 NEXT_FIT_TO_WINDOW	Fit window to feature (with optional padding).	boolean	FALSE
