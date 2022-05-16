@@ -5,11 +5,11 @@ IGV.track.show.attribute.views	Show attribute panel	boolean	FALSE
 SHOW_DEFAULT_TRACK_ATTRIBUTES	Show default track attributes	boolean	FALSE
 SHOW_REGION_BARS	Show region-of-interest boundaries	boolean	FALSE
 ENABLE_GOOGLE_MENU	Enable Google access	boolean	FALSE	Enable loading from Google apis.
-FLANKING_REGION	"Go to feature" padding region in bp, < 0 is interpreted as a percentage.	integer	2000	
+FLANKING_REGION	"Search for feature" padding region in bp, < 0 is interpreted as a percentage.	integer	2000	
 DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases), < 0 disables visibility window.	float	-1	
 
-##Jump To Next Feature Options (F/B Keys)
-NEXT_FIT_TO_WINDOW	Fit window to feature (with optional padding).	boolean	FALSE
+##Jump To Next Feature Options (f/b Keys)
+NEXT_FIT_TO_WINDOW	Fit feature to window (with optional padding).	boolean	FALSE
 NEXT_FLANKING_REGION	Padding region in bp, < 0 is interpreted as a percentage.	integer	0
 
 ##Appearance
@@ -162,7 +162,7 @@ SAM.INSERT_SIZE_THRESHOLD	Default maximum (bp)	float	100000
 
 
 #Third Gen	THIRD_GEN
-info Settings below override defaults for 3rd-gen (PacBIO, Oxford Nanopore, ...) alignments.
+info Settings below override defaults for 3rd-gen (PacBio, Oxford Nanopore, ...) alignments.
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	1000	Range at which alignments become visibile
 
 ##Downsampling
@@ -201,12 +201,12 @@ PORT_ENABLED	Enable port	boolean	TRUE
 PORT_NUMBER	Port number	integer	60151
 ---
 IGV.genome.sequence.dir	Genome server URL	string	https://s3.amazonaws.com/igv.org.genomes/genomes.tsv
-MASTER_RESOURCE_FILE_KEY	Data registry url	string	https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt
+MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
 
-BLAT_URL	Blat url	String	http://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=$SEQUENCE&type=DNA&db=$DB&output=json
+BLAT_URL	BLAT URL	String	http://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=$SEQUENCE&type=DNA&db=$DB&output=json
 ---
 
 ## Tooltip
@@ -216,9 +216,9 @@ TOOLTIP.DISMISS_DELAY	Tooltip dismiss delay (ms)	integer	60000
 
 
 ## JBrowse Circular View Integration  **EXPERIMENTAL FEATURE**
-CIRC_VIEW_ENABLED	Enable Circview	boolean	FALSE
-CIRC_VIEW_HOST	Circview host (usually localhost)	string	localhost
-CIRC_VIEW_PORT	Circview port	integer	60152
+CIRC_VIEW_ENABLED	Enable CircView	boolean	FALSE
+CIRC_VIEW_HOST	CircView host (usually localhost)	string	localhost
+CIRC_VIEW_PORT	CircView port	integer	60152
 
 
 ##
