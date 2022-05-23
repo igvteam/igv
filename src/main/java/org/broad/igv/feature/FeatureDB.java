@@ -106,23 +106,21 @@ public class FeatureDB {
     }
 
     private static void addByAttributes(IGVFeature igvFeature, Genome genome) {
-        Map<String, String> attributes = igvFeature.getAttributes();
-        if (attributes != null) {
-            for (String value : attributes.values()) {
-                if (value.length() < 20) {
-                    put(value, igvFeature, genome);
-                }
+        List<String> attributeKeys = igvFeature.getAttributeKeys();
+        for (String key : attributeKeys) {
+            String value = igvFeature.getAttribute(key);
+            if (value.length() < 20) {
+                put(value, igvFeature, genome);
             }
         }
     }
 
     private static void removeByAttributes(IGVFeature igvFeature, Genome genome) {
-        Map<String, String> attributes = igvFeature.getAttributes();
-        if (attributes != null) {
-            for (String value : attributes.values()) {
-                if (value.length() < 20) {
-                    featureMap.remove(value.toUpperCase());
-                }
+        List<String> attributeKeys = igvFeature.getAttributeKeys();
+        for (String key : attributeKeys) {
+            String value = igvFeature.getAttribute(key);
+            if (value.length() < 20) {
+                featureMap.remove(value.toUpperCase());
             }
         }
     }
@@ -133,7 +131,7 @@ public class FeatureDB {
      *
      * @param name
      * @param feature
-     * @param genome The genome which these features belong to. Used for checking chromosomes
+     * @param genome  The genome which these features belong to. Used for checking chromosomes
      * @return true if successfully added, false if not
      */
     static boolean put(String name, NamedFeature feature, Genome genome) {
@@ -319,7 +317,7 @@ public class FeatureDB {
      * @param mutAA           String symbolizing the mutated amino acid
      * @param currentGenome
      * @return Map from genome position to features found. Feature name
-     *         must be exact, but there can be multiple features with the same name
+     * must be exact, but there can be multiple features with the same name
      */
     public static Map<Integer, BasicFeature> getMutationAA(String name, int proteinPosition, String refAA,
                                                            String mutAA, Genome currentGenome) {
@@ -347,7 +345,7 @@ public class FeatureDB {
                     if (c.getAminoAcid().equalsByName(refAA)) {
 
                         CodonTable codonTable = CodonTableManager.getInstance().getCodonTableForChromosome(currentGenome.getId(), bf.getChr());
-                        if(codonTable != null) {
+                        if (codonTable != null) {
                             Set<String> snps = AminoAcidManager.getInstance().getMappingSNPs(c.getSequence(),
                                     AminoAcidManager.getAminoAcidByName(mutAA), codonTable);
                             if (snps.size() >= 1) {

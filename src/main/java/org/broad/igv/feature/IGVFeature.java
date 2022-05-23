@@ -27,13 +27,17 @@
 package org.broad.igv.feature;
 
 import java.awt.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Interface for features in IGV annotation tracks  (FeatureTrack and derived classes).
+ */
 
 public interface IGVFeature extends LocusScore, NamedFeature {
 
-     String getType();
+    String getType();
 
     default String getIdentifier() {
         return null;
@@ -45,11 +49,15 @@ public interface IGVFeature extends LocusScore, NamedFeature {
         return Strand.NONE;
     }
 
-     default int  getLength() {
+    default int getLength() {
         return getEnd() - getStart();
-     }
+    }
 
-    default Map<String, String> getAttributes() {
+    default List<String> getAttributeKeys() {
+        return Collections.EMPTY_LIST;
+    }
+
+    default String getAttribute(String key) {
         return null;
     }
 

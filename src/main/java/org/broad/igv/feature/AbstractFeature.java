@@ -33,8 +33,8 @@ import org.broad.igv.util.FormatUtils;
 import htsjdk.tribble.Feature;
 
 import java.awt.*;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -172,18 +172,27 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         return attributes;
     }
 
+    @Override
+    public List<String> getAttributeKeys() {
+        return attributes == null ? Collections.EMPTY_LIST : new ArrayList<>(attributes.keySet());
+    }
+
+    @Override
+    public String getAttribute(String key) {
+        return attributes == null ? null : attributes.get(key);
+    }
+
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
 
 
     public void setAttribute(String key, String value) {
-        if(attributes == null) {
+        if (attributes == null) {
             attributes = new LinkedHashMap<>();
         }
         attributes.put(key, value);
     }
-
 
 
     public boolean overlaps(Feature anotherFeature) {
@@ -225,7 +234,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
 
         StringBuffer buf = new StringBuffer();
         // 30 attributes is the maximum visible on a typical screen
-        int max = IGV.getInstance().isShowDetailsOnClick() ? 10000 :  30;
+        int max = IGV.getInstance().isShowDetailsOnClick() ? 10000 : 30;
         FormatUtils.printHtml(attributes, buf, max);
         return buf.toString();
 
@@ -235,7 +244,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         this.readingFrame = frame;
     }
 
-    public int getReadingFrame(){
+    public int getReadingFrame() {
         return this.readingFrame;
     }
 }
