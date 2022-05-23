@@ -1,15 +1,10 @@
 package org.broad.igv.feature.tribble;
 
-import org.broad.igv.Globals;
-import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.util.collections.MultiMap;
 
 import java.awt.*;
-import java.util.List;
 
 /**
  * Created by jrobinso on 10/31/17.

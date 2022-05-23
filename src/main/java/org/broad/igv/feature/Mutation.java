@@ -32,13 +32,11 @@ import org.broad.igv.logging.*;
 import org.broad.igv.feature.aa.AminoAcidSequence;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorTable;
-import org.broad.igv.util.collections.MultiMap;
+import org.broad.igv.util.FormatUtils;
 
 import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -63,7 +61,7 @@ public class Mutation implements IGVFeature {
     String refAllele;
     String altAllele1;
     String altAllele2;
-    private MultiMap<String, String> attributes;
+    private Map<String, String> attributes;
     private String valueString;
 
 
@@ -112,7 +110,7 @@ public class Mutation implements IGVFeature {
 
         String genomeID = GenomeManager.getInstance().getGenomeId();
         if ("hg38".equals(genomeID) || "GRCh38".equals(genomeID)) {
-            if(refAllele == null) return null;
+            if (refAllele == null) return null;
             String altAllele = altAllele1;
             if (refAllele.equals(altAllele1)) {
                 altAllele = altAllele2;
@@ -124,8 +122,7 @@ public class Mutation implements IGVFeature {
             return "<a target='_blank' " +
                     "href='http://www.cravat.us/CRAVAT/variant.html?variant=" +
                     cravatChr + "_" + position + "_+_" + refAllele + "_" + altAllele + "'>Cravat " + refAllele + "->" + altAllele + "</a>";
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -193,15 +190,15 @@ public class Mutation implements IGVFeature {
             buf.append("Type: ");
             buf.append(mutationType);
             if (attributes != null) {
-                attributes.printHtml(buf, 100);
+                FormatUtils.printHtml(attributes, buf, 100);
             }
 
-            if(getOMAName() != null) {
+            if (getOMAName() != null) {
                 buf.append("<br/><a href=\"" + getOMAUrl() + "\">Mutation Assessor</a>");
             }
 
             String cravatLink = getCravatLink();
-            if(cravatLink != null) {
+            if (cravatLink != null) {
                 buf.append("<br/>" + cravatLink);
             }
 
@@ -275,7 +272,7 @@ public class Mutation implements IGVFeature {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void setAttributes(MultiMap<String, String> attributes) {
+    public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
 

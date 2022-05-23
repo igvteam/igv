@@ -26,10 +26,9 @@
 
 package org.broad.igv.feature;
 
-import org.broad.igv.util.collections.MultiMap;
-
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 
 
 public interface IGVFeature extends LocusScore, NamedFeature {
@@ -50,7 +49,7 @@ public interface IGVFeature extends LocusScore, NamedFeature {
         return getEnd() - getStart();
      }
 
-    default MultiMap<String, String> getAttributes() {
+    default Map<String, String> getAttributes() {
         return null;
     }
 

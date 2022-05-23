@@ -37,7 +37,6 @@ import org.broad.igv.feature.aa.CodonTableManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.SequenceTrack;
-import org.broad.igv.util.collections.MultiMap;
 import htsjdk.tribble.Feature;
 
 import java.util.*;
@@ -107,7 +106,7 @@ public class FeatureDB {
     }
 
     private static void addByAttributes(IGVFeature igvFeature, Genome genome) {
-        MultiMap<String, String> attributes = igvFeature.getAttributes();
+        Map<String, String> attributes = igvFeature.getAttributes();
         if (attributes != null) {
             for (String value : attributes.values()) {
                 if (value.length() < 20) {
@@ -118,7 +117,7 @@ public class FeatureDB {
     }
 
     private static void removeByAttributes(IGVFeature igvFeature, Genome genome) {
-        MultiMap<String, String> attributes = igvFeature.getAttributes();
+        Map<String, String> attributes = igvFeature.getAttributes();
         if (attributes != null) {
             for (String value : attributes.values()) {
                 if (value.length() < 20) {

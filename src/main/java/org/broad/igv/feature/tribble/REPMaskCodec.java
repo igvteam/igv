@@ -32,11 +32,13 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.collections.MultiMap;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.exception.CodecLineParsingException;
 import htsjdk.tribble.readers.LineIterator;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Basically BED format with some columns rearranged
@@ -173,7 +175,7 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
         feature.setName(name);
         feature.setIdentifier(name);
 
-        MultiMap<String, String> attributes = new MultiMap<String, String>();
+        Map<String, String> attributes = new LinkedHashMap<>();
         attributes.put("Smith Waterman score", tokens[1]);
         attributes.put("base mismatches per thousand", tokens[2]);
         attributes.put("bases deleted per thousand", tokens[3]);

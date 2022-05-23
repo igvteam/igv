@@ -26,10 +26,8 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.util.collections.MultiMap;
 
 import java.awt.*;
-import java.util.List;
 
 /**
  * Representation of a feature from a UCSC "snp" file
