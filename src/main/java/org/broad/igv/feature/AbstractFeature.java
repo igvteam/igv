@@ -29,11 +29,12 @@ package org.broad.igv.feature;
 
 import org.broad.igv.logging.*;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.util.collections.MultiMap;
+import org.broad.igv.util.FormatUtils;
 import htsjdk.tribble.Feature;
 
 import java.awt.*;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -48,7 +49,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
     protected String type = "";
     protected Color color;
     protected String description;
-    protected MultiMap<String, String> attributes;
+    protected Map<String, String> attributes;
     protected String name = "";
 
     /**
@@ -167,18 +168,18 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         return (description == null) ? getName() : description;
     }
 
-    public MultiMap<String, String> getAttributes() {
+    public Map<String, String> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(MultiMap<String, String> attributes) {
+    public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
 
 
     public void setAttribute(String key, String value) {
         if(attributes == null) {
-            attributes = new MultiMap<String, String>();
+            attributes = new LinkedHashMap<>();
         }
         attributes.put(key, value);
     }
@@ -225,7 +226,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         StringBuffer buf = new StringBuffer();
         // 30 attributes is the maximum visible on a typical screen
         int max = IGV.getInstance().isShowDetailsOnClick() ? 10000 :  30;
-        attributes.printHtml(buf, max);
+        FormatUtils.printHtml(attributes, buf, max);
         return buf.toString();
 
     }

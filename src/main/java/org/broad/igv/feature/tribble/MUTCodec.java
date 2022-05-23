@@ -36,13 +36,14 @@ import org.broad.igv.feature.Mutation;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.collections.MultiMap;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Codec for .mut and .maf mutation files
@@ -194,7 +195,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                         tokens[typeColumn].trim();
             }
 
-            MultiMap<String, String> attributes = new MultiMap();
+            Map<String, String> attributes = new LinkedHashMap<>();
             int n = Math.min(headers.length, tokens.length);
             for (int i = 0; i < n; i++) {
                 String key = headers[i];
