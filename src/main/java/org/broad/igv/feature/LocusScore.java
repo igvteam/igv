@@ -36,10 +36,6 @@ import org.broad.igv.track.WindowFunction;
  */
 public interface LocusScore extends htsjdk.tribble.Feature {
 
-     void setStart(int start);
-
-     void setEnd(int end);
-
      float getScore();
 
     /**

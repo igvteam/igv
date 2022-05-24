@@ -401,16 +401,6 @@ public class LinkedAlignment implements Alignment {
     }
 
     @Override
-    public void setStart(int start) {
-
-    }
-
-    @Override
-    public void setEnd(int end) {
-
-    }
-
-    @Override
     public float getScore() {
         return 0;
     }
