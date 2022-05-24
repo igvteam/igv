@@ -104,7 +104,7 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
         return getDescription();
     }
 
-    @Override
+
     public String getDescription() {
 
         StringBuffer desc = new StringBuffer();
