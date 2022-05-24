@@ -50,11 +50,6 @@ public class PAFFeature implements IGVFeature {
     }
 
     @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
     public Strand getStrand() {
         return strand;
     }

@@ -43,8 +43,6 @@ public interface IGVFeature extends LocusScore, NamedFeature {
         return null;
     }
 
-    public String getDescription();
-
     default Strand getStrand() {
         return Strand.NONE;
     }
