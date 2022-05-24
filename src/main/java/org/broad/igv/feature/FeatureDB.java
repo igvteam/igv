@@ -63,8 +63,8 @@ public class FeatureDB {
         if (name != null && name.length() > 0 && !name.equals(".")) {
             put(name, feature, genome);
         }
-        if (feature instanceof IGVFeature) {
-            final IGVFeature igvFeature = (IGVFeature) feature;
+        if (feature instanceof BasicFeature) {
+            final BasicFeature igvFeature = (BasicFeature) feature;
             final String id = igvFeature.getIdentifier();
             if (id != null && id.length() > 0) {
                 put(id, feature, genome);
@@ -87,8 +87,8 @@ public class FeatureDB {
         if (name != null && name.length() > 0 && !name.equals(".")) {
             featureMap.remove(name.toUpperCase());
         }
-        if (feature instanceof IGVFeature) {
-            final IGVFeature igvFeature = (IGVFeature) feature;
+        if (feature instanceof BasicFeature) {
+            final BasicFeature igvFeature = (BasicFeature) feature;
             final String id = igvFeature.getIdentifier();
             if (id != null && id.length() > 0) {
                 featureMap.remove(id.toUpperCase());

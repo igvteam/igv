@@ -38,17 +38,6 @@ public class PAFFeature implements IGVFeature {
         this.description = description;
     }
 
-
-    @Override
-    public String getType() {
-        return "Aignment";
-    }
-
-    @Override
-    public String getIdentifier() {
-        return name;
-    }
-
     @Override
     public Strand getStrand() {
         return strand;
@@ -57,16 +46,6 @@ public class PAFFeature implements IGVFeature {
     @Override
     public Color getColor() {
         return defaultColor;
-    }
-
-    @Override
-    public void setStart(int start) {
-        this.start = start;
-    }
-
-    @Override
-    public void setEnd(int end) {
-        this.end = end;
     }
 
     @Override

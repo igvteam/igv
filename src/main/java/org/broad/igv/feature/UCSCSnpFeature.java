@@ -129,27 +129,6 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
 
     // Everything below has to be implemented for IGVFeature.   Sigh....
 
-
-    @Override
-    public void setStart(int start) {
-        this.start = start;
-    }
-
-    @Override
-    public void setEnd(int end) {
-        this.end = end;
-    }
-
-    @Override
-    public String getType() {
-        return "SNP";
-    }
-
-    @Override
-    public String getIdentifier() {
-        return name;
-    }
-
     @Override
     public Strand getStrand() {
         return strand;

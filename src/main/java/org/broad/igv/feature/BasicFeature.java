@@ -275,7 +275,6 @@ public class BasicFeature extends AbstractFeature {
     }
 
 
-    @Override
     public String getIdentifier() {
         return identifier;
     }
