@@ -49,8 +49,8 @@ import java.util.Map;
  * 9 peak (Narrow peak only) - Point-source called for this peak; 0-based offset from chromStart. Use -1 if no point-source called.
  *
  * @author jrobinso
- *         Date: 10/16/12
- *         Time: 11:35 AM
+ * Date: 10/16/12
+ * Time: 11:35 AM
  */
 public class EncodePeakCodec extends UCSCCodec {
 
@@ -110,14 +110,13 @@ public class EncodePeakCodec extends UCSCCodec {
             strand = Strand.NONE;
         }
         feature.setStrand(strand);
-
-
+        
         // Store the remaining features in description string */
         Map<String, String> attributes = new LinkedHashMap<>();
-        attributes.put("signalValue", tokens[6]);
-        attributes.put("pValue", tokens[7]);
-        attributes.put("qValue", tokens[8]);
-        attributes.put("peak", tokens[9]);
+        if (tokens.length > 6) attributes.put("signalValue", tokens[6]);
+        if (tokens.length > 7) attributes.put("pValue", tokens[7]);
+        if (tokens.length > 8) attributes.put("qValue", tokens[8]);
+        if (tokens.length > 9) attributes.put("peak", tokens[9]);
         feature.setAttributes(attributes);
 
         return feature;
