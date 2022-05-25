@@ -321,16 +321,15 @@ public class BBFileReader {
 
 
         // go from chromosome names to chromosome ID region
-        RPChromosomeRegion selectionRegion = getChromosomeBounds(startChromosome, startBase,
-                endChromosome, endBase);
+        RPChromosomeRegion selectionRegion = getChromosomeBounds(startChromosome, startBase, endChromosome, endBase);
 
         // check for valid selection region
-        if (selectionRegion == null)
+        if (selectionRegion == null) {
             return new BigBedIterator();  // an empty iterator
+        }
 
         // compose an iterator
-        BigBedIterator bedIterator = new BigBedIterator(fis, chromosomeIDTree, chromosomeDataTree,
-                selectionRegion, contained);
+        BigBedIterator bedIterator = new BigBedIterator(fis, fileHeader, chromosomeIDTree, chromosomeDataTree, selectionRegion, contained);
 
         return bedIterator;
     }

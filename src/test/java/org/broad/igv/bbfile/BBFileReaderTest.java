@@ -69,12 +69,38 @@ public class BBFileReaderTest {
         BigBedIterator iter = bbReader.getBigBedIterator(chr, start, chr, end, false);
         int count = 0;
         while (iter.hasNext()) {
-            BedFeature f = iter.next();
+            BedData f = iter.next();
             assertEquals(chr, f.getChromosome());
             assertTrue(f.getStartBase() <= end && f.getEndBase() >= start);
             count++;
         }
         assertEquals("Feature count", 225, count);
+
+    }
+
+    @Test
+    public void testManeBB() throws IOException {
+
+        String path = "/Users/jrobinso/Downloads/mane.1.0.bb";
+        BBFileReader bbReader = new BBFileReader(path);
+
+        BBFileHeader bbFileHdr = bbReader.getBBFileHeader();
+        assertTrue(bbFileHdr.isBigBed());
+
+        String chr = "chr21";
+        int start = 26490012;
+        int end = 42182827;
+
+        BigBedIterator iter = bbReader.getBigBedIterator(chr, start, chr, end, false);
+        int count = 0;
+        while (iter.hasNext()) {
+            BedData f = iter.next();
+            assertEquals(chr, f.getChromosome());
+            assertTrue(f.getStartBase() <= end && f.getEndBase() >= start);
+            count++;
+        }
+        assertEquals("Feature count", 225, count);
+
 
     }
 

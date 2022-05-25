@@ -434,7 +434,7 @@ public class Genome {
      */
 
     public byte[] getSequence(String chr, int start, int end) {
-        return getSequence(chr, start, end, true);
+        return getSequence(getCanonicalChrName(chr), start, end, true);
     }
 
     public byte[] getSequence(String chr, int start, int end, boolean useCache) {

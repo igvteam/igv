@@ -132,13 +132,15 @@ public class BasicFeature extends AbstractFeature {
      * Defined in interface {@linkplain LocusScore}
      */
     public String getValueString(double position, int mouseX, WindowFunction ignored) {
+
         StringBuffer valueString = new StringBuffer();
 
         String name = getName();
         if (name != null && name.length() > 0) {
-            valueString.append("<b>" + name + "</b><br>");
+            valueString.append("<b>name</b>:&nbsp;" + name);
         }
 
+        valueString.append("<br><b>location</b>:&nbsp;");
         valueString.append(getLocusString());
         if(strand == Strand.POSITIVE) {
             valueString.append(" (+)");
@@ -147,17 +149,17 @@ public class BasicFeature extends AbstractFeature {
         }
 
         if (type != null && type.length() > 0) {
-            valueString.append("<br>Type = " + type);
+            valueString.append("<br><b>type</b>:&nbsp;" + type);
         }
-        if ((identifier != null) && ((name == null || name.length() == 0) || !name.equals(identifier))) {
-            valueString.append("<br>id = " + identifier);
+        if ((identifier != null && identifier.length() > 0) && ((name == null || name.length() == 0) || !name.equals(identifier))) {
+            valueString.append("<br><b>id</b>:&nbsp;" + identifier);
         }
 
         if (!Float.isNaN(score)) {
-            valueString.append("<br>Score = " + score);
+            valueString.append("<br><b>score</b>:&nbsp;" + score);
         }
         if (description != null) {
-            valueString.append("<br>" + description);
+            valueString.append("<br><b>score</b>:&nbsp;" + description);
         }
         if (attributes != null) {
             valueString.append(getAttributeString());

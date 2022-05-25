@@ -27,7 +27,6 @@ package org.broad.igv.bbfile;
 
 import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.Globals;
-import org.broad.igv.bbfile.*;
 import org.broad.igv.bbfile.codecs.BBCodec;
 import org.broad.igv.bbfile.codecs.BBCodecFactory;
 import org.broad.igv.data.AbstractDataSource;
@@ -35,7 +34,6 @@ import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
@@ -417,7 +415,7 @@ public class BBDataSource extends AbstractDataSource implements FeatureSource {
         }
 
         public Feature next() {
-            BedFeature feat = bedIterator.next();
+            BedData feat = bedIterator.next();
             BasicFeature feature = bedCodec.decode(feat);
             return feature;
 

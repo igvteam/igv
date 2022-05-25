@@ -54,7 +54,7 @@ public interface IGVFeature extends LocusScore, NamedFeature {
     }
 
     /**
-     * Return true if the feature is completely contained within the bounds of this
+     * Return true if the given feature is completely contained within the bounds of this
      * feature. amd is on the same strand.
      * <p/>
      *

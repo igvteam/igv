@@ -27,7 +27,7 @@ package org.broad.igv.methyl;
 
 import org.broad.igv.Globals;
 import org.broad.igv.bbfile.BBFileReader;
-import org.broad.igv.bbfile.BedFeature;
+import org.broad.igv.bbfile.BedData;
 import org.broad.igv.bbfile.BigBedIterator;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -102,11 +102,11 @@ public class BBMethylDataSource implements MethylDataSource {
 
         public MethylScore next() {
 
-            BedFeature feat = null;
+            BedData feat = null;
 
             while (feat == null && bedIterator.hasNext()) {
                 feat = bedIterator.next();
-                String[] restOfFields = feat.getRestOfFields();
+                String[] restOfFields = Globals.tabPattern.split(feat.getRestOfFields());
                 MethylScore score = type == Type.ZILLER ?
                         createZillerScore(feat, restOfFields) : createUSCScore(feat, restOfFields);
                 return score;
@@ -115,7 +115,7 @@ public class BBMethylDataSource implements MethylDataSource {
 
         }
 
-        private MethylScore createZillerScore(BedFeature feat, String[] restOfFields) {
+        private MethylScore createZillerScore(BedData feat, String[] restOfFields) {
 
             float percent;
             float count;
@@ -135,7 +135,7 @@ public class BBMethylDataSource implements MethylDataSource {
             return new MethylScore(feat.getChromosome(), feat.getStartBase(), feat.getEndBase(), Strand.NONE, percent, (int) count);
         }
 
-        private MethylScore createUSCScore(BedFeature feat, String[] restOfFields) {
+        private MethylScore createUSCScore(BedData feat, String[] restOfFields) {
             //String name = restOfFields[0];
             //int score = Integer.parseInt(restOfFields[1]);
             char strandChar = restOfFields[2].charAt(0);

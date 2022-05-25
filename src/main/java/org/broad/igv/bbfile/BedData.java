@@ -69,9 +69,9 @@ import org.broad.igv.logging.*;
 *   provided by the autoSQL section of the BigBed file. (See BBFile Table B example)
 *
 * */
-public class BedFeature {
+public class BedData {
 
-    private static Logger log = LogManager.getLogger(BedFeature.class);
+    private static Logger log = LogManager.getLogger(BedData.class);
 
     private int itemIndex;     // data record index
 
@@ -79,15 +79,15 @@ public class BedFeature {
     private String chromosome;      // mChromosome/contig name
     private int startBase;         // starting base for item
     private int endBase;           // ending base for item
-    private String[] restOfFields;    // string containing custom fields
+    String restOfFields;    // string containing custom fields
 
-    public BedFeature(int itemIndex, String chromosome, int startBase, int endBase, String restOfFieldsString){
+    public BedData(int itemIndex, String chromosome, int startBase, int endBase, String restOfFields){
 
        this.itemIndex = itemIndex;
        this.chromosome =  chromosome;
        this.startBase =  startBase;
        this.endBase = endBase;
-       restOfFields = restOfFieldsString == null ? null : restOfFieldsString.split("\t");
+       this.restOfFields = restOfFields;
    }
 
    // returns the data record index
@@ -110,7 +110,7 @@ public class BedFeature {
        return endBase;
    }
 
-    public String[] getRestOfFields(){
+    public String getRestOfFields(){
         return restOfFields;
     }
 

@@ -247,7 +247,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
      * @param feature
      * @return
      */
-    private boolean isCoding(BasicFeature feature) {
+    public static boolean isCoding(BasicFeature feature) {
         return feature.hasExons() && feature.getThickStart() > feature.getStart() && feature.getThickEnd() < feature.getEnd()
                 && feature.getStrand() != Strand.NONE;
     }
@@ -297,7 +297,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
     }
 
 
-    private void createExons(int start, String[] tokens, BasicFeature gene, String chr,
+    public static void createExons(int start, String[] tokens, BasicFeature gene, String chr,
                              Strand strand) throws NumberFormatException {
 
         int cdStart = Integer.parseInt(tokens[6]);
@@ -324,10 +324,12 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
                 } else {
                     exonNumber++;
                 }
-
             }
         }
     }
+
+
+
 
     /**
      * Encode a feature as a BED string.
