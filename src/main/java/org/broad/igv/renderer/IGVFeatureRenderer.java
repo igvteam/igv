@@ -225,19 +225,22 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     }
 
                     // This is ugly, but alternatives are probably worse
-                    if (feature instanceof EncodePeakFeature && pixelWidth > 5) {
-                        int peakPosition = ((EncodePeakFeature) feature).getPeakPosition();
-                        if (peakPosition > 0) {
-                            Color c = g2D.getColor();
-                            int peakPixelPosition = (int) ((peakPosition - origin) / locScale);
-                            Color peakColor = c == Color.black ? Color.red : Color.black;
-                            g2D.setColor(peakColor);
-                            int pw = Math.min(3, pixelWidth / 5);
-                            g2D.fillRect(peakPixelPosition - pw/2, pixelYCenter - thinBlockHeight/2 - 1, pw, thinBlockHeight + 2);
-                            g2D.setColor(c);
+                    if (feature.getAttribute("peak") != null && pixelWidth > 5) {
+                        try {
+                            int peakPosition = Integer.parseInt(feature.getAttribute("peak"));
+                            if (peakPosition > 0) {
+                                Color c = g2D.getColor();
+                                int peakPixelPosition = (int) ((feature.getStart() + peakPosition - origin) / locScale);
+                                Color peakColor = c == Color.cyan ? Color.red : Color.cyan;
+                                g2D.setColor(peakColor);
+                                int pw = Math.min(4, pixelWidth / 5);
+                                g2D.fillRect(peakPixelPosition - pw/2, pixelYCenter - thinBlockHeight/2 - 1, pw, thinBlockHeight + 2);
+                                g2D.setColor(c);
+                            }
+                        } catch (NumberFormatException e) {
+                            // TODO Unexpected, should this be logged?
                         }
                     }
-
                 }
 
 

@@ -9,26 +9,11 @@ public class BBCodecFactory {
 
     public static BBCodec getCodec(String autosql, int standardFieldCount) {
 
-        List<BBUtils.ASField> fields;
-        if (autosql == null) {
-            fields = Collections.EMPTY_LIST;
-        } else {
-            BBUtils.ASTable asTable = BBUtils.parseAutosql(autosql);
-            fields = asTable.fields;
-        }
+        BBUtils.ASTable astable = autosql == null ||
+                autosql.length() == 0 ? null : BBUtils.parseAutosql(autosql);
 
-        if (fields.size() > 15 &&
-                "cdsStartStat".equals(fields.get(13).name) &&
-                "exonFrames".equals(fields.get(15).name)) {
-            return new BBGenePredCodec(standardFieldCount);
-        } if (fields.size() > 9 &&
-                "signalValue".equals(fields.get(6).name) &&
-                "pValue".equals(fields.get(7).name) &&
-                "qValue".equals(fields.get(8).name)) {
-            return new BBNarowPeakCodec(standardFieldCount);
-        }else {
-            return new BBBedCodec(standardFieldCount);
-        }
+        return new BBBedCodec(standardFieldCount, astable);
+
     }
 }
 

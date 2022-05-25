@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.DataInputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -71,7 +70,7 @@ public class BigBedDataBlock {
     private DataInputStream dis;       // high to low byte stream reader
 
     // Bed data extraction members
-    private ArrayList<BedFeature> bedFeatureList; // array of BigBed data
+    private ArrayList<BedData> bedFeatureList; // array of BigBed data
 
     /*
     *   Constructor for Bed data block reader.
@@ -83,7 +82,7 @@ public class BigBedDataBlock {
     *       isLowToHigh - byte order is low to high if true; else high to low
     *       uncompressBufSize - byte size for decompression buffer; else 0 for uncompressed
     * */
-    public BigBedDataBlock(SeekableStream fis, RPTreeLeafNodeItem leafHitItem,
+    public BigBedDataBlock(SeekableStream fis, BBFileHeader header,  RPTreeLeafNodeItem leafHitItem,
                            Map<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize) {
 
         this.leafHitItem = leafHitItem;
@@ -139,8 +138,8 @@ public class BigBedDataBlock {
     *   Note: Remaining bytes to data block are used to determine end of reading
     *   since a zoom record count for the data block is not known.
     * */
-    public ArrayList<BedFeature> getBedData(RPChromosomeRegion selectionRegion,
-                                            boolean contained) {
+    public ArrayList<BedData> getBedData(RPChromosomeRegion selectionRegion,
+                                         boolean contained) {
         int itemNumber = 0;
         int chromID, chromStart, chromEnd;
         String restOfFields;
@@ -150,7 +149,7 @@ public class BigBedDataBlock {
         int minItemSize = 3 * 4 + 1;
 
         // allocate the bed feature array list
-        bedFeatureList = new ArrayList<BedFeature>();
+        bedFeatureList = new ArrayList<BedData>();
 
         try {
             for (int index = 0; remDataSize >= minItemSize; ++index) {
@@ -180,7 +179,7 @@ public class BigBedDataBlock {
                 } else {
                     remDataSize -= (minItemSize + restOfFields.length());
                     String chromosome = chromosomeMap.get(chromID);
-                    BedFeature bbItem = new BedFeature(itemNumber, chromosome, chromStart, chromEnd, restOfFields);
+                    BedData bbItem = new BedData(itemNumber, chromosome, chromStart, chromEnd, restOfFields);
                     bedFeatureList.add(bbItem);
                 }
             }

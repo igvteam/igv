@@ -29,21 +29,24 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Codec for UCSC / ENCDOE "broad and narrow peak" files (http://genome.ucsc.edu/FAQ/FAQformat.html#format13)
  * <p/>
  * This format is used to provide called peaks of signal enrichment based on pooled, normalized (interpreted) data. It is a BED6+4 format.
  * <p/>
- * chrom - Name of the chromosome (or contig, scaffold, etc.).
- * chromStart - The starting position of the feature in the chromosome or scaffold. The first base in a chromosome is numbered 0.
- * chromEnd - The ending position of the feature in the chromosome or scaffold. The chromEnd base is not included in the display of the feature. For example, the first 100 bases of a chromosome are defined as chromStart=0, chromEnd=100, and span the bases numbered 0-99.
- * name - Name given to a region (preferably unique). Use '.' if no name is assigned.
- * score - Indicates how dark the peak will be displayed in the browser (0-1000). If all scores were '0' when the data were submitted to the DCC, the DCC assigned scores 1-1000 based on signal value. Ideally the average signalValue per base spread is between 100-1000.
- * strand - +/- to denote strand or orientation (whenever applicable). Use '.' if no orientation is assigned.
- * signalValue - Measurement of overall (usually, average) enrichment for the region.
- * pValue - Measurement of statistical significance (-log10). Use -1 if no pValue is assigned.
- * qValue - Measurement of statistical significance using false discovery rate (-log10). Use -1 if no qValue is assigned.
- * peak (Narrow peak only) - Point-source called for this peak; 0-based offset from chromStart. Use -1 if no point-source called.
+ * 0 chrom - Name of the chromosome (or contig, scaffold, etc.).
+ * 1 chromStart - The starting position of the feature in the chromosome or scaffold. The first base in a chromosome is numbered 0.
+ * 2 chromEnd - The ending position of the feature in the chromosome or scaffold. The chromEnd base is not included in the display of the feature. For example, the first 100 bases of a chromosome are defined as chromStart=0, chromEnd=100, and span the bases numbered 0-99.
+ * 3 name - Name given to a region (preferably unique). Use '.' if no name is assigned.
+ * 4 score - Indicates how dark the peak will be displayed in the browser (0-1000). If all scores were '0' when the data were submitted to the DCC, the DCC assigned scores 1-1000 based on signal value. Ideally the average signalValue per base spread is between 100-1000.
+ * 5 strand - +/- to denote strand or orientation (whenever applicable). Use '.' if no orientation is assigned.
+ * 6 signalValue - Measurement of overall (usually, average) enrichment for the region.
+ * 7 pValue - Measurement of statistical significance (-log10). Use -1 if no pValue is assigned.
+ * 8 qValue - Measurement of statistical significance using false discovery rate (-log10). Use -1 if no qValue is assigned.
+ * 9 peak (Narrow peak only) - Point-source called for this peak; 0-based offset from chromStart. Use -1 if no point-source called.
  *
  * @author jrobinso
  *         Date: 10/16/12
@@ -58,12 +61,12 @@ public class EncodePeakCodec extends UCSCCodec {
     }
 
     public EncodePeakCodec(Genome genome) {
-        super(EncodePeakFeature.class);
+        super(BasicFeature.class);
         this.genome = genome;
     }
 
     @Override
-    public EncodePeakFeature decode(String nextLine) {
+    public BasicFeature decode(String nextLine) {
 
 
         if (nextLine.trim().length() == 0) {
@@ -89,7 +92,7 @@ public class EncodePeakCodec extends UCSCCodec {
         //BED format, and IGV, use starting element as 0.
         int start = Integer.parseInt(tokens[1]);
         int end = Integer.parseInt(tokens[2]);
-        EncodePeakFeature feature = new EncodePeakFeature(chr, start, end);
+        BasicFeature feature = new BasicFeature(chr, start, end);
 
         feature.setName(tokens[3]);
         feature.setScore(Float.parseFloat(tokens[4]));
@@ -110,9 +113,12 @@ public class EncodePeakCodec extends UCSCCodec {
 
 
         // Store the remaining features in description string */
-        feature.setSignal((float) Double.parseDouble(tokens[6]));
-        feature.setPValue((float) Double.parseDouble(tokens[7]));
-        feature.setQValue((float) Double.parseDouble(tokens[8]));
+        Map<String, String> attributes = new LinkedHashMap<>();
+        attributes.put("signalValue", tokens[6]);
+        attributes.put("pValue", tokens[7]);
+        attributes.put("qValue", tokens[8]);
+        attributes.put("peak", tokens[9]);
+        feature.setAttributes(attributes);
 
         return feature;
     }
