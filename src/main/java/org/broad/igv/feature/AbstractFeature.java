@@ -86,6 +86,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         return name;
     }
 
+    @Override
     public String getDisplayName(String property) {
         String nm = getAttribute(property);
         return nm == null ? getName() : nm;

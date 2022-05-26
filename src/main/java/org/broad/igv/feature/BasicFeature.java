@@ -142,9 +142,9 @@ public class BasicFeature extends AbstractFeature {
 
         valueString.append("<br><b>location</b>:&nbsp;");
         valueString.append(getLocusString());
-        if(strand == Strand.POSITIVE) {
+        if (strand == Strand.POSITIVE) {
             valueString.append(" (+)");
-        } else if(strand == Strand.NEGATIVE) {
+        } else if (strand == Strand.NEGATIVE) {
             valueString.append(" (-)");
         }
 
@@ -289,6 +289,15 @@ public class BasicFeature extends AbstractFeature {
         this.link = link;
     }
 
+    @Override
+    public String getDisplayName(String property) {
+        if (property.equals("id")) {
+            return identifier;
+        } else {
+            return super.getDisplayName(property);
+        }
+    }
+
     public String getURL() {
         return link;
     }
@@ -345,8 +354,8 @@ public class BasicFeature extends AbstractFeature {
      *
      * @param featurePositions Must be 0-based.
      * @return Positions relative to genome (0-based). Will contain "-1"s for
-     *         positions not found. Sorted ascending for positive strand,
-     *         descending for negative strand.
+     * positions not found. Sorted ascending for positive strand,
+     * descending for negative strand.
      */
     int[] featureToGenomePosition(int[] featurePositions) {
         List<Exon> exons = getExons();

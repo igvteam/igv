@@ -1413,11 +1413,11 @@ public class TrackMenuUtils {
 
     public static JMenuItem getFeatureNameAttribute(final Collection<Track> selectedTracks) {
 
-        JMenuItem item = new JMenuItem("Set Feature Name Property...");
+        JMenuItem item = new JMenuItem("Set Feature Label Field...");
         item.addActionListener(evt -> {
             String currentVal = selectedTracks.iterator().next().getLabelField();
             if (currentVal == null) currentVal = "";
-            final String newVal = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), "Feature Name Property: ", currentVal);
+            final String newVal = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), "Feature Label Field: ", currentVal);
             if (newVal == null) {
                 return; // Dialog canceled
             }
