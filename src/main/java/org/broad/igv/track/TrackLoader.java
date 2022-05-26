@@ -247,7 +247,10 @@ public class TrackLoader {
 
                 for (Track track : newTracks) {
                     if (locator.getFeatureInfoURL() != null) {
-                        track.setUrl(locator.getFeatureInfoURL());
+                        track.setFeatureInfoURL(locator.getFeatureInfoURL());
+                    }
+                    if (locator.getLabelField() != null && track instanceof FeatureTrack) {
+                        ((FeatureTrack) track).setLabelField(locator.getLabelField());
                     }
                     if (tp != null) {
                         track.setProperties(tp);

@@ -34,4 +34,8 @@ import htsjdk.tribble.Feature;
 public interface  NamedFeature extends Feature {
 
     String getName();
+
+    default String getDisplayName(String property) {
+        return getName();
+    }
 }

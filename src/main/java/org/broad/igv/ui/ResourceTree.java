@@ -242,6 +242,7 @@ public class ResourceTree {
             locator.setIndexPath(getAttribute(xmlNode, INDEX.getText()));
             locator.setSampleId(sampleId);
             locator.setFeatureInfoURL(getAttribute(xmlNode, URL.getText()));
+            locator.setLabelField(getAttribute(xmlNode, LABEL_FIELD.getText()));
             locator.setDescription(getAttribute(xmlNode, DESCRIPTION.getText()));
             locator.setTrackLine(getAttribute(xmlNode, TRACK_LINE.getText()));
             locator.setName(name);

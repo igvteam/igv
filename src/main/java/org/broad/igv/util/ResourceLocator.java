@@ -93,6 +93,8 @@ public class ResourceLocator {
      */
     String featureInfoURL;
 
+    String labelField;
+
     /**
      * Descriptive text
      */
@@ -428,6 +430,14 @@ public class ResourceLocator {
         return featureInfoURL;
     }
 
+    public String getLabelField() {
+        return labelField;
+    }
+
+    public void setLabelField(String labelField) {
+        this.labelField = labelField;
+    }
+
     public void setFeatureInfoURL(String featureInfoURL) {
         this.featureInfoURL = featureInfoURL;
     }
@@ -557,14 +567,6 @@ public class ResourceLocator {
         }
     }
 
-    public void setAttribute(String key, Object value) {
-        this.attributes.put(key, value);
-    }
-
-    public Object getAttribute(String key) {
-        return attributes.get(key);
-    }
-
     public void setIndexed(boolean indexed) {
         this.indexed = indexed;
     }
@@ -612,6 +614,7 @@ public class ResourceLocator {
         SAMPLE_ID("sampleId"),
         NAME("name"),
         URL("url"),
+        LABEL_FIELD("labelField"),
         RESOURCE_TYPE("resourceType"),
         TRACK_LINE("trackLine"),
         COVERAGE("coverage"),

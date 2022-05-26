@@ -25,7 +25,6 @@
 
 package org.broad.igv.track;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import htsjdk.tribble.Feature;
@@ -61,7 +60,6 @@ import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
-import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.extview.ExtendViewClient;
 
 import javax.swing.*;
@@ -421,7 +419,6 @@ public class TrackMenuUtils {
 
         addDisplayModeItems(tracks, featurePopupMenu);
 
-
         if (tracks.size() == 1) {
             Track t = tracks.iterator().next();
             Feature f = t.getFeatureAtMousePosition(te);
@@ -475,7 +472,7 @@ public class TrackMenuUtils {
 
         featurePopupMenu.addSeparator();
         featurePopupMenu.add(getShowFeatureNames(tracks));
-
+        featurePopupMenu.add(getFeatureNameAttribute(tracks));
     }
 
     /**
@@ -745,17 +742,7 @@ public class TrackMenuUtils {
     public static JMenuItem getTrackRenameItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Rename Track...");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                UIUtilities.invokeOnEventThread(new Runnable() {
-
-                    public void run() {
-                        renameTrack(selectedTracks);
-                    }
-                });
-            }
-        });
+        item.addActionListener(evt -> UIUtilities.invokeOnEventThread(() -> renameTrack(selectedTracks)));
         if (selectedTracks.size() > 1) {
             item.setEnabled(false);
         }
@@ -1123,7 +1110,6 @@ public class TrackMenuUtils {
         IGV.getInstance().repaint(selectedTracks);
     }
 
-
     public static Integer getIntegerInput(String parameter, int value) {
 
         while (true) {
@@ -1422,6 +1408,27 @@ public class TrackMenuUtils {
         String label = currentValue ? "Hide Feature Names" : "Show Feature Names";
         JMenuItem item = new JMenuItem(label);
         item.addActionListener(evt -> selectedTracks.stream().forEach(t -> t.setShowFeatureNames(!currentValue)));
+        return item;
+    }
+
+    public static JMenuItem getFeatureNameAttribute(final Collection<Track> selectedTracks) {
+
+        JMenuItem item = new JMenuItem("Set Feature Name Property...");
+        item.addActionListener(evt -> {
+            String currentVal = selectedTracks.iterator().next().getLabelField();
+            if (currentVal == null) currentVal = "";
+            final String newVal = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), "Feature Name Property: ", currentVal);
+            if (newVal == null) {
+                return; // Dialog canceled
+            }
+            selectedTracks.stream().forEach(t -> {
+                if (t instanceof FeatureTrack) {
+                    ((FeatureTrack) t).setLabelField(newVal);
+                }
+            });
+            IGV.getInstance().repaint(selectedTracks);
+        });
+
         return item;
     }
 

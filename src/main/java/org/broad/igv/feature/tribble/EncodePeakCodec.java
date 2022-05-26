@@ -110,7 +110,7 @@ public class EncodePeakCodec extends UCSCCodec {
             strand = Strand.NONE;
         }
         feature.setStrand(strand);
-        
+
         // Store the remaining features in description string */
         Map<String, String> attributes = new LinkedHashMap<>();
         if (tokens.length > 6) attributes.put("signalValue", tokens[6]);

@@ -68,6 +68,8 @@ final public class Constants {
     // Generic track options
     public static final String BYPASS_FILE_AUTO_DISCOVERY = "BYPASS_FILE_AUTO_DISCOVERY";
     public static final String TRACK_ATTRIBUTE_NAME_KEY = "TRACK_ATTRIBUTE_NAME_KEY";
+
+    public static final String FEATURE_NAME_PROPERTY = "FEATURE_NAME_PROPERTY";
     public static final String INITIAL_TRACK_HEIGHT = "15";
     public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
     public static final String TRACK_HEIGHT_KEY = "IGV.track.height";

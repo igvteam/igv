@@ -59,8 +59,6 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.broad.igv.feature.FeatureUtils.FEATURE_CENTER_COMPARATOR;
-
 /**
  * Track which displays features, typically showing regions of the genome
  * in a qualitative way. Features are rendered using the specified FeatureRenderer.
@@ -119,6 +117,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     private String trackLine = null;
 
     private boolean groupByStrand = false;
+    private String labelField;
 
     public FeatureTrack() {
 
@@ -445,7 +444,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     private String getFeatureURL(IGVFeature igvFeature) {
         String url = igvFeature.getURL();
         if (url == null) {
-            String trackURL = getUrl();
+            String trackURL = getFeatureInfoURL();
             if (trackURL != null && igvFeature.getName() != null) {
                 String encodedID = StringUtils.encodeURL(igvFeature.getName());
                 url = trackURL.replaceAll("\\$\\$", encodedID);
@@ -454,6 +453,14 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         return url;
     }
 
+    @Override
+    public String getLabelField() {
+        return labelField;
+    }
+
+    public void setLabelField(String labelField) {
+        this.labelField = labelField;
+    }
 
     /**
      * Get all features which overlap the specified locus
@@ -1036,7 +1043,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public void marshalXML(Document document, Element element) {
         element.setAttribute("groupByStrand", String.valueOf(groupByStrand));
-
+        if (labelField != null) {
+            element.setAttribute("featureNameProperty", labelField);
+        }
         super.marshalXML(document, element);
 
     }
@@ -1045,6 +1054,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     public void unmarshalXML(Element element, Integer version) {
 
         super.unmarshalXML(element, version);
+
+        if (element.hasAttribute("featureNameProperty")) {
+            this.labelField = element.getAttribute("featureNameProperty");
+        }
 
         this.groupByStrand = "true".equals(element.getAttribute("groupByStrand"));
 

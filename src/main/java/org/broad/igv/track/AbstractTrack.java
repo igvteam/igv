@@ -75,7 +75,7 @@ public abstract class AbstractTrack implements Track {
 
     private String attributeKey;
     private String name;
-    private String url;
+    private String featureInfoURL;
     private boolean itemRGB = true;
 
     private boolean useScore;
@@ -150,12 +150,12 @@ public abstract class AbstractTrack implements Track {
         // Ignore by default
     }
 
-    public String getUrl() {
-        return url;
+    public String getFeatureInfoURL() {
+        return featureInfoURL;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setFeatureInfoURL(String featureInfoURL) {
+        this.featureInfoURL = featureInfoURL;
     }
 
     public void setUseScore(boolean useScore) {
@@ -191,11 +191,6 @@ public abstract class AbstractTrack implements Track {
 
     public void setSampleId(String sampleId) {
         this.sampleId = sampleId;
-    }
-
-    @Override
-    public boolean isFilterable() {
-        return true;   // True by default
     }
 
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
@@ -503,10 +498,6 @@ public abstract class AbstractTrack implements Track {
         return (height < 0) ? getDefaultHeight() : height;
     }
 
-    public boolean hasDataRange() {
-        return dataRange != null;
-    }
-
     public DataRange getDataRange() {
         if (dataRange == null) {
             // Use the color scale if there is one
@@ -679,7 +670,7 @@ public abstract class AbstractTrack implements Track {
             setWindowFunction(properties.getWindowingFunction());
         }
         if (properties.getUrl() != null) {
-            setUrl(properties.getUrl());
+            setFeatureInfoURL(properties.getUrl());
         }
 
         Map<String, String> attributes = properties.getAttributes();
