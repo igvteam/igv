@@ -401,9 +401,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                     buf.append(vs);
 
                     if (IGV.getInstance().isShowDetailsOnClick()) {
-                        // URL
                         String url = getFeatureURL(igvFeature);
-
                         if (url != null) {
                             buf.append("<br/><a href=\"" + url + "\">" + url + "</a>");
                         }
@@ -446,7 +444,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         if (url == null) {
             String trackURL = getFeatureInfoURL();
             if (trackURL != null && igvFeature.getName() != null) {
-                String encodedID = StringUtils.encodeURL(igvFeature.getName());
+                String name = labelField != null ? igvFeature.getDisplayName(labelField) : igvFeature.getName();
+                String encodedID = StringUtils.encodeURL(name);
                 url = trackURL.replaceAll("\\$\\$", encodedID);
             }
         }

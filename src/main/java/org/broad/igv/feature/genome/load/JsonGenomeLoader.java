@@ -129,8 +129,6 @@ public class JsonGenomeLoader extends GenomeLoader {
                         res.setFeatureInfoURL(infoURL.getAsString());
                     }
 
-                   // geneFeatureTrack.setFeatureInfoURL(annotationURL);
-
                     JsonElement indexedElement = obj.get("indexed");
                     JsonElement hiddenElement = obj.get("hidden");
                     boolean hidden = hiddenElement != null && hiddenElement.getAsBoolean();
