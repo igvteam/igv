@@ -53,7 +53,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
 
 
-public class S3LoadDialog extends org.broad.igv.ui.IGVDialog  {
+public class S3LoadDialog extends org.broad.igv.ui.IGVDialog {
 
     private static Logger log = LogManager.getLogger(S3LoadDialog.class);
 
@@ -71,12 +71,12 @@ public class S3LoadDialog extends org.broad.igv.ui.IGVDialog  {
 
         // List toplevel buckets
         List<String> buckets = AmazonUtils.ListBucketsForUser();
-        for (String bucket: buckets) {
+        for (String bucket : buckets) {
             IGVS3Object bucket_obj = new IGVS3Object(bucket, true, "STANDARD");
             root.add(new S3TreeNode(bucket_obj, true));
         }
 
-        log.debug("Populated S3 load dialog with S3 buckets: "+ buckets.toString());
+        log.debug("Populated S3 load dialog with S3 buckets: " + buckets.toString());
 
         // Propagate changes to UI
         treeModel.reload();
@@ -87,14 +87,20 @@ public class S3LoadDialog extends org.broad.igv.ui.IGVDialog  {
      * This one only one way of loading files. The other one is via mouse double click (see initComponents())
      * The main differences are that this method can handle multiple selected files, which are defined by the selection
      * in the tree at the time of loading, vs the mouse coordinates in when double clicking.
+     *
      * @param e
      */
     private void loadButtonActionPerformed(ActionEvent e) {
 
         setVisible(false);
+        TreePath[] paths = selectionTree.getSelectionPaths();
 
+        loadSelections(paths);
+    }
+
+    private void loadSelections(TreePath[] paths) {
         LongRunningTask.submit(() -> {
-            TreePath[] paths = selectionTree.getSelectionPaths();
+
             ArrayList<Triple<String, String, String>> preLocatorPaths = new ArrayList<>();
             ArrayList<ResourceLocator> finalLocators = new ArrayList<>();
 
@@ -103,18 +109,25 @@ public class S3LoadDialog extends org.broad.igv.ui.IGVDialog  {
                     Triple<String, String, String> bucketKeyTier = getBucketKeyTierFromTreePath(path);
 
                     AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucketKeyTier.getLeft(), bucketKeyTier.getMiddle());
-                    if(!res.isObjectAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return; }
+                    if (!res.isObjectAvailable()) {
+                        MessageUtils.showErrorMessage(res.getErrorReason(), null);
+                        return;
+                    }
 
                     preLocatorPaths.add(bucketKeyTier);
                 }
             }
 
-            for (Triple<String, String, String> preLocator: preLocatorPaths) {
+            for (Triple<String, String, String> preLocator : preLocatorPaths) {
                 ResourceLocator locator = getResourceLocatorFromBucketKey(preLocator);
                 finalLocators.add(locator);
             }
 
-            IGV.getInstance().loadTracks(finalLocators);
+            if (finalLocators.size() == 1 && "xml".equals(ResourceLocator.deriveFormat(finalLocators.get(0).getPath()))) {
+                IGV.getInstance().loadSession(finalLocators.get(0).getPath(), null);
+            } else {
+                IGV.getInstance().loadTracks(finalLocators);
+            }
         });
     }
 
@@ -125,9 +138,7 @@ public class S3LoadDialog extends org.broad.igv.ui.IGVDialog  {
     private ResourceLocator getResourceLocatorFromBucketKey(Triple<String, String, String> preLocator) {
         String bucketName = preLocator.getLeft();
         String s3objPath = preLocator.getMiddle();
-
-        String s3Path = "s3://"+bucketName+"/"+s3objPath;
-
+        String s3Path = "s3://" + bucketName + "/" + s3objPath;
         return new ResourceLocator(s3Path);
     }
 
@@ -169,14 +180,14 @@ public class S3LoadDialog extends org.broad.igv.ui.IGVDialog  {
                     prefix += path[i] + "/";
                 }
 
-                log.debug("S3 bucket prefix is: "+prefix);
+                log.debug("S3 bucket prefix is: " + prefix);
 
                 try {
                     // List contents of bucket with path-prefix passed
                     ArrayList<IGVS3Object> IGVS3Objects = AmazonUtils.ListBucketObjects(currentBucket, prefix);
                     parentNode.addS3Children(IGVS3Objects);
                 } catch (S3Exception e) {
-                    MessageUtils.showErrorMessage("Amazon S3: Access denied to bucket: "+currentBucket, e);
+                    MessageUtils.showErrorMessage("Amazon S3: Access denied to bucket: " + currentBucket, e);
                     log.error("Permission denied on S3 bucket ListObjects: ");
                 }
 
@@ -233,19 +244,10 @@ public class S3LoadDialog extends org.broad.igv.ui.IGVDialog  {
             public void mousePressed(MouseEvent e) {
                 int selRow = selectionTree.getRowForLocation(e.getX(), e.getY());
                 TreePath selPath = selectionTree.getPathForLocation(e.getX(), e.getY());
-                if(selRow != -1) {
-                    if(e.getClickCount() == 2) {
-                        // similar behaviour to loadButtonActionPerformed, see docs there for details
-                        if (isFilePath(selPath)) {
-                            Triple<String, String, String> bucketKeyTier = getBucketKeyTierFromTreePath(selPath);
-
-                            AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucketKeyTier.getLeft(), bucketKeyTier.getMiddle());
-                            if(!res.isObjectAvailable()) { MessageUtils.showErrorMessage(res.getErrorReason(), null); return;}
-
-                            ResourceLocator loc = getResourceLocatorFromBucketKey(bucketKeyTier);
-                            IGV.getInstance().loadTracks(Collections.singletonList(loc));
-                            setVisible(false);
-                        }
+                if (selRow != -1) {
+                    if (e.getClickCount() == 2) {
+                        setVisible(false);
+                        loadSelections(new TreePath[]{selPath});
                     }
                 }
             }

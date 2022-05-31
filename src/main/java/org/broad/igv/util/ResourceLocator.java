@@ -241,7 +241,7 @@ public class ResourceLocator {
         this.visibilityWindow = visibilityWindow;
     }
 
-    private String deriveFormat(String pathOrName) {
+    public static String deriveFormat(String pathOrName) {
 
         String filename;
         if (FileUtils.isRemote(pathOrName)) {
