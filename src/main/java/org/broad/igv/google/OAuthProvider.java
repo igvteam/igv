@@ -196,7 +196,7 @@ public class OAuthProvider {
             params.put("client_secret", clientSecret);
         }
 
-        params.put("redirect_uri", new URLDecoder().decode(redirect, "utf-8"));
+        params.put("redirect_uri", URLDecoder.decode(redirect, "utf-8"));
         params.put("grant_type", "authorization_code");
 
         //  set the resource if it necessary for the auth provider dwm08
