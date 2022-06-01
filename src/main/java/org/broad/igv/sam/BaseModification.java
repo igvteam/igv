@@ -1,5 +1,7 @@
 package org.broad.igv.sam;
 
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.color.ColorPalette;
@@ -11,6 +13,8 @@ import java.util.*;
 import java.util.List;
 
 public class BaseModification {
+
+    private static Logger log = LogManager.getLogger(BaseModification.class);
 
     public String modification;
     char strand;
@@ -106,11 +110,11 @@ public class BaseModification {
 
                 while (idx < positions.length) {
                     if (s >= sequence.length) {
-                        System.err.println("Ran out of sequence");
-                        System.out.println(isNegativeStrand);
-                        System.out.println(mm);
-                        System.out.println(new String(origSequence));
-                        System.out.println(new String(sequence));
+                        log.error("Ran out of sequence");
+                        log.error("Is negative strand ? " + String.valueOf(isNegativeStrand));
+                        log.error("mm = " + mm);
+                        log.error("origSequence = " + new String(origSequence));
+                        log.error("sequence = " + new String(sequence));
                         break;
                     }
                     if (base == 'N' || sequence[s] == base) {
