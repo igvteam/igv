@@ -950,7 +950,7 @@ public class AlignmentRenderer {
             int pX0i = pX, dXi = dX;
 
             // If bisulfite mode, we expand the rectangle to make it more visible
-            if (bisulfiteMode && bisstatus.equals(DisplayStatus.COLOR)) {
+            if (bisulfiteMode && bisstatus.equals(DisplayStatus.RECTANGLE)) {
                 if (dXi < 3) {
                     int expansion = dXi;
                     pX0i -= expansion;
