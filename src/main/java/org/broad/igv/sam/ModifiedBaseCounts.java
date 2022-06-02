@@ -41,9 +41,11 @@ public class ModifiedBaseCounts {
 
     LinkedHashSet<String> allModifications = new LinkedHashSet<>();
     Map<String, Map<Integer, Integer>> counts;
+    Map<String, Map<Integer, Integer>> thresholdCounts;
 
     public ModifiedBaseCounts() {
         counts = new HashMap<>();
+        thresholdCounts = new HashMap<>();
     }
 
     public void incrementCounts(Alignment alignment) {
@@ -60,17 +62,22 @@ public class ModifiedBaseCounts {
                         BaseModification mod = baseModifications.get(i);
                         double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
                         int l = Byte.toUnsignedInt(mod.likelihood);
-                        if(l < threshold) continue;
 
                         int blockIdx = i - block.getBases().startOffset;
                         int position = block.getStart() + blockIdx;   // genomic position
                         Map<Integer, Integer> modCounts = counts.get(mod.modification);
+                        Map<Integer, Integer> thresholdModCounts = thresholdCounts.get(mod.modification);
                         if (modCounts == null) {
                             modCounts = new HashMap<>();
                             counts.put(mod.modification, modCounts);
+                            thresholdModCounts = new HashMap<>();
+                            thresholdCounts.put(mod.modification, thresholdModCounts);
                         }
                         int c = modCounts.containsKey(position) ? modCounts.get(position) + 1 : 1;
                         modCounts.put(position, c);
+
+                        c = (thresholdModCounts.containsKey(position) ? thresholdModCounts.get(position) : 0) + (l < threshold ? 0 : 1);
+                        thresholdModCounts.put(position, c);
 
                         allModifications.add(mod.modification);
                     }
@@ -82,6 +89,16 @@ public class ModifiedBaseCounts {
     public int getCount(int position, String modification) {
 
         Map<Integer, Integer> modCounts = counts.get(modification);
+        if (modCounts != null && modCounts.containsKey(position)) {
+            return modCounts.get(position);
+        } else {
+            return 0;
+        }
+    }
+
+    public int getThresholdCount(int position, String modification) {
+
+        Map<Integer, Integer> modCounts = thresholdCounts.get(modification);
         if (modCounts != null && modCounts.containsKey(position)) {
             return modCounts.get(position);
         } else {

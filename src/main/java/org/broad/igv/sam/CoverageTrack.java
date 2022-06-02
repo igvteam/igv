@@ -516,7 +516,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 int barHeight = (int) Math.min(tmp * rect.height, rect.height - 1);
                 if (barHeight > 0) {
                     int bottomY = rect.y + rect.height;
-       
+
                     // Potentially color mismatch
                     if (bisulfiteMode) {
                         BisulfiteCounts.Count bc = bisulfiteCounts != null ? bisulfiteCounts.getCount(pos) : null;
@@ -593,11 +593,12 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             byte likelihood = (byte) 255;
             for (String modification : baseCounts.getAllModifications()) {
                 int count = baseCounts.getCount(pos, modification);
-                double f = count / totalCount;
-                int height = (int) (f * barHeight);
+                int thresholdCount = baseCounts.getThresholdCount(pos, modification);
+                double f = (thresholdCount == 0 ? 0.0 : (double) thresholdCount / (double) count);
+                int height = (int) ((f > 0.5 ? f : 1.0 - f) * barHeight);
                 int baseY = pBottom - height;
-                if (height > 0) {
-                    Color c = BaseModification.getModColor(modification, likelihood);
+                if (count > 0) {
+                    Color c = BaseModification.getModColor(modification, (f < 0.5 ? (byte) 0 : (byte) 255));
                     Graphics2D tGraphics = context.getGraphic2DForColor(c);
                     tGraphics.fillRect(pX, baseY, dX, height);
                 }

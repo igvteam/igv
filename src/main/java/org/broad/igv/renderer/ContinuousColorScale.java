@@ -290,14 +290,14 @@ public class ContinuousColorScale extends AbstractColorScale {
 
         // See if we are in the midrange.  TO deal with floating point roundoffissues expand the range
         // by a small amount.
-        if ((val >= 1.0001 * negStart) && (val <= 1.0001 * posStart)) {
-            return midColor;
-        } else {
+//        if ((val >= 1.0001 * negStart) && (val <= 1.0001 * posStart)) {
+//            return midColor;
+//        } else {
             //double f = (val - getMinimum()) / (getMaximum() - getMinimum());
             int index = (int) Math.round((val - negEnd) / delta);
             index = Math.max(0, Math.min(index, colors.length - 1));
             return colors[index];
-        }
+ //       }
     }
 
     /**
@@ -378,43 +378,29 @@ public class ContinuousColorScale extends AbstractColorScale {
 
     static class ColorGradient {
 
+        private  Color minColor;
+        private  Color maxColor;
+
         boolean useDoubleGradient = true;
         double min, max, mid;
         BufferedImage posImage, negImage;
 
-        /**
-         * Constructs ...
-         *
-         * @param min
-         * @param mid
-         * @param max
-         * @param negColor
-         * @param neutralColor
-         * @param posColor
-         */
-        public ColorGradient(double min, double mid, double max, Color negColor,
-                             Color neutralColor, Color posColor) {
-            this.useDoubleGradient = true;
-            this.min = min;
-            this.max = max;
-            this.mid = mid;
-            this.posImage = createGradientImage(neutralColor, posColor);
-            this.negImage = createGradientImage(negColor, neutralColor);
-        }
 
         /**
          * Constructs ...
          *
          * @param min
          * @param max
-         * @param neutralColor
+         * @param negColor
          * @param posColor
          */
-        public ColorGradient(double min, double max, Color neutralColor, Color posColor) {
+        public ColorGradient(double min, double max, Color negColor, Color posColor) {
             this.useDoubleGradient = false;
             this.min = min;
             this.max = max;
-            posImage = createGradientImage(neutralColor, posColor);
+            this.minColor = negColor;
+            this.maxColor = posColor;
+            posImage = createGradientImage(negColor, posColor);
         }
 
         /**
@@ -449,6 +435,12 @@ public class ContinuousColorScale extends AbstractColorScale {
         public Color getColor(double value) {
 
             int rgb;
+
+            if(value <= this.min) {
+                return minColor;
+            } else if(value >= this.max) {
+                return maxColor;
+            }
 
             if (useDoubleGradient) {
 
