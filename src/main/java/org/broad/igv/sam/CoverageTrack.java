@@ -590,12 +590,28 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         ModifiedBaseCounts baseCounts = alignmentCounts.getModifiedBaseCounts();
 
         if (baseCounts != null) {
-            byte likelihood = (byte) 255;
+
+//            for (String modification : baseCounts.getAllModifications()) {
+//                int count = baseCounts.getCount(pos, modification);
+//                int thresholdCount = baseCounts.getThresholdCount(pos, modification);
+//                double f = (thresholdCount == 0 ? 0.0 : (double) thresholdCount / (double) count);
+//                int height = (int) ((f > 0.5 ? f : 1.0 - f) * barHeight);
+//                int baseY = pBottom - height;
+//                if (count > 0) {
+//                    Color c = BaseModification.getModColor(modification, (f < 0.5 ? (byte) 0 : (byte) 255));
+//                    Graphics2D tGraphics = context.getGraphic2DForColor(c);
+//                    tGraphics.fillRect(pX, baseY, dX, height);
+//                }
+//                pBottom = baseY;
+//            }
+
+            ColorScale cs = new ContinuousColorScale(0, 1, Color.BLUE, Color.RED);
+
             for (String modification : baseCounts.getAllModifications()) {
                 int count = baseCounts.getCount(pos, modification);
                 int thresholdCount = baseCounts.getThresholdCount(pos, modification);
                 double f = (thresholdCount == 0 ? 0.0 : (double) thresholdCount / (double) count);
-                int height = (int) ((f > 0.5 ? f : 1.0 - f) * barHeight);
+                int height = barHeight;
                 int baseY = pBottom - height;
                 if (count > 0) {
                     Color c = BaseModification.getModColor(modification, (f < 0.5 ? (byte) 0 : (byte) 255));

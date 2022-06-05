@@ -149,9 +149,6 @@ public class BaseModification {
 
         Color baseColor;
 
-        ColorScale cs = new ContinuousColorScale(0, 1, Color.BLUE, Color.RED);
-
-
         if (modColorPallete == null) {
             modColorPallete = new PaletteColorTable(new Color(132, 178, 158));
             modColorPallete.put("m", Color.red);
@@ -177,14 +174,12 @@ public class BaseModification {
         String key = modification + "--" + l;
         if (!modColorMap.containsKey(key)) {
 
-            modColorMap.put(key, cs.getColor(l / 255.0f));
-
-//            if (l >= 128) {
-//                modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), (l-127)));
-//            }
-//            else {
-//                modColorMap.put(key, new Color(baseColor.getBlue(), baseColor.getGreen(), baseColor.getRed(), (127-l)));
-//            }
+            if (l >= 128) {
+                modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), (l-127)));
+            }
+            else {
+                modColorMap.put(key, new Color(baseColor.getBlue(), baseColor.getGreen(), baseColor.getRed(), (127-l)));
+            }
         }
 
         return modColorMap.get(key);
