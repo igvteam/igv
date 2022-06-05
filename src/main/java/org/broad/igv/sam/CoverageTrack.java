@@ -590,35 +590,37 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         ModifiedBaseCounts baseCounts = alignmentCounts.getModifiedBaseCounts();
 
         if (baseCounts != null) {
-
+//            byte likelihood = (byte) 255;
 //            for (String modification : baseCounts.getAllModifications()) {
 //                int count = baseCounts.getCount(pos, modification);
-//                int thresholdCount = baseCounts.getThresholdCount(pos, modification);
-//                double f = (thresholdCount == 0 ? 0.0 : (double) thresholdCount / (double) count);
-//                int height = (int) ((f > 0.5 ? f : 1.0 - f) * barHeight);
+//                double f = count / totalCount;
+//                int height = (int) (f * barHeight);
 //                int baseY = pBottom - height;
-//                if (count > 0) {
-//                    Color c = BaseModification.getModColor(modification, (f < 0.5 ? (byte) 0 : (byte) 255));
+//                if (height > 0) {
+//                    Color c = BaseModification.getModColor(modification, likelihood);
 //                    Graphics2D tGraphics = context.getGraphic2DForColor(c);
 //                    tGraphics.fillRect(pX, baseY, dX, height);
 //                }
 //                pBottom = baseY;
 //            }
 
-            ColorScale cs = new ContinuousColorScale(0, 1, Color.BLUE, Color.RED);
+            ColorScale cs = new ContinuousColorScale(0, 255, Color.BLUE, Color.RED);
 
             for (String modification : baseCounts.getAllModifications()) {
+
                 int count = baseCounts.getCount(pos, modification);
-                int thresholdCount = baseCounts.getThresholdCount(pos, modification);
-                double f = (thresholdCount == 0 ? 0.0 : (double) thresholdCount / (double) count);
-                int height = barHeight;
-                int baseY = pBottom - height;
-                if (count > 0) {
-                    Color c = BaseModification.getModColor(modification, (f < 0.5 ? (byte) 0 : (byte) 255));
+
+                if (barHeight > 0 && count > 0) {
+                    int baseY = pBottom - barHeight;
+                    float likelhood = (float) (baseCounts.getLikelihood(pos, modification)) / count;
+                    Color c = cs.getColor(likelhood);
+
+                    int alpha = Math.min(255, (int) (2 * 255 * (count/ totalCount)));
+                    c = new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
+
                     Graphics2D tGraphics = context.getGraphic2DForColor(c);
-                    tGraphics.fillRect(pX, baseY, dX, height);
+                    tGraphics.fillRect(pX, baseY, dX, barHeight);
                 }
-                pBottom = baseY;
             }
         }
         return pX + dX;

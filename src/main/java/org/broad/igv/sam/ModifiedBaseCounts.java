@@ -41,11 +41,12 @@ public class ModifiedBaseCounts {
 
     LinkedHashSet<String> allModifications = new LinkedHashSet<>();
     Map<String, Map<Integer, Integer>> counts;
-    Map<String, Map<Integer, Integer>> thresholdCounts;
+
+    Map<String, Map<Integer, Integer>> likelihoods;
 
     public ModifiedBaseCounts() {
         counts = new HashMap<>();
-        thresholdCounts = new HashMap<>();
+        likelihoods = new HashMap<>();
     }
 
     public void incrementCounts(Alignment alignment) {
@@ -60,24 +61,29 @@ public class ModifiedBaseCounts {
                 for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
                     if (baseModifications.containsKey(i)) {
                         BaseModification mod = baseModifications.get(i);
-                        double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
-                        int l = Byte.toUnsignedInt(mod.likelihood);
+                        double threshold = 255 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
+                        int lh = Byte.toUnsignedInt(mod.likelihood);
+                        //if(lh < threshold) continue;
 
                         int blockIdx = i - block.getBases().startOffset;
                         int position = block.getStart() + blockIdx;   // genomic position
                         Map<Integer, Integer> modCounts = counts.get(mod.modification);
-                        Map<Integer, Integer> thresholdModCounts = thresholdCounts.get(mod.modification);
                         if (modCounts == null) {
                             modCounts = new HashMap<>();
                             counts.put(mod.modification, modCounts);
-                            thresholdModCounts = new HashMap<>();
-                            thresholdCounts.put(mod.modification, thresholdModCounts);
                         }
-                        int c = modCounts.containsKey(position) ? modCounts.get(position) + 1 : 1;
-                        modCounts.put(position, c);
 
-                        c = (thresholdModCounts.containsKey(position) ? thresholdModCounts.get(position) : 0) + (l < threshold ? 0 : 1);
-                        thresholdModCounts.put(position, c);
+                        Map<Integer, Integer> modLikelihoods = likelihoods.get(mod.modification);
+                        if(modLikelihoods == null) {
+                            modLikelihoods = new HashMap<>();
+                            likelihoods.put(mod.modification, modLikelihoods);
+                        }
+
+                        int c = modCounts.containsKey(position) ? modCounts.get(position) + 1 : 1;
+                        int l = modLikelihoods.containsKey(position) ? modLikelihoods.get(position) + lh : lh;
+
+                        modCounts.put(position, c);
+                        modLikelihoods.put(position, l);
 
                         allModifications.add(mod.modification);
                     }
@@ -96,13 +102,12 @@ public class ModifiedBaseCounts {
         }
     }
 
-    public int getThresholdCount(int position, String modification) {
-
-        Map<Integer, Integer> modCounts = thresholdCounts.get(modification);
-        if (modCounts != null && modCounts.containsKey(position)) {
-            return modCounts.get(position);
+    public int getLikelihood(int position, String modification) {
+        Map<Integer, Integer> modLikelihoods = likelihoods.get(modification);
+        if (modLikelihoods != null && modLikelihoods.containsKey(position)) {
+            return modLikelihoods.get(position);
         } else {
-            return 0;
+            return getCount(position, modification) * 255;
         }
     }
 
