@@ -95,6 +95,9 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     private boolean removed = false;
     IGV igv;
 
+    ColorScale cs = new ContinuousColorScale(0, 255, Color.BLUE, Color.RED);
+
+
     /**
      * Whether to autoscale across all ReferenceFrames
      * Default is true because we usually do, SashimiPlot does not
@@ -604,7 +607,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 //                pBottom = baseY;
 //            }
 
-            ColorScale cs = new ContinuousColorScale(0, 255, Color.BLUE, Color.RED);
 
             for (String modification : baseCounts.getAllModifications()) {
 
