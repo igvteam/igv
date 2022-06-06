@@ -23,9 +23,11 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.sam;
+package org.broad.igv.sam.mods;
 
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.AlignmentBlock;
 
 import java.util.Collection;
 import java.util.HashMap;

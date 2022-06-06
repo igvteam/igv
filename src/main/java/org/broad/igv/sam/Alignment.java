@@ -31,6 +31,7 @@ package org.broad.igv.sam;
 
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.sam.mods.BaseModification;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;

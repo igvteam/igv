@@ -37,6 +37,7 @@ import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
+import org.broad.igv.sam.mods.BaseModification;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;

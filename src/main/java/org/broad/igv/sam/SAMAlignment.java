@@ -39,6 +39,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.mods.BaseModification;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;

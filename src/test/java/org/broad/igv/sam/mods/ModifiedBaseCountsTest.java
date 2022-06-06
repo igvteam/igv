@@ -1,8 +1,9 @@
-package org.broad.igv.sam;
+package org.broad.igv.sam.mods;
 
 import htsjdk.samtools.util.CloseableIterator;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.sam.reader.BAMReader;
-import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -11,7 +12,6 @@ import java.io.IOException;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.*;
 
 public class ModifiedBaseCountsTest {
 

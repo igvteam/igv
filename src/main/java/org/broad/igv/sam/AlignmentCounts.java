@@ -26,6 +26,7 @@
 package org.broad.igv.sam;
 
 import htsjdk.tribble.Feature;
+import org.broad.igv.sam.mods.ModifiedBaseCounts;
 
 /**
  * @author Jim Robinson

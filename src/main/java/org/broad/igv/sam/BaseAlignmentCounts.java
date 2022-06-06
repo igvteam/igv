@@ -32,6 +32,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.mods.ModifiedBaseCounts;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;

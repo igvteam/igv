@@ -1,13 +1,9 @@
-package org.broad.igv.sam;
+package org.broad.igv.sam.mods;
 
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.renderer.ColorScale;
-import org.broad.igv.renderer.ContinuousColorScale;
-import org.broad.igv.ui.color.ColorPalette;
-import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.sam.AlignmentUtils;
 import org.broad.igv.ui.color.PaletteColorTable;
 
 import java.awt.*;

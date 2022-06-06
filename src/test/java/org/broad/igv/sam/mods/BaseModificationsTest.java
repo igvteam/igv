@@ -1,9 +1,8 @@
-package org.broad.igv.sam;
+package org.broad.igv.sam.mods;
 
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
