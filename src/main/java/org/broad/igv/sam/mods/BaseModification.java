@@ -170,11 +170,13 @@ public class BaseModification {
         String key = modification + "--" + l;
         if (!modColorMap.containsKey(key)) {
 
+            //int alpha = Math.abs(2*(l-127))   // Linear
+            int alpha = Math.min(255, (int) (l*l/64f - 4*l + 256));    // quadratic
             if (l >= 128) {
-                modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), 2*(l-127)));
+                modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha));
             }
             else {
-                modColorMap.put(key, new Color(baseColor.getBlue(), baseColor.getGreen(), baseColor.getRed(), 2*(127-l)));
+                modColorMap.put(key, new Color(baseColor.getBlue(), baseColor.getGreen(), baseColor.getRed(), alpha));
             }
         }
 
