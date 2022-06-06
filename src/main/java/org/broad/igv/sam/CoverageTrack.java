@@ -239,7 +239,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     public void drawData(RenderContext context, Rectangle rect) {
 
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
-        if (viewWindowSize < dataManager.getVisibilityWindow() && !context.getChr().equals(Globals.CHR_ALL)) {
+        if (viewWindowSize <= dataManager.getVisibilityWindow() && !context.getChr().equals(Globals.CHR_ALL)) {
             //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
