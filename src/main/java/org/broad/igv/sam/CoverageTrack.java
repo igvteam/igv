@@ -95,7 +95,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     private boolean removed = false;
     IGV igv;
 
-    ColorScale cs = new ContinuousColorScale(0, 255, Color.BLUE, Color.RED);
+    ColorScale baseModificationColorScale;
 
 
     /**
@@ -527,14 +527,14 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             drawBarBisulfite(context, pX, bottomY, dX, barHeight, totalCount, bc);
                         }
                     } else if (baseModMode) {
-                        drawModifiedBaseBar(context, pX, bottomY, dX, barHeight, pos, totalCount,  alignmentCounts);
+                        drawModifiedBaseBar(context, pX, bottomY, dX, barHeight, pos, totalCount, alignmentCounts);
                     } else {
                         if (refBases != null) {
                             int refIdx = pos - intervalStart;
                             if (refIdx >= 0 && refIdx < refBases.length) {
                                 byte ref = refBases[refIdx];
                                 if (alignmentCounts.isConsensusMismatch(pos, ref, context.getChr(), snpThreshold)) {
-                                    drawAllelFreqBar(context, pX, bottomY, dX, barHeight, pos, totalCount,  alignmentCounts);
+                                    drawAllelFreqBar(context, pX, bottomY, dX, barHeight, pos, totalCount, alignmentCounts);
                                 }
                             }
                         }
@@ -608,6 +608,9 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 //            }
 
 
+            if (baseModificationColorScale == null) {
+                baseModificationColorScale = new ContinuousColorScale(0, 255, Color.BLUE, Color.RED);
+            }
             for (String modification : baseCounts.getAllModifications()) {
 
                 int count = baseCounts.getCount(pos, modification);
@@ -615,9 +618,9 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 if (barHeight > 0 && count > 0) {
                     int baseY = pBottom - barHeight;
                     float likelhood = (float) (baseCounts.getLikelihood(pos, modification)) / count;
-                    Color c = cs.getColor(likelhood);
+                    Color c = baseModificationColorScale.getColor(likelhood);
 
-                    int alpha = Math.min(255, (int) (2 * 255 * (count/ totalCount)));
+                    int alpha = Math.min(255, (int) (2 * 255 * (count / totalCount)));
                     c = new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
 
                     Graphics2D tGraphics = context.getGraphic2DForColor(c);
