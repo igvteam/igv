@@ -218,8 +218,13 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         String chr = referenceFrame.getChrName();
         final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
 
-        Chromosome chromosome = currentGenome.getChromosome(chr);
         int start = (int) referenceFrame.getOrigin();
+
+        Chromosome chromosome = currentGenome.getChromosome(chr);
+        if(chromosome == null) {
+            return;
+        }
+        
         final int chromosomeLength = chromosome.getLength();
 
         int end = (int) referenceFrame.getEnd();
