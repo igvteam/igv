@@ -39,8 +39,7 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
-import org.broad.igv.sam.mods.BaseModification;
-import org.broad.igv.sam.mods.ModifiedBaseCounts;
+import org.broad.igv.sam.mods.BaseModificationCounts;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -592,7 +591,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             double totalCount,
                             AlignmentCounts alignmentCounts) {
 
-        ModifiedBaseCounts baseCounts = alignmentCounts.getModifiedBaseCounts();
+        BaseModificationCounts baseCounts = alignmentCounts.getModifiedBaseCounts();
 
         if (baseCounts != null) {
 //            byte likelihood = (byte) 255;
@@ -623,16 +622,18 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
                     int baseY = pBottom - barHeight;
 
-                    float likelhood = (float) (baseCounts.getLikelihood(pos, modification)) / count;
+                    float likelhood = (float) (baseCounts.getLikelhoodSum(pos, modification)) / count;
 
                     // Alpha => reflects % of bases with MM/ML tags,  X2 as most modifications are strand specific
                     int alpha = Math.min(255, (int) (2 * 255 * (count / totalCount)));
 
-                    Color c1 = new Color(0, 0, 255, alpha);
-                    Color c2 = new Color(255, 0, 0, alpha);
+                    Color c1 = Color.BLUE;
+                    Color c2 = Color.RED;
 
-                    int height2 = (int) ((likelhood / 255) * barHeight);
-                    int height1 = barHeight - height2;
+                    int calledBarHeight = (int) ((((float) count) / totalCount) * barHeight);
+
+                    int height2 = (int) ((likelhood / 255) * calledBarHeight);
+                    int height1 = calledBarHeight - height2;
 
                     graphics.setColor(c1);
                     graphics.fillRect(pX, baseY, dX, height1);

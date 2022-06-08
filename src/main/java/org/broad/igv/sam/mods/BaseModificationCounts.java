@@ -38,17 +38,28 @@ import java.util.Map;
  * @author Jim Robinson
  * @date 2/6/12
  */
-public class ModifiedBaseCounts {
+public class BaseModificationCounts {
 
 
-    LinkedHashSet<String> allModifications = new LinkedHashSet<>();
+    /**
+     * Set of all modification seen.
+     */
+    LinkedHashSet<String> allModifications;
+
+    /**
+     * Map for counts of modifications, key is modification identifier, value is map of position -> counts
+     */
     Map<String, Map<Integer, Integer>> counts;
 
-    Map<String, Map<Integer, Integer>> likelihoods;
+    /**
+     * Map for capturing modification likelihood "pileup", key is modification identifier,
+     * value is map of position -> sum of likelihoods for modifications at that position
+     */Map<String, Map<Integer, Integer>> likelihoodSums;
 
-    public ModifiedBaseCounts() {
+    public BaseModificationCounts() {
+        allModifications = new LinkedHashSet<>();
         counts = new HashMap<>();
-        likelihoods = new HashMap<>();
+        likelihoodSums = new HashMap<>();
     }
 
     public void incrementCounts(Alignment alignment) {
@@ -75,10 +86,10 @@ public class ModifiedBaseCounts {
                             counts.put(mod.modification, modCounts);
                         }
 
-                        Map<Integer, Integer> modLikelihoods = likelihoods.get(mod.modification);
+                        Map<Integer, Integer> modLikelihoods = likelihoodSums.get(mod.modification);
                         if(modLikelihoods == null) {
                             modLikelihoods = new HashMap<>();
-                            likelihoods.put(mod.modification, modLikelihoods);
+                            likelihoodSums.put(mod.modification, modLikelihoods);
                         }
 
                         int c = modCounts.containsKey(position) ? modCounts.get(position) + 1 : 1;
@@ -104,8 +115,8 @@ public class ModifiedBaseCounts {
         }
     }
 
-    public int getLikelihood(int position, String modification) {
-        Map<Integer, Integer> modLikelihoods = likelihoods.get(modification);
+    public int getLikelhoodSum(int position, String modification) {
+        Map<Integer, Integer> modLikelihoods = likelihoodSums.get(modification);
         if (modLikelihoods != null && modLikelihoods.containsKey(position)) {
             return modLikelihoods.get(position);
         } else {

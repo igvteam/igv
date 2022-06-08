@@ -26,7 +26,7 @@
 package org.broad.igv.sam;
 
 import htsjdk.tribble.Feature;
-import org.broad.igv.sam.mods.ModifiedBaseCounts;
+import org.broad.igv.sam.mods.BaseModificationCounts;
 
 /**
  * @author Jim Robinson
@@ -66,7 +66,7 @@ public interface AlignmentCounts extends Feature {
 
     BisulfiteCounts getBisulfiteCounts();
 
-    default ModifiedBaseCounts getModifiedBaseCounts() {
+    default BaseModificationCounts getModifiedBaseCounts() {
         return null;
     }
 

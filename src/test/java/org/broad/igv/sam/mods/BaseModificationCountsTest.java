@@ -13,7 +13,7 @@ import java.io.IOException;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
-public class ModifiedBaseCountsTest {
+public class BaseModificationCountsTest {
 
     @Test
     public void incrementCounts() throws IOException {
@@ -27,7 +27,7 @@ public class ModifiedBaseCountsTest {
         CloseableIterator<SAMAlignment> bamiter = bamreader.query(chr, start, end, false);
         int readCount = 0;
 
-        ModifiedBaseCounts counts = new ModifiedBaseCounts();
+        BaseModificationCounts counts = new BaseModificationCounts();
         while (bamiter.hasNext()) {
             Alignment alignment = bamiter.next();
             counts.incrementCounts(alignment);
