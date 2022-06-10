@@ -29,6 +29,7 @@
  */
 package org.broad.igv.sam;
 
+import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
@@ -528,7 +529,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             drawBarBisulfite(context, pX, bottomY, dX, barHeight, totalCount, bc);
                         }
                     } else if (baseModMode) {
-                        drawModifiedBaseBar(context, pX, bottomY, dX, barHeight, pos, totalCount, alignmentCounts);
+                        drawModifiedBaseBar(context, pX, bottomY, dX, barHeight, pos, alignmentCounts);
                     } else {
                         if (refBases != null) {
                             int refIdx = pos - intervalStart;
@@ -588,58 +589,47 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             int dX,
                             int barHeight,
                             int pos,
-                            double totalCount,
                             AlignmentCounts alignmentCounts) {
 
         BaseModificationCounts baseCounts = alignmentCounts.getModifiedBaseCounts();
 
         if (baseCounts != null) {
-//            byte likelihood = (byte) 255;
-//            for (String modification : baseCounts.getAllModifications()) {
-//                int count = baseCounts.getCount(pos, modification);
-//                double f = count / totalCount;
-//                int height = (int) (f * barHeight);
-//                int baseY = pBottom - height;
-//                if (height > 0) {
-//                    Color c = BaseModification.getModColor(modification, likelihood);
-//                    Graphics2D tGraphics = context.getGraphic2DForColor(c);
-//                    tGraphics.fillRect(pX, baseY, dX, height);
-//                }
-//                pBottom = baseY;
-//            }
-
-
-//            if (baseModificationColorScale == null) {
-//                baseModificationColorScale = new ContinuousColorScale(0, 255, Color.BLUE, Color.RED);
-//            }
 
             Graphics2D graphics = context.getGraphics();
-            for (String modification : baseCounts.getAllModifications()) {
 
-                int count = baseCounts.getCount(pos, modification);
+            for (BaseModificationCounts.Key key : baseCounts.getAllModifications()) {
+
+                int count = baseCounts.getCount(pos, key);
 
                 if (barHeight > 0 && count > 0) {
 
-                    int baseY = pBottom - barHeight;
+                    float likelhood = (float) (baseCounts.getLikelhoodSum(pos, key)) / count;
 
-                    float likelhood = (float) (baseCounts.getLikelhoodSum(pos, modification)) / count;
+                    byte base = (byte) key.getBase();
+                    byte complement = SequenceUtil.complement(base);
+                    char strand = key.getStrand();
+                    String modification = key.getModification();
 
-                    // Alpha => reflects % of bases with MM/ML tags,  X2 as most modifications are strand specific
-                    int alpha = Math.min(255, (int) (2 * 255 * (count / totalCount)));
+                    int cCount = strand == '+' ?
+                            alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement) :
+                            alignmentCounts.getPosCount(pos, complement) + alignmentCounts.getNegCount(pos, base);
 
+                    // TODO -- get colors for modification
                     Color c1 = Color.BLUE;
                     Color c2 = Color.RED;
 
-                    int calledBarHeight = (int) ((((float) count) / totalCount) * barHeight);
+                    int calledBarHeight = (int) ((((float) count) / cCount) * barHeight);
 
                     int height2 = (int) ((likelhood / 255) * calledBarHeight);
                     int height1 = calledBarHeight - height2;
+                    int baseY = pBottom - height1;
 
                     graphics.setColor(c1);
                     graphics.fillRect(pX, baseY, dX, height1);
 
+                    baseY -= height2;
                     graphics.setColor(c2);
-                    graphics.fillRect(pX, baseY + height1, dX, height2);
+                    graphics.fillRect(pX, baseY, dX, height2);
 
                 }
             }

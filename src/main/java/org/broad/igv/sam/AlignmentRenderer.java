@@ -37,7 +37,8 @@ import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
-import org.broad.igv.sam.mods.BaseModification;
+import org.broad.igv.sam.mods.BaseModificationUtils;
+import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -46,9 +47,8 @@ import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -827,9 +827,10 @@ public class AlignmentRenderer {
 
         // Base modification
         if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
-            Map<Integer, BaseModification> baseModifications = alignment.getBaseModificationMap();
-            if (baseModifications != null) {
-                //double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
+
+            List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
+            if (baseModificationSets != null) {
+
                 for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
                     // Compute bounds
                     int pY = (int) rowRect.getY();
@@ -839,13 +840,23 @@ public class AlignmentRenderer {
 
                     for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
 
-                        if (baseModifications.containsKey(i)) {
+                        // Search all sets for modifications of this base.  For now keeps mod with > probability
+                        // TODO -- merge mods in some way
+                        byte lh = 0;
+                        String modification = null;
+                        for (BaseModificationSet bmSet : baseModificationSets) {
+                            if (bmSet.containsPosition(i)) {
+                                if(modification == null || bmSet.getLikelihoods().get(i) > lh) {
+                                    modification = bmSet.getModification();
+                                    lh = bmSet.getLikelihoods().get(i);
+                                }
+                            }
+                        }
 
-                            BaseModification mod = baseModifications.get(i);
-                            int l = Byte.toUnsignedInt(mod.likelihood);
-                            //if (l < threshold) continue;
 
-                            Color c = BaseModification.getModColor(mod.modification, mod.likelihood);
+                        if (modification != null) {
+
+                            Color c = BaseModificationUtils.getModColor(modification, lh);
                             g.setColor(c);
 
                             int blockIdx = i - block.getBases().startOffset;
@@ -863,7 +874,6 @@ public class AlignmentRenderer {
                                 dX = 3;
                                 pX--;
                             }
-
                             g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
                         }
                     }
