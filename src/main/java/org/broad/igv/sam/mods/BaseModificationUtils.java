@@ -4,6 +4,7 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentUtils;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 
 import java.awt.*;
@@ -15,6 +16,8 @@ public class BaseModificationUtils {
     private static Logger log = LogManager.getLogger(BaseModificationUtils.class);
 
     static Map<String, String> codeValues;
+    static PaletteColorTable modColorPallete;
+
 
     static {
         codeValues = new HashMap<>();
@@ -33,6 +36,16 @@ public class BaseModificationUtils {
         codeValues.put("A", "Unknown A");
         codeValues.put("G", "Unknown G");
         codeValues.put("N", "Unknown");
+
+        modColorPallete = new PaletteColorTable(new Color(132, 178, 158));
+        modColorPallete.put("m", Color.red);
+        modColorPallete.put("h", new Color(11, 132, 165));
+        modColorPallete.put("o", new Color(111, 78, 129));
+        modColorPallete.put("f", new Color(246, 200, 95));
+        modColorPallete.put("c", new Color(157, 216, 102));
+        modColorPallete.put("g", new Color(255, 160, 86));
+        modColorPallete.put("e", new Color(141, 221, 208));
+        modColorPallete.put("b", new Color(202, 71, 47));
     }
 
 
@@ -156,34 +169,21 @@ public class BaseModificationUtils {
 
     public static Color getModColor(String modification, byte likelihood) {
 
-        Color baseColor;
-
-        if (modColorPallete == null) {
-            modColorPallete = new PaletteColorTable(new Color(132, 178, 158));
-            modColorPallete.put("m", Color.red);
-            modColorPallete.put("h", new Color(11, 132, 165));
-            modColorPallete.put("o", new Color(111, 78, 129));
-            modColorPallete.put("f", new Color(246, 200, 95));
-            modColorPallete.put("c", new Color(157, 216, 102));
-            modColorPallete.put("g", new Color(255, 160, 86));
-            modColorPallete.put("e", new Color(141, 221, 208));
-            modColorPallete.put("b", new Color(202, 71, 47));
-        }
-        baseColor = modColorPallete.get(modification);
+        // Note the pallete will always return a color, either an initially seeded one if supplied or a random color.
+        Color baseColor = modColorPallete.get(modification);
 
         // Alpha shade by likelihood
-        double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
+//        double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
         int l = Byte.toUnsignedInt(likelihood);
-        if (l > 250) {
+        if (l > 255) {
             return baseColor;
         }
-        if (l < threshold) {
-            l = 0;
-        }
+//        if (l < threshold) {
+//            l = 0;
+//        }
         String key = modification + "--" + l;
         if (!modColorMap.containsKey(key)) {
 
-            //int alpha = Math.abs(2*(l-127))   // Linear
             int alpha = Math.min(255, (int) (l * l / 64f - 4 * l + 256));    // quadratic
             if (l >= 128) {
                 modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha));
@@ -195,8 +195,10 @@ public class BaseModificationUtils {
         return modColorMap.get(key);
     }
 
-    static PaletteColorTable modColorPallete;
 
+    /**
+     * Cache for alpha modified colors
+     */
     static Map<String, Color> modColorMap = new HashMap<>();
 
 

@@ -41,6 +41,7 @@ import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.mods.BaseModificationCounts;
+import org.broad.igv.sam.mods.BaseModificationUtils;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -615,8 +616,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             alignmentCounts.getPosCount(pos, complement) + alignmentCounts.getNegCount(pos, base);
 
                     // TODO -- get colors for modification
-                    Color c1 = Color.BLUE;
-                    Color c2 = Color.RED;
+                    Color c1 = BaseModificationUtils.getModColor(modification, (byte) 0);
+                    Color c2 = BaseModificationUtils.getModColor(modification, (byte) 255);
 
                     int calledBarHeight = (int) ((((float) count) / cCount) * barHeight);
 
