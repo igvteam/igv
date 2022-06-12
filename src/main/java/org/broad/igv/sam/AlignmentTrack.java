@@ -271,6 +271,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         readNamePalette = new PaletteColorTable(ColorUtilities.getDefaultPalette());
         insertionIntervalsMap = Collections.synchronizedMap(new HashMap<>());
 
+        dataManager.setViewAsPairs(prefs.getAsBoolean(SAM_DISPLAY_PAIRED), renderOptions);
+
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(AlignmentTrackEvent.class, this);
     }
