@@ -329,9 +329,13 @@ public class SAMAlignment implements Alignment {
 
             Object mm = record.hasAttribute("Mm") ? record.getAttribute("Mm") : record.getAttribute("MM");
             byte[] ml = (byte[]) (record.hasAttribute("Ml") ? record.getAttribute("Ml") : record.getAttribute("ML"));
-            byte[] sequence =  record.getReadBases();
+            byte[] sequence = record.getReadBases();
 
-            baseModificationSets = BaseModificationUtils.getBaseModificationSets(mm.toString(), ml, sequence, isNegativeStrand());
+            if (mm.toString().length() == 0) { // TODO -- more extensive validation?
+                baseModificationSets = Collections.EMPTY_LIST;
+            } else {
+                baseModificationSets = BaseModificationUtils.getBaseModificationSets(mm.toString(), ml, sequence, isNegativeStrand());
+            }
         }
         return baseModificationSets;
     }
@@ -621,7 +625,7 @@ public class SAMAlignment implements Alignment {
                                 modString += BaseModificationUtils.valueString(bmSet.getModification(), bmSet.getLikelihoods().get(p));
                             }
                         }
-                        if(modString.length() > 0) {
+                        if (modString.length() > 0) {
                             return modString;
                         }
                     }
