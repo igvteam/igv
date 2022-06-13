@@ -18,7 +18,12 @@ public class FormatUtils {
 
             buffer.append("<b>" + entry.getKey() + "</b>");
             buffer.append(":&nbsp;");
-            String ts = lineWrapString(value, MAX_CHARS_PER_LINE);
+            String ts;
+            if (value.startsWith("https://")) {
+                ts = "<a href='" + value + "'>" + value + "</a>";
+            } else {
+                ts = value.startsWith("<") ? value : lineWrapString(value, MAX_CHARS_PER_LINE);
+            }
 
             buffer.append(ts);
             buffer.append("<br/>");
