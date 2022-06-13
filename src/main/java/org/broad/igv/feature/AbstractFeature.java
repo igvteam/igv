@@ -239,8 +239,8 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
     protected String getAttributeString() {
 
         StringBuffer buf = new StringBuffer();
-        // 30 attributes is the maximum visible on a typical screen
-        int max = IGV.getInstance().isShowDetailsOnClick() ? 10000 : 30;
+        // 100 attributes is the maximum visible on a typical screen
+        int max = IGV.getInstance().isShowDetailsOnClick() ? 10000 : 100;
         FormatUtils.printHtml(attributes, buf, max);
         return buf.toString();
 
