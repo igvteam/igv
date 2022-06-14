@@ -174,6 +174,8 @@ public class Row  {
                     String readName = centerAlignment.getReadName();
                     score = readName == null ? 0 : readName.hashCode();
                     return score;
+                case ALIGNED_READ_LENGTH:
+                    return centerAlignment.getAlignmentStart() - centerAlignment.getAlignmentEnd();
                 default:
                     return Integer.MAX_VALUE;
 
