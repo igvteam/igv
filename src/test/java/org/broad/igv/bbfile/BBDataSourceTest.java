@@ -115,5 +115,29 @@ public class BBDataSourceTest {
         assertTrue(count > 0);
     }
 
+    // NOTE:  bigInteract is not yet supported in IGV desktop, bigInteract is treated as a plain bed file.
+    @Test
+    public void testBigRmsk() throws IOException {
+
+        String path = "https://hgdownload.soe.ucsc.edu/hubs/GCA/009/914/755/GCA_009914755.4/bbi/GCA_009914755.4_T2T-CHM13v2.0.t2tRepeatMasker/chm13v2.0_rmsk.bb";
+
+        BBFileReader bbReader = new BBFileReader(path);
+        BBDataSource bbSource = new BBDataSource(bbReader, null);
+
+        String chr = "chr3";
+        int start = 63081504;
+        int end = 64501215;
+
+        Iterator<Feature> iter = bbSource.getFeatures(chr, start, end);
+
+        int count = 0;
+        while (iter.hasNext()) {
+            Feature f = iter.next();
+            assertEquals(chr, f.getChr());
+            assertTrue(f.getStart() <= end && f.getEnd() >= start);
+            count++;
+        }
+        assertTrue(count > 0);
+    }
 
 }

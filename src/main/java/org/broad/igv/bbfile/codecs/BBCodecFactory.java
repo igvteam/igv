@@ -12,7 +12,12 @@ public class BBCodecFactory {
         BBUtils.ASTable astable = autosql == null ||
                 autosql.length() == 0 ? null : BBUtils.parseAutosql(autosql);
 
-        return new BBBedCodec(standardFieldCount, astable);
+        switch(astable.name) {
+            case "bigRmskBed":
+                return new BBRmskCodec(standardFieldCount, astable);
+            default:
+                return new BBBedCodec(standardFieldCount, astable);
+        }
 
     }
 }
