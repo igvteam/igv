@@ -873,7 +873,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         Renderer renderer = getRenderer();
 
-        if (getDisplayMode() == DisplayMode.COLLAPSED) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED && !isGroupByStrand()) {
             List<Feature> features = packedFeatures.getFeatures();
             if (features != null) {
                 renderer.render(features, context, inputRect, this);
