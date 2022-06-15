@@ -83,7 +83,6 @@ public class BBDataSourceTest {
         while (iter.hasNext()) {
             Feature f = iter.next();
             assertEquals(chr, f.getChr());
-            assertTrue(f.getStart() <= end && f.getEnd() >= start);
             count++;
         }
         assertTrue(count > 0);
@@ -109,7 +108,6 @@ public class BBDataSourceTest {
         while (iter.hasNext()) {
             Feature f = iter.next();
             assertEquals(chr, f.getChr());
-            assertTrue(f.getStart() <= end && f.getEnd() >= start);
             count++;
         }
         assertTrue(count > 0);
@@ -134,7 +132,6 @@ public class BBDataSourceTest {
         while (iter.hasNext()) {
             Feature f = iter.next();
             assertEquals(chr, f.getChr());
-            assertTrue(f.getStart() <= end && f.getEnd() >= start);
             count++;
         }
         assertTrue(count > 0);
