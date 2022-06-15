@@ -119,13 +119,17 @@ public class BasicFeature extends AbstractFeature {
     @Override
     public void setStart(int start) {
         super.setStart(start);
-        this.thickStart = start;
+        if(start > thickStart) {
+            this.thickStart = start;
+        }
     }
 
     @Override
     public void setEnd(int end) {
         super.setEnd(end);
-        this.thickEnd = end;
+        if(end < thickEnd || thickEnd == 0) {
+            this.thickEnd = end;
+        }
     }
 
     /**

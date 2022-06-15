@@ -188,6 +188,11 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         return attributes == null ? null : attributes.get(key);
     }
 
+    @Override
+    public void removeAttribute(String key) {
+        if(attributes != null) attributes.remove(key);
+    }
+
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
