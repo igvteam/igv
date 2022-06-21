@@ -1,6 +1,8 @@
 package org.broad.igv.google;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.broad.igv.logging.*;
@@ -15,7 +17,11 @@ import org.broad.igv.util.JWTParser;
 import software.amazon.awssdk.services.sts.model.Credentials;
 
 import java.awt.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -49,6 +55,7 @@ public class OAuthProvider {
     private String refreshToken;
     private long expirationTime; // in milliseconds
     private String scope;
+    private String[] hosts;
     private String currentUserName;
     private String currentUserID;
     private String currentUserEmail;
@@ -80,8 +87,24 @@ public class OAuthProvider {
         clientSecret = obj.has("client_secret") ? obj.get("client_secret").getAsString() : null;
         setAuthProvider(obj.has("auth_provider") ? obj.get("auth_provider").getAsString() : authProvider);
         appIdURI = obj.has("app_id_uri") ? obj.get("app_id_uri").getAsString() : null;
+        findString = obj.has("find_string") ?  obj.get("find_string").getAsString() : null;
+        replaceString = obj.has("replace_string") ?  obj.get("replace_string").getAsString() : null;
         if (obj.has("scope")) {
             scope = obj.get("scope").getAsString();
+        }
+        if (obj.has("hosts")) {
+            // hosts element may be an array or a single string - put in hosts array either way
+            JsonElement hostsElement = obj.get("hosts");
+            if (hostsElement.isJsonArray()) {
+                JsonArray hostsArrJson = hostsElement.getAsJsonArray();
+                hosts = new String[hostsArrJson.size()];
+                for (int i = 0; i < hostsArrJson.size(); i++)
+                    hosts[i] = hostsArrJson.get(i).getAsString();
+            }
+            else{
+                hosts = new String[1];
+                hosts[0] = hostsElement.getAsString();
+            }
         }
 
         // Special Google properties
@@ -196,7 +219,7 @@ public class OAuthProvider {
             params.put("client_secret", clientSecret);
         }
 
-        params.put("redirect_uri", URLDecoder.decode(redirect, "utf-8"));
+        params.put("redirect_uri", new URLDecoder().decode(redirect, "utf-8"));
         params.put("grant_type", "authorization_code");
 
         //  set the resource if it necessary for the auth provider dwm08
@@ -445,6 +468,98 @@ public class OAuthProvider {
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
+        }
+    }
+
+    /**
+     * Generate a set of all urls in the session file
+     *
+     * @param sessionPath
+     * @return list of urls
+     */
+    public static Set<String> findUrlsInSessionFile(String sessionPath) {
+        BufferedReader br = null;
+        HashSet<String> urlSet = new HashSet<>();
+        try {
+            br = new BufferedReader(new FileReader(new File(sessionPath)));
+            String line;
+            while ((line = br.readLine()) != null) {
+                int start = line.indexOf("http");
+                if (start != -1) {
+                    int mid = line.indexOf("://", start);
+                    int end = line.indexOf("/", mid + 3);
+                    String url = line.substring(start, end);
+                    urlSet.add(url);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        return urlSet;
+    }
+
+    /**
+     * Check if any reference in the session file refers to a server protected
+     * by the oauth protocol. If so, check to see if the user is logged in. If
+     * user is not logged in, put up login prompt.
+     *
+     * @param sessionPath
+     */
+    public void checkServerLogin(String sessionPath) {
+        Set<String> urlSet = findUrlsInSessionFile(sessionPath);
+        if (urlSet.size() > 0) {
+            for (String url : urlSet) {
+                if (this.appliesToUrl(url)) {
+                    doSecureLogin();
+                    // user is logged in. Can proceed with the load
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Does this ouath provider apply (should it's access token be used) for the url provided
+     * @param url
+     * @return
+     */
+    public boolean appliesToUrl(URL url){
+        // If this provider has a list of hosts, use them to check the url
+        if(this.hosts != null && this.hosts.length > 0){
+            for (String host: hosts){
+                 if(url.getHost() != null && url.getHost().equals(host)){
+                     return true;
+                 }
+            }
+            return false;
+        }
+        // Otherwise assume it's a google provider and check if this is a google url
+        else{
+            return GoogleUtils.isGoogleCloud(url.toExternalForm());
+        }
+
+    }
+
+    /**
+     * Does this ouath provider apply (should it's access token be used) for the url string
+     * @param urlString
+     * @return
+     */
+    public boolean appliesToUrl(String urlString){
+        try {
+            URL url = new URL(urlString);
+            return this.appliesToUrl(url);
+        }
+        catch(MalformedURLException ex){
+            return false;
         }
     }
 

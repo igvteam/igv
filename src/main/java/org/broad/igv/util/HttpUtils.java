@@ -34,6 +34,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.google.OAuthProvider;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -675,14 +676,20 @@ public class HttpUtils {
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
         // string to dynamically map url - dwm08
+        OAuthProvider oauthProvider = OAuthUtils.getInstanceNoCreate() != null ? OAuthUtils.getInstanceNoCreate().getProvider() : null;
         if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
             url = HttpUtils.createURL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
+        }
+        // Also support find and replace for other non-google oauth providers
+        else if(oauthProvider != null && oauthProvider.appliesToUrl(url) && oauthProvider.findString != null){
+            url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
         }
 
         // If a presigned URL, check its validity and update if needed
         if (AmazonUtils.isPresignedURL(url.toExternalForm())) {
             url = new URL(AmazonUtils.updatePresignedURL(url.toExternalForm()));
         }
+        
 
         // If an S3 url, obtain a signed https url
         if (AmazonUtils.isAwsS3Path(url.toExternalForm())) {
@@ -773,6 +780,14 @@ public class HttpUtils {
         // If this is a Google URL and we have an access token use it.
         if (GoogleUtils.isGoogleURL(url.toExternalForm())) {
             String token = OAuthUtils.getInstance().getProvider().getAccessToken();
+            if (token != null) {
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+            }
+        } 
+
+        // If this a google url (or other url covered by custom oauth provider) and we have an access token use it.
+        else if (oauthProvider != null && oauthProvider.appliesToUrl(url)) {
+            String token = oauthProvider.getAccessToken();
             if (token != null) {
                 conn.setRequestProperty("Authorization", "Bearer " + token);
             }
