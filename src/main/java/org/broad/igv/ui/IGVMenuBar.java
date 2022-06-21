@@ -25,6 +25,7 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -43,8 +44,10 @@ import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.session.Session;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.commandbar.GenomeComboBox;
@@ -1062,7 +1065,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         final OAuthProvider oauth = OAuthUtils.getInstance().getProvider();
 
         if (oauth != null) {  // TODO -- how do we know this is a google provider?
-            oauth.setAuthProvider("Google");
+            if(oauth.getAuthProvider() == null || oauth.getAuthProvider().isEmpty()){
+                oauth.setAuthProvider("Google");
+            }
             JMenu menu = new JMenu(oauth.getAuthProvider());
 
             final JMenuItem login = new JMenuItem("Login ... ");
@@ -1167,6 +1172,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
 
         return false;
+    }
+
+    public JMenu getViewMenu() {
+        return viewMenu;
     }
 
     final public void doExitApplication() {

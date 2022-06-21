@@ -31,6 +31,8 @@ package org.broad.igv.ui.action;
 
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.google.OAuthProvider;
+import org.broad.igv.google.OAuthUtils;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -86,6 +88,11 @@ public class OpenSessionMenuAction extends MenuAction {
             PreferencesManager.getPreferences().setLastTrackDirectory(tmpFile.getParentFile());
         }
         if (sessionFile != null) {
+              OAuthProvider authProvider = OAuthUtils.getInstance().getProvider();
+              if(authProvider != null){
+                  authProvider.checkServerLogin(sessionFile);
+              }
+
             LongRunningTask.submit(() -> this.igv.loadSession(sessionFile, null));
         }
     }
