@@ -91,7 +91,7 @@ public class LoadFromURLMenuAction extends MenuAction {
 
                 if (inputURL != null && inputURL.trim().length() > 0) {
 
-                    String url = mapURL(inputURL.trim());
+                    final String url = mapURL(inputURL.trim());
 
                     if (url.startsWith("s3://")) {
                         checkAWSAccessbility(url);
