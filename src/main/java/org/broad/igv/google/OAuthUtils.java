@@ -109,7 +109,7 @@ public class OAuthUtils {
         }
 
         // Local config takes precendence, overriding URL provisioned and Broad's default oauth-config.json.gz
-        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config-2.13.0.MAYO.json";
+        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config-2.13.0.json";
         if ((new File(oauthConfig)).exists()) {
             try {
                 log.debug("Loading Oauth properties from: " + oauthConfig);
