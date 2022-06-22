@@ -87,7 +87,7 @@ public class LoadFromURLMenuAction extends MenuAction {
 
             if (!dlg.isCanceled()) {
 
-                String inputURL = dlg.getFileURL();
+                final String inputURL = dlg.getFileURL();
 
                 if (inputURL != null && inputURL.trim().length() > 0) {
 
