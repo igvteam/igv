@@ -100,7 +100,7 @@ public class GFFtoBedTest {
         assertEquals(gffFeature.getColor(), bedFeature.getColor());
         //BED features don't have a type
         //assertEquals(gffFeature.getType(), bedFeature.getType());
-        assertEquals(gffFeature.getStart(), bedFeature.getThickStart());
+        assertEquals(gffFeature.getThickStart(), bedFeature.getThickStart());
         assertEquals(gffFeature.getThickEnd(), bedFeature.getThickEnd());
         if (!Float.isNaN(gffFeature.getScore())) {
             assertEquals(gffFeature.getScore(), bedFeature.getScore());

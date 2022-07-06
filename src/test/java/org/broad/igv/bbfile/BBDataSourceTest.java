@@ -83,7 +83,6 @@ public class BBDataSourceTest {
         while (iter.hasNext()) {
             Feature f = iter.next();
             assertEquals(chr, f.getChr());
-            assertTrue(f.getStart() <= end && f.getEnd() >= start);
             count++;
         }
         assertTrue(count > 0);
@@ -109,7 +108,6 @@ public class BBDataSourceTest {
         while (iter.hasNext()) {
             Feature f = iter.next();
             assertEquals(chr, f.getChr());
-            assertTrue(f.getStart() <= end && f.getEnd() >= start);
             count++;
         }
         assertTrue(count > 0);
@@ -124,9 +122,9 @@ public class BBDataSourceTest {
         BBFileReader bbReader = new BBFileReader(path);
         BBDataSource bbSource = new BBDataSource(bbReader, null);
 
-        String chr = "chr3";
-        int start = 63081504;
-        int end = 64501215;
+        String chr = "chr9";
+        int start = 145481787;
+        int end = 145481785;
 
         Iterator<Feature> iter = bbSource.getFeatures(chr, start, end);
 
@@ -134,7 +132,6 @@ public class BBDataSourceTest {
         while (iter.hasNext()) {
             Feature f = iter.next();
             assertEquals(chr, f.getChr());
-            assertTrue(f.getStart() <= end && f.getEnd() >= start);
             count++;
         }
         assertTrue(count > 0);

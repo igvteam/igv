@@ -53,6 +53,8 @@ public interface IGVFeature extends LocusScore, NamedFeature {
         return null;
     }
 
+    default void removeAttribute(String key) {}
+
     /**
      * Return true if the given feature is completely contained within the bounds of this
      * feature. amd is on the same strand.

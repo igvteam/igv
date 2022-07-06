@@ -471,7 +471,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         try {
             Iterator<Feature> iter = source.getFeatures(chr, start, end);
             while (iter.hasNext()) {
-                features.add(iter.next());
+                Feature f = iter.next();
+                if(f.getEnd() >= start && f.getStart() <= end) {
+                    features.add(f);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

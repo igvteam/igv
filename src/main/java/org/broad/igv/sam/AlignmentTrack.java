@@ -378,15 +378,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
-//
-//        Alignment alignment = getAlignment(te);
-//        if (alignment != null && alignment.getInsertions() != null) {
-//            for (AlignmentBlock block : alignment.getInsertions()) {
-//                if (block.containsPixel(te.getMouseEvent().getX())) {
-//                    return new InsertionMenu(block);
-//                }
-//            }
-//        }
         return new PopupMenu(te);
     }
 
@@ -1372,64 +1363,63 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
+
+    /**
+     * Popup menu class for AlignmentTrack.  The menu gets instantiated from TrackPanelComponent on right-click in the
+     * alignment track or its associated name panel.
+     */
     class PopupMenu extends IGVPopupMenu {
 
 
         PopupMenu(final TrackClickEvent e) {
 
             final MouseEvent me = e.getMouseEvent();
-            ReferenceFrame frame = e.getFrame();
-            Alignment clickedAlignment = null;
-
-            if (frame != null) {
-                double location = frame.getChromosomePosition(me.getX());
-                clickedAlignment = getAlignmentAt(location, me.getY(), frame);
-            }
+            final ReferenceFrame frame = e.getFrame();
+            final Alignment clickedAlignment = (frame == null) ? null :
+                    getAlignmentAt(frame.getChromosomePosition(me.getX()), me.getY(), frame);
 
 
-            Collection<Track> tracks = new ArrayList();
-            tracks.add(AlignmentTrack.this);
-
+            // Title
             JLabel popupTitle = new JLabel("  " + AlignmentTrack.this.getName(), JLabel.CENTER);
-
             Font newFont = getFont().deriveFont(Font.BOLD, 12);
             popupTitle.setFont(newFont);
             add(popupTitle);
 
+            // Circular view items -- optional
             if (PreferencesManager.getPreferences().getAsBoolean(CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
                 addSeparator();
                 JMenuItem item = new JMenuItem("Add Discordant Pairs to Circular View");
-                //item.setEnabled(dataManager.isPairedEnd());
+                item.setEnabled(dataManager.isPairedEnd());
                 add(item);
                 item.addActionListener(ae -> AlignmentTrack.this.sendPairsToCircularView(e));
 
                 JMenuItem item2 = new JMenuItem("Add Split Reads to Circular View");
-                //item.setEnabled(dataManager.isPairedEnd());
                 add(item2);
                 item2.addActionListener(ae -> AlignmentTrack.this.sendSplitToCircularView(e));
             }
 
+            // Some generic items from TrackMenuUtils
+            Collection<Track> tracks = List.of(AlignmentTrack.this);
             addSeparator();
             add(TrackMenuUtils.getTrackRenameItem(tracks));
             addCopyToClipboardItem(e, clickedAlignment);
-
-            //         addSeparator();
-            //          addExpandInsertions();
 
             addSeparator();
             JMenuItem item = new JMenuItem("Change Track Color...");
             item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(tracks));
             add(item);
 
+            // Experiment type  (RNA, THIRD GEN, OTHER)
             addSeparator();
             addExperimentTypeMenuItem();
-
             if (experimentType == ExperimentType.THIRD_GEN) {
                 addHaplotype(e);
             }
 
+            // Linked read items
             addLinkedReadItems();
 
+            // Group, sort, color, and pack
             addSeparator();
             addGroupMenuItem(e);
             addSortMenuItem();
@@ -1437,11 +1427,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             //addFilterMenuItem();
             addPackMenuItem();
 
+            // Shading and mismatch items
             addSeparator();
             addShadeBaseByMenuItem();
             JMenuItem misMatchesItem = addShowMismatchesMenuItem();
             JMenuItem showAllItem = addShowAllBasesMenuItem();
-
             misMatchesItem.addActionListener(new Deselector(misMatchesItem, showAllItem));
             showAllItem.addActionListener(new Deselector(showAllItem, misMatchesItem));
 
@@ -1462,7 +1452,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             addSeparator();
             TrackMenuUtils.addDisplayModeItems(tracks, this);
 
-            // Select items
+            // Select alignment items
             addSeparator();
             addSelectByNameItem();
             addClearSelectionsMenuItem();
@@ -1477,25 +1467,23 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             addBlatItem(e);
             addBlatClippingItems(e);
 
+            // Insertion items, only if clicked over an insertion
             AlignmentBlock insertion = getInsertion(clickedAlignment, e.getMouseEvent().getX());
             if (insertion != null) {
                 addSeparator();
                 addInsertionItems(insertion);
             }
 
+            // Sashimi plot, probably should be depdenent on experimentType (RNA)
             addSeparator();
             JMenuItem sashimi = new JMenuItem("Sashimi Plot");
             sashimi.addActionListener(e1 -> SashimiPlot.getSashimiPlot(null));
             add(sashimi);
 
+            // Show alignments, coverage, splice junctions
             addSeparator();
             addShowItems();
 
-//
-//            if (getPreferences().get(Constants.EXTVIEW_URL) != null) {
-//                addSeparator();
-//                addExtViewItem(e);
-//            }
 
         }
 
@@ -1553,30 +1541,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
 
-        public JMenuItem addExpandInsertions() {
-
-            final JMenuItem item = new JCheckBoxMenuItem("Expand insertions");
-            final Session session = IGV.getInstance().getSession();
-            item.setSelected(session.expandInsertions);
-
-            item.addActionListener(aEvt -> {
-                session.expandInsertions = !session.expandInsertions;
-                AlignmentTrack.this.repaint();
-            });
-            add(item);
-            return item;
-        }
 
         /**
-         * Item for exporting "consensus" sequence of region, based
-         * on loaded alignments.
+         * Item for exporting "consensus" sequence of region, based on loaded alignments.
          *
          * @param e
          */
         private void addConsensusSequence(TrackClickEvent e) {
-            //Export consensus sequence
-            JMenuItem item = new JMenuItem("Copy consensus sequence");
 
+            JMenuItem item = new JMenuItem("Copy consensus sequence");
 
             final ReferenceFrame frame;
             if (e.getFrame() == null && FrameManager.getFrames().size() == 1) {
@@ -1589,8 +1562,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             add(item);
 
             item.addActionListener(ae -> {
-                //This shouldn't ever be true, but just in case it's more user-friendly
-                if (frame == null) {
+
+                if (frame == null) {  // Should never happen
                     MessageUtils.showMessage("Unknown region bounds, cannot export consensus");
                     return;
                 }
@@ -1610,10 +1583,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         private JMenu getBisulfiteContextMenuItem(ButtonGroup group) {
-            // Change track height by attribute
-            //JMenu bisulfiteContextMenu = new JMenu("Bisulfite Contexts");
-            JMenu bisulfiteContextMenu = new JMenu("bisulfite mode");
 
+            JMenu bisulfiteContextMenu = new JMenu("bisulfite mode");
 
             JRadioButtonMenuItem nomeESeqOption = null;
             boolean showNomeESeq = getPreferences().getAsBoolean(SAM_NOMESEQ_ENABLED);
@@ -1694,6 +1665,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             final Range range = frame.getCurrentRange();
             final String chrom = range.getChr();
             final int chromStart = (int) frame.getChromosomePosition(me.getX());
+
             // Change track height by attribute
             JMenu groupMenu = new JMenu("Group alignments by");
             ButtonGroup group = new ButtonGroup();
@@ -1709,7 +1681,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 JCheckBoxMenuItem mi = new JCheckBoxMenuItem(option.label);
                 mi.setSelected(renderOptions.getGroupByOption() == option);
                 mi.addActionListener(aEvt -> {
-                    IGV.getInstance().groupAlignmentTracks(option, null, null);
+                    groupAlignments(option, null, null);
                 });
                 groupMenu.add(mi);
                 group.add(mi);
@@ -1720,9 +1692,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
                 if (tag != null) {
                     if (tag.trim().length() > 0) {
-                        IGV.getInstance().groupAlignmentTracks(GroupOption.TAG, tag, null);
+                        groupAlignments(GroupOption.TAG, tag, null);
                     } else {
-                        IGV.getInstance().groupAlignmentTracks(GroupOption.NONE, null, null);
+                        groupAlignments(GroupOption.NONE, null, null);
                     }
                 }
 
@@ -1745,7 +1717,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                         ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
                 newGroupByPosOption.addActionListener(aEvt -> {
                     Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
-                    IGV.getInstance().groupAlignmentTracks(GroupOption.BASE_AT_POS, null, groupByPos);
+                    groupAlignments(GroupOption.BASE_AT_POS, null, groupByPos);
                 });
                 groupMenu.add(newGroupByPosOption);
                 group.add(newGroupByPosOption);
@@ -1773,12 +1745,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("read order", SortOption.READ_ORDER);
             mappings.put("read name", SortOption.READ_NAME);
             mappings.put("aligned read length", SortOption.ALIGNED_READ_LENGTH);
+// mappings.put("supplementary flag", SortOption.SUPPLEMENTARY);
 
             if (dataManager.isPairedEnd()) {
                 mappings.put("insert size", SortOption.INSERT_SIZE);
                 mappings.put("chromosome of mate", SortOption.MATE_CHR);
             }
-            // mappings.put("supplementary flag", SortOption.SUPPLEMENTARY);
 
             for (Map.Entry<String, SortOption> el : mappings.entrySet()) {
                 JMenuItem mi = new JMenuItem(el.getKey());
