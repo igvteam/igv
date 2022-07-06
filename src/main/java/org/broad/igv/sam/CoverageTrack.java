@@ -372,7 +372,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 if (counts != null) {
                     buf.append(counts.getValueStringAt((int) position));
                     final AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
-                    if ((colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION  ||
+                    if ((colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION ||
                             colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC) &&
                             counts.getModifiedBaseCounts() != null) {
                         buf.append("<hr>");
@@ -608,8 +608,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
                 if (barHeight > 0 && count > 0) {
 
-                    float likelhood = (float) (baseCounts.getLikelhoodSum(pos, key)) / count;
-
                     byte base = (byte) key.getBase();
                     byte complement = SequenceUtil.complement(base);
                     char strand = key.getStrand();
@@ -618,28 +616,44 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                     int cCount = strand == '+' ?
                             alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement) :
                             alignmentCounts.getPosCount(pos, complement) + alignmentCounts.getNegCount(pos, base);
+                    float averageLikelihood = (float) (baseCounts.getLikelhoodSum(pos, key)) / cCount;
 
-                    Color c1 = BaseModificationUtils.getModColor(modification, (byte) 0, colorOption);
-                    Color c2 = BaseModificationUtils.getModColor(modification, (byte) 255, colorOption);
 
                     int calledBarHeight = (int) ((((float) count) / cCount) * barHeight);
+                    Color noModColor = BaseModificationUtils.getModColor(modification, (byte) 0, colorOption);
+                    Color modColor = BaseModificationUtils.getModColor(modification, (byte) 255, colorOption);
+                    int modHeight = (int) ((averageLikelihood / 255) * calledBarHeight);
 
-                    int height2 = (int) ((likelhood / 255) * calledBarHeight);
-                    int height1 = calledBarHeight - height2;
-                    int baseY = pBottom - height1;
+                    if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC) {
 
-                    graphics.setColor(c1);
-                    graphics.fillRect(pX, baseY, dX, height1);
+                        int noModHeight = calledBarHeight - modHeight;
+                        int baseY = pBottom - noModHeight;
 
-                    baseY -= height2;
-                    graphics.setColor(c2);
-                    graphics.fillRect(pX, baseY, dX, height2);
+                        graphics.setColor(noModColor);
+                        graphics.fillRect(pX, baseY, dX, noModHeight);
+
+                        if(modHeight > 0) {
+                            baseY -= modHeight;
+                            graphics.setColor(modColor);
+                            graphics.fillRect(pX, baseY, dX, modHeight);
+                        }
+
+                    } else {
+                        // Generic modification
+                        if (modHeight > 0) {
+                            int baseY = pBottom - modHeight;
+                            graphics.setColor(modColor);
+                            graphics.fillRect(pX, baseY, dX, modHeight);
+                            pBottom = baseY;
+                        }
+                    }
 
                 }
             }
         }
         return pX + dX;
     }
+
 
     void drawBarBisulfite(RenderContext context,
                           int pX0,
