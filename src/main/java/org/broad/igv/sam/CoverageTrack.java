@@ -619,7 +619,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement) :
                             alignmentCounts.getPosCount(pos, complement) + alignmentCounts.getNegCount(pos, base);
 
-                    // TODO -- get colors for modification
                     Color c1 = BaseModificationUtils.getModColor(modification, (byte) 0, colorOption);
                     Color c2 = BaseModificationUtils.getModColor(modification, (byte) 255, colorOption);
 

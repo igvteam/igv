@@ -288,16 +288,16 @@ public class ContinuousColorScale extends AbstractColorScale {
             return PreferencesManager.getPreferences().getAsColor(Constants.NO_DATA_COLOR);
         }
 
-        // See if we are in the midrange.  TO deal with floating point roundoffissues expand the range
-        // by a small amount.
-//        if ((val >= 1.0001 * negStart) && (val <= 1.0001 * posStart)) {
-//            return midColor;
-//        } else {
+        // See if we are in the midrange.
+
+        if (val >= negStart && val <= posStart) {
+            return midColor;
+        } else {
             //double f = (val - getMinimum()) / (getMaximum() - getMinimum());
             int index = (int) Math.round((val - negEnd) / delta);
             index = Math.max(0, Math.min(index, colors.length - 1));
             return colors[index];
- //       }
+        }
     }
 
     /**

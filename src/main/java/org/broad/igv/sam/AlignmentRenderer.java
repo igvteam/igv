@@ -828,7 +828,7 @@ public class AlignmentRenderer {
 
 
         // Base modification
-        if (colorOption == ColorOption.BASE_MODIFICATION_5MC) {
+        if (ColorOption.BASE_MODIFICATION_5MC == colorOption || ColorOption.BASE_MODIFICATION == colorOption) {
 
             List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
             if (baseModificationSets != null) {
