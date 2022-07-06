@@ -310,7 +310,9 @@ public class AlignmentRenderer {
                 Color alignmentColor = getAlignmentColor(alignment, track);
                 final boolean leaveMargin = (this.track.getDisplayMode() != Track.DisplayMode.SQUISHED);
                 if ((pixelWidth < 2) &&
-                        !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) || renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) &&
+                        !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) ||
+                                renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION ||
+                                renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION_5MC) &&
                                 (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
@@ -716,9 +718,9 @@ public class AlignmentRenderer {
         // Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
         // that is proportional to the base quality score, or flow signal deviation, whichever is selected.
 
+        final ColorOption colorOption = renderOptions.getColorOption();
         if (locScale < 100) {
 
-            ColorOption colorOption = renderOptions.getColorOption();
             boolean showAllBases = renderOptions.isShowAllBases() &&
                     !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ); // Disable showAllBases in bisulfite mode
 
@@ -756,8 +758,8 @@ public class AlignmentRenderer {
                     dX = (int) Math.max(1, (1.0 / locScale));
 
                     BisulfiteBaseInfo bisinfo = null;
-                    boolean nomeseqMode = (renderOptions.getColorOption().equals(AlignmentTrack.ColorOption.NOMESEQ));
-                    boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption());
+                    boolean nomeseqMode = (colorOption.equals(AlignmentTrack.ColorOption.NOMESEQ));
+                    boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(colorOption);
                     if (nomeseqMode) {
                         bisinfo = new BisulfiteBaseInfoNOMeseq(reference, alignment, block, renderOptions.bisulfiteContext);
                     } else if (bisulfiteMode) {
@@ -781,7 +783,7 @@ public class AlignmentRenderer {
                             Color color = null;
                             if (bisulfiteMode) {
                                 color = bisinfo.getDisplayColor(idx);
-                            } else if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
+                            } else if (colorOption == ColorOption.BASE_MODIFICATION || colorOption == ColorOption.BASE_MODIFICATION_5MC) {
                                 color = Color.GRAY;
                             } else {
                                 color = nucleotideColors.get(c);
@@ -826,7 +828,7 @@ public class AlignmentRenderer {
 
 
         // Base modification
-        if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
+        if (colorOption == ColorOption.BASE_MODIFICATION_5MC) {
 
             List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
             if (baseModificationSets != null) {
@@ -881,6 +883,51 @@ public class AlignmentRenderer {
             }
         }
 
+//        if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
+//            Map<Integer, BaseModification> baseModifications = alignment.getBaseModificationMap();
+//            if (baseModifications != null) {
+//                double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
+//                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
+//                    // Compute bounds
+//                    int pY = (int) rowRect.getY();
+//                    int dY = (int) rowRect.getHeight();
+//                    dX = (int) Math.max(1, (1.0 / locScale));
+//                    Graphics g = context.getGraphics();
+//
+//                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
+//
+//                        if (baseModifications.containsKey(i)) {
+//
+//                            BaseModification mod = baseModifications.get(i);
+//                            int l = Byte.toUnsignedInt(mod.likelihood);
+//                            if (l < threshold) continue;
+//
+//                            Color c = BaseModification.getModColor(mod.modification, mod.likelihood);
+//                            g.setColor(c);
+//
+//                            int blockIdx = i - block.getBases().startOffset;
+//                            int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
+//
+//                            // Don't draw out of clipping rect
+//                            if (pX > rowRect.getMaxX()) {
+//                                break;
+//                            } else if (pX + dX < rowRect.getX()) {
+//                                continue;
+//                            }
+//
+//                            // Expand narrow width to make more visible
+//                            if (dX < 3) {
+//                                dX = 3;
+//                                pX--;
+//                            }
+//
+//                            g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
 
         // DRAW Insertions
         AlignmentBlock[] insertions = alignment.getInsertions();
@@ -1224,6 +1271,7 @@ public class AlignmentRenderer {
 
             case BISULFITE:
             case BASE_MODIFICATION:
+            case BASE_MODIFICATION_5MC:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
                 c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;

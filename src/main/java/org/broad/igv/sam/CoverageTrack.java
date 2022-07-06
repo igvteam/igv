@@ -371,10 +371,12 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 AlignmentCounts counts = interval.getCounts();
                 if (counts != null) {
                     buf.append(counts.getValueStringAt((int) position));
-                    boolean baseModMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION;
-                    if (baseModMode && counts.getModifiedBaseCounts() != null) {
+                    final AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
+                    if ((colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION  ||
+                            colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC) &&
+                            counts.getModifiedBaseCounts() != null) {
                         buf.append("<hr>");
-                        buf.append(counts.getModifiedBaseCounts().getValueString((int) position));
+                        buf.append(counts.getModifiedBaseCounts().getValueString((int) position, colorOption));
                     }
                 }
             }
@@ -457,8 +459,10 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
             Color color = getColor();
             Graphics2D graphics = context.getGraphic2DForColor(color);
-            boolean bisulfiteMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BISULFITE;
-            boolean baseModMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION;
+            final AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
+            boolean bisulfiteMode = colorOption == AlignmentTrack.ColorOption.BISULFITE;
+            boolean baseModMode = colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION ||
+                    colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC;
 
             final int intervalEnd = alignmentCounts.getEnd();
             final int intervalStart = alignmentCounts.getStart();
@@ -593,14 +597,14 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             AlignmentCounts alignmentCounts) {
 
         BaseModificationCounts baseCounts = alignmentCounts.getModifiedBaseCounts();
-
+        AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
         if (baseCounts != null) {
 
             Graphics2D graphics = context.getGraphics();
 
             for (BaseModificationCounts.Key key : baseCounts.getAllModifications()) {
 
-                int count = baseCounts.getCount(pos, key);
+                int count = baseCounts.getCount(pos, key, colorOption);
 
                 if (barHeight > 0 && count > 0) {
 
