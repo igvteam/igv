@@ -3,6 +3,7 @@ package org.broad.igv.sam.mods;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.AlignmentUtils;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
@@ -136,7 +137,7 @@ public class BaseModificationUtils {
                                 byte likelihood = ml == null ? (byte) 255 : ml[mlIdx++];
                                 likelihoodMap.get(modification).put(position, likelihood);
                             }
-                            if(idx < tokens.length) {
+                            if (idx < tokens.length) {
                                 skip = Integer.parseInt(tokens[idx++]);
                                 matchCount = 0;
                             } else {
@@ -167,40 +168,48 @@ public class BaseModificationUtils {
     }
 
 
-    public static Color getModColor(String modification, byte likelihood) {
+    public static Color getModColor(String modification, byte likelihood, AlignmentTrack.ColorOption colorOption) {
 
         // Note the pallete will always return a color, either an initially seeded one if supplied or a random color.
         Color baseColor = modColorPallete.get(modification);
-
-        // Alpha shade by likelihood
-//        double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
         int l = Byte.toUnsignedInt(likelihood);
-        if (l > 255) {
-            return baseColor;
-        }
-//        if (l < threshold) {
-//            l = 0;
-//        }
+
         String key = modification + "--" + l;
-        if (!modColorMap.containsKey(key)) {
 
-            int alpha = Math.min(255, (int) (l * l / 64f - 4 * l + 256));    // quadratic
-            if (l >= 128) {
-                modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha));
-            } else {
-                modColorMap.put(key, new Color(baseColor.getBlue(), baseColor.getGreen(), baseColor.getRed(), alpha));
+        if (AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC == colorOption) {
+            if (l > 255) {
+                return baseColor;
             }
-        }
+            if (!modColorMap5MC.containsKey(key)) {
+                int alpha = Math.min(255, (int) (l * l / 64f - 4 * l + 256));    // quadratic
+                if (l >= 128) {
+                    modColorMap5MC.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha));
+                } else {
+                    modColorMap5MC.put(key, new Color(baseColor.getBlue(), baseColor.getGreen(), baseColor.getRed(), alpha));
+                }
+            }
+            return modColorMap5MC.get(key);
 
-        return modColorMap.get(key);
+        } else {
+            if (l > 250) {
+                return baseColor;
+            }
+            double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
+            if (l < threshold) {
+                l = 0;
+            }
+            if (!modColorMap.containsKey(key)) {
+                modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), l));
+            }
+            return modColorMap.get(key);
+        }
     }
 
-
     /**
-     * Cache for alpha modified colors
+     * Cache for modified colors
      */
     static Map<String, Color> modColorMap = new HashMap<>();
-
+    static Map<String, Color> modColorMap5MC = new HashMap<>();
 
     /**
      * If a string can be converted to a positive integer assume its a ChEBI ID

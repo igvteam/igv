@@ -858,7 +858,7 @@ public class AlignmentRenderer {
 
                         if (modification != null) {
 
-                            Color c = BaseModificationUtils.getModColor(modification, lh);
+                            Color c = BaseModificationUtils.getModColor(modification, lh, colorOption);
                             g.setColor(c);
 
                             int blockIdx = i - block.getBases().startOffset;
