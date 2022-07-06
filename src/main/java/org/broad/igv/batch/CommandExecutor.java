@@ -1194,6 +1194,8 @@ public class CommandExecutor {
             return AlignmentTrack.SortOption.READ_ORDER;
         } else if (str.equalsIgnoreCase("readname")) {
             return AlignmentTrack.SortOption.READ_NAME;
+        } else if (str.equalsIgnoreCase("alignedReadLength")) {
+            return AlignmentTrack.SortOption.ALIGNED_READ_LENGTH;
         } else {
             try {
                 return AlignmentTrack.SortOption.valueOf(str.toUpperCase());
