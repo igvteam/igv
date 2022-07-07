@@ -1860,7 +1860,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("movie", ColorOption.MOVIE);
             mappings.put("ZMW", ColorOption.ZMW);
             mappings.put("base modification", ColorOption.BASE_MODIFICATION);
-            mappings.put("base modification (5MC)", ColorOption.BASE_MODIFICATION_5MC);
+            mappings.put("base modification (5mC)", ColorOption.BASE_MODIFICATION_5MC);
 
             for (Map.Entry<String, ColorOption> el : mappings.entrySet()) {
                 JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());

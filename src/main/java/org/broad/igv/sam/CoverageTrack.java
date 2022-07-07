@@ -610,19 +610,19 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
                     byte base = (byte) key.getBase();
                     byte complement = SequenceUtil.complement(base);
-                    char strand = key.getStrand();
+                    char modStrand = key.getStrand();
                     String modification = key.getModification();
 
-                    int cCount = strand == '+' ?
+                    int cCount = modStrand == '+' ?
                             alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement) :
                             alignmentCounts.getPosCount(pos, complement) + alignmentCounts.getNegCount(pos, base);
-                    float averageLikelihood = (float) (baseCounts.getLikelhoodSum(pos, key)) / cCount;
-
 
                     int calledBarHeight = (int) ((((float) count) / cCount) * barHeight);
                     Color noModColor = BaseModificationUtils.getModColor(modification, (byte) 0, colorOption);
                     Color modColor = BaseModificationUtils.getModColor(modification, (byte) 255, colorOption);
-                    int modHeight = (int) ((averageLikelihood / 255) * calledBarHeight);
+
+                    float averageLikelihood = (float) (baseCounts.getLikelhoodSum(pos, key)) / (count * 255);
+                    int modHeight = (int) (averageLikelihood * calledBarHeight);
 
                     if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC) {
 
@@ -640,7 +640,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
                     } else {
                         // Generic modification
-                        if (modHeight > 0) {
+                        float threshold = PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
+                        if(averageLikelihood > threshold && modHeight > 0) {
                             int baseY = pBottom - modHeight;
                             graphics.setColor(modColor);
                             graphics.fillRect(pX, baseY, dX, modHeight);

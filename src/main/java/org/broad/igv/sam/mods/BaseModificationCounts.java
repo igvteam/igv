@@ -48,7 +48,6 @@ public class BaseModificationCounts {
      * Map for counts for each modification (e.g. m, h, etc). Key is base+modification identifier, value is map of position -> count
      */
     Map<Key, Map<Integer, Integer>> counts;
-    Map<Key, Map<Integer, Integer>> thresholdedCounts;
 
     /**
      * Map for capturing modification likelihood "pileup", key is modification identifier,
@@ -59,7 +58,6 @@ public class BaseModificationCounts {
     public BaseModificationCounts() {
         allModifications = new LinkedHashSet<>();
         counts = new HashMap<>();
-        thresholdedCounts = new HashMap<>();
         likelihoodSums = new HashMap<>();
     }
 
@@ -77,8 +75,6 @@ public class BaseModificationCounts {
         List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
         if (baseModificationSets != null) {
 
-            double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
-
             for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
 
                 // Loop through read sequence index ("i")
@@ -95,12 +91,9 @@ public class BaseModificationCounts {
                             int lh = Byte.toUnsignedInt(likelihoods.get(i));
 
                             Map<Integer, Integer> modCounts = counts.get(key);
-                            Map<Integer, Integer> thresholdedModCounts = thresholdedCounts.get(key);
                             if (modCounts == null) {
                                 modCounts = new HashMap<>();
                                 counts.put(key, modCounts);
-                                thresholdedModCounts = new HashMap<>();
-                                thresholdedCounts.put(key, thresholdedModCounts);
                             }
 
                             Map<Integer, Integer> modLikelihoods = likelihoodSums.get(key);
@@ -117,10 +110,6 @@ public class BaseModificationCounts {
                             modCounts.put(position, c);
                             modLikelihoods.put(position, l);
 
-                            if (lh >= threshold) {
-                                int lc = thresholdedModCounts.containsKey(position) ? thresholdedModCounts.get(position) + 1 : 1;
-                                thresholdedModCounts.put(position, lc);
-                            }
                         }
                         allModifications.add(key);
                     }
@@ -130,8 +119,7 @@ public class BaseModificationCounts {
     }
 
     public int getCount(int position, Key key, AlignmentTrack.ColorOption colorOption) {
-        Map<Key, Map<Integer, Integer>> c = AlignmentTrack.ColorOption.BASE_MODIFICATION == colorOption  ? thresholdedCounts : counts;
-        Map<Integer, Integer> modCounts = c.get(key);
+        Map<Integer, Integer> modCounts = counts.get(key);
         if (modCounts != null && modCounts.containsKey(position)) {
             return modCounts.get(position);
         } else {
@@ -154,8 +142,7 @@ public class BaseModificationCounts {
 
     public String getValueString(int position, AlignmentTrack.ColorOption colorOption) {
         StringBuffer buffer = new StringBuffer();
-        Map<Key, Map<Integer, Integer>> c = colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION ? thresholdedCounts : counts;
-        for (Map.Entry<Key, Map<Integer, Integer>> entry : c.entrySet()) {
+        for (Map.Entry<Key, Map<Integer, Integer>> entry : counts.entrySet()) {
             String modification = entry.getKey().modification;
             Map<Integer, Integer> modCounts = entry.getValue();
             if (modCounts.containsKey(position)) {
