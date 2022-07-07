@@ -158,7 +158,7 @@ public class SearchCommand {
         String[] tokens = searchString.split("\\s+");
         for (String s : tokens) {
             SearchResult result = parseToken(s);
-            if(result != null) {
+            if (result != null) {
                 results.add(result);
             } else {
                 SearchResult unknownResult = new SearchResult();
@@ -203,7 +203,19 @@ public class SearchCommand {
                     showFlankedRegion(result.chr, result.start, result.end);
                     break;
                 case LOCUS:
-                    referenceFrame.jumpTo(result.chr, result.start, result.end);
+
+                    Chromosome chromosome = GenomeManager.getInstance().getCurrentGenome().getChromosome(result.chr);
+                    if (chromosome == null) {
+                        message = "Unknow chromosome: " + result.chr;
+                        success = false;
+                        showMessage = true;
+                    } else if (result.start > chromosome.getLength()) {
+                        message = "Range " + result.locus + " is beyond the end of the chromosome";
+                        success = false;
+                        showMessage = true;
+                    } else {
+                        referenceFrame.jumpTo(result.chr, result.start, result.end);
+                    }
                     break;
                 case CHROMOSOME:
                     referenceFrame.changeChromosome(result.chr, true);
@@ -230,10 +242,9 @@ public class SearchCommand {
             GeneList geneList = new GeneList("", loci, false);
             IGV.getInstance().getSession().setCurrentGeneList(geneList);
         }
-        if(resetFrames) {
+        if (resetFrames) {
             IGV.getInstance().resetFrames();
-        }
-        else {
+        } else {
             IGV.getInstance().repaint();
         }
 

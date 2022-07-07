@@ -418,7 +418,6 @@ public class BBDataSource extends AbstractDataSource implements FeatureSource {
             BedData feat = bedIterator.next();
             BasicFeature feature = bedCodec.decode(feat);
             return feature;
-
         }
 
         public void remove() {

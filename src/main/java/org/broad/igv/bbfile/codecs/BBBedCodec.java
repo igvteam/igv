@@ -13,18 +13,13 @@ import java.util.List;
 
 public class BBBedCodec implements BBCodec {
 
-    private final Genome genome;
+
     private final BBUtils.ASTable astable;
 
     int standardFieldCount;
     IGVBEDCodec igvBedCodec;
 
     public BBBedCodec(int standardFieldCount, BBUtils.ASTable autosql) {
-        this(standardFieldCount, autosql, null);
-    }
-
-    public BBBedCodec(int standardFieldCount, BBUtils.ASTable autosql, Genome genome) {
-        this.genome = genome;
         this.astable = autosql;
         this.standardFieldCount = standardFieldCount;
         this.igvBedCodec = new IGVBEDCodec();   // Backing "tribble" codec

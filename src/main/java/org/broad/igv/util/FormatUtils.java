@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class FormatUtils {
 
-    private static final int MAX_CHARS_PER_LINE = 50;
+    private static final int MAX_CHARS_PER_LINE = 200;
 
     public static void printHtml(Map<String, String> map, StringBuffer buffer, int max) {
 
@@ -18,7 +18,12 @@ public class FormatUtils {
 
             buffer.append("<b>" + entry.getKey() + "</b>");
             buffer.append(":&nbsp;");
-            String ts = lineWrapString(value, MAX_CHARS_PER_LINE);
+            String ts;
+            if (value.startsWith("https://")) {
+                ts = "<a href='" + value + "'>" + value + "</a>";
+            } else {
+                ts = lineWrapString(value, MAX_CHARS_PER_LINE);
+            }
 
             buffer.append(ts);
             buffer.append("<br/>");
@@ -46,4 +51,9 @@ public class FormatUtils {
     }
 
 
+    public static void main(String [] args) {
+        for(int i = 0; i < 256; i++) {
+            System.out.println("" + i + '\t' + ((byte) i));
+        }
+    }
 }

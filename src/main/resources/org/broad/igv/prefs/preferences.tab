@@ -90,6 +90,7 @@ SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which al
 SAM.QUALITY_THRESHOLD	Mapping quality threshold	int	0
 SAM.ALIGNMENT_SCORE_THRESHOLD	Alignment score threshold	int	0
 SAM.DISPLAY_MODE	Alignment display mode	string	EXPANDED
+SAM.DISPLAY_PAIRED	Display reads as paired by default	boolean	FALSE
 ---
 SAM.SHOW_MISMATCHES	Show mismatched bases	boolean	TRUE
 SAM.SHOW_ALL_BASES	Show all bases	boolean	FALSE

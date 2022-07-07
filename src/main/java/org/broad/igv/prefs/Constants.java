@@ -168,6 +168,7 @@ final public class Constants {
     public static final String SAM_COLOR_G = "SAM.COLOR.G";
     public static final String SAM_COLOR_N = "SAM.COLOR.N";
     public static final String SAM_DISPLAY_MODE = "SAM.DISPLAY_MODE";
+    public static final String SAM_DISPLAY_PAIRED = "SAM.DISPLAY_PAIRED";
     public static final String KNOWN_SNPS = "KNOWN_SNPS_FILE";
 
     // Sequence track settings

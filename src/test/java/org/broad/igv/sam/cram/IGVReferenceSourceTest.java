@@ -26,19 +26,13 @@
 package org.broad.igv.sam.cram;
 
 import htsjdk.samtools.*;
-import htsjdk.samtools.seekablestream.SeekableStream;
-import htsjdk.samtools.util.CloseableIterator;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.util.stream.IGVSeekableBufferedStream;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -49,35 +43,40 @@ import static junit.framework.Assert.assertTrue;
 
 public class IGVReferenceSourceTest {
 
+    public static final String FASTA_URL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa";
+    public static final String COMPRESSED_FASTA_URL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.gz";
+    public static final String EXPECTED_REFERENCE_BASES = "AAACCCAGGGCAAAGAATCTGGCCCTA"; //bases at 22:27198875-271988902
+
     @Before
     public void setUp() throws Exception {
 
     }
 
-    @Test
-    public void testGetReferenceBases() throws Exception {
-
-        String fastaURL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa";
-
-        GenomeManager.getInstance().loadGenome(fastaURL, null);
+    private void assertReferenceReqionRequestsWork(final String fastaUrl) throws IOException {
+        GenomeManager.getInstance().loadGenome(fastaUrl, null);
 
         IGVReferenceSource refSource = new IGVReferenceSource();
+        String expected = EXPECTED_REFERENCE_BASES;
         SAMSequenceRecord rec = new SAMSequenceRecord("22", 50818468);
-        byte[] bases = refSource.getReferenceBases(rec, false);
-
-        assertEquals(50818468, bases.length);
-
-        assertEquals('N', bases[0]);
-        assertEquals('G', bases[27198882]);
+        byte[] bases = refSource.getReferenceBasesByRegion(rec, 27198874, expected.length());
+        assertEquals(expected.length(), bases.length);
+        assertEquals(expected, new String(bases, StandardCharsets.US_ASCII));
     }
 
+    @Test
+    public void testGetReferenceBasesByRegion() throws Exception {
+        assertReferenceReqionRequestsWork(IGVReferenceSourceTest.FASTA_URL);
+    }
+
+    @Test
+    public void testGetReferenceBasesByRegionCompressed() throws Exception {
+        assertReferenceReqionRequestsWork(COMPRESSED_FASTA_URL);
+    }
 
     @Test
     public void testGetReferenceBasesCompressed() throws Exception {
 
-        String fastaURL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.gz";
-
-        GenomeManager.getInstance().loadGenome(fastaURL, null);
+        GenomeManager.getInstance().loadGenome(COMPRESSED_FASTA_URL, null);
 
         IGVReferenceSource refSource = new IGVReferenceSource();
         SAMSequenceRecord rec = new SAMSequenceRecord("22", 50818468);
@@ -86,7 +85,9 @@ public class IGVReferenceSourceTest {
         assertEquals(50818468, bases.length);
 
         assertEquals('N', bases[0]);
-        assertEquals('G', bases[27198882]);
+        String expected = EXPECTED_REFERENCE_BASES;
+        String actual = new String(Arrays.copyOfRange(bases, 27198874, 27198874 + expected.length()), StandardCharsets.US_ASCII);
+        assertEquals(expected, actual);
     }
 
 //    @Test

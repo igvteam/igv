@@ -216,7 +216,20 @@ public class GFF3Combiner implements GFFCombiner {
                 int increment = bf.getStrand() == Strand.NEGATIVE ? -1 : 1;
                 for (Exon ex : exons) {
                     ex.setNumber(exonNumber);
-                    exonNumber += increment;
+                }
+                // Correct thick start and ends, if needed
+                for(Exon ex : exons) {
+                    if(!ex.isNonCoding()) {
+                        bf.setThickStart(ex.getCdStart());
+                        break;
+                    }
+                }
+                for(int i=exons.size() - 1; i >= 0; i--) {
+                    Exon ex = exons.get(i);
+                    if(!ex.isNonCoding()) {
+                        bf.setThickEnd(ex.getCdEnd());
+                        break;
+                    }
                 }
             }
         }

@@ -471,7 +471,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         try {
             Iterator<Feature> iter = source.getFeatures(chr, start, end);
             while (iter.hasNext()) {
-                features.add(iter.next());
+                Feature f = iter.next();
+                if(f.getEnd() >= start && f.getStart() <= end) {
+                    features.add(f);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -873,7 +876,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         Renderer renderer = getRenderer();
 
-        if (getDisplayMode() == DisplayMode.COLLAPSED) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED && !isGroupByStrand()) {
             List<Feature> features = packedFeatures.getFeatures();
             if (features != null) {
                 renderer.render(features, context, inputRect, this);
