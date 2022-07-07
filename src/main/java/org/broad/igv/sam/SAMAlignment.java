@@ -39,6 +39,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.mods.BaseModificationUtils;
+import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
@@ -101,7 +103,11 @@ public class SAMAlignment implements Alignment {
     public AlignmentBlockImpl[] insertions;
     List<Gap> gaps;
     char[] gapTypes;
-    private Map<Integer, BaseModification> baseModificationMap;
+
+    /**
+     * Map of position -> base modification
+     */
+    private List<BaseModificationSet> baseModificationSets;
 
     protected String mateSequence = null;
     protected String pairOrientation = "";
@@ -180,7 +186,7 @@ public class SAMAlignment implements Alignment {
 
     public Object getAttribute(String key) {
         // SAM alignment tag keys must be of length 2
-        if(key == null) {
+        if (key == null) {
             return null;
         } else {
             return key.length() == 2 ? record.getAttribute(key) :
@@ -317,23 +323,21 @@ public class SAMAlignment implements Alignment {
         return 0;
     }
 
-    @Override
-    public synchronized Map<Integer, BaseModification> getBaseModificationMap() {
+    public List<BaseModificationSet> getBaseModificationSets() {
 
-        if (baseModificationMap == null && (record.hasAttribute("Mm") || record.hasAttribute("MM"))) {
+        if (baseModificationSets == null && record.hasAttribute("Mm") || record.hasAttribute("MM")) {
+
             Object mm = record.hasAttribute("Mm") ? record.getAttribute("Mm") : record.getAttribute("MM");
             byte[] ml = (byte[]) (record.hasAttribute("Ml") ? record.getAttribute("Ml") : record.getAttribute("ML"));
-            List<BaseModification> baseModifications = BaseModification.getBaseModifications(mm.toString(), ml, record.getReadBases(), isNegativeStrand());
-            baseModificationMap = new HashMap<>();
-            for (BaseModification mod : baseModifications) {
-                Integer p = mod.position;
-                if (!baseModificationMap.containsKey(p) || Byte.toUnsignedInt(mod.likelihood) > Byte.toUnsignedInt(baseModificationMap.get(p).likelihood)) {
-                    baseModificationMap.put(p, mod);
-                }
+            byte[] sequence = record.getReadBases();
 
+            if (mm.toString().length() == 0) { // TODO -- more extensive validation?
+                baseModificationSets = Collections.EMPTY_LIST;
+            } else {
+                baseModificationSets = BaseModificationUtils.getBaseModificationSets(mm.toString(), ml, sequence, isNegativeStrand());
             }
         }
-        return baseModificationMap;
+        return baseModificationSets;
     }
 
     /**
@@ -609,13 +613,23 @@ public class SAMAlignment implements Alignment {
         }
 
         // Check base modifications
-        if (renderOptions != null && renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION) {
+        if (renderOptions != null &&
+                (renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION ||
+                        renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC)) {
             for (AlignmentBlock block : this.alignmentBlocks) {
                 if (block.contains((int) position)) {
                     int p = (int) (position - block.getStart()) + block.getBasesOffset();
-                    if (baseModificationMap != null && baseModificationMap.containsKey(p)) {
-                        BaseModification mod = baseModificationMap.get(p);
-                        return mod.valueString();
+                    if (baseModificationSets != null) {
+                        String modString = "";
+                        for (BaseModificationSet bmSet : baseModificationSets) {
+                            if (bmSet.containsPosition(p)) {
+                                if (modString.length() > 0) modString += "; ";
+                                modString += BaseModificationUtils.valueString(bmSet.getModification(), bmSet.getLikelihoods().get(p));
+                            }
+                        }
+                        if (modString.length() > 0) {
+                            return modString;
+                        }
                     }
                 }
             }
@@ -637,7 +651,7 @@ public class SAMAlignment implements Alignment {
         }
         buf.append("Read length = " + getReadLengthString() + "<br>");
 
-        buf.append("Flags = " + record.getFlags()  + "<br>");
+        buf.append("Flags = " + record.getFlags() + "<br>");
 
         buf.append("----------------------" + "<br>");
         String cigarString = getCigarString();
