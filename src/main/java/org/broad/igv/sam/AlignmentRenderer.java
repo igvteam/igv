@@ -37,6 +37,8 @@ import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
+import org.broad.igv.sam.mods.BaseModificationUtils;
+import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -45,9 +47,8 @@ import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -309,7 +310,9 @@ public class AlignmentRenderer {
                 Color alignmentColor = getAlignmentColor(alignment, track);
                 final boolean leaveMargin = (this.track.getDisplayMode() != Track.DisplayMode.SQUISHED);
                 if ((pixelWidth < 2) &&
-                        !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) || renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) &&
+                        !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) ||
+                                renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION ||
+                                renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION_5MC) &&
                                 (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
@@ -712,6 +715,219 @@ public class AlignmentRenderer {
             leftmost = false;
         }
 
+        // Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
+        // that is proportional to the base quality score, or flow signal deviation, whichever is selected.
+
+        final ColorOption colorOption = renderOptions.getColorOption();
+        if (locScale < 100) {
+
+            boolean showAllBases = renderOptions.isShowAllBases() &&
+                    !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ); // Disable showAllBases in bisulfite mode
+
+            if (renderOptions.isShowMismatches() || showAllBases) {
+
+                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
+
+                    boolean haveBases = (block.hasBases() && block.getLength() > 0);
+                    if (!haveBases) {
+                        continue;   // nothing to draw
+                    }
+
+                    String chr = context.getChr();
+                    final int start = block.getStart();
+                    final int end = block.getEnd();
+                    if (end <= bpStart) { // block ends before the visible context
+                        continue; // move to next block
+                    } else if (start >= bpEnd) { // block starts after the visible context
+                        break; // done examining blocks
+                    }
+
+                    boolean isSoftClip = block.isSoftClip();
+
+                    // Get the reference sequence
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                    final byte[] reference = isSoftClip ? softClippedReference : genome.getSequence(chr, start, end);
+
+                    if (reference == null && !showAllBases) {
+                        continue;   // No reference to compare to.
+                    }
+
+                    // Compute bounds
+                    int pY = (int) rowRect.getY();
+                    int dY = (int) rowRect.getHeight();
+                    dX = (int) Math.max(1, (1.0 / locScale));
+
+                    BisulfiteBaseInfo bisinfo = null;
+                    boolean nomeseqMode = (colorOption.equals(AlignmentTrack.ColorOption.NOMESEQ));
+                    boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(colorOption);
+                    if (nomeseqMode) {
+                        bisinfo = new BisulfiteBaseInfoNOMeseq(reference, alignment, block, renderOptions.bisulfiteContext);
+                    } else if (bisulfiteMode) {
+                        bisinfo = new BisulfiteBaseInfo(reference, alignment, block, renderOptions.bisulfiteContext);
+                    }
+
+                    ByteSubarray blockBases = block.getBases();
+                    final int s = (int) Math.max(Math.floor(bpStart), start);
+                    final int e = (int) Math.min(Math.ceil(bpEnd), end);
+                    for (int loc = s; loc < e; loc++) {
+
+                        int idx = loc - start;
+
+                        boolean misMatch = AlignmentUtils.isMisMatch(reference, blockBases, isSoftClip, idx);
+
+                        // if base is modified paint rectangle
+                        if (showAllBases || (!bisulfiteMode && misMatch) ||
+                                (bisulfiteMode && (DisplayStatus.NOTHING != bisinfo.getDisplayStatus(idx)))) {
+                            char c = (char) blockBases.getByte(idx);
+
+                            Color color = null;
+                            if (bisulfiteMode) {
+                                color = bisinfo.getDisplayColor(idx);
+                            } else if (colorOption == ColorOption.BASE_MODIFICATION || colorOption == ColorOption.BASE_MODIFICATION_5MC) {
+                                color = Color.GRAY;
+                            } else {
+                                color = nucleotideColors.get(c);
+                            }
+                            if (color == null) {
+                                color = Color.black;
+                            }
+
+                            if (renderOptions.getShadeBasesOption()) {
+                                byte qual = block.getQuality(loc - start);
+                                color = getShadedColor(qual, color, alignmentColor, prefs);
+                            }
+
+                            double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
+
+                            // If there is room for text draw the character, otherwise
+                            // just draw a rectangle to represent the
+                            int pX = (int) (((double) loc + bisulfiteXaxisShift - bpStart) / locScale);
+
+                            // Don't draw out of clipping rect
+                            if (pX > rowRect.getMaxX()) {
+                                break;
+                            } else if (pX + dX < rowRect.getX()) {
+                                continue;
+                            }
+
+                            BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
+
+                            final boolean showBase =
+                                    isSoftClip ||
+                                            bisulfiteMode ||
+                                            // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
+                                            (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
+                            if (showBase) {
+                                drawBase(gAlignment, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), bisulfiteMode, bisstatus);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        // Base modification
+        if (ColorOption.BASE_MODIFICATION_5MC == colorOption || ColorOption.BASE_MODIFICATION == colorOption) {
+
+            List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
+            if (baseModificationSets != null) {
+
+                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
+                    // Compute bounds
+                    int pY = (int) rowRect.getY();
+                    int dY = (int) rowRect.getHeight();
+                    dX = (int) Math.max(1, (1.0 / locScale));
+                    Graphics g = context.getGraphics();
+
+                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
+
+                        // Search all sets for modifications of this base.  For now keeps mod with > probability
+                        // TODO -- merge mods in some way
+                        byte lh = 0;
+                        String modification = null;
+                        for (BaseModificationSet bmSet : baseModificationSets) {
+                            if (bmSet.containsPosition(i)) {
+                                if(modification == null || bmSet.getLikelihoods().get(i) > lh) {
+                                    modification = bmSet.getModification();
+                                    lh = bmSet.getLikelihoods().get(i);
+                                }
+                            }
+                        }
+
+
+                        if (modification != null) {
+
+                            Color c = BaseModificationUtils.getModColor(modification, lh, colorOption);
+                            g.setColor(c);
+
+                            int blockIdx = i - block.getBases().startOffset;
+                            int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
+
+                            // Don't draw out of clipping rect
+                            if (pX > rowRect.getMaxX()) {
+                                break;
+                            } else if (pX + dX < rowRect.getX()) {
+                                continue;
+                            }
+
+                            // Expand narrow width to make more visible
+                            if (dX < 3) {
+                                dX = 3;
+                                pX--;
+                            }
+                            g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
+                        }
+                    }
+                }
+            }
+        }
+
+//        if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
+//            Map<Integer, BaseModification> baseModifications = alignment.getBaseModificationMap();
+//            if (baseModifications != null) {
+//                double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
+//                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
+//                    // Compute bounds
+//                    int pY = (int) rowRect.getY();
+//                    int dY = (int) rowRect.getHeight();
+//                    dX = (int) Math.max(1, (1.0 / locScale));
+//                    Graphics g = context.getGraphics();
+//
+//                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
+//
+//                        if (baseModifications.containsKey(i)) {
+//
+//                            BaseModification mod = baseModifications.get(i);
+//                            int l = Byte.toUnsignedInt(mod.likelihood);
+//                            if (l < threshold) continue;
+//
+//                            Color c = BaseModification.getModColor(mod.modification, mod.likelihood);
+//                            g.setColor(c);
+//
+//                            int blockIdx = i - block.getBases().startOffset;
+//                            int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
+//
+//                            // Don't draw out of clipping rect
+//                            if (pX > rowRect.getMaxX()) {
+//                                break;
+//                            } else if (pX + dX < rowRect.getX()) {
+//                                continue;
+//                            }
+//
+//                            // Expand narrow width to make more visible
+//                            if (dX < 3) {
+//                                dX = 3;
+//                                pX--;
+//                            }
+//
+//                            g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
 
         // DRAW Insertions
         AlignmentBlock[] insertions = alignment.getInsertions();
@@ -757,164 +973,6 @@ public class AlignmentRenderer {
 
                         x += context.translateX;
                         aBlock.setPixelRange(x - pxWing, x + 2 + pxWing);
-                    }
-                }
-            }
-        }
-
-        // Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
-        // that is proportional to the base quality score, or flow signal deviation, whichever is selected.
-
-        if (locScale < 100) {
-
-            ColorOption colorOption = renderOptions.getColorOption();
-            boolean showAllBases = renderOptions.isShowAllBases() &&
-                    !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ); // Disable showAllBases in bisulfite mode
-
-            if (renderOptions.isShowMismatches() || showAllBases) {
-
-                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-
-                    boolean haveBases = (block.hasBases() && block.getLength() > 0);
-                    if (!haveBases) {
-                        continue;   // nothing to draw
-                    }
-
-                    String chr = context.getChr();
-                    final int start = block.getStart();
-                    final int end = block.getEnd();
-                    if (end <= bpStart) { // block ends before the visible context
-                        continue; // move to next block
-                    } else if (start >= bpEnd) { // block starts after the visible context
-                        break; // done examining blocks
-                    }
-
-                    boolean isSoftClip = block.isSoftClip();
-
-                    // Get the reference sequence
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                    final byte[] reference = isSoftClip ? softClippedReference : genome.getSequence(chr, start, end);
-
-                    if (reference == null && !showAllBases) {
-                        continue;   // No reference to compare to.
-                    }
-
-                    // Compute bounds
-                    int pY = (int) rowRect.getY();
-                    int dY = (int) rowRect.getHeight();
-                    dX = (int) Math.max(1, (1.0 / locScale));
-
-                    BisulfiteBaseInfo bisinfo = null;
-                    boolean nomeseqMode = (renderOptions.getColorOption().equals(AlignmentTrack.ColorOption.NOMESEQ));
-                    boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption());
-                    if (nomeseqMode) {
-                        bisinfo = new BisulfiteBaseInfoNOMeseq(reference, alignment, block, renderOptions.bisulfiteContext);
-                    } else if (bisulfiteMode) {
-                        bisinfo = new BisulfiteBaseInfo(reference, alignment, block, renderOptions.bisulfiteContext);
-                    }
-
-                    ByteSubarray blockBases = block.getBases();
-                    final int s = (int) Math.max(Math.floor(bpStart), start);
-                    final int e = (int) Math.min(Math.ceil(bpEnd), end);
-                    for (int loc = s; loc < e; loc++) {
-
-                        int idx = loc - start;
-
-                        boolean misMatch = AlignmentUtils.isMisMatch(reference, blockBases, isSoftClip, idx);
-
-                        // if base is modified paint rectangle
-                        if (showAllBases || (!bisulfiteMode && misMatch) ||
-                                (bisulfiteMode && (DisplayStatus.NOTHING != bisinfo.getDisplayStatus(idx)))) {
-                            char c = (char) blockBases.getByte(idx);
-
-                            Color color = null;
-                            if (bisulfiteMode) {
-                                color = bisinfo.getDisplayColor(idx);
-                            } else if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
-                                color = Color.GRAY;
-                            } else {
-                                color = nucleotideColors.get(c);
-                            }
-                            if (color == null) {
-                                color = Color.black;
-                            }
-
-                            if (renderOptions.getShadeBasesOption()) {
-                                byte qual = block.getQuality(loc - start);
-                                color = getShadedColor(qual, color, alignmentColor, prefs);
-                            }
-
-                            double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
-
-                            // If there is room for text draw the character, otherwise
-                            // just draw a rectangle to represent the
-                            int pX = (int) (((double) loc + bisulfiteXaxisShift - bpStart) / locScale);
-
-                            // Don't draw out of clipping rect
-                            if (pX > rowRect.getMaxX()) {
-                                break;
-                            } else if (pX + dX < rowRect.getX()) {
-                                continue;
-                            }
-
-                            BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
-
-                            final boolean showBase =
-                                    isSoftClip ||
-                                            bisulfiteMode ||
-                                            // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
-                                            (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
-                            if (showBase) {
-                                drawBase(gAlignment, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), bisulfiteMode, bisstatus);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-
-        // Base modification
-        if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
-            Map<Integer, BaseModification> baseModifications = alignment.getBaseModificationMap();
-            if (baseModifications != null) {
-                double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
-                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-                    // Compute bounds
-                    int pY = (int) rowRect.getY();
-                    int dY = (int) rowRect.getHeight();
-                    dX = (int) Math.max(1, (1.0 / locScale));
-                    Graphics g = context.getGraphics();
-
-                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
-
-                        if (baseModifications.containsKey(i)) {
-
-                            BaseModification mod = baseModifications.get(i);
-                            int l = Byte.toUnsignedInt(mod.likelihood);
-                            if (l < threshold) continue;
-
-                            Color c = BaseModification.getModColor(mod.modification, mod.likelihood);
-                            g.setColor(c);
-
-                            int blockIdx = i - block.getBases().startOffset;
-                            int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
-
-                            // Don't draw out of clipping rect
-                            if (pX > rowRect.getMaxX()) {
-                                break;
-                            } else if (pX + dX < rowRect.getX()) {
-                                continue;
-                            }
-
-                            // Expand narrow width to make more visible
-                            if (dX < 3) {
-                                dX = 3;
-                                pX--;
-                            }
-
-                            g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
-                        }
                     }
                 }
             }
@@ -1213,6 +1271,7 @@ public class AlignmentRenderer {
 
             case BISULFITE:
             case BASE_MODIFICATION:
+            case BASE_MODIFICATION_5MC:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
                 c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;

@@ -32,6 +32,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.mods.BaseModificationCounts;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -56,7 +57,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
     protected boolean countDeletedBasesCovered = false;
 
     private BisulfiteCounts bisulfiteCounts;
-    private ModifiedBaseCounts modifiedBaseCounts;
+    private BaseModificationCounts baseModificationCounts;
 
 
     public BaseAlignmentCounts(int start, int end, AlignmentTrack.BisulfiteContext bisulfiteContext) {
@@ -74,7 +75,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
             bisulfiteCounts = new BisulfiteCounts(bisulfiteContext, GenomeManager.getInstance().getCurrentGenome());
         }
 
-        modifiedBaseCounts = new ModifiedBaseCounts();
+        baseModificationCounts = new BaseModificationCounts();
 
     }
 
@@ -103,8 +104,8 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
     }
 
     @Override
-    public ModifiedBaseCounts getModifiedBaseCounts() {
-        return modifiedBaseCounts;
+    public BaseModificationCounts getModifiedBaseCounts() {
+        return baseModificationCounts;
     }
 
     @Override
@@ -127,8 +128,8 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         if (bisulfiteCounts != null) {
             bisulfiteCounts.incrementCounts(alignment);
         }
-        if(modifiedBaseCounts != null) {
-            modifiedBaseCounts.incrementCounts(alignment);
+        if(baseModificationCounts != null) {
+            baseModificationCounts.incrementCounts(alignment);
         }
 
         int alignmentStart = alignment.getAlignmentStart();
