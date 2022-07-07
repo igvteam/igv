@@ -43,6 +43,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.SortOption;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.session.SessionWriter;
@@ -828,7 +829,7 @@ public class CommandExecutor {
         }
 
         if (sort != null) {
-            final AlignmentTrack.SortOption sortOption = getAlignmentSortOption(sort);
+            final SortOption sortOption = getAlignmentSortOption(sort);
             igv.sortAlignmentTracks(sortOption, sortTag, false);
         }
 
@@ -1171,38 +1172,38 @@ public class CommandExecutor {
     }
 
     //todo check that this matches all the existing sorts
-    private static AlignmentTrack.SortOption getAlignmentSortOption(String str) {
+    private static SortOption getAlignmentSortOption(String str) {
         str = str == null ? "base" : str;
         if (str.equalsIgnoreCase("start") || str.equalsIgnoreCase("position")) {
-            return AlignmentTrack.SortOption.START;
+            return SortOption.START;
         } else if (str.equalsIgnoreCase("strand")) {
-            return AlignmentTrack.SortOption.STRAND;
+            return SortOption.STRAND;
         } else if (str.equalsIgnoreCase("base")) {
-            return AlignmentTrack.SortOption.NUCLEOTIDE;
+            return SortOption.NUCLEOTIDE;
         } else if (str.equalsIgnoreCase("quality")) {
-            return AlignmentTrack.SortOption.QUALITY;
+            return SortOption.QUALITY;
         } else if (str.equalsIgnoreCase("sample")) {
-            return AlignmentTrack.SortOption.SAMPLE;
+            return SortOption.SAMPLE;
         } else if (str.equalsIgnoreCase("readGroup") || str.equalsIgnoreCase("read_group")) {
-            return AlignmentTrack.SortOption.READ_GROUP;
+            return SortOption.READ_GROUP;
         } else if (str.equalsIgnoreCase("insertSize") || str.equalsIgnoreCase("insert_size")) {
-            return AlignmentTrack.SortOption.INSERT_SIZE;
+            return SortOption.INSERT_SIZE;
         } else if (str.equalsIgnoreCase("firstOfPairStrand")) {
-            return AlignmentTrack.SortOption.FIRST_OF_PAIR_STRAND;
+            return SortOption.FIRST_OF_PAIR_STRAND;
         } else if (str.equalsIgnoreCase("mateChr")) {
-            return AlignmentTrack.SortOption.MATE_CHR;
+            return SortOption.MATE_CHR;
         } else if (str.equalsIgnoreCase("readOrder")) {
-            return AlignmentTrack.SortOption.READ_ORDER;
+            return SortOption.READ_ORDER;
         } else if (str.equalsIgnoreCase("readname")) {
-            return AlignmentTrack.SortOption.READ_NAME;
+            return SortOption.READ_NAME;
         } else if (str.equalsIgnoreCase("alignedReadLength")) {
-            return AlignmentTrack.SortOption.ALIGNED_READ_LENGTH;
+            return SortOption.ALIGNED_READ_LENGTH;
         } else {
             try {
-                return AlignmentTrack.SortOption.valueOf(str.toUpperCase());
+                return SortOption.valueOf(str.toUpperCase());
             } catch (IllegalArgumentException e) {
                 log.error("Unknown sort option: " + str);
-                return AlignmentTrack.SortOption.NUCLEOTIDE;
+                return SortOption.NUCLEOTIDE;
             }
         }
 

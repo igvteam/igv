@@ -40,7 +40,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.SortOption;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
@@ -252,7 +252,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 String sortOptionString = prefMgr.get(SAM_SORT_OPTION);
                 if (sortOptionString != null) {
                     try {
-                        AlignmentTrack.SortOption option = AlignmentTrack.SortOption.valueOf(sortOptionString);
+                        SortOption option = SortOption.valueOf(sortOptionString);
                         String lastSortTag = prefMgr.get(SAM_SORT_BY_TAG);
                         igv.sortAlignmentTracks(option, lastSortTag, prefMgr.getAsBoolean(SAM_INVERT_SORT));
                     } catch (IllegalArgumentException e1) {

@@ -3,7 +3,7 @@ package org.broad.igv.sam;
 import java.util.Arrays;
 
 /**
- * A read-only implementation of a byte sub-array.  Created to support aligment blocks.
+ * A read-only implementation of a byte sub-array.  Created to support alignment blocks.
  */
 public class ByteSubarray {
 

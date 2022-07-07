@@ -123,8 +123,29 @@ public interface Alignment extends LocusScore {
     void finish();
 
     default AlignmentBlock getInsertionAt(int position) {
+        final AlignmentBlock[] insertions = getInsertions();
+        if(insertions == null) {
+            return null;
+        }
+        for (AlignmentBlock block : insertions) {
+            if (block.getStart() == position) return block;
+        }
         return null;
     }
+
+     default Gap getDeletionAt(int position) {
+         List<Gap> gaps = this.getGaps();
+         if (gaps != null && !gaps.isEmpty()) {
+             for (Gap gap : gaps) {
+                 if (gap.getStart() <= position
+                         && gap.getnBases() + gap.getStart() > position
+                         && gap.getType() == SAMAlignment.DELETION) {
+                     return gap;
+                 }
+             }
+         }
+         return null;
+     }
 
     default void setHaplotypeName(String hap) {}
 
