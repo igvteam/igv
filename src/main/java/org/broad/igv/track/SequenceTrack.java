@@ -225,8 +225,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             return;
         }
 
-
         final int chromosomeLength = chromosome.getLength();
+
         int end = (int) referenceFrame.getEnd();
         int w = end - start;
 
