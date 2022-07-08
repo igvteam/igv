@@ -25,6 +25,7 @@
 
 package org.broad.igv.sam;
 
+import com.google.common.primitives.Ints;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -1426,15 +1427,41 @@ public class AlignmentRenderer {
         }
         if (c == null) c = defaultColor;
 
-        if (alignment.getMappingQuality() == 0 && renderOptions.isFlagZeroQualityAlignments()) {
-            // Maping Q = 0
-            float alpha = 0.15f;
-            // Assuming white background TODO -- this should probably be passed in
-            return ColorUtilities.getCompositeColor(Color.white, c, alpha);
-        }
-
+        c = shadeByMappingQuality(c, renderOptions, alignment.getMappingQuality());
         return c;
 
+    }
+
+    private Color shadeByMappingQuality(final Color initialColor, final AlignmentTrack.RenderOptions renderOptions, final int mappingQuality) {
+        final float minAlpha = 0.15f;
+        final float maxAlpha = 1;
+        int maxMapQCutoff = renderOptions.getMappingQualityHigh();
+        int minMapQCutoff = renderOptions.getMappingQualityLow();
+        maxMapQCutoff = Ints.constrainToRange(maxMapQCutoff, 1, 255);
+        minMapQCutoff = Ints.constrainToRange(minMapQCutoff, 0, maxMapQCutoff-1);
+
+        int clippedMQ = Ints.constrainToRange(mappingQuality, minMapQCutoff, maxMapQCutoff);
+        float alphaRange = maxAlpha - minAlpha;
+        float normalizedMQ = (float) (clippedMQ - minMapQCutoff) / (float) (maxMapQCutoff - minMapQCutoff);
+        // Assuming white background TODO -- this should probably be passed in
+        final Color backgroundColor = Color.white;
+
+        switch (renderOptions.getShadeAlignmentsOption()) {
+            case NONE:
+                if (mappingQuality == 0 && renderOptions.isFlagZeroQualityAlignments()) {
+
+                    return ColorUtilities.getCompositeColor(backgroundColor, initialColor, minAlpha);
+                } else {
+                    return initialColor;
+                }
+            case MAPPING_QUALITY_LOW:
+                normalizedMQ = 1 - normalizedMQ; //invert this and fall through.
+            case MAPPING_QUALITY_HIGH:
+                float actualAlpha = minAlpha + alphaRange * normalizedMQ;
+                return ColorUtilities.getCompositeColor(backgroundColor, initialColor, actualAlpha);
+            default:
+                return initialColor;
+        }
     }
 
     private ColorTable getTenXColorTable(String group) {
