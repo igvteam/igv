@@ -769,6 +769,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
         renderOptions.setGroupByOption(option);
         dataManager.packAlignments(renderOptions);
+        AlignmentTrack.this.repaint();
     }
 
     public void setBisulfiteContext(BisulfiteContext option) {
@@ -1724,6 +1725,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 group.add(newGroupByPosOption);
             }
 
+            groupMenu.add(new JPopupMenu.Separator());
+            JCheckBoxMenuItem invertGroupNameSortingOption = new JCheckBoxMenuItem("reverse group name sorting");
+            invertGroupNameSortingOption.setSelected(renderOptions.invertGroupNameSorting);
+            invertGroupNameSortingOption.addActionListener(aEvt -> {
+               renderOptions.invertGroupNameSorting = !renderOptions.invertGroupNameSorting;
+               dataManager.packAlignments(renderOptions);
+               AlignmentTrack.this.repaint();
+            });
+            groupMenu.add(invertGroupNameSortingOption);
+
             add(groupMenu);
         }
 
@@ -2470,6 +2481,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean pairedArcView;
         private Boolean flagZeroQualityAlignments;
         private Range groupByPos;
+        private boolean invertGroupNameSorting;
         private Boolean showInsertionMarkers;
         private Boolean hideSmallIndels;
         private Integer smallIndelThreshold;
@@ -2542,6 +2554,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         void setGroupByPos(Range groupByPos) {
             this.groupByPos = groupByPos;
+        }
+
+        void setInvertGroupNameSorting(boolean invertGroupNameSorting){
+            this.invertGroupNameSorting = invertGroupNameSorting;
         }
 
         void setLinkByTag(String linkByTag) {
@@ -2663,6 +2679,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return groupByPos;
         }
 
+        public boolean isInvertGroupNameSorting(){
+            return invertGroupNameSorting;
+        }
         public String getLinkByTag() {
             return linkByTag;
         }
@@ -2765,6 +2784,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (groupByPos != null) {
                 element.setAttribute("groupByPos", groupByPos.toString());
             }
+            if (invertGroupNameSorting) {
+                element.setAttribute("invertGroupNameSorting", Boolean.toString(invertGroupNameSorting));
+            }
             if (hideSmallIndels != null) {
                 element.setAttribute("hideSmallIndels", hideSmallIndels.toString());
             }
@@ -2848,6 +2870,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if (element.hasAttribute("groupByPos")) {
                 groupByPos = Range.fromString(element.getAttribute("groupByPos"));
+            }
+            if (element.hasAttribute("invertGroupNameSorting")) {
+                invertGroupNameSorting = Boolean.parseBoolean(element.getAttribute("invertGroupNameSorting"));
             }
             if (element.hasAttribute("hideSmallIndels")) {
                 hideSmallIndels = Boolean.parseBoolean(element.getAttribute("hideSmallIndels"));
