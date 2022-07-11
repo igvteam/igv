@@ -100,21 +100,6 @@ public class SequenceWrapperTest extends AbstractHeadlessTest{
 
     }
 
-    @Test
-    public void testNonCloudGenome() throws IOException {
-
-
-        String chr = "scaffold_v2_26164";
-        int start = 5;
-        int end = 10;
-        String expSequence = "ATTGC";
-        String tmp = SequenceWrapper.checkSequenceURL("http://data.broadinstitute.org/igvdata/annotations/seq/spur_2.1/");
-        SequenceWrapper helper = new SequenceWrapper(new IGVSequence(tmp));
-        byte[] seq = helper.getSequence(chr, start, end, true);
-        assertEquals(expSequence, new String(seq));
-
-    }
-
     /**
      * Test known sequence (start of EGFR).
      */
