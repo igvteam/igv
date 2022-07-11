@@ -105,7 +105,7 @@ SAM.FLAG_UNMAPPED_PAIR	Flag unmapped pairs	boolean	FALSE
 SAM.SHOW_CENTER_LINE	Show center line	boolean	FALSE
 SAM.SHOW_SOFT_CLIPPED	Show soft-clipped bases	boolean	FALSE
 ---
-SAM.SHADE_BASE_QUALITY	Shade mismatched bases by quality.	boolean	TRUE
+SAM.SHADE_BASE_QUALITY	Shade mismatched bases by quality.	boolean	FALSE
 SAM.BASE_QUALITY_MIN	Maximum transparency at base quality:	integer	5
 SAM.BASE_QUALITY_MAX	No transparency above base quality:	integer	20
 ---
