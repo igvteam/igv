@@ -2681,9 +2681,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         public ShadeAlignmentsOption getShadeAlignmentsOption() {
-            return shadeAlignmentsOption == null ?
-                    CollUtils.valueOf(ShadeAlignmentsOption.class, getPreferences().get(SAM_SHADE_ALIGNMENT_BY), ShadeAlignmentsOption.NONE) :
-                    shadeAlignmentsOption;
+            if (shadeAlignmentsOption != null) {
+                return shadeAlignmentsOption;
+            } else {
+                try {
+                    return ShadeAlignmentsOption.valueOf(getPreferences().get(SAM_SHADE_ALIGNMENT_BY));
+                } catch (IllegalArgumentException e) {
+                    log.error("Error parsing alignment shade option: " + ShadeAlignmentsOption.valueOf(getPreferences().get(SAM_SHADE_ALIGNMENT_BY)));
+                    return ShadeAlignmentsOption.NONE;
+                }
+            }
         }
 
         public int getMappingQualityLow() {
