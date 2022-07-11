@@ -59,6 +59,9 @@ public class JsonGenomeLoader extends GenomeLoader {
             String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
 
             JsonElement gziObject = json.get("gziIndexURL");
+            if(gziObject == null) {
+                gziObject = json.get("compressedIndexURL");
+            }
             String gziIndexPath = gziObject == null ? null : gziObject.getAsString();
 
             fastaPath = FileUtils.getAbsolutePath(fastaPath, genomePath);
