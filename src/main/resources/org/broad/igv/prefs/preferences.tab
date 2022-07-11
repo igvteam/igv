@@ -88,12 +88,13 @@ SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRAR
 SAM.GROUP_BY_TAG	Group by TAG	string
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visibile
 SAM.QUALITY_THRESHOLD	Mapping quality threshold	int	0	Hide alignments with MQ lower than this value
-SAM.QUALITY_LOW	Mapping quality low display threshold	int	0	Alignments with MQ <= this value will be considered treated as low for shading purposes
-SAM.QUALITY_HIGH	Mapping quality high display threshold	int	60	Alignments with MQ >= this value will be considered treated as high for shading purposes
-SAM.SHADE_ALIGNMENT_BY	Shade alignments by	select NONE|MAPPING_QUALITY_HIGH|MAPPING_QUALITY_LOW	MAPPING_QUALITY_HIGH	NONE
 SAM.ALIGNMENT_SCORE_THRESHOLD	Alignment score threshold	int	0
 SAM.DISPLAY_MODE	Alignment display mode	string	EXPANDED
 SAM.DISPLAY_PAIRED	Display reads as paired by default	boolean	FALSE
+---
+SAM.SHADE_ALIGNMENT_BY	Shade alignments by	select NONE|MAPPING_QUALITY_HIGH|MAPPING_QUALITY_LOW	MAPPING_QUALITY_HIGH	NONE
+SAM.SHADE_QUALITY_LOW	Mapping quality low shading threshold	int	0	Alignments with MQ <= this value will be considered treated as low for shading purposes
+SAM.SHADE_QUALITY_HIGH	Mapping quality high shading threshold	int	60	Alignments with MQ >= this value will be considered treated as high for shading purposes
 ---
 SAM.SHOW_MISMATCHES	Show mismatched bases	boolean	TRUE
 SAM.SHOW_ALL_BASES	Show all bases	boolean	FALSE

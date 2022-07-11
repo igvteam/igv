@@ -26,7 +26,6 @@
 package org.broad.igv.sam;
 
 
-import com.google.common.primitives.Ints;
 import org.broad.igv.Globals;
 import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.event.IGVEventBus;
@@ -2688,11 +2687,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         public int getMappingQualityLow() {
-            return mappingQualityLow == null ? getPreferences().getAsInt(SAM_QUALITY_LOW) : mappingQualityLow;
+            return mappingQualityLow == null ? getPreferences().getAsInt(SAM_SHADE_QUALITY_LOW) : mappingQualityLow;
         }
 
         public int getMappingQualityHigh() {
-            return mappingQualityHigh == null ? getPreferences().getAsInt(SAM_QUALITY_HIGH) : mappingQualityHigh;
+            return mappingQualityHigh == null ? getPreferences().getAsInt(SAM_SHADE_QUALITY_HIGH) : mappingQualityHigh;
         }
 
         String getSortByTag() {

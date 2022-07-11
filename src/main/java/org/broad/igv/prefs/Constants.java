@@ -104,8 +104,8 @@ final public class Constants {
     public static final String SAM_ALLELE_THRESHOLD = "SAM.ALLELE_THRESHOLD";
     public static final String SAM_ALLELE_USE_QUALITY = "SAM.ALLELE_USE_QUALITY";
     public static final String SAM_QUALITY_THRESHOLD = "SAM.QUALITY_THRESHOLD";
-    public static final String SAM_QUALITY_LOW = "SAM.QUALITY_LOW";
-    public static final String SAM_QUALITY_HIGH = "SAM.QUALITY_HIGH";
+    public static final String SAM_SHADE_QUALITY_LOW = "SAM.SHADE_QUALITY_LOW";
+    public static final String SAM_SHADE_QUALITY_HIGH = "SAM.SHADE_QUALITY_HIGH";
     public static final String SAM_SHADE_ALIGNMENT_BY = "SAM.SHADE_ALIGNMENT_BY";
     public static final String SAM_ALIGNMENT_SCORE_THRESHOLD = "SAM.ALIGNMENT_SCORE_THRESHOLD";
     public static final String SAM_BASEMOD_THRESHOLD = "SAM.BASEMOD_THRESHOLD";
@@ -315,8 +315,8 @@ final public class Constants {
             SAM_SHOW_INSERTION_MARKERS,
             SAM_GROUP_OPTION,
             SAM_GROUP_BY_TAG,
-            SAM_QUALITY_LOW,
-            SAM_QUALITY_HIGH,
+            SAM_SHADE_QUALITY_LOW,
+            SAM_SHADE_QUALITY_HIGH,
             SAM_SHADE_ALIGNMENT_BY
     );
 
