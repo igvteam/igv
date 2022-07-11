@@ -781,6 +781,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
         renderOptions.setGroupByOption(option);
         dataManager.packAlignments(renderOptions);
+        repaint();
     }
 
     public void setBisulfiteContext(BisulfiteContext option) {
