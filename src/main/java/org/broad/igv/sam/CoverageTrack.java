@@ -755,12 +755,12 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     private Color getShadedColor(int qual, Color backgroundColor, Color color) {
         float alpha = 0;
-        int minQ = prefs.getAsInt(SAM_BASE_QUALITY_MIN);
+        int minQ = prefs.getAsInt(SAM_SHADE_BASE_QUALITY_MIN);
         ColorUtilities.getRGBColorComponents(color);
         if (qual < minQ) {
             alpha = 0.1f;
         } else {
-            int maxQ = prefs.getAsInt(SAM_BASE_QUALITY_MAX);
+            int maxQ = prefs.getAsInt(SAM_SHADE_BASE_QUALITY_MAX);
             alpha = Math.max(0.1f, Math.min(1.0f, 0.1f + 0.9f * (qual - minQ) / (maxQ - minQ)));
         }
         // Round alpha to nearest 0.1, for effeciency;

@@ -120,8 +120,8 @@ final public class Constants {
     public static final String SAM_SHOW_REF_SEQ = "SAM.SHOW_REF_SEQ";
     public static final String SAM_SHOW_COV_TRACK = "SAM.SHOW_COV_TRACK";
     public static final String SAM_SHADE_BASES = "SAM.SHADE_BASE_QUALITY";
-    public static final String SAM_BASE_QUALITY_MIN = "SAM.BASE_QUALITY_MIN";
-    public static final String SAM_BASE_QUALITY_MAX = "SAM.BASE_QUALITY_MAX";
+    public static final String SAM_SHADE_BASE_QUALITY_MIN = "SAM.SHADE_BASE_QUALITY_MIN";
+    public static final String SAM_SHADE_BASE_QUALITY_MAX = "SAM.SHADE_BASE_QUALITY_MAX";
     public static final String SAM_FILTER_ALIGNMENTS = "SAM.FILTER_ALIGNMENTS";
     public static final String SAM_FILTER_SECONDARY_ALIGNMENTS = "SAM.FILTER_SECONDARY_ALIGNMENTS";
     public static final String SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS = "SAM.FILTER_SUPPLEMENTARY_ALIGNMENTS";
