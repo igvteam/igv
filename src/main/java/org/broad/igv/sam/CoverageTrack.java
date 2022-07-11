@@ -749,30 +749,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             pY = isPositive ? baseY : baseY + height;
         }
     }
-
-
-    static float[] colorComps = new float[3];
-
-    private Color getShadedColor(int qual, Color backgroundColor, Color color) {
-        float alpha = 0;
-        int minQ = prefs.getAsInt(SAM_BASE_QUALITY_MIN);
-        ColorUtilities.getRGBColorComponents(color);
-        if (qual < minQ) {
-            alpha = 0.1f;
-        } else {
-            int maxQ = prefs.getAsInt(SAM_BASE_QUALITY_MAX);
-            alpha = Math.max(0.1f, Math.min(1.0f, 0.1f + 0.9f * (qual - minQ) / (maxQ - minQ)));
-        }
-        // Round alpha to nearest 0.1, for effeciency;
-        alpha = ((int) (alpha * 10 + 0.5f)) / 10.0f;
-
-        if (alpha >= 1) {
-            return color;
-        } else {
-            return ColorUtilities.getCompositeColor(backgroundColor, color, alpha);
-        }
-    }
-
+    
     /**
      * Override to return a specialized popup menu
      *
