@@ -1438,7 +1438,7 @@ public class AlignmentRenderer {
         int maxMapQCutoff = renderOptions.getMappingQualityHigh();
         int minMapQCutoff = renderOptions.getMappingQualityLow();
         maxMapQCutoff = Ints.constrainToRange(maxMapQCutoff, 1, 255);
-        minMapQCutoff = Ints.constrainToRange(minMapQCutoff, 0, maxMapQCutoff-1);
+        minMapQCutoff = Ints.constrainToRange(minMapQCutoff, 0, maxMapQCutoff - 1);
 
         int clippedMQ = Ints.constrainToRange(mappingQuality, minMapQCutoff, maxMapQCutoff);
         float alphaRange = maxAlpha - minAlpha;
@@ -1446,21 +1446,21 @@ public class AlignmentRenderer {
         // Assuming white background TODO -- this should probably be passed in
         final Color backgroundColor = Color.white;
 
-        switch (renderOptions.getShadeAlignmentsOption()) {
-            case NONE:
-                if (mappingQuality == 0 && renderOptions.isFlagZeroQualityAlignments()) {
-
-                    return ColorUtilities.getCompositeColor(backgroundColor, initialColor, minAlpha);
-                } else {
+        // MQ of zero has special meaning, and pre-empts shading by mapping quality if "flag zero quality" is set
+        if (mappingQuality == 0 && renderOptions.isFlagZeroQualityAlignments()) {
+            return ColorUtilities.getCompositeColor(backgroundColor, initialColor, minAlpha);
+        } else {
+            switch (renderOptions.getShadeAlignmentsOption()) {
+                case NONE:
                     return initialColor;
-                }
-            case MAPPING_QUALITY_LOW:
-                normalizedMQ = 1 - normalizedMQ; //invert this and fall through.
-            case MAPPING_QUALITY_HIGH:
-                float actualAlpha = minAlpha + alphaRange * normalizedMQ;
-                return ColorUtilities.getCompositeColor(backgroundColor, initialColor, actualAlpha);
-            default:
-                return initialColor;
+                case MAPPING_QUALITY_LOW:
+                    normalizedMQ = 1 - normalizedMQ; //invert this and fall through.
+                case MAPPING_QUALITY_HIGH:
+                    float actualAlpha = minAlpha + alphaRange * normalizedMQ;
+                    return ColorUtilities.getCompositeColor(backgroundColor, initialColor, actualAlpha);
+                default:
+                    return initialColor;
+            }
         }
     }
 
