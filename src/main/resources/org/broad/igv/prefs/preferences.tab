@@ -106,8 +106,8 @@ SAM.SHOW_CENTER_LINE	Show center line	boolean	FALSE
 SAM.SHOW_SOFT_CLIPPED	Show soft-clipped bases	boolean	FALSE
 ---
 SAM.SHADE_BASE_QUALITY	Shade mismatched bases by quality.	boolean	FALSE
-SAM.SHADE_BASE_QUALITY_MIN	Maximum transparency at base quality:	integer	5
-SAM.SHADE_BASE_QUALITY_MAX	No transparency above base quality:	integer	20
+SAM.BASE_QUALITY_MIN	Maximum transparency at base quality:	integer	5
+SAM.BASE_QUALITY_MAX	No transparency above base quality:	integer	20
 ---
 SAM.FLAG_LARGE_INDELS	Label indels >  threshold	boolean	TRUE
 SAM.LARGE_INSERTIONS_THRESOLD	Label threshold (bases)	integer	1
