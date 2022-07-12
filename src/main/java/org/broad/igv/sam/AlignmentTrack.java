@@ -119,6 +119,17 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         SUPPLEMENTARY, NONE, HAPLOTYPE, READ_ORDER, READ_NAME, ALIGNED_READ_LENGTH
     }
 
+    public enum ShadeAlignmentsOption {
+        NONE("none"),
+        MAPPING_QUALITY_HIGH("mapping quality high"),
+        MAPPING_QUALITY_LOW("mapping quality low");
+
+        public final String label;
+        ShadeAlignmentsOption(String label) {
+            this.label = label;
+        }
+    }
+
     public enum GroupOption {
         STRAND("read strand"),
         SAMPLE("sample"),
@@ -137,9 +148,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         READ_ORDER("read order"),
         LINKED("linked"),
         PHASE("phase"),
-        REFERENCE_CONCORDANCE("reference concordance");
+        REFERENCE_CONCORDANCE("reference concordance"),
+        MAPPING_QUALITY("mapping quality");
 
-        public String label;
+        public final String label;
 
         GroupOption(String label) {
             this.label = label;
@@ -769,7 +781,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
         renderOptions.setGroupByOption(option);
         dataManager.packAlignments(renderOptions);
-        AlignmentTrack.this.repaint();
+        repaint();
+
     }
 
     public void setBisulfiteContext(BisulfiteContext option) {
@@ -784,6 +797,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     public void setColorByTag(String tag) {
         renderOptions.setColorByTag(tag);
         getPreferences(experimentType).put(SAM_COLOR_BY_TAG, tag);
+    }
+
+    public void setShadeAlignmentsOptions(ShadeAlignmentsOption option) {
+        renderOptions.setShadeAlignmentsOption(option);
     }
 
     public void packAlignments() {
@@ -1421,11 +1438,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             // Linked read items
             addLinkedReadItems();
 
-            // Group, sort, color, and pack
+            // Group, sort, color, shade, and pack
             addSeparator();
             addGroupMenuItem(e);
             addSortMenuItem();
             addColorByMenuItem();
+            addShadeAlignmentsMenuItem();
             //addFilterMenuItem();
             addPackMenuItem();
 
@@ -1676,7 +1694,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     GroupOption.NONE, GroupOption.STRAND, GroupOption.FIRST_OF_PAIR_STRAND, GroupOption.SAMPLE,
                     GroupOption.LIBRARY, GroupOption.READ_GROUP, GroupOption.MATE_CHROMOSOME,
                     GroupOption.PAIR_ORIENTATION, GroupOption.SUPPLEMENTARY, GroupOption.REFERENCE_CONCORDANCE,
-                    GroupOption.MOVIE, GroupOption.ZMW, GroupOption.READ_ORDER, GroupOption.LINKED, GroupOption.PHASE
+                    GroupOption.MOVIE, GroupOption.ZMW, GroupOption.READ_ORDER, GroupOption.LINKED, GroupOption.PHASE,
+                    GroupOption.MAPPING_QUALITY
             };
 
             for (final GroupOption option : groupOptions) {
@@ -1871,6 +1890,22 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             add(colorMenu);
 
+        }
+
+        void addShadeAlignmentsMenuItem(){
+            JMenu shadeMenu = new JMenu("Shade alignments by");
+
+            for( ShadeAlignmentsOption option: ShadeAlignmentsOption.values()) {
+                JRadioButtonMenuItem mi = new JRadioButtonMenuItem(option.label);
+                mi.setSelected(renderOptions.getShadeAlignmentsOption() == option);
+                mi.addActionListener(aEvt -> {
+                    setShadeAlignmentsOptions(option);
+                    AlignmentTrack.this.repaint();
+                });
+
+                shadeMenu.add(mi);
+            }
+            add(shadeMenu);
         }
 
         void addPackMenuItem() {
@@ -2467,6 +2502,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Integer maxInsertSize;
         private ColorOption colorOption;
         private GroupOption groupByOption;
+        private ShadeAlignmentsOption shadeAlignmentsOption;
+        private Integer mappingQualityLow;
+        private Integer mappingQualityHigh;
         private boolean viewPairs = false;
         private String colorByTag;
         private String groupByTag;
@@ -2572,6 +2610,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.groupByOption = (groupByOption == null) ? GroupOption.NONE : groupByOption;
         }
 
+        void setShadeAlignmentsOption(ShadeAlignmentsOption shadeAlignmentsOption){
+            this.shadeAlignmentsOption = shadeAlignmentsOption;
+        }
+
         void setShadeBasesOption(boolean shadeBasesOption) {
             this.shadeBasesOption = shadeBasesOption;
         }
@@ -2653,6 +2695,27 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         public String getColorByTag() {
             return colorByTag == null ? getPreferences().get(SAM_COLOR_BY_TAG) : colorByTag;
+        }
+
+        public ShadeAlignmentsOption getShadeAlignmentsOption() {
+            if (shadeAlignmentsOption != null) {
+                return shadeAlignmentsOption;
+            } else {
+                try {
+                    return ShadeAlignmentsOption.valueOf(getPreferences().get(SAM_SHADE_ALIGNMENT_BY));
+                } catch (IllegalArgumentException e) {
+                    log.error("Error parsing alignment shade option: " + ShadeAlignmentsOption.valueOf(getPreferences().get(SAM_SHADE_ALIGNMENT_BY)));
+                    return ShadeAlignmentsOption.NONE;
+                }
+            }
+        }
+
+        public int getMappingQualityLow() {
+            return mappingQualityLow == null ? getPreferences().getAsInt(SAM_SHADE_QUALITY_LOW) : mappingQualityLow;
+        }
+
+        public int getMappingQualityHigh() {
+            return mappingQualityHigh == null ? getPreferences().getAsInt(SAM_SHADE_QUALITY_HIGH) : mappingQualityHigh;
         }
 
         String getSortByTag() {
@@ -2742,6 +2805,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (groupByOption != null) {
                 element.setAttribute("groupByOption", groupByOption.toString());
             }
+            if (shadeAlignmentsOption != null){
+                element.setAttribute("shadeAlignmentsByOption", shadeAlignmentsOption.toString());
+            }
+            if (mappingQualityLow != null) {
+                element.setAttribute("mappingQualityLow", mappingQualityLow.toString());
+            }
+            if (mappingQualityHigh != null) {
+                element.setAttribute("mappingQualityHigh", mappingQualityHigh.toString());
+            }
             if (viewPairs != false) {
                 element.setAttribute("viewPairs", Boolean.toString(viewPairs));
             }
@@ -2828,6 +2900,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if (element.hasAttribute("groupByOption")) {
                 groupByOption = GroupOption.valueOf(element.getAttribute("groupByOption"));
+            }
+            if (element.hasAttribute("shadeAlignmentsByOption")){
+                shadeAlignmentsOption = ShadeAlignmentsOption.valueOf(element.getAttribute("shadeAlignmentsByOption"));
+            }
+            if (element.hasAttribute("mappingQualityLow")){
+                mappingQualityLow = Integer.parseInt(element.getAttribute("mappingQualityLow"));
+            }
+            if (element.hasAttribute("mappingQualityHigh")) {
+                mappingQualityHigh = Integer.parseInt(element.getAttribute("mappingQualityHigh"));
             }
             if (element.hasAttribute("viewPairs")) {
                 viewPairs = Boolean.parseBoolean(element.getAttribute("viewPairs"));

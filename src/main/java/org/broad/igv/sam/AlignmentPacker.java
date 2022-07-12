@@ -431,7 +431,7 @@ public class AlignmentPacker {
                 if (mate == null) {
                     return null;
                 }
-                if (mate.isMapped() == false) {
+                if (!mate.isMapped()) {
                     return "UNMAPPED";
                 } else {
                     return mate.getChr();
@@ -478,6 +478,8 @@ public class AlignmentPacker {
                 movieName = readNameParts[0];
                 zmw = readNameParts[1];
                 return movieName + "/" + zmw;
+            case MAPPING_QUALITY:
+                return al.getMappingQuality();
         }
         return null;
     }
