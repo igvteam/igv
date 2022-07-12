@@ -952,7 +952,7 @@ public class TrackLoader {
                                 path.contains("dataformat=.bam") ||
                                 path.contains("/query.cgi?");
                 if (!bypassFileAutoDiscovery) {
-                    covPath = path + ".tdf";
+                    covPath = ResourceLocator.appendToPath(locator, ".tdf");
                 }
             }
 
