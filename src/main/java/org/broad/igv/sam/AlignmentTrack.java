@@ -782,6 +782,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         renderOptions.setGroupByOption(option);
         dataManager.packAlignments(renderOptions);
         repaint();
+
     }
 
     public void setBisulfiteContext(BisulfiteContext option) {
@@ -1743,6 +1744,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 group.add(newGroupByPosOption);
             }
 
+            groupMenu.add(new JPopupMenu.Separator());
+            JCheckBoxMenuItem invertGroupNameSortingOption = new JCheckBoxMenuItem("reverse group sorting");
+            invertGroupNameSortingOption.setSelected(renderOptions.invertGroupSorting);
+            invertGroupNameSortingOption.addActionListener(aEvt -> {
+               renderOptions.invertGroupSorting = !renderOptions.invertGroupSorting;
+               dataManager.packAlignments(renderOptions);
+               AlignmentTrack.this.repaint();
+            });
+            groupMenu.add(invertGroupNameSortingOption);
+
             add(groupMenu);
         }
 
@@ -2508,6 +2519,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean pairedArcView;
         private Boolean flagZeroQualityAlignments;
         private Range groupByPos;
+        private boolean invertGroupSorting;
         private Boolean showInsertionMarkers;
         private Boolean hideSmallIndels;
         private Integer smallIndelThreshold;
@@ -2580,6 +2592,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         void setGroupByPos(Range groupByPos) {
             this.groupByPos = groupByPos;
+        }
+
+        void setInvertGroupSorting(boolean invertGroupSorting){
+            this.invertGroupSorting = invertGroupSorting;
         }
 
         void setLinkByTag(String linkByTag) {
@@ -2726,6 +2742,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return groupByPos;
         }
 
+        public boolean isInvertGroupSorting(){
+            return invertGroupSorting;
+        }
         public String getLinkByTag() {
             return linkByTag;
         }
@@ -2837,6 +2856,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (groupByPos != null) {
                 element.setAttribute("groupByPos", groupByPos.toString());
             }
+            if (invertGroupSorting) {
+                element.setAttribute("invertGroupSorting", Boolean.toString(invertGroupSorting));
+            }
             if (hideSmallIndels != null) {
                 element.setAttribute("hideSmallIndels", hideSmallIndels.toString());
             }
@@ -2929,6 +2951,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if (element.hasAttribute("groupByPos")) {
                 groupByPos = Range.fromString(element.getAttribute("groupByPos"));
+            }
+            if (element.hasAttribute("invertGroupSorting")) {
+                invertGroupSorting = Boolean.parseBoolean(element.getAttribute("invertGroupSorting"));
             }
             if (element.hasAttribute("hideSmallIndels")) {
                 hideSmallIndels = Boolean.parseBoolean(element.getAttribute("hideSmallIndels"));
