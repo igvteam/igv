@@ -101,7 +101,7 @@ public class AlignmentPacker {
             // Now alphabetize (sort) and pack the groups
             List<Object> keys = new ArrayList<Object>(groupedAlignments.keySet());
             Comparator<Object> groupComparator = getGroupComparator(renderOptions.getGroupByOption());
-            if(renderOptions.isInvertGroupNameSorting()){
+            if(renderOptions.isInvertGroupSorting()){
                 groupComparator = groupComparator.reversed();
             }
             Collections.sort(keys, groupComparator);
