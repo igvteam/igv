@@ -1496,7 +1496,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             // Sashimi plot, probably should be depdenent on experimentType (RNA)
             addSeparator();
             JMenuItem sashimi = new JMenuItem("Sashimi Plot");
-            sashimi.addActionListener(e1 -> SashimiPlot.getSashimiPlot(null));
+            sashimi.addActionListener(e1 -> SashimiPlot.openSashimiPlot());
             add(sashimi);
 
             // Show alignments, coverage, splice junctions

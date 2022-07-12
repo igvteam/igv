@@ -29,8 +29,6 @@ package org.broad.igv.sam;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.SpliceJunctionFeature;
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
@@ -183,12 +181,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
         menu.addSeparator();
         JMenuItem sashimi = new JMenuItem("Sashimi Plot");
-        sashimi.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                SashimiPlot.getSashimiPlot(null);
-            }
-        });
+        sashimi.addActionListener(e -> SashimiPlot.openSashimiPlot());
         menu.add(sashimi);
 
 
