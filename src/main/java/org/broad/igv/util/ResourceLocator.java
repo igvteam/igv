@@ -531,20 +531,20 @@ public class ResourceLocator {
 
 
     /**
-     * Add the {@code indexExtension} to the path in locator, preserving
+     * Add the {@code extension} to the path in locator, preserving
      * query string elements if present
      *
      * @param locator
-     * @param indexExtension
+     * @param extension
      * @return
      */
-    public static String appendToPath(ResourceLocator locator, String indexExtension) {
-        String indexFile = locator.getURLPath() + indexExtension;
+    public static String appendToPath(ResourceLocator locator, String extension) {
+        String extendedPath = locator.getURLPath() + extension;
         String qs = locator.getURLQueryString();
         if (qs != null && qs.length() > 0) {
-            indexFile += "?" + qs;
+            extendedPath += "?" + qs;
         }
-        return indexFile;
+        return extendedPath;
     }
 
     /**
