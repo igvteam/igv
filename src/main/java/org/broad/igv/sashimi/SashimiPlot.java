@@ -530,8 +530,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         @Override
         protected IGVPopupMenu getPopupMenu(MouseEvent e) {
             IGVPopupMenu menu = new IGVPopupMenu();
-            TrackMenuUtils.addDisplayModeItems(Arrays.<Track>asList(trackComponent.track), menu);
-            menu.addPopupMenuListener(new RepaintPopupMenuListener(SashimiPlot.this));
+            TrackMenuUtils.addDisplayModeItems(Arrays.asList(trackComponent.track), menu);
+            menu.addPopupMenuListener(new RepaintPopupMenuListener(trackComponent));
             return menu;
         }
     }
@@ -686,7 +686,11 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         @Override
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-            component.repaint();
+            UIUtilities.invokeOnEventThread(() -> {
+                component.revalidate();
+                component.repaint();
+            });
+
         }
 
         @Override
