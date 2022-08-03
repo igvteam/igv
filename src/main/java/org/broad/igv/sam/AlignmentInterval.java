@@ -97,6 +97,31 @@ public class AlignmentInterval extends Locus {
         return null;
     }
 
+    /**
+     * Sort rows group by group
+     *  @param option
+     * @param location
+     */
+    public void sortRows(AlignmentTrack.SortOption option, double location, String tag, boolean invertSort) {
+
+        PackedAlignments packedAlignments = getPackedAlignments();
+        if (packedAlignments == null) {
+            return;
+        }
+
+        Comparator<Row> rowComparator = (o1, o2) -> (int) Math.signum(o1.getScore() - o2.getScore());
+        if(invertSort){
+            rowComparator = rowComparator.reversed();
+        }
+
+        for (List<Row> alignmentRows : packedAlignments.values()) {
+            for (Row row : alignmentRows) {
+                row.updateScore(option, location, this, tag);
+            }
+            alignmentRows.sort(rowComparator);
+        }
+    }
+
     public byte getReference(int pos) {
         if (genome == null) {
             return 0;
