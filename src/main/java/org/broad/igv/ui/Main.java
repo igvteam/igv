@@ -227,8 +227,6 @@ public class Main {
         // Anti alias settings.   TODO = Are these neccessary anymore ?
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
-
-        checkVersion();
     }
 
     public static void updateTooltipSettings() {
@@ -237,53 +235,6 @@ public class Main {
         ToolTipManager.sharedInstance().setInitialDelay(prefMgr.getAsInt(TOOLTIP_INITIAL_DELAY));
         ToolTipManager.sharedInstance().setReshowDelay(prefMgr.getAsInt(TOOLTIP_RESHOW_DELAY));
         ToolTipManager.sharedInstance().setDismissDelay(prefMgr.getAsInt(TOOLTIP_DISMISS_DELAY));
-
-    }
-
-    private static void checkVersion() {
-
-        Runnable runnable = () -> {
-            try {
-                Version thisVersion = Version.getVersion(Globals.VERSION);
-                if (thisVersion != null) {
-
-                    final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
-                    // See if user has specified to skip this update
-
-                    Version serverVersion = Version.getVersion(serverVersionString.trim());
-                    if (serverVersion == null) return;
-
-                    if (thisVersion.lessThan(serverVersion)) {
-
-                        log.info("A later version of IGV is available (" + serverVersionString + ")");
-                        final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
-                        boolean skip = false;
-                        if (skipString != null) {
-                            HashSet<String> skipVersion = new HashSet<>(Arrays.asList(skipString.split(",")));
-                            skip = (skipVersion.contains(serverVersionString));
-                        }
-
-                        if (!(skip || Globals.isBatch() || Globals.isHeadless() || Globals.isSuppressMessages())) {
-                            // Inform user, do this only once
-                            final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
-                            UIUtilities.invokeOnEventThread(() -> {
-                                dlg.setVisible(true);
-                                if (dlg.isSkipVersion()) {
-                                    String newSkipString = skipString + "," + serverVersionString;
-                                    PreferencesManager.getPreferences().put(SKIP_VERSION, newSkipString);
-                                }
-                            });
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                log.error("Error checking IGV version ");
-            } finally {
-
-            }
-        };
-
-        (new Thread(runnable)).start();
 
     }
 
