@@ -790,56 +790,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return MenuAndToolbarUtils.createMenu(menuItems, helpMenuAction);
     }
 
-    private void checkVersion() {
-
-        int readTimeout = Globals.READ_TIMEOUT;
-        int connectTimeout = Globals.CONNECT_TIMEOUT;
-
-        try {
-            Main.Version thisVersion = Main.Version.getVersion(Globals.VERSION);
-
-            if (thisVersion != null) {
-
-                Globals.CONNECT_TIMEOUT = 5000;
-                Globals.READ_TIMEOUT = 1000;
-                final String serverVersionString = HttpUtils.getInstance().getContentsAsString(HttpUtils.createURL(Globals.getVersionURL())).trim();
-                // See if user has specified to skip this update
-
-                final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
-                HashSet<String> skipVersion = new HashSet<String>(Arrays.asList(skipString.split(",")));
-                if (skipVersion.contains(serverVersionString)) return;
-
-                Main.Version serverVersion = Main.Version.getVersion(serverVersionString.trim());
-                if (serverVersion == null) return;
-
-                if (thisVersion.lessThan(serverVersion)) {
-
-                    log.info("A later version of IGV is available (" + serverVersionString + ")");
-                    final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
-
-                    dlg.setVisible(true);
-                    if (dlg.isSkipVersion()) {
-                        String newSkipString = skipString + "," + serverVersionString;
-                        PreferencesManager.getPreferences().put(SKIP_VERSION, newSkipString);
-                    }
-
-                } else {
-                    MessageUtils.showMessage("IGV is up to date");
-                }
-            } else {
-                if (Globals.VERSION.contains("3.0_beta") || Globals.VERSION.contains("snapshot")) {
-                    HttpUtils.getInstance().getContentsAsString(HttpUtils.createURL(Globals.getVersionURL())).trim();
-                }
-            }
-
-        } catch (Exception e) {
-            log.error("Error checking version", e);
-        } finally {
-            Globals.CONNECT_TIMEOUT = connectTimeout;
-            Globals.READ_TIMEOUT = readTimeout;
-        }
-    }
-
     private JMenu createExtrasMenu() {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
