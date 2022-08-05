@@ -920,46 +920,50 @@ public class IGVSessionReader implements SessionReader {
 //                return Collections.emptyList();
 //            }
 
+//            String className = getAttribute(element, "clazz");
+//            if (className != null &&
+//                    (className.contains("MergedTracks") ||
+//                            className.contains("CombinedDataTrack") ||
+//                            className.contains("SequenceTrack") ||
+//                            className.contains("BlatTrack"))) {
             String className = getAttribute(element, "clazz");
-            if (className != null &&
-                    (className.contains("MergedTracks") || className.contains("CombinedDataTrack") || className.contains("SequenceTrack"))) {
-                try {
-                    Track track = createTrack(className, element);
-                    if (track != null) {
+            try {
+                Track track = createTrack(className, element);
+                if (track != null) {
 
-                        track.unmarshalXML(element, version);
-                        matchedTracks = Arrays.asList(track);
-                        allTracks.put(track.getId(), matchedTracks);   // Important for second pass
+                    track.unmarshalXML(element, version);
+                    matchedTracks = Arrays.asList(track);
+                    allTracks.put(track.getId(), matchedTracks);   // Important for second pass
 
-                        // Special tracks
-                        if (className.contains("CombinedDataTrack")) {
-                            combinedDataSourceTracks.add(new Pair(track, element));
-                        }
+                    // Special tracks
+                    if (className.contains("CombinedDataTrack")) {
+                        combinedDataSourceTracks.add(new Pair(track, element));
+                    }
 
-                        if (className.contains("MergedTracks")) {
-                            List<DataTrack> memberTracks = processChildTracks(session, element, additionalInformation, rootPath);
-                            ((MergedTracks) track).setMemberTracks(memberTracks);
+                    if (className.contains("MergedTracks")) {
+                        List<DataTrack> memberTracks = processChildTracks(session, element, additionalInformation, rootPath);
+                        ((MergedTracks) track).setMemberTracks(memberTracks);
 
-                            NodeList nodeList = element.getElementsByTagName("DataRange");
-                            if (nodeList != null && nodeList.getLength() > 0) {
-                                Element dataRangeElement = (Element) nodeList.item(0);
-                                try {
-                                    DataRange dataRange = new DataRange(dataRangeElement, version);
-                                    track.setDataRange(dataRange);
-                                } catch (Exception e) {
-                                    log.error("Unrecognized DataRange");
-                                }
+                        NodeList nodeList = element.getElementsByTagName("DataRange");
+                        if (nodeList != null && nodeList.getLength() > 0) {
+                            Element dataRangeElement = (Element) nodeList.item(0);
+                            try {
+                                DataRange dataRange = new DataRange(dataRangeElement, version);
+                                track.setDataRange(dataRange);
+                            } catch (Exception e) {
+                                log.error("Unrecognized DataRange");
                             }
                         }
-                    } else {
-                        log.warn("Warning.  No tracks were found with id: " + id + " in session file");
                     }
-                } catch (Exception e) {
-                    log.error("Error restoring track: " + element.toString(), e);
-                    MessageUtils.showMessage("Error loading track: " + element.toString());
+                } else {
+                    log.warn("Warning.  No tracks were found with id: " + id + " in session file");
                 }
+            } catch (Exception e) {
+                log.error("Error restoring track: " + element.toString(), e);
+                MessageUtils.showMessage("Error loading track: " + element.toString());
             }
         }
+        //}
 
         NodeList elements = element.getChildNodes();
         process(session, elements, additionalInformation, rootPath);
