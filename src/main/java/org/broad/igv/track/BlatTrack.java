@@ -121,6 +121,7 @@ public class BlatTrack extends FeatureTrack {
             if (sequence == null || sequence.length() == 0) {
                 sequence = element.getAttribute("id");  // Bug in versions < 2.11.5
             }
+            this.sequence = sequence;
             String db = element.getAttribute("db");
             if (db == null || db.length() == 0) {
                 db = GenomeManager.getInstance().getCurrentGenome().getBlatDB();
