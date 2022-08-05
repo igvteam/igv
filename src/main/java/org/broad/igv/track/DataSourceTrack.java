@@ -56,7 +56,7 @@ public class DataSourceTrack extends DataTrack {
 
     public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource) {
         super(locator, id, name);
-        if(dataSource == null) {
+        if(dataSource == null && locator != null) {
             log.warn("Null data source for track: " + locator.getTrackName() + "  " + locator.getPath());
         }
         if (dataSource != null) {
