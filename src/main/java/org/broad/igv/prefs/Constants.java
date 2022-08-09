@@ -137,6 +137,7 @@ final public class Constants {
     public static final String SAM_SAMPLING_WINDOW = "SAM.SAMPLING_WINDOW";
     public static final String SAM_DOWNSAMPLE_READS = "SAM.DOWNSAMPLE_READS";
     public static final String SAM_SORT_OPTION = "SAM.SORT_OPTION";
+    public static final String SAM_INVERT_SORT = "SAM.INVERT_SORT";
     public static final String SAM_GROUP_OPTION = "SAM.GROUP_OPTION";
     public static final String SAM_SHOW_ALL_BASES = "SAM.SHOW_ALL_BASES";
     public static final String SAM_SHOW_MISMATCHES = "SAM.SHOW_MISMATCHES";
