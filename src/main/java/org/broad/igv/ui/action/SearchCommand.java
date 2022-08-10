@@ -44,6 +44,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.liftover.Liftover;
 
 import javax.swing.*;
 import java.awt.*;
@@ -65,7 +66,6 @@ public class SearchCommand {
 
     private static Logger log = LogManager.getLogger(SearchCommand.class);
     public static int SEARCH_LIMIT = 10000;
-    private boolean askUser = false;
 
     String searchString;
     ReferenceFrame referenceFrame;
@@ -144,6 +144,18 @@ public class SearchCommand {
      */
     public List<SearchResult> runSearch(String searchString) {
 
+        // Check for special "liftover" syntax.  This allows searching based on coordinates from another genome
+        // (the "target" genome) if an associated liftover map is defined for the target genome.
+        Liftover liftover = null;
+        if (searchString.startsWith("!") && genome.getLiftoverMap() != null) {
+            int idx = searchString.indexOf(' ');
+            String genomeKey = searchString.substring(1, idx);
+            liftover = genome.getLiftoverMap().get(genomeKey);
+            if (liftover != null) {
+                searchString = searchString.substring(idx + 1);
+            }
+        }
+
         List<SearchResult> results = new ArrayList<>();
 
         searchString = searchString.replace("\"", "");
@@ -151,26 +163,42 @@ public class SearchCommand {
         Set<ResultType> wholeStringType = checkTokenType(searchString);
         if (wholeStringType.contains(ResultType.LOCUS)) {
             results.add(calcChromoLocus(searchString));
-            return results;
-        }
-
-        // Space delimited?
-        String[] tokens = searchString.split("\\s+");
-        for (String s : tokens) {
-            SearchResult result = parseToken(s);
-            if (result != null) {
-                results.add(result);
-            } else {
-                SearchResult unknownResult = new SearchResult();
-                unknownResult.setMessage("Unknown search term: " + s);
-                results.add(unknownResult);
+        } else {
+            // Space delimited?
+            String[] tokens = searchString.split("\\s+");
+            for (String s : tokens) {
+                SearchResult result = parseToken(s);
+                if (result != null) {
+                    results.add(result);
+                } else {
+                    SearchResult unknownResult = new SearchResult();
+                    unknownResult.setMessage("Unknown search term: " + s);
+                    results.add(unknownResult);
+                }
             }
         }
 
         if (results.size() == 0) {
             SearchResult result = new SearchResult();
-            result.setMessage("Invalid Search String: " + searchString);
+            result.setMessage("\"" + searchString + " \" not found.");
             results.add(result);
+        }
+
+        // If this is a liftover search map the results
+        // TODO -- support gene name lookup
+        if(liftover != null) {
+            List<SearchResult> mappedResults = new ArrayList<>();
+            for(SearchResult result : results) {
+                if(result.getType() == ResultType.LOCUS) {
+                   List<Range> mapped = liftover.map(new Range(result.getChr(), result.getStart(), result.getEnd()));
+                   for(Range m : mapped) {
+                       mappedResults.add(new SearchResult(result.type, m.chr, m.start, m.end));
+                   }
+                } else {
+                    // ??? Error
+                }
+            }
+            results = mappedResults;
         }
 
         return results;
@@ -353,7 +381,6 @@ public class SearchCommand {
                 //This should never happen
                 throw new IllegalArgumentException("Something went wrong parsing input token");
             }
-            askUser |= genomePosList.size() >= 2;
 
             for (int genomePos : genomePosList.keySet()) {
                 Feature feat = genomePosList.get(genomePos);
@@ -532,7 +559,8 @@ public class SearchCommand {
         FEATURE_MUT_NT,
         LOCUS,
         CHROMOSOME,
-        ERROR
+        ERROR,
+        LIFTOVER
     }
 
 

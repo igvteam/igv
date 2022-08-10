@@ -390,6 +390,10 @@ Match_Norm_Seq_Allele2
                     }
                 }
 
+                if(nextLine == null) {
+                    return false;
+                }
+
                 String[] tokens = Globals.tabPattern.split(nextLine);
                 if (tokens.length > 5 && tokens[0].equalsIgnoreCase("Hugo_Symbol")) {
                     return true;
