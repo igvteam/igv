@@ -212,6 +212,7 @@ public class JsonGenomeLoader extends GenomeLoader {
             // Load liftover "chain" files.  This enables navigating by coordinates of another genome.
             // Not a common option.
             JsonElement chains = json.get("chainURL");
+
             if (chains != null) {
                 Map<String, Liftover> liftoverMap = new HashMap<>();
                 JsonObject chainsObj = chains.getAsJsonObject();

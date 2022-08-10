@@ -35,7 +35,6 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.Track;
@@ -270,33 +269,6 @@ public class AlignmentDataManager implements IGVEventObserver {
             }
         }
         return null;
-    }
-
-    /**
-     * Sort rows group by group
-     *
-     * @param option
-     * @param location
-     */
-    public boolean sortRows(SortOption option, ReferenceFrame frame, double location, String tag) {
-
-        AlignmentInterval interval = getLoadedInterval(frame);
-        if (interval == null) {
-            return false;
-        } else {
-            PackedAlignments packedAlignments = interval.getPackedAlignments();
-            if (packedAlignments == null) {
-                return false;
-            }
-
-            for (List<Row> alignmentRows : packedAlignments.values()) {
-                for (Row row : alignmentRows) {
-                    row.updateScore(option, location, interval, tag);
-                }
-                Collections.sort(alignmentRows, (o1, o2) -> (int) Math.signum(o1.getScore() - o2.getScore()));
-            }
-            return true;
-        }
     }
 
     public void setViewAsPairs(boolean option, AlignmentTrack.RenderOptions renderOptions) {
