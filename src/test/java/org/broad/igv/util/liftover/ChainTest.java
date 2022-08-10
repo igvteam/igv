@@ -1,5 +1,6 @@
 package org.broad.igv.util.liftover;
 
+import org.broad.igv.feature.Range;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -20,14 +21,14 @@ public class ChainTest {
 
         Chain chain = getTestChain();
 
-        int [] span = {4784516, 4784516 + 10};
-        List<int []> mapped = chain.map(span);
+        Range span = new Range("chr1",4784516, 4784516 + 10);
+        List<Range> mapped = chain.map(span);
 
         assertEquals(1, mapped.size());
-        int [] m = mapped.get(0);
+        Range m = mapped.get(0);
 
-        assertEquals(0, m[0]);
-        assertEquals(10, (m[1] - m[0]));
+        assertEquals(0, m.start);
+        assertEquals(10, (m.end - m.start));
     }
 
     /**
@@ -39,14 +40,14 @@ public class ChainTest {
         Chain chain = getTestChain();
 
         int boundary = 4784516 + 1725;
-        int [] span = {boundary - 10, boundary + 10};
-        List<int []> mapped = chain.map(span);
+        Range span = new Range("chr1", boundary - 10, boundary + 10);
+        List<Range> mapped = chain.map(span);
 
         assertEquals(1, mapped.size());
-        int [] m = mapped.get(0);
+        Range m = mapped.get(0);
 
-        assertEquals(1725 - 10, m[0]);
-        assertEquals(10, (m[1] - m[0]));
+        assertEquals(1725 - 10, m.start);
+        assertEquals(10, (m.end - m.start));
     }
 
     /**
@@ -57,14 +58,14 @@ public class ChainTest {
         Chain chain = getTestChain();
 
         int boundary = 4784516;
-        int [] span = {boundary - 10, boundary + 10};
-        List<int []> mapped = chain.map(span);
+        Range span = new Range("chr1",boundary - 10, boundary + 10);
+        List<Range> mapped = chain.map(span);
 
         assertEquals(1, mapped.size());
-        int [] m = mapped.get(0);
+        Range m = mapped.get(0);
 
-        assertEquals(0, m[0]);
-        assertEquals(10, (m[1] - m[0]));
+        assertEquals(0, m.start);
+        assertEquals(10, (m.end - m.start));
     }
 
     /**
@@ -75,20 +76,20 @@ public class ChainTest {
         Chain chain = getTestChain();
 
         int boundary = 4784516 + 1725 + 14679;
-        int [] span = {4784516 - 10, boundary + 10};
-        List<int []> mapped = chain.map(span);
+        Range span = new Range("chr1",4784516 - 10, boundary + 10);
+        List<Range> mapped = chain.map(span);
 
         assertEquals(2, mapped.size());
 
-        Collections.sort(mapped, (o1, o2) -> o1[0] - o2[0]);
+        Collections.sort(mapped, (o1, o2) -> o1.start - o2.start);
 
-        int [] m1 = mapped.get(0);
-        assertEquals(0, m1[0]);
-        assertEquals(1725, (m1[1] - m1[0]));
+        Range m1 = mapped.get(0);
+        assertEquals(0, m1.start);
+        assertEquals(1725, (m1.end - m1.start));
 
-        int [] m2 = mapped.get(1);
-        assertEquals(1725, m2[0]);
-        assertEquals(10, (m2[1] - m2[0]));
+        Range m2 = mapped.get(1);
+        assertEquals(1725, m2.start);
+        assertEquals(10, (m2.end - m2.start));
     }
 
     /**
@@ -98,8 +99,8 @@ public class ChainTest {
     public void outside() {
         Chain chain = getTestChain();
 
-        int [] span = {10,20};
-        List<int []> mapped = chain.map(span);
+        Range span = new Range("chr1",10,20);
+        List<Range> mapped = chain.map(span);
         assertEquals(0, mapped.size());
     }
 

@@ -2,12 +2,16 @@ package org.broad.igv.util.liftover;
 
 import htsjdk.tribble.Feature;
 import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.Range;
 import org.broad.igv.util.Interval;
 import org.broad.igv.util.IntervalTree;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a single "chain" from a UCSC chain format file (see https://genome.ucsc.edu/goldenPath/help/chain.html)
+ */
 public class Chain {
     String tName;
     int tSize;
@@ -34,6 +38,10 @@ public class Chain {
     }
 
 
+    /**
+     * Set the pairwise alignments from alignment lines of the chain file.
+     * @param lines
+     */
     public void setAlignments(List<String[]> lines) {
 
         this.tree = new IntervalTree();
@@ -60,25 +68,28 @@ public class Chain {
     }
 
     /**
-     * Map a span represented by the array [start, end] in target coordinates to query coordinates
+     * Map a region in target coordinates to query coordinates
      *
      * @param span
      * @return
      */
-    public List<int[]> map(int[] span) {
+    public List<Range> map(Range span) {
 
-        List<int[]> mapped = new ArrayList<>();
-        List<Interval<int[]>> intervals = this.tree.findOverlapping(span[0], span[1]);
-        if(intervals != null) {
-            for(Interval<int[]> interval : intervals) {
+        List<Range> mapped = new ArrayList<>();
 
-                int ds = span[0] - interval.getLow();
+        if(span.getChr().equals(this.tName)) {
+            List<Interval<int[]>> intervals = this.tree.findOverlapping(span.start, span.end);
+            if (intervals != null) {
+                for (Interval<int[]> interval : intervals) {
 
-                int [] qspan = interval.getValue();
-                int start = Math.max(qspan[0], qspan[0] + ds);
-                int end = Math.min(qspan[1], qspan[0] + (span[1] - span[0]) + ds);
-                int [] mappedSpan = {start, end};
-                mapped.add(mappedSpan);
+                    int ds = span.start - interval.getLow();
+
+                    int[] qspan = interval.getValue();
+                    int start = Math.max(qspan[0], qspan[0] + ds);
+                    int end = Math.min(qspan[1], qspan[0] + (span.getLength()) + ds);
+                    Range mappedSpan = new Range(this.qName, start, end);
+                    mapped.add(mappedSpan);
+                }
             }
         }
 

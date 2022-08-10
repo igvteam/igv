@@ -44,6 +44,7 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.liftover.Liftover;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -79,6 +80,8 @@ public class Genome {
     private List<ResourceLocator> annotationResources;
     private Map<ResourceLocator, List<Track>> annotationTracks;
     private boolean showWholeGenomeView = true;
+
+    private Map<String, Liftover> liftoverMap;
 
     /**
      * @param id
@@ -673,5 +676,13 @@ public class Genome {
 
     public void setLongChromosomeNames(List<String> chrNames) {
         this.longChromosomeNames = chrNames;
+    }
+
+    public Map<String, Liftover> getLiftoverMap() {
+        return liftoverMap;
+    }
+
+    public void setLiftoverMap(Map<String, Liftover> liftoverMap) {
+        this.liftoverMap = liftoverMap;
     }
 }
