@@ -217,20 +217,6 @@ public class HttpUtils {
         return new String(bytes, "UTF-8");
     }
 
-    public String getContentsAsGzippedString(URL url) throws IOException {
-        InputStream is = null;
-        HttpURLConnection conn = openConnection(url, null);
-        try {
-            is = conn.getInputStream();
-            return readContents(new GZIPInputStream(is));
-        } catch (IOException e) {
-            readErrorStream(conn);  // Consume content
-            throw e;
-        } finally {
-            if (is != null) is.close();
-        }
-    }
-
     public byte[] getContentsAsBytes(URL url, Map<String, String> headers) throws IOException {
         InputStream is = null;
         HttpURLConnection conn = openConnection(url, headers);
@@ -675,14 +661,11 @@ public class HttpUtils {
         }
 
         // If the URL is protected via an oAuth provider check login, and optionally map url with find/replace string
-        OAuthProvider oauthProvider = null;
-        if (OAuthUtils.isInitialized()) {
-            oauthProvider = OAuthUtils.getInstance().getProvider();
-            if (oauthProvider != null && oauthProvider.appliesToUrl(url)) {
-                oauthProvider.checkLogin();
-                if (oauthProvider.findString != null) {
-                    url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
-                }
+        OAuthProvider oauthProvider = OAuthUtils.getInstance().getProvider();
+        if (oauthProvider != null && oauthProvider.appliesToUrl(url)) {
+            oauthProvider.checkLogin();
+            if (oauthProvider.findString != null) {
+                url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
             }
         }
 

@@ -38,8 +38,12 @@ import org.broad.igv.util.ParsingUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by jrobinso on 11/19/14.
@@ -66,9 +70,6 @@ public class OAuthUtils {
         return theInstance;
     }
 
-    public static boolean isInitialized() {
-        return theInstance != null;
-    }
 
     public OAuthProvider getProvider(String providerName) {
         if (providerName != null) {
@@ -97,7 +98,7 @@ public class OAuthUtils {
 
         // Load a provider config specified in preferences
         String provisioningURL = PreferencesManager.getPreferences().getProvisioningURL();
-        log.debug("The provisioning URL from prefs.properties is: "+provisioningURL);
+        log.debug("The provisioning URL from prefs.properties is: " + provisioningURL);
         if (provisioningURL != null && provisioningURL.length() > 0) {
             loadProvisioningURL(provisioningURL);
         }
@@ -117,7 +118,7 @@ public class OAuthUtils {
         if (defaultProvider == null) {
             // IGV default
             log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from Broad's IGV properties endpoint: " + PROPERTIES_URL);
-            String propString = HttpUtils.getInstance().getContentsAsGzippedString(HttpUtils.createURL(PROPERTIES_URL));
+            String propString = getContentsAsGzippedString(HttpUtils.createURL(PROPERTIES_URL));
             JsonParser parser = new JsonParser();
             JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
             defaultProvider = new OAuthProvider(obj);
@@ -170,5 +171,18 @@ public class OAuthUtils {
     public void setAccessToken(Map<String, String> params) {
         OAuthProvider provider = defaultProvider;
         provider.setAccessToken("token");
+    }
+
+
+    public String getContentsAsGzippedString(URL url) throws IOException {
+        URLConnection conn = url.openConnection();
+        InputStream is = conn.getInputStream();
+        try {
+            is = conn.getInputStream();
+            byte[] bytes = (new GZIPInputStream(is)).readAllBytes();
+            return new String(bytes, "UTF-8");
+        } finally {
+            if (is != null) is.close();
+        }
     }
 }
