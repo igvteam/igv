@@ -675,11 +675,14 @@ public class HttpUtils {
         }
 
         // If the URL is protected via an oAuth provider check login, and optionally map url with find/replace string
-        OAuthProvider oauthProvider = OAuthUtils.getInstance().getProvider();
-        if (oauthProvider != null && oauthProvider.appliesToUrl(url)) {
-            oauthProvider.checkLogin();
-            if (oauthProvider.findString != null) {
-                url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
+        OAuthProvider oauthProvider = null;
+        if (OAuthUtils.isInitialized()) {
+            oauthProvider = OAuthUtils.getInstance().getProvider();
+            if (oauthProvider != null && oauthProvider.appliesToUrl(url)) {
+                oauthProvider.checkLogin();
+                if (oauthProvider.findString != null) {
+                    url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
+                }
             }
         }
 

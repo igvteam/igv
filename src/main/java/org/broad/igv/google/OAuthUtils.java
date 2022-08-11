@@ -66,6 +66,10 @@ public class OAuthUtils {
         return theInstance;
     }
 
+    public static boolean isInitialized() {
+        return theInstance != null;
+    }
+
     public OAuthProvider getProvider(String providerName) {
         if (providerName != null) {
             if (!providers.containsKey(providerName)) {
