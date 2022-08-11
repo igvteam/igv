@@ -211,13 +211,13 @@ public class JsonGenomeLoader extends GenomeLoader {
 
             // Load liftover "chain" files.  This enables navigating by coordinates of another genome.
             // Not a common option.
-            JsonElement chains = json.get("chainURL");
+            JsonElement chains = json.get("chains");
             if (chains != null) {
                 Map<String, Liftover> liftoverMap = new HashMap<>();
                 JsonObject chainsObj = chains.getAsJsonObject();
                 for (Map.Entry<String, JsonElement> entry : chainsObj.entrySet()) {
                     String chainsPath = FileUtils.getAbsolutePath(entry.getValue().getAsString(), genomePath);
-                  liftoverMap.put(entry.getKey(), Liftover.load(chainsPath));
+                    liftoverMap.put(entry.getKey(), Liftover.load(chainsPath));
                 }
                 newGenome.setLiftoverMap(liftoverMap);
             }
