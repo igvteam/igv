@@ -48,11 +48,9 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.*;
-import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
@@ -1378,21 +1376,16 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, String tag) {
-        sortAlignmentTracks(option, null, tag);
+    public void sortAlignmentTracks(AlignmentTrack.SortOption option, String tag, final boolean invertSort) {
+        sortAlignmentTracks(option, null, tag, invertSort);
     }
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, Double location, String tag) {
-        double actloc;
-        List<Track> alignmentTracks = getAllTracks().stream()
+    public void sortAlignmentTracks(AlignmentTrack.SortOption option, Double location, String tag, boolean invertSort) {
+        List<AlignmentTrack> alignmentTracks = getAllTracks().stream()
                 .filter(track -> track instanceof AlignmentTrack)
+                .map(track -> (AlignmentTrack)track)
+                .peek(track -> track.sortRows(option, location, tag, invertSort))
                 .collect(Collectors.toList());
-        for (Track t : alignmentTracks) {
-            for (ReferenceFrame frame : FrameManager.getFrames()) {
-                actloc = location != null ? location : frame.getCenter();
-                ((AlignmentTrack) t).sortRows(option, frame, actloc, tag);
-            }
-        }
         this.repaint(alignmentTracks);
     }
 

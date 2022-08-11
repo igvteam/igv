@@ -829,7 +829,7 @@ public class CommandExecutor {
 
         if (sort != null) {
             final AlignmentTrack.SortOption sortOption = getAlignmentSortOption(sort);
-            igv.sortAlignmentTracks(sortOption, sortTag);
+            igv.sortAlignmentTracks(sortOption, sortTag, false);
         }
 
         return CommandListener.OK;
@@ -1061,7 +1061,7 @@ public class CommandExecutor {
                     }
                 }
             }
-            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
+            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag, false);
             return "OK";
         }
     }
@@ -1170,6 +1170,7 @@ public class CommandExecutor {
         }
     }
 
+    //todo check that this matches all the existing sorts
     private static AlignmentTrack.SortOption getAlignmentSortOption(String str) {
         str = str == null ? "base" : str;
         if (str.equalsIgnoreCase("start") || str.equalsIgnoreCase("position")) {
