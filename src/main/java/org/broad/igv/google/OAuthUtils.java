@@ -58,8 +58,6 @@ public class OAuthUtils {
 
     private static Logger log = LogManager.getLogger(OAuthUtils.class);
 
-    public static String findString = null;
-    public static String replaceString = null;
     private static final String PROPERTIES_URL = "https://s3.amazonaws.com/igv.org.app/desktop_google";
 
     private static OAuthUtils theInstance;
@@ -70,10 +68,6 @@ public class OAuthUtils {
         if (theInstance == null) {
             theInstance = new OAuthUtils();
         }
-        return theInstance;
-    }
-
-    public static synchronized OAuthUtils getInstanceNoCreate() {
         return theInstance;
     }
 
@@ -172,7 +166,7 @@ public class OAuthUtils {
     }
 
 
-    // jtr -- I don't think this is used.  If it is I don't know how to distinguish provider.
+    // Used by batch commands (CommandExecutor).  No argument provided to select provider
     public void setAccessToken(Map<String, String> params) {
         OAuthProvider provider = defaultProvider;
         provider.setAccessToken("token");

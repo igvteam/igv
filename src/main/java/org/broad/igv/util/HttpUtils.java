@@ -676,12 +676,8 @@ public class HttpUtils {
 
         // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
         // string to dynamically map url - dwm08
-        OAuthProvider oauthProvider = OAuthUtils.getInstanceNoCreate() != null ? OAuthUtils.getInstanceNoCreate().getProvider() : null;
-        if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
-            url = HttpUtils.createURL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
-        }
-        // Also support find and replace for other non-google oauth providers
-        else if(oauthProvider != null && oauthProvider.appliesToUrl(url) && oauthProvider.findString != null){
+        OAuthProvider oauthProvider = OAuthUtils.getInstance().getProvider();
+        if(oauthProvider != null && oauthProvider.appliesToUrl(url) && oauthProvider.findString != null){
             url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
         }
 
