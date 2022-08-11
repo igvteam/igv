@@ -29,7 +29,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.FileUtils;
@@ -42,15 +41,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-// XXX: Both Oauth and JWT classes need a serious refactor/audit. Multi-provider support, concurrency, security, etc...:
-// WARNING: This class requires a thorough security audit of Oauth/JWT implementations. I would recommend going through:
-// https://www.owasp.org/index.php/JSON_Web_Token_(JWT)_Cheat_Sheet_for_Java
-//
-// And potentially refactor/substitute this logic with:
-//
-// https://github.com/auth0/java-jwt.
-// https://developers.google.com/api-client-library/java/google-oauth-java-client/
-
 /**
  * Created by jrobinso on 11/19/14.
  */
@@ -61,7 +51,12 @@ public class OAuthUtils {
     private static final String PROPERTIES_URL = "https://s3.amazonaws.com/igv.org.app/desktop_google";
 
     private static OAuthUtils theInstance;
+
+    /**
+     * Map of key name -> oauth provider.  This is currently only used to distinguish Amazon from Google providers.
+     */
     static Map<String, OAuthProvider> providers;
+
     static OAuthProvider defaultProvider;
 
     public static synchronized OAuthUtils getInstance() {
@@ -95,6 +90,7 @@ public class OAuthUtils {
     }
 
     public void fetchOauthProperties() throws IOException {
+
         // Load a provider config specified in preferences
         String provisioningURL = PreferencesManager.getPreferences().getProvisioningURL();
         log.debug("The provisioning URL from prefs.properties is: "+provisioningURL);

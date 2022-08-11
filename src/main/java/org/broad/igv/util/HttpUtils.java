@@ -674,18 +674,20 @@ public class HttpUtils {
             }
         }
 
-        // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
-        // string to dynamically map url - dwm08
+        // If the URL is protected via an oAuth provider check login, and optionally map url with find/replace string
         OAuthProvider oauthProvider = OAuthUtils.getInstance().getProvider();
-        if(oauthProvider != null && oauthProvider.appliesToUrl(url) && oauthProvider.findString != null){
-            url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
+        if (oauthProvider != null && oauthProvider.appliesToUrl(url)) {
+            oauthProvider.checkLogin();
+            if (oauthProvider.findString != null) {
+                url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
+            }
         }
 
         // If a presigned URL, check its validity and update if needed
         if (AmazonUtils.isPresignedURL(url.toExternalForm())) {
             url = new URL(AmazonUtils.updatePresignedURL(url.toExternalForm()));
         }
-        
+
 
         // If an S3 url, obtain a signed https url
         if (AmazonUtils.isAwsS3Path(url.toExternalForm())) {
@@ -716,20 +718,20 @@ public class HttpUtils {
         if (proxySettings != null && proxySettings.isProxyDefined()) {
 
             // NOTE: setting disabledSchemes to "" through System.setProperty does not work !!!
-             System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
-             System.setProperty("jdk.http.auth.proxying.disabledSchemes", "");
+            System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+            System.setProperty("jdk.http.auth.proxying.disabledSchemes", "");
 
 //            if (url.getProtocol().equals("https") && proxySettings.isUserPwDefined()) {
 //                conn = new ProxiedHttpsConnection(url, proxySettings.proxyHost, proxySettings.proxyPort,
 //                        proxySettings.user, proxySettings.pw);
 //            } else {
-                Proxy proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
-                conn = (HttpURLConnection) url.openConnection(proxy);
-                if (proxySettings.isUserPwDefined()) {
-                    byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
-                    String encodedUserPwd = String.valueOf(Base64Coder.encode(bytes));
-                    conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
-                }
+            Proxy proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
+            conn = (HttpURLConnection) url.openConnection(proxy);
+            if (proxySettings.isUserPwDefined()) {
+                byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
+                String encodedUserPwd = String.valueOf(Base64Coder.encode(bytes));
+                conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
+            }
 //            }
         }
         if (conn == null && !PreferencesManager.getPreferences().getAsBoolean("PROXY.DISABLE_CHECK")) {
@@ -779,7 +781,7 @@ public class HttpUtils {
             if (token != null) {
                 conn.setRequestProperty("Authorization", "Bearer " + token);
             }
-        } 
+        }
 
         // If this a google url (or other url covered by custom oauth provider) and we have an access token use it.
         else if (oauthProvider != null && oauthProvider.appliesToUrl(url)) {
