@@ -539,13 +539,8 @@ public class OAuthProvider {
                      return true;
                  }
             }
-            return false;
         }
-        // Otherwise assume it's a google provider and check if this is a google url
-        else{
-            return GoogleUtils.isGoogleCloud(url.toExternalForm());
-        }
-
+        return false;
     }
 
     /**
