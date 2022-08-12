@@ -67,6 +67,11 @@ public class OAuthProvider {
 
         config = obj;
 
+        // For backward compatibility
+        if (obj.has("installed") && !obj.has("client_id")) {
+            obj = obj.get("installed").getAsJsonObject();
+        }
+
         // Mandatory attributes, fail hard if not present
         try {
             clientId = obj.get("client_id").getAsString();
