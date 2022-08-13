@@ -2890,7 +2890,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (groupByPos != null) {
                 element.setAttribute("groupByPos", groupByPos.toString());
             }
-            if(invertSorting) {
+            if(invertSorting != null) {
                 element.setAttribute("invertSorting", Boolean.toString(invertSorting));
             }
             if(sortOption != null){
