@@ -62,6 +62,12 @@ public class AlignmentRenderer {
 
     private static final Color negStrandColor = new Color(150, 150, 230);
     private static final Color posStrandColor = new Color(230, 150, 150);
+
+    private static final Color firstOfPairColor = new Color(150, 150, 230);
+    private static final Color secondOfPairColor = new Color(230, 150, 150);
+    private static final Color firstAndSecondofPairColor = new Color(150, 150, 0);
+    private static final Color neitherForOrSecondOfPair = new Color(198, 106, 245, 255);
+
     private static final Color RL_COLOR = new Color(0, 150, 0);
     private static final Color RR_COLOR = new Color(20, 50, 200);
     private static final Color LL_COLOR = new Color(0, 150, 150);
@@ -1245,6 +1251,19 @@ public class AlignmentRenderer {
                     c = negStrandColor;
                 } else if (fragmentStrand == Strand.POSITIVE) {
                     c = posStrandColor;
+                }
+                break;
+            case READ_ORDER:
+                if (alignment.isPaired()){
+                    if(alignment.isFirstOfPair() && !alignment.isSecondOfPair()){
+                        c = firstOfPairColor;
+                    } else if(!alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
+                        c = secondOfPairColor;
+                    } else if (alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
+                        c = firstAndSecondofPairColor;
+                    } else {
+                        c = neitherForOrSecondOfPair;
+                    }
                 }
                 break;
             case READ_GROUP:
