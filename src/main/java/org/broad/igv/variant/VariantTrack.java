@@ -900,7 +900,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     public String getNameValueString(int y) {
-        if (y < top + getVariantBandHeight()) {
+        if (y < top + getVariantsHeight()) {
             return super.getNameValueString(y);
         } else {
             String sample = getSampleAtPosition(y);
