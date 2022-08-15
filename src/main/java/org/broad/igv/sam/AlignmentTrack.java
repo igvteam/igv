@@ -97,7 +97,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         READ_STRAND,
         FIRST_OF_PAIR_STRAND,
         PAIR_ORIENTATION,
-        READ_ORDER,
         SAMPLE,
         READ_GROUP,
         LIBRARY,
@@ -1872,11 +1871,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
             mappings.put("read group", ColorOption.READ_GROUP);
-
-            if (dataManager.isPairedEnd()) {
-                mappings.put("read order", ColorOption.READ_ORDER);
-            }
-
+            
             mappings.put("sample", ColorOption.SAMPLE);
             mappings.put("library", ColorOption.LIBRARY);
             mappings.put("movie", ColorOption.MOVIE);
