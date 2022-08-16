@@ -817,11 +817,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return false;
     }
 
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
-        return 0.0f;
-    }
-
-
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
         if (downsampleRect != null && mouseY > downsampleRect.y && mouseY <= downsampleRect.y + downsampleRect.height) {

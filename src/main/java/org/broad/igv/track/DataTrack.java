@@ -320,12 +320,9 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
      * @param zoom
      * @param type
      * @param frameName
-     * @param tracks    Mutation scores require other tracks to calculate the score. If provided,
-     *                  use these tracks. If null and not headless we use the currently loaded tracks.
      * @return
      */
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName,
-                                List<Track> tracks) {
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
 
         if (end <= start) {
             return 0;
@@ -367,7 +364,8 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
             } else if (type == RegionScoreType.MUTATION_COUNT) {
                 // Sort by overlaid mutation count.
-                if (!Globals.isHeadless() && tracks == null) {
+                List<Track> tracks = null;
+                if (!Globals.isHeadless()) {
                     tracks = IGV.getInstance().getOverlayTracks(this);
                 }
                 float count = 0;

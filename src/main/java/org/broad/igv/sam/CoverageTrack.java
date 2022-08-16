@@ -403,10 +403,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         }
     }
 
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
-        return 0;
-    }
-
     public void rescale(ReferenceFrame iframe) {
         List<ReferenceFrame> frameList = new ArrayList<ReferenceFrame>();
         if (iframe != null) frameList.add(iframe);

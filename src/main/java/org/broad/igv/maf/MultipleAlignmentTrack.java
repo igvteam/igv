@@ -291,12 +291,6 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         return "Multiple alignments";
     }
 
-    public float getRegionScore(String chr, int start, int end, int zoom,
-                                RegionScoreType type, String frameName) {
-        return 0;
-    }
-
-
     /**
      * Override to return a specialized popup menu
      *

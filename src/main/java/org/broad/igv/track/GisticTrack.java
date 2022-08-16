@@ -327,22 +327,6 @@ public class GisticTrack extends AbstractTrack {
     }
 
     /**
-     * This method is required for the interface, but will not be called.
-     *
-     * @param chr
-     * @param start
-     * @param end
-     * @param zoom
-     * @param type
-     * @param frameName
-     * @return
-     */
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
-        return 0;
-    }
-
-
-    /**
      * Method description
      *
      * @param chr
