@@ -714,7 +714,7 @@ public class ReferenceFrame {
      * @param end
      * @return
      */
-    private int calculateZoom(double start, double end) {
+    public int calculateZoom(double start, double end) {
         return (int) Math.round((Math.log((getChromosomeLength() / (end - start)) * (((double) widthInPixels) / binsPerTile)) / Globals.log2));
     }
 
