@@ -214,10 +214,15 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         setVisible(false);
     }
 
+    @Override
+    public int getVisibilityWindow() {
+        return (int) dataManager.getVisibilityWindow();
+    }
+
     public void render(RenderContext context, Rectangle rect) {
 
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
-        if (viewWindowSize > dataManager.getVisibilityWindow() && dataSource == null) {
+        if (viewWindowSize > getVisibilityWindow() && dataSource == null) {
             Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             GraphicUtils.drawCenteredText("Zoom in to see coverage.", visibleRect, g);
