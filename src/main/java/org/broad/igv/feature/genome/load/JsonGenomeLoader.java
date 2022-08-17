@@ -20,14 +20,13 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.liftover.Liftover;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class JsonGenomeLoader extends GenomeLoader {
 
@@ -59,12 +58,16 @@ public class JsonGenomeLoader extends GenomeLoader {
             String indexPath = indexPathObject == null ? null : indexPathObject.getAsString();
 
             JsonElement gziObject = json.get("gziIndexURL");
+            if (gziObject == null) {
+                gziObject = json.get("compressedIndexURL");
+            }
             String gziIndexPath = gziObject == null ? null : gziObject.getAsString();
 
             fastaPath = FileUtils.getAbsolutePath(fastaPath, genomePath);
             if (indexPath != null) {
                 indexPath = FileUtils.getAbsolutePath(indexPath, genomePath);
-            } if (gziIndexPath != null) {
+            }
+            if (gziIndexPath != null) {
                 gziIndexPath = FileUtils.getAbsolutePath(gziIndexPath, genomePath);
             }
 
@@ -125,7 +128,7 @@ public class JsonGenomeLoader extends GenomeLoader {
                     }
 
                     JsonElement infoURL = obj.get("infoURL");
-                    if(infoURL != null) {
+                    if (infoURL != null) {
                         res.setFeatureInfoURL(infoURL.getAsString());
                     }
 
@@ -206,6 +209,21 @@ public class JsonGenomeLoader extends GenomeLoader {
                 newGenome.setLongChromosomeNames(chrs);
             }
 
+            // Load liftover "chain" files.  This enables navigating by coordinates of another genome.
+            // Not a common option.
+
+            JsonElement chains = json.get("chains");
+            if (chains != null) {
+                Map<String, Liftover> liftoverMap = new HashMap<>();
+                JsonObject chainsObj = chains.getAsJsonObject();
+                for (Map.Entry<String, JsonElement> entry : chainsObj.entrySet()) {
+                    String chainsPath = FileUtils.getAbsolutePath(entry.getValue().getAsString(), genomePath);
+                    liftoverMap.put(entry.getKey(), Liftover.load(chainsPath));
+
+                }
+                newGenome.setLiftoverMap(liftoverMap);
+            }
+
             return newGenome;
         } finally {
             reader.close();
@@ -244,7 +262,6 @@ public class JsonGenomeLoader extends GenomeLoader {
             }
         }
     }
-
 
     public static class GenomeDescriptor {
         String id;

@@ -33,6 +33,7 @@
 --add-exports org.igv/org.broad.igv.repeats=junit
 --add-exports org.igv/org.broad.igv.renderer=junit
 --add-exports org.igv/org.broad.igv.sam=junit
+--add-exports org.igv/org.broad.igv.sam.mods=junit
 --add-exports org.igv/org.broad.igv.sam.cram=junit
 --add-exports org.igv/org.broad.igv.sam.reader=junit
 --add-exports org.igv/org.broad.igv.session=junit

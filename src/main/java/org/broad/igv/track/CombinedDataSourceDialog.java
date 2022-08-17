@@ -29,7 +29,6 @@
 
 package org.broad.igv.track;
 
-import com.google.common.base.Predicate;
 import org.broad.igv.logging.*;
 import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.ui.IGV;
@@ -50,7 +49,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -98,8 +96,9 @@ public class CombinedDataSourceDialog extends org.broad.igv.ui.IGVDialog  {
         String name = resultName.getText();
         final String id = String.valueOf(System.currentTimeMillis());
 
-        CombinedDataTrack newTrack = new CombinedDataTrack(id, name);
-        newTrack.setDatasource(new CombinedDataSource(track0, track1, op));
+        CombinedDataSource dataSource = (new CombinedDataSource(track0, track1, op));
+        CombinedDataTrack newTrack = new CombinedDataTrack(dataSource, id, name);
+
 
         TrackMenuUtils.changeRenderer(Arrays.asList(newTrack), track0.getRenderer().getClass());
         newTrack.setDataRange(track0.getDataRange());

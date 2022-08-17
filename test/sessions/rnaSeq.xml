@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" locus="chr12:98985462-99002145" version="8">
+    <Resources>
+        <Resource name="Liver" path="http://www.broadinstitute.org/igvdata/tutorials/SL2C5A3/liver.bodyMap.bam" type="bam"/>
+        <Resource name="Heart" path="http://www.broadinstitute.org/igvdata/tutorials/SL2C5A3/heart.bodyMap.bam" type="bam"/>
+    </Resources>
+    <Panel height="4542" name="Panel1657297677193" width="1460">
+        <Track attributeKey="Liver Coverage" autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" fontSize="10" id="http://www.broadinstitute.org/igvdata/tutorials/SL2C5A3/liver.bodyMap.bam_coverage" name="Liver Coverage" snpThreshold="0.2" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="5313.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Liver Junctions" clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="http://www.broadinstitute.org/igvdata/tutorials/SL2C5A3/liver.bodyMap.bam_junctions" name="Liver Junctions" visible="true"/>
+        <Track attributeKey="Liver" clazz="org.broad.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="RNA" fontSize="10" id="http://www.broadinstitute.org/igvdata/tutorials/SL2C5A3/liver.bodyMap.bam" name="Liver" visible="true">
+            <RenderOptions/>
+        </Track>
+    </Panel>
+    <Panel height="7888" name="Panel1657568433869" width="1460">
+        <Track attributeKey="Heart Coverage" autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" fontSize="10" id="http://www.broadinstitute.org/igvdata/tutorials/SL2C5A3/heart.bodyMap.bam_coverage" name="Heart Coverage" snpThreshold="0.2" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="11850.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Heart Junctions" clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="http://www.broadinstitute.org/igvdata/tutorials/SL2C5A3/heart.bodyMap.bam_junctions" name="Heart Junctions" visible="true"/>
+        <Track attributeKey="Heart" clazz="org.broad.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="RNA" fontSize="10" id="http://www.broadinstitute.org/igvdata/tutorials/SL2C5A3/heart.bodyMap.bam" name="Heart" visible="true">
+            <RenderOptions/>
+        </Track>
+    </Panel>
+    <Panel height="51" name="FeaturePanel" width="1460">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="true" visible="true"/>
+        <Track attributeKey="Refseq Genes" clazz="org.broad.igv.track.FeatureTrack" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.genomes/hg19/ncbiRefSeq.sorted.txt.gz" name="Refseq Genes" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.008670520231213872,0.5982658959537572,0.9190751445086706"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>

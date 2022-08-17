@@ -84,13 +84,18 @@ SAM.MAX_LEVELS	Number of reads per window	integer	100
 
 SAM.COLOR_BY	Color alignments by	select NONE|READ_STRAND|FIRST_OF_PAIR_STRAND|PAIR_ORIENTATION|UNEXPECTED_PAIR|INSERT_SIZE|SAMPLE|READ_GROUP|LIBRARY|MOVIE|ZMW|BISULFITE|NOMESEQ|TAG|MAPPED_SIZE|LINK_STRAND|YC_TAG	UNEXPECTED_PAIR
 SAM.COLOR_BY_TAG	Color by TAG	string
-SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE
+SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE|MAPPING_QUALITY
 SAM.GROUP_BY_TAG	Group by TAG	string
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visibile
-SAM.QUALITY_THRESHOLD	Mapping quality threshold	int	0
+SAM.QUALITY_THRESHOLD	Mapping quality threshold	int	0	Hide alignments with MQ lower than this value
 SAM.ALIGNMENT_SCORE_THRESHOLD	Alignment score threshold	int	0
 SAM.DISPLAY_MODE	Alignment display mode	string	EXPANDED
 SAM.DISPLAY_PAIRED	Display reads as paired by default	boolean	FALSE
+---
+SAM.FLAG_ZERO_QUALITY	Flag alignments with mapping quality = 0 with transparency and solid outline	boolean	TRUE
+SAM.SHADE_ALIGNMENT_BY	Shade alignments by	select NONE|MAPPING_QUALITY_HIGH|MAPPING_QUALITY_LOW	NONE
+SAM.SHADE_QUALITY_LOW	Mapping quality low shading threshold	int	0	Alignments with MQ <= this value will be considered treated as low for shading purposes
+SAM.SHADE_QUALITY_HIGH	Mapping quality high shading threshold	int	60	Alignments with MQ >= this value will be considered treated as high for shading purposes
 ---
 SAM.SHOW_MISMATCHES	Show mismatched bases	boolean	TRUE
 SAM.SHOW_ALL_BASES	Show all bases	boolean	FALSE
@@ -102,7 +107,7 @@ SAM.FLAG_UNMAPPED_PAIR	Flag unmapped pairs	boolean	FALSE
 SAM.SHOW_CENTER_LINE	Show center line	boolean	FALSE
 SAM.SHOW_SOFT_CLIPPED	Show soft-clipped bases	boolean	FALSE
 ---
-SAM.SHADE_BASE_QUALITY	Shade mismatched bases by quality.	boolean	TRUE
+SAM.SHADE_BASE_QUALITY	Shade mismatched bases by quality.	boolean	FALSE
 SAM.BASE_QUALITY_MIN	Maximum transparency at base quality:	integer	5
 SAM.BASE_QUALITY_MAX	No transparency above base quality:	integer	20
 ---
@@ -130,7 +135,7 @@ SAM.FILTER_URL	URL or path to read group filter file	string	null
 ##Coverage Track Options
 SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2
 SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
-SAM.BASEMOD_THRESHOLD	Base modification probability threshold (0-1)	float	0.2
+SAM.BASEMOD_THRESHOLD	Base modification average probability threshold (0-1)	float	0
 
 ##Insert Size Options
 SAM.COMPUTE_ISIZES	Compute insert size thresholds	boolean	TRUE
@@ -201,7 +206,7 @@ PROXY.PW	Password	string	null
 PORT_ENABLED	Enable port	boolean	TRUE
 PORT_NUMBER	Port number	integer	60151
 ---
-IGV.genome.sequence.dir	Genome server URL	string	https://s3.amazonaws.com/igv.org.genomes/genomes.tsv
+IGV.genome.sequence.dir	Genome server URL	string	https://igv.org/genomes/genomes.tsv
 MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
@@ -239,7 +244,6 @@ SAM.SHADE_CENTER	TRUE
 SAM.SHOW_REF_SEQ	FALSE
 
 SAM.BISULFITE_CONTEXT	CG
-SAM.FLAG_ZERO_QUALITY	TRUE
 SAM.NOMESEQ_ENABLED	FALSE
 SAM.COUNT_DELETED_BASES_COVERED	FALSE
 SAM.SORT_OPTION	NUCLEOTIDE

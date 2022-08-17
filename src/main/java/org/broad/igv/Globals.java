@@ -113,7 +113,6 @@ public class Globals {
     public static boolean toolsMenuEnabled = false;
     public static boolean development = false;
 
-    public static String versionURL = "https://data.broadinstitute.org/igv/projects/current/version.txt";
     public static String downloadURL = "https://software.broadinstitute.org/software/igv/download";
     static {
         Properties properties = new Properties();
@@ -198,11 +197,4 @@ public class Globals {
         return curVersion.compareTo(minVersion) >= 0;
     }
 
-    /**
-     * Return the URL to fetch the current IGV version (note:  not Java version)
-     * @return
-     */
-    public static String getVersionURL() {
-        return versionURL;
-    }
 }

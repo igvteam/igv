@@ -134,8 +134,10 @@ public class GraphicUtils {
             //g2D.setColor(Globals.VERY_LIGHT_GREY);
             int y = Math.max(rect.y, yPos - h);
             int h2 = Math.min(rect.height, 2 * h);
-            g2D.clearRect(rect.x, y, rect.width, h2);
-            //g2D.setColor(c);
+            Color c = g2D.getColor();
+            g2D.setColor(Color.WHITE);
+            g2D.fillRect(rect.x, y, rect.width, h2);
+            g2D.setColor(c);
         }
 
         if (rightJustify) {
