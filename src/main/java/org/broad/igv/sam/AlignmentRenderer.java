@@ -849,7 +849,7 @@ public class AlignmentRenderer {
                         String modification = null;
                         for (BaseModificationSet bmSet : baseModificationSets) {
                             if (bmSet.containsPosition(i)) {
-                                if(modification == null ||  Byte.toUnsignedInt(bmSet.getLikelihoods().get(i)) > Byte.toUnsignedInt(lh)) {
+                                if(modification == null || bmSet.getLikelihoods().get(i) > lh) {
                                     modification = bmSet.getModification();
                                     lh = bmSet.getLikelihoods().get(i);
                                 }
