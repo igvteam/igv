@@ -223,27 +223,27 @@ public class PreferencesEditor {
                         if (pref.getKey().equals(Constants.PROXY_PW) && fieldText != null && fieldText.length() > 0) {
                             fieldText = Utilities.base64Decode(fieldText);
                         }
-                        JTextField field = new JTextField(fieldText);
-                        Dimension d = field.getPreferredSize();
+                        PreferencesTextField field = new PreferencesTextField(pref.getKey().equals(Constants.PROXY_PW) ? new JPasswordField(fieldText) : new JTextField(fieldText));
+                        Dimension d = field.get().getPreferredSize();
                         d.width = 300;
-                        field.setPreferredSize(d);
-                        field.setMaximumSize(d);
-                        field.addActionListener(event -> {
-                            String text = field.getText();
+                        field.get().setPreferredSize(d);
+                        field.get().setMaximumSize(d);
+                        field.get().addActionListener(event -> {
+                            String text = field.getPreferenceText();
                             if (validate(text, pref.getType())) {
                                 if (pref.getKey().equals(Constants.PROXY_PW)) {
                                     text = Utilities.base64Encode(text);
                                 }
                                 updatedPrefs.put(pref.getKey(), text);
                             } else {
-                                field.setText(preferences.get(pref.getKey()));
+                                field.get().setText(preferences.get(pref.getKey()));
                             }
                         });
-                        field.addFocusListener(new FocusAdapter() {
+                        field.get().addFocusListener(new FocusAdapter() {
                             @Override
                             public void focusLost(FocusEvent e) {
                                 // Validate and save the value if the Preference field loses focus
-                                String text = field.getText();
+                                String text = field.getPreferenceText();
                                 if (validate(text, pref.getType())) {
                                     // TODO -- make base64 an explicit type
                                     if (pref.getKey().equals(Constants.PROXY_PW)) {
@@ -251,19 +251,19 @@ public class PreferencesEditor {
                                     }
                                     updatedPrefs.put(pref.getKey(), text);
                                 } else {
-                                    field.setText(preferences.get(pref.getKey()));
+                                    field.get().setText(preferences.get(pref.getKey()));
                                 }
                             }
                         });
 
                         grid.addLayoutComponent(label, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 5, 2, 3), 2, 2));
-                        grid.addLayoutComponent(field, new GridBagConstraints(1, row, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(3, 2, 2, 5), 2, 2));
+                        grid.addLayoutComponent(field.get(), new GridBagConstraints(1, row, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(3, 2, 2, 5), 2, 2));
                         group.add(label);
-                        group.add(field);
+                        group.add(field.get());
 
                         if (pref.getComment() != null) {
                             label.setToolTipText(pref.getComment());
-                            field.setToolTipText(pref.getComment());
+                            field.get().setToolTipText(pref.getComment());
                         }
                     }
 
