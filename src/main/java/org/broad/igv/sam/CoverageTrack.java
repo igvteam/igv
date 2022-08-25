@@ -461,8 +461,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             Graphics2D graphics = context.getGraphic2DForColor(color);
             final AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
             boolean bisulfiteMode = colorOption == AlignmentTrack.ColorOption.BISULFITE;
-            boolean baseModMode = colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION ||
-                    colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC;
 
             final int intervalEnd = alignmentCounts.getEnd();
             final int intervalStart = alignmentCounts.getStart();
@@ -533,8 +531,10 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                         if (bc != null && (bc.methylatedCount + bc.unmethylatedCount) > 0) {
                             drawBarBisulfite(context, pX, bottomY, dX, barHeight, totalCount, bc);
                         }
-                    } else if (baseModMode) {
+                    } else if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION) {
                         drawModifiedBaseBar(context, pX, bottomY, dX, barHeight, pos, alignmentCounts);
+                    } else if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC) {
+                        drawModifiedBaseBar5MC(context, pX, bottomY, dX, barHeight, pos, alignmentCounts);
                     } else {
                         if (refBases != null) {
                             int refIdx = pos - intervalStart;
@@ -588,6 +588,71 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         }
     }
 
+    int drawModifiedBaseBar5MC(RenderContext context,
+                               int pX,
+                               int pBottom,
+                               int dX,
+                               int barHeight,
+                               int pos,
+                               AlignmentCounts alignmentCounts) {
+
+        BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
+        AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
+        if (modificationCounts != null) {
+
+            Graphics2D graphics = context.getGraphics();
+            for (BaseModificationCounts.Key key : modificationCounts.getAllModifications()) {
+
+                // The number of modification calls, some of which might have likelihood of zero
+                int modificationCount = modificationCounts.getCount(pos, key);
+
+                if (barHeight > 0 && modificationCount > 0) {
+
+                    byte base = (byte) key.getBase();
+                    byte complement = SequenceUtil.complement(base);
+                    char modStrand = key.getStrand();
+                    String modification = key.getModification();
+
+
+                    // Count of bases at this location that could potentially be modified, accounting for strand
+                    int modifiableBaseCount = modStrand == '+' ?
+                            alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement) :
+                            alignmentCounts.getPosCount(pos, complement) + alignmentCounts.getNegCount(pos, base);
+
+                    // Count of complements to base at this location, accounting for strand (not modifiable, but not snps)
+                    double nonmodifableBaseCount = modStrand == '+' ?
+                            alignmentCounts.getPosCount(pos, complement) + alignmentCounts.getNegCount(pos, base) :
+                            alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement);
+
+                    // Compute "snp factor", ratio of total base count for this modification (accounting for strand) to total count
+                    // This is normally close to 1, except in the presense of snps or indels.
+                    double snpFactor = (modifiableBaseCount + nonmodifableBaseCount) / alignmentCounts.getTotalCount(pos);
+                    System.out.println(snpFactor);
+
+                    int calledBarHeight = (int) (((snpFactor * modificationCount) / modifiableBaseCount) * barHeight);
+                    Color noModColor = BaseModificationUtils.getModColor(modification, (byte) 0, colorOption);
+                    Color modColor = BaseModificationUtils.getModColor(modification, (byte) 255, colorOption);
+
+                    float averageLikelihood = (float) (modificationCounts.getLikelhoodSum(pos, key)) / (modificationCount * 255);
+                    int modHeight = (int) (averageLikelihood * calledBarHeight);
+                    int noModHeight = calledBarHeight - modHeight;
+                    int baseY = pBottom - noModHeight;
+
+                    graphics.setColor(noModColor);
+                    graphics.fillRect(pX, baseY, dX, noModHeight);
+
+                    if (modHeight > 0) {
+                        baseY -= modHeight;
+                        graphics.setColor(modColor);
+                        graphics.fillRect(pX, baseY, dX, modHeight);
+                    }
+
+                }
+            }
+        }
+        return pX + dX;
+    }
+
     int drawModifiedBaseBar(RenderContext context,
                             int pX,
                             int pBottom,
@@ -596,59 +661,44 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             int pos,
                             AlignmentCounts alignmentCounts) {
 
-        BaseModificationCounts baseCounts = alignmentCounts.getModifiedBaseCounts();
+        BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
         AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
-        if (baseCounts != null) {
+        if (modificationCounts != null) {
 
             Graphics2D graphics = context.getGraphics();
 
-            for (BaseModificationCounts.Key key : baseCounts.getAllModifications()) {
+            for (BaseModificationCounts.Key key : modificationCounts.getAllModifications()) {
 
-                int count = baseCounts.getCount(pos, key, colorOption);
+                // The number of modification calls, some of which might have likelihood of zero
+                int modificationCount = modificationCounts.getCount(pos, key);
 
-                if (barHeight > 0 && count > 0) {
+                if (barHeight > 0 && modificationCount > 0) {
 
                     byte base = (byte) key.getBase();
                     byte complement = SequenceUtil.complement(base);
                     char modStrand = key.getStrand();
                     String modification = key.getModification();
 
-                    int cCount = modStrand == '+' ?
+                    // Count of bases at this location that could potentially be modified, accounting for strand
+                    int baseCount = modStrand == '+' ?
                             alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement) :
                             alignmentCounts.getPosCount(pos, complement) + alignmentCounts.getNegCount(pos, base);
 
-                    int calledBarHeight = (int) ((((float) count) / cCount) * barHeight);
+                    int calledBarHeight = (int) ((((float) modificationCount) / baseCount) * barHeight);
                     Color noModColor = BaseModificationUtils.getModColor(modification, (byte) 0, colorOption);
                     Color modColor = BaseModificationUtils.getModColor(modification, (byte) 255, colorOption);
 
-                    float averageLikelihood = (float) (baseCounts.getLikelhoodSum(pos, key)) / (count * 255);
+                    float averageLikelihood = (float) (modificationCounts.getLikelhoodSum(pos, key)) / (modificationCount * 255);
                     int modHeight = (int) (averageLikelihood * calledBarHeight);
 
-                    if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC) {
-
-                        int noModHeight = calledBarHeight - modHeight;
-                        int baseY = pBottom - noModHeight;
-
-                        graphics.setColor(noModColor);
-                        graphics.fillRect(pX, baseY, dX, noModHeight);
-
-                        if(modHeight > 0) {
-                            baseY -= modHeight;
-                            graphics.setColor(modColor);
-                            graphics.fillRect(pX, baseY, dX, modHeight);
-                        }
-
-                    } else {
-                        // Generic modification
-                        float threshold = PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
-                        if(averageLikelihood > threshold && modHeight > 0) {
-                            int baseY = pBottom - modHeight;
-                            graphics.setColor(modColor);
-                            graphics.fillRect(pX, baseY, dX, modHeight);
-                            pBottom = baseY;
-                        }
+                    // Generic modification
+                    float threshold = PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
+                    if (averageLikelihood > threshold && modHeight > 0) {
+                        int baseY = pBottom - modHeight;
+                        graphics.setColor(modColor);
+                        graphics.fillRect(pX, baseY, dX, modHeight);
+                        pBottom = baseY;
                     }
-
                 }
             }
         }
@@ -749,7 +799,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             pY = isPositive ? baseY : baseY + height;
         }
     }
-    
+
     /**
      * Override to return a specialized popup menu
      *

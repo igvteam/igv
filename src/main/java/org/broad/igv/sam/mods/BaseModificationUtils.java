@@ -19,6 +19,14 @@ public class BaseModificationUtils {
     static Map<String, String> codeValues;
     static PaletteColorTable modColorPallete;
 
+    static Color mColor = Color.red;
+    static Color hColor = new Color(11, 132, 165);
+    static Color oColor = new Color(111, 78, 129);
+    static Color fColor = new Color(246, 200, 95);
+    static Color cColor = new Color(157, 216, 102);
+    static Color gColor = new Color(255, 160, 86);
+    static Color eColor = new Color(141, 221, 208);
+    static Color bColor = new Color(202, 71, 47);
 
     static {
         codeValues = new HashMap<>();
@@ -39,14 +47,14 @@ public class BaseModificationUtils {
         codeValues.put("N", "Unknown");
 
         modColorPallete = new PaletteColorTable(new Color(132, 178, 158));
-        modColorPallete.put("m", Color.red);
-        modColorPallete.put("h", new Color(11, 132, 165));
-        modColorPallete.put("o", new Color(111, 78, 129));
-        modColorPallete.put("f", new Color(246, 200, 95));
-        modColorPallete.put("c", new Color(157, 216, 102));
-        modColorPallete.put("g", new Color(255, 160, 86));
-        modColorPallete.put("e", new Color(141, 221, 208));
-        modColorPallete.put("b", new Color(202, 71, 47));
+        modColorPallete.put("m", mColor);
+        modColorPallete.put("h", hColor);
+        modColorPallete.put("o", oColor);
+        modColorPallete.put("f", fColor);
+        modColorPallete.put("c", cColor);
+        modColorPallete.put("g", gColor);
+        modColorPallete.put("e", eColor);
+        modColorPallete.put("b", bColor);
     }
 
 
@@ -185,7 +193,8 @@ public class BaseModificationUtils {
                 if (l >= 128) {
                     modColorMap5MC.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha));
                 } else {
-                    modColorMap5MC.put(key, new Color(baseColor.getBlue(), baseColor.getGreen(), baseColor.getRed(), alpha));
+                    //modColorMap5MC.put(key, new Color(baseColor.getBlue(), baseColor.getGreen(), baseColor.getRed(), alpha));
+                    modColorMap5MC.put(key, new Color(0, 0, 255, alpha));
                 }
             }
             return modColorMap5MC.get(key);
