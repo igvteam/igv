@@ -38,8 +38,7 @@ import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
-import org.broad.igv.sam.mods.BaseModificationUtils;
-import org.broad.igv.sam.mods.BaseModificationSet;
+import org.broad.igv.sam.mods.BaseModificationRenderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -63,6 +62,12 @@ public class AlignmentRenderer {
 
     private static final Color negStrandColor = new Color(150, 150, 230);
     private static final Color posStrandColor = new Color(230, 150, 150);
+
+    private static final Color firstOfPairColor = new Color(150, 150, 230);
+    private static final Color secondOfPairColor = new Color(230, 150, 150);
+    private static final Color firstAndSecondofPairColor = new Color(150, 150, 0);
+    private static final Color neitherForOrSecondOfPair = new Color(198, 106, 245, 255);
+
     private static final Color RL_COLOR = new Color(0, 150, 0);
     private static final Color RR_COLOR = new Color(20, 50, 200);
     private static final Color LL_COLOR = new Color(0, 150, 150);
@@ -312,8 +317,7 @@ public class AlignmentRenderer {
                 final boolean leaveMargin = (this.track.getDisplayMode() != Track.DisplayMode.SQUISHED);
                 if ((pixelWidth < 2) &&
                         !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) ||
-                                renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION ||
-                                renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION_5MC) &&
+                                renderOptions.getColorOption().isBaseMod()) &&
                                 (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
@@ -781,10 +785,19 @@ public class AlignmentRenderer {
                                 (bisulfiteMode && (DisplayStatus.NOTHING != bisinfo.getDisplayStatus(idx)))) {
                             char c = (char) blockBases.getByte(idx);
 
+                            double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
+                            int pX = (int) (((double) loc + bisulfiteXaxisShift - bpStart) / locScale);
+
+                            // Don't draw out of clipping rect
+                            if (pX > rowRect.getMaxX()) {
+                                break;
+                            } else if (pX + dX < rowRect.getX()) {
+                                continue;
+                            }
                             Color color = null;
                             if (bisulfiteMode) {
                                 color = bisinfo.getDisplayColor(idx);
-                            } else if (colorOption == ColorOption.BASE_MODIFICATION || colorOption == ColorOption.BASE_MODIFICATION_5MC) {
+                            } else if (colorOption.isBaseMod()) {
                                 color = Color.GRAY;
                             } else {
                                 color = nucleotideColors.get(c);
@@ -796,19 +809,6 @@ public class AlignmentRenderer {
                             if (renderOptions.getShadeBasesOption()) {
                                 byte qual = block.getQuality(loc - start);
                                 color = getShadedColor(qual, color, alignmentColor, prefs);
-                            }
-
-                            double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
-
-                            // If there is room for text draw the character, otherwise
-                            // just draw a rectangle to represent the
-                            int pX = (int) (((double) loc + bisulfiteXaxisShift - bpStart) / locScale);
-
-                            // Don't draw out of clipping rect
-                            if (pX > rowRect.getMaxX()) {
-                                break;
-                            } else if (pX + dX < rowRect.getX()) {
-                                continue;
                             }
 
                             BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
@@ -827,108 +827,10 @@ public class AlignmentRenderer {
             }
         }
 
-
         // Base modification
-        if (ColorOption.BASE_MODIFICATION_5MC == colorOption || ColorOption.BASE_MODIFICATION == colorOption) {
-
-            List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
-            if (baseModificationSets != null) {
-
-                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-                    // Compute bounds
-                    int pY = (int) rowRect.getY();
-                    int dY = (int) rowRect.getHeight();
-                    dX = (int) Math.max(1, (1.0 / locScale));
-                    Graphics g = context.getGraphics();
-
-                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
-
-                        // Search all sets for modifications of this base.  For now keeps mod with > probability
-                        // TODO -- merge mods in some way
-                        byte lh = 0;
-                        String modification = null;
-                        for (BaseModificationSet bmSet : baseModificationSets) {
-                            if (bmSet.containsPosition(i)) {
-                                if(modification == null || bmSet.getLikelihoods().get(i) > lh) {
-                                    modification = bmSet.getModification();
-                                    lh = bmSet.getLikelihoods().get(i);
-                                }
-                            }
-                        }
-
-
-                        if (modification != null) {
-
-                            Color c = BaseModificationUtils.getModColor(modification, lh, colorOption);
-                            g.setColor(c);
-
-                            int blockIdx = i - block.getBases().startOffset;
-                            int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
-
-                            // Don't draw out of clipping rect
-                            if (pX > rowRect.getMaxX()) {
-                                break;
-                            } else if (pX + dX < rowRect.getX()) {
-                                continue;
-                            }
-
-                            // Expand narrow width to make more visible
-                            if (dX < 3) {
-                                dX = 3;
-                                pX--;
-                            }
-                            g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
-                        }
-                    }
-                }
-            }
+        if (colorOption.isBaseMod()) {
+            BaseModificationRenderer.drawModifications(alignment, bpStart, locScale, rowRect, context.getGraphics(), colorOption);
         }
-
-//        if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
-//            Map<Integer, BaseModification> baseModifications = alignment.getBaseModificationMap();
-//            if (baseModifications != null) {
-//                double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
-//                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-//                    // Compute bounds
-//                    int pY = (int) rowRect.getY();
-//                    int dY = (int) rowRect.getHeight();
-//                    dX = (int) Math.max(1, (1.0 / locScale));
-//                    Graphics g = context.getGraphics();
-//
-//                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
-//
-//                        if (baseModifications.containsKey(i)) {
-//
-//                            BaseModification mod = baseModifications.get(i);
-//                            int l = Byte.toUnsignedInt(mod.likelihood);
-//                            if (l < threshold) continue;
-//
-//                            Color c = BaseModification.getModColor(mod.modification, mod.likelihood);
-//                            g.setColor(c);
-//
-//                            int blockIdx = i - block.getBases().startOffset;
-//                            int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
-//
-//                            // Don't draw out of clipping rect
-//                            if (pX > rowRect.getMaxX()) {
-//                                break;
-//                            } else if (pX + dX < rowRect.getX()) {
-//                                continue;
-//                            }
-//
-//                            // Expand narrow width to make more visible
-//                            if (dX < 3) {
-//                                dX = 3;
-//                                pX--;
-//                            }
-//
-//                            g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
 
         // DRAW Insertions
         AlignmentBlock[] insertions = alignment.getInsertions();
@@ -1273,6 +1175,7 @@ public class AlignmentRenderer {
             case BISULFITE:
             case BASE_MODIFICATION:
             case BASE_MODIFICATION_5MC:
+            case BASE_MODIFICATION_C:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
                 c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;
@@ -1343,6 +1246,19 @@ public class AlignmentRenderer {
                     c = negStrandColor;
                 } else if (fragmentStrand == Strand.POSITIVE) {
                     c = posStrandColor;
+                }
+                break;
+            case READ_ORDER:
+                if (alignment.isPaired()){
+                    if(alignment.isFirstOfPair() && !alignment.isSecondOfPair()){
+                        c = firstOfPairColor;
+                    } else if(!alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
+                        c = secondOfPairColor;
+                    } else if (alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
+                        c = firstAndSecondofPairColor;
+                    } else {
+                        c = neitherForOrSecondOfPair;
+                    }
                 }
                 break;
             case READ_GROUP:

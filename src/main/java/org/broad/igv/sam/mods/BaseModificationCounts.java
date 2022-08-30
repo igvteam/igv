@@ -25,6 +25,7 @@
 
 package org.broad.igv.sam.mods;
 
+import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
@@ -38,6 +39,11 @@ import java.util.*;
  */
 public class BaseModificationCounts {
 
+
+    public static Key Key5mC = new Key('C', '+', "m");
+    public static Key Key5mCcomplement = new Key('G', '-', "m");
+    public static Key Key5hmC = new Key('C', '+', "hm");
+    public static Key Key5hmCcomplement = new Key('G', '-', "hm");
 
     /**
      * Set of all modification seen.
@@ -106,6 +112,8 @@ public class BaseModificationCounts {
                             int position = block.getStart() + blockIdx;   // genomic position
 
                             int c = modCounts.containsKey(position) ? modCounts.get(position) + 1 : 1;
+
+
                             int l = modLikelihoods.containsKey(position) ? modLikelihoods.get(position) + lh : lh;
                             modCounts.put(position, c);
                             modLikelihoods.put(position, l);
@@ -118,7 +126,7 @@ public class BaseModificationCounts {
         }
     }
 
-    public int getCount(int position, Key key, AlignmentTrack.ColorOption colorOption) {
+    public int getCount(int position, Key key) {
         Map<Integer, Integer> modCounts = counts.get(key);
         if (modCounts != null && modCounts.containsKey(position)) {
             return modCounts.get(position);
@@ -132,7 +140,7 @@ public class BaseModificationCounts {
         if (modLikelihoods != null && modLikelihoods.containsKey(position)) {
             return modLikelihoods.get(position);
         } else {
-            return getCount(position, key, null) * 255;
+            return getCount(position, key) * 255;
         }
     }
 
@@ -142,13 +150,15 @@ public class BaseModificationCounts {
 
     public String getValueString(int position, AlignmentTrack.ColorOption colorOption) {
         StringBuffer buffer = new StringBuffer();
-        for (Map.Entry<Key, Map<Integer, Integer>> entry : counts.entrySet()) {
-            String modification = entry.getKey().modification;
-            Map<Integer, Integer> modCounts = entry.getValue();
-            if (modCounts.containsKey(position)) {
-                buffer.append("Modification: " + modification + " (" + modCounts.get(position) + ")<br>");
+            for (Map.Entry<Key, Map<Integer, Integer>> entry : counts.entrySet()) {
+                String modification = entry.getKey().modification;
+                Map<Integer, Integer> modCounts = entry.getValue();
+                if (modCounts.containsKey(position)) {
+                    final Integer count = modCounts.get(position);
+                    int lh = (int) (((100.0f / 255) * getLikelhoodSum(position, entry.getKey())) / count);
+                    buffer.append("Modification: " + modification + " (" + count + "  @ " + lh + "%)<br>");
+                }
             }
-        }
         return buffer.toString();
     }
 
@@ -160,12 +170,10 @@ public class BaseModificationCounts {
 
             String modification = entry.getKey().toString();
             Map<Integer, Integer> modCounts = entry.getValue();
-
             System.out.println("Modification: " + modification);
             for (Map.Entry<Integer, Integer> modKey : modCounts.entrySet()) {
                 System.out.println(modKey.getKey() + "  " + modKey.getValue());
             }
-
         }
     }
 
@@ -182,6 +190,10 @@ public class BaseModificationCounts {
 
         public char getBase() {
             return base;
+        }
+
+        public char getCanonicalBase() {
+            return strand == '+' ? base : (char) SequenceUtil.complement((byte) base);
         }
 
         public char getStrand() {
@@ -210,5 +222,6 @@ public class BaseModificationCounts {
             return "" + base + strand + modification;
         }
     }
+
 
 }
