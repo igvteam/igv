@@ -616,8 +616,7 @@ public class SAMAlignment implements Alignment {
 
         // Check base modifications
         if (renderOptions != null &&
-                (renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION ||
-                        renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC)) {
+                (renderOptions.getColorOption().isBaseMod())) {
             for (AlignmentBlock block : this.alignmentBlocks) {
                 if (block.contains((int) position)) {
                     int p = (int) (position - block.getStart()) + block.getBasesOffset();
