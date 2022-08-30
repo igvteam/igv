@@ -371,9 +371,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 if (counts != null) {
                     buf.append(counts.getValueStringAt((int) position));
                     final AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
-                    if ((colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION ||
-                            colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC) &&
-                            counts.getModifiedBaseCounts() != null) {
+                    if (colorOption.isBaseMod() && counts.getModifiedBaseCounts() != null) {
                         buf.append("<hr>");
                         buf.append(counts.getModifiedBaseCounts().getValueString((int) position, colorOption));
                     }
@@ -530,10 +528,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                         if (bc != null && (bc.methylatedCount + bc.unmethylatedCount) > 0) {
                             drawBarBisulfite(context, pX, bottomY, dX, barHeight, totalCount, bc);
                         }
-                    } else if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION) {
-                        BaseModificationCoverageRenderer.draw(context, pX, bottomY, dX, barHeight, pos, alignmentCounts);
-                    } else if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC) {
-                        BaseModificationCoverageRenderer.draw5MC(context, pX, bottomY, dX, barHeight, pos, alignmentCounts);
+                    } else if (colorOption.isBaseMod()) {
+                        BaseModificationCoverageRenderer.drawModifications(context, pX, bottomY, dX, barHeight, pos, alignmentCounts, colorOption);
                     } else {
                         if (refBases != null) {
                             int refIdx = pos - intervalStart;

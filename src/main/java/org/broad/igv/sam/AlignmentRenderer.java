@@ -317,8 +317,7 @@ public class AlignmentRenderer {
                 final boolean leaveMargin = (this.track.getDisplayMode() != Track.DisplayMode.SQUISHED);
                 if ((pixelWidth < 2) &&
                         !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) ||
-                                renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION ||
-                                renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION_5MC) &&
+                                renderOptions.getColorOption().isBaseMod()) &&
                                 (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
@@ -798,7 +797,7 @@ public class AlignmentRenderer {
                             Color color = null;
                             if (bisulfiteMode) {
                                 color = bisinfo.getDisplayColor(idx);
-                            } else if (colorOption == ColorOption.BASE_MODIFICATION || colorOption == ColorOption.BASE_MODIFICATION_5MC) {
+                            } else if (colorOption.isBaseMod()) {
                                 color = Color.GRAY;
                             } else {
                                 color = nucleotideColors.get(c);
@@ -828,14 +827,9 @@ public class AlignmentRenderer {
             }
         }
 
-
         // Base modification
-        if (ColorOption.BASE_MODIFICATION_5MC == colorOption) {
-            BaseModificationRenderer.draw5mC(alignment, bpStart, locScale, rowRect, context.getGraphics());
-        }
-
-        if (ColorOption.BASE_MODIFICATION == colorOption) {
-            BaseModificationRenderer.draw(alignment, bpStart, locScale, rowRect, context.getGraphics());
+        if (colorOption.isBaseMod()) {
+            BaseModificationRenderer.drawModifications(alignment, bpStart, locScale, rowRect, context.getGraphics(), colorOption);
         }
 
         // DRAW Insertions
@@ -1181,6 +1175,7 @@ public class AlignmentRenderer {
             case BISULFITE:
             case BASE_MODIFICATION:
             case BASE_MODIFICATION_5MC:
+            case BASE_MODIFICATION_C:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
                 c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;

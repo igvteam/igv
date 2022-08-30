@@ -4,6 +4,7 @@ import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentCounts;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.track.RenderContext;
 
 import java.awt.*;
@@ -14,14 +15,35 @@ import java.util.Map;
 
 public class BaseModificationCoverageRenderer {
 
+    public static void drawModifications(RenderContext context,
+                                         int pX,
+                                         int pBottom,
+                                         int dX,
+                                         int barHeight,
+                                         int pos,
+                                         AlignmentCounts alignmentCounts,
+                                         ColorOption colorOption) {
 
-    public static void draw(RenderContext context,
-                            int pX,
-                            int pBottom,
-                            int dX,
-                            int barHeight,
-                            int pos,
-                            AlignmentCounts alignmentCounts) {
+        switch (colorOption) {
+            case BASE_MODIFICATION_5MC:
+                draw5MC(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, false);
+                break;
+            case BASE_MODIFICATION_C:
+                draw5MC(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, true);
+                break;
+            default:
+                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts);
+        }
+    }
+
+
+    private static void draw(RenderContext context,
+                             int pX,
+                             int pBottom,
+                             int dX,
+                             int barHeight,
+                             int pos,
+                             AlignmentCounts alignmentCounts) {
 
         BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
 
@@ -45,7 +67,7 @@ public class BaseModificationCoverageRenderer {
                     int baseCount = alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement);
 
                     int calledBarHeight = (int) ((((float) modificationCount) / baseCount) * barHeight);
-                    Color modColor = BaseModificationColors.getModColor(modification, (byte) 255, AlignmentTrack.ColorOption.BASE_MODIFICATION);
+                    Color modColor = BaseModificationColors.getModColor(modification, (byte) 255, ColorOption.BASE_MODIFICATION);
 
                     float averageLikelihood = (float) (modificationCounts.getLikelhoodSum(pos, key)) / (modificationCount * 255);
                     int modHeight = (int) (averageLikelihood * calledBarHeight);
@@ -62,13 +84,15 @@ public class BaseModificationCoverageRenderer {
             }
         }
     }
-    public static void draw5MC(RenderContext context,
-                               int pX,
-                               int pBottom,
-                               int dX,
-                               int barHeight,
-                               int pos,
-                               AlignmentCounts alignmentCounts) {
+
+    private static void draw5MC(RenderContext context,
+                                int pX,
+                                int pBottom,
+                                int dX,
+                                int barHeight,
+                                int pos,
+                                AlignmentCounts alignmentCounts,
+                                boolean allMods) {
 
         BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
 
@@ -83,13 +107,14 @@ public class BaseModificationCoverageRenderer {
 
                 // This coloring mode is exclusively for "C" modifications
                 if (key.getCanonicalBase() != 'C') continue;
-
-                String mod = key.getModification();
-                final int count = modificationCounts.getCount(pos, key);
-                if (count > 0) {
-                    modCounts.put(mod, count);
-                    final int likelhoodSum = modificationCounts.getLikelhoodSum(pos, key);
-                    likelihoodSums.put(mod, likelhoodSum);
+                if (key.getModification().equals("m") || allMods) {
+                    String mod = key.getModification();
+                    final int count = modificationCounts.getCount(pos, key);
+                    if (count > 0) {
+                        modCounts.put(mod, count);
+                        final int likelhoodSum = modificationCounts.getLikelhoodSum(pos, key);
+                        likelihoodSums.put(mod, likelhoodSum);
+                    }
                 }
             }
 
@@ -126,7 +151,7 @@ public class BaseModificationCoverageRenderer {
                 String[] orderedMods = likelihoodSums.keySet().toArray(new String[0]);
                 Arrays.sort(orderedMods, (o1, o2) -> -1 * o1.compareTo(o2));
                 for (String m : orderedMods) {
-                    Color mColor = BaseModificationColors.getModColor(m, (byte) 255, AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC);
+                    Color mColor = BaseModificationColors.getModColor(m, (byte) 255, ColorOption.BASE_MODIFICATION_5MC);
                     int mModHeight = (int) Math.round(((likelihoodSums.get(m)) / t) * calledBarHeight);
                     if (mModHeight > 0) {
                         baseY -= mModHeight;

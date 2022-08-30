@@ -9,6 +9,28 @@ import java.util.List;
 
 public class BaseModificationRenderer {
 
+    public static void drawModifications(
+            Alignment alignment,
+            double bpStart,
+            double locScale,
+            Rectangle rowRect,
+            Graphics g,
+            AlignmentTrack.ColorOption colorOption) {
+
+        switch (colorOption) {
+            case BASE_MODIFICATION_5MC:
+                draw5mC(alignment, bpStart, locScale, rowRect, g, false);
+                break;
+            case BASE_MODIFICATION_C:
+                draw5mC(alignment, bpStart, locScale, rowRect, g, true);
+                break;
+
+            default:
+                draw(alignment, bpStart, locScale, rowRect, g);
+        }
+
+    }
+
     /**
      * Helper function for AlignmentRenderer.  Draw base modifications over alignment.
      *
@@ -18,7 +40,7 @@ public class BaseModificationRenderer {
      * @param rowRect
      * @param g
      */
-    public static void draw(
+    private static void draw(
             Alignment alignment,
             double bpStart,
             double locScale,
@@ -78,13 +100,13 @@ public class BaseModificationRenderer {
 
     /**
      * Helper function for AlignmentRenderer.  Draw base modifications over alignment for "5mC" mode.
-     *
+     * <p>
      * Notes:
      * Designed primarily for visualization of 5mC modifications compatible with existing bisulfite seq viz
      * - 5mC methylated bases colored red
      * - Non modified bases colored blue
      * - Other modificationc colored as defined in BaseModificationColors
-     *
+     * <p>
      * If multiple modifications are specified for a base the modification with the highest probability is
      * drawn.
      *
@@ -94,12 +116,13 @@ public class BaseModificationRenderer {
      * @param rowRect
      * @param g
      */
-    public static void draw5mC(
+    private static void draw5mC(
             Alignment alignment,
             double bpStart,
             double locScale,
             Rectangle rowRect,
-            Graphics g) {
+            Graphics g,
+            boolean allMods) {
 
         List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
         if (baseModificationSets != null) {
@@ -122,23 +145,24 @@ public class BaseModificationRenderer {
                         continue;
                     }
 
-                    // Search all sets for modifications of this base.  For now keeps mod with > probability
-                    // TODO -- merge mods in some way
+                    // Search all sets for modifications of this base, select modification with largest likelihood
                     int lh = -1;
                     String modification = null;
 
                     // Compare likelihoods, including likelihood of no modification
                     int noModificationLikelihood = 255;
                     for (BaseModificationSet bmSet : baseModificationSets) {
-                        if (bmSet.getCanonicalBase() != 'C') { //  !bmSet.is5mC()) {
-                            continue;
-                        }
-                        if (bmSet.containsPosition(i)) {
-                            int l = Byte.toUnsignedInt(bmSet.getLikelihoods().get(i));
-                            noModificationLikelihood -= l;
-                            if (modification == null || l > lh) {
-                                modification = bmSet.getModification();
-                                lh = l;
+
+                        // This coloring mode is exclusively for "C" modifications, either 5mC or all C mods
+                        if (bmSet.getCanonicalBase() != 'C') continue;
+                        if (bmSet.getModification().equals("m") || allMods) {
+                            if (bmSet.containsPosition(i)) {
+                                int l = Byte.toUnsignedInt(bmSet.getLikelihoods().get(i));
+                                noModificationLikelihood -= l;
+                                if (modification == null || l > lh) {
+                                    modification = bmSet.getModification();
+                                    lh = l;
+                                }
                             }
                         }
                     }

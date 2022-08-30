@@ -70,7 +70,8 @@ public class BaseModificationColors {
         }
 
         String key = modification + "--" + l;
-        if (AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC == colorOption) {
+        if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC ||
+                colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_C) {
 
             if (!modColorMap5MC.containsKey(key)) {
                 int alpha = Math.min(255, (int) (l * l / 64f - 4 * l + 256));    // quadratic
@@ -120,7 +121,8 @@ public class BaseModificationColors {
     }
 
     private static Color getBaseColor(String modification, AlignmentTrack.ColorOption colorOption) {
-        if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC && colors5MC.containsKey(modification)) {
+        if ((colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC ||
+                colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_C) && colors5MC.containsKey(modification)) {
             return colors5MC.get(modification);
         } else if (colors.containsKey(modification)) {
             return colors.get(modification);
