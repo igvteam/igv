@@ -591,23 +591,25 @@ public class SAMAlignment implements Alignment {
             buf.append("Dist: " + getHapDistance() + "<br>");
         }
 
+        boolean atInsertion = false;
+        boolean atBaseMod = false;
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
             for (AlignmentBlock block : this.insertions) {
                 if (block.containsPixel(mouseX)) {
                     ByteSubarray bases = block.getBases();
                     if (bases == null) {
-                        buf.append("Insertion: " + block.getLength() + " bases");
+                        buf.append("Insertion: " + block.getLength() + " bases<br>");
                     } else {
                         if (bases.length < 50) {
-                            buf.append("Insertion (" + bases.length + " bases): " + bases.getString());
+                            buf.append("Insertion (" + bases.length + " bases): " + bases.getString() + "<br>");
                         } else {
                             int len = bases.length;
                             buf.append("Insertion (" + bases.length + " bases): " + new String(bases.copyOfRange(0, 25)) + "..." +
-                                    new String(bases.copyOfRange(len - 25, len)));
+                                    new String(bases.copyOfRange(len - 25, len)) + "<br>");
                         }
                     }
-                    return buf.toString();
+                    atInsertion = true;
                 }
             }
         }
@@ -623,16 +625,22 @@ public class SAMAlignment implements Alignment {
                         String modString = "";
                         for (BaseModificationSet bmSet : baseModificationSets) {
                             if (bmSet.containsPosition(p)) {
-                                if (modString.length() > 0) modString += "; ";
+                                if (modString.length() > 0) modString += "<br>";
                                 modString += BaseModificationUtils.valueString(bmSet.getModification(), bmSet.getLikelihoods().get(p));
                             }
                         }
                         if (modString.length() > 0) {
-                            return modString;
+                            buf.append(modString);
+                            buf.append("<br");
+                            atBaseMod = true;
                         }
                     }
                 }
             }
+        }
+
+        if (atInsertion || atBaseMod) {
+            return buf.toString();
         }
 
         buf.append("Read name = " + getReadName() + "<br>");

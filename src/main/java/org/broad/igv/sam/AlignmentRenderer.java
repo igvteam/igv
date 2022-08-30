@@ -38,9 +38,7 @@ import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
-import org.broad.igv.sam.mods.BaseModificationColors;
-import org.broad.igv.sam.mods.BaseModificationUtils;
-import org.broad.igv.sam.mods.BaseModificationSet;
+import org.broad.igv.sam.mods.BaseModificationRenderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -827,123 +825,11 @@ public class AlignmentRenderer {
 
         // Base modification
         if (ColorOption.BASE_MODIFICATION_5MC == colorOption) {
-
-            List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
-            if (baseModificationSets != null) {
-
-                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-                    // Compute bounds
-                    int pY = (int) rowRect.getY();
-                    int dY = (int) rowRect.getHeight();
-                    dX = (int) Math.max(1, (1.0 / locScale));
-                    Graphics g = context.getGraphics();
-
-                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
-
-                        int blockIdx = i - block.getBases().startOffset;
-                        int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
-
-                        // Don't draw out of clipping rect
-                        if (pX > rowRect.getMaxX()) {
-                            break;
-                        } else if (pX + dX < rowRect.getX()) {
-                            continue;
-                        }
-
-                        // Search all sets for modifications of this base.  For now keeps mod with > probability
-                        // TODO -- merge mods in some way
-                        int lh = -1;
-                        String modification = null;
-
-                        // Compare likelihoods, including likelihood of no modification
-                        int noModificationLikelihood = 255;
-                        for (BaseModificationSet bmSet : baseModificationSets) {
-                            if (bmSet.getCanonicalBase() != 'C') { //  !bmSet.is5mC()) {
-                                continue;
-                            }
-                            if (bmSet.containsPosition(i)) {
-                                int l = Byte.toUnsignedInt(bmSet.getLikelihoods().get(i));
-                                noModificationLikelihood -= l;
-                                if (modification == null || l > lh) {
-                                    modification = bmSet.getModification();
-                                    lh = l;
-                                }
-                            }
-                        }
-
-                        if (modification != null) {
-
-                            Color c = noModificationLikelihood > lh ?
-                                    BaseModificationColors.getNoModColor((byte) noModificationLikelihood) :
-                                    BaseModificationColors.getModColor(modification, (byte) lh, colorOption);
-                            g.setColor(c);
-
-                            // Expand narrow width to make more visible
-                            if (dX < 3) {
-                                dX = 3;
-                                pX--;
-                            }
-                            g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
-                        }
-                    }
-                }
-            }
+            BaseModificationRenderer.draw5mC(alignment, bpStart, locScale, rowRect, context.getGraphics());
         }
 
         if (ColorOption.BASE_MODIFICATION == colorOption) {
-
-            List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
-            if (baseModificationSets != null) {
-
-                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-                    // Compute bounds
-                    int pY = (int) rowRect.getY();
-                    int dY = (int) rowRect.getHeight();
-                    dX = (int) Math.max(1, (1.0 / locScale));
-                    Graphics g = context.getGraphics();
-
-                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
-
-                        int blockIdx = i - block.getBases().startOffset;
-                        int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
-
-                        // Don't draw out of clipping rect
-                        if (pX > rowRect.getMaxX()) {
-                            break;
-                        } else if (pX + dX < rowRect.getX()) {
-                            continue;
-                        }
-
-                        // Search all sets for modifications of this base.  For now keeps mod with > probability
-                        // TODO -- merge mods in some way
-                        byte lh = 0;
-                        String modification = null;
-                        for (BaseModificationSet bmSet : baseModificationSets) {
-                            if (bmSet.containsPosition(i)) {
-                                if (modification == null || Byte.toUnsignedInt(bmSet.getLikelihoods().get(i)) > Byte.toUnsignedInt(lh)) {
-                                    modification = bmSet.getModification();
-                                    lh = bmSet.getLikelihoods().get(i);
-                                }
-                            }
-                        }
-
-
-                        if (modification != null) {
-
-                            Color c = BaseModificationColors.getModColor(modification, lh, colorOption);
-                            g.setColor(c);
-
-
-                            // Expand narrow width to make more visible
-                            if (dX < 3) {
-                                dX = 3;
-                                pX--;
-                            }
-                            g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
-                        }
-                    }
-                }
-            }
+            BaseModificationRenderer.draw(alignment, bpStart, locScale, rowRect, context.getGraphics());
         }
 
         // DRAW Insertions
