@@ -1,5 +1,7 @@
 package org.broad.igv.sam.mods;
 
+import htsjdk.samtools.util.SequenceUtil;
+
 import java.util.Map;
 
 public class BaseModificationSet {
@@ -21,6 +23,10 @@ public class BaseModificationSet {
         return base;
     }
 
+    public char getCanonicalBase() {
+        return strand == '+' ? base : (char) SequenceUtil.complement((byte) base);
+    }
+
     public String getModification() {
         return modification;
     }
@@ -35,5 +41,9 @@ public class BaseModificationSet {
 
     public boolean containsPosition(Integer pos) {
         return likelihoods.containsKey(pos);
+    }
+
+    public boolean is5mC() {
+        return modification.equals("m") &&  ((base == 'C' && strand == '+') || (base == 'G' && strand == '-'));
     }
 }

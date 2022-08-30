@@ -1,5 +1,8 @@
 package org.broad.igv.sam.mods;
 
+import htsjdk.samtools.util.SequenceUtil;
+import org.broad.igv.sam.AlignmentUtils;
+import org.broad.igv.util.Utilities;
 import org.junit.Test;
 
 import java.util.*;
@@ -25,6 +28,35 @@ public class BaseModificationsTest {
         Map<Integer, Byte> likelihoods = bmSet.getLikelihoods();
         for (Integer pos : likelihoods.keySet()) {
             assertEquals('C', sequence[pos]);
+        }
+
+        int idx = 0;
+        assertEquals(ml[idx++], (byte) likelihoods.get(7));
+        assertEquals(ml[idx++], (byte) likelihoods.get(30));
+        assertEquals(ml[idx++], (byte) likelihoods.get(31));
+    }
+
+    @Test
+    /**
+     * Tests  5mC calls detected on the "opposite strand", i.e. complementary strand wrt sequence reported for alignment
+     */
+    public void testOppositeStrandCall() {
+
+        //top-fwd	0	*	0	0	*	*	0	0	AGGATCTCTAGCGGATCGGCGGGGGATATGCCATAT	*	Mm:Z:C+m,1,3,0;	Ml:B:C,128,153,179
+        byte[] sequence = "AGGATCTCTAGCGGATCGGCGGGGGATATGCCATAT".getBytes();
+        for(int i=0; i<sequence.length; i++) sequence[i] = SequenceUtil.complement(sequence[i]);
+        String mm = "G-m,1,3,0";
+        byte[] ml = {(byte) 128, (byte) 153, (byte) 179};
+        boolean isNegativeStrand = false;
+        int[] expectedPositions = {7, 30, 31};
+
+        List<BaseModificationSet> modificationSets = BaseModificationUtils.getBaseModificationSets(mm, ml, sequence, isNegativeStrand);
+        assertEquals(1, modificationSets.size());
+
+        BaseModificationSet bmSet = modificationSets.get(0);
+        Map<Integer, Byte> likelihoods = bmSet.getLikelihoods();
+        for (Integer pos : likelihoods.keySet()) {
+            assertEquals('G', sequence[pos]);
         }
 
         int idx = 0;
@@ -79,11 +111,10 @@ public class BaseModificationsTest {
             assertEquals('G', sequence[pos]);
         }
 
-        int idx = 0;
-        assertEquals(ml[idx++], (byte) likelihoods.get(1));
-        assertEquals(ml[idx++], (byte) likelihoods.get(2));
-        assertEquals(ml[idx++], (byte) likelihoods.get(18));
-        assertEquals(ml[idx++], (byte) likelihoods.get(23));
+        assertEquals(ml[0], (byte) likelihoods.get(1));
+        assertEquals(ml[1], (byte) likelihoods.get(2));
+        assertEquals(ml[2], (byte) likelihoods.get(18));
+        assertEquals(ml[3], (byte) likelihoods.get(23));
     }
 
     @Test
@@ -105,11 +136,11 @@ public class BaseModificationsTest {
             assertEquals('C', sequence[pos]);
         }
 
-        int idx = 0;
-        assertEquals(ml[idx++], (byte) likelihoods.get(34));
-        assertEquals(ml[idx++], (byte) likelihoods.get(33));
-        assertEquals(ml[idx++], (byte) likelihoods.get(17));
-        assertEquals(ml[idx++], (byte) likelihoods.get(12));
+
+        assertEquals(ml[0], (byte) likelihoods.get(34));
+        assertEquals(ml[1], (byte) likelihoods.get(33));
+        assertEquals(ml[2], (byte) likelihoods.get(17));
+        assertEquals(ml[3], (byte) likelihoods.get(12));
 
     }
 
