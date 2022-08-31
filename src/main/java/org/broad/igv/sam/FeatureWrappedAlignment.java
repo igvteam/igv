@@ -52,7 +52,7 @@ public class FeatureWrappedAlignment implements Alignment {
 
     public FeatureWrappedAlignment(BasicFeature f) {
 
-        this.readName = f.getName();
+        this.readName = f.getName() == null ? "" : f.getName();
         this.chr = f.getChr();
         this.start = f.getStart();
         this.end = f.getEnd();
