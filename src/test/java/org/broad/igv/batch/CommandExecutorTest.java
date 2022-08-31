@@ -396,11 +396,11 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         boolean merge = true;
         String sort = null;
         String sortTag = null;
-        exec.loadFiles(urlPath, index, coverage, name, format, locus, merge, params, sort, sortTag);
+        exec.loadFiles(urlPath, index, coverage, name, format, locus, merge, params, sort, sortTag, false);
 
         name = null;
         String localPath = TestUtils.DATA_DIR + "bed/test.bed";
-        exec.loadFiles(localPath, index, coverage, name, format, locus, merge, params, sort, sortTag);
+        exec.loadFiles(localPath, index, coverage, name, format, locus, merge, params, sort, sortTag, false);
 
         assertEquals(2, igv.getAllTracks().size() - beginTracks);
     }
@@ -417,7 +417,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         boolean merge = true;
         String sort = null;
         String sortTag = null;
-        exec.loadFiles(dataFile, index, coverage, name, format, locus, merge, params, sort, sortTag);
+        exec.loadFiles(dataFile, index, coverage, name, format, locus, merge, params, sort, sortTag, false);
 
         String[] goodArgSet = new String[]{"0,5.0 ", "0,1,5", "-1,0,1", "-1.32,10.21"};
         for (String arg : goodArgSet) {
@@ -446,7 +446,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         boolean merge = true;
         String sort = null;
         String sortTag = null;
-        exec.loadFiles(dataFile, index, coverage, name, format, locus, merge, params, sort, sortTag);
+        exec.loadFiles(dataFile, index, coverage, name, format, locus, merge, params, sort, sortTag, false);
 
         String[] goodArgSet = new String[]{"true"};
         for (String arg : goodArgSet) {
@@ -521,7 +521,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         Map<String, String> params = null;
         String sort = null;
         String sortTag = null;
-        exec.loadFiles(urlPath, index, coverage, name, format, locus, merge, params, sort, sortTag);
+        exec.loadFiles(urlPath, index, coverage, name, format, locus, merge, params, sort, sortTag, false);
         List<Track> tracks = igv.getAllTracks();
         // Find our alignment track
         boolean foundTrack = false;

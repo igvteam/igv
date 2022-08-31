@@ -1752,7 +1752,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
 
             groupMenu.add(new JPopupMenu.Separator());
-            JCheckBoxMenuItem invertGroupNameSortingOption = new JCheckBoxMenuItem("reverse group sorting");
+            JCheckBoxMenuItem invertGroupNameSortingOption = new JCheckBoxMenuItem("Reverse group order");
             invertGroupNameSortingOption.setSelected(renderOptions.invertGroupSorting);
             invertGroupNameSortingOption.addActionListener(aEvt -> {
                renderOptions.invertGroupSorting = !renderOptions.invertGroupSorting;
@@ -1890,9 +1890,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             mappings.put("library", ColorOption.LIBRARY);
             mappings.put("movie", ColorOption.MOVIE);
             mappings.put("ZMW", ColorOption.ZMW);
-            mappings.put("base modification", ColorOption.BASE_MODIFICATION);
-            mappings.put("base modification (5mC)", ColorOption.BASE_MODIFICATION_5MC);
-            mappings.put("base modification (any C)", ColorOption.BASE_MODIFICATION_C);
 
             for (Map.Entry<String, ColorOption> el : mappings.entrySet()) {
                 JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
@@ -1914,6 +1911,19 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             group.add(tagOption);
 
             colorMenu.add(getBisulfiteContextMenuItem(group));
+
+            // Base modifications
+            mappings.clear();
+            mappings.put("base modification", ColorOption.BASE_MODIFICATION);
+            mappings.put("base modification (5mC)", ColorOption.BASE_MODIFICATION_5MC);
+            mappings.put("base modification (all C)", ColorOption.BASE_MODIFICATION_C);
+            colorMenu.addSeparator();
+            for (Map.Entry<String, ColorOption> el : mappings.entrySet()) {
+                JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
+                colorMenu.add(mi);
+                group.add(mi);
+            }
+
 
             add(colorMenu);
 
