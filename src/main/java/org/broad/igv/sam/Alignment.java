@@ -44,9 +44,17 @@ import java.util.Map;
  */
 public interface Alignment extends LocusScore {
 
-    String getReadName();
+    /**
+     * Name for the associated read.  Cannot be null.
+     * @return
+     */
+    default String getReadName() {
+        return "";
+    }
 
-    String getReadSequence();
+    default String getReadSequence() {
+        return "";
+    }
 
     String getChr();
 

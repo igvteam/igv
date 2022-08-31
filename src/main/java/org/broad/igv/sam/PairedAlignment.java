@@ -37,7 +37,6 @@ import java.util.List;
  */
 public class PairedAlignment implements Alignment {
 
-    String readName;
     String chr;
     int start;
     int end;
@@ -62,7 +61,7 @@ public class PairedAlignment implements Alignment {
     }
 
     public String getReadName() {
-        return readName;
+        return firstAlignment == null ? "" : firstAlignment.getReadName();
     }
 
     public String getChromosome() {
@@ -214,7 +213,7 @@ public class PairedAlignment implements Alignment {
     }
 
     public String getReadSequence() {
-        return null;
+        return firstAlignment == null ? "" : firstAlignment.getReadSequence();
     }
 
     public String getCigarString() {
