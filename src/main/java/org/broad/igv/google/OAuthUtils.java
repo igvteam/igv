@@ -29,6 +29,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.FileUtils;
@@ -101,7 +102,7 @@ public class OAuthUtils {
         }
 
         // Local config takes precendence, overriding URL provisioned and Broad's default oauth-config.json.gz
-        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
+        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config-custom.json";
         if ((new File(oauthConfig)).exists()) {
             try {
                 log.debug("Loading Oauth properties from: " + oauthConfig);

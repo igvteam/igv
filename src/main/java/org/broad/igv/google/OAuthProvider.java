@@ -488,7 +488,6 @@ public class OAuthProvider {
                      return true;
                  }
             }
-        }
         return false;
     }
 

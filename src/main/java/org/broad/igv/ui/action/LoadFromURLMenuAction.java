@@ -152,6 +152,7 @@ public class LoadFromURLMenuAction extends MenuAction {
 
         url = url.trim();
 
+        OAuthProvider oauthProvider = OAuthUtils.getInstance().getProvider();
         if (GoogleUtils.isGoogleCloud(url) || GoogleUtils.isGoogleDrive(url)) {
             enableGoogleMenu();
         }

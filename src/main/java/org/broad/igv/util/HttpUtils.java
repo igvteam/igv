@@ -667,12 +667,18 @@ public class HttpUtils {
             if (oauthProvider.findString != null) {
                 url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
             }
+
+        }
+        // Also support find and replace for other non-google oauth providers
+        else if(oauthProvider != null && oauthProvider.appliesToUrl(url) && oauthProvider.findString != null){
+            url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
         }
 
         // If a presigned URL, check its validity and update if needed
         if (AmazonUtils.isPresignedURL(url.toExternalForm())) {
             url = new URL(AmazonUtils.updatePresignedURL(url.toExternalForm()));
         }
+        
 
 
         // If an S3 url, obtain a signed https url
@@ -764,6 +770,14 @@ public class HttpUtils {
         // If this is a Google URL and we have an access token use it.
         if (GoogleUtils.isGoogleURL(url.toExternalForm())) {
             String token = OAuthUtils.getInstance().getProvider().getAccessToken();
+            if (token != null) {
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+            }
+        } 
+
+        // If this a google url (or other url covered by custom oauth provider) and we have an access token use it.
+        else if (oauthProvider != null && oauthProvider.appliesToUrl(url)) {
+            String token = oauthProvider.getAccessToken();
             if (token != null) {
                 conn.setRequestProperty("Authorization", "Bearer " + token);
             }
