@@ -56,6 +56,7 @@ import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionSelectionEvent;
+import org.broad.igv.sam.SortOption;
 import org.broad.igv.session.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.WaitCursorManager.CursorToken;
@@ -1376,11 +1377,11 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, String tag, final boolean invertSort) {
+    public void sortAlignmentTracks(SortOption option, String tag, final boolean invertSort) {
         sortAlignmentTracks(option, null, tag, invertSort);
     }
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, Double location, String tag, boolean invertSort) {
+    public void sortAlignmentTracks(SortOption option, Double location, String tag, boolean invertSort) {
         List<AlignmentTrack> alignmentTracks = getAllTracks().stream()
                 .filter(track -> track instanceof AlignmentTrack)
                 .map(track -> (AlignmentTrack)track)

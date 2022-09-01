@@ -932,7 +932,7 @@ public class SAMAlignment implements Alignment {
     public AlignmentBlock getInsertionAt(int position) {
         for (AlignmentBlock block : insertions) {
             if (block.getStart() == position) return block;
-            if (block.getStart() > position) return null;  // Blocks increase lineraly
+            if (block.getStart() > position) return null;  // Blocks increase linearly
         }
         return null;
     }

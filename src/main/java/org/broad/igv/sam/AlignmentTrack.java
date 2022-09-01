@@ -120,10 +120,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    public enum SortOption {
-        START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG,
-        SUPPLEMENTARY, NONE, HAPLOTYPE, READ_ORDER, READ_NAME, ALIGNED_READ_LENGTH
-    }
 
     public enum ShadeAlignmentsOption {
         NONE("none"),

@@ -102,22 +102,18 @@ public class AlignmentInterval extends Locus {
      *  @param option
      * @param location
      */
-    public void sortRows(AlignmentTrack.SortOption option, double location, String tag, boolean invertSort) {
+    public void sortRows(SortOption option, double location, String tag, boolean invertSort) {
 
         PackedAlignments packedAlignments = getPackedAlignments();
         if (packedAlignments == null) {
             return;
         }
 
-        Comparator<Row> rowComparator = (o1, o2) -> (int) Math.signum(o1.getScore() - o2.getScore());
-        if(invertSort){
-            rowComparator = rowComparator.reversed();
-        }
+        final int center = (int) location;
+        byte referenceBase = this.getReference(center);
+        final Comparator<Row> rowComparator =  option.getComparator(center, referenceBase, tag, invertSort);
 
         for (List<Row> alignmentRows : packedAlignments.values()) {
-            for (Row row : alignmentRows) {
-                row.updateScore(option, location, this, tag);
-            }
             alignmentRows.sort(rowComparator);
         }
     }
