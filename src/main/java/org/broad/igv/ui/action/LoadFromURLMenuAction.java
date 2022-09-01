@@ -154,18 +154,7 @@ public class LoadFromURLMenuAction extends MenuAction {
 
         OAuthProvider oauthProvider = OAuthUtils.getInstance().getProvider();
         if (GoogleUtils.isGoogleCloud(url) || GoogleUtils.isGoogleDrive(url)) {
-
             enableGoogleMenu();
-        }
-        else if(oauthProvider != null && oauthProvider.appliesToUrl(url)){
-            // if user is not currently logged in, attempt to
-            // log in user
-           try {
-              oauthProvider.doSecureLogin();
-           } catch (Exception e) {
-                log.error("Error connecting to OAuth: " + e.getMessage());
-           }
-
         }
 
         return url;

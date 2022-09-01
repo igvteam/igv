@@ -67,6 +67,11 @@ public class OAuthProvider {
 
         config = obj;
 
+        // For backward compatibility
+        if (obj.has("installed") && !obj.has("client_id")) {
+            obj = obj.get("installed").getAsJsonObject();
+        }
+
         // Mandatory attributes, fail hard if not present
         try {
             clientId = obj.get("client_id").getAsString();
@@ -111,7 +116,6 @@ public class OAuthProvider {
         if (authURI.contains("google")) {
             if (scope == null) {
                 String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
-                String driveScope = "https://www.googleapis.com/auth/drive.readonly";
                 String emailScope = "https://www.googleapis.com/auth/userinfo.email";
                 scope = gsScope + "%20" + emailScope;
 
@@ -444,9 +448,9 @@ public class OAuthProvider {
     }
 
     /**
-     * Try to login to secure server. dwm08
+     * If not logged in, attempt to login
      */
-    public synchronized void doSecureLogin() {
+    public synchronized void checkLogin() {
         // if user is not currently logged in, attempt to
         // log in user if not logged in dwm08
         if (!isLoggedIn()) {
@@ -472,95 +476,20 @@ public class OAuthProvider {
     }
 
     /**
-     * Generate a set of all urls in the session file
-     *
-     * @param sessionPath
-     * @return list of urls
-     */
-    public static Set<String> findUrlsInSessionFile(String sessionPath) {
-        BufferedReader br = null;
-        HashSet<String> urlSet = new HashSet<>();
-        try {
-            br = new BufferedReader(new FileReader(new File(sessionPath)));
-            String line;
-            while ((line = br.readLine()) != null) {
-                int start = line.indexOf("http");
-                if (start != -1) {
-                    int mid = line.indexOf("://", start);
-                    int end = line.indexOf("/", mid + 3);
-                    String url = line.substring(start, end);
-                    urlSet.add(url);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                }
-            }
-        }
-        return urlSet;
-    }
-
-    /**
-     * Check if any reference in the session file refers to a server protected
-     * by the oauth protocol. If so, check to see if the user is logged in. If
-     * user is not logged in, put up login prompt.
-     *
-     * @param sessionPath
-     */
-    public void checkServerLogin(String sessionPath) {
-        Set<String> urlSet = findUrlsInSessionFile(sessionPath);
-        if (urlSet.size() > 0) {
-            for (String url : urlSet) {
-                if (this.appliesToUrl(url)) {
-                    doSecureLogin();
-                    // user is logged in. Can proceed with the load
-                    return;
-                }
-            }
-        }
-    }
-
-    /**
      * Does this ouath provider apply (should it's access token be used) for the url provided
      * @param url
      * @return
      */
     public boolean appliesToUrl(URL url){
         // If this provider has a list of hosts, use them to check the url
-        if(this.hosts != null && this.hosts.length > 0){
-            for (String host: hosts){
-                 if(url.getHost() != null && url.getHost().equals(host)){
-                     return true;
-                 }
+        if(this.hosts != null && this.hosts.length > 0) {
+            for (String host : hosts) {
+                if (url.getHost() != null && url.getHost().equals(host)) {
+                    return true;
+                }
             }
-            return false;
         }
-        // Otherwise assume it's a google provider and check if this is a google url
-        else{
-            return GoogleUtils.isGoogleCloud(url.toExternalForm());
-        }
-
-    }
-
-    /**
-     * Does this ouath provider apply (should it's access token be used) for the url string
-     * @param urlString
-     * @return
-     */
-    public boolean appliesToUrl(String urlString){
-        try {
-            URL url = new URL(urlString);
-            return this.appliesToUrl(url);
-        }
-        catch(MalformedURLException ex){
-            return false;
-        }
+        return false;
     }
 
     public JsonObject getResponse() {

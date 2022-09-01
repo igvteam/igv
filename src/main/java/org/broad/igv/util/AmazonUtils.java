@@ -542,7 +542,7 @@ public class AmazonUtils {
     public static void checkLogin() {
         if (GetCognitoConfig() != null &&
                 !OAuthUtils.getInstance().getProvider("Amazon").isLoggedIn()) {
-            OAuthUtils.getInstance().getProvider("Amazon").doSecureLogin();
+            OAuthUtils.getInstance().getProvider("Amazon").checkLogin();
         }
     }
 

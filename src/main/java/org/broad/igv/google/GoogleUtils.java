@@ -48,7 +48,7 @@ public class GoogleUtils {
 
     public static void checkLogin() {
         if (!OAuthUtils.getInstance().getProvider().isLoggedIn()) {
-            OAuthUtils.getInstance().getProvider().doSecureLogin();
+            OAuthUtils.getInstance().getProvider().checkLogin();
         }
     }
 
