@@ -482,12 +482,13 @@ public class OAuthProvider {
      */
     public boolean appliesToUrl(URL url){
         // If this provider has a list of hosts, use them to check the url
-        if(this.hosts != null && this.hosts.length > 0){
-            for (String host: hosts){
-                 if(url.getHost() != null && url.getHost().equals(host)){
-                     return true;
-                 }
+        if(this.hosts != null && this.hosts.length > 0) {
+            for (String host : hosts) {
+                if (url.getHost() != null && url.getHost().equals(host)) {
+                    return true;
+                }
             }
+        }
         return false;
     }
 
