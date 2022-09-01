@@ -1,4 +1,0 @@
-##gff-version 2
-##date 2021-01-25
-chr2	ensembl	exon	27928653	27931363	.	-	.	gene_id "TESTGENE"; transcript_id TESTGENE:1; color #AAAAAA
-chr2	ensembl	exon	27938451	27938599	.	-	.	gene_id "TESTGENE"; transcript_id TESTGENE:1; color #AAAAAA
