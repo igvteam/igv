@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" version="8">
+    <Resources>
+        <Resource path="~/igv-team Dropbox/Data/bedpe/small_loops.bedpe"/>
+    </Resources>
+</Session>

@@ -40,8 +40,9 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
+import org.broad.igv.sam.mods.BaseModificationColors;
 import org.broad.igv.sam.mods.BaseModificationCounts;
-import org.broad.igv.sam.mods.BaseModificationUtils;
+import org.broad.igv.sam.mods.BaseModificationCoverageRenderer;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -64,9 +65,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -372,9 +371,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 if (counts != null) {
                     buf.append(counts.getValueStringAt((int) position));
                     final AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
-                    if ((colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION ||
-                            colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC) &&
-                            counts.getModifiedBaseCounts() != null) {
+                    if (colorOption.isBaseMod() && counts.getModifiedBaseCounts() != null) {
                         buf.append("<hr>");
                         buf.append(counts.getModifiedBaseCounts().getValueString((int) position, colorOption));
                     }
@@ -461,8 +458,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             Graphics2D graphics = context.getGraphic2DForColor(color);
             final AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
             boolean bisulfiteMode = colorOption == AlignmentTrack.ColorOption.BISULFITE;
-            boolean baseModMode = colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION ||
-                    colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC;
 
             final int intervalEnd = alignmentCounts.getEnd();
             final int intervalStart = alignmentCounts.getStart();
@@ -533,8 +528,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                         if (bc != null && (bc.methylatedCount + bc.unmethylatedCount) > 0) {
                             drawBarBisulfite(context, pX, bottomY, dX, barHeight, totalCount, bc);
                         }
-                    } else if (baseModMode) {
-                        drawModifiedBaseBar(context, pX, bottomY, dX, barHeight, pos, alignmentCounts);
+                    } else if (colorOption.isBaseMod()) {
+                        BaseModificationCoverageRenderer.drawModifications(context, pX, bottomY, dX, barHeight, pos, alignmentCounts, colorOption);
                     } else {
                         if (refBases != null) {
                             int refIdx = pos - intervalStart;
@@ -587,74 +582,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             }
         }
     }
-
-    int drawModifiedBaseBar(RenderContext context,
-                            int pX,
-                            int pBottom,
-                            int dX,
-                            int barHeight,
-                            int pos,
-                            AlignmentCounts alignmentCounts) {
-
-        BaseModificationCounts baseCounts = alignmentCounts.getModifiedBaseCounts();
-        AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
-        if (baseCounts != null) {
-
-            Graphics2D graphics = context.getGraphics();
-
-            for (BaseModificationCounts.Key key : baseCounts.getAllModifications()) {
-
-                int count = baseCounts.getCount(pos, key, colorOption);
-
-                if (barHeight > 0 && count > 0) {
-
-                    byte base = (byte) key.getBase();
-                    byte complement = SequenceUtil.complement(base);
-                    char modStrand = key.getStrand();
-                    String modification = key.getModification();
-
-                    int cCount = modStrand == '+' ?
-                            alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement) :
-                            alignmentCounts.getPosCount(pos, complement) + alignmentCounts.getNegCount(pos, base);
-
-                    int calledBarHeight = (int) ((((float) count) / cCount) * barHeight);
-                    Color noModColor = BaseModificationUtils.getModColor(modification, (byte) 0, colorOption);
-                    Color modColor = BaseModificationUtils.getModColor(modification, (byte) 255, colorOption);
-
-                    float averageLikelihood = (float) (baseCounts.getLikelhoodSum(pos, key)) / (count * 255);
-                    int modHeight = (int) (averageLikelihood * calledBarHeight);
-
-                    if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC) {
-
-                        int noModHeight = calledBarHeight - modHeight;
-                        int baseY = pBottom - noModHeight;
-
-                        graphics.setColor(noModColor);
-                        graphics.fillRect(pX, baseY, dX, noModHeight);
-
-                        if(modHeight > 0) {
-                            baseY -= modHeight;
-                            graphics.setColor(modColor);
-                            graphics.fillRect(pX, baseY, dX, modHeight);
-                        }
-
-                    } else {
-                        // Generic modification
-                        float threshold = PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
-                        if(averageLikelihood > threshold && modHeight > 0) {
-                            int baseY = pBottom - modHeight;
-                            graphics.setColor(modColor);
-                            graphics.fillRect(pX, baseY, dX, modHeight);
-                            pBottom = baseY;
-                        }
-                    }
-
-                }
-            }
-        }
-        return pX + dX;
-    }
-
 
     void drawBarBisulfite(RenderContext context,
                           int pX0,
@@ -749,7 +676,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             pY = isPositive ? baseY : baseY + height;
         }
     }
-    
+
     /**
      * Override to return a specialized popup menu
      *

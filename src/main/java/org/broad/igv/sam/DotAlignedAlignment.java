@@ -69,15 +69,6 @@ public class DotAlignedAlignment implements Alignment {
         return readName;
     }
 
-    /**
-     * .aligned files do not include sequence
-     *
-     * @return
-     */
-    public String getReadSequence() {
-        return "";
-    }
-
     public void setMateSequence(String sequnce) {
         // Ignore
     }

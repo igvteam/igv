@@ -78,7 +78,7 @@ public class BisulfiteBaseInfoTest {
 
         @Override
         public String getReadName() {
-            return null;
+            return "";
         }
 
         @Override

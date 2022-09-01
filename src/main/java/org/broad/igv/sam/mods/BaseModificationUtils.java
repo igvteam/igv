@@ -2,11 +2,10 @@ package org.broad.igv.sam.mods;
 
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.AlignmentUtils;
-import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.color.PaletteColorTable;
 
 import java.awt.*;
 import java.util.*;
@@ -17,8 +16,6 @@ public class BaseModificationUtils {
     private static Logger log = LogManager.getLogger(BaseModificationUtils.class);
 
     static Map<String, String> codeValues;
-    static PaletteColorTable modColorPallete;
-
 
     static {
         codeValues = new HashMap<>();
@@ -38,15 +35,6 @@ public class BaseModificationUtils {
         codeValues.put("G", "Unknown G");
         codeValues.put("N", "Unknown");
 
-        modColorPallete = new PaletteColorTable(new Color(132, 178, 158));
-        modColorPallete.put("m", Color.red);
-        modColorPallete.put("h", new Color(11, 132, 165));
-        modColorPallete.put("o", new Color(111, 78, 129));
-        modColorPallete.put("f", new Color(246, 200, 95));
-        modColorPallete.put("c", new Color(157, 216, 102));
-        modColorPallete.put("g", new Color(255, 160, 86));
-        modColorPallete.put("e", new Color(141, 221, 208));
-        modColorPallete.put("b", new Color(202, 71, 47));
     }
 
 
@@ -166,50 +154,6 @@ public class BaseModificationUtils {
 
         return modificationSets;
     }
-
-
-    public static Color getModColor(String modification, byte likelihood, AlignmentTrack.ColorOption colorOption) {
-
-        // Note the pallete will always return a color, either an initially seeded one if supplied or a random color.
-        Color baseColor = modColorPallete.get(modification);
-        int l = Byte.toUnsignedInt(likelihood);
-
-        String key = modification + "--" + l;
-
-        if (AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC == colorOption) {
-            if (l > 255) {
-                return baseColor;
-            }
-            if (!modColorMap5MC.containsKey(key)) {
-                int alpha = Math.min(255, (int) (l * l / 64f - 4 * l + 256));    // quadratic
-                if (l >= 128) {
-                    modColorMap5MC.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha));
-                } else {
-                    modColorMap5MC.put(key, new Color(baseColor.getBlue(), baseColor.getGreen(), baseColor.getRed(), alpha));
-                }
-            }
-            return modColorMap5MC.get(key);
-
-        } else {
-            if (l > 250) {
-                return baseColor;
-            }
-            double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
-            if (l < threshold) {
-                l = 0;
-            }
-            if (!modColorMap.containsKey(key)) {
-                modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), l));
-            }
-            return modColorMap.get(key);
-        }
-    }
-
-    /**
-     * Cache for modified colors
-     */
-    static Map<String, Color> modColorMap = new HashMap<>();
-    static Map<String, Color> modColorMap5MC = new HashMap<>();
 
     /**
      * If a string can be converted to a positive integer assume its a ChEBI ID

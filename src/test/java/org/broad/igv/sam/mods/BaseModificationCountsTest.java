@@ -41,7 +41,7 @@ public class BaseModificationCountsTest {
         BaseModificationCounts.Key key = new BaseModificationCounts.Key('C', '+', "m");
 
         for(int i=0; i<expectedPositions.length; i++) {
-            int c = counts.getCount(expectedPositions[i] - 1, key, null);
+            int c = counts.getCount(expectedPositions[i] - 1, key);
             assertEquals("Unexpected count at position " + expectedPositions[i], expectedCounts[i], c);
         }
 

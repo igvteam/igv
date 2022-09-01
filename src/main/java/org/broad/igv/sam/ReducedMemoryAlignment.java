@@ -119,20 +119,6 @@ public class ReducedMemoryAlignment implements Alignment {
 
     }
 
-
-    public String getReadName() {
-        return null;
-    }
-
-    /**
-     * .aligned files do not include sequence
-     *
-     * @return
-     */
-    public String getReadSequence() {
-        return "";
-    }
-
     public void setMateSequence(String sequnce) {
         // Ignore
     }

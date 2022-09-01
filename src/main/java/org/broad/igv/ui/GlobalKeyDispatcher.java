@@ -53,12 +53,9 @@ import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -257,7 +254,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                     try {
                         AlignmentTrack.SortOption option = AlignmentTrack.SortOption.valueOf(sortOptionString);
                         String lastSortTag = prefMgr.get(SAM_SORT_BY_TAG);
-                        igv.sortAlignmentTracks(option, lastSortTag);
+                        igv.sortAlignmentTracks(option, lastSortTag, prefMgr.getAsBoolean(SAM_INVERT_SORT));
                     } catch (IllegalArgumentException e1) {
                         log.error("Unrecognized sort option: " + sortOptionString);
                     }

@@ -681,7 +681,7 @@ public class CommandExecutor {
         Map<String, String> ignore = null;
         String sort = null;
         String sortTag = null;
-        return loadFiles(fileString, index, coverage, name, format, locus, merge, ignore, sort, sortTag);
+        return loadFiles(fileString, index, coverage, name, format, locus, merge, ignore, sort, sortTag, true);
 
     }
 
@@ -695,6 +695,7 @@ public class CommandExecutor {
      * @param params
      * @param sort
      * @param sortTag    Used iff sort == SortOption.TAG
+     * @param dup
      * @return
      * @throws IOException
      */
@@ -707,7 +708,8 @@ public class CommandExecutor {
                      final boolean merge,
                      Map<String, String> params,
                      String sort,
-                     String sortTag) {
+                     String sortTag,
+                     boolean dup) {
 
         boolean isDataURL = ParsingUtils.isDataURL(fileString);
 
@@ -742,15 +744,14 @@ public class CommandExecutor {
             igv.newSession();
         }
 
-
         // Create set of loaded files
-//        Set<String> loadedFiles = new HashSet<>();
-//        for (ResourceLocator rl : igv.getDataResourceLocators()) {
-//            loadedFiles.add(rl.getPath());
-//        }
+        Set<String> loadedFiles = new HashSet<>();
+        for (ResourceLocator rl : igv.getDataResourceLocators()) {
+            loadedFiles.add(rl.getPath());
+        }
+
 
         // Loop through files
-
         for (int fi = 0; fi < files.size(); fi++) {
             String f = files.get(fi);
             if (!FileUtils.isRemote(f)) {
@@ -769,8 +770,9 @@ public class CommandExecutor {
                 return "Error: format must be specified for dataURLs";
             }
 
-            // Skip already loaded files TODO -- make this optional?  Check for change?
-            //if (loadedFiles.contains(f)) continue;
+
+            // Skip already loaded files
+            if (!dup && loadedFiles.contains(f)) continue;
 
             if (SessionReader.isSessionFile(f)) {
                 igv.loadSession(f, locus);
@@ -829,7 +831,7 @@ public class CommandExecutor {
 
         if (sort != null) {
             final AlignmentTrack.SortOption sortOption = getAlignmentSortOption(sort);
-            igv.sortAlignmentTracks(sortOption, sortTag);
+            igv.sortAlignmentTracks(sortOption, sortTag, false);
         }
 
         return CommandListener.OK;
@@ -1061,7 +1063,7 @@ public class CommandExecutor {
                     }
                 }
             }
-            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
+            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag, false);
             return "OK";
         }
     }
@@ -1170,6 +1172,7 @@ public class CommandExecutor {
         }
     }
 
+    //todo check that this matches all the existing sorts
     private static AlignmentTrack.SortOption getAlignmentSortOption(String str) {
         str = str == null ? "base" : str;
         if (str.equalsIgnoreCase("start") || str.equalsIgnoreCase("position")) {

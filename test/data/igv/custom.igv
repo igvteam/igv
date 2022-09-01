@@ -1,0 +1,4 @@
+#columns chr=7 start=8 probe=2 data=4-5 #coords=1
+Index	TargetID	ProbeID_A	sample 1 methylation	sample 2 methylation	genome_build	chromosome	position
+60	cg00002593	25796427	0.7642099	0.7426524	37	1	1258656
+21	cg00000957	65648367	0.8172337	0.8323303	37	1	5859840
