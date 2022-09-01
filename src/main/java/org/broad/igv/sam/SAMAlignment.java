@@ -109,10 +109,19 @@ public class SAMAlignment implements Alignment {
      */
     private List<BaseModificationSet> baseModificationSets;
 
+    private short[] smrtSubreadIpdVals;
+    private short[] smrtSubreadPwVals;
+    private short[] smrtCcsFwdIpdVals;
+    private short[] smrtCcsFwdPwVals;
+    private short[] smrtCcsRevIpdVals;
+    private short[] smrtCcsRevPwVals;
+
     protected String mateSequence = null;
     protected String pairOrientation = "";
     private Strand firstOfPairStrand;
     private Strand secondOfPairStrand;
+
+    private SMRTKineticsDecoder smrtKineticsDecoder;
 
     public SAMAlignment(SAMRecord record) {
 
@@ -158,6 +167,7 @@ public class SAMAlignment implements Alignment {
         setPairStrands();
         createAlignmentBlocks();
 
+        this.smrtKineticsDecoder = new SMRTKineticsDecoder();
     }
 
     public SAMRecord getRecord() {
@@ -341,6 +351,62 @@ public class SAMAlignment implements Alignment {
     }
 
     /**
+     * 1. Decode compressed kinetic byte codes into frame counts
+     * 2. Reverse frame count sequence if reverseSequence is true
+     * 3. If the read has a leading hard-clip, remove all frame-counts from the hard-clipped region
+     */
+    private short[] parseSmrtKineticByteCodes(byte[] smrtKineticByteCodes, boolean reverseSequence) {
+        int hardClipLength = getLeadingHardClipLength();
+        int kineticValLength = smrtKineticByteCodes.length - hardClipLength;
+        assert(kineticValLength > 0);
+        short[] ccsKineticVals = new short[kineticValLength];
+
+        int byteCodeIndex = 0;
+        for (byte ccKineticByteCode : smrtKineticByteCodes) {
+            int valIndex = byteCodeIndex;
+            if (reverseSequence) {
+                valIndex = smrtKineticByteCodes.length - (valIndex+1);
+            }
+            if (valIndex < hardClipLength) continue;
+            valIndex -= hardClipLength;
+            ccsKineticVals[valIndex] = smrtKineticsDecoder.lookupFrameCount(ccKineticByteCode);
+            byteCodeIndex++;
+        }
+        return ccsKineticVals;
+    }
+
+    private short[] getSmrtKineticsVals(short[] smrtKineticVals, String tag, boolean bytesReversedInBam) {
+        if (smrtKineticVals != null || ! record.hasAttribute(tag)) return null;
+        final byte[] ccsKineticByteCodes = (byte[]) (record.getAttribute(tag));
+        smrtKineticVals = parseSmrtKineticByteCodes(ccsKineticByteCodes, (bytesReversedInBam ^ isNegativeStrand()));
+        return smrtKineticVals;
+    }
+
+    public short[] getSmrtSubreadIpd() {
+        return getSmrtKineticsVals(smrtSubreadIpdVals, "ip", false);
+    }
+
+    public short[] getSmrtSubreadPw() {
+        return getSmrtKineticsVals(smrtSubreadPwVals, "pw", false);
+    }
+
+    public short[] getSmrtCcsIpd(boolean isForwardStrand) {
+        if (isForwardStrand ^ isNegativeStrand()) {
+            return getSmrtKineticsVals(smrtCcsFwdIpdVals, "fi", false);
+        } else {
+            return getSmrtKineticsVals(smrtCcsRevIpdVals, "ri", true);
+        }
+    }
+
+    public short[] getSmrtCcsPw(boolean isForwardStrand) {
+        if (isForwardStrand ^ isNegativeStrand()) {
+            return getSmrtKineticsVals(smrtCcsFwdPwVals, "fp", false);
+        } else {
+            return getSmrtKineticsVals(smrtCcsRevPwVals, "rp", true);
+        }
+    }
+
+    /**
      * Set pair strands.  Used for strand specific libraries to recover strand of
      * originating fragment.
      */
@@ -377,6 +443,26 @@ public class SAMAlignment implements Alignment {
             firstOfPairStrand = getReadStrand();
             secondOfPairStrand = Strand.NONE;
         }
+    }
+
+    /**
+     * Return the number of bases hard-clipped from the leading-edge (leftmost view in IGV) of the alignment
+     */
+    private int getLeadingHardClipLength() {
+        int clipLength = 0;
+
+        String cigarString = record.getCigarString();
+        if (!cigarString.equals("*")) {
+            java.util.List<CigarOperator> operators = buildOperators(cigarString);
+            for (CigarOperator operator : operators) {
+                if (operator.operator == HARD_CLIP) {
+                    clipLength += operator.nBases;
+                } else {
+                    break;
+                }
+            }
+        }
+        return clipLength;
     }
 
     /**
@@ -579,6 +665,14 @@ public class SAMAlignment implements Alignment {
         return getAlignmentValueString(location, mouseX, (AlignmentTrack.RenderOptions) null);
     }
 
+    private Integer positionToReadIndex(double position) {
+        for (AlignmentBlock block : this.alignmentBlocks) {
+            if (block.contains((int) position)) {
+                return (int) (position - block.getStart()) + block.getBasesOffset();
+            }
+        }
+        return null;
+    }
 
     public String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
 
@@ -614,12 +708,13 @@ public class SAMAlignment implements Alignment {
             }
         }
 
-        // Check base modifications
-        if (renderOptions != null &&
-                (renderOptions.getColorOption().isBaseMod())) {
-            for (AlignmentBlock block : this.alignmentBlocks) {
-                if (block.contains((int) position)) {
-                    int p = (int) (position - block.getStart()) + block.getBasesOffset();
+        // Check base modifications & kinetics
+        if (renderOptions != null) {
+            final AlignmentTrack.ColorOption colorOption = renderOptions.getColorOption();
+            if (colorOption.isBaseMod()) {
+                Integer readIndex = positionToReadIndex(position);
+                if (readIndex != null) {
+                    int p = readIndex;
                     if (baseModificationSets != null) {
                         String modString = "";
                         for (BaseModificationSet bmSet : baseModificationSets) {
@@ -632,6 +727,35 @@ public class SAMAlignment implements Alignment {
                             buf.append(modString);
                             buf.append("<br");
                             atBaseMod = true;
+                        }
+                    }
+                }
+            } else if (colorOption.isSMRTKinetics()) {
+                Integer readIndex = positionToReadIndex(position);
+                if (readIndex != null) {
+                    if (colorOption == AlignmentTrack.ColorOption.SMRT_SUBREAD_IPD) {
+                        short[] ipdVals = getSmrtSubreadIpd();
+                        if (ipdVals != null) {
+                            return "Subread IPD: " + ipdVals[readIndex] + " Frames";
+                        }
+                    } else if (colorOption == AlignmentTrack.ColorOption.SMRT_SUBREAD_PW) {
+                        short[] pwVals = getSmrtSubreadPw();
+                        if (pwVals != null) {
+                            return "Subread PW: " + pwVals[readIndex] + " Frames";
+                        }
+                    } else if (colorOption == AlignmentTrack.ColorOption.SMRT_CCS_FWD_IPD || colorOption == AlignmentTrack.ColorOption.SMRT_CCS_REV_IPD) {
+                        final boolean isForwardStrand = (colorOption == AlignmentTrack.ColorOption.SMRT_CCS_FWD_IPD);
+                        short[] ipdVals = getSmrtCcsIpd(isForwardStrand);
+                        if (ipdVals != null) {
+                            final String strand = (isForwardStrand ? "fwd" : "rev");
+                            return "CCS " + strand + "-strand aligned IPD: " + ipdVals[readIndex] + " Frames";
+                        }
+                    } else {
+                        final boolean isForwardStrand = (colorOption == AlignmentTrack.ColorOption.SMRT_CCS_FWD_PW);
+                        short[] pwVals = getSmrtCcsPw(isForwardStrand);
+                        if (pwVals != null) {
+                            final String strand = (isForwardStrand ? "fwd" : "rev");
+                            return "CCS " + strand + "-strand aligned PW: " + pwVals[readIndex] + " Frames";
                         }
                     }
                 }

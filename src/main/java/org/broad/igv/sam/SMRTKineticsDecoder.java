@@ -1,6 +1,6 @@
 package org.broad.igv.sam;
 
-/// Logic to decode SMRT kinetic values from uint8 compressed code to an approximation of the
+/// Decode SMRT kinetic values from uint8 compressed code to an approximation of the
 /// original frame count.
 ///
 public class SMRTKineticsDecoder {

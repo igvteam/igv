@@ -113,10 +113,30 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         YC_TAG,
         BASE_MODIFICATION,
         BASE_MODIFICATION_5MC,
-        BASE_MODIFICATION_C;
+        BASE_MODIFICATION_C,
+        SMRT_SUBREAD_IPD,
+        SMRT_SUBREAD_PW,
+        SMRT_CCS_FWD_IPD,
+        SMRT_CCS_FWD_PW,
+        SMRT_CCS_REV_IPD,
+        SMRT_CCS_REV_PW;
 
         public boolean isBaseMod() {
             return this == BASE_MODIFICATION || this == BASE_MODIFICATION_5MC || this == BASE_MODIFICATION_C;
+        }
+
+        public boolean isSMRTKinetics() {
+            switch (this) {
+                case SMRT_SUBREAD_IPD:
+                case SMRT_SUBREAD_PW:
+                case SMRT_CCS_FWD_IPD:
+                case SMRT_CCS_REV_IPD:
+                case SMRT_CCS_FWD_PW:
+                case SMRT_CCS_REV_PW:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 
@@ -1920,6 +1940,20 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 group.add(mi);
             }
 
+            // SMRT Kinetics
+            mappings.clear();
+            mappings.put("SMRT subread IPD", ColorOption.SMRT_SUBREAD_IPD);
+            mappings.put("SMRT subread PW", ColorOption.SMRT_SUBREAD_PW);
+            mappings.put("SMRT CCS fwd-strand aligned IPD", ColorOption.SMRT_CCS_FWD_IPD);
+            mappings.put("SMRT CCS fwd-strand aligned PW", ColorOption.SMRT_CCS_FWD_PW);
+            mappings.put("SMRT CCS rev-strand aligned IPD", ColorOption.SMRT_CCS_REV_IPD);
+            mappings.put("SMRT CCS rev-strand aligned PW", ColorOption.SMRT_CCS_REV_PW);
+            colorMenu.addSeparator();
+            for (Map.Entry<String, ColorOption> el : mappings.entrySet()) {
+                JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
+                colorMenu.add(mi);
+                group.add(mi);
+            }
 
             add(colorMenu);
 
