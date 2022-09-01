@@ -22,9 +22,16 @@ public enum SortOption {
         Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
 
             final Comparator<Alignment> insertionComparator = Comparator.comparing((Alignment alignment) -> {
-                AlignmentBlock insertion = alignment.getInsertionAt(center + 1); //todo figure out what's going on with the +1 here..
-                if(insertion == null) insertion = alignment.getInsertionAt(center);
-                return insertion != null ? insertion.getBases().getString() : "";
+                String insertionBases = "";
+                AlignmentBlock leftInsertion = alignment.getInsertionAt(center + 1); //todo figure out what's going on with the +1 here..
+                if(leftInsertion != null) {
+                    insertionBases += leftInsertion.getBases().getString();
+                }
+                AlignmentBlock rightInsertion = alignment.getInsertionAt(center);
+                if(rightInsertion != null) {
+                    insertionBases += rightInsertion.getBases().getString();
+                }
+                return insertionBases;
             }).reversed();
 
             final int refBase = referenceBase >= 97 ? referenceBase - 32 : referenceBase;
@@ -33,22 +40,23 @@ public enum SortOption {
                 int base = a.getBase(center);
                 if (base >= 97) base -= 32; //normalize case
                 if (base == refBase) base = Integer.MAX_VALUE - 3;
-                if (base == (int)'N') base = Integer.MAX_VALUE - 2;
-                if (base == 0) base = Integer.MAX_VALUE;
+                if (base == (int) 'N') base = Integer.MAX_VALUE - 2;
+                if (base == 0) base = 97;  // > any letter, causes deletions to be placed after snps
                 return base;
             };
 
             final Comparator<Alignment> deletionComparator = Comparator.comparing(
-                        (Alignment a) -> a.getDeletionAt(center),
-                        Comparator.nullsLast(Comparator.comparing(Gap::getnBases).thenComparing(Gap::getStart)
+                    (Alignment a) -> a.getDeletionAt(center),
+                    Comparator.nullsLast(Comparator.comparing(Gap::getnBases).thenComparing(Gap::getStart)
                     ));
 
             final ToIntFunction<Alignment> baseQualityCompare = ((Alignment a) -> -a.getPhred(center));
 
-            return insertionComparator
+            return Comparator.comparingInt(baseCompare)
                     .thenComparing(deletionComparator)
-                    .thenComparingInt(baseCompare)
+                    .thenComparing(insertionComparator)
                     .thenComparingInt(baseQualityCompare);
+
         }
     }, QUALITY {
         @Override
@@ -78,7 +86,7 @@ public enum SortOption {
     }, MATE_CHR {
         @Override
         Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
-                return Comparator.comparing((Alignment a) -> a.getMate() == null)
+            return Comparator.comparing((Alignment a) -> a.getMate() == null)
                     .thenComparing(a -> a.getMate().getChr().equals(a.getChr()))
                     .thenComparing(a -> a.getMate().getChr());
         }
@@ -120,7 +128,7 @@ public enum SortOption {
     }, ALIGNED_READ_LENGTH {
         @Override
         Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
-            return Comparator.comparingInt( a -> a.getAlignmentStart() - a.getAlignmentEnd());
+            return Comparator.comparingInt(a -> a.getAlignmentStart() - a.getAlignmentEnd());
         }
     };
 
@@ -130,11 +138,11 @@ public enum SortOption {
     }
 
     /**
-     * get a Comparator that will perform the relevant sort. 
+     * get a Comparator that will perform the relevant sort.
      */
     public Comparator<Row> getComparator(final int center, final byte reference, final String tag, boolean invertSort) {
         Comparator<Alignment> alignmentComparator = getAlignmentComparator(center, tag, reference);
-        if(invertSort) alignmentComparator = alignmentComparator.reversed();
+        if (invertSort) alignmentComparator = alignmentComparator.reversed();
         return Comparator.comparing((Row row) -> AlignmentInterval.getFeatureContaining(row.getAlignments(), center),
                 Comparator.nullsLast(alignmentComparator));
 
