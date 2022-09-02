@@ -1625,7 +1625,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
                 String optionStr = getBisulfiteContextPubStr(item);
                 JRadioButtonMenuItem m1 = new JRadioButtonMenuItem(optionStr);
-                m1.setSelected(renderOptions.bisulfiteContext == item);
+                m1.setSelected(renderOptions.getColorOption() == ColorOption.BISULFITE && renderOptions.bisulfiteContext == item);
                 m1.addActionListener(aEvt -> {
                     setColorOption(ColorOption.BISULFITE);
                     setBisulfiteContext(item);
