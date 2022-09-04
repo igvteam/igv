@@ -47,7 +47,7 @@ Note that Gradle creates a number of other subdirectories in 'build'.  These can
 
 Public data files hosted in Amazon S3 buckets can be loaded into IGV using [https endpoints](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html).  
 
-Authenticated access can be loading using s3:// urls by either (1) enabling OAuth access with Cognito using the UMCCR 
+Authenticated access using s3:// urls is supported by either (1) enabling OAuth access with Cognito using the UMCCR 
 contributed AWS configuration option, or (2) setting AWS credentials and region information as described 
 [here]( https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) and 
 [here](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/java-dg-region-selection.html).
