@@ -359,6 +359,10 @@ public class SAMAlignment implements Alignment {
      * Returns the processed frame count array
      */
     private short[] parseSmrtKineticByteCodes(byte[] smrtKineticByteCodes, boolean reverseSequence) {
+        if (smrtKineticByteCodes.length == 0) {
+            return null;
+        }
+
         int hardClipLength = getLeadingHardClipLength();
         int kineticValLength = smrtKineticByteCodes.length - hardClipLength;
         assert(kineticValLength > 0);
@@ -387,6 +391,10 @@ public class SAMAlignment implements Alignment {
      * Returns the processed frame count array
      */
     private short[] parseAuxSmrtKineticFrameCounts(short[] auxSmrtKineticFrameCounts, boolean reverseSequence) {
+        if (auxSmrtKineticFrameCounts.length == 0) {
+            return null;
+        }
+
         int hardClipLength = getLeadingHardClipLength();
         int kineticValLength = auxSmrtKineticFrameCounts.length - hardClipLength;
         assert(kineticValLength > 0);
