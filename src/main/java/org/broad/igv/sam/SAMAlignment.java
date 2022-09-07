@@ -351,9 +351,12 @@ public class SAMAlignment implements Alignment {
     }
 
     /**
-     * 1. Decode compressed kinetic byte codes into frame counts
-     * 2. Reverse frame count sequence if reverseSequence is true
-     * 3. If the read has a leading hard-clip, remove all frame-counts from the hard-clipped region
+     * Given the compressed byte code array of CCS kinetic values from the SAM aux field do the following:
+     * - Initialize frame count array, decode compressed kinetic byte codes into frame counts and copy these into it
+     * - Reverse frame count sequence if reverseSequence is true
+     * - If the read has a leading hard-clip, remove all frame counts from the hard-clipped region
+     *
+     * Returns the processed frame count array
      */
     private short[] parseSmrtKineticByteCodes(byte[] smrtKineticByteCodes, boolean reverseSequence) {
         int hardClipLength = getLeadingHardClipLength();
@@ -362,23 +365,59 @@ public class SAMAlignment implements Alignment {
         short[] ccsKineticVals = new short[kineticValLength];
 
         int byteCodeIndex = 0;
-        for (byte ccKineticByteCode : smrtKineticByteCodes) {
+        for (byte ccsKineticByteCode : smrtKineticByteCodes) {
             int valIndex = byteCodeIndex;
+            byteCodeIndex++;
             if (reverseSequence) {
                 valIndex = smrtKineticByteCodes.length - (valIndex+1);
             }
             if (valIndex < hardClipLength) continue;
             valIndex -= hardClipLength;
-            ccsKineticVals[valIndex] = smrtKineticsDecoder.lookupFrameCount(ccKineticByteCode);
-            byteCodeIndex++;
+            ccsKineticVals[valIndex] = smrtKineticsDecoder.lookupFrameCount(ccsKineticByteCode);
+        }
+        return ccsKineticVals;
+    }
+
+    /**
+     * Given the original uint16 CCS kinetic frame count array from the SAM aux field do the following:
+     * - Initialize the processed frame count array and copy values into it
+     * - Reverse frame count sequence if reverseSequence is true
+     * - If the read has a leading hard-clip, remove all frame counts from the hard-clipped region
+     *
+     * Returns the processed frame count array
+     */
+    private short[] parseAuxSmrtKineticFrameCounts(short[] auxSmrtKineticFrameCounts, boolean reverseSequence) {
+        int hardClipLength = getLeadingHardClipLength();
+        int kineticValLength = auxSmrtKineticFrameCounts.length - hardClipLength;
+        assert(kineticValLength > 0);
+        short[] ccsKineticVals = new short[kineticValLength];
+
+        int auxIndex = 0;
+        for (short ccsKineticFrameCount : auxSmrtKineticFrameCounts) {
+            int valIndex = auxIndex;
+            auxIndex++;
+            if (reverseSequence) {
+                valIndex = auxSmrtKineticFrameCounts.length - (valIndex+1);
+            }
+            if (valIndex < hardClipLength) continue;
+            valIndex -= hardClipLength;
+            ccsKineticVals[valIndex] = ccsKineticFrameCount;
         }
         return ccsKineticVals;
     }
 
     private short[] getSmrtKineticsVals(short[] smrtKineticVals, String tag, boolean bytesReversedInBam) {
-        if (smrtKineticVals != null || ! record.hasAttribute(tag)) return null;
-        final byte[] ccsKineticByteCodes = (byte[]) (record.getAttribute(tag));
-        smrtKineticVals = parseSmrtKineticByteCodes(ccsKineticByteCodes, (bytesReversedInBam ^ isNegativeStrand()));
+        if (smrtKineticVals == null && record.hasAttribute(tag)) {
+            final boolean reverseSequence = (bytesReversedInBam ^ isNegativeStrand());
+            Object tagValue = record.getAttribute(tag);
+            if (tagValue instanceof byte[]) {
+                smrtKineticVals = parseSmrtKineticByteCodes((byte[]) (tagValue), reverseSequence);
+            } else if (tagValue instanceof short[]) {
+                smrtKineticVals = parseAuxSmrtKineticFrameCounts((short[]) (tagValue), reverseSequence);
+            } else {
+                throw new RuntimeException("Unexpected format in SMRT kinetic aux tag '" + tag + "'");
+            }
+        }
         return smrtKineticVals;
     }
 
