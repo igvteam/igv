@@ -1009,20 +1009,41 @@ public class AlignmentRenderer {
                 blendColorValue(c1.getBlue(), c2.getBlue(), c2Frac));
     }
 
-    private static Color getSmrtFrameCountColor(short frameCount) {
-        final int transition1FrameCount = 127; // Red with Alpha 0->255
-        final int transition2FrameCount = 511; // Red->Yellow
+    /**
+     * Set base color for SMRT sequencing frame count
+     *
+     * This color scheme uses multiple transitions to help visually distinguish a large range of time intervals.
+     *
+     * Color scheme:
+     * The color starts out as transparent at a frame count of 0.
+     * - Color transition 1 goes from transparent to opaque red
+     * - Color transition 2 goes from red to yellow
+     * - Color transition 3 goes from yellow to cyan
+     *
+     * Transition 3 will mostly be visible when uncompressed frame counts are used. It helps to visually distinguish
+     * exceptional polymerase stalling events.
+     */
+    private static Color getSmrtFrameCountColor(short shortFrameCount) {
+        final int transition1MaxFrameCount = 100;
+        final int transition2MaxFrameCount = 600;
+        final int transition3MaxFrameCount = 6000;
         final Color color1 = Color.red;
         final Color color2 = Color.yellow;
-        int alpha = Math.min(255, (frameCount*255)/transition1FrameCount);
+        final Color color3 = Color.cyan;
+
+        final int frameCount = Short.toUnsignedInt(shortFrameCount);
+        final int alpha = Math.min(255, (frameCount*255)/transition1MaxFrameCount);
         Color blendedColor;
-        if (frameCount <= transition1FrameCount) {
+        if (frameCount <= transition1MaxFrameCount) {
             blendedColor = color1;
-        } else if (frameCount <= transition2FrameCount) {
-            float color2Fraction = (frameCount-transition1FrameCount)/((float) (transition2FrameCount-transition1FrameCount));
+        } else if (frameCount <= transition2MaxFrameCount) {
+            float color2Fraction = (frameCount-transition1MaxFrameCount)/((float) (transition2MaxFrameCount-transition1MaxFrameCount));
             blendedColor = blendColors(color1, color2, color2Fraction);
+        } else if (frameCount <= transition3MaxFrameCount) {
+            float color3Fraction = (frameCount-transition2MaxFrameCount)/((float) (transition3MaxFrameCount-transition2MaxFrameCount));
+            blendedColor = blendColors(color2, color3, color3Fraction);
         } else {
-            blendedColor = color2;
+            blendedColor = color3;
         }
         return new Color(blendedColor.getRed(), blendedColor.getGreen(), blendedColor.getBlue(), alpha);
     }
