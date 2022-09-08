@@ -1940,19 +1940,21 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 group.add(mi);
             }
 
-            // SMRT Kinetics
-            mappings.clear();
-            mappings.put("SMRT subread IPD", ColorOption.SMRT_SUBREAD_IPD);
-            mappings.put("SMRT subread PW", ColorOption.SMRT_SUBREAD_PW);
-            mappings.put("SMRT CCS fwd-strand aligned IPD", ColorOption.SMRT_CCS_FWD_IPD);
-            mappings.put("SMRT CCS fwd-strand aligned PW", ColorOption.SMRT_CCS_FWD_PW);
-            mappings.put("SMRT CCS rev-strand aligned IPD", ColorOption.SMRT_CCS_REV_IPD);
-            mappings.put("SMRT CCS rev-strand aligned PW", ColorOption.SMRT_CCS_REV_PW);
-            colorMenu.addSeparator();
-            for (Map.Entry<String, ColorOption> el : mappings.entrySet()) {
-                JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
-                colorMenu.add(mi);
-                group.add(mi);
+            if (getPreferences().getAsBoolean(SMRT_KINETICS_SHOW_OPTIONS)) {
+                // Show additional options to help visualize SMRT kinetics data
+                mappings.clear();
+                mappings.put("SMRT subread IPD", ColorOption.SMRT_SUBREAD_IPD);
+                mappings.put("SMRT subread PW", ColorOption.SMRT_SUBREAD_PW);
+                mappings.put("SMRT CCS fwd-strand aligned IPD", ColorOption.SMRT_CCS_FWD_IPD);
+                mappings.put("SMRT CCS fwd-strand aligned PW", ColorOption.SMRT_CCS_FWD_PW);
+                mappings.put("SMRT CCS rev-strand aligned IPD", ColorOption.SMRT_CCS_REV_IPD);
+                mappings.put("SMRT CCS rev-strand aligned PW", ColorOption.SMRT_CCS_REV_PW);
+                colorMenu.addSeparator();
+                for (Map.Entry<String, ColorOption> el : mappings.entrySet()) {
+                    JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
+                    colorMenu.add(mi);
+                    group.add(mi);
+                }
             }
 
             add(colorMenu);
