@@ -17,11 +17,7 @@ import org.broad.igv.util.JWTParser;
 import software.amazon.awssdk.services.sts.model.Credentials;
 
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -39,7 +35,6 @@ public class OAuthProvider {
     public static String findString = null;
     public static String replaceString = null;
 
-
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
 
     private String state = UUID.randomUUID().toString(); // "RFC6749: An opaque value used by the client to maintain state"
@@ -47,9 +42,8 @@ public class OAuthProvider {
     private String redirectURI = "http%3A%2F%2Flocalhost%3A" + portNumber + "%2FoauthCallback";
     private String clientId;
     private String clientSecret;
-    private String authURI;
-    private String tokenURI;
-    private String authorizationCode;
+    private String authEndpoint;
+    private String tokenEndpoint;
     private String accessToken;
     private String refreshToken;
     private long expirationTime; // in milliseconds
@@ -74,10 +68,10 @@ public class OAuthProvider {
         // Mandatory attributes, fail hard if not present
         try {
             clientId = obj.get("client_id").getAsString();
-            authURI = obj.has("auth_uri") ?
+            authEndpoint = obj.has("auth_uri") ?
                     obj.get("auth_uri").getAsString() :
                     obj.get("authorization_endpoint").getAsString();
-            tokenURI = obj.has("token_uri") ?
+            tokenEndpoint = obj.has("token_uri") ?
                     obj.get("token_uri").getAsString() :
                     obj.get("token_endpoint").getAsString();
 
@@ -90,7 +84,13 @@ public class OAuthProvider {
         // Optional or custom attributes, fail on runtime, depending on identity provider configuration
         clientSecret = obj.has("client_secret") ? obj.get("client_secret").getAsString() : null;
         setAuthProvider(obj.has("auth_provider") ? obj.get("auth_provider").getAsString() : authProvider);
-        appIdURI = obj.has("app_id_uri") ? obj.get("app_id_uri").getAsString() : null;
+
+        // app ID URI is a Microsoft
+        appIdURI = obj.has("app_id_uri") ?
+                obj.get("app_id_uri").getAsString() :
+                obj.has("resource") ? obj.get("resource").getAsString() : null;
+
+
         findString = obj.has("find_string") ? obj.get("find_string").getAsString() : null;
         replaceString = obj.has("replace_string") ? obj.get("replace_string").getAsString() : null;
         if (obj.has("scope")) {
@@ -111,7 +111,7 @@ public class OAuthProvider {
         }
 
         // Special Google properties
-        if (authURI.contains("google")) {
+        if (authEndpoint.contains("google")) {
             if (scope == null) {
                 String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
                 String emailScope = "https://www.googleapis.com/auth/userinfo.email";
@@ -135,7 +135,6 @@ public class OAuthProvider {
      * @throws URISyntaxException
      */
     public void openAuthorizationPage() throws IOException, URISyntaxException {
-        Desktop desktop = Desktop.getDesktop();
 
         String url;
 
@@ -149,70 +148,45 @@ public class OAuthProvider {
         if (!CommandListener.isListening()) {
             String ac = MessageUtils.showInputDialog("The IGV port listener is required for OAuth authentication.  If you have an access token enter it here.");
             if (ac != null) {
-                setAuthorizationCode(ac);
+                setAccessToken(ac);
             }
         } else {
 
-            if (appIdURI == null) {
-                log.debug("appIdURI is null, skipping resource setting");
-                url = authURI + "?" +
-                        "scope=" + scope + "&" +
-                        "state=" + state + "&" +
-                        "redirect_uri=" + redirectURI + "&" +
-                        "response_type=code&" +
-                        "client_id=" + clientId; // Native app
-            } else {
-                // CommandListener is up and running
-                log.debug("appIdURI is not null, setting resource= as part of the authURI");
-                url = authURI + "?" +
-                        "scope=" + scope + "&" +
-                        "state=" + state + "&" +
-                        "redirect_uri=" + redirectURI + "&" +
-                        "response_type=code&" +
-                        "resource=" + appIdURI + "&" +
-                        "client_id=" + clientId; // Native app
+            url = authEndpoint + "?state=" + state +
+                    "&redirect_uri=" + redirectURI +
+                    "&client_id=" + clientId +
+                    "&response_type=code";
+
+            if (scope != null) {
+                url += "&scope=" + scope;
+            }
+            if (appIdURI != null) {
+                url += "&resource=" + appIdURI;
             }
 
-            log.debug("URL for the auth page is: " + url);
-
-            // check if the "browse" Desktop action is supported (many Linux DEs cannot directly
-            // launch browsers!)
-
+            // check if the "browse" Desktop action is supported (many Linux DEs cannot directly launch browsers)
+            // otherwise, display a dialog box for the user to copy the URL manually.
+            Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
                 desktop.browse(new URI(url));
-            } else { // otherwise, display a dialog box for the user to copy the URL manually.
+            } else {
                 MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
             }
         }
-
     }
 
     // Called from port listener (org.broad.igv.batch.CommandListener) upon receiving the oauth request with a "code" parameter
-    public void setAuthorizationCode(String ac) throws IOException {
-        authorizationCode = ac;
-        log.debug("oauth code parameter: " + ac);
-        log.debug("url-encoded redirect_uri: " + redirectURI);
-        fetchTokens(redirectURI);
-    }
+    public void setAuthorizationCode(String authorizationCode) throws IOException {
 
-    // Called from port listener upon receiving the oauth request with a "token" parameter
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
+        URL url = HttpUtils.createURL(tokenEndpoint);
 
-    private void fetchTokens(String redirect) throws IOException {
-
-        URL url = HttpUtils.createURL(tokenURI);
-
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("code", authorizationCode);
         params.put("client_id", clientId);
-        // pointless to have clientsecret on a publicly distributed client software?
         if (clientSecret != null) {
             params.put("client_secret", clientSecret);
         }
-
-        params.put("redirect_uri", new URLDecoder().decode(redirect, "utf-8"));
+        params.put("redirect_uri", new URLDecoder().decode(redirectURI, "utf-8"));
         params.put("grant_type", "authorization_code");
 
         //  set the resource if it necessary for the auth provider dwm08
@@ -221,7 +195,6 @@ public class OAuthProvider {
         }
 
         try {
-            String idToken;
 
             String res = HttpUtils.getInstance().doPost(url, params);
             JsonParser parser = new JsonParser();
@@ -230,21 +203,12 @@ public class OAuthProvider {
 
             accessToken = response.get("access_token").getAsString();
             refreshToken = response.get("refresh_token").getAsString();
-            idToken = response.get("id_token").getAsString();
-
-            log.debug("Oauth2 refresh token: " + refreshToken);
-            log.debug("Oauth2 token_id: " + idToken);
-            log.debug("Oauth2 access token: " + accessToken);
-            log.debug("Oauth2 state: " + state);
-
-            refreshToken = response.get("refresh_token").getAsString();
             expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
 
             JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
 
             // Populate this class with user profile attributes
             fetchUserProfile(payload);
-
 
             if (authProvider.equals("Amazon")) {
                 // Get AWS credentials after getting relevant tokens
@@ -267,6 +231,10 @@ public class OAuthProvider {
         }
     }
 
+    // Called from port listener upon receiving the oauth request with a "token" parameter
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
 
     /**
      * Fetch a new access token from a refresh token.
@@ -290,7 +258,7 @@ public class OAuthProvider {
         }
 
         // Poke the token refresh endpoint to get new access key
-        URL url = HttpUtils.createURL(tokenURI);
+        URL url = HttpUtils.createURL(tokenEndpoint);
 
         String response = HttpUtils.getInstance().doPost(url, params);
         JsonParser parser = new JsonParser();

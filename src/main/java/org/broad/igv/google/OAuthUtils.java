@@ -29,10 +29,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.AmazonUtils;
-import org.broad.igv.util.FileUtils;
 
 
 import java.io.*;

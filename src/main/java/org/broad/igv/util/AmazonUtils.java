@@ -225,7 +225,8 @@ public class AmazonUtils {
         if (credentials == null) {
             s3Client = S3Client.builder().region(region).build();
         } else {
-            AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
+            AwsSessionCredentials creds = AwsSessionCredentials.create(
+                    credentials.accessKeyId(),
                     credentials.secretAccessKey(),
                     credentials.sessionToken());
 
