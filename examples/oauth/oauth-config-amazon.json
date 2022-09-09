@@ -1,6 +1,6 @@
 {
-   "client_id": "3f4ujenfmr77tg12iofbebpkoh",
-   "client_secret": "en1q6638m4dogrr6erhosetim67sjilc6htjnfmf6ljk2q3j9og",
+   "client_id": "3f4ujenfmr77tg12idlkebpkoh",
+   "client_secret": "en1q6638m4dogrr6erhrmitim67sjilc6htjnfmf6ljk2q3j9og",
    "auth_provider": "Amazon",
    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
    "aws_region": "ap-southeast-2",
