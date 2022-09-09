@@ -44,8 +44,7 @@ public class OAuthProvider {
 
     private String state = UUID.randomUUID().toString(); // "RFC6749: An opaque value used by the client to maintain state"
     private String portNumber = PreferencesManager.getPreferences().getPortNumber();
-    private String redirectURI = "http%3A%2F%2Flocalhost%3A"+portNumber+"%2FoauthCallback";
-    private String oobURI = "urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob";
+    private String redirectURI = "http%3A%2F%2Flocalhost%3A" + portNumber + "%2FoauthCallback";
     private String clientId;
     private String clientSecret;
     private String authURI;
@@ -92,8 +91,8 @@ public class OAuthProvider {
         clientSecret = obj.has("client_secret") ? obj.get("client_secret").getAsString() : null;
         setAuthProvider(obj.has("auth_provider") ? obj.get("auth_provider").getAsString() : authProvider);
         appIdURI = obj.has("app_id_uri") ? obj.get("app_id_uri").getAsString() : null;
-        findString = obj.has("find_string") ?  obj.get("find_string").getAsString() : null;
-        replaceString = obj.has("replace_string") ?  obj.get("replace_string").getAsString() : null;
+        findString = obj.has("find_string") ? obj.get("find_string").getAsString() : null;
+        replaceString = obj.has("replace_string") ? obj.get("replace_string").getAsString() : null;
         if (obj.has("scope")) {
             scope = obj.get("scope").getAsString();
         }
@@ -105,8 +104,7 @@ public class OAuthProvider {
                 hosts = new String[hostsArrJson.size()];
                 for (int i = 0; i < hostsArrJson.size(); i++)
                     hosts[i] = hostsArrJson.get(i).getAsString();
-            }
-            else{
+            } else {
                 hosts = new String[1];
                 hosts[0] = hostsElement.getAsString();
             }
@@ -140,70 +138,61 @@ public class OAuthProvider {
         Desktop desktop = Desktop.getDesktop();
 
         String url;
-        String redirect = oobURI;
 
         // If the port listener is not on, try starting it
-        if(!CommandListener.isListening()) {
+        if (!CommandListener.isListening()) {
             CommandListener.start();
-        }
-
-        // if the listener is active, then set the redirect URI.  dwm08
-        if (CommandListener.isListening()) {
-            redirect = redirectURI;
-        }
-
-        if (appIdURI == null) {
-            // OOB IETF urn: url instead of localhost CommandListener
-            log.debug("appIdURI is null, skipping resource setting");
-            url = authURI + "?" +
-                    "scope=" + scope + "&" +
-                    "state=" + state + "&" +
-                    "redirect_uri=" + redirect + "&" +
-                    "response_type=code&" +
-                    "client_id=" + clientId; // Native app
-        } else {
-            // CommandListener is up and running
-            log.debug("appIdURI is not null, setting resource= as part of the authURI");
-            url = authURI + "?" +
-                    "scope=" + scope + "&" +
-                    "state=" + state + "&" +
-                    "redirect_uri=" + redirect + "&" +
-                    "response_type=code&" +
-                    "resource=" + appIdURI + "&" +
-                    "client_id=" + clientId; // Native app
-        }
-
-        log.debug("URL for the auth page is: " + url);
-
-        // check if the "browse" Desktop action is supported (many Linux DEs cannot directly
-        // launch browsers!)
-
-        if (desktop.isSupported(Desktop.Action.BROWSE)) {
-            desktop.browse(new URI(url));
-        } else { // otherwise, display a dialog box for the user to copy the URL manually.
-            MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
         }
 
         // if the listener is not active, prompt the user
         // for the access token
         if (!CommandListener.isListening()) {
-            String ac = MessageUtils.showInputDialog("Please paste authorization code here:");
+            String ac = MessageUtils.showInputDialog("The IGV port listener is required for OAuth authentication.  If you have an access token enter it here.");
             if (ac != null) {
-                setAuthorizationCode(ac, oobURI);
+                setAuthorizationCode(ac);
+            }
+        } else {
+
+            if (appIdURI == null) {
+                log.debug("appIdURI is null, skipping resource setting");
+                url = authURI + "?" +
+                        "scope=" + scope + "&" +
+                        "state=" + state + "&" +
+                        "redirect_uri=" + redirectURI + "&" +
+                        "response_type=code&" +
+                        "client_id=" + clientId; // Native app
+            } else {
+                // CommandListener is up and running
+                log.debug("appIdURI is not null, setting resource= as part of the authURI");
+                url = authURI + "?" +
+                        "scope=" + scope + "&" +
+                        "state=" + state + "&" +
+                        "redirect_uri=" + redirectURI + "&" +
+                        "response_type=code&" +
+                        "resource=" + appIdURI + "&" +
+                        "client_id=" + clientId; // Native app
+            }
+
+            log.debug("URL for the auth page is: " + url);
+
+            // check if the "browse" Desktop action is supported (many Linux DEs cannot directly
+            // launch browsers!)
+
+            if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                desktop.browse(new URI(url));
+            } else { // otherwise, display a dialog box for the user to copy the URL manually.
+                MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
             }
         }
+
     }
 
     // Called from port listener (org.broad.igv.batch.CommandListener) upon receiving the oauth request with a "code" parameter
     public void setAuthorizationCode(String ac) throws IOException {
-        setAuthorizationCode(ac, redirectURI);
-    }
-
-    public void setAuthorizationCode(String ac, String redirect) throws IOException {
         authorizationCode = ac;
         log.debug("oauth code parameter: " + ac);
-        log.debug("url-encoded redirect_uri: " + redirect);
-        fetchTokens(redirect);
+        log.debug("url-encoded redirect_uri: " + redirectURI);
+        fetchTokens(redirectURI);
     }
 
     // Called from port listener upon receiving the oauth request with a "token" parameter
@@ -477,12 +466,13 @@ public class OAuthProvider {
 
     /**
      * Does this ouath provider apply (should it's access token be used) for the url provided
+     *
      * @param url
      * @return
      */
-    public boolean appliesToUrl(URL url){
+    public boolean appliesToUrl(URL url) {
         // If this provider has a list of hosts, use them to check the url
-        if(this.hosts != null && this.hosts.length > 0) {
+        if (this.hosts != null && this.hosts.length > 0) {
             for (String host : hosts) {
                 if (url.getHost() != null && url.getHost().equals(host)) {
                     return true;
