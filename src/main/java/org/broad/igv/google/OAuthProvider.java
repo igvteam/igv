@@ -1,6 +1,8 @@
 package org.broad.igv.google;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.broad.igv.logging.*;
@@ -33,22 +35,20 @@ public class OAuthProvider {
     public static String findString = null;
     public static String replaceString = null;
 
-
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
 
     private String state = UUID.randomUUID().toString(); // "RFC6749: An opaque value used by the client to maintain state"
     private String portNumber = PreferencesManager.getPreferences().getPortNumber();
-    private String redirectURI = "http%3A%2F%2Flocalhost%3A"+portNumber+"%2FoauthCallback";
-    private String oobURI = "urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob";
+    private String redirectURI = "http%3A%2F%2Flocalhost%3A" + portNumber + "%2FoauthCallback";
     private String clientId;
     private String clientSecret;
-    private String authURI;
-    private String tokenURI;
-    private String authorizationCode;
+    private String authEndpoint;
+    private String tokenEndpoint;
     private String accessToken;
     private String refreshToken;
     private long expirationTime; // in milliseconds
     private String scope;
+    private String[] hosts;
     private String currentUserName;
     private String currentUserID;
     private String currentUserEmail;
@@ -60,13 +60,18 @@ public class OAuthProvider {
 
         config = obj;
 
+        // For backward compatibility
+        if (obj.has("installed") && !obj.has("client_id")) {
+            obj = obj.get("installed").getAsJsonObject();
+        }
+
         // Mandatory attributes, fail hard if not present
         try {
             clientId = obj.get("client_id").getAsString();
-            authURI = obj.has("auth_uri") ?
+            authEndpoint = obj.has("auth_uri") ?
                     obj.get("auth_uri").getAsString() :
                     obj.get("authorization_endpoint").getAsString();
-            tokenURI = obj.has("token_uri") ?
+            tokenEndpoint = obj.has("token_uri") ?
                     obj.get("token_uri").getAsString() :
                     obj.get("token_endpoint").getAsString();
 
@@ -79,16 +84,36 @@ public class OAuthProvider {
         // Optional or custom attributes, fail on runtime, depending on identity provider configuration
         clientSecret = obj.has("client_secret") ? obj.get("client_secret").getAsString() : null;
         setAuthProvider(obj.has("auth_provider") ? obj.get("auth_provider").getAsString() : authProvider);
-        appIdURI = obj.has("app_id_uri") ? obj.get("app_id_uri").getAsString() : null;
+
+        // app ID URI is a Microsoft
+        appIdURI = obj.has("app_id_uri") ?
+                obj.get("app_id_uri").getAsString() :
+                obj.has("resource") ? obj.get("resource").getAsString() : null;
+
+
+        findString = obj.has("find_string") ? obj.get("find_string").getAsString() : null;
+        replaceString = obj.has("replace_string") ? obj.get("replace_string").getAsString() : null;
         if (obj.has("scope")) {
             scope = obj.get("scope").getAsString();
         }
+        if (obj.has("hosts")) {
+            // hosts element may be an array or a single string - put in hosts array either way
+            JsonElement hostsElement = obj.get("hosts");
+            if (hostsElement.isJsonArray()) {
+                JsonArray hostsArrJson = hostsElement.getAsJsonArray();
+                hosts = new String[hostsArrJson.size()];
+                for (int i = 0; i < hostsArrJson.size(); i++)
+                    hosts[i] = hostsArrJson.get(i).getAsString();
+            } else {
+                hosts = new String[1];
+                hosts[0] = hostsElement.getAsString();
+            }
+        }
 
         // Special Google properties
-        if (authURI.contains("google")) {
+        if (authEndpoint.contains("google")) {
             if (scope == null) {
                 String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
-                String driveScope = "https://www.googleapis.com/auth/drive.readonly";
                 String emailScope = "https://www.googleapis.com/auth/userinfo.email";
                 scope = gsScope + "%20" + emailScope;
 
@@ -110,93 +135,58 @@ public class OAuthProvider {
      * @throws URISyntaxException
      */
     public void openAuthorizationPage() throws IOException, URISyntaxException {
-        Desktop desktop = Desktop.getDesktop();
 
         String url;
-        String redirect = oobURI;
 
         // If the port listener is not on, try starting it
-        if(!CommandListener.isListening()) {
+        if (!CommandListener.isListening()) {
             CommandListener.start();
-        }
-
-        // if the listener is active, then set the redirect URI.  dwm08
-        if (CommandListener.isListening()) {
-            redirect = redirectURI;
-        }
-
-        if (appIdURI == null) {
-            // OOB IETF urn: url instead of localhost CommandListener
-            log.debug("appIdURI is null, skipping resource setting");
-            url = authURI + "?" +
-                    "scope=" + scope + "&" +
-                    "state=" + state + "&" +
-                    "redirect_uri=" + redirect + "&" +
-                    "response_type=code&" +
-                    "client_id=" + clientId; // Native app
-        } else {
-            // CommandListener is up and running
-            log.debug("appIdURI is not null, setting resource= as part of the authURI");
-            url = authURI + "?" +
-                    "scope=" + scope + "&" +
-                    "state=" + state + "&" +
-                    "redirect_uri=" + redirect + "&" +
-                    "response_type=code&" +
-                    "resource=" + appIdURI + "&" +
-                    "client_id=" + clientId; // Native app
-        }
-
-        log.debug("URL for the auth page is: " + url);
-
-        // check if the "browse" Desktop action is supported (many Linux DEs cannot directly
-        // launch browsers!)
-
-        if (desktop.isSupported(Desktop.Action.BROWSE)) {
-            desktop.browse(new URI(url));
-        } else { // otherwise, display a dialog box for the user to copy the URL manually.
-            MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
         }
 
         // if the listener is not active, prompt the user
         // for the access token
         if (!CommandListener.isListening()) {
-            String ac = MessageUtils.showInputDialog("Please paste authorization code here:");
+            String ac = MessageUtils.showInputDialog("The IGV port listener is required for OAuth authentication.  If you have an access token enter it here.");
             if (ac != null) {
-                setAuthorizationCode(ac, oobURI);
+                setAccessToken(ac);
+            }
+        } else {
+
+            url = authEndpoint + "?state=" + state +
+                    "&redirect_uri=" + redirectURI +
+                    "&client_id=" + clientId +
+                    "&response_type=code";
+
+            if (scope != null) {
+                url += "&scope=" + scope;
+            }
+            if (appIdURI != null) {
+                url += "&resource=" + appIdURI;
+            }
+
+            // check if the "browse" Desktop action is supported (many Linux DEs cannot directly launch browsers)
+            // otherwise, display a dialog box for the user to copy the URL manually.
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                desktop.browse(new URI(url));
+            } else {
+                MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
             }
         }
     }
 
     // Called from port listener (org.broad.igv.batch.CommandListener) upon receiving the oauth request with a "code" parameter
-    public void setAuthorizationCode(String ac) throws IOException {
-        setAuthorizationCode(ac, redirectURI);
-    }
+    public void setAuthorizationCode(String authorizationCode) throws IOException {
 
-    public void setAuthorizationCode(String ac, String redirect) throws IOException {
-        authorizationCode = ac;
-        log.debug("oauth code parameter: " + ac);
-        log.debug("url-encoded redirect_uri: " + redirect);
-        fetchTokens(redirect);
-    }
+        URL url = HttpUtils.createURL(tokenEndpoint);
 
-    // Called from port listener upon receiving the oauth request with a "token" parameter
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
-    private void fetchTokens(String redirect) throws IOException {
-
-        URL url = HttpUtils.createURL(tokenURI);
-
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("code", authorizationCode);
         params.put("client_id", clientId);
-        // pointless to have clientsecret on a publicly distributed client software?
         if (clientSecret != null) {
             params.put("client_secret", clientSecret);
         }
-
-        params.put("redirect_uri", URLDecoder.decode(redirect, "utf-8"));
+        params.put("redirect_uri", new URLDecoder().decode(redirectURI, "utf-8"));
         params.put("grant_type", "authorization_code");
 
         //  set the resource if it necessary for the auth provider dwm08
@@ -205,7 +195,6 @@ public class OAuthProvider {
         }
 
         try {
-            String idToken;
 
             String res = HttpUtils.getInstance().doPost(url, params);
             JsonParser parser = new JsonParser();
@@ -214,21 +203,12 @@ public class OAuthProvider {
 
             accessToken = response.get("access_token").getAsString();
             refreshToken = response.get("refresh_token").getAsString();
-            idToken = response.get("id_token").getAsString();
-
-            log.debug("Oauth2 refresh token: " + refreshToken);
-            log.debug("Oauth2 token_id: " + idToken);
-            log.debug("Oauth2 access token: " + accessToken);
-            log.debug("Oauth2 state: " + state);
-
-            refreshToken = response.get("refresh_token").getAsString();
             expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
 
             JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
 
             // Populate this class with user profile attributes
             fetchUserProfile(payload);
-
 
             if (authProvider.equals("Amazon")) {
                 // Get AWS credentials after getting relevant tokens
@@ -251,6 +231,10 @@ public class OAuthProvider {
         }
     }
 
+    // Called from port listener upon receiving the oauth request with a "token" parameter
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
 
     /**
      * Fetch a new access token from a refresh token.
@@ -274,7 +258,7 @@ public class OAuthProvider {
         }
 
         // Poke the token refresh endpoint to get new access key
-        URL url = HttpUtils.createURL(tokenURI);
+        URL url = HttpUtils.createURL(tokenEndpoint);
 
         String response = HttpUtils.getInstance().doPost(url, params);
         JsonParser parser = new JsonParser();
@@ -421,9 +405,9 @@ public class OAuthProvider {
     }
 
     /**
-     * Try to login to secure server. dwm08
+     * If not logged in, attempt to login
      */
-    public synchronized void doSecureLogin() {
+    public synchronized void checkLogin() {
         // if user is not currently logged in, attempt to
         // log in user if not logged in dwm08
         if (!isLoggedIn()) {
@@ -446,6 +430,24 @@ public class OAuthProvider {
                 e1.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Does this ouath provider apply (should it's access token be used) for the url provided
+     *
+     * @param url
+     * @return
+     */
+    public boolean appliesToUrl(URL url) {
+        // If this provider has a list of hosts, use them to check the url
+        if (this.hosts != null && this.hosts.length > 0) {
+            for (String host : hosts) {
+                if (url.getHost() != null && url.getHost().equals(host)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public JsonObject getResponse() {

@@ -31,24 +31,14 @@ import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.AmazonUtils;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ParsingUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
-
-// XXX: Both Oauth and JWT classes need a serious refactor/audit. Multi-provider support, concurrency, security, etc...:
-// WARNING: This class requires a thorough security audit of Oauth/JWT implementations. I would recommend going through:
-// https://www.owasp.org/index.php/JSON_Web_Token_(JWT)_Cheat_Sheet_for_Java
-//
-// And potentially refactor/substitute this logic with:
-//
-// https://github.com/auth0/java-jwt.
-// https://developers.google.com/api-client-library/java/google-oauth-java-client/
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by jrobinso on 11/19/14.
@@ -57,12 +47,15 @@ public class OAuthUtils {
 
     private static Logger log = LogManager.getLogger(OAuthUtils.class);
 
-    public static String findString = null;
-    public static String replaceString = null;
     private static final String PROPERTIES_URL = "https://s3.amazonaws.com/igv.org.app/desktop_google";
 
     private static OAuthUtils theInstance;
+
+    /**
+     * Map of key name -> oauth provider.  This is currently only used to distinguish Amazon from Google providers.
+     */
     static Map<String, OAuthProvider> providers;
+
     static OAuthProvider defaultProvider;
 
     public static synchronized OAuthUtils getInstance() {
@@ -71,6 +64,7 @@ public class OAuthUtils {
         }
         return theInstance;
     }
+
 
     public OAuthProvider getProvider(String providerName) {
         if (providerName != null) {
@@ -95,20 +89,22 @@ public class OAuthUtils {
         }
     }
 
-    public void fetchOauthProperties() throws IOException {
+    private void fetchOauthProperties() throws IOException {
+
         // Load a provider config specified in preferences
         String provisioningURL = PreferencesManager.getPreferences().getProvisioningURL();
-        log.debug("The provisioning URL from prefs.properties is: "+provisioningURL);
+        log.debug("The provisioning URL from prefs.properties is: " + provisioningURL);
         if (provisioningURL != null && provisioningURL.length() > 0) {
-            loadProvisioningURL(provisioningURL);
+            String json = loadAsString(provisioningURL);
+            parseProviderJson(json, provisioningURL);
         }
 
         // Local config takes precendence, overriding URL provisioned and Broad's default oauth-config.json.gz
-        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
+        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config-custom.json";
         if ((new File(oauthConfig)).exists()) {
             try {
                 log.debug("Loading Oauth properties from: " + oauthConfig);
-                String json = FileUtils.getContents(oauthConfig);
+                String json = loadAsString(oauthConfig);
                 parseProviderJson(json, oauthConfig);
             } catch (IOException e) {
                 log.error(e);
@@ -118,21 +114,48 @@ public class OAuthUtils {
         if (defaultProvider == null) {
             // IGV default
             log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from Broad's IGV properties endpoint: " + PROPERTIES_URL);
-            String propString = HttpUtils.getInstance().getContentsAsGzippedString(HttpUtils.createURL(PROPERTIES_URL));
+            String propString = loadAsString(PROPERTIES_URL);
             JsonParser parser = new JsonParser();
-            JsonObject obj = parser.parse(propString).getAsJsonObject().get("installed").getAsJsonObject();
+            JsonObject obj = parser.parse(propString).getAsJsonObject();
             defaultProvider = new OAuthProvider(obj);
         }
     }
 
-    public void loadProvisioningURL(String provisioningURL) throws IOException {
-        if (provisioningURL != null && provisioningURL.length() > 0) {
-            InputStream is = ParsingUtils.openInputStream(provisioningURL);
-            String json = ParsingUtils.readContentsFromStream(is);
+    public void updateOauthProvider(String provisioningURL) throws IOException {
+        if (provisioningURL == null || provisioningURL.trim().length() == 0) {
+            defaultProvider = null;
+            // TODO -- reset (load google default)?
+        } else {
+            String json = loadAsString(provisioningURL);
             parseProviderJson(json, provisioningURL);
         }
     }
 
+
+    private String loadAsString(String urlOrPath) throws IOException {
+        InputStream is = null;
+        try {
+            is = openInputStream(urlOrPath);
+            byte[] bytes = is.readAllBytes();
+            if ((bytes[0] == (byte) (GZIPInputStream.GZIP_MAGIC)) && (bytes[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8))) {
+                bytes = new GZIPInputStream(new ByteArrayInputStream(bytes)).readAllBytes();
+            }
+
+            return new String(bytes, "UTF-8");
+        } finally {
+            if (is != null) is.close();
+        }
+    }
+
+    /**
+     * Parse Oauth provider configuration and update state
+     * <p>
+     * TODO -- refactor to remove side effects.
+     *
+     * @param json
+     * @param path
+     * @throws IOException
+     */
     private void parseProviderJson(String json, String path) throws IOException {
         JsonParser parser = new JsonParser();
         JsonObject obj = parser.parse(json).getAsJsonObject();
@@ -167,9 +190,40 @@ public class OAuthUtils {
     }
 
 
-    // jtr -- I don't think this is used.  If it is I don't know how to distinguish provider.
+    // Used by batch commands (CommandExecutor).  No argument provided to select provider
     public void setAccessToken(Map<String, String> params) {
         OAuthProvider provider = defaultProvider;
         provider.setAccessToken("token");
     }
+
+    /**
+     * Open an input stream for reading a local or remote file.
+     * <p>
+     * NOTE:  This method does not use HttpUtils by design.  This class must be independent of HttpUtils.
+     *
+     * @param urlOrPath -- either an http URL or path to a local file.  Can be gzipped
+     * @return
+     * @throws IOException
+     */
+    public static InputStream openInputStream(String urlOrPath) throws IOException {
+
+        InputStream inputStream = null;
+        if (urlOrPath.startsWith("http://") || urlOrPath.startsWith("https://")) {
+            URL url = new URL(urlOrPath);
+            URLConnection conn = url.openConnection();
+            inputStream = conn.getInputStream();
+            urlOrPath = url.getPath();
+        } else {
+            if (urlOrPath.startsWith("file://")) {
+                urlOrPath = urlOrPath.substring(7);
+            }
+            File file = new File(urlOrPath);
+            inputStream = new FileInputStream(file);
+        }
+
+        return inputStream;
+
+    }
+
+
 }

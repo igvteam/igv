@@ -373,7 +373,7 @@ public class PreferencesEditor {
         for (Map<String, String> map : updatedPreferencesMap.values()) {
             if (map.containsKey(PROVISIONING_URL)) {
                 try {
-                    OAuthUtils.getInstance().loadProvisioningURL(map.get(PROVISIONING_URL));
+                    OAuthUtils.getInstance().updateOauthProvider(map.get(PROVISIONING_URL));
                 } catch (IOException e) {
                     MessageUtils.showErrorMessage("Error loading provisioning URL", e);
                 }

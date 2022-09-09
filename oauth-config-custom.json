@@ -1,0 +1,13 @@
+{
+  "client_id": "hbq82djj-wxky-7iub-j7zq-7i8nv72n48nq",
+  "client_secret": "cVAX64fXRikCLmtLEb/cktrAtaHz/tmB3WHKhnbXN2Gq",
+  "authorization_endpoint": "https://login.microsoftonline.com/77nwe2q2-e53r-uq2p-7vdh-9z7px83zmtiv/oauth2/authorize",
+  "token_endpoint": "https://login.microsoftonline.com/77nwe2q2-e53r-uq2p-7vdh-9z7px83zmtiv/oauth2/token",
+  "hosts": ["prod_host.mayo.edu", "dev_host.mayo.edu", "int_host.mayo.edu"],
+  "auth_provider": "Mayo Clinic",
+  "app_id_uri": "https://orgtools.onmicrosoft.com/6q9qk3mr-tw99-eu73-vx5a-nqw2aqidutm9",
+  "scope": "openid",
+  "find_string": "dept",
+  "replace_string": "dept-oauth2"
+}
+

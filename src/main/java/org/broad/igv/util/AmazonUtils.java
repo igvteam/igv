@@ -225,7 +225,8 @@ public class AmazonUtils {
         if (credentials == null) {
             s3Client = S3Client.builder().region(region).build();
         } else {
-            AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
+            AwsSessionCredentials creds = AwsSessionCredentials.create(
+                    credentials.accessKeyId(),
                     credentials.secretAccessKey(),
                     credentials.sessionToken());
 
@@ -542,7 +543,7 @@ public class AmazonUtils {
     public static void checkLogin() {
         if (GetCognitoConfig() != null &&
                 !OAuthUtils.getInstance().getProvider("Amazon").isLoggedIn()) {
-            OAuthUtils.getInstance().getProvider("Amazon").doSecureLogin();
+            OAuthUtils.getInstance().getProvider("Amazon").checkLogin();
         }
     }
 
