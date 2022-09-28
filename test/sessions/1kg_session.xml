@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" locus="chr8:128747872-128748032" version="8">
+    <Resources>
+        <Resource name="Phase 3 sites" path="http://1000genomes.s3.amazonaws.com/release/20130502/ALL.wgs.phase3_shapeit2_mvncall_integrated_v5b.20130502.sites.vcf.gz" type="vcf"/>
+        <Resource name="NA12878" path="gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam" type="bam"/>
+    </Resources>
+</Session>

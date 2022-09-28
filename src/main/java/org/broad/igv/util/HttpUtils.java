@@ -32,9 +32,8 @@ import org.broad.igv.logging.*;
 import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;
-import org.broad.igv.google.GoogleUtils;
-import org.broad.igv.google.OAuthUtils;
-import org.broad.igv.google.OAuthProvider;
+import org.broad.igv.oauth.OAuthUtils;
+import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -58,7 +57,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 import static org.broad.igv.prefs.Constants.*;
 import static org.broad.igv.util.stream.SeekableServiceStream.WEBSERVICE_URL;
@@ -874,7 +872,7 @@ public class HttpUtils {
                     throw new FileNotFoundException(message);
                 } else if (code == 401) {
                     if (GoogleUtils.isGoogleURL(url.toExternalForm()) && retries == 0) {
-                        GoogleUtils.checkLogin();
+                        OAuthUtils.checkLogin();
                         return openConnection(url, requestProperties, method, redirectCount, ++retries);
                     }
                     message = "You must log in to access this file";

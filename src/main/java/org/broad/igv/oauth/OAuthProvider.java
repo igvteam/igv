@@ -1,4 +1,4 @@
-package org.broad.igv.google;
+package org.broad.igv.oauth;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
