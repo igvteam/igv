@@ -31,11 +31,9 @@ import htsjdk.samtools.seekablestream.SeekableStreamFactory;
 import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.batch.CommandListener;
-import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
@@ -49,12 +47,10 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 
 import static org.broad.igv.prefs.Constants.*;
 

@@ -30,7 +30,7 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;

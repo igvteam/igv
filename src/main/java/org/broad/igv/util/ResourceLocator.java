@@ -27,7 +27,6 @@ package org.broad.igv.util;
 
 import com.google.gson.JsonObject;
 import htsjdk.tribble.Tribble;
-import org.broad.igv.google.GoogleUtils;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 
