@@ -1,15 +1,13 @@
-package org.broad.igv.google;
+package org.broad.igv.util;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.broad.igv.logging.*;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.HttpUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 
@@ -23,6 +21,9 @@ public class GoogleUtils {
 
     private static Logger log = LogManager.getLogger(GoogleUtils.class);
 
+    /**
+     * Google project ID for "user pays" requests.
+     */
     private static String ProjectID;
     public static final String GOOGLE_API_HOST = "www.googleapis.com";
     public static final String GOOGLE_DRIVE_HOST = "drive.google.com";
@@ -44,12 +45,6 @@ public class GoogleUtils {
                 (url.startsWith("https://www.googleapis.com/storage") ||
                         url.startsWith("https://storage.cloud.google.com")  ||
                         url.startsWith("https://storage.googleapis.com"));
-    }
-
-    public static void checkLogin() {
-        if (!OAuthUtils.getInstance().getProvider().isLoggedIn()) {
-            OAuthUtils.getInstance().getProvider().checkLogin();
-        }
     }
 
 
@@ -157,15 +152,4 @@ public class GoogleUtils {
         }
     }
 
-
-    public static void main(String[] args) throws IOException, URISyntaxException {
-
-        String fileUrl = "https://drive.google.com/file/d/1Q4uEV2tv0aIyIvGqvwnOpBdmqVeFAPIw/view?usp=sharing";
-
-        //OAuthUtils.getInstance().getProvider().openAuthorizationPage();
-        JsonObject obj = GoogleUtils.getDriveFileInfo(fileUrl);
-
-        System.out.println(obj);
-
-    }
 }

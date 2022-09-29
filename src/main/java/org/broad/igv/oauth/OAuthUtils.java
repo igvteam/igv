@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.google;
+package org.broad.igv.oauth;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -65,6 +65,20 @@ public class OAuthUtils {
         return theInstance;
     }
 
+    private OAuthUtils() {
+        providers = new HashMap<>();
+        try {
+            fetchOauthProperties();
+        } catch (Exception e) {
+            log.error("Error fetching oAuth properties", e);
+        }
+    }
+    public static void checkLogin() {
+        if (!getInstance().getProvider().isLoggedIn()) {
+            getInstance().getProvider().checkLogin();
+        }
+    }
+
 
     public OAuthProvider getProvider(String providerName) {
         if (providerName != null) {
@@ -80,15 +94,6 @@ public class OAuthUtils {
         return defaultProvider;
     }
 
-    private OAuthUtils() {
-        providers = new HashMap<>();
-        try {
-            fetchOauthProperties();
-        } catch (Exception e) {
-            log.error("Error fetching oAuth properties", e);
-        }
-    }
-
     private void fetchOauthProperties() throws IOException {
 
         // Load a provider config specified in preferences
@@ -99,8 +104,11 @@ public class OAuthUtils {
             parseProviderJson(json, provisioningURL);
         }
 
-        // Local config takes precendence, overriding URL provisioned and Broad's default oauth-config.json.gz
-        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config-custom.json";
+        // Local config takes precendence, overriding URL provisioned and Broad's default
+        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
+        if(!(new File(oauthConfig)).exists()) {
+            oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config-custom.json";
+        }
         if ((new File(oauthConfig)).exists()) {
             try {
                 log.debug("Loading Oauth properties from: " + oauthConfig);

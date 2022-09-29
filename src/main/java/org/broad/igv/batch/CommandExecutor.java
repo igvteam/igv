@@ -36,7 +36,7 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;

@@ -25,7 +25,6 @@
 
 package org.broad.igv.ui;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -37,17 +36,15 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeUtils;
-import org.broad.igv.google.GoogleUtils;
-import org.broad.igv.google.OAuthProvider;
-import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.util.GoogleUtils;
+import org.broad.igv.oauth.OAuthProvider;
+import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.session.Session;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
-import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.commandbar.GenomeComboBox;
@@ -60,7 +57,6 @@ import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.BrowserLauncher;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.encode.EncodeFileBrowser;
@@ -77,8 +73,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;

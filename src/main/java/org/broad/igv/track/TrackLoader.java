@@ -58,7 +58,7 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
-import org.broad.igv.google.GoogleUtils;
+import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.gwas.GWASFeature;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
