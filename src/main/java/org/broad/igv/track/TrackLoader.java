@@ -927,17 +927,8 @@ public class TrackLoader {
             }
 
             AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName)
-            alignmentTrack.setName(dsName);
             alignmentTrack.setVisible(PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK));
-
-
-            // Create coverage track
-            CoverageTrack covTrack = new CoverageTrack(locator, dsName + " Coverage", alignmentTrack, genome);
-            newTracks.add(covTrack);
-            covTrack.setDataManager(dataManager);
-            dataManager.setCoverageTrack(covTrack);
-
-            alignmentTrack.setCoverageTrack(covTrack);
+            newTracks.add(alignmentTrack.getCoverageTrack());
 
             //  Precalculated coverage data (can be null)
             String covPath = locator.getCoverage();
@@ -962,18 +953,15 @@ public class TrackLoader {
                     try {
                         TDFReader reader = TDFReader.getReader(covPath);
                         TDFDataSource ds = new TDFDataSource(reader, 0, dsName + " coverage", genome);
-                        covTrack.setDataSource(ds);
+                        alignmentTrack.getCoverageTrack().setDataSource(ds);
                     } catch (Exception e) {
                         log.error("Error loading coverage TDF file", e);
                     }
                 }
             }
 
-            SpliceJunctionTrack spliceJunctionTrack = new SpliceJunctionTrack(locator,
-                    dsName + " Junctions", dataManager, alignmentTrack, SpliceJunctionTrack.StrandOption.BOTH);
-            spliceJunctionTrack.setHeight(60);
-            newTracks.add(spliceJunctionTrack);
-            alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
+            // Splice junction track
+            newTracks.add(alignmentTrack.getSpliceJunctionTrack());
 
             alignmentTrack.init();
 

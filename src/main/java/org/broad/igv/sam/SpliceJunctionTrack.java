@@ -67,12 +67,6 @@ public class SpliceJunctionTrack extends FeatureTrack {
     private AlignmentDataManager dataManager;
     private boolean removed = false;
 
-    /**
-     * The "DataPanel" containing this track.  This field might be null at any given time.  It is updated each repaint.
-     */
-
-    private JComponent dataPanel;
-
     public static void setStrandOption(StrandOption so) {
         strandOption = so;
     }
@@ -265,7 +259,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
     }
 
     public void load(ReferenceFrame frame) {
-        dataManager.load(frame, alignmentTrack.renderOptions, true);
+        dataManager.load(frame, alignmentTrack.getRenderOptions(), true);
 
     }
 
@@ -291,15 +285,6 @@ public class SpliceJunctionTrack extends FeatureTrack {
     }
 
 
-    @Override
-    public boolean handleDataClick(TrackClickEvent te) {
-        boolean result = super.handleDataClick(te);
-        if (dataPanel != null) dataPanel.repaint();
-
-        return result;
-    }
-
-
     // Start of Roche-Tessella modification
     private JMenuItem getChangeAutoScale() {
 
@@ -309,23 +294,19 @@ public class SpliceJunctionTrack extends FeatureTrack {
         autoscaleItem.setSelected(autoScale);
 
 
-        autoscaleItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                boolean autoScale = getAutoScale();
-                TrackProperties tp = new TrackProperties();
-                if (autoScale) {
-                    tp.setAutoScale(false);
-                    autoscaleItem.setSelected(false);
-                } else {
-                    tp.setAutoScale(true);
-                    autoscaleItem.setSelected(true);
-                }
-                tp.setRendererClass(SpliceJunctionRenderer.class);
-                setProperties(tp);
-
-                if (dataPanel != null) dataPanel.repaint();
+        autoscaleItem.addActionListener(evt -> {
+            boolean autoScale1 = getAutoScale();
+            TrackProperties tp = new TrackProperties();
+            if (autoScale1) {
+                tp.setAutoScale(false);
+                autoscaleItem.setSelected(false);
+            } else {
+                tp.setAutoScale(true);
+                autoscaleItem.setSelected(true);
             }
+            tp.setRendererClass(SpliceJunctionRenderer.class);
+            setProperties(tp);
+
         });
 
         return autoscaleItem;

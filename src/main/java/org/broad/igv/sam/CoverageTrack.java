@@ -183,7 +183,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public void load(ReferenceFrame referenceFrame) {
-        dataManager.load(referenceFrame, alignmentTrack.renderOptions, true);
+        dataManager.load(referenceFrame, alignmentTrack.getRenderOptions(), true);
     }
 
 
@@ -370,7 +370,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 AlignmentCounts counts = interval.getCounts();
                 if (counts != null) {
                     buf.append(counts.getValueStringAt((int) position));
-                    final AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
+                    final AlignmentTrack.ColorOption colorOption = alignmentTrack.getRenderOptions().getColorOption();
                     if (colorOption.isBaseMod() && counts.getModifiedBaseCounts() != null) {
                         buf.append("<hr>");
                         buf.append(counts.getModifiedBaseCounts().getValueString((int) position, colorOption));
@@ -456,7 +456,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
             Color color = getColor();
             Graphics2D graphics = context.getGraphic2DForColor(color);
-            final AlignmentTrack.ColorOption colorOption = alignmentTrack.renderOptions.getColorOption();
+            final AlignmentTrack.ColorOption colorOption = alignmentTrack.getRenderOptions().getColorOption();
             boolean bisulfiteMode = colorOption == AlignmentTrack.ColorOption.BISULFITE;
 
             final int intervalEnd = alignmentCounts.getEnd();

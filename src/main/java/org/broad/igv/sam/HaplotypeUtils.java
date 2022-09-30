@@ -1,6 +1,7 @@
 package org.broad.igv.sam;
 
 
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.util.MessageUtils;
@@ -19,11 +20,10 @@ public class HaplotypeUtils {
     private static Logger log = LogManager.getLogger(HaplotypeUtils.class);
 
     private final AlignmentInterval alignmentInterval;
-    Genome genome;
 
-    public HaplotypeUtils(AlignmentInterval alignmentInterval, Genome genome) {
+
+    public HaplotypeUtils(AlignmentInterval alignmentInterval) {
         this.alignmentInterval = alignmentInterval;
-        this.genome = genome;
     }
 
     public boolean clusterAlignments(String chr, int start, int end, int nClasses) {
@@ -32,7 +32,7 @@ public class HaplotypeUtils {
         try {
             AlignmentCounts counts = this.alignmentInterval.getCounts();
 
-            final byte[] reference = genome.getSequence(chr, start, end);
+            final byte[] reference = GenomeManager.getInstance().getCurrentGenome().getSequence(chr, start, end);
 
             // Find snp positions
             List<Integer> snpPos = findVariantPositions(start, end, counts, reference);

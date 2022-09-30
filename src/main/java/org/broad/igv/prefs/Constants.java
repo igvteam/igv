@@ -215,6 +215,8 @@ final public class Constants {
     public static final String OVERLAY_MUTATIONS_WHOLE_GENOME = "OVERLAY_MUTATIONS_WHOLE_GENOME";
     public static final String COLOR_MUTATIONS = "COVER_OVERLAY_KEY";
 
+    public static final String MUT_COORDS = "MUT_COORDS";
+
     // GWAS track options
     public static final String GWAS_TRACK_HEIGHT = "GWAS_TRACK_HEIGHT";
     public static final String GWAS_DESCRIPTION_CACHE_SIZE = "GWAS_DESCRIPTION_CACHE_SIZE";
