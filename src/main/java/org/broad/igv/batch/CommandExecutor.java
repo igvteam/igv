@@ -1040,12 +1040,21 @@ public class CommandExecutor {
         } else {
             // Alignments
             String tag = null;
-            String locusString = null;
+            String locusString;
+            String reverseString;
             if (sortArg.equalsIgnoreCase("tag")) {
                 tag = param2;
                 locusString = param3;
+                reverseString = param4;
             } else {
                 locusString = param2;
+                reverseString =  param3;
+            }
+
+            // Special case, "reverse" is a resered word for inverting sorting.  Locus is optional
+            if(reverseString == null && "reverse".equalsIgnoreCase(locusString)) {
+                reverseString = locusString;
+                locusString = null;
             }
 
             Double location = null;
@@ -1064,7 +1073,10 @@ public class CommandExecutor {
                     }
                 }
             }
-            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag, false);
+
+            boolean invertSort = "reverse".equalsIgnoreCase(reverseString);
+
+            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag, invertSort);
             return "OK";
         }
     }
