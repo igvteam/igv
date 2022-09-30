@@ -641,7 +641,7 @@ public class AlignmentRenderer {
         // Draw blocks
         // Get a graphics context for outlining alignment blocks.
         Graphics2D outlineGraphics = null;
-        final HashMap<String, Color> selectedReadNames = this.track.selectedReadNames;
+        final HashMap<String, Color> selectedReadNames = this.track.getSelectedReadNames();
         if (selectedReadNames.containsKey(alignment.getReadName())) {
             Color c = selectedReadNames.get(alignment.getReadName());
             c = (c == null) ? Color.blue : c;
@@ -1261,7 +1261,7 @@ public class AlignmentRenderer {
 
         Color defaultColor = track.getColor();
         Color c = defaultColor;
-        AlignmentTrack.RenderOptions renderOptions = track.renderOptions;
+        AlignmentTrack.RenderOptions renderOptions = track.getRenderOptions();
         ColorOption colorOption = renderOptions.getColorOption();
         String readNameParts[];
 
