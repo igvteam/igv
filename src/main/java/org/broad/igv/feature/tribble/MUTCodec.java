@@ -153,7 +153,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
 
             int start;
             try {
-                start = Integer.parseInt(tokens[startColumn].trim());
+                start = Integer.parseInt(tokens[startColumn].trim()) - 1;
             } catch (NumberFormatException e) {
                 errorCount++;
                 if (errorCount > 100) {
@@ -175,14 +175,6 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                     log.warn("Error parsing line: " + line);
                     return null;
                 }
-            }
-
-
-            // MAF files use the 1-based inclusive convention for coordinates.  The convention is not
-            // specified for MUT files, and it appears both conventions have been used.  We can detect
-            // the convention used for single base mutations by testing start == end.
-            if (isMAF || (start == end)) {
-                start--;
             }
 
             String sampleId = "Unknown";
