@@ -25,8 +25,11 @@
 
 package org.broad.igv.track;
 
+import htsjdk.samtools.util.Locatable;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.TribbleException;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.DataLoadedEvent;
@@ -34,8 +37,6 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -118,6 +119,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     private boolean groupByStrand = false;
     private String labelField;
+    private ArrayList<Feature> wgFeatures;
 
     public FeatureTrack() {
 
@@ -195,7 +197,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         if (vizWindow != null) {
             visibilityWindow = vizWindow;
         } else {
-            int sourceFeatureWindowSize = source.getFeatureWindowSize();
+            int sourceFeatureWindowSize = source.estimateFeatureWindowSize();
             int defVisibilityWindow = PreferencesManager.getPreferences().getAsInt(Constants.DEFAULT_VISIBILITY_WINDOW);
             if (sourceFeatureWindowSize > 0 && defVisibilityWindow > 0) {  // Only apply a default if the feature source supports visibility window.
                 visibilityWindow = defVisibilityWindow * 1000;
@@ -685,21 +687,29 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         try {
 
+            Iterator<Feature> iter;
             int expandedStart;
             int expandedEnd;
-            int vw = getVisibilityWindow();
-            if (vw > 0) {
-                int delta = (end - start) / 2;
-                expandedStart = start < 0 ? start : start - delta;
-                expandedEnd = end + delta;
-                if (expandedEnd < 0) {
-                    expandedEnd = Integer.MAX_VALUE;  // assumed integer overflow
-                }
+
+            if(Globals.CHR_ALL.equals(chr)) {
+             iter = sampleGenomeFeatures().iterator();
+             expandedStart = 0;
+             expandedEnd = Integer.MAX_VALUE;
             } else {
-                expandedStart = 0;
-                expandedEnd = Integer.MAX_VALUE;
+                int vw = getVisibilityWindow();
+                if (vw > 0) {
+                    int delta = (end - start) / 2;
+                    expandedStart = start < 0 ? start : start - delta;
+                    expandedEnd = end + delta;
+                    if (expandedEnd < 0) {
+                        expandedEnd = Integer.MAX_VALUE;  // assumed integer overflow
+                    }
+                } else {
+                    expandedStart = 0;
+                    expandedEnd = Integer.MAX_VALUE;
+                }
+                iter = source.getFeatures(chr, expandedStart, expandedEnd);
             }
-            Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
 
             if (iter == null) {
                 PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
@@ -995,6 +1005,40 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
+    private List<Feature> sampleGenomeFeatures() throws IOException {
+
+        if (wgFeatures == null) {
+
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            List<Feature> allFeatures = this.source.getAllFeatures();
+            if (allFeatures == null) return Collections.EMPTY_LIST;
+
+            wgFeatures = new ArrayList(allFeatures.size());
+
+            wgFeatures.sort(Comparator.comparingInt(Locatable::getStart));
+
+            Set<String> chrNames = new HashSet<>(genome.getLongChromosomeNames());
+
+            for (Feature feature : allFeatures) {
+
+                String chr = genome.getCanonicalChrName(feature.getChr());
+                if (!chrNames.contains(chr)) continue;
+
+                long offset = genome.getCumulativeOffset(chr);
+
+                if (feature instanceof IGVFeature) {
+                    IGVFeature f = (IGVFeature) feature;
+                    int genStart = (int) ((offset + f.getStart()) / 1000);
+                    int genEnd = (int) ((offset + f.getEnd()) / 1000);
+
+                    WGFeature f2 = new WGFeature(f, genStart, genEnd);
+
+                    wgFeatures.add(f2);
+                }
+            }
+        }
+        return wgFeatures;
+    }
 
     public void setTrackLine(String trackLine) {
         this.trackLine = trackLine;

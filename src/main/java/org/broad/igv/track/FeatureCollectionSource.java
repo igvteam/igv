@@ -38,6 +38,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.collections.CollUtils;
 import htsjdk.tribble.Feature;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -65,7 +66,6 @@ public class FeatureCollectionSource implements FeatureSource {
         initFeatures(allFeatures);
         coverageData = new CoverageDataSource(genome);
         coverageData.computeGenomeCoverage();
-        sampleGenomeFeatures();
     }
 
     public List<LocusScore> getCoverageScores(String chr, int startLocation, int endLocation, int zoom) {
@@ -81,26 +81,22 @@ public class FeatureCollectionSource implements FeatureSource {
      * @return
      */
     public Iterator<Feature> getFeatures(String chr, int start, int end) {
-        return getFeatureList(chr, start, end).iterator();
-    }
-
-    public List<Feature> getFeatureList(String chr, int start, int end) {
 
         List<Feature> features = featureMap.get(chr);
         if (features == null) {
-            return Collections.<Feature>emptyList();
+            return Collections.<Feature>emptyList().iterator();
         }
         List<Feature> filteredFeatures = CollUtils.filter(features, FeatureUtils.getOverlapPredicate(chr, start, end));
-        return filteredFeatures;
+        return filteredFeatures.iterator();
     }
 
     @Override
-    public boolean isLoaded(ReferenceFrame frame) {
-        return true;  // All features are loaded by definition
-    }
-
-    public List<Feature> getFeatures(String chr) {
-        return featureMap.get(chr);
+    public List<Feature> getAllFeatures() throws IOException {
+        List<Feature> allFeatures = new ArrayList<>();
+        for(List<Feature> f : featureMap.values()) {
+            allFeatures.addAll(f);
+        }
+        return allFeatures;
     }
 
     private void initFeatures(Iterable<? extends Feature> allFeatures) {
@@ -118,10 +114,6 @@ public class FeatureCollectionSource implements FeatureSource {
 
             for (List<Feature> featureList : featureMap.values()) {
                 FeatureUtils.sortFeatureList(featureList);
-            }
-
-            if (featureMap.size() < 100) {
-                sampleGenomeFeatures();
             }
     }
 
@@ -156,7 +148,7 @@ public class FeatureCollectionSource implements FeatureSource {
         int sampleLength = (int) ((double) genome.getNominalLength() / (1000 * 700));
         int lastFeaturePosition = -1;
         for (String chr : genome.getLongChromosomeNames()) {
-            List<Feature> features = getFeatures(chr);
+            List<Feature> features =featureMap.get(chr);
             if (features != null) {
                 long offset = genome.getCumulativeOffset(chr);
                 for (Feature feature : features) {

@@ -25,10 +25,7 @@
 
 package org.broad.igv.tools.motiffinder;
 
-import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.MotifTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -37,8 +34,6 @@ import org.broad.igv.util.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
