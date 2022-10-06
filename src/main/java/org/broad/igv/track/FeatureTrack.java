@@ -439,14 +439,23 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
+    /**
+     * Return an info URL for a specific feature, constructed as follows
+     *
+     * @param igvFeature
+     * @return
+     */
     private String getFeatureURL(IGVFeature igvFeature) {
-        String url = igvFeature.getURL();
+        String url = igvFeature.getURL();    // Explicity URL setting
         if (url == null) {
-            String trackURL = getFeatureInfoURL();
-            if (trackURL != null && igvFeature.getName() != null) {
-                String name = labelField != null ? igvFeature.getDisplayName(labelField) : igvFeature.getName();
-                String encodedID = StringUtils.encodeURL(name);
-                url = trackURL.replaceAll("\\$\\$", encodedID);
+            String trackURL = getFeatureInfoURL();   // Template
+            if (trackURL != null) {
+                String idOrName = igvFeature.getIdentifier() != null ?
+                        igvFeature.getIdentifier() :
+                        labelField != null ?
+                                igvFeature.getDisplayName(labelField) :
+                                igvFeature.getName();
+                    url = trackURL.replaceAll("\\$\\$", StringUtils.encodeURL(idOrName));
             }
         }
         return url;
@@ -472,7 +481,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             Iterator<Feature> iter = source.getFeatures(chr, start, end);
             while (iter.hasNext()) {
                 Feature f = iter.next();
-                if(f.getEnd() >= start && f.getStart() <= end) {
+                if (f.getEnd() >= start && f.getStart() <= end) {
                     features.add(f);
                 }
             }

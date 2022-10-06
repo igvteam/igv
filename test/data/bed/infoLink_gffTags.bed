@@ -1,0 +1,2 @@
+track name="Test track" url="http://chip-atlas.org/view?id=$$" gffTags="on"
+chr1	225887119	225888309	ID=SRX1497383;Name=BRD4;Title=GSM1976289	544	.	225887119	225888309	44,255,0
