@@ -624,14 +624,7 @@ public class ReferenceFrame {
      * @return
      */
     public String getFormattedLocusString() {
-
-        if (zoom == 0) {
-            return getChrName();
-        } else {
-
-            Range range = getCurrentRange();
-            return Locus.getFormattedLocusString(range.getChr(), range.getStart(), range.getEnd());
-        }
+        return zoom == 0 ? getChrName() : Locus.getFormattedLocusString(getCurrentRange());
     }
 
     public Range getCurrentRange() {

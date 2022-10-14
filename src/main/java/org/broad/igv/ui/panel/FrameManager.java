@@ -321,14 +321,14 @@ public class FrameManager implements IGVEventObserver {
             for (ReferenceFrame ref : currentFrames) {
                 if (locus != null && ref.getChrName().equals(locus.chr) && ref.getCurrentRange().overlaps(locus)) {
                     Range union = ref.getCurrentRange().union(locus);
-                    loci.add(Locus.getFormattedLocusString(union.getChr(), union.getStart(), union.getEnd()));
+                    loci.add(Locus.getFormattedLocusString(union));
                     found = true;
                     usedFrames.add(ref);
                     break;
                 }
             }
             if (!found) {
-                loci.add(Locus.getFormattedLocusString(locus.getChr(), locus.getStart(), locus.getEnd()));
+                loci.add(Locus.getFormattedLocusString(locus));
             }
         }
 

@@ -568,31 +568,34 @@ public class SearchCommand {
     Container class for search results
      */
     public static class SearchResult {
-        String chr;
-        private int start;
-        private int end;
-        ResultType type;
+        private final String chr;
+        private final int start;
+        private final int end;
+        private final ResultType type;
+        private final String locus;
+        private final NamedFeature feature;
 
-        private String locus;
         private String message;
-        private NamedFeature feature;
 
         public SearchResult() {
             this(ResultType.ERROR, null, -1, -1);
         }
 
         public SearchResult(ResultType type, String chr, int start, int end) {
+            this(type, chr, start, end, null);
+        }
+
+        public SearchResult(NamedFeature feature) {
+            this(ResultType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd(), feature);
+        }
+
+        private SearchResult(ResultType type, String chr, int start, int end, NamedFeature feature) {
             this.type = type;
             this.chr = chr;
             this.start = start;
             this.end = end;
             this.locus = Locus.getFormattedLocusString(chr, start, end);
-        }
-
-        public SearchResult(NamedFeature feature) {
-            this(ResultType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd());
             this.feature = feature;
-            this.locus = Locus.getFormattedLocusString(chr, start, end);
         }
 
         void setMessage(String message) {

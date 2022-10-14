@@ -104,8 +104,8 @@ public class SearchCommandTest extends AbstractHeadlessTest {
                 cmd = new SearchCommand(null, searchStr, genome);
                 List<SearchCommand.SearchResult> results = cmd.runSearch(cmd.searchString);
                 assertEquals(1, results.size());
-                assertEquals(SearchCommand.ResultType.CHROMOSOME, results.get(0).type);
-                assertEquals(chr, results.get(0).chr);
+                assertEquals(SearchCommand.ResultType.CHROMOSOME, results.get(0).getType());
+                assertEquals(chr, results.get(0).getChr());
             }
         }
 
@@ -166,7 +166,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     private boolean containsType(List<SearchCommand.SearchResult> results, SearchCommand.ResultType check) {
         boolean contains = false;
         for (SearchCommand.SearchResult result : results) {
-            contains |= result.type == check;
+            contains |= result.getType() == check;
         }
         return contains;
     }
@@ -204,7 +204,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         for (int ii = 0; ii < tokens.length; ii++) {
             SearchCommand.SearchResult result = results.get(ii);
             try {
-                assertEquals(types[ii], result.type);
+                assertEquals(types[ii], result.getType());
                 assertEquals(tokens[ii].toLowerCase(), result.getShortName().toLowerCase());
             } catch (AssertionFailedError e) {
                 System.out.println(searchStr + " :" + result.getMessage());
@@ -228,7 +228,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         for (int ii = 0; ii < tokens.length; ii++) {
             SearchCommand.SearchResult result = results.get(ii);
 
-            assertEquals(SearchCommand.ResultType.CHROMOSOME, result.type);
+            assertEquals(SearchCommand.ResultType.CHROMOSOME, result.getType());
             assertTrue(result.getLocus().contains(tokens[ii]));
         }
     }
