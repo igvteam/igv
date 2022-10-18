@@ -151,8 +151,6 @@ public class LoadFromURLMenuAction extends MenuAction {
     private String mapURL(String url) {
 
         url = url.trim();
-
-        OAuthProvider oauthProvider = OAuthUtils.getInstance().getProvider();
         if (GoogleUtils.isGoogleCloud(url) || GoogleUtils.isGoogleDrive(url)) {
             enableGoogleMenu();
         }
