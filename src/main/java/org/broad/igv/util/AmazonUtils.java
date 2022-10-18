@@ -135,7 +135,7 @@ public class AmazonUtils {
      */
     public static Credentials GetCognitoAWSCredentials() {
 
-        OAuthProvider provider = OAuthUtils.getInstance().getProvider("Amazon");
+        OAuthProvider provider = OAuthUtils.getInstance().getAWSProvider();
 
         JsonObject igv_oauth_conf = GetCognitoConfig();
         JsonObject response = provider.getResponse();
@@ -246,7 +246,7 @@ public class AmazonUtils {
         if (bucketsFinalList.isEmpty()) {
 
             if (GetCognitoConfig() != null) {
-                OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
+                OAuthUtils.getInstance().getAWSProvider().getAccessToken();
                 updateS3Client(GetCognitoAWSCredentials());
             } else {
                 updateS3Client(null);
@@ -407,7 +407,7 @@ public class AmazonUtils {
         log.debug("Listing objects for bucketName: " + bucketName);
 
         if (GetCognitoConfig() != null) {
-            OAuthUtils.getInstance().getProvider("Amazon").getAccessToken();
+            OAuthUtils.getInstance().getAWSProvider().getAccessToken();
             updateS3Client(GetCognitoAWSCredentials());
         } else {
             updateS3Client(null);
@@ -477,7 +477,7 @@ public class AmazonUtils {
         S3Presigner s3Presigner;
 
         if (GetCognitoConfig() != null) {
-            OAuthProvider provider = OAuthUtils.getInstance().getProvider("Amazon");
+            OAuthProvider provider = OAuthUtils.getInstance().getAWSProvider();
             provider.getAccessToken();
 
             Credentials credentials = GetCognitoAWSCredentials();
@@ -542,8 +542,8 @@ public class AmazonUtils {
      */
     public static void checkLogin() {
         if (GetCognitoConfig() != null &&
-                !OAuthUtils.getInstance().getProvider("Amazon").isLoggedIn()) {
-            OAuthUtils.getInstance().getProvider("Amazon").checkLogin();
+                !OAuthUtils.getInstance().getAWSProvider().isLoggedIn()) {
+            OAuthUtils.getInstance().getAWSProvider().checkLogin();
         }
     }
 

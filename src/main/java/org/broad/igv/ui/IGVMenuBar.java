@@ -928,7 +928,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         final JMenuItem login = new JMenuItem("Login");
         login.addActionListener(e -> {
             try {
-                OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
+                OAuthProvider oauth = OAuthUtils.getInstance().getAWSProvider();
                 oauth.openAuthorizationPage();
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
@@ -942,7 +942,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // Logout
         final JMenuItem logout = new JMenuItem("Logout");
         logout.addActionListener(e -> {
-            OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
+            OAuthProvider oauth = OAuthUtils.getInstance().getAWSProvider();
             oauth.logout();
         });
         logout.setEnabled(false);
@@ -970,7 +970,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             public void menuSelected(MenuEvent e) {
                 if (AmazonUtils.GetCognitoConfig() != null) {
                     Runnable runnable = () -> {
-                        OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
+                        OAuthProvider oauth = OAuthUtils.getInstance().getAWSProvider();
                         boolean loggedIn = false;
                         loggedIn = oauth.isLoggedIn();
                         log.debug("MenuBar is user loggedIn?: " + loggedIn);
@@ -1006,7 +1006,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenu createGoogleMenu() throws IOException {
 
         // Dynamically name menu - dwm08
-        final OAuthProvider oauth = OAuthUtils.getInstance().getProvider();
+        final OAuthProvider oauth = OAuthUtils.getInstance().getDefaultProvider();
 
         if (oauth != null) {  // TODO -- how do we know this is a google provider?
             if(oauth.getAuthProvider() == null || oauth.getAuthProvider().isEmpty()){
@@ -1044,7 +1044,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 @Override
                 public void menuSelected(MenuEvent e) {
                     Runnable runnable = () -> {
-                        boolean loggedIn = OAuthUtils.getInstance().getProvider().isLoggedIn();
+                        boolean loggedIn = OAuthUtils.getInstance().getDefaultProvider().isLoggedIn();
 
                         if (loggedIn) {
                             login.setText(oauth.getCurrentUserName());
