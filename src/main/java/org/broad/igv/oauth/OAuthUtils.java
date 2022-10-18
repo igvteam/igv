@@ -54,7 +54,7 @@ public class OAuthUtils {
     /**
      * Map of key name -> oauth provider.  This is currently only used to distinguish Amazon from Google providers.
      */
-    static Map<String, OAuthProvider> providers;
+    static OAuthProvider awsProvider;
 
     static OAuthProvider defaultProvider;
 
@@ -66,31 +66,36 @@ public class OAuthUtils {
     }
 
     private OAuthUtils() {
-        providers = new HashMap<>();
         try {
             fetchOauthProperties();
         } catch (Exception e) {
             log.error("Error fetching oAuth properties", e);
         }
     }
+
+    /**
+     * Called from HttpUtils, after 401 error, for Google urls only*
+     */
     public static void checkLogin() {
-        if (!getInstance().getProvider().isLoggedIn()) {
-            getInstance().getProvider().checkLogin();
+        if (!getInstance().getDefaultProvider().isLoggedIn()) {
+            getInstance().getDefaultProvider().checkLogin();
         }
     }
 
 
-    public OAuthProvider getProvider(String providerName) {
-        if (providerName != null) {
-            if (!providers.containsKey(providerName)) {
-                throw new RuntimeException("Unknwon oAuth provider name: " + providerName);
-            }
-            return providers.get(providerName);
+    /**
+     * Called by AWS code only -- never called with any value other than "Amazon"
+     * <p>
+     * providers hash is never used for any key other than Amazon
+     */
+    public OAuthProvider getAWSProvider() {
+        if (awsProvider == null) {
+            throw new RuntimeException("AWS Oauth is not configured");
         }
-        return defaultProvider;
+        return awsProvider;
     }
 
-    public OAuthProvider getProvider() {
+    public OAuthProvider getDefaultProvider() {
         return defaultProvider;
     }
 
@@ -106,7 +111,7 @@ public class OAuthUtils {
 
         // Local config takes precendence, overriding URL provisioned and Broad's default
         String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
-        if(!(new File(oauthConfig)).exists()) {
+        if (!(new File(oauthConfig)).exists()) {
             oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config-custom.json";
         }
         if ((new File(oauthConfig)).exists()) {
@@ -129,6 +134,12 @@ public class OAuthUtils {
         }
     }
 
+    /**
+     * Called from preferences editor
+     *
+     * @param provisioningURL
+     * @throws IOException
+     */
     public void updateOauthProvider(String provisioningURL) throws IOException {
         if (provisioningURL == null || provisioningURL.trim().length() == 0) {
             defaultProvider = null;
@@ -171,7 +182,7 @@ public class OAuthUtils {
 
         // Hack - a move towards multiple providers
         if (obj.has("auth_provider") && obj.get("auth_provider").getAsString().equals("Amazon")) {
-            providers.put("Amazon", p);
+            awsProvider = p;
             AmazonUtils.setCognitoConfig(obj);
         } else {
             if (defaultProvider != null) {
@@ -188,8 +199,8 @@ public class OAuthUtils {
         OAuthProvider provider = null;
         if (params.containsKey("scope") && params.get("scope").contains("googleapis")) {
             provider = defaultProvider;
-        } else if (providers.containsKey("Amazon")) {
-            provider = providers.get("Amazon");
+        } else if (awsProvider != null) {
+            provider = awsProvider;
         }
         if (provider == null) {
             provider = defaultProvider;
@@ -199,9 +210,11 @@ public class OAuthUtils {
 
 
     // Used by batch commands (CommandExecutor).  No argument provided to select provider
-    public void setAccessToken(Map<String, String> params) {
+    public void setAccessToken(String token, String hostOrProvider) {
+
+
         OAuthProvider provider = defaultProvider;
-        provider.setAccessToken("token");
+        provider.setAccessToken(token);
     }
 
     /**
