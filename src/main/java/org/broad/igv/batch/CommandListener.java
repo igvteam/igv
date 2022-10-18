@@ -216,14 +216,14 @@ public class CommandListener implements Runnable {
                             sendHTTPResponse(out, result, "text/html", "HEAD");
                         } else {
 
-                            if (command != null) {
+                             if (command != null) {
 
                                 // Detect google oauth callback
                                 if (command.equals("/oauthCallback")) {
                                     if (params.containsKey("code")) {
                                         OAuthUtils.getInstance().setAuthorizationCode(params);
                                     } else if (params.containsKey("token")) {
-                                        OAuthUtils.getInstance().setAccessToken(params);
+                                        OAuthUtils.getInstance().setAccessToken(params.get("token"), null);
                                     }
                                     sendTextResponse(out, "SUCCESS");
                                     if(PreferencesManager.getPreferences().getAsBoolean(Constants.PORT_ENABLED) == false) {

@@ -659,7 +659,7 @@ public class HttpUtils {
         }
 
         // If the URL is protected via an oAuth provider check login, and optionally map url with find/replace string
-        OAuthProvider oauthProvider = OAuthUtils.getInstance().getProvider();
+        OAuthProvider oauthProvider = OAuthUtils.getInstance().getDefaultProvider();
         if (oauthProvider != null && oauthProvider.appliesToUrl(url)) {
             oauthProvider.checkLogin();
             if (oauthProvider.findString != null) {
@@ -767,7 +767,7 @@ public class HttpUtils {
 
         // If this is a Google URL and we have an access token use it.
         if (GoogleUtils.isGoogleURL(url.toExternalForm())) {
-            String token = OAuthUtils.getInstance().getProvider().getAccessToken();
+            String token = OAuthUtils.getInstance().getDefaultProvider().getAccessToken();
             if (token != null) {
                 conn.setRequestProperty("Authorization", "Bearer " + token);
             }
