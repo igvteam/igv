@@ -205,8 +205,10 @@ public class CommandExecutor {
                 FrameManager.incrementZoom(1);
             } else if (cmd.equals("zoomout")) {
                 FrameManager.incrementZoom(-1);
-            } else if ("oauth".equals(cmd)) {
-                OAuthUtils.getInstance().setAccessToken(param1, param2);
+            } else if ("oauth".equals(cmd) || cmd.equalsIgnoreCase("setaccesstoken")) {
+                HttpUtils.getInstance().setAccessToken(param1, param2);
+            } else if(cmd.equals("clearaccesstokens")) {
+                HttpUtils.getInstance().clearAccessTokens();
             } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
                 result = sortByAttribute(args);
             } else if (cmd.equalsIgnoreCase("fitTracks")) {

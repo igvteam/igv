@@ -30,11 +30,13 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.StringUtils;
 
 import java.awt.*;
@@ -178,7 +180,7 @@ public class CommandListener implements Runnable {
             while (!halt && (inputLine = in.readLine()) != null) {
 
                 String cmd = inputLine;
-                if(!cmd.contains("/oauthCallback")) {
+                if (!cmd.contains("/oauthCallback")) {
                     log.info(cmd);
                 }
 
@@ -216,17 +218,23 @@ public class CommandListener implements Runnable {
                             sendHTTPResponse(out, result, "text/html", "HEAD");
                         } else {
 
-                             if (command != null) {
+                            if (command != null) {
 
-                                // Detect google oauth callback
+                                // Detect  oauth callback
                                 if (command.equals("/oauthCallback")) {
+
+                                    OAuthProvider provider = OAuthUtils.getInstance().getProviderForState(params.get("state"));
+
                                     if (params.containsKey("code")) {
-                                        OAuthUtils.getInstance().setAuthorizationCode(params);
+                                        provider.setAuthorizationCode(params.get("code"));
                                     } else if (params.containsKey("token")) {
-                                        OAuthUtils.getInstance().setAccessToken(params.get("token"), null);
+                                        // Very doubtful this is ever called -- its not a normal OAuth flow
+                                        log.info("Oauth token received");
+                                        provider.setAccessToken(params.get("token"));
                                     }
                                     sendTextResponse(out, "SUCCESS");
-                                    if(PreferencesManager.getPreferences().getAsBoolean(Constants.PORT_ENABLED) == false) {
+
+                                    if (PreferencesManager.getPreferences().getAsBoolean(Constants.PORT_ENABLED) == false) {
                                         // Turn off port
                                         halt();
                                     }
@@ -271,7 +279,6 @@ public class CommandListener implements Runnable {
             if (in != null) in.close();
         }
     }
-
 
     private void closeSockets() {
         if (clientSocket != null) {
@@ -416,8 +423,6 @@ public class CommandListener implements Runnable {
 
         return result;
     }
-
-
 
 
     /**
