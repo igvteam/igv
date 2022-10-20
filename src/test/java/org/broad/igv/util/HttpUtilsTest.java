@@ -106,32 +106,31 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
     @Test
     public void testAccessTokenCache() throws MalformedURLException {
 
-        // Exact match
-        HttpUtils.getInstance().setAccessToken("foo", "bar.foo.com");
-        String token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
-        assertEquals("foo", token);
-        HttpUtils.getInstance().clearAccessTokens();
+        try {
+            // Exact match
+            HttpUtils.getInstance().setAccessToken("foo", "bar.foo.com");
+            String token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
+            assertEquals("foo", token);
+            HttpUtils.getInstance().clearAccessTokens();
 
-        // Wildcard match
-        HttpUtils.getInstance().setAccessToken("foo", "*.foo.com");
-        token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
-        assertEquals("foo", token);
+            // Wildcard match
+            HttpUtils.getInstance().setAccessToken("foo", "*.foo.com");
+            token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
+            assertEquals("foo", token);
 
-        // Clear token
-        HttpUtils.getInstance().clearAccessTokens();
-        token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
-        assertNull(token);
-        HttpUtils.getInstance().clearAccessTokens();
+            // Clear token
+            HttpUtils.getInstance().clearAccessTokens();
+            token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
+            assertNull(token);
+            HttpUtils.getInstance().clearAccessTokens();
 
-        // Match all hosts
-        HttpUtils.getInstance().setAccessToken("foo", "");
-        token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://igv.org/path"));
-        assertEquals("foo", token);
-
-
-
-
-
+            // Match all hosts
+            HttpUtils.getInstance().setAccessToken("foo", "");
+            token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://igv.org/path"));
+            assertEquals("foo", token);
+        } finally {
+            HttpUtils.getInstance().clearAccessTokens();
+        }
     }
 
     public class RunnableSparkHttp implements Runnable {
