@@ -59,6 +59,7 @@ import java.util.*;
  */
 public class SashimiPlot extends JFrame implements IGVEventObserver {
 
+    private final SashimiContentPane sashimiContentPane;
     private List<SpliceJunctionTrack> spliceJunctionTracks;
 
     private ReferenceFrame referenceFrame;
@@ -152,9 +153,9 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         scrollableGenePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollableGenePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sashimiPanel, scrollableGenePane);
-        splitPane.setDividerLocation(2 * height / 3);
-        getContentPane().add(splitPane);
+        sashimiContentPane = new SashimiContentPane(sashimiPanel, scrollableGenePane);
+        sashimiContentPane.setDividerLocation(2 * height / 3);
+        getContentPane().add(sashimiContentPane);
 
         validate();
     }
@@ -430,7 +431,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     File defaultFile = new File("Sashimi.png");
-                    IGV.getInstance().createSnapshot(SashimiPlot.this.getContentPane(), defaultFile);
+                    IGV.getInstance().createSnapshot(SashimiPlot.this.sashimiContentPane, defaultFile);
                 }
             });
 
@@ -439,7 +440,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     File defaultFile = new File("Sashimi.svg");
-                    IGV.getInstance().createSnapshot(SashimiPlot.this.getContentPane(), defaultFile);
+                    IGV.getInstance().createSnapshot(SashimiPlot.this.sashimiContentPane, defaultFile);
                 }
             });
 
