@@ -950,6 +950,22 @@ public abstract class AbstractTrack implements Track {
     // End of Roche-Tessella modification
 
 
+    public void setShowFeatureNames(boolean b) {
+        this.showFeatureNames = b;
+    }
+
+    @Override
+    public boolean isShowFeatureNames() {
+        return showFeatureNames;
+    }
+
+    /**
+     * Restore track from XML serialization -- work in progress
+     * //        <renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+     *
+     * @param element
+     */
+
     @Override
     public void marshalXML(Document document, Element element) {
 
@@ -1008,22 +1024,6 @@ public abstract class AbstractTrack implements Track {
 
     }
 
-
-    public void setShowFeatureNames(boolean b) {
-        this.showFeatureNames = b;
-    }
-
-    @Override
-    public boolean isShowFeatureNames() {
-        return showFeatureNames;
-    }
-
-    /**
-     * Restore track from XML serialization -- work in progress
-     * //        <renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
-     *
-     * @param element
-     */
 
     @Override
     public void unmarshalXML(Element element, Integer version) {

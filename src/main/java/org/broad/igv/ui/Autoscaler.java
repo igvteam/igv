@@ -44,6 +44,11 @@ public class Autoscaler {
         }
     }
 
+    /**
+     * Autoscaling happens here.  Ungrouped tracks are treated as groups of size 1.
+     * *
+     * @param trackList -- list of tracks to be autoscaled as a group.
+     */
     private static void autoscaleGroup(List<Track> trackList) {
         List<ReferenceFrame> frames =
                 FrameManager.isGeneListMode() ? FrameManager.getFrames() :
