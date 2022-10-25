@@ -170,4 +170,15 @@ public interface Alignment extends LocusScore {
     default String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
         return getValueString(position, mouseX, (WindowFunction) null);
     }
+
+    /**
+     * Get the most specific sub alignment which contains the given chromosome location, implementations which
+     * contain multiple distinct sub alignments should override this to provide the appropriate behavior
+     * Note: no check is performed to validate that the location is on the same chromosome as this alignment
+     * @param location the location on the chromosome to select an alignment from
+     * @return the alignment (or sub-alignment) that contains the given location, null if this alignment does not contain it
+     */
+    default Alignment getSpecificAlignment(double location) {
+        return this.contains(location) ? this : null;
+    }
 }

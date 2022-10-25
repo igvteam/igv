@@ -235,7 +235,7 @@ public class RegionOfInterestPanel extends JPanel {
             if ((e.getModifiers() & MouseEvent.CTRL_MASK) != 0) {
                 focusROI = getRegionOfInterest(e.getX());
                 if (focusROI != null) {
-                    int curPos = (int) frame.getChromosomePosition(e.getX());
+                    int curPos = (int) frame.getChromosomePosition(e);
                     int startDist = Math.abs(focusROI.getStart() - curPos);
                     int endDist = Math.abs(focusROI.getEnd() - curPos);
                     if (startDist < endDist) {
@@ -254,9 +254,9 @@ public class RegionOfInterestPanel extends JPanel {
             dragging = true;
             if (focusROI != null) {
                 if (switchStartOrEnd) {
-                    focusROI.setStart((int) frame.getChromosomePosition(e.getX()));
+                    focusROI.setStart((int) frame.getChromosomePosition(e));
                 } else {
-                    focusROI.setEnd((int) frame.getChromosomePosition(e.getX()));
+                    focusROI.setEnd((int) frame.getChromosomePosition(e));
                 }
                 IGV.getInstance().repaint();
             }

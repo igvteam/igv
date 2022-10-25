@@ -332,4 +332,20 @@ public class PairedAlignment implements Alignment {
         return firstAlignment.isSupplementary() && (secondAlignment == null || secondAlignment.isSupplementary());
     }
 
+    /**
+     *
+     * @return the individual Alignment at location or null if neither contains it, if they overlap first is preferred
+     */
+    @Override
+    public Alignment getSpecificAlignment(final double location) {
+        Alignment first = getFirstAlignment();
+        Alignment second = getSecondAlignment();
+        if (first.contains(location)) {
+            return first;
+        } else if (second.contains(location)) {
+            return second;
+        } else {
+            return null;
+        }
+    }
 }
