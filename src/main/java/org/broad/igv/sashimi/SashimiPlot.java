@@ -267,7 +267,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
-            Rectangle bounds = new Rectangle(getBounds());
+            Rectangle bounds = new Rectangle(this.getParent().getBounds());       // Parent is the scroll pane
             bounds.y = 0;
             RenderContext context = new RenderContext(this, (Graphics2D) g, frame, bounds);
             track.render(context, bounds);
