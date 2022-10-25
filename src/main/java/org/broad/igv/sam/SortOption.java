@@ -1,6 +1,7 @@
 package org.broad.igv.sam;
 
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
@@ -87,8 +88,9 @@ public enum SortOption {
         @Override
         Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
             return Comparator.comparing((Alignment a) -> a.getMate() == null)
-                    .thenComparing(a -> a.getMate().getChr().equals(a.getChr()))
-                    .thenComparing(a -> a.getMate().getChr());
+                    .thenComparing(a -> a.getMate() != null && Objects.equals(a.getMate().getChr(),a.getChr()))
+                    .thenComparing(nullSafeComparator(a -> a.getMate() == null ? null : a.getMate().getChr()));
+
         }
     }, TAG {
         @Override
