@@ -29,7 +29,6 @@ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
- import org.apache.commons.math3.stat.Frequency;
  import org.broad.igv.logging.*;
  import org.broad.igv.feature.IGVFeature;
  import org.broad.igv.feature.SpliceJunctionFeature;
@@ -60,19 +59,13 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
     private static Logger log = LogManager.getLogger(SpliceJunctionRenderer.class);
 
     //color for drawing all arcs
-    Color ARC_COLOR_NEG = new Color(50, 50, 150, 140); //transparent dull blue
-    Color ARC_COLOR_POS = new Color(150, 50, 50, 140); //transparent dull red
+    private static Color ARC_COLOR_NEG = new Color(50, 50, 150, 140); //transparent dull blue
+    private static Color ARC_COLOR_POS = new Color(150, 50, 50, 140); //transparent dull red
+    private static Color ARC_COLOR_HIGHLIGHT_NEG = new Color(90, 90, 255, 255); //opaque, brighter blue
+    private Color ARC_COLOR_HIGHLIGHT_POS = new Color(255, 90, 90, 255); //opaque, brighter red
+    private static Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
 
-    Color ARC_COLOR_HIGHLIGHT_NEG = new Color(90, 90, 255, 255); //opaque, brighter blue
-    Color ARC_COLOR_HIGHLIGHT_POS = new Color(255, 90, 90, 255); //opaque, brighter red
-
-
-    //central horizontal line color
-    Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
-
-    //maximum depth that can be displayed, due to track height limitations. Junctions with
-    //this depth and deeper will all look the same
-    protected int maxDepth = 50;
+    private int maxDepth = 50;
 
     /**
      * Note:  assumption is that featureList is sorted by pStart position.
@@ -113,28 +106,6 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             SpliceJunctionFeature selectedFeature =
                     (SpliceJunctionFeature) ((FeatureTrack) track).getSelectedFeature();
 
-            // Start of Roche-Tessella modification
-            if (track.getAutoScale())    {
-                Frequency f = new Frequency();
-                List<Integer> scores = new ArrayList<Integer>();
-
-                for (IGVFeature feature : featureList) {
-                    SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
-                    f.addValue(junctionFeature.getScore());
-                    scores.add((int) junctionFeature.getScore());
-                }
-
-                Collections.sort(scores);
-                Collections.reverse(scores);
-                for (int s: scores)	{
-                    if (f.getCumPct(s) < 0.99)	{
-                        maxDepth = s;
-                        break;
-                    }
-                }
-
-            }
-            // End of Roche-Tessella modification
 
             for (IGVFeature feature : featureList) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
@@ -346,5 +317,11 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
     }
 
+    public int getMaxDepth() {
+        return maxDepth;
+    }
 
+    public void setMaxDepth(int maxDepth) {
+        this.maxDepth = maxDepth;
+    }
 }
