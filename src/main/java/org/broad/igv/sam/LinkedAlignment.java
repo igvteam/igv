@@ -411,4 +411,19 @@ public class LinkedAlignment implements Alignment {
         }
     };
 
+    /**
+     * This chooses the smallest overlapping alignment (i.e. if a group of linked alignments overlap take the smallest one).
+     */
+    @Override
+    public Alignment getSpecificAlignment(final double location) {
+        Alignment sa = null;
+        for (Alignment a : alignments) {
+            if (a.contains(location)) {
+                if (sa == null || (a.getLengthOnReference() < sa.getLengthOnReference())) {
+                    sa = a;
+                }
+            }
+        }
+        return sa;
+    }
 }

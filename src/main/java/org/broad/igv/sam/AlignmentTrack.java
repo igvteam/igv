@@ -909,6 +909,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
+
+    Alignment getAlignmentAt(final TrackClickEvent te) {
+        MouseEvent e = te.getMouseEvent();
+        final ReferenceFrame frame = te.getFrame();
+        return frame == null ? null : getAlignmentAt(frame.getChromosomePosition(e), e.getY(), frame);
+    }
+
     Alignment getAlignmentAt(double position, int y, ReferenceFrame frame) {
 
         if (alignmentsRect == null || dataManager == null) {
@@ -941,12 +948,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         MouseEvent e = te.getMouseEvent();
         if (Globals.IS_MAC && e.isMetaDown() || (!Globals.IS_MAC && e.isControlDown())) {
             // Selection
-            final ReferenceFrame frame = te.getFrame();
-            if (frame != null) {
-                selectAlignment(e, frame);
-                IGV.getInstance().repaint(this);
-                return true;
+            Alignment alignment = this.getAlignmentAt(te);
+            if (alignment != null) {
+                if (selectedReadNames.containsKey(alignment.getReadName())) {
+                    selectedReadNames.remove(alignment.getReadName());
+                } else {
+                    setSelectedAlignment(alignment);
+                }
+                IGV.getInstance().repaint(this); //todo check if doing this conditionally here is ok
             }
+            return true;
         }
 
         InsertionInterval insertionInterval = getInsertionInterval(te.getFrame(), te.getMouseEvent().getX(), te.getMouseEvent().getY());
@@ -972,19 +983,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         return false;
-    }
-
-    private void selectAlignment(MouseEvent e, ReferenceFrame frame) {
-        double location = frame.getChromosomePosition(e.getX());
-        Alignment alignment = this.getAlignmentAt(location, e.getY(), frame);
-        if (alignment != null) {
-            if (selectedReadNames.containsKey(alignment.getReadName())) {
-                selectedReadNames.remove(alignment.getReadName());
-            } else {
-                setSelectedAlignment(alignment);
-            }
-
-        }
     }
 
     void setSelectedAlignment(Alignment alignment) {
