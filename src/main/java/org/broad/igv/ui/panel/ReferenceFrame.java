@@ -46,6 +46,8 @@ import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
+import java.awt.event.MouseEvent;
+
 
 /**
  * @author jrobinso
@@ -508,6 +510,10 @@ public class ReferenceFrame {
     // layout manager?
     public int getWidthInPixels() {
         return widthInPixels;
+    }
+
+    public double getChromosomePosition(final MouseEvent e) {
+        return getChromosomePosition(e.getX());
     }
 
     /**

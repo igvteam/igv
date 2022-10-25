@@ -444,7 +444,7 @@ public class RulerPanel extends JPanel {
                 try {
 
                     if (!isWholeGenomeView()) {
-                        double newLocation = frame.getChromosomePosition(e.getX());
+                        double newLocation = frame.getChromosomePosition(e);
                         frame.centerOnLocation(newLocation);
                     } else {
                         for (final ClickLink link : chromosomeRects) {
