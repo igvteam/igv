@@ -477,11 +477,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         downsampleRect = new Rectangle(rect);
         downsampleRect.height = DOWNAMPLED_ROW_HEIGHT;
         renderDownsampledIntervals(context, downsampleRect);
-
+        
+        // Must init and calc insertionRect
+        insertionRect = new Rectangle(rect);
+        insertionRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0;
+        insertionRect.height = INSERTION_ROW_HEIGHT;
         if (renderOptions.isShowInsertionMarkers()) {
-            insertionRect = new Rectangle(rect);
-            insertionRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0;
-            insertionRect.height = INSERTION_ROW_HEIGHT;
             renderInsertionIntervals(context, insertionRect);
             rect.y = insertionRect.y + insertionRect.height;
         }
