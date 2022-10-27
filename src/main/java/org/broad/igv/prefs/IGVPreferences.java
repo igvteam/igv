@@ -30,11 +30,14 @@
 package org.broad.igv.prefs;
 
 
-import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
+import org.broad.igv.event.AlignmentTrackEvent;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
@@ -42,12 +45,11 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.event.AlignmentTrackEvent;
-import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -217,24 +219,10 @@ public class IGVPreferences {
         }
     }
 
-
     public boolean hasExplicitValue(String key) {
         key = key.trim();
         return userPreferences.containsKey(key);
     }
-
-    /**
-     * Get the default value for the specified key.
-     * May be null.
-     *
-     * @param key
-     * @return
-     */
-    public String getDefaultValue(String key) {
-        key = key.trim();
-        return parent == null ? get(key) : parent.get(key);
-    }
-
 
     public void addOverrides(Map<String, String> newPrefs) {
         overrideKeys.addAll(newPrefs.keySet());
@@ -250,7 +238,6 @@ public class IGVPreferences {
             return false;
         }
     }
-
 
     /**
      * Update any cached values with the new key/value pair
@@ -307,6 +294,8 @@ public class IGVPreferences {
         checkForProxyChanges(updatedPrefs);
         checkForAlignmentChanges(updatedPrefs);
         checkForCommandListenerChanges(updatedPrefs);
+        checkForAttributePanelChanges(updatedPrefs);
+        checkForCircViewChanges(updatedPrefs);
         IGVEventBus.getInstance().post(new PreferencesChangeEvent());
 
     }
@@ -359,11 +348,31 @@ public class IGVPreferences {
     }
 
     private void checkForCommandListenerChanges(Map<String, String> updatedPreferenceMap) {
-        if(updatedPreferenceMap.containsKey(PORT_ENABLED) || updatedPreferenceMap.containsKey(PORT_NUMBER)) {
+        if (updatedPreferenceMap.containsKey(PORT_ENABLED) || updatedPreferenceMap.containsKey(PORT_NUMBER)) {
             CommandListener.halt();
             if (getAsBoolean(PORT_ENABLED)) {
                 CommandListener.start(getAsInt(PORT_NUMBER));
             }
+        }
+    }
+
+    private void checkForAttributePanelChanges(Map<String, String> updatedPreferenceMap) {
+        if (updatedPreferenceMap.containsKey(SHOW_ATTRIBUTE_VIEWS_KEY) || updatedPreferenceMap.containsKey(SHOW_DEFAULT_TRACK_ATTRIBUTES)) {
+           if(IGV.hasInstance()) {
+               IGV.getInstance().revalidateTrackPanels();
+           }
+        }
+    }
+
+    /**
+     * Enabling circ view requires port listener
+     */
+    private void checkForCircViewChanges(Map<String, String> updatedPreferenceMap) {
+        if (updatedPreferenceMap.containsKey(CIRC_VIEW_ENABLED) &&
+                getAsBoolean(CIRC_VIEW_ENABLED) &&
+                !getAsBoolean(PORT_ENABLED)) {
+            put(PORT_ENABLED, true);
+            CommandListener.start(getAsInt(PORT_NUMBER));
         }
     }
 
@@ -950,7 +959,7 @@ public class IGVPreferences {
 
     public void print(PrintWriter pw) {
         for (Map.Entry<String, String> entry : userPreferences.entrySet()) {
-            if(!overrideKeys.contains(entry.getKey())) {
+            if (!overrideKeys.contains(entry.getKey())) {
                 pw.print(entry.getKey());
                 pw.print("=");
                 pw.println(entry.getValue());

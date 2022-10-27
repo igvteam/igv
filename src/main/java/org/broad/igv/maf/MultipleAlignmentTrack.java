@@ -342,11 +342,11 @@ public class MultipleAlignmentTrack extends AbstractTrack {
     private void configureTrack() {
         AbstractMultipleAlignmentDialog dialog;
         if (getId().endsWith("hg18.maf.dict") || getId().endsWith("hg19.maf.dict")) {
-            dialog = new Multiz44ConfigurationDialog(IGV.getMainFrame(), true, this);
+            dialog = new Multiz44ConfigurationDialog(IGV.getInstance().getMainFrame(), true, this);
         } else {
             dialog = null;
         }
-        dialog.setLocationRelativeTo(IGV.getMainFrame());
+        dialog.setLocationRelativeTo(IGV.getInstance().getMainFrame());
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 
             public void windowClosing(java.awt.event.WindowEvent e) {

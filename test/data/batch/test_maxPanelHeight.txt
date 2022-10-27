@@ -1,5 +1,0 @@
-genome hg19
-load https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam
-maxPanelHeight 2000
-goto myc
-snapshot

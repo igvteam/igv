@@ -40,7 +40,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  *
@@ -48,9 +50,9 @@ import java.util.Iterator;
 class FeatureTrackUtils {
 
     /**
-     * Attempt to load in very small chunks, we're looking for a single feature.
+     * Attempt to load in small chunks, we're looking for a single feature.
      */
-    static int binSize = 1000;
+    static int MIN_BUFFER_SIZE = 10000;
 
     /**
      * Find the next/previous feature which lies outside chr:initStart-initEnd
@@ -62,11 +64,10 @@ class FeatureTrackUtils {
      * @return
      * @throws IOException
      */
-    public static Feature nextFeature(FeatureSource source, String chr, int initStart, int initEnd, boolean forward) throws IOException {
-
-        Feature f = null;
+    public static Feature nextFeature(FeatureSource source, String chr, int initStart, int initEnd, double position, int buffer, boolean forward) throws IOException {
 
         final Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        final int binSize = Math.max(MIN_BUFFER_SIZE, buffer);
         if (forward) {
             // Forward
             int nextStart = initEnd;
@@ -81,7 +82,7 @@ class FeatureTrackUtils {
                         // obey the contract to return features only in the interval.
                         while (iter.hasNext()) {
                             Feature feat = iter.next();
-                            if (feat.getStart() > nextStart) {
+                            if (center(feat) > position) {
                                 return feat;
                             }
                         }
@@ -90,6 +91,7 @@ class FeatureTrackUtils {
                 }
                 nextChr = genome.getNextChrName(nextChr);
                 nextStart = 0;
+                position = -1;   // Take first feature found on next chromosome.
             }
         } else {
             // Reverse
@@ -99,18 +101,13 @@ class FeatureTrackUtils {
                 while (nextEnd > 0) {
                     int nextStart = binSize > 0 ? Math.max(0, nextEnd - binSize) : 0;
                     Iterator<Feature> iter = source.getFeatures(nextChr, nextStart, nextEnd);
-                    if (iter != null && iter.hasNext()) {
-                        // The check on position should not be necessary, but not all implementations of getFeatures
-                        // obey the contract to return features only in the interval.
-                        Feature prevFeature = null;
-                        while (iter.hasNext()) {
-                            Feature feat = iter.next();
-                            if (feat.getStart() < nextEnd) {
-                                prevFeature = feat;
-                            }
-                        }
-                        if (prevFeature != null) {
-                            return prevFeature;
+                    // Search backwards for first feature whose center is < position
+                    List<Feature> featureList = new ArrayList<>();
+                    if (iter != null && iter.hasNext()) featureList.add(iter.next());
+                    int idx = featureList.size();
+                    while(--idx >= 0) {
+                        if(center(featureList.get(idx)) < position) {
+                            return featureList.get(idx);
                         }
                     }
                     nextEnd = nextStart;
@@ -118,11 +115,17 @@ class FeatureTrackUtils {
                 nextChr = genome.getPrevChrName(nextChr);
                 if (nextChr != null) {
                     nextEnd = genome.getChromosome(nextChr).getLength();
+                    position = Integer.MAX_VALUE;  // Take last feature found on next chromosome.
                 }
             }
         }
 
-        return f;
+        return null;
     }
+
+    private static double center(Feature f) {
+        return (f.getStart() + f.getEnd()) / 2.0;
+    }
+
 
 }

@@ -58,7 +58,7 @@ import java.util.ArrayList;
  *
  * @author jrobinso
  */
-public class HeaderPanel extends JPanel implements Transferable {
+public class HeaderPanel extends JPanel implements Transferable, Paintable {
 
     ReferenceFrame frame;
     private JLabel label;
@@ -289,6 +289,23 @@ public class HeaderPanel extends JPanel implements Transferable {
         }
 
         return dragAndDropPanelDataFlavor;
+    }
+
+    @Override
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
+
+        Graphics2D borderGraphics = (Graphics2D) g.create();
+
+        this.paint(g);
+
+        borderGraphics.setColor(Color.lightGray);
+        borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
+        borderGraphics.dispose();
+    }
+
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
     }
 
 

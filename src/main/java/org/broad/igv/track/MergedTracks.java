@@ -211,15 +211,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     public LoadedDataInterval<List<LocusScore>> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
         return null;
     }
-
-    @Override
-    public void setRendererClass(Class rc) {
-        super.setRendererClass(rc);
-        for (Track track : memberTracks) {
-            track.setRendererClass(rc);
-        }
-    }
-
+    
     @Override
     public boolean getAutoScale() {
         boolean autoScale = true;
@@ -402,12 +394,6 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         // Un-marshalling handled in IGVSessionReader
     }
 
-    @Override
-    public void dispose() {
-
-
-    }
-
     private enum ChangeTrackMethod {
         POSITIVE, NEGATIVE
     }
@@ -499,7 +485,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         optionPane.setMessage(new Object[]{"Adjust transparency: ", slider});
         optionPane.setMessageType(JOptionPane.QUESTION_MESSAGE);
         optionPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
-        JDialog dialog = optionPane.createDialog(IGV.getMainFrame(), "Transparency");
+        JDialog dialog = optionPane.createDialog(IGV.getInstance().getMainFrame(), "Transparency");
         return dialog;
     }
 

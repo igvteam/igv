@@ -41,6 +41,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.mods.BaseModificationUtils;
+import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
@@ -103,7 +105,11 @@ public class SAMAlignment implements Alignment {
     public AlignmentBlockImpl[] insertions;
     List<Gap> gaps;
     char[] gapTypes;
-    private Map<Integer, BaseModification> baseModificationMap;
+
+    /**
+     * Map of position -> base modification
+     */
+    private List<BaseModificationSet> baseModificationSets;
 
     protected String mateSequence = null;
     protected String pairOrientation = "";
@@ -182,7 +188,7 @@ public class SAMAlignment implements Alignment {
 
     public Object getAttribute(String key) {
         // SAM alignment tag keys must be of length 2
-        if(key == null) {
+        if (key == null) {
             return null;
         } else {
             return key.length() == 2 ? record.getAttribute(key) :
@@ -319,23 +325,21 @@ public class SAMAlignment implements Alignment {
         return 0;
     }
 
-    @Override
-    public synchronized Map<Integer, BaseModification> getBaseModificationMap() {
+    public List<BaseModificationSet> getBaseModificationSets() {
 
-        if (baseModificationMap == null && (record.hasAttribute("Mm") || record.hasAttribute("MM"))) {
+        if (baseModificationSets == null && record.hasAttribute("Mm") || record.hasAttribute("MM")) {
+
             Object mm = record.hasAttribute("Mm") ? record.getAttribute("Mm") : record.getAttribute("MM");
             byte[] ml = (byte[]) (record.hasAttribute("Ml") ? record.getAttribute("Ml") : record.getAttribute("ML"));
-            List<BaseModification> baseModifications = BaseModification.getBaseModifications(mm.toString(), ml, record.getReadBases(), isNegativeStrand());
-            baseModificationMap = new HashMap<>();
-            for (BaseModification mod : baseModifications) {
-                Integer p = mod.position;
-                if (!baseModificationMap.containsKey(p) || Byte.toUnsignedInt(mod.likelihood) > Byte.toUnsignedInt(baseModificationMap.get(p).likelihood)) {
-                    baseModificationMap.put(p, mod);
-                }
+            byte[] sequence = record.getReadBases();
 
+            if (mm.toString().length() == 0) { // TODO -- more extensive validation?
+                baseModificationSets = Collections.EMPTY_LIST;
+            } else {
+                baseModificationSets = BaseModificationUtils.getBaseModificationSets(mm.toString(), ml, sequence, isNegativeStrand());
             }
         }
-        return baseModificationMap;
+        return baseModificationSets;
     }
 
     /**
@@ -589,20 +593,22 @@ public class SAMAlignment implements Alignment {
             buf.append("Dist: " + getHapDistance() + "<br>");
         }
 
+        boolean atInsertion = false;
+        boolean atBaseMod = false;
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
             for (AlignmentBlock block : this.insertions) {
                 if (block.containsPixel(mouseX)) {
                     ByteSubarray bases = block.getBases();
                     if (bases == null) {
-                        buf.append("Insertion: " + block.getLength() + " bases");
+                        buf.append("Insertion: " + block.getLength() + " bases<br>");
                     } else {
                         if (bases.length < 50) {
-                            buf.append("Insertion (" + bases.length + " bases): " + bases.getString());
+                            buf.append("Insertion (" + bases.length + " bases): " + bases.getString() + "<br>");
                         } else {
                             int len = bases.length;
                             buf.append("Insertion (" + bases.length + " bases): " + new String(bases.copyOfRange(0, 25)) + "..." +
-                                    new String(bases.copyOfRange(len - 25, len)));
+                                    new String(bases.copyOfRange(len - 25, len)) + "<br>");
                         }
 
                         // extended annotation?
@@ -610,22 +616,37 @@ public class SAMAlignment implements Alignment {
                         if ( ext != null )
                             ext.appendBlockQualityAnnotation(this, block, buf);
                     }
-                    return buf.toString();
+                    atInsertion = true;
                 }
             }
         }
 
         // Check base modifications
-        if (renderOptions != null && renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION) {
+        if (renderOptions != null &&
+                (renderOptions.getColorOption().isBaseMod())) {
             for (AlignmentBlock block : this.alignmentBlocks) {
                 if (block.contains((int) position)) {
                     int p = (int) (position - block.getStart()) + block.getBasesOffset();
-                    if (baseModificationMap != null && baseModificationMap.containsKey(p)) {
-                        BaseModification mod = baseModificationMap.get(p);
-                        return mod.valueString();
+                    if (baseModificationSets != null) {
+                        String modString = "";
+                        for (BaseModificationSet bmSet : baseModificationSets) {
+                            if (bmSet.containsPosition(p)) {
+                                if (modString.length() > 0) modString += "<br>";
+                                modString += BaseModificationUtils.valueString(bmSet.getModification(), bmSet.getLikelihoods().get(p));
+                            }
+                        }
+                        if (modString.length() > 0) {
+                            buf.append(modString);
+                            buf.append("<br");
+                            atBaseMod = true;
+                        }
                     }
                 }
             }
+        }
+
+        if (atInsertion || atBaseMod) {
+            return buf.toString();
         }
 
         buf.append("Read name = " + getReadName() + "<br>");
@@ -644,7 +665,7 @@ public class SAMAlignment implements Alignment {
         }
         buf.append("Read length = " + getReadLengthString() + "<br>");
 
-        buf.append("Flags = " + record.getFlags()  + "<br>");
+        buf.append("Flags = " + record.getFlags() + "<br>");
 
         buf.append("----------------------" + "<br>");
         String cigarString = getCigarString();
@@ -921,7 +942,7 @@ public class SAMAlignment implements Alignment {
     public AlignmentBlock getInsertionAt(int position) {
         for (AlignmentBlock block : insertions) {
             if (block.getStart() == position) return block;
-            if (block.getStart() > position) return null;  // Blocks increase lineraly
+            if (block.getStart() > position) return null;  // Blocks increase linearly
         }
         return null;
     }

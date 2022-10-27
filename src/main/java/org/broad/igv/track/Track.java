@@ -84,7 +84,9 @@ public interface Track extends Persistable {
      *
      * @return
      */
-    boolean isFilterable();
+    default boolean isFilterable() {
+        return true;
+    }
 
 
     /**
@@ -128,7 +130,7 @@ public interface Track extends Persistable {
 
     String getSample();
 
-    void setUrl(String url);
+    void setFeatureInfoURL(String featureInfoURL);
 
     ResourceLocator getResourceLocator();
 
@@ -181,8 +183,6 @@ public interface Track extends Persistable {
      * @param axisDefinition
      */
     void setDataRange(DataRange axisDefinition);
-
-    boolean hasDataRange();
 
     DataRange getDataRange();
 
@@ -266,7 +266,7 @@ public interface Track extends Persistable {
 
     float getYLine();
 
-    void dispose();
+    void unload();
 
     boolean getAutoScale();
 
@@ -275,6 +275,16 @@ public interface Track extends Persistable {
     default boolean isShowFeatureNames() {return true;}
 
     default void setShowFeatureNames(boolean b) {}
+
+    /**
+     * Return the java property or attribute for the feature display name.  Default is "null", in which case the
+     * feature "name" property will be used.
+     *
+     * @return
+     */
+    default String getLabelField() {
+        return null;
+    }
 
     default void repaint() {
         IGV.getInstance().repaint(this);

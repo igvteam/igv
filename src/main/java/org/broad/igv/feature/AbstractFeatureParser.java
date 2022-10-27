@@ -185,54 +185,6 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
     abstract protected Feature parseLine(String nextLine);
 
-    /**
-     * Convenience method.  Write a list of features out as a BED file
-     *
-     * @param features
-     * @param outputfile
-     */
-    public static void dumpFeatures(List<IGVFeature> features, String outputfile) {
-
-        PrintWriter pw = null;
-
-        try {
-            pw = new PrintWriter(new FileWriter(outputfile));
-            pw.println("Header row");
-            for (IGVFeature gene : features) {
-                pw.print(gene.getName() + "\t");
-                pw.print(gene.getIdentifier() + "\t");
-                pw.print(gene.getChr() + "\t");
-                if (gene.getStrand() == Strand.POSITIVE) {
-                    pw.print("+\t");
-                } else if (gene.getStrand() == Strand.NEGATIVE) {
-                    pw.print("-\t");
-                } else {
-                    pw.print(" \t");
-                }
-                pw.print(gene.getStart() + "\t");
-                pw.print(gene.getEnd() + "\t");
-
-                List<Exon> regions = gene.getExons();
-                pw.print(regions.size() + "\t");
-                for (Exon exon : regions) {
-                    pw.print(exon.getStart() + ",");
-                }
-                pw.print("\t");
-                for (Exon exon : regions) {
-                    pw.print(exon.getEnd() + ",");
-                }
-                pw.println();
-
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (pw != null) {
-                pw.close();
-            }
-        }
-    }
-
     protected void setTrackProperties(TrackProperties trackProperties) {
         this.trackProperties = trackProperties;
     }

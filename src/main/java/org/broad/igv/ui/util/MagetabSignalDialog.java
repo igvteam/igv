@@ -37,7 +37,7 @@ import java.awt.event.ActionListener;
  * Time: 11:06:07 AM
  * To change this template use File | Settings | File Templates.
  */
-public class MagetabSignalDialog  extends JDialog
+public class MagetabSignalDialog  extends org.broad.igv.ui.IGVDialog
 {
     private String quantitationColumn = null;
     private boolean canceled = true;

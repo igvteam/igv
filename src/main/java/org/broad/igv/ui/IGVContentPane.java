@@ -83,32 +83,11 @@ public class IGVContentPane extends JPanel {
         statusBar = new ApplicationStatusBar();
         statusBar.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
         add(statusBar, BorderLayout.SOUTH);
-
     }
-
-    public void addCommandBar(JComponent component) {
-        component.setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
-        component.setAlignmentX(Component.BOTTOM_ALIGNMENT);
-        commandBarPanel.add(component);
-        commandBarPanel.invalidate();
-    }
-
 
     @Override
     public Dimension getPreferredSize() {
         return UIConstants.preferredSize;
-    }
-
-    public void revalidateTrackPanels() {
-        for (TrackPanel tp : mainPanel.getTrackPanels()) {
-            tp.getScrollPane().getDataPanel().revalidate();
-        }
-    }
-
-    public void validateTrackPanels() {
-        for (TrackPanel tp : mainPanel.getTrackPanels()) {
-            tp.getScrollPane().getDataPanel().validate();
-        }
     }
 
     /**

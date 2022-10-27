@@ -265,15 +265,15 @@ public class LoadFromServerAction extends MenuAction {
         for (Node item : tmp) {
             NamedNodeMap nodeMap = item.getAttributes();
             if (nodeMap == null) {
-                log.info("XML node " + item.getNodeName() + " has no attributes");
+                log.warn("XML node " + item.getNodeName() + " has no attributes");
             } else {
                 Attr path = (Attr) item.getAttributes().getNamedItem("path");
                 if (path == null) {
-                    log.info("XML node " + item.getNodeName() + " is missing a path attribute");
+                    log.warn("XML node " + item.getNodeName() + " is missing a path attribute");
                 } else {
                     Node parent = item.getParentNode();
 
-                    //log.info("Loading node " + path.getValue());
+                    //log.warn("Loading node " + path.getValue());
                     Document doc = readXMLDocument(path.getValue(), errors);
                     if (doc != null) {
                         Element global = doc.getDocumentElement();

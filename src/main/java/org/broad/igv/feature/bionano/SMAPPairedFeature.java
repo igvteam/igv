@@ -79,9 +79,5 @@ public class SMAPPairedFeature extends AbstractFeature {
 
     }
 
-    @Override
-    public String getURL() {
-        return null;
-    }
 }
 

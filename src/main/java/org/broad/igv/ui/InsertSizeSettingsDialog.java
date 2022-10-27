@@ -41,7 +41,7 @@ import javax.swing.border.*;
 /**
  * @author Jim Robinson
  */
-public class InsertSizeSettingsDialog extends JDialog {
+public class InsertSizeSettingsDialog extends org.broad.igv.ui.IGVDialog  {
 
     private boolean isCanceled = false;
 

@@ -41,7 +41,7 @@ import java.awt.event.ActionListener;
 /**
  * @author Stan Diamond
  */
-public class LegendDialog extends JDialog {
+public class LegendDialog extends org.broad.igv.ui.IGVDialog  {
 
     public LegendDialog(Frame owner) {
         super(owner);

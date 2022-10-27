@@ -480,7 +480,7 @@ public class TrackProperties {
             if (kv.length == 2) {
                 attributes.put(kv[0], kv[1]);
             } else {
-                log.info("Skipping meta value: " + value + ".  Missing '=' token?");
+                log.warn("Skipping meta value: " + value + ".  Missing '=' token?");
             }
         }
 

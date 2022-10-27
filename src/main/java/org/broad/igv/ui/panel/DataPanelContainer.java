@@ -121,33 +121,23 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
     /**
      * Paint to an offscreen graphic, e.g. a graphic for an image or svg file.
      *
-     * @param g
-     * @param rect
+     * @param g -- graphics context, translated as neccessary to datapanel origin
+     * @param rect  -- Rectangle in which to draw datapanel container
      */
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
         // Get the components of the sort by X position.
         Component[] components = getComponents();
-        Arrays.sort(components, new Comparator<Component>() {
-            public int compare(Component component, Component component1) {
-                return component.getX() - component1.getX();
-            }
-        });
+        Arrays.sort(components, Comparator.comparingInt(Component::getX));
 
         for (Component c : this.getComponents()) {
-
             if (c instanceof DataPanel) {
                 Graphics2D g2d = (Graphics2D) g.create();
-                Rectangle clipRect = new Rectangle(c.getBounds());
-                clipRect.y = rect.y;
-                clipRect.height = rect.height;
-                g2d.setClip(clipRect);
                 g2d.translate(c.getX(), 0);
-                ((DataPanel) c).paintOffscreen(g2d, clipRect, batch);
-
+                Rectangle panelRect = new Rectangle(0, rect.y, c.getWidth(), rect.height);
+                ((DataPanel) c).paintOffscreen(g2d, panelRect, batch);
             }
         }
-        //super.paintBorder(g);
     }
 
     @Override
@@ -250,7 +240,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 MessageUtils.showMessage(messages.getFormattedMessage());
             }
 
-            IGV.getMainFrame().repaint();
+            IGV.getInstance().getMainFrame().repaint();
             event.dropComplete(true);
         }
 

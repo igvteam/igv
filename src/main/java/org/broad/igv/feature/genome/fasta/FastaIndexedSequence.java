@@ -95,7 +95,7 @@ public class FastaIndexedSequence implements Sequence {
         FastaIndex.FastaSequenceIndexEntry idxEntry = index.getIndexEntry(chr);
 
         if (idxEntry == null) {
-            //log.info("No fasta sequence entry for: " + chr);
+            //log.warn("No fasta sequence entry for: " + chr);
             return null;
         }
 

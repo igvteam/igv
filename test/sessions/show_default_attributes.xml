@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" locus="All" version="8">
+    <Panel height="115" name="FeaturePanel" width="1515">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="true" visible="true"/>
+        <Track attributeKey="Refseq Genes" clazz="org.broad.igv.track.FeatureTrack" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.genomes/hg19/ncbiRefSeq.sorted.txt.gz" name="Refseq Genes" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.8708288482238966"/>
+    <HiddenAttributes/>
+</Session>

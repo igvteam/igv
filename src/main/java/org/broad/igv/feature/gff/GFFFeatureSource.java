@@ -73,8 +73,8 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
     }
 
     @Override
-    public void dispose() {
-        wrappedSource.dispose();
+    public void close() {
+        wrappedSource.close();
     }
 
     @Override

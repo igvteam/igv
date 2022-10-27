@@ -25,7 +25,6 @@
 
 package org.broad.igv.track;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import htsjdk.tribble.Feature;
@@ -61,7 +60,6 @@ import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
-import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.extview.ExtendViewClient;
 
 import javax.swing.*;
@@ -421,7 +419,6 @@ public class TrackMenuUtils {
 
         addDisplayModeItems(tracks, featurePopupMenu);
 
-
         if (tracks.size() == 1) {
             Track t = tracks.iterator().next();
             Feature f = t.getFeatureAtMousePosition(te);
@@ -475,7 +472,7 @@ public class TrackMenuUtils {
 
         featurePopupMenu.addSeparator();
         featurePopupMenu.add(getShowFeatureNames(tracks));
-
+        featurePopupMenu.add(getFeatureNameAttribute(tracks));
     }
 
     /**
@@ -745,17 +742,7 @@ public class TrackMenuUtils {
     public static JMenuItem getTrackRenameItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Rename Track...");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                UIUtilities.invokeOnEventThread(new Runnable() {
-
-                    public void run() {
-                        renameTrack(selectedTracks);
-                    }
-                });
-            }
-        });
+        item.addActionListener(evt -> UIUtilities.invokeOnEventThread(() -> renameTrack(selectedTracks)));
         if (selectedTracks.size() > 1) {
             item.setEnabled(false);
         }
@@ -772,7 +759,7 @@ public class TrackMenuUtils {
                 if (selectedTracks.size() > 0) {
 
                     ContinuousColorScale colorScale = selectedTracks.iterator().next().getColorScale();
-                    HeatmapScaleDialog dlg = new HeatmapScaleDialog(IGV.getMainFrame(), colorScale);
+                    HeatmapScaleDialog dlg = new HeatmapScaleDialog(IGV.getInstance().getMainFrame(), colorScale);
 
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
@@ -800,7 +787,7 @@ public class TrackMenuUtils {
 
                 // Create a datarange that spans the extent of prev tracks range
                 DataRange prevAxisDefinition = DataRange.getFromTracks(selectedTracks);
-                DataRangeDialog dlg = new DataRangeDialog(IGV.getMainFrame(), prevAxisDefinition);
+                DataRangeDialog dlg = new DataRangeDialog(IGV.getInstance().getMainFrame(), prevAxisDefinition);
                 dlg.setVisible(true);
                 if (!dlg.isCanceled()) {
                     float min = Math.min(dlg.getMax(), dlg.getMin());
@@ -890,7 +877,7 @@ public class TrackMenuUtils {
             }
 
             PreferencesManager.getPreferences().setShowAttributeView(true);
-            IGV.getInstance().getMainPanel().revalidateTrackPanels();
+            IGV.getInstance().revalidateTrackPanels();
             IGV.getInstance().repaint(selectedTracks);
 
         });
@@ -1045,7 +1032,7 @@ public class TrackMenuUtils {
             return;
         }
         Track t = selectedTracks.iterator().next();
-        String newName = JOptionPane.showInputDialog(IGV.getMainFrame(), "Enter new name: ", t.getName());
+        String newName = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), "Enter new name: ", t.getName());
 
         if (newName == null || newName.trim() == "") {
             return;
@@ -1123,13 +1110,12 @@ public class TrackMenuUtils {
         IGV.getInstance().repaint(selectedTracks);
     }
 
-
     public static Integer getIntegerInput(String parameter, int value) {
 
         while (true) {
 
             String strValue = JOptionPane.showInputDialog(
-                    IGV.getMainFrame(), parameter + ": ",
+                    IGV.getInstance().getMainFrame(), parameter + ": ",
                     String.valueOf(value));
 
             //strValue will be null if dialog cancelled
@@ -1141,7 +1127,7 @@ public class TrackMenuUtils {
                 value = Integer.parseInt(strValue);
                 return value;
             } catch (NumberFormatException numberFormatException) {
-                JOptionPane.showMessageDialog(IGV.getMainFrame(),
+                JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(),
                         parameter + " must be an integer number.");
             }
         }
@@ -1152,7 +1138,7 @@ public class TrackMenuUtils {
         while (true) {
 
             String strValue = JOptionPane.showInputDialog(
-                    IGV.getMainFrame(), parameter + ": ",
+                    IGV.getInstance().getMainFrame(), parameter + ": ",
                     String.valueOf(value));
 
             //strValue will be null if dialog cancelled
@@ -1422,6 +1408,27 @@ public class TrackMenuUtils {
         String label = currentValue ? "Hide Feature Names" : "Show Feature Names";
         JMenuItem item = new JMenuItem(label);
         item.addActionListener(evt -> selectedTracks.stream().forEach(t -> t.setShowFeatureNames(!currentValue)));
+        return item;
+    }
+
+    public static JMenuItem getFeatureNameAttribute(final Collection<Track> selectedTracks) {
+
+        JMenuItem item = new JMenuItem("Set Feature Label Field...");
+        item.addActionListener(evt -> {
+            String currentVal = selectedTracks.iterator().next().getLabelField();
+            if (currentVal == null) currentVal = "";
+            final String newVal = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), "Feature Label Field: ", currentVal);
+            if (newVal == null) {
+                return; // Dialog canceled
+            }
+            selectedTracks.stream().forEach(t -> {
+                if (t instanceof FeatureTrack) {
+                    ((FeatureTrack) t).setLabelField(newVal);
+                }
+            });
+            IGV.getInstance().repaint(selectedTracks);
+        });
+
         return item;
     }
 

@@ -151,12 +151,12 @@ public class VariantRenderer { //extends FeatureRenderer {
         Color colorAlleleRef = track.getColor();
         Color colorAlleleRefAlpha = useAlpha ? ColorUtilities.getCompositeColor(colorAlleleRef, alphaValue) : colorAlleleRef;
 
-        if(track.getColorMode() == VariantTrack.ColorMode.NONE) {
-            refColor = colorAlleleRef;
-            alleleColor = colorAlleleRef;
+        if(track.getSiteColorMode() == VariantTrack.ColorMode.NONE) {
+            refColor = track.getColor();
+            alleleColor = track.getColor();
             percent = 0;
         }
-        else if (track.getColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
+        else if (track.getSiteColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
             alleleColor = this.convertMethylationRateToColor((float) variant.getMethlationRate() / 100);
             percent = variant.getCoveredSampleFraction();
             refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
@@ -213,7 +213,7 @@ public class VariantRenderer { //extends FeatureRenderer {
 
         int tOffset = 6;
         int bOffset = 8;
-        Graphics2D g = (Graphics2D) context.getGraphics2D("GENOTYPE");
+        Graphics2D g = context.getGraphics2D("GENOTYPE");
 
         if (dX >= 10) {
             if (dY > 24) {

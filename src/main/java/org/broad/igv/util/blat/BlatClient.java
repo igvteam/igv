@@ -149,7 +149,7 @@ public class BlatClient {
                 BlatTrack newTrack = new BlatTrack(db, userSeq, features, trackLabel); //species, userSeq, db, genome, trackLabel);
                 IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
                 IGV.getInstance().repaint();
-                BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), userSeq, newTrack.getFeatures());
+                BlatQueryWindow win = new BlatQueryWindow(IGV.getInstance().getMainFrame(), userSeq, newTrack.getFeatures());
                 win.setVisible(true);
             }
         } catch (Exception e1) {

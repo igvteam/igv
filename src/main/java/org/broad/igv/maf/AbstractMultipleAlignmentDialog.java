@@ -33,7 +33,7 @@ import java.util.List;
  *         Date: 2/15/13
  *         Time: 7:24 PM
  */
-public abstract class AbstractMultipleAlignmentDialog extends javax.swing.JDialog {
+public abstract class AbstractMultipleAlignmentDialog extends org.broad.igv.ui.IGVDialog  {
 
     public AbstractMultipleAlignmentDialog(Frame parent, boolean modal) {
         super(parent, modal);

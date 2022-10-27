@@ -123,7 +123,7 @@ public class Preprocessor implements DataConsumer {
     public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames, boolean computeWholeGenome) {
 
         if (trackLine != null) {
-            // log.info(trackLine);
+            // log.warn(trackLine);
         }
 
         if (outputFile != null && writer == null) {

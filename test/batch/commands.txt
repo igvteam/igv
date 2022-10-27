@@ -1,0 +1,37 @@
+# Test a variety of commands, not comprehensive (yet)
+snapshotDirectory $SCRIPT_DIR/snapshots/commands
+version
+new
+genome hg19
+load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
+load gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
+snapshot loadBams.png
+goto myc
+snapshot myc.pngcollapse NA12878_S1.bam
+snapshot collapsed_NA12898.png
+squish NA12878_S1.bam
+snapshot squish_NA12878.png
+expand NA12878_S1.bam
+snapshot expand.png
+viewAsPairs true NA12878_S1.bam
+snapshot viewAsPairs.png
+viewAsPairs false NA12878_S1.bam
+snapshot viewAsPairsOff.png
+squish
+group STRAND
+snapshot groupByStrang.png
+group NONE
+snapshot ungroup.png
+expand
+goto chr17:7,579,801
+sort BASE chr17:7,579,801
+snapshot sortByBase.png
+setSequenceStrand -
+snapshot minusStrang.png
+setSequenceShowTranslation true
+snapshot showTranslation.png
+setTrackHeight 30 NA12878_S1.bam
+setLogScale true NA12878_S1.bam%20Coverage
+setDataRange 0,1000 NA12878_S1.bam%20Coverage
+setColor 0,0,100 NA12878_S1.bam%20Coverage
+snapshot blueCoverage.png

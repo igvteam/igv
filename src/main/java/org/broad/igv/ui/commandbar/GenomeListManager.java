@@ -31,7 +31,8 @@ import java.util.zip.ZipInputStream;
  */
 public class GenomeListManager {
 
-    private static Logger log = LogManager.getLogger(GenomeManager.class);
+    public static final String BACKUP_GENOME_SERVER_URL = "https://s3.amazonaws.com/igv.org.genomes/genomes.tsv";
+    private static Logger log = LogManager.getLogger(GenomeListManager.class);
 
     private static GenomeListManager theInstance;
 
@@ -353,7 +354,14 @@ public class GenomeListManager {
                 genomeListURLString = PreferencesManager.getPreferences().getGenomeListURL();
                 if (HttpUtils.isRemoteURL(genomeListURLString)) {
                     URL serverGenomeURL = HttpUtils.createURL(genomeListURLString);
-                    inputStream = HttpUtils.getInstance().openConnectionStream(serverGenomeURL);
+                    try {
+                        inputStream = HttpUtils.getInstance().openConnectionStream(serverGenomeURL);
+                    } catch (IOException e) {
+                        log.error(e);
+                        MessageUtils.showMessage("Error: Could not connect to genome server " + genomeListURLString + "<br>Trying " + BACKUP_GENOME_SERVER_URL);
+                        serverGenomeURL = HttpUtils.createURL(BACKUP_GENOME_SERVER_URL);
+                        inputStream = HttpUtils.getInstance().openConnectionStream(serverGenomeURL);
+                    }
                 } else {
                     File file = new File(genomeListURLString.startsWith("file:") ? (new URL(genomeListURLString)).getFile() : genomeListURLString);
                     inputStream = new FileInputStream(file);

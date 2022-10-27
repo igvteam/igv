@@ -29,15 +29,20 @@
  */
 package org.broad.igv.sam;
 
-import org.broad.igv.logging.*;
+import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
+import org.broad.igv.sam.mods.BaseModificationColors;
+import org.broad.igv.sam.mods.BaseModificationCounts;
+import org.broad.igv.sam.mods.BaseModificationCoverageRenderer;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -49,7 +54,6 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.w3c.dom.Document;
@@ -61,9 +65,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -95,6 +97,9 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     private boolean removed = false;
     IGV igv;
 
+    ColorScale baseModificationColorScale;
+
+
     /**
      * Whether to autoscale across all ReferenceFrames
      * Default is true because we usually do, SashimiPlot does not
@@ -124,7 +129,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         this.alignmentTrack = alignmentTrack;
         this.genome = genome;
         intervalRenderer = new IntervalRenderer();
-        setMaximumHeight(40);
         prefs = PreferencesManager.getPreferences();
         snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
         autoScale = DEFAULT_AUTOSCALE;
@@ -179,7 +183,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public void load(ReferenceFrame referenceFrame) {
-        dataManager.load(referenceFrame, alignmentTrack.renderOptions, true);
+        dataManager.load(referenceFrame, alignmentTrack.getRenderOptions(), true);
     }
 
 
@@ -201,15 +205,12 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     }
 
     @Override
-    public void dispose() {
-        super.dispose();
+    public void unload() {
+        super.unload();
         removed = true;
         if (dataManager != null) {
             dataManager.unsubscribe(this);
         }
-        dataManager = null;
-        dataSource = null;
-        alignmentTrack = null;
         setVisible(false);
     }
 
@@ -240,7 +241,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     public void drawData(RenderContext context, Rectangle rect) {
 
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
-        if (viewWindowSize < dataManager.getVisibilityWindow() && !context.getChr().equals(Globals.CHR_ALL)) {
+        if (viewWindowSize <= dataManager.getVisibilityWindow() && !context.getChr().equals(Globals.CHR_ALL)) {
             //Show coverage calculated from intervals if zoomed in enough
             AlignmentInterval interval = null;
             if (dataManager != null) {
@@ -369,10 +370,10 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 AlignmentCounts counts = interval.getCounts();
                 if (counts != null) {
                     buf.append(counts.getValueStringAt((int) position));
-                    boolean baseModMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION;
-                    if (baseModMode && counts.getModifiedBaseCounts() != null) {
+                    final AlignmentTrack.ColorOption colorOption = alignmentTrack.getRenderOptions().getColorOption();
+                    if (colorOption.isBaseMod() && counts.getModifiedBaseCounts() != null) {
                         buf.append("<hr>");
-                        buf.append(counts.getModifiedBaseCounts().getValueString((int) position));
+                        buf.append(counts.getModifiedBaseCounts().getValueString((int) position, colorOption));
                     }
                 }
             }
@@ -440,154 +441,105 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
      * NOTE:  This class has been extensively optimized with the aid of a profiler,  attempts to "clean up" this code
      * should be done with frequent profiling, or it will likely have detrimental performance impacts.
      */
+
+    /**
+     *
+     */
     class IntervalRenderer {
 
-        private void paint(RenderContext context, Rectangle rect, AlignmentCounts alignmentCounts) {
+        /**
+         * @param context
+         * @param rect            - the track rectangle
+         * @param alignmentCounts
+         */
+        private void paint(final RenderContext context, final Rectangle rect, final AlignmentCounts alignmentCounts) {
 
             Color color = getColor();
             Graphics2D graphics = context.getGraphic2DForColor(color);
+            final AlignmentTrack.ColorOption colorOption = alignmentTrack.getRenderOptions().getColorOption();
+            boolean bisulfiteMode = colorOption == AlignmentTrack.ColorOption.BISULFITE;
+
+            final int intervalEnd = alignmentCounts.getEnd();
+            final int intervalStart = alignmentCounts.getStart();
+
+            BisulfiteCounts bisulfiteCounts = null;
+            byte[] refBases = null;
+            if ((intervalEnd - intervalStart) < TEN_MB && alignmentCounts.hasBaseCounts()) {
+                refBases = genome.getSequence(context.getChr(), intervalStart, intervalEnd);
+                bisulfiteCounts = alignmentCounts.getBisulfiteCounts();
+            }
 
             DataRange range = getDataRange();
             double maxRange = range.isLog() ? Math.log10(range.getMaximum() + 1) : range.getMaximum();
-
-            final double rectX = rect.getX();
-            final double rectMaxX = rect.getMaxX();
-            final double rectY = rect.getY();
-            final double rectMaxY = rect.getMaxY();
-            final double rectHeight = rect.getHeight();
             final double origin = context.getOrigin();
-            final double colorScaleMax = getColorScale().getMaximum();
             final double scale = context.getScale();
-
-            boolean bisulfiteMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BISULFITE;
-            boolean baseModMode = alignmentTrack.renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION;
-
-
-            // First pass, coverage
-            int lastpX = -1;
-
             int start = alignmentCounts.getStart();
             int step = alignmentCounts.getBucketSize();
             int nPoints = alignmentCounts.getNumberOfPoints();
             boolean isSparse = alignmentCounts instanceof SparseAlignmentCounts;
 
+            // First pass -- draw gray coverage bars
             for (int idx = 0; idx < nPoints; idx++) {
 
                 int pos = isSparse ? ((SparseAlignmentCounts) alignmentCounts).getPosition(idx) : start + idx * step;
-                int pX = (int) (rectX + (pos - origin) / scale);
+                int pX = (int) (rect.x + (pos - origin) / scale);
+                double endX = rect.x + (pos + step - origin) / scale;
+                int dX = (int) ((endX - pX) < 1 ? 1 : (endX - pX) > 3 ? endX - pX - 1 : endX - pX);
 
-                if (pX > rectMaxX) {
+                if (pX > rect.x + rect.width) {
                     break; // We're done,  data is position sorted so we're beyond the right-side of the view
+                } else if (endX < rect.x) {
+                    continue;
                 }
 
-                int dX = (int) (rectX + (pos + step - origin) / scale) - pX;
-                dX = dX < 1 ? 1 : dX;
-                //  if (pX + dX > lastpX) {
-                int pY = (int) rectMaxY - 1;
                 int totalCount = alignmentCounts.getTotalCount(pos);
                 double tmp = range.isLog() ? Math.log10(totalCount + 1) / maxRange : totalCount / maxRange;
-                int height = (int) (tmp * rectHeight);
-
-                height = Math.min(height, rect.height - 1);
-                int topY = (pY - height);
-                if (dX > 3) {
-                    dX--; // Create a little space between bars when there is room.
+                int barHeight = (int) Math.min(tmp * rect.height, rect.height - 1);
+                if (barHeight > 0) {
+                    int bottomY = rect.y + rect.height;
+                    int topY = bottomY - barHeight;
+                    graphics.fillRect(pX, topY, dX, barHeight);
                 }
-                if (height > 0) {
-                    graphics.fillRect(pX, topY, dX, height);
-
-                }
-                lastpX = pX + dX;
-                //   }
             }
 
-            // Second pass - mark mismatches
+            // Second pass -- potentially overlay mismatches
+            for (int idx = 0; idx < nPoints; idx++) {
 
-            if (alignmentCounts.hasBaseCounts()) {
+                int pos = isSparse ? ((SparseAlignmentCounts) alignmentCounts).getPosition(idx) : start + idx * step;
+                int pX = (int) (rect.x + (pos - origin) / scale);
+                double endX = rect.x + (pos + step - origin) / scale;
+                int dX = (int) ((endX - pX) < 1 ? 1 : (endX - pX) > 3 ? endX - pX - 1 : endX - pX);
 
-                lastpX = -1;
-                BisulfiteCounts bisulfiteCounts = alignmentCounts.getBisulfiteCounts();
-                final int intervalEnd = alignmentCounts.getEnd();
-                final int intervalStart = alignmentCounts.getStart();
-                byte[] refBases = null;
-
-                // Dont try to compute mismatches for intervals > 10 MB
-                if ((intervalEnd - intervalStart) < TEN_MB) {
-                    refBases = genome.getSequence(context.getChr(), intervalStart, intervalEnd);
+                if (pX > rect.x + rect.width) {
+                    break; // We're done,  data is position sorted so we're beyond the right-side of the view
+                } else if (endX < rect.x) {
+                    continue;
                 }
 
+                int totalCount = alignmentCounts.getTotalCount(pos);
+                double tmp = range.isLog() ? Math.log10(totalCount + 1) / maxRange : totalCount / maxRange;
+                int barHeight = (int) Math.min(tmp * rect.height, rect.height - 1);
+                if (barHeight > 0) {
+                    int bottomY = rect.y + rect.height;
 
-                start = alignmentCounts.getStart();
-                nPoints = alignmentCounts.getNumberOfPoints();
-                isSparse = alignmentCounts instanceof SparseAlignmentCounts;
-
-                for (int idx = 0; idx < nPoints; idx++) {
-                    int pos = isSparse ? ((SparseAlignmentCounts) alignmentCounts).getPosition(idx) : start + idx;
-
-                    BisulfiteCounts.Count bc = null;
-                    if (bisulfiteMode && bisulfiteCounts != null) {
-                        bc = bisulfiteCounts.getCount(pos);
-                    }
-
-                    int pX = (int) (rectX + (pos - origin) / scale);
-
-                    if (pX > rectMaxX) {
-                        break; // We're done,  data is position sorted so we're beyond the right-side of the view
-                    }
-
-                    int dX = (int) (rectX + (pos + 1 - origin) / scale) - pX;
-                    dX = dX < 1 ? 1 : dX;
-                    if (pX + dX > lastpX) {
-
-
-                        // Test to see if any single nucleotide mismatch  (nucleotide other than the reference)
-                        // has a quality weight > 20% of the total
-                        boolean mismatch = false;
-
+                    // Potentially color mismatch
+                    if (bisulfiteMode) {
+                        BisulfiteCounts.Count bc = bisulfiteCounts != null ? bisulfiteCounts.getCount(pos) : null;
+                        if (bc != null && (bc.methylatedCount + bc.unmethylatedCount) > 0) {
+                            drawBarBisulfite(context, pX, bottomY, dX, barHeight, totalCount, bc);
+                        }
+                    } else if (colorOption.isBaseMod()) {
+                        BaseModificationCoverageRenderer.drawModifications(context, pX, bottomY, dX, barHeight, pos, alignmentCounts, colorOption);
+                    } else {
                         if (refBases != null) {
                             int refIdx = pos - intervalStart;
                             if (refIdx >= 0 && refIdx < refBases.length) {
-                                if (bisulfiteMode) {
-                                    mismatch = (bc != null && (bc.methylatedCount + bc.unmethylatedCount) > 0);
-                                } else {
-                                    byte ref = refBases[refIdx];
-                                    mismatch = alignmentCounts.isConsensusMismatch(pos, ref, context.getChr(), snpThreshold);
+                                byte ref = refBases[refIdx];
+                                if (alignmentCounts.isConsensusMismatch(pos, ref, context.getChr(), snpThreshold)) {
+                                    drawAllelFreqBar(context, pX, bottomY, dX, barHeight, pos, totalCount, alignmentCounts);
                                 }
                             }
                         }
-
-                        if (!(mismatch || baseModMode)) {
-                            continue;
-                        }
-
-                        int pY = (int) rectMaxY - 1;
-
-                        int totalCount = alignmentCounts.getTotalCount(pos);
-                        double tmp = range.isLog() ? Math.log10(totalCount + 1) / maxRange : totalCount / maxRange;
-                        int height = (int) (tmp * rectHeight);
-
-                        height = Math.min(height, rect.height - 1);
-
-                        if (dX > 3) {
-                            dX--; // Create a little space between bars when there is room.
-                        }
-
-                        if (height > 0) {
-                            if (bisulfiteMode) {
-                                if (bc != null) {
-                                    drawBarBisulfite(context, pos, rect, totalCount, maxRange,
-                                            pY, pX, dX, bc, range.isLog());
-                                }
-                            } else if (baseModMode) {
-                                drawModifiedBaseBar(context, pos, rect, totalCount, maxRange,
-                                        pY, pX, dX, alignmentCounts, range.isLog());
-                            } else {
-                                drawBar(context, pos, rect, totalCount, maxRange,
-                                        pY, pX, dX, alignmentCounts, range.isLog());
-                            }
-                        }
-                        lastpX = pX + dX;
-
                     }
                 }
             }
@@ -600,95 +552,44 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
      *
      * @param context
      * @param pos
-     * @param rect
-     * @param max
-     * @param pY
+     * @param barHeight       -- total height in pixels of the coverage bar
+     * @param pBottom
      * @param pX
      * @param dX
-     * @param interval
+     * @param alignmentCounts
      * @return
      */
 
-    int drawBar(RenderContext context,
-                int pos,
-                Rectangle rect,
-                double totalCount,
-                double max,
-                int pY,
-                int pX,
-                int dX,
-                AlignmentCounts interval,
-                boolean isLog) {
+    void drawAllelFreqBar(RenderContext context,
+                          int pX,
+                          int pBottom,
+                          int dX,
+                          int barHeight,
+                          int pos,
+                          double totalCount,
+                          AlignmentCounts alignmentCounts) {
 
         for (char nucleotide : nucleotides) {
-
-            int count = interval.getCount(pos, (byte) nucleotide);
-            double tmp = isLog ?
-                    (count / totalCount) * Math.log10(totalCount + 1) / max :
-                    count / max;
-            int height = (int) (tmp * rect.getHeight());
-            height = Math.min(pY - rect.y, height);
-            int baseY = pY - height;
-
-            if (height > 0) {
+            int count = alignmentCounts.getCount(pos, (byte) nucleotide);
+            if (count > 0) {
+                double f = count / totalCount;
+                int alleleHeight = (int) (f * barHeight);
+                int baseY = pBottom - alleleHeight;
                 Color c = SequenceRenderer.nucleotideColors.get(nucleotide);
                 Graphics2D tGraphics = context.getGraphic2DForColor(c);
-                tGraphics.fillRect(pX, baseY, dX, height);
-            }
-
-            pY = baseY;
-        }
-        return pX + dX;
-    }
-
-    int drawModifiedBaseBar(RenderContext context,
-                            int pos,
-                            Rectangle rect,
-                            double totalCount,
-                            double max,
-                            int pY,
-                            int pX,
-                            int dX,
-                            AlignmentCounts interval,
-                            boolean isLog) {
-
-        ModifiedBaseCounts baseCounts = interval.getModifiedBaseCounts();
-
-        if (baseCounts != null) {
-
-            byte likelihood = (byte) 255;
-
-            for (String modification : baseCounts.getAllModifications()) {
-
-                int count = baseCounts.getCount(pos, modification);
-                double tmp = isLog ?
-                        (count / totalCount) * Math.log10(totalCount + 1) / max :
-                        count / max;
-                int height = (int) (tmp * rect.getHeight());
-                height = Math.min(pY - rect.y, height);
-                int baseY = pY - height;
-                if (height > 0) {
-                    Color c = BaseModification.getModColor(modification, likelihood);
-                    Graphics2D tGraphics = context.getGraphic2DForColor(c);
-                    tGraphics.fillRect(pX, baseY, dX, height);
-                }
-
-                pY = baseY;
+                tGraphics.fillRect(pX, baseY, dX, alleleHeight);
+                pBottom = baseY;
             }
         }
-        return pX + dX;
     }
 
-    int drawBarBisulfite(RenderContext context,
-                         int pos,
-                         Rectangle rect,
-                         double totalCount,
-                         double maxRange,
-                         int pY,
-                         int pX0,
-                         int dX,
-                         BisulfiteCounts.Count count,
-                         boolean isLog) {
+    void drawBarBisulfite(RenderContext context,
+                          int pX0,
+                          int pBottom,
+                          int dX,
+                          int barHeight,
+                          double totalCount,
+                          BisulfiteCounts.Count count) {
 
         // If bisulfite mode, we expand the rectangle to make it more visible.  This code is copied from AlignmentRenderer
         int pX = pX0;
@@ -710,33 +611,24 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         // nMethylated *= mult;
         // unMethylated *= mult;
 
-        double tmp = isLog ?
-                (nMethylated / totalCount) * Math.log10(totalCount + 1) / maxRange :
-                nMethylated / maxRange;
-        int height = (int) (tmp * rect.getHeight());
+        double f = nMethylated / totalCount;
+        int height = (int) (f * barHeight);
 
-        height = Math.min(pY - rect.y, height);
-        int baseY = pY - height;
+        int baseY = pBottom - height;
         if (height > 0) {
             tGraphics.fillRect(pX, baseY, dX, height);
         }
-        pY = baseY;
+        pBottom = baseY;
 
         c = Color.blue;
         tGraphics = context.getGraphic2DForColor(c);
 
-        tmp = isLog ?
-                (unMethylated / totalCount) * Math.log10(totalCount + 1) / maxRange :
-                unMethylated / maxRange;
-        height = (int) (tmp * rect.getHeight());
-
-        height = Math.min(pY - rect.y, height);
-        baseY = pY - height;
+        f = unMethylated / totalCount;
+        height = (int) (f * barHeight);
         if (height > 0) {
+            baseY = pBottom - height;
             tGraphics.fillRect(pX, baseY, dX, height);
-
         }
-        return pX + dX;
     }
 
 
@@ -782,29 +674,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                 tGraphics.fillRect(pX, baseY, dX, height);
             }
             pY = isPositive ? baseY : baseY + height;
-        }
-    }
-
-
-    static float[] colorComps = new float[3];
-
-    private Color getShadedColor(int qual, Color backgroundColor, Color color) {
-        float alpha = 0;
-        int minQ = prefs.getAsInt(SAM_BASE_QUALITY_MIN);
-        ColorUtilities.getRGBColorComponents(color);
-        if (qual < minQ) {
-            alpha = 0.1f;
-        } else {
-            int maxQ = prefs.getAsInt(SAM_BASE_QUALITY_MAX);
-            alpha = Math.max(0.1f, Math.min(1.0f, 0.1f + 0.9f * (qual - minQ) / (maxQ - minQ)));
-        }
-        // Round alpha to nearest 0.1, for effeciency;
-        alpha = ((int) (alpha * 10 + 0.5f)) / 10.0f;
-
-        if (alpha >= 1) {
-            return color;
-        } else {
-            return ColorUtilities.getCompositeColor(backgroundColor, color, alpha);
         }
     }
 

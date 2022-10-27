@@ -95,7 +95,7 @@ public class FastaIndex {
                 String[] tokens =  Globals.singleTabMultiSpacePattern.split(nextLine);
                 int nTokens =  tokens.length;
                 if (nTokens != 5) {
-                    log.info("Skipping fasta index line: " + nextLine);
+                    log.warn("Skipping fasta index line: " + nextLine);
                     continue;
                 }
                 // Parse the index line.

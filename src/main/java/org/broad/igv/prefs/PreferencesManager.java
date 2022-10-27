@@ -1,17 +1,15 @@
 package org.broad.igv.prefs;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.util.ParsingUtils;
-
 
 import java.io.*;
 import java.util.*;
-import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -27,8 +25,6 @@ public class PreferencesManager implements IGVEventObserver {
     private static Logger log = LogManager.getLogger(PreferencesManager.class);
     private static Map<String, IGVPreferences> preferencesMap = Collections.synchronizedMap(new HashMap<>());
     private static IGVPreferences genericDefaults;
-
-    public static boolean forceDefaults = false;
 
     private static String prefFile;  // User preferences file
 
@@ -52,9 +48,7 @@ public class PreferencesManager implements IGVEventObserver {
         if (preferenceGroupList == null) {
             init();
         }
-        if (forceDefaults) {
-            return genericDefaults;
-        } else if (preferencesMap.containsKey(category)) {
+        if (preferencesMap.containsKey(category)) {
             return preferencesMap.get(category);
         } else {
             return preferencesMap.get(NULL_CATEGORY);
@@ -78,7 +72,7 @@ public class PreferencesManager implements IGVEventObserver {
                 String category = group.category == null ? NULL_CATEGORY : group.category;
                 Map<String, String> defs = defaultPreferences.get(category);
                 if (defs == null) {
-                    log.info("Unknown preference category: " + category);
+                    log.warn("Unknown preference category: " + category);
                 }
                 for (Preference pref : group.preferences) {
                     defs.put(pref.getKey(), pref.getDefaultValue());
@@ -109,11 +103,11 @@ public class PreferencesManager implements IGVEventObserver {
 
     private static void extractMutationColors(IGVPreferences prefs) {
         String cts = prefs.get("MUTATION_COLOR_TABLE");
-        if(cts != null) {
-            String [] tokens= cts.split(";");
-            for(String t : tokens) {
-                String [] kv = t.split("=");
-                if(kv.length  == 2) {
+        if (cts != null) {
+            String[] tokens = cts.split(";");
+            for (String t : tokens) {
+                String[] kv = t.split("=");
+                if (kv.length == 2) {
                     String key = IGVPreferences.getMutationColorKey(kv[0]);
                     prefs.put(key, kv[1]);
                 }
@@ -123,7 +117,7 @@ public class PreferencesManager implements IGVEventObserver {
     }
 
     public static IGVPreferences getPreferences() {
-        return forceDefaults ? genericDefaults : getPreferences(NULL_CATEGORY);
+        return getPreferences(NULL_CATEGORY);
     }
 
     public static Collection<IGVPreferences> getAllPreferences() {
@@ -199,7 +193,7 @@ public class PreferencesManager implements IGVEventObserver {
                 }
             }
         } catch (IOException e) {
-            log.info("Error loading preferences " + e.getMessage());
+            log.warn("Error loading preferences " + e.getMessage());
         } finally {
             try {
                 if (reader != null) {
@@ -213,9 +207,9 @@ public class PreferencesManager implements IGVEventObserver {
     }
 
 
-
     /**
      * Update legacy preference key/value
+     *
      * @param key
      * @param value
      * @return
@@ -223,14 +217,12 @@ public class PreferencesManager implements IGVEventObserver {
     private static KeyValue translate(String key, String value) {
         if (aliasTable.containsKey(key)) {
             key = aliasTable.get(key);
-        }
-        else if (key.equals(SAM_SHADE_BASES)) {
+        } else if (key.equals(SAM_SHADE_BASES)) {
             boolean b = value.equalsIgnoreCase("quality") || value.equalsIgnoreCase("true");
             value = String.valueOf(b);
         }
         return new KeyValue(key, value);
     }
-
 
 
     public static List<PreferenceGroup> loadPreferenceList() throws IOException {
@@ -328,6 +320,7 @@ public class PreferencesManager implements IGVEventObserver {
     /**
      * Override a preference for this session.  We don't have a parameter to indicate experiment type so override
      * it for all preference categories.
+     *
      * @param prefKey
      * @param prefVal
      */
@@ -336,7 +329,7 @@ public class PreferencesManager implements IGVEventObserver {
         if (preferenceGroupList == null) {
             init();
         }
-        for(IGVPreferences prefs : preferencesMap.values()) {
+        for (IGVPreferences prefs : preferencesMap.values()) {
             prefs.override(prefKey, prefVal);
         }
     }

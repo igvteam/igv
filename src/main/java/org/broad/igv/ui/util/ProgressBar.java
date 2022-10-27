@@ -91,7 +91,7 @@ public class ProgressBar extends JPanel
         }
     }
 
-    static public class ProgressDialog extends JDialog {
+    static public class ProgressDialog extends org.broad.igv.ui.IGVDialog  {
 
         private ProgressBar progressBar = null;
 

@@ -34,7 +34,7 @@ package org.broad.igv.feature;
 
 public enum Strand {
 
-    NONE, POSITIVE, NEGATIVE;
+    POSITIVE, NEGATIVE, NONE; //The order here matters because it sets how strand sorts.
 
     public static Strand fromString(String strandString) {
         return strandString.equals("+") || strandString.equalsIgnoreCase("POSITIVE")

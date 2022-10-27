@@ -47,7 +47,7 @@ import java.util.Arrays;
 /**
  * @author Jim Robinson
  */
-public class GeneListEditDialog extends JDialog {
+public class GeneListEditDialog extends org.broad.igv.ui.IGVDialog  {
 
     private GeneList geneList;
     private boolean canceled = true;

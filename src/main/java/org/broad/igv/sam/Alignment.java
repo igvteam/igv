@@ -31,9 +31,12 @@ package org.broad.igv.sam;
 
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.sam.mods.BaseModificationUtils;
+import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,9 +44,17 @@ import java.util.Map;
  */
 public interface Alignment extends LocusScore {
 
-    String getReadName();
+    /**
+     * Name for the associated read.  Cannot be null.
+     * @return
+     */
+    default String getReadName() {
+        return "";
+    }
 
-    String getReadSequence();
+    default String getReadSequence() {
+        return "";
+    }
 
     String getChr();
 
@@ -120,8 +131,29 @@ public interface Alignment extends LocusScore {
     void finish();
 
     default AlignmentBlock getInsertionAt(int position) {
+        final AlignmentBlock[] insertions = getInsertions();
+        if(insertions == null) {
+            return null;
+        }
+        for (AlignmentBlock block : insertions) {
+            if (block.getStart() == position) return block;
+        }
         return null;
     }
+
+     default Gap getDeletionAt(int position) {
+         List<Gap> gaps = this.getGaps();
+         if (gaps != null && !gaps.isEmpty()) {
+             for (Gap gap : gaps) {
+                 if (gap.getStart() <= position
+                         && gap.getnBases() + gap.getStart() > position
+                         && gap.getType() == SAMAlignment.DELETION) {
+                     return gap;
+                 }
+             }
+         }
+         return null;
+     }
 
     default void setHaplotypeName(String hap) {}
 
@@ -131,7 +163,9 @@ public interface Alignment extends LocusScore {
 
     default int getHapDistance() {return 0;}
 
-    default Map<Integer, BaseModification> getBaseModificationMap() { return null;}
+    default Map<Integer, BaseModificationUtils> getBaseModificationMap() { return null;}
+
+    default List<BaseModificationSet> getBaseModificationSets() { return null;}
 
     default String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
         return getValueString(position, mouseX, (WindowFunction) null);

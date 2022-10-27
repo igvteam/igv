@@ -220,12 +220,7 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public String getReadName() {
-        return "READNAME".equals(tag) ? name : null;
-    }
-
-    @Override
-    public String getReadSequence() {
-        return null;
+        return "READNAME".equals(tag) ? name : "";
     }
 
     @Override
@@ -398,16 +393,6 @@ public class LinkedAlignment implements Alignment {
     @Override
     public void finish() {
         alignments.sort(ALIGNMENT_START_COMPARATOR);
-    }
-
-    @Override
-    public void setStart(int start) {
-
-    }
-
-    @Override
-    public void setEnd(int end) {
-
     }
 
     @Override

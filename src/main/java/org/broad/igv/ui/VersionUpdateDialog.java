@@ -42,7 +42,7 @@ import static org.broad.igv.ui.UIConstants.SERVER_BASE_URL;
 /**
  * @author Jim Robinson
  */
-public class VersionUpdateDialog extends JDialog {
+public class VersionUpdateDialog extends org.broad.igv.ui.IGVDialog  {
 
     private static Logger log = LogManager.getLogger(VersionUpdateDialog.class);
 

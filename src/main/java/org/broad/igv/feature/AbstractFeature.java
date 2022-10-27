@@ -29,10 +29,11 @@ package org.broad.igv.feature;
 
 import org.broad.igv.logging.*;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.util.collections.MultiMap;
+import org.broad.igv.util.FormatUtils;
 import htsjdk.tribble.Feature;
 
 import java.awt.*;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -42,13 +43,13 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
 
     private static Logger log = LogManager.getLogger(AbstractFeature.class);
     protected Strand strand = Strand.NONE;
-    protected String chromosome;
+    protected String chr;
     protected int start = -1;
     protected int end = -1;
     protected String type = "";
     protected Color color;
     protected String description;
-    protected MultiMap<String, String> attributes;
+    protected Map<String, String> attributes;
     protected String name = "";
 
     /**
@@ -67,14 +68,10 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
      * @param strand
      */
     public AbstractFeature(String chr, int start, int end, Strand strand) {
-        this.chromosome = chr;
+        this.chr = chr;
         this.start = start;
         this.end = end;
         this.strand = strand;
-    }
-
-    public String getIdentifier() {
-        return null;
     }
 
     public void setType(String type) {
@@ -89,8 +86,10 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         return name;
     }
 
-    public List<Exon> getExons() {
-        return null;
+    @Override
+    public String getDisplayName(String property) {
+        String nm = getAttribute(property);
+        return nm == null ? getName() : nm;
     }
 
     public boolean hasExons() {
@@ -102,11 +101,11 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
     }
 
     public String getChr() {
-        return chromosome;
+        return chr;
     }
 
     public String getContig() {
-        return chromosome;
+        return chr;
     }
 
     /**
@@ -118,35 +117,8 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         return end;
     }
 
-    public int getLength() {
-        return end - start;
-    }
-
     public int getStart() {
         return start;
-    }
-
-    /**
-     * Return true if the feature is completely contained within the bounds of this
-     * feature. amd is on the same strand..
-     * <p/>
-     *
-     * @param feature
-     * @return
-     */
-    public boolean contains(IGVFeature feature) {
-        if (feature == null) {
-            return false;
-        }
-        if (!this.getChr().equals(feature.getChr()) ||
-                this.getStrand() != feature.getStrand()) {
-            return false;
-        }
-        if ((feature.getStart() >= this.getStart()) && (feature.getEnd() <= this.getEnd())) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public void setEnd(int end) {
@@ -202,30 +174,42 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         return (description == null) ? getName() : description;
     }
 
-    public MultiMap<String, String> getAttributes() {
+    public Map<String, String> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(MultiMap<String, String> attributes) {
+    @Override
+    public List<String> getAttributeKeys() {
+        return attributes == null ? Collections.EMPTY_LIST : new ArrayList<>(attributes.keySet());
+    }
+
+    @Override
+    public String getAttribute(String key) {
+        return attributes == null ? null : attributes.get(key);
+    }
+
+    @Override
+    public void removeAttribute(String key) {
+        if(attributes != null) attributes.remove(key);
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
 
 
     public void setAttribute(String key, String value) {
-        if(attributes == null) {
-            attributes = new MultiMap<String, String>();
+        if (attributes == null) {
+            attributes = new LinkedHashMap<>();
         }
         attributes.put(key, value);
     }
 
-    public boolean contains(double location) {
-        return location >= getStart() && location < getEnd();
-    }
 
     public boolean overlaps(Feature anotherFeature) {
 
         return end >= anotherFeature.getStart() && start <= anotherFeature.getEnd() &&
-                chromosome.equals(anotherFeature.getChr());
+                chr.equals(anotherFeature.getChr());
 
     }
 
@@ -241,7 +225,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
      * @param chromosome the chromosome to set
      */
     public void setChr(String chromosome) {
-        this.chromosome = chromosome;
+        this.chr = chromosome;
     }
 
     /**
@@ -260,9 +244,9 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
     protected String getAttributeString() {
 
         StringBuffer buf = new StringBuffer();
-        // 30 attributes is the maximum visible on a typical screen
-        int max = IGV.getInstance().isShowDetailsOnClick() ? 10000 :  30;
-        attributes.printHtml(buf, max);
+        // 100 attributes is the maximum visible on a typical screen
+        int max = IGV.getInstance().isShowDetailsOnClick() ? 10000 : 100;
+        FormatUtils.printHtml(attributes, buf, max);
         return buf.toString();
 
     }
@@ -271,7 +255,7 @@ abstract public class AbstractFeature implements IGVFeature, htsjdk.tribble.Feat
         this.readingFrame = frame;
     }
 
-    public int getReadingFrame(){
+    public int getReadingFrame() {
         return this.readingFrame;
     }
 }

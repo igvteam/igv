@@ -44,9 +44,7 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.List;
@@ -61,9 +59,10 @@ import java.util.*;
  */
 public class SashimiPlot extends JFrame implements IGVEventObserver {
 
+    private final SashimiContentPane sashimiContentPane;
     private List<SpliceJunctionTrack> spliceJunctionTracks;
 
-    private ReferenceFrame frame;
+    private ReferenceFrame referenceFrame;
 
     private IGVEventBus eventBus;
 
@@ -90,23 +89,25 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack) {
 
-        setContentPane(new SashimiContentPane());
+        // setContentPane(new SashimiContentPane());
         getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         int minJunctionCoverage = PreferencesManager.getPreferences().getAsInt(Constants.SAM_JUNCTION_MIN_COVERAGE);
 
         this.eventBus = new IGVEventBus();
-        this.frame = new ReferenceFrame(iframe, eventBus);
+        this.referenceFrame = new ReferenceFrame(iframe, eventBus);
 
-        minOrigin = this.frame.getOrigin();
-        maxEnd = this.frame.getEnd();
+        minOrigin = this.referenceFrame.getOrigin();
+        maxEnd = this.referenceFrame.getEnd();
 
-        initSize(frame.getWidthInPixels());
+        int height = IGV.hasInstance() ? IGV.getInstance().getMainFrame().getHeight() : 800;
+        setSize(referenceFrame.getWidthInPixels(), height);
 
-        BoxLayout boxLayout = new BoxLayout(getContentPane(), BoxLayout.Y_AXIS);
-        getContentPane().setLayout(boxLayout);
+        JPanel sashimiPanel = new JPanel();
+        BoxLayout boxLayout = new BoxLayout(sashimiPanel, BoxLayout.Y_AXIS);
+        sashimiPanel.setLayout(boxLayout);
 
         //Add control elements to the top
-        getContentPane().add(generateControlPanel(this.frame));
+        sashimiPanel.add(generateControlPanel(this.referenceFrame));
 
         spliceJunctionTracks = new ArrayList<>(alignmentTracks.size());
         int colorInd = 0;
@@ -130,26 +131,32 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             colorInd = (colorInd + 1) % plotColors.size();
             spliceJunctionTrack.setColor(color);
 
-            TrackComponent<SpliceJunctionTrack> trackComponent = new TrackComponent<SpliceJunctionTrack>(frame, spliceJunctionTrack);
+            TrackComponent<SpliceJunctionTrack> trackComponent = new TrackComponent<SpliceJunctionTrack>(referenceFrame, spliceJunctionTrack);
             trackComponent.originalFrame = iframe;
 
-            initSpliceJunctionComponent(trackComponent, dataManager,dataManager.getCoverageTrack(), minJunctionCoverage);
+            initSpliceJunctionComponent(trackComponent, dataManager, dataManager.getCoverageTrack(), minJunctionCoverage);
 
-            getContentPane().add(trackComponent);
+            sashimiPanel.add(trackComponent);
             spliceJunctionTracks.add(spliceJunctionTrack);
 
             spliceJunctionTrack.load(iframe);  // <= Must "load" tracks with frame of alignment track (actually just fetches from cache)
         }
 
-        Axis axis = createAxis(frame);
-        getContentPane().add(axis);
+        Axis axis = createAxis(referenceFrame);
+        sashimiPanel.add(axis);
 
         SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
-        TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(frame, geneTrackClone);
+        TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(referenceFrame, geneTrackClone);
+        initGeneComponent(referenceFrame.getWidthInPixels(), geneComponent, geneTrackClone);
 
-        getContentPane().add(geneComponent);
+        JScrollPane scrollableGenePane = new JScrollPane(geneComponent);
+        scrollableGenePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollableGenePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-        initGeneComponent(frame.getWidthInPixels(), geneComponent, geneTrackClone);
+        sashimiContentPane = new SashimiContentPane(sashimiPanel, scrollableGenePane);
+        sashimiContentPane.setDividerLocation(2 * height / 3);
+        getContentPane().add(sashimiContentPane);
+
         validate();
     }
 
@@ -187,10 +194,6 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         component.setMaximumSize(dimension);
     }
 
-    private void initSize(int width) {
-        setSize(width, 500);
-    }
-
     private Axis createAxis(ReferenceFrame frame) {
         Axis axis = new Axis(frame);
 
@@ -208,15 +211,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         geneTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
 
         geneTrack.clearPackedFeatures();
-        RenderContext context = new RenderContext(geneComponent, null, frame, null);
+        RenderContext context = new RenderContext(geneComponent, null, referenceFrame, null);
         geneTrack.load(context.getReferenceFrame());
-
-
-        Dimension maxGeneDim = new Dimension(Integer.MAX_VALUE, geneTrack.getNumberOfFeatureLevels() * geneTrack.getSquishedRowHeight() + 10);
-        geneComponent.setMaximumSize(maxGeneDim);
-        Dimension prefGeneDim = new Dimension(maxGeneDim);
-        prefGeneDim.setSize(prefWidth, prefGeneDim.height);
-        geneComponent.setPreferredSize(prefGeneDim);
 
         GeneTrackMouseAdapter ad2 = new GeneTrackMouseAdapter(geneComponent);
         geneComponent.addMouseListener(ad2);
@@ -271,11 +267,16 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
-            Rectangle visibleRect = getVisibleRect();
-            RenderContext context = new RenderContext(this, (Graphics2D) g, frame, visibleRect);
-            track.render(context, visibleRect);
+            Rectangle bounds = new Rectangle(this.getParent().getBounds());       // Parent is the scroll pane
+            bounds.y = 0;
+            RenderContext context = new RenderContext(this, (Graphics2D) g, frame, bounds);
+            track.render(context, bounds);
         }
 
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(Integer.MAX_VALUE, track.getHeight());
+        }
     }
 
     /**
@@ -430,7 +431,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     File defaultFile = new File("Sashimi.png");
-                    IGV.getInstance().createSnapshot(SashimiPlot.this.getContentPane(), defaultFile);
+                    IGV.getInstance().createSnapshot(SashimiPlot.this.sashimiContentPane, defaultFile);
                 }
             });
 
@@ -439,7 +440,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     File defaultFile = new File("Sashimi.svg");
-                    IGV.getInstance().createSnapshot(SashimiPlot.this.getContentPane(), defaultFile);
+                    IGV.getInstance().createSnapshot(SashimiPlot.this.sashimiContentPane, defaultFile);
                 }
             });
 
@@ -531,8 +532,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         @Override
         protected IGVPopupMenu getPopupMenu(MouseEvent e) {
             IGVPopupMenu menu = new IGVPopupMenu();
-            TrackMenuUtils.addDisplayModeItems(Arrays.<Track>asList(trackComponent.track), menu);
-            menu.addPopupMenuListener(new RepaintPopupMenuListener(SashimiPlot.this));
+            TrackMenuUtils.addDisplayModeItems(Arrays.asList(trackComponent.track), menu);
+            menu.addPopupMenuListener(new RepaintPopupMenuListener(trackComponent));
             return menu;
         }
     }
@@ -557,8 +558,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             }
             double diff = e.getX() - currentTool.getLastMousePoint().getX();
             // diff > 0 means moving mouse to the right, which drags the frame towards the negative direction
-            boolean hitBounds = SashimiPlot.this.frame.getOrigin() <= minOrigin && diff > 0;
-            hitBounds |= SashimiPlot.this.frame.getEnd() >= maxEnd && diff < 0;
+            boolean hitBounds = SashimiPlot.this.referenceFrame.getOrigin() <= minOrigin && diff > 0;
+            hitBounds |= SashimiPlot.this.referenceFrame.getEnd() >= maxEnd && diff < 0;
             if (!hitBounds) {
                 currentTool.mouseDragged(e);
                 repaint();
@@ -625,52 +626,49 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     /**
      * Show SashimiPlot window, or change settings of {@code currentWindow}
-     *
-     * @param sashimiPlot
      */
-    public static void getSashimiPlot(SashimiPlot sashimiPlot) {
-        if (sashimiPlot == null) {
-            FeatureTrack geneTrack = null;
+    public static void openSashimiPlot() {
 
-            List<FeatureTrack> nonJunctionTracks = new ArrayList(IGV.getInstance().getFeatureTracks());
-            Iterator iter = nonJunctionTracks.iterator();
-            while(iter.hasNext()) {
-                if(iter.next() instanceof SpliceJunctionTrack) iter.remove();
-            }
+        FeatureTrack geneTrack = null;
 
-            if (nonJunctionTracks.size() == 1) {
-                geneTrack = nonJunctionTracks.get(0);
-            } else {
-                FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getMainFrame(), nonJunctionTracks);
-                dlg.setTitle("Select Gene Track");
-                dlg.setVisible(true);
-                if (dlg.getIsCancelled()) return;
-                geneTrack = dlg.getSelectedTrack();
-            }
-
-            Collection<AlignmentTrack> alignmentTracks = new ArrayList<AlignmentTrack>();
-            for (Track track : IGV.getInstance().getAllTracks()) {
-                if (track instanceof AlignmentTrack) {
-                    alignmentTracks.add((AlignmentTrack) track);
-                }
-            }
-
-            if (alignmentTracks.size() > 1) {
-                TrackSelectionDialog<AlignmentTrack> alDlg =
-                        new TrackSelectionDialog<AlignmentTrack>(IGV.getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, alignmentTracks);
-                alDlg.setTitle("Select Alignment Tracks");
-                alDlg.setVisible(true);
-                if (alDlg.getIsCancelled()) return;
-
-                alignmentTracks = alDlg.getSelectedTracks();
-            }
-
-            sashimiPlot = new SashimiPlot(FrameManager.getDefaultFrame(), alignmentTracks, geneTrack);
-            //sashimiPlot.setShapeType(shapeType);
-            sashimiPlot.setVisible(true);
-        } else {
-            //sashimiPlot.setShapeType(shapeType);
+        List<FeatureTrack> nonJunctionTracks = new ArrayList(IGV.getInstance().getFeatureTracks());
+        Iterator iter = nonJunctionTracks.iterator();
+        while (iter.hasNext()) {
+            if (iter.next() instanceof SpliceJunctionTrack) iter.remove();
         }
+
+        if (nonJunctionTracks.size() == 1) {
+            geneTrack = nonJunctionTracks.get(0);
+        } else {
+            FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getInstance().getMainFrame(), nonJunctionTracks);
+            dlg.setTitle("Select Gene Track");
+            dlg.setVisible(true);
+            if (dlg.getIsCancelled()) {
+                return;
+            }
+            geneTrack = dlg.getSelectedTrack();
+        }
+
+        Collection<AlignmentTrack> alignmentTracks = new ArrayList<AlignmentTrack>();
+        for (Track track : IGV.getInstance().getAllTracks()) {
+            if (track instanceof AlignmentTrack) {
+                alignmentTracks.add((AlignmentTrack) track);
+            }
+        }
+
+        if (alignmentTracks.size() > 1) {
+            TrackSelectionDialog<AlignmentTrack> alDlg =
+                    new TrackSelectionDialog<AlignmentTrack>(IGV.getInstance().getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, alignmentTracks);
+            alDlg.setTitle("Select Alignment Tracks");
+            alDlg.setVisible(true);
+            if (alDlg.getIsCancelled()) return;
+
+            alignmentTracks = alDlg.getSelectedTracks();
+        }
+
+        SashimiPlot sashimiPlot = new SashimiPlot(FrameManager.getDefaultFrame(), alignmentTracks, geneTrack);
+        //sashimiPlot.setShapeType(shapeType);
+        sashimiPlot.setVisible(true);
 
 
     }
@@ -690,7 +688,11 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         @Override
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-            component.repaint();
+            UIUtilities.invokeOnEventThread(() -> {
+                component.revalidate();
+                component.repaint();
+            });
+
         }
 
         @Override

@@ -626,13 +626,13 @@ public class GWASTrack extends AbstractTrack {
 
         int value = this.minPointSize;
         String tmpValue = JOptionPane.showInputDialog(
-                IGV.getMainFrame(), "Minimum point size in pixels (1-20):", String.valueOf(value));
+                IGV.getInstance().getMainFrame(), "Minimum point size in pixels (1-20):", String.valueOf(value));
         if (!(tmpValue == null) || !tmpValue.trim().equals("")) {
 
             try {
                 value = Integer.parseInt(tmpValue);
                 if (value < 1 || value > 20) {
-                    JOptionPane.showMessageDialog(IGV.getMainFrame(),
+                    JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(),
                             "Minimum point size must be an integer number between 1 and 20.");
                 } else {
                     if (value > this.maxPointSize) {
@@ -643,7 +643,7 @@ public class GWASTrack extends AbstractTrack {
                     repaint();
                 }
             } catch (NumberFormatException numberFormatException) {
-                JOptionPane.showMessageDialog(IGV.getMainFrame(),
+                JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(),
                         "Point size must be an integer number.");
             }
         }
@@ -653,7 +653,7 @@ public class GWASTrack extends AbstractTrack {
 
         int value = this.maxPointSize;
         String tmpValue = JOptionPane.showInputDialog(
-                IGV.getMainFrame(), "Maximum point size in pixels (1-20):",
+                IGV.getInstance().getMainFrame(), "Maximum point size in pixels (1-20):",
                 String.valueOf(value));
 
         if (!(tmpValue == null) || !tmpValue.trim().equals("")) {
@@ -661,7 +661,7 @@ public class GWASTrack extends AbstractTrack {
             try {
                 value = Integer.parseInt(tmpValue);
                 if (value < 1 || value > 20) {
-                    JOptionPane.showMessageDialog(IGV.getMainFrame(),
+                    JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(),
                             "Maximum point size must be an integer number between 1 and 20.");
                 } else {
                     if (value < this.minPointSize) {
@@ -673,7 +673,7 @@ public class GWASTrack extends AbstractTrack {
                 }
 
             } catch (NumberFormatException numberFormatException) {
-                JOptionPane.showMessageDialog(IGV.getMainFrame(),
+                JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(),
                         "Point size must be an integer number.");
             }
         }

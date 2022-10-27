@@ -35,7 +35,6 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.Track;
@@ -94,7 +93,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         } else if (event instanceof RefreshEvent) {
             clear();
         } else {
-            log.info("Unknown event type: " + event.getClass());
+            log.warn("Unknown event type: " + event.getClass());
         }
     }
 
@@ -272,33 +271,6 @@ public class AlignmentDataManager implements IGVEventObserver {
         return null;
     }
 
-    /**
-     * Sort rows group by group
-     *
-     * @param option
-     * @param location
-     */
-    public boolean sortRows(SortOption option, ReferenceFrame frame, double location, String tag) {
-
-        AlignmentInterval interval = getLoadedInterval(frame);
-        if (interval == null) {
-            return false;
-        } else {
-            PackedAlignments packedAlignments = interval.getPackedAlignments();
-            if (packedAlignments == null) {
-                return false;
-            }
-
-            for (List<Row> alignmentRows : packedAlignments.values()) {
-                for (Row row : alignmentRows) {
-                    row.updateScore(option, location, interval, tag);
-                }
-                Collections.sort(alignmentRows);
-            }
-            return true;
-        }
-    }
-
     public void setViewAsPairs(boolean option, AlignmentTrack.RenderOptions renderOptions) {
         if (option == renderOptions.isViewPairs()) {
             return;
@@ -417,7 +389,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
 
         AlignmentTileLoader.AlignmentTile t = getLoader().loadTile(sequence, start, end, spliceJunctionHelper,
-                downsampleOptions, peStats, bisulfiteContext);
+                downsampleOptions, peStats, bisulfiteContext, renderOptions);
       List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
         return new AlignmentInterval(chr, start, end, alignments, t.getCounts(), spliceJunctionHelper, downsampledIntervals);
@@ -425,11 +397,23 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public AlignmentTrack.ExperimentType inferType() {
         ReadStats readStats = new ReadStats();
-        List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 1000);
+        List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 100);
         for(Alignment a : sample) {
             readStats.addAlignment(a);
         }
-        return readStats.inferType();
+        AlignmentTrack.ExperimentType type = readStats.inferType();
+
+        if(type == AlignmentTrack.ExperimentType.THIRD_GEN) {
+            return type;
+        } else {
+            // Get a larger sample to distinguish RNA-Seq
+            readStats = new ReadStats();
+            sample = AlignmentUtils.firstAlignments(reader, 2000);
+            for(Alignment a : sample) {
+                readStats.addAlignment(a);
+            }
+            return readStats.inferType();
+        }
     }
 
     private AlignmentTrack.ExperimentType getExperimentType() {

@@ -27,17 +27,16 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.aa.AminoAcidSequence;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorTable;
-import org.broad.igv.util.collections.MultiMap;
+import org.broad.igv.util.FormatUtils;
 
 import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,7 +61,7 @@ public class Mutation implements IGVFeature {
     String refAllele;
     String altAllele1;
     String altAllele2;
-    private MultiMap<String, String> attributes;
+    private Map<String, String> attributes;
     private String valueString;
 
 
@@ -101,7 +100,7 @@ public class Mutation implements IGVFeature {
 
     public String getOMAUrl() {
         if (refAllele == null) return null;
-        String genome = IGV.getInstance().getGenomeManager().getGenomeId();
+        String genome = GenomeManager.getInstance().getGenomeId();
         String url = "http://mutationassessor.org/r3/?cm=var&var=" + genome + "," + getOMAName();
         return url;
 
@@ -109,9 +108,9 @@ public class Mutation implements IGVFeature {
 
     public String getCravatLink() {
 
-        String genomeID = IGV.getInstance().getGenomeManager().getGenomeId();
+        String genomeID = GenomeManager.getInstance().getGenomeId();
         if ("hg38".equals(genomeID) || "GRCh38".equals(genomeID)) {
-            if(refAllele == null) return null;
+            if (refAllele == null) return null;
             String altAllele = altAllele1;
             if (refAllele.equals(altAllele1)) {
                 altAllele = altAllele2;
@@ -123,8 +122,7 @@ public class Mutation implements IGVFeature {
             return "<a target='_blank' " +
                     "href='http://www.cravat.us/CRAVAT/variant.html?variant=" +
                     cravatChr + "_" + position + "_+_" + refAllele + "_" + altAllele + "'>Cravat " + refAllele + "->" + altAllele + "</a>";
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -192,15 +190,15 @@ public class Mutation implements IGVFeature {
             buf.append("Type: ");
             buf.append(mutationType);
             if (attributes != null) {
-                attributes.printHtml(buf, 100);
+                FormatUtils.printHtml(attributes, buf, 100);
             }
 
-            if(getOMAName() != null) {
+            if (getOMAName() != null) {
                 buf.append("<br/><a href=\"" + getOMAUrl() + "\">Mutation Assessor</a>");
             }
 
             String cravatLink = getCravatLink();
-            if(cravatLink != null) {
+            if (cravatLink != null) {
                 buf.append("<br/>" + cravatLink);
             }
 
@@ -262,45 +260,6 @@ public class Mutation implements IGVFeature {
         return 0;
     }
 
-    /**
-     * Return true if the feature is completely contained within the bounds of this
-     * featre.
-     *
-     * @param feature
-     * @return
-     */
-    public boolean contains(IGVFeature feature) {
-
-        if (feature == null || !this.getChr().equals(feature.getChr())) {
-            return false;
-        }
-        if ((feature.getStart() >= this.getStart()) && (feature.getEnd() <= this.getEnd())) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean contains(double location) {
-        return location >= start && location <= end;
-    }
-
-    public String getURL() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public Exon getExonAt(double location) {
-        return null;
-    }
-
-    public List<Exon> getExons() {
-        return null;
-    }
-
-    public String getIdentifier() {
-        return null;
-    }
-
     public AminoAcidSequence getAminoAcidSequence(int exonIndex) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -313,15 +272,7 @@ public class Mutation implements IGVFeature {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public int getLength() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public MultiMap<String, String> getAttributes() {
-        return null;
-    }
-
-    public void setAttributes(MultiMap<String, String> attributes) {
+    public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
 

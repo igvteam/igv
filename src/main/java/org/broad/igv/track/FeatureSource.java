@@ -85,7 +85,7 @@ public interface FeatureSource<T extends Feature> {
         return -1;
     }
 
-    default void dispose() {
+    default void close() {
       // Do nothing by default
     };
 

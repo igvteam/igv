@@ -34,17 +34,22 @@
  */
 package org.broad.igv.feature.genome;
 
-import com.google.gson.JsonElement;
 import org.apache.commons.math3.stat.StatUtils;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.liftover.Liftover;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 
 /**
@@ -72,9 +77,11 @@ public class Genome {
     private String species;
     private String ucscID;
     private String blatDB;
-    private ArrayList<ResourceLocator> annotationResources;
+    private List<ResourceLocator> annotationResources;
+    private Map<ResourceLocator, List<Track>> annotationTracks;
     private boolean showWholeGenomeView = true;
 
+    private Map<String, Liftover> liftoverMap;
 
     /**
      * @param id
@@ -83,34 +90,32 @@ public class Genome {
      * @param chromosOrdered Whether the chromosomes are already ordered. If false, they will be sorted.
      */
     public Genome(String id, String displayName, Sequence sequence, boolean chromosOrdered) {
+
         this.id = id;
         this.displayName = displayName;
         this.chrAliasTable = new HashMap<>();
         this.sequence = (sequence instanceof InMemorySequence) ? sequence : new SequenceWrapper(sequence);
-        chromosomeNames = sequence.getChromosomeNames();
+        this.chromosomeNames = sequence.getChromosomeNames();
         this.ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
+        this.chromosomeMap = new LinkedHashMap<>();
 
-        List<Chromosome> tmpChromos = new ArrayList<Chromosome>(chromosomeNames.size());
         int maxLength = -1;
-        chromosomeMap = new LinkedHashMap<String, Chromosome>(tmpChromos.size());
-
         for (int i = 0; i < chromosomeNames.size(); i++) {
             String chr = chromosomeNames.get(i);
             int length = sequence.getChromosomeLength(chr);
-            maxLength = Math.max(maxLength, length);
-            Chromosome chromo = new Chromosome(i, chr, length);
-            tmpChromos.add(chromo);
-
-            if (chromosOrdered) {
-                chromosomeMap.put(chr, chromo);
-            }
+            maxLength = length > maxLength ? length : maxLength;
+            chromosomeMap.put(chr, new Chromosome(i, chr, length));
         }
 
         if (!chromosOrdered) {
-            ChromosomeComparator.sortChromosomeList(tmpChromos, maxLength / 10, chromosomeMap);
-            chromosomeNames = new ArrayList<String>(chromosomeMap.keySet());
+            List<Chromosome> chromosomeList = new ArrayList<>(chromosomeMap.values());
+            Collections.sort(chromosomeList, new ChromosomeComparator(maxLength / 10));
+            for (int ii = 0; ii < chromosomeList.size(); ii++) {
+                Chromosome chrom = chromosomeList.get(ii);
+                chrom.setIndex(ii);
+                chromosomeNames.set(ii, chrom.getName());
+            }
         }
-
 
         initializeChromosomeAliases();
     }
@@ -432,7 +437,7 @@ public class Genome {
      */
 
     public byte[] getSequence(String chr, int start, int end) {
-        return getSequence(chr, start, end, true);
+        return getSequence(getCanonicalChrName(chr), start, end, true);
     }
 
     public byte[] getSequence(String chr, int start, int end, boolean useCache) {
@@ -496,7 +501,7 @@ public class Genome {
     }
 
     /**
-     * Return the annotation track associated with this genome.   Can return null
+     * Return the annotation track associated with this genome.  This is a legacy ".genome" artifact, can return null.
      *
      * @return a FeatureTrack, or null
      */
@@ -515,7 +520,7 @@ public class Genome {
 
         if (longChromosomeNames == null) {
             longChromosomeNames = new ArrayList<>();
-            if(chromosomeMap.size() < 100) {
+            if (chromosomeMap.size() < 100) {
                 // Keep all chromosomes within 10% of the mean in length
                 double[] lengths = new double[chromosomeMap.size()];
                 int idx = 0;
@@ -524,15 +529,13 @@ public class Genome {
                 }
                 double mean = StatUtils.mean(lengths);
                 double std = Math.sqrt(StatUtils.variance(lengths));
-                double min = 0.1*mean;
+                double min = 0.1 * mean;
                 for (String chr : getAllChromosomeNames()) {
                     if (chromosomeMap.get(chr).getLength() > min) {
                         longChromosomeNames.add(chr);
                     }
                 }
-            }
-
-            else {
+            } else {
                 // Long list, likely many small contigs.  Search for a break between long (presumably assembled)
                 // chromosomes and small contigs.
                 List<Chromosome> allChromosomes = new ArrayList<>(chromosomeMap.values());
@@ -635,14 +638,21 @@ public class Genome {
         return sequence.isLoaded(frame);
     }
 
-    public void setAnnotationResources(ArrayList<ResourceLocator> annotationResources) {
+    public void setAnnotationResources(List<ResourceLocator> annotationResources) {
         this.annotationResources = annotationResources;
     }
 
-    public ArrayList<ResourceLocator> getAnnotationResources() {
+    public List<ResourceLocator> getAnnotationResources() {
         return annotationResources;
     }
 
+    public Map<ResourceLocator, List<Track>> getAnnotationTracks() {
+        return annotationTracks;
+    }
+
+    public void setAnnotationTracks(Map<ResourceLocator, List<Track>> annotationTracks) {
+        this.annotationTracks = annotationTracks;
+    }
 
     /**
      * Mock genome for unit tests
@@ -666,5 +676,13 @@ public class Genome {
 
     public void setLongChromosomeNames(List<String> chrNames) {
         this.longChromosomeNames = chrNames;
+    }
+
+    public Map<String, Liftover> getLiftoverMap() {
+        return liftoverMap;
+    }
+
+    public void setLiftoverMap(Map<String, Liftover> liftoverMap) {
+        this.liftoverMap = liftoverMap;
     }
 }

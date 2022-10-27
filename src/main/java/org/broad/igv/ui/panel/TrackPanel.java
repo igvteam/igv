@@ -26,10 +26,11 @@
 package org.broad.igv.ui.panel;
 
 
-import org.broad.igv.logging.*;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
@@ -37,8 +38,8 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author eflakes
@@ -75,7 +76,7 @@ public class TrackPanel extends IGVPanel {
 
 
     private void init() {
-
+        setBackground(Color.white);
         namePanel = new TrackNamePanel(this);
         attributePanel = new AttributePanel(this);
         dataPanelContainer = new DataPanelContainer(this);
@@ -175,12 +176,20 @@ public class TrackPanel extends IGVPanel {
     public void clearTracks() {
 
         final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        Track geneTrack = currentGenome == null ? null : currentGenome.getGeneTrack();
-        for (Track t : getTracks()) {
-            if (t != geneTrack) {
-                t.dispose();
+        Set<Track> genomeAnnotationTracks = new HashSet<>();
+        if (currentGenome != null) {
+            if (currentGenome.getGeneTrack() != null) genomeAnnotationTracks.add(currentGenome.getGeneTrack());
+            if (currentGenome.getAnnotationTracks() != null) {
+                for (List<Track> t : currentGenome.getAnnotationTracks().values()) {
+                    genomeAnnotationTracks.addAll(t);
+                }
             }
         }
+
+        for (Track t : getTracks()) {
+            t.unload();
+        }
+        groupAttribute = null;
         trackGroups.clear();
         trackCountEstimate = 0;
     }
@@ -271,10 +280,6 @@ public class TrackPanel extends IGVPanel {
         }
     }
 
-    public boolean hasTrack(Track track) {
-        return trackGroups.stream().anyMatch(tg -> (new HashSet(tg.getTracks()).contains(track)));
-    }
-
     public void moveGroup(TrackGroup group, int index) {
 
         if (index > trackGroups.indexOf(group)) {
@@ -291,7 +296,7 @@ public class TrackPanel extends IGVPanel {
 
     public void reset() {
         this.groupAttribute = null;
-        trackGroups.clear();
+        clearTracks();
     }
 
     /**
@@ -490,49 +495,6 @@ public class TrackPanel extends IGVPanel {
         Dimension dim = super.getPreferredSize();
         dim.height = getPreferredPanelHeight();
         return dim;
-    }
-
-    @Override
-    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
-
-        int h = rect.height;
-
-        Component[] children = getComponents();
-        // name panel starts at offset=0
-
-        g.translate(mainPanel.getNamePanelX(), 0);
-
-        Rectangle nameRect = new Rectangle(children[0].getBounds());
-        nameRect.y = rect.y;
-        nameRect.height = h;
-        if (nameRect.width > 0) {
-            Graphics2D nameGraphics = (Graphics2D) g.create();
-            nameGraphics.setClip(nameRect);
-            ((Paintable) children[0]).paintOffscreen(nameGraphics, nameRect, batch);
-            nameGraphics.dispose();
-        }
-
-        int dx = mainPanel.getAttributePanelX() - mainPanel.getNamePanelX();
-        g.translate(dx, 0);
-        Rectangle attRect = new Rectangle(0, rect.y, children[1].getWidth(), h);
-        if (attRect.width > 0) {
-            Graphics2D attGraphics = (Graphics2D) g.create();
-            attGraphics.setClip(attRect);
-            ((Paintable) children[1]).paintOffscreen(attGraphics, attRect, batch);
-            attGraphics.dispose();
-        }
-
-        dx = mainPanel.getDataPanelX() - mainPanel.getAttributePanelX();
-        g.translate(dx, 0);
-        Rectangle dataRect = new Rectangle(0, rect.y, mainPanel.getDataPanelWidth(), h);
-        Graphics2D dataGraphics = (Graphics2D) g.create();
-        dataGraphics.setClip(dataRect);
-        ((Paintable) children[2]).paintOffscreen(dataGraphics, dataRect, batch);
-        dataGraphics.dispose();
-
-
-        //super.paintBorder(g);
-
     }
 
     @Override

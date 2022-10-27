@@ -25,18 +25,18 @@
 
 package org.broad.igv.feature.tribble;
 
-import htsjdk.samtools.util.BlockCompressedInputStream;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.FeatureCodec;
 import htsjdk.variant.bcf2.BCF2Codec;
 import htsjdk.variant.vcf.VCF3Codec;
 import htsjdk.variant.vcf.VCFCodec;
-import org.broad.igv.logging.*;
 import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
 import org.broad.igv.feature.FeatureType;
 import org.broad.igv.feature.dsi.DSICodec;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.gwas.EQTLCodec;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -48,6 +48,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 /**
  * A factory class for Tribble codecs.  implements a single, static, public method to return a codec given a
@@ -63,8 +64,7 @@ public class CodecFactory {
 
     /**
      * @param path
-     * @param genome
-     * This won't handle URLs with query strings properly for all codecs
+     * @param genome This won't handle URLs with query strings properly for all codecs
      */
     public static FeatureCodec getCodec(String path, Genome genome) {
         return getCodec(new ResourceLocator(path), genome);
@@ -171,10 +171,8 @@ public class CodecFactory {
         BufferedReader reader = null;
 
         try {
-            // If the file ends with ".gz" assume it is a tabix indexed file
             if (locator.getURLPath().toLowerCase().endsWith(".gz")) {
-                // NOTE:  MUST USE THE PICARD VERSION OF ParsingUtils.  The IGV version will return a gzip stream.
-                reader = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(
+                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(
                         htsjdk.tribble.util.ParsingUtils.openInputStream(path))));
             } else {
                 reader = ParsingUtils.openBufferedReader(path);

@@ -36,13 +36,14 @@ import org.broad.igv.feature.Mutation;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.collections.MultiMap;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Codec for .mut and .maf mutation files
@@ -152,7 +153,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
 
             int start;
             try {
-                start = Integer.parseInt(tokens[startColumn].trim());
+                start = Integer.parseInt(tokens[startColumn].trim()) - 1;
             } catch (NumberFormatException e) {
                 errorCount++;
                 if (errorCount > 100) {
@@ -171,17 +172,9 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                 if (errorCount > 100) {
                     throw new DataLoadException("Column " + (endColumn + 1) + " must be a numeric value.", path);
                 } else {
-                    log.info("Error parsing line: " + line);
+                    log.warn("Error parsing line: " + line);
                     return null;
                 }
-            }
-
-
-            // MAF files use the 1-based inclusive convention for coordinates.  The convention is not
-            // specified for MUT files, and it appears both conventions have been used.  We can detect
-            // the convention used for single base mutations by testing start == end.
-            if (isMAF || (start == end)) {
-                start--;
             }
 
             String sampleId = "Unknown";
@@ -194,7 +187,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                         tokens[typeColumn].trim();
             }
 
-            MultiMap<String, String> attributes = new MultiMap();
+            Map<String, String> attributes = new LinkedHashMap<>();
             int n = Math.min(headers.length, tokens.length);
             for (int i = 0; i < n; i++) {
                 String key = headers[i];
@@ -387,6 +380,10 @@ Match_Norm_Seq_Allele2
                     if (nextLine.startsWith("#")) {
                         continue;
                     }
+                }
+
+                if(nextLine == null) {
+                    return false;
                 }
 
                 String[] tokens = Globals.tabPattern.split(nextLine);

@@ -31,7 +31,7 @@ import htsjdk.variant.vcf.VCFHeader;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bedpe.BedPEParser;
 import org.broad.igv.bedpe.InteractionTrack;
-import org.broad.igv.bigwig.BigWigDataSource;
+import org.broad.igv.bbfile.BBDataSource;
 import org.broad.igv.blast.BlastMapping;
 import org.broad.igv.blast.BlastParser;
 import org.broad.igv.data.*;
@@ -58,7 +58,7 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
-import org.broad.igv.google.GoogleUtils;
+import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.gwas.GWASFeature;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
@@ -121,7 +121,7 @@ public class TrackLoader {
             AmazonUtils.checkLogin();
         }
 
-        log.info("Loading resource, path " + path);
+        log.info("Loading resource:  " + (locator.isDataURL() ? "<data url>" : path));
         try {
             String format = locator.getFormat();
 
@@ -247,7 +247,10 @@ public class TrackLoader {
 
                 for (Track track : newTracks) {
                     if (locator.getFeatureInfoURL() != null) {
-                        track.setUrl(locator.getFeatureInfoURL());
+                        track.setFeatureInfoURL(locator.getFeatureInfoURL());
+                    }
+                    if (locator.getLabelField() != null && track instanceof FeatureTrack) {
+                        ((FeatureTrack) track).setLabelField(locator.getLabelField());
                     }
                     if (tp != null) {
                         track.setProperties(tp);
@@ -312,10 +315,14 @@ public class TrackLoader {
     }
 
     public static boolean isAlignmentTrack(String typeString) {
-        return typeString.equals("sam") || typeString.equals("bam") || typeString.equals("cram") ||
-                typeString.equals("sam.list") || typeString.equals("bam.list") ||
-                typeString.equals("aligned") || typeString.equals("sai") ||
-                typeString.equals("bai") || typeString.equals("csi") || typeString.equals("alist");
+        if (typeString == null) {
+            return false;
+        } else {
+            return typeString.equals("sam") || typeString.equals("bam") || typeString.equals("cram") ||
+                    typeString.equals("sam.list") || typeString.equals("bam.list") ||
+                    typeString.equals("aligned") || typeString.equals("sai") ||
+                    typeString.equals("bai") || typeString.equals("csi") || typeString.equals("alist");
+        }
     }
 
     private void loadSMAPFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
@@ -813,11 +820,11 @@ public class TrackLoader {
 
         String path = locator.getPath();
         BBFileReader reader = new BBFileReader(path);
-        BigWigDataSource bigwigSource = new BigWigDataSource(reader, genome);
+        BBDataSource bigwigSource = new BBDataSource(reader, genome);
+        Track track = null;
 
         if (reader.isBigWigFile()) {
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
-            newTracks.add(track);
+            track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
 
             if (locator.getPath().contains("RRBS_cpgMethylation") ||
@@ -825,12 +832,16 @@ public class TrackLoader {
                     (reader.getAutoSql() != null && reader.getAutoSql().startsWith("table BisulfiteSeq"))) {
                 loadMethylTrack(locator, reader, newTracks, genome);
             } else {
-                FeatureTrack track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
-                newTracks.add(track);
+                track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
             }
         } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
         }
+
+        if (track != null) {
+            newTracks.add(track);
+        }
+
     }
 
     private void loadMethylTrack(ResourceLocator locator, BBFileReader reader, List<Track> newTracks, Genome genome) throws IOException {
@@ -916,17 +927,8 @@ public class TrackLoader {
             }
 
             AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName)
-            alignmentTrack.setName(dsName);
             alignmentTrack.setVisible(PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK));
-
-
-            // Create coverage track
-            CoverageTrack covTrack = new CoverageTrack(locator, dsName + " Coverage", alignmentTrack, genome);
-            newTracks.add(covTrack);
-            covTrack.setDataManager(dataManager);
-            dataManager.setCoverageTrack(covTrack);
-
-            alignmentTrack.setCoverageTrack(covTrack);
+            newTracks.add(alignmentTrack.getCoverageTrack());
 
             //  Precalculated coverage data (can be null)
             String covPath = locator.getCoverage();
@@ -941,7 +943,7 @@ public class TrackLoader {
                                 path.contains("dataformat=.bam") ||
                                 path.contains("/query.cgi?");
                 if (!bypassFileAutoDiscovery) {
-                    covPath = path + ".tdf";
+                    covPath = ResourceLocator.appendToPath(locator, ".tdf");
                 }
             }
 
@@ -951,18 +953,15 @@ public class TrackLoader {
                     try {
                         TDFReader reader = TDFReader.getReader(covPath);
                         TDFDataSource ds = new TDFDataSource(reader, 0, dsName + " coverage", genome);
-                        covTrack.setDataSource(ds);
+                        alignmentTrack.getCoverageTrack().setDataSource(ds);
                     } catch (Exception e) {
                         log.error("Error loading coverage TDF file", e);
                     }
                 }
             }
 
-            SpliceJunctionTrack spliceJunctionTrack = new SpliceJunctionTrack(locator,
-                    dsName + " Junctions", dataManager, alignmentTrack, SpliceJunctionTrack.StrandOption.BOTH);
-            spliceJunctionTrack.setHeight(60);
-            newTracks.add(spliceJunctionTrack);
-            alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
+            // Splice junction track
+            newTracks.add(alignmentTrack.getSpliceJunctionTrack());
 
             alignmentTrack.init();
 
@@ -991,16 +990,19 @@ public class TrackLoader {
                 break;
             }
         }
-        message.append("<br>Genome: ");
-        n = 0;
-        for (String cn : genome.getAllChromosomeNames()) {
-            message.append(cn + ", ");
-            n++;
-            if (n > 3) {
-                message.append(" ...");
-                break;
+        if (genome != null && genome.getAllChromosomeNames() != null) {
+            message.append("<br>Genome: ");
+            n = 0;
+            for (String cn : genome.getAllChromosomeNames()) {
+                message.append(cn + ", ");
+                n++;
+                if (n > 3) {
+                    message.append(" ...");
+                    break;
+                }
             }
         }
+
         MessageUtils.showMessage(message.toString());
     }
 

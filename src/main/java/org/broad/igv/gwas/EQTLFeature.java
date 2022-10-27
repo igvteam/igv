@@ -44,7 +44,6 @@ import java.io.IOException;
 public class EQTLFeature extends AbstractFeature {
 
     private String snp;
-    String chr;
     int position;
     private String geneId;
     private String geneName;
@@ -80,11 +79,6 @@ public class EQTLFeature extends AbstractFeature {
     }
 
     @Override
-    public String getChr() {
-        return chr;
-    }
-
-    @Override
     public int getStart() {
         return position;
     }
@@ -93,7 +87,6 @@ public class EQTLFeature extends AbstractFeature {
     public int getEnd() {
         return position + 1;
     }
-
 
     public String getSnp() {
         return snp;
@@ -118,10 +111,5 @@ public class EQTLFeature extends AbstractFeature {
         //sb.append("<br>qValue = " + qValue);
         return sb.toString();
 
-    }
-
-    @Override
-    public String getURL() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

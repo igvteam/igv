@@ -69,6 +69,7 @@ public class IGVPanel extends JPanel implements Paintable {
 
     @Override
     public void doLayout() {
+
         synchronized (getTreeLock()) {
 
             int h = getHeight(); //getPreferredSize().height;
@@ -79,8 +80,8 @@ public class IGVPanel extends JPanel implements Paintable {
             Component namePanel = children[0];
             Component attributePanel = children[1];
             Component dataPanel = children[2];
-
             namePanel.setBounds(mainPanel.getNamePanelX(), 0, nw, h);
+
             attributePanel.setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);  // Attributes
             dataPanel.setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
 
@@ -94,36 +95,18 @@ public class IGVPanel extends JPanel implements Paintable {
 
         Component[] children = getComponents();
 
-        Component namePanel = children[0];
-        Rectangle nameRect = new Rectangle(namePanel.getBounds());
-        if(nameRect.width > 0) {
-            Graphics2D nameGraphics = (Graphics2D) g.create();
-            nameGraphics.translate(nameRect.x, 0);
-            nameRect.x = 0;
-            nameGraphics.setClip(nameRect);
-            ((Paintable) namePanel).paintOffscreen(nameGraphics, nameRect, batch);
-            nameGraphics.dispose();
+        for(Component component : children) {
+            if (component instanceof Paintable) {
+                if (component.getWidth() > 0) {
+                    Rectangle clipRect = new Rectangle(0, rect.y, component.getWidth(), rect.height);
+                    Graphics2D graphics = (Graphics2D) g.create();
+                    graphics.translate(component.getX(), component.getY());
+                    //  graphics.setClip(clipRect);
+                    ((Paintable) component).paintOffscreen(graphics, clipRect, batch);
+                    graphics.dispose();
+                }
+            }
         }
-
-        Component attributePanel = children[1];
-        Rectangle attRect = new Rectangle(attributePanel.getBounds());
-        if(attRect.width > 0) {
-            Graphics2D attributeGraphics = (Graphics2D) g.create();
-            attributeGraphics.translate(attRect.x, 0);
-            attRect.x = 0;
-            attributeGraphics.setClip(attRect);
-            ((Paintable) attributePanel).paintOffscreen(attributeGraphics, attRect, batch);
-            attributeGraphics.dispose();
-        }
-
-        Component dataPanel = children[2];
-        Rectangle dataRect = new Rectangle(dataPanel.getBounds());
-        Graphics2D dataGraphics = (Graphics2D) g.create();
-        dataGraphics.translate(dataRect.x, 0);
-        dataRect.x = 0;
-        g.setClip(dataRect);
-        ((Paintable) dataPanel).paintOffscreen(dataGraphics, dataRect, batch);
-        dataGraphics.dispose();
     }
 
     @Override

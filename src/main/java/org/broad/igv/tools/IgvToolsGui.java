@@ -41,7 +41,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class IgvToolsGui extends JDialog {
+public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
 
     private static Logger log = LogManager.getLogger(IgvToolsGui.class);
 

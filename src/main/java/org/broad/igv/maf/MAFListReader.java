@@ -98,7 +98,7 @@ public class MAFListReader implements MAFReader {
                 if (nextLine.startsWith("#")) continue;
                 String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 if (tokens.length != 2) {
-                    log.info("Skipping line: " + nextLine);
+                    log.warn("Skipping line: " + nextLine);
                 } else {
                     String chr = tokens[0];
                     String fname = tokens[1];
@@ -146,7 +146,7 @@ public class MAFListReader implements MAFReader {
                         species.add(id);
                         speciesNames.put(id, name);
                     } else {
-                        //log.info("Skipping line: " + nextLine);
+                        //log.warn("Skipping line: " + nextLine);
                     }
                 }
 

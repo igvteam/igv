@@ -55,7 +55,7 @@ import java.util.regex.PatternSyntaxException;
  *
  * @author Jacob Silterra
  */
-public class MotifFinderDialog extends JDialog {
+public class MotifFinderDialog extends org.broad.igv.ui.IGVDialog {
 
     private static Map<String, String> letterToRegex;
     private static Set<String> validIUPACInputStrings;
@@ -142,10 +142,10 @@ public class MotifFinderDialog extends JDialog {
         this.posTrackNames = new String[lines.length];
         this.negTrackNames = new String[lines.length];
 
-        for(int ii=0; ii < lines.length; ii++){
+        for (int ii = 0; ii < lines.length; ii++) {
             String strPattern = lines[ii].toUpperCase().trim();
 
-            if(strPattern.length() == 0) {
+            if (strPattern.length() == 0) {
                 MessageUtils.showMessage("Please enter a search pattern.");
                 return;
             }
@@ -166,11 +166,11 @@ public class MotifFinderDialog extends JDialog {
                 strPattern = convertMotifToRegex(strPattern);
             }
 
-            if(isMultiMatch){
+            if (isMultiMatch) {
                 String posName = getPosNameFromPattern(strPattern);
                 this.posTrackNames[ii] = posName;
                 this.negTrackNames[ii] = getNegNameFromPositive(posName);
-            }else{
+            } else {
                 this.posTrackNames[ii] = posNameField.getText();
                 this.negTrackNames[ii] = negNameField.getText();
                 if (this.posTrackNames[ii].equalsIgnoreCase(negTrackNames[ii])) {
@@ -232,9 +232,10 @@ public class MotifFinderDialog extends JDialog {
 
     /**
      * Whether we are matching multiple patterns (ie whether there are newlines in the text field)
+     *
      * @return
      */
-    private boolean isMultiMatch(){
+    private boolean isMultiMatch() {
         String patternText = MotifFinderDialog.this.patternField.getText();
         return patternText.contains("\n") || patternText.contains("\r");
     }
@@ -256,7 +257,7 @@ public class MotifFinderDialog extends JDialog {
             public void run() {
                 String posNameText = "Auto";
                 boolean hasNewlines = isMultiMatch();
-                if(!hasNewlines){
+                if (!hasNewlines) {
                     String patternText = MotifFinderDialog.this.patternField.getText();
                     posNameText = StringUtils.checkLength(patternText, MaxTrackNameLength);
                 }
@@ -267,11 +268,11 @@ public class MotifFinderDialog extends JDialog {
         });
     }
 
-    private String getPosNameFromPattern(String patternText){
+    private String getPosNameFromPattern(String patternText) {
         return StringUtils.checkLength(patternText, MaxTrackNameLength);
     }
 
-    private String getNegNameFromPositive(String posText){
+    private String getNegNameFromPositive(String posText) {
         return posText + " Negative";
     }
 
@@ -395,8 +396,8 @@ public class MotifFinderDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -407,8 +408,8 @@ public class MotifFinderDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -419,8 +420,8 @@ public class MotifFinderDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }

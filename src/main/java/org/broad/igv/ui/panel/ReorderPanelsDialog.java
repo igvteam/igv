@@ -42,7 +42,7 @@ import org.broad.igv.ui.util.*;
 /**
  * @author Stan Diamond
  */
-public class ReorderPanelsDialog extends JDialog {
+public class ReorderPanelsDialog extends org.broad.igv.ui.IGVDialog  {
 
     private boolean canceled = false;
 

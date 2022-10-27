@@ -62,7 +62,7 @@ public class MotifFinderDialogHeadedTest extends AbstractHeadedTest{
         int initCount = IGV.getInstance().getFeatureTracks().size();
 
         String[] patterns = new String[]{"TATTAAT", "NCTC[GC]{3,8}", "NRTGC"};
-        MotifFinderDialog dialog = new MotifFinderDialog(IGV.getMainFrame());
+        MotifFinderDialog dialog = new MotifFinderDialog(IGV.getInstance().getMainFrame());
         String patternText = StringUtils.join(patterns, sep);
 
         dialog.setModal(false);

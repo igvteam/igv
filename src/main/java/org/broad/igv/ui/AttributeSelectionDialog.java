@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * @author eflakes
  */
-public class AttributeSelectionDialog extends javax.swing.JDialog {
+public class AttributeSelectionDialog extends org.broad.igv.ui.IGVDialog  {
 
     private javax.swing.JButton cancelButton;
     private JComboBox comboBox;

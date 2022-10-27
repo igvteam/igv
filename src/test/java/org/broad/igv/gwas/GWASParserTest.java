@@ -26,9 +26,6 @@
 package org.broad.igv.gwas;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.exceptions.ParserException;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -81,12 +78,10 @@ public class GWASParserTest extends AbstractHeadlessTest {
     public void tstParseBad(String finame) throws Exception {
         GWASParser parser = new GWASParser(new ResourceLocator(TestUtils.DATA_DIR + "gwas/" + finame), genome);
         boolean excepted = false;
-        try {
-            Map<String, List<GWASFeature>> data = parser.parse();
-        } catch (ParserException e) {
-            excepted = true;
-        }
-        assertTrue(excepted);
+
+        Map<String, List<GWASFeature>> data = parser.parse();
+
+        assertTrue(data.isEmpty());
 
     }
 }

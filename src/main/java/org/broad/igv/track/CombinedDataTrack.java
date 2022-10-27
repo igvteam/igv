@@ -1,13 +1,22 @@
 package org.broad.igv.track;
 
 import org.broad.igv.data.CombinedDataSource;
+import org.broad.igv.data.DataSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class CombinedDataTrack extends DataSourceTrack {
 
-    public CombinedDataTrack(String id, String name) {
+    /**
+     * Special constructor provided for session unmarshalling
+     * @param id
+     * @param name
+     */
+    public CombinedDataTrack( String id, String name) {
         super(null, id, name, null);
+    }
+    public CombinedDataTrack(DataSource dataSource, String id, String name) {
+        super(null, id, name, dataSource);
     }
 
     @Override

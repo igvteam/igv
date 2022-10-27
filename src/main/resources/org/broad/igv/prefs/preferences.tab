@@ -5,12 +5,18 @@ IGV.track.show.attribute.views	Show attribute panel	boolean	FALSE
 SHOW_DEFAULT_TRACK_ATTRIBUTES	Show default track attributes	boolean	FALSE
 SHOW_REGION_BARS	Show region-of-interest boundaries	boolean	FALSE
 ENABLE_GOOGLE_MENU	Enable Google access	boolean	FALSE	Enable loading from Google apis.
-FLANKING_REGION	Feature flanking region	integer	2000	< 0 interpreted as a percentage.
-DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases)	float	-1	< 0 disables visibility window
+FLANKING_REGION	"Search for feature" padding region in bp, < 0 is interpreted as a percentage.	integer	2000	
+DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases), < 0 disables visibility window.	float	-1	
+
+##Jump To Next Feature Options (f/b Keys)
+NEXT_FIT_TO_WINDOW	Fit feature to window (with optional padding).	boolean	FALSE
+NEXT_FLANKING_REGION	Padding region in bp, < 0 is interpreted as a percentage.	integer	0
+
+##Appearance
+BACKGROUND_COLOR	Background color	color	250,250,250
 DEFAULT_FONT_FAMILY	Default font family	string	Arial
 DEFAULT_FONT_SIZE	Default font size	float	10
 SCALE_FONTS	Scale fonts	boolean	FALSE	Scale fonts for high resolution screens. Requires restart.
-BACKGROUND_COLOR	Background color	color	250,250,250
 ENABLE_ANTIALIASING	Enable anti-aliasing	boolean	TRUE
 
 #Tracks
@@ -78,12 +84,18 @@ SAM.MAX_LEVELS	Number of reads per window	integer	100
 
 SAM.COLOR_BY	Color alignments by	select NONE|READ_STRAND|FIRST_OF_PAIR_STRAND|PAIR_ORIENTATION|UNEXPECTED_PAIR|INSERT_SIZE|SAMPLE|READ_GROUP|LIBRARY|MOVIE|ZMW|BISULFITE|NOMESEQ|TAG|MAPPED_SIZE|LINK_STRAND|YC_TAG	UNEXPECTED_PAIR
 SAM.COLOR_BY_TAG	Color by TAG	string
-SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE
+SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE|MAPPING_QUALITY
 SAM.GROUP_BY_TAG	Group by TAG	string
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visibile
-SAM.QUALITY_THRESHOLD	Mapping quality threshold	int	0
+SAM.QUALITY_THRESHOLD	Mapping quality threshold	int	0	Hide alignments with MQ lower than this value
 SAM.ALIGNMENT_SCORE_THRESHOLD	Alignment score threshold	int	0
 SAM.DISPLAY_MODE	Alignment display mode	string	EXPANDED
+SAM.DISPLAY_PAIRED	Display reads as paired by default	boolean	FALSE
+---
+SAM.FLAG_ZERO_QUALITY	Flag alignments with mapping quality = 0 with transparency and solid outline	boolean	TRUE
+SAM.SHADE_ALIGNMENT_BY	Shade alignments by	select NONE|MAPPING_QUALITY_HIGH|MAPPING_QUALITY_LOW	NONE
+SAM.SHADE_QUALITY_LOW	Mapping quality low shading threshold	int	0	Alignments with MQ <= this value will be considered treated as low for shading purposes
+SAM.SHADE_QUALITY_HIGH	Mapping quality high shading threshold	int	60	Alignments with MQ >= this value will be considered treated as high for shading purposes
 ---
 SAM.SHOW_MISMATCHES	Show mismatched bases	boolean	TRUE
 SAM.SHOW_ALL_BASES	Show all bases	boolean	FALSE
@@ -95,7 +107,7 @@ SAM.FLAG_UNMAPPED_PAIR	Flag unmapped pairs	boolean	FALSE
 SAM.SHOW_CENTER_LINE	Show center line	boolean	FALSE
 SAM.SHOW_SOFT_CLIPPED	Show soft-clipped bases	boolean	FALSE
 ---
-SAM.SHADE_BASE_QUALITY	Shade mismatched bases by quality.	boolean	TRUE
+SAM.SHADE_BASE_QUALITY	Shade mismatched bases by quality.	boolean	FALSE
 SAM.BASE_QUALITY_MIN	Maximum transparency at base quality:	integer	5
 SAM.BASE_QUALITY_MAX	No transparency above base quality:	integer	20
 ---
@@ -123,13 +135,7 @@ SAM.FILTER_URL	URL or path to read group filter file	string	null
 ##Coverage Track Options
 SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2
 SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
-SAM.BASEMOD_THRESHOLD	Base modification probability threshold (0-1)	float	0.2
-
-
-##Splice Junction Track
-SAM.SHOW_JUNCTION_FLANKINGREGIONS	Show flanking regions	boolean	FALSE
-SAM.JUNCTION_MIN_FLANKING_WIDTH	Minimum flanking width	integer	0
-SAM.JUNCTION_MIN_COVERAGE	Minimum junction coverage	integer	1
+SAM.BASEMOD_THRESHOLD	Base modification average probability threshold (0-1)	float	0
 
 ##Insert Size Options
 SAM.COMPUTE_ISIZES	Compute insert size thresholds	boolean	TRUE
@@ -154,8 +160,16 @@ SAM.SHOW_JUNCTION_FLANKINGREGIONS	Show flanking regions	boolean	TRUE
 SAM.JUNCTION_MIN_FLANKING_WIDTH	Minimum flanking width	integer	0
 SAM.JUNCTION_MIN_COVERAGE	Minimum junction coverage	integer	1
 
+##Insert Size Options
+SAM.COMPUTE_ISIZES	Compute insert size thresholds	boolean	FALSE
+SAM.MIN_ISIZE_MIN_PERCENTILE	Minimum (percentile)	float	0.5
+SAM.ISIZE_MAX_PERCENTILE	Maximum (percentile)	float	99.5
+SAM.MIN_INSERT_SIZE_THRESHOLD	Default minimum (bp)	float	50
+SAM.INSERT_SIZE_THRESHOLD	Default maximum (bp)	float	100000
+
+
 #Third Gen	THIRD_GEN
-info Settings below override defaults for 3rd-gen (PacBIO, Oxford Nanopore, ...) alignments.
+info Settings below override defaults for 3rd-gen (PacBio, Oxford Nanopore, ...) alignments.
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	1000	Range at which alignments become visibile
 
 ##Downsampling
@@ -167,8 +181,8 @@ SAM.LARGE_INSERTIONS_THRESOLD	Label threshold (bases)	integer	1
 SAM.HIDE_SMALL_INDEL	Hide indels < show indel threshold	boolean	TRUE
 SAM.SMALL_INDEL_BP_THRESHOLD	Show indel threshold (bases)	integer	2
 ---
-SAM.FLAG_CLIPPING	Flag clipping > flag clipping threshold	boolean	FALSE
-SAM.CLIPPING_THRESHOLD	Flag clipping threshold (bases)	integer	0
+SAM.FLAG_CLIPPING	Flag clipping > flag clipping threshold	boolean	TRUE
+SAM.CLIPPING_THRESHOLD	Flag clipping threshold (bases)	integer	20
 ---
 SAM.QUICK_CONSENSUS_MODE	Quick consensus mode	boolean	TRUE
 SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	TRUE
@@ -190,16 +204,16 @@ PROXY.PW	Password	string	null
 
 #Advanced
 ---
-PORT_ENABLED	Enable port	boolean	FALSE
+PORT_ENABLED	Enable port	boolean	TRUE
 PORT_NUMBER	Port number	integer	60151
 ---
-IGV.genome.sequence.dir	Genome server URL	string	https://s3.amazonaws.com/igv.org.genomes/genomes.tsv
-MASTER_RESOURCE_FILE_KEY	Data registry url	string	https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt
+IGV.genome.sequence.dir	Genome server URL	string	https://igv.org/genomes/genomes.tsv
+MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
 
-BLAT_URL	Blat url	String	http://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=$SEQUENCE&type=DNA&db=$DB&output=json
+BLAT_URL	BLAT URL	String	http://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=$SEQUENCE&type=DNA&db=$DB&output=json
 ---
 
 ## Tooltip
@@ -209,15 +223,20 @@ TOOLTIP.DISMISS_DELAY	Tooltip dismiss delay (ms)	integer	60000
 
 
 ## JBrowse Circular View Integration  **EXPERIMENTAL FEATURE**
-CIRC_VIEW_ENABLED	Enable Circview	boolean	FALSE
-CIRC_VIEW_HOST	Circview host (usually localhost)	string	localhost
-CIRC_VIEW_PORT	Circview port	integer	60152
+CIRC_VIEW_ENABLED	Enable CircView	boolean	FALSE
+CIRC_VIEW_HOST	CircView host (usually localhost)	string	localhost
+CIRC_VIEW_PORT	CircView port	integer	60152
 
 
 ##
 
 
 #Hidden
+
+SAM.SHOW_JUNCTION_FLANKINGREGIONS	FALSE
+SAM.JUNCTION_MIN_FLANKING_WIDTH	0
+SAM.JUNCTION_MIN_COVERAGE	1
+
 
 SCORE_VARIANTS	FALSE
 
@@ -226,7 +245,6 @@ SAM.SHADE_CENTER	TRUE
 SAM.SHOW_REF_SEQ	FALSE
 
 SAM.BISULFITE_CONTEXT	CG
-SAM.FLAG_ZERO_QUALITY	TRUE
 SAM.NOMESEQ_ENABLED	FALSE
 SAM.COUNT_DELETED_BASES_COVERED	FALSE
 SAM.SORT_OPTION	NUCLEOTIDE

@@ -31,22 +31,22 @@ import java.awt.*;
 
 /**
  * @author benb
- *         Benjamin Berman, University of Southern California
- *         <p/>
- *         Note that this is only currently supporting a single bisulfite protocol with the following assumptions:
- *         - The first end of paired end reads have C->T variants, while the second ends have G->A
- *         - Bisulfite only affects one strand.  So for the first end, you don't see G->A and for the
- *         second end you don't see C->T.  This allows us to detect true C->T genomic changes by examining
- *         the strand opposite the bisulfite event (we use the DEAMINATION_COLOR for these variants).
- *         <p/>
- *         This is the Illumina protocol published by Joe Ecker lab (Lister et al. 2009, Lister et al. 2011)
- *         and our lab (Berman et al. 2011)
+ * Benjamin Berman, University of Southern California
+ * <p/>
+ * Note that this is only currently supporting a single bisulfite protocol with the following assumptions:
+ * - The first end of paired end reads have C->T variants, while the second ends have G->A
+ * - Bisulfite only affects one strand.  So for the first end, you don't see G->A and for the
+ * second end you don't see C->T.  This allows us to detect true C->T genomic changes by examining
+ * the strand opposite the bisulfite event (we use the DEAMINATION_COLOR for these variants).
+ * <p/>
+ * This is the Illumina protocol published by Joe Ecker lab (Lister et al. 2009, Lister et al. 2011)
+ * and our lab (Berman et al. 2011)
  */
 public class BisulfiteBaseInfo {
 
 
     public enum DisplayStatus {
-        NOTHING, COLOR, CHARACTER
+        NOTHING, RECTANGLE, CHARACTER
     }
 
     // Constants
@@ -121,37 +121,36 @@ public class BisulfiteBaseInfo {
                     readbase = (byte) (readbase - 32);
                 }
 
-                Color out = null;
+                Color color = null;
                 boolean matchesContext = false;
 
 
                 if ((byte) 'N' == readbase) {
                     if (!AlignmentUtils.compareBases(readbase, refbase)) {
-                        out = NONCYTOSINE_MISMATCH_COLOR;
+                        color = NONCYTOSINE_MISMATCH_COLOR;
                     }
-                }
-                else {
+                } else {
                     // The logic is organized according to the reference base.
                     switch (refbase) {
                         case 'T':
                         case 'A':
                         case 'G':
-                            if (AlignmentUtils.compareBases((byte) 'C', readbase)) {
-                                out = METHYLATED_COLOR;
-                            } else if (!AlignmentUtils.compareBases(readbase, refbase)) {
-                                out = NONCYTOSINE_MISMATCH_COLOR;
+                            if (!AlignmentUtils.compareBases(readbase, refbase)) {
+                                color = AlignmentUtils.compareBases((byte) 'C', readbase) ?
+                                        METHYLATED_COLOR :
+                                        NONCYTOSINE_MISMATCH_COLOR;
                             }
                             break;
                         case 'C':
                             if (!AlignmentUtils.compareBases((byte) 'C', readbase) && !AlignmentUtils.compareBases((byte) 'T', readbase)) {
-                                out = CYTOSINE_MISMATCH_COLOR;
+                                color = CYTOSINE_MISMATCH_COLOR;
                             } else {
                                 // If we had information about whether this position was a SNP or not, we could
                                 // show cytosines in any context when they are a SNP.
                                 BisulfiteContext matchingContext = contextIsMatching(reference, read, idx, bisulfiteContext);
                                 matchesContext = (matchingContext != null);
                                 if (matchesContext) {
-                                    out = getContextColor(readbase, matchingContext);
+                                    color = getContextColor(readbase, matchingContext);
                                 }
                             }
                             break;
@@ -159,13 +158,13 @@ public class BisulfiteBaseInfo {
                 }
 
                 // Remember, the output should be relative to the FW strand (use idxFw)
-                this.displayColors[idxFw] = out;
-                if (out == null) {
+                this.displayColors[idxFw] = color;
+                if (color == null) {
                     this.displayStatus[idxFw] = DisplayStatus.NOTHING;
                 } else {
                     if (matchesContext) {
-                        // Display the color
-                        this.displayStatus[idxFw] = DisplayStatus.COLOR;
+                        // Display the color as a rectangle
+                        this.displayStatus[idxFw] = DisplayStatus.RECTANGLE;
                     } else {
                         // Display the character
                         this.displayStatus[idxFw] = DisplayStatus.CHARACTER;
@@ -178,22 +177,18 @@ public class BisulfiteBaseInfo {
         //this.numDisplayStatus();
     }
 
+    /**
+     * getContextColor for CG context -- called for forward strand readbase "C" in this (CG) context.  There are
+     * only 2 possiblilities for the default protocol represented by this base class.   This method is overriden
+     * for "NOMeseq" in a subclass.
+     *
+     * @param readbase
+     * @param bisulfiteContext
+     * @return
+     */
 
-    protected Color getContextColor(byte readbase,
-                                    BisulfiteContext bisulfiteContext) {
-        Color out = null;
-        if (AlignmentUtils.compareBases((byte) 'T', readbase)) {
-            out = UNMETHYLATED_COLOR;
-        } else if (AlignmentUtils.compareBases((byte) 'C', readbase)) {
-            out = METHYLATED_COLOR;
-        }
-        // C and T should be the only options at this point
-        //						else
-        //						{
-        //							out = Color.yellow;
-        //						}
-
-        return out;
+    protected Color getContextColor(byte readbase, BisulfiteContext bisulfiteContext) {
+        return AlignmentUtils.compareBases((byte) 'T', readbase) ? UNMETHYLATED_COLOR : METHYLATED_COLOR;
     }
 
 
@@ -214,65 +209,7 @@ public class BisulfiteBaseInfo {
         }
 
         // Get the context and see if it matches our desired context.
-        byte[] preContext = AlignmentTrack.getBisulfiteContextPreContext(bisulfiteContext);
-        byte[] postContext = AlignmentTrack.getBisulfiteContextPostContext(bisulfiteContext);
-
-        boolean matchesContext = true;
-
-        // First do the "post" context
-        int minLen = Math.min(reference.length, read.length);
-        if ((idx + postContext.length) >= minLen) {
-            matchesContext = false;
-        } else {
-            // Cut short whenever we don't match
-            for (int posti = 0; matchesContext && (posti < postContext.length); posti++) {
-                byte contextb = postContext[posti];
-                int offsetidx = idx + 1 + posti;
-                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read.getByte(offsetidx));
-
-                //				System.err.printf("POST posMatchesContext(posti=%d, contextb=%c, refb=%c, readb=%c, offsetidx=%d) = %s\n",
-                //						posti, contextb, reference[offsetidx], read[offsetidx], offsetidx, matchesContext);
-
-            }
-        }
-
-        // Now do the pre context
-        if ((idx - preContext.length) < 0) {
-            matchesContext = false;
-        } else {
-            // Cut short whenever we don't match
-            for (int prei = 0; matchesContext && (prei < preContext.length); prei++) {
-                byte contextb = preContext[prei];
-                int offsetidx = idx - (preContext.length - prei);
-                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read.getByte(offsetidx));
-                //				System.err.printf("PRE posMatchesContext(prei=%d, contextb=%c, refb=%c, readb=%c, offsetidx=%d) = %s\n",
-                //						prei, contextb, reference[offsetidx], read[offsetidx], offsetidx, matchesContext);
-            }
-        }
-
-        return (matchesContext) ? bisulfiteContext : null;
-    }
-
-    /**
-     * @param contextb      The residue in the context string (IUPAC)
-     * @param referenceBase The reference sequence (already checked that offsetidx is within bounds)
-     * @param readBase      The read sequence (already checked that offsetidx is within bounds)
-     * @return
-     */
-    protected boolean positionMatchesContext(byte contextb, final byte referenceBase, final byte readBase) {
-
-        boolean matchesContext = AlignmentUtils.compareBases(contextb, referenceBase);
-        if (!matchesContext) {
-            return false; // Don't need to check any further
-        }
-
-        // For the read, we have to handle C separately
-        boolean matchesReadContext = AlignmentUtils.compareBases(contextb, readBase);
-        if (AlignmentUtils.compareBases((byte) 'T', readBase)) {
-            matchesReadContext |= AlignmentUtils.compareBases(contextb, (byte) 'C');
-        }
-
-        return matchesReadContext;
+        return bisulfiteContext.getMatchingBisulfiteContext(reference, read, idx);
     }
 
     public Color getDisplayColor(int idx) {
@@ -300,7 +237,7 @@ public class BisulfiteBaseInfo {
         double offset = 0.0;
         // This gets CpGs on opposite strands to line up. Only do it for meth values though, not snps
 
-        if (DisplayStatus.COLOR == getDisplayStatus(idx)) {
+        if (DisplayStatus.RECTANGLE == getDisplayStatus(idx)) {
             double baseOffset = getBisulfiteSymmetricCytosineShift(myContext);
             offset = offset + ((flipRead ? -1 : 1) * baseOffset);
         }

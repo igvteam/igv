@@ -37,9 +37,10 @@ import java.util.*;
  * Time: 3:10:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BigBedIterator implements Iterator<BedFeature> {
+public class BigBedIterator implements Iterator<BedData> {
 
     private static Logger log = LogManager.getLogger(BigBedIterator.class);
+    private BBFileHeader header;
 
     //specification of chromosome selection region
     private RPChromosomeRegion selectionRegion;  // selection region for iterator
@@ -52,7 +53,7 @@ public class BigBedIterator implements Iterator<BedFeature> {
 
     // chromosome region extraction items
     private Map<Integer, String> chromosomeMap;  // map of chromosome ID's and corresponding names
-    List<BedFeature> features;
+    List<BedData> features;
     int currentIdx = 0;
 
     /**
@@ -71,13 +72,14 @@ public class BigBedIterator implements Iterator<BedFeature> {
      * contained - specifies bed features must be contained by region, if true;
      * else return any intersecting region features
      */
-    public BigBedIterator(SeekableStream fis, BPTree chromIDTree, RPTree chromDataTree,
+    public BigBedIterator(SeekableStream fis, BBFileHeader header, BPTree chromIDTree, RPTree chromDataTree,
                           RPChromosomeRegion selectionRegion, boolean contained) {
 
         // check for valid selection region
         if (selectionRegion == null)
             throw new RuntimeException("Error: BigBedIterator selection region is null\n");
 
+        this.header = header;
         this.fis = fis;
         this.chromIDTree = chromIDTree;
         this.chromDataTree = chromDataTree;
@@ -85,7 +87,7 @@ public class BigBedIterator implements Iterator<BedFeature> {
         this.contained = contained;
 
         List<RPTreeLeafNodeItem> leafNodeItems = chromDataTree.getChromosomeDataHits(selectionRegion, contained);
-        features = new ArrayList<BedFeature>(512 * leafNodeItems.size());
+        features = new ArrayList<BedData>(512 * leafNodeItems.size());
         for (RPTreeLeafNodeItem item : leafNodeItems) {
             features.addAll(readBedDataBlock(item));
         }
@@ -100,8 +102,8 @@ public class BigBedIterator implements Iterator<BedFeature> {
         return currentIdx < features.size();
     }
 
-    public BedFeature next() {
-        BedFeature retvalue = features.get(currentIdx);
+    public BedData next() {
+        BedData retvalue = features.get(currentIdx);
         currentIdx++;
         return retvalue;
     }
@@ -135,7 +137,7 @@ public class BigBedIterator implements Iterator<BedFeature> {
    *   Returns:
    *       Successful Bed feature data block set up: true or false.
    * */
-    private List<BedFeature> readBedDataBlock(RPTreeLeafNodeItem leafHitItem) {
+    private List<BedData> readBedDataBlock(RPTreeLeafNodeItem leafHitItem) {
 
         // get the chromosome names associated with the hit region ID's
         int startChromID = leafHitItem.getChromosomeBounds().getStartChromID();
@@ -146,8 +148,7 @@ public class BigBedIterator implements Iterator<BedFeature> {
         int uncompressBufSize = chromDataTree.getUncompressBuffSize();
 
         // decompress leaf item data block for feature extraction
-        BigBedDataBlock bedDataBlock = new BigBedDataBlock(fis, leafHitItem, chromosomeMap, isLowToHigh,
-                uncompressBufSize);
+        BigBedDataBlock bedDataBlock = new BigBedDataBlock(fis, header, leafHitItem, chromosomeMap, isLowToHigh, uncompressBufSize);
 
         // get data block Bed feature list and set next index to first item
         return bedDataBlock.getBedData(selectionRegion, contained);

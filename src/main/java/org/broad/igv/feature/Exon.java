@@ -116,7 +116,7 @@ public class Exon extends AbstractFeature implements IExon {
         this.strand = bf.getStrand();
         this.codingStart = bf.getCdStart();
         this.codingEnd = bf.getCdEnd();
-        this.chromosome = bf.getChr();
+        this.chr = bf.getChr();
         this.type = bf.getType();
         this.color = bf.getColor();
         this.description = bf.getDescription();
@@ -134,7 +134,7 @@ public class Exon extends AbstractFeature implements IExon {
         this.strand = bf.getStrand();
         this.codingStart = bf.getThickStart();
         this.codingEnd = bf.getThickEnd();
-        this.chromosome = bf.getChr();
+        this.chr = bf.getChr();
         this.type = bf.getType();
         this.color = bf.getColor();
         this.description = bf.getDescription();
@@ -299,10 +299,6 @@ public class Exon extends AbstractFeature implements IExon {
 
     public void setNumber(int number) {
         this.number = number;
-    }
-
-    public String getURL() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public static IExon getExonProxy(IExon exon) {

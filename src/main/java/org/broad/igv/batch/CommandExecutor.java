@@ -30,25 +30,26 @@
 
 package org.broad.igv.batch;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.oauth.OAuthUtils;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.SortOption;
 import org.broad.igv.session.Session;
+import org.broad.igv.session.SessionReader;
 import org.broad.igv.session.SessionWriter;
-import org.broad.igv.track.AttributeManager;
-import org.broad.igv.track.DataTrack;
-import org.broad.igv.track.RegionScoreType;
-import org.broad.igv.track.Track;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.action.OverlayTracksMenuAction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -59,10 +60,11 @@ import org.broad.igv.util.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CommandExecutor {
 
@@ -70,31 +72,36 @@ public class CommandExecutor {
 
     private File snapshotDirectory;
     private IGV igv;
+    private String scriptDir;
     private int sleepInterval = 0; //2000;
 
-
     public CommandExecutor(IGV igv) {
+        this(igv, null);
+    }
+
+    public CommandExecutor(IGV igv, String scriptDir) {
         this.igv = igv;
+        this.scriptDir = scriptDir;
     }
 
     private List<String> getArgs(String[] tokens) {
         List<String> args = new ArrayList(tokens.length);
         for (String s : tokens) {
             if (s.trim().length() > 0) {
-                args.add(StringUtils.stripQuotes(s.trim()));
+                args.add(s.trim());
             }
         }
         return args;
     }
 
 
-    public String execute(String command) {
+    public String execute(String commandLine) {
 
-        List<String> args = getArgs(StringUtils.breakQuotedString(command, ' ').toArray(new String[]{}));
+        List<String> args = getArgs(StringUtils.breakQuotedString(commandLine, ' ').toArray(new String[]{}));
 
         String result = "OK";
 
-        log.debug("Executing: " + command);
+        log.debug("Executing: " + commandLine);
         try {
             if (args.size() == 0) {
                 return "Empty command string";
@@ -107,24 +114,23 @@ public class CommandExecutor {
             String param4 = args.size() > 4 ? args.get(4) : null;
 
             if (cmd.equalsIgnoreCase("echo")) {
-                result = cmd;
+                result = param1 != null ? param1 : cmd;
             } else if (cmd.equalsIgnoreCase("gotoimmediate") || cmd.equalsIgnoreCase("goto")) {
                 result = goto1(args);
             } else if (cmd.equalsIgnoreCase("addframes")) {
                 result = addFrames(args);
             } else if (cmd.equalsIgnoreCase("scrolltotrack") || cmd.equalsIgnoreCase("gototrack")) {
-                boolean res = this.igv.scrollToTrack(param1);
+                boolean res = this.igv.scrollToTrack(StringUtils.stripQuotes(param1));
                 result = res ? "OK" : String.format("Error: Track %s not found", param1);
             } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
                 result = setSnapshotDirectory(param1);
             } else if (cmd.equalsIgnoreCase("snapshot")) {
-                String filename = param1;
-                result = createSnapshot(filename, param2);
-            } else if (cmd.equalsIgnoreCase("saveSession")) {
+                result = createSnapshot(param1, param2);
+            } else if (cmd.equalsIgnoreCase("savesession")) {
                 String filename = param1;
                 result = saveSession(filename);
             } else if ((cmd.equalsIgnoreCase("loadfile") || cmd.equalsIgnoreCase("load")) && param1 != null) {
-                result = load(param1, param2, param3, param4);
+                result = load(param1, args.size() > 2 ? args.subList(2, args.size()) : null);
             } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
                 result = genome(param1);
             } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
@@ -139,9 +145,9 @@ public class CommandExecutor {
                 result = colorBy(param1, param2);
             } else if (cmd.equalsIgnoreCase("collapse")) {
                 String trackName = parseTrackName(param1);
-                igv.setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
+                setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
             } else if (cmd.equalsIgnoreCase("setSequenceStrand")) {
-                igv.setSequenceTrackStrand(Strand.fromString(param1));
+                setSequenceTrackStrand(Strand.fromString(param1));
             } else if (cmd.equalsIgnoreCase("setSequenceShowTranslation")) {
                 boolean showTranslation;
                 try {
@@ -153,13 +159,13 @@ public class CommandExecutor {
                 } catch (IllegalArgumentException e) {
                     return e.getMessage();
                 }
-                igv.setSequenceShowTranslation(showTranslation);
+                setSequenceShowTranslation(showTranslation);
             } else if (cmd.equalsIgnoreCase("expand")) {
                 String trackName = parseTrackName(param1);
-                igv.setTrackDisplayMode(Track.DisplayMode.EXPANDED, trackName);
+                setTrackDisplayMode(Track.DisplayMode.EXPANDED, trackName);
             } else if (cmd.equalsIgnoreCase("squish")) {
                 String trackName = parseTrackName(param1);
-                igv.setTrackDisplayMode(Track.DisplayMode.SQUISHED, trackName);
+                setTrackDisplayMode(Track.DisplayMode.SQUISHED, trackName);
             } else if (cmd.equalsIgnoreCase("remove")) {
                 String trackName = parseTrackName(param1);
                 result = removeTrack(trackName);
@@ -199,8 +205,10 @@ public class CommandExecutor {
                 FrameManager.incrementZoom(1);
             } else if (cmd.equals("zoomout")) {
                 FrameManager.incrementZoom(-1);
-            } else if ("oauth".equals(cmd)) {
-                OAuthUtils.getInstance().getProvider().setAccessToken(param1);
+            } else if ("oauth".equals(cmd) || cmd.equalsIgnoreCase("setaccesstoken")) {
+                HttpUtils.getInstance().setAccessToken(param1, param2);
+            } else if(cmd.equals("clearaccesstokens")) {
+                HttpUtils.getInstance().clearAccessTokens();
             } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
                 result = sortByAttribute(args);
             } else if (cmd.equalsIgnoreCase("fitTracks")) {
@@ -211,9 +219,13 @@ public class CommandExecutor {
                 result = this.setShowDataRange(param1, param2);
             } else if (cmd.equalsIgnoreCase("setTrackHeight")) {
                 result = this.setTrackHeight(param1, param2);
+            } else if (cmd.equalsIgnoreCase("overlay")) {
+                result = this.overlay(args);
+            } else if (cmd.equalsIgnoreCase("separate")) {
+                result = this.separate(param1);
             } else {
-                result = "UNKOWN COMMAND: " + command;
-                log.error(result);
+                result = "UNKOWN COMMAND: " + commandLine;
+                log.warn(result);
                 return result;
             }
 
@@ -223,7 +235,7 @@ public class CommandExecutor {
                 log.debug("Running garbage collection");
                 System.gc();
             }
-            log.debug("Finished execution: " + command + "  sleeping ....");
+            log.debug("Finished execution: " + commandLine + "  sleeping ....");
             if (sleepInterval > 0) try {
                 Thread.sleep(sleepInterval);
             } catch (InterruptedException e) {
@@ -278,12 +290,13 @@ public class CommandExecutor {
     }
 
     private String removeTrack(String trackName) {
-        if (trackName == null) return "Error: NULL TRACK NAME";
-        for (Track track : igv.getAllTracks()) {
-            if (track.getName().equals(trackName)) {
-                igv.deleteTracks(Arrays.asList(track));
-                return "OK";
-            }
+        if (trackName == null) {
+            return "Error: NULL TRACK NAME";
+        }
+        List<Track> tracks = tracksMatchingName(trackName);
+        if (tracks.size() > 0) {
+            igv.deleteTracks(tracks);
+            return "OK";
         }
         return String.format("Error: Track %s not found", trackName);
     }
@@ -298,7 +311,7 @@ public class CommandExecutor {
     }
 
     private String setDataRange(String dataRangeString, String trackName) {
-        List<Track> tracks = igv.getAllTracks();
+
         String[] tokens = dataRangeString.split(",");
         //Min,max or min,baseline,max
         DataRange range = null;
@@ -322,19 +335,23 @@ public class CommandExecutor {
                 return e.getMessage();
             }
         }
-
+        List<Track> tracks = tracksMatchingName(trackName);
         for (Track track : tracks) {
-            if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                if (!autoscale) track.setDataRange(range);
-                track.setAutoScale(autoscale);
+            if (!autoscale) {
+                if (track.getDataRange().isLog()) {
+                    range.setType(DataRange.Type.LOG);  // Maintain "logness"
+                }
+                track.setDataRange(range);
             }
+            track.setAutoScale(autoscale);
+
         }
         igv.repaint();
         return "OK";
     }
 
     private String setLogScale(String logScaleString, String trackName) {
-        List<Track> tracks = igv.getAllTracks();
+
         boolean logScale;
         try {
             if (logScaleString.equalsIgnoreCase("true") || logScaleString.equalsIgnoreCase("false")) {
@@ -348,14 +365,11 @@ public class CommandExecutor {
         DataRange.Type scaleType = logScale == true ?
                 DataRange.Type.LOG :
                 DataRange.Type.LINEAR;
-        List<Track> affectedTracks = new ArrayList<>();
+        List<Track> tracks = tracksMatchingName(trackName);
         for (Track track : tracks) {
-            if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                track.getDataRange().setType(scaleType);
-                affectedTracks.add(track);
-            }
+            track.getDataRange().setType(scaleType);
         }
-        igv.repaint(affectedTracks);
+        igv.repaint(tracks);
         return "OK";
     }
 
@@ -366,36 +380,81 @@ public class CommandExecutor {
             if (color == null) {
                 return "Error: unrecognized color value " + colorString;
             }
-            List<Track> tracks = igv.getAllTracks();
+            List<Track> tracks = tracksMatchingName(trackName);
             List<Track> affectedTracks = new ArrayList<>();
             for (Track track : tracks) {
-                if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                    if (alt) {
-                        track.setAltColor(color);
-                    } else {
-                        track.setColor(color);
-                    }
-                    affectedTracks.add(track);
+                if (alt) {
+                    track.setAltColor(color);
+                } else {
+                    track.setColor(color);
                 }
+                affectedTracks.add(track);
+
             }
             igv.repaint(affectedTracks);
             return "OK";
         } catch (Exception e) {
             return "Error setting track color: " + e.getMessage();
         }
+    }
 
+    private String overlay(List<String> args) {
+        if (args.size() > 2) {
+            String name = StringUtils.isQuoted(args.get(1)) ?
+                    StringUtils.stripQuotes(args.get(1)) :
+                    URLDecoder.decode(args.get(1), Charset.defaultCharset());
+            List<DataTrack> tracks = new ArrayList<>();
+            for (int i = 2; i < args.size(); i++) {
+                List<Track> tmp = this.tracksMatchingName(args.get(i));
+                for (Track t : tmp) {
+                    if (t instanceof DataTrack) {
+                        tracks.add((DataTrack) t);
+                    }
+                }
+            }
+            OverlayTracksMenuAction.merge(tracks, name);
+            return "OK";
+        } else {
+            return "overlay command requires at least 2 arguments (trackName track1 track2 ...)";
+        }
+    }
 
+    private String separate(String trackName) {
+        List<Track> tmp = this.tracksMatchingName(trackName);
+        if (tmp != null && tmp.size() > 0) {
+            OverlayTracksMenuAction.unmerge(tmp);
+            return "OK";
+        } else {
+            return "No track found matching " + trackName;
+        }
+    }
+
+    private List<Track> tracksMatchingName(String name) {
+        List<Track> tracks = igv.getAllTracks();
+        if (name == null) {
+            return tracks;
+        } else {
+            String altName = StringUtils.isQuoted(name) ?
+                    StringUtils.stripQuotes(name) :
+                    URLDecoder.decode(name, Charset.defaultCharset());
+
+            return tracks.stream()
+                    .filter(t ->
+                            name.equalsIgnoreCase(t.getName()) || altName.equalsIgnoreCase(t.getName()) ||
+                                    (t.getResourceLocator() != null && name.equals(t.getResourceLocator().getPath())) ||
+                                    (t.getResourceLocator() != null && altName.equals(t.getResourceLocator().getPath()))
+                    )
+                    .collect(Collectors.toList());
+        }
     }
 
     private String setViewAsPairs(String vAPString, String trackName) {
-        List<Track> tracks = igv.getAllTracks();
+        List<Track> tracks = tracksMatchingName(trackName);
         boolean vAP = "false".equalsIgnoreCase(vAPString) ? false : true;
         for (Track track : tracks) {
             if (track instanceof AlignmentTrack) {
-                if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                    AlignmentTrack atrack = (AlignmentTrack) track;
-                    atrack.setViewAsPairs(vAP);
-                }
+                AlignmentTrack atrack = (AlignmentTrack) track;
+                atrack.setViewAsPairs(vAP);
             }
         }
         return "OK";
@@ -419,29 +478,60 @@ public class CommandExecutor {
             hiddenAttributes.remove(attributeName);
         }
         igv.getSession().setHiddenAttributes(hiddenAttributes);
-        igv.getMainPanel().revalidateTrackPanels();
+        igv.revalidateTrackPanels();
         return "OK";
     }
 
 
-    private String setTrackHeight(String trackName, String value) {
-        if (trackName == null) return "Error: NULL TRACK NAME";
-        trackName = parseTrackName(trackName);
-        int height = Integer.parseInt(value);
-        height = Math.max(0, height);
+    private void setTrackDisplayMode(Track.DisplayMode mode, String trackName) {
+        for (Track t : tracksMatchingName(trackName)) {
+            t.setDisplayMode(mode);
+        }
+    }
 
-        for (Track track : igv.getAllTracks()) {
-            if (track.getName().equals(trackName)) {
-                track.setHeight(height, true);
-                igv.repaint(track);
-                return "OK";
+    private void setSequenceTrackStrand(Strand trackStrand) {
+        for (Track t : igv.getAllTracks()) {
+            if (t instanceof SequenceTrack) {
+                ((SequenceTrack) t).setStrand(trackStrand);
             }
         }
-        return String.format("Error: Track %s not found", trackName);
+    }
+
+    private void setSequenceShowTranslation(boolean shouldShowTranslation) {
+        for (Track t : igv.getAllTracks()) {
+            if (t instanceof SequenceTrack) {
+                ((SequenceTrack) t).setShowTranslation(shouldShowTranslation);
+            }
+        }
+    }
+
+    private String setTrackHeight(String param1, String param2) {
+
+        int height;
+        String trackName;
+        try {
+            height = Integer.parseInt(param1);
+            trackName = parseTrackName(param2);
+        } catch (NumberFormatException e) {
+            height = Integer.parseInt(param2);
+            trackName = parseTrackName(param1);
+        }
+
+        height = Math.max(0, height);
+        List<Track> tracks = tracksMatchingName(trackName);
+        if (tracks.size() > 0) {
+            for (Track track : tracks) {
+                track.setHeight(height, true);
+                igv.repaint(track);
+            }
+            return "OK";
+        } else {
+            return String.format("Error: Track %s not found", trackName);
+        }
     }
 
     private String setShowDataRange(String show, String trackName) {
-        List<Track> tracks = igv.getAllTracks();
+
         boolean showDataRange;
         try {
             if (show.equalsIgnoreCase("true") || show.equalsIgnoreCase("false")) {
@@ -453,8 +543,9 @@ public class CommandExecutor {
             return e.getMessage();
         }
         List<Track> affectedTracks = new ArrayList<>();
+        List<Track> tracks = tracksMatchingName(trackName);
         for (Track track : tracks) {
-            if (track instanceof DataTrack && (trackName == null || trackName.equalsIgnoreCase(track.getName()))) {
+            if (track instanceof DataTrack) {
                 ((DataTrack) track).setShowDataRange(showDataRange);
                 affectedTracks.add(track);
             }
@@ -558,55 +649,43 @@ public class CommandExecutor {
      * Load function for port and batch script
      *
      * @param fileString path to file
-     * @param param2
-     * @param param3
+     * @param params     optional parameters
      * @return
      * @throws IOException
      */
-    private String load(String fileString, String param2, String param3, String param4) throws IOException {
-
-        // Default for merge is "true" for session files,  "false" otherwise
-        String tmpFile = StringUtils.stripQuotes(fileString);
-        boolean merge = !(tmpFile.endsWith(".xml") || tmpFile.endsWith(".php") || tmpFile.endsWith(".php3"));
+    private String load(String fileString, List<String> params) throws IOException {
 
         // remaining parameters might be "merge", "name", or "index"
         String name = null;
         String index = null;
         String coverage = null;
         String format = null;
-        for (String param : Arrays.asList(param2, param3)) {
-            if (param != null && param.startsWith("name=")) {
-                name = param.substring(5);
-            } else if (param != null && param.startsWith("merge=")) {
-                String mergeString = param.substring(6);
-                merge = mergeString.equalsIgnoreCase("true");
-            } else if (param != null && param.startsWith("index=")) {
-                index = param.substring(6);
-            } else if (param != null && param.startsWith("coverage=")) {
-                coverage = param.substring(9);
-            } else if (param != null && param.startsWith("format=")) {
-                format = param.substring(7);
+        boolean merge = true;
+        if (params != null) {
+            for (String param : params) {
+                if (param != null && param.startsWith("name=")) {
+                    name = param.substring(5);
+                } else if (param != null && param.startsWith("merge=")) {
+                    String mergeString = param.substring(6);
+                    merge = !mergeString.equalsIgnoreCase("false");
+                } else if (param != null && param.startsWith("index=")) {
+                    index = param.substring(6);
+                } else if (param != null && param.startsWith("coverage=")) {
+                    coverage = param.substring(9);
+                } else if (param != null && param.startsWith("format=")) {
+                    format = param.substring(7);
+                }
             }
         }
 
 
         // Locus is not specified from port commands
         String locus = null;
-        Map<String, String> params = null;
-        return loadFiles(fileString, index, coverage, name, format, locus, merge, params);
+        Map<String, String> ignore = null;
+        String sort = null;
+        String sortTag = null;
+        return loadFiles(fileString, index, coverage, name, format, locus, merge, ignore, sort, sortTag, true);
 
-    }
-
-
-    String loadFiles(final String fileString,
-                     final String indexString,
-                     final String coverageString,
-                     final String nameString,
-                     final String formatString,
-                     final String locus,
-                     final boolean merge,
-                     Map<String, String> params) throws IOException {
-        return loadFiles(fileString, indexString, coverageString, nameString, formatString, locus, merge, params, null, null);
     }
 
     /**
@@ -619,6 +698,7 @@ public class CommandExecutor {
      * @param params
      * @param sort
      * @param sortTag    Used iff sort == SortOption.TAG
+     * @param dup
      * @return
      * @throws IOException
      */
@@ -631,91 +711,74 @@ public class CommandExecutor {
                      final boolean merge,
                      Map<String, String> params,
                      String sort,
-                     String sortTag) throws IOException {
-
-
-        log.debug("Run load files");
+                     String sortTag,
+                     boolean dup) {
 
         boolean isDataURL = ParsingUtils.isDataURL(fileString);
 
-        List<String> files = isDataURL ? Arrays.asList(fileString) : StringUtils.breakQuotedString(fileString, ',');
-        List<String> names = StringUtils.breakQuotedString(nameString, ',');
-        List<String> indexFiles = StringUtils.breakQuotedString(indexString, ',');
-        List<String> coverageFiles = StringUtils.breakQuotedString(coverageString, ',');
-        List<String> formats = StringUtils.breakQuotedString(formatString, ',');
-
-        if (files.size() == 1 && !ParsingUtils.isDataURL(files.get(0))) {
-            // String might be URL encoded
-            files = StringUtils.breakQuotedString(fileString.replaceAll("%2C", ","), ',');
-            names = nameString != null ? StringUtils.breakQuotedString(nameString.replaceAll("%2C", ","), ',') : null;
-            indexFiles = indexString != null ? StringUtils.breakQuotedString(indexString.replaceAll("%2C", ","), ',') : null;
-            coverageFiles = coverageString != null ? StringUtils.breakQuotedString(coverageString.replaceAll("%2C", ","), ',') : null;
-            formats = formatString != null ? StringUtils.breakQuotedString(formatString.replaceAll("%2C", ","), ',') : null;
-        }
-
+        List<String> files = isDataURL ? Arrays.asList(fileString) : breakFileString(fileString);
+        List<String> indexFiles = isDataURL ? null : breakFileString(indexString);
+        List<String> coverageFiles = breakFileString(coverageString);
+        List<String> names = breakFileString(nameString);
+        List<String> formats = breakFileString(formatString);
         if (names != null && names.size() != files.size()) {
             return "Error: If file is a comma-separated list, names must also be a comma-separated list of the same length";
         }
-
         if (indexFiles != null && indexFiles.size() != files.size()) {
             return "Error: If file is a comma-separated list, index must also be a comma-separated list of the same length";
         }
+        if (isDataURL && formatString == null) {
+            return "Error: format must be specified for dataURLs";
+        }
 
+        // Fix formats -- backward compatibility
+        if (formats != null) {
+            for (int i = 0; i < formats.size(); i++) {
+                String formatOrExt = decodeFileString(formats.get(i));
+                String format = formatOrExt.startsWith(".") ? formatOrExt.substring(1) : formatOrExt;
+                formats.set(i, format);
 
-        // Must decode URLs (local or remote), but leave local file paths only
-        for (int ii = 0; ii < files.size(); ii++) {
-            files.set(ii, decodeFileString(files.get(ii).replace("\"", "")));
-            if (names != null) {
-                names.set(ii, names.get(ii).replace("\"", ""));
-            }
-            if (indexFiles != null) {
-                indexFiles.set(ii, decodeFileString(indexFiles.get(ii).replace("\"", "")));
-            }
-            if (coverageFiles != null) {
-                coverageFiles.set(ii, decodeFileString(coverageFiles.get(ii).replace("\"", "")));
-            }
-            if (formatString != null) {
-                formats.set(ii, decodeFileString(formats.get(ii).replace("\"", "")));
             }
         }
 
-        List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
-        List<String> sessionPaths = new ArrayList<String>();
+        List<ResourceLocator> fileLocators = new ArrayList<>();
 
-        if (!merge) {
-            // If this is a session file start fresh without asking, otherwise ask
-            boolean unload = !merge;
-            if (fileString.endsWith(".xml") || fileString.endsWith(".php") || fileString.endsWith(".php3")) {
-                unload = !merge;
-            } else {
-                unload = true;
-            }
-            if (unload) {
-                igv.newSession();
-            }
+        if (!SessionReader.isSessionFile(fileString) && merge == false) {
+            igv.newSession();
         }
 
         // Create set of loaded files
-        Set<String> loadedFiles = new HashSet<String>();
+        Set<String> loadedFiles = new HashSet<>();
         for (ResourceLocator rl : igv.getDataResourceLocators()) {
             loadedFiles.add(rl.getPath());
         }
 
+
         // Loop through files
-
         for (int fi = 0; fi < files.size(); fi++) {
-
             String f = files.get(fi);
-
-            if (isDataURL && formats == null) {
-                throw new Error("ERROR: format must be specified for dataURLs");
+            if (!FileUtils.isRemote(f)) {
+                File maybeFile = getFile(f);
+                if (maybeFile.exists()) {
+                    f = maybeFile.getAbsolutePath();
+                } else {
+                    maybeFile = new File(this.scriptDir, StringUtils.stripQuotes(f));
+                    if (maybeFile.exists()) {
+                        f = maybeFile.getAbsolutePath();
+                    }
+                }
             }
 
-            // Skip already loaded files TODO -- make this optional?  Check for change?
-            if (loadedFiles.contains(f)) continue;
+            if (isDataURL && formats == null) {
+                return "Error: format must be specified for dataURLs";
+            }
 
-            if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3") || f.endsWith(".session")) {
-                sessionPaths.add(f);
+
+            // Skip already loaded files
+            if (!dup && loadedFiles.contains(f)) continue;
+
+            if (SessionReader.isSessionFile(f)) {
+                igv.loadSession(f, locus);
             } else {
 
                 ResourceLocator rl = new ResourceLocator(f);
@@ -732,9 +795,7 @@ public class CommandExecutor {
                     rl.setCoverage(coverageFiles.get(fi));
                 }
                 if (formats != null) {
-                    String format = formats.get(fi);
-                    if (!("ga4gh".equals(format)) && !format.startsWith(".")) format = "." + format;
-                    rl.setFormat(format);
+                    rl.setFormat(formats.get(fi));
                 }
 
                 if (params != null) {
@@ -745,19 +806,17 @@ public class CommandExecutor {
                 if (!isDataURL && rl.isLocal()) {
                     File file = new File(rl.getPath());
                     if (!file.exists()) {
-                        throw new Error("Error: " + f + " does not exist.");
+                        return "Error: " + f + " does not exist.";
                     }
                 }
-
                 fileLocators.add(rl);
             }
         }
 
-        for (String sessionPath : sessionPaths) {
-            igv.restoreSessionSynchronous(sessionPath, locus, merge);
-        }
 
-        igv.loadTracks(fileLocators);
+        if (fileLocators.size() > 0) {
+            igv.loadTracks(fileLocators);
+        }
 
         if (locus != null && !locus.equals("null")) {
             igv.goToLocus(locus);
@@ -774,12 +833,36 @@ public class CommandExecutor {
         }
 
         if (sort != null) {
-            final AlignmentTrack.SortOption sortOption = getAlignmentSortOption(sort);
-            igv.sortAlignmentTracks(sortOption, sortTag);
+            final SortOption sortOption = getAlignmentSortOption(sort);
+            igv.sortAlignmentTracks(sortOption, sortTag, false);
         }
 
         return CommandListener.OK;
     }
+
+
+    static List<String> breakFileString(String fileString) {
+        if (fileString == null) {
+            return null;
+        }
+        List<String> files = StringUtils.breakQuotedString(fileString, ',');
+        if (files.size() == 1) {
+            // String might be URL encoded
+            List<String> files2 = StringUtils.breakQuotedString(fileString.replaceAll("%2C", ","), ',');
+            if (files2.size() > 1) {
+                files = files2;
+            }
+        }
+
+        // URL decode strings.   This could be problematic as we don't know they were encoded, but its been like this
+        // since 2009
+        for (int ii = 0; ii < files.size(); ii++) {
+            files.set(ii, decodeFileString(files.get(ii)));
+        }
+
+        return files;
+    }
+
 
     /**
      * If {@code fileString} is a URL and can be decoded,
@@ -789,7 +872,9 @@ public class CommandExecutor {
      * @return
      */
     static String decodeFileString(String fileString) {
-        if (needsDecode(fileString)) {
+        if (StringUtils.isQuoted(fileString)) {
+            return StringUtils.stripQuotes(fileString);
+        } else if (needsDecode(fileString)) {
             return StringUtils.decodeURL(fileString);
         } else {
             return fileString;
@@ -797,6 +882,7 @@ public class CommandExecutor {
     }
 
     static boolean needsDecode(String fileString) {
+
         String decodedString = decodeSafe(fileString);
         return (decodedString != null && (URLUtils.isURL(fileString) || URLUtils.isURL(decodedString)));
     }
@@ -843,25 +929,17 @@ public class CommandExecutor {
             return "ERROR: missing directory parameter";
         }
 
-        param1 = StringUtils.stripQuotes(param1);
-
-        File parentDir = null;
-        try {
-            parentDir = getFile(param1);
-        } catch (URISyntaxException e) {
-            log.error("Error parsing directory path: " + param1, e);
-            return "Error parsing directory path: " + param1;
-        }
+        File snapshotDir = getFile(param1);
 
         String result;
-        if (parentDir.exists()) {
-            snapshotDirectory = parentDir;
+        if (snapshotDir.exists()) {
+            snapshotDirectory = snapshotDir;
             result = "OK";
         } else {
-            createParents(parentDir);
-            parentDir.mkdir();
-            if (parentDir.exists()) {
-                snapshotDirectory = parentDir;
+            createParents(snapshotDir);
+            snapshotDir.mkdir();
+            if (snapshotDir.exists()) {
+                snapshotDirectory = snapshotDir;
                 result = "OK";
             } else {
                 result = "ERROR: directory: " + param1 + " does not exist";
@@ -870,25 +948,35 @@ public class CommandExecutor {
         return result;
     }
 
-    private File getFile(String param1) throws URISyntaxException {
-
+    /**
+     * Fetch a file for the given path, which might be absolute, relative to the user home directory, or relative
+     * to the script path
+     *
+     * @param path
+     * @return
+     */
+    private File getFile(String path) {
         // Strip trailing & leading quotes
-        if (param1.startsWith("\"")) param1 = param1.substring(1);
-        if (param1.endsWith("\"")) param1 = param1.substring(0, param1.lastIndexOf('"'));
+        path = StringUtils.stripQuotes(path);
 
-        // See if file contains spaces, if not no special treatment is required
-        if (param1.indexOf(' ') < 0) {
-            return new File(param1);
+        // Replace leading ~ with home directory
+        if (path.startsWith("~")) {
+            path = System.getProperty("user.home") + path.substring(1);
+            return new File(path);
+        } else if (path.startsWith("$SCRIPT_DIR") && this.scriptDir != null) {
+            return new File(this.scriptDir + path.substring("$SCRIPT_DIR".length()));
         } else {
-            // If file is absolute use a URI,
-            File f = new File(param1);
-            if (f.isAbsolute()) {
-                URI outputURI = new URI(("file://" + param1.replaceAll(" ", "%20")));
-                return new File(outputURI);
-            } else {
-                return f;
+            File maybeFile = new File(path);
+            if (maybeFile.exists()) {
+                return maybeFile;
+            } else if (scriptDir != null) {
+                maybeFile = new File(this.scriptDir, path);
+                if (maybeFile.exists()) {
+                    return maybeFile;
+                }
             }
         }
+        return new File(path);
     }
 
     private String goto1(List<String> args) {
@@ -954,12 +1042,21 @@ public class CommandExecutor {
         } else {
             // Alignments
             String tag = null;
-            String locusString = null;
+            String locusString;
+            String reverseString;
             if (sortArg.equalsIgnoreCase("tag")) {
                 tag = param2;
                 locusString = param3;
+                reverseString = param4;
             } else {
                 locusString = param2;
+                reverseString =  param3;
+            }
+
+            // Special case, "reverse" is a resered word for inverting sorting.  Locus is optional
+            if(reverseString == null && "reverse".equalsIgnoreCase(locusString)) {
+                reverseString = locusString;
+                locusString = null;
             }
 
             Double location = null;
@@ -978,7 +1075,10 @@ public class CommandExecutor {
                     }
                 }
             }
-            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
+
+            boolean invertSort = "reverse".equalsIgnoreCase(reverseString);
+
+            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag, invertSort);
             return "OK";
         }
     }
@@ -1021,20 +1121,13 @@ public class CommandExecutor {
 
         File file;
         if (snapshotDirectory == null) {
-            try {
-                file = getFile(filename);
-                if (!file.getAbsoluteFile().getParentFile().exists()) {
-                    createParents(file);
-                }
-            } catch (URISyntaxException e) {
-                log.error("Error parsing directory path: " + filename, e);
-                return "Error parsing directory path: " + filename;
+            file = getFile(filename);
+            if (!file.getAbsoluteFile().getParentFile().exists()) {
+                createParents(file);
             }
         } else {
             file = new File(snapshotDirectory, filename);
         }
-        System.out.println("Snapshot: " + file.getAbsolutePath());
-
 
         Component target = null;
         if (region == null || region.trim().length() == 0) {
@@ -1062,7 +1155,7 @@ public class CommandExecutor {
         if (!filename.endsWith(".xml")) {
             filename = filename + ".xml";
         }
-        File targetFile = new File(filename);
+        File targetFile = getFile(filename);
         if (targetFile.getParentFile().exists()) {
             currentSession.setPath(targetFile.getAbsolutePath());
             try {
@@ -1094,36 +1187,39 @@ public class CommandExecutor {
         }
     }
 
-    private static AlignmentTrack.SortOption getAlignmentSortOption(String str) {
+    //todo check that this matches all the existing sorts
+    private static SortOption getAlignmentSortOption(String str) {
         str = str == null ? "base" : str;
         if (str.equalsIgnoreCase("start") || str.equalsIgnoreCase("position")) {
-            return AlignmentTrack.SortOption.START;
+            return SortOption.START;
         } else if (str.equalsIgnoreCase("strand")) {
-            return AlignmentTrack.SortOption.STRAND;
+            return SortOption.STRAND;
         } else if (str.equalsIgnoreCase("base")) {
-            return AlignmentTrack.SortOption.NUCLEOTIDE;
+            return SortOption.NUCLEOTIDE;
         } else if (str.equalsIgnoreCase("quality")) {
-            return AlignmentTrack.SortOption.QUALITY;
+            return SortOption.QUALITY;
         } else if (str.equalsIgnoreCase("sample")) {
-            return AlignmentTrack.SortOption.SAMPLE;
+            return SortOption.SAMPLE;
         } else if (str.equalsIgnoreCase("readGroup") || str.equalsIgnoreCase("read_group")) {
-            return AlignmentTrack.SortOption.READ_GROUP;
+            return SortOption.READ_GROUP;
         } else if (str.equalsIgnoreCase("insertSize") || str.equalsIgnoreCase("insert_size")) {
-            return AlignmentTrack.SortOption.INSERT_SIZE;
+            return SortOption.INSERT_SIZE;
         } else if (str.equalsIgnoreCase("firstOfPairStrand")) {
-            return AlignmentTrack.SortOption.FIRST_OF_PAIR_STRAND;
+            return SortOption.FIRST_OF_PAIR_STRAND;
         } else if (str.equalsIgnoreCase("mateChr")) {
-            return AlignmentTrack.SortOption.MATE_CHR;
+            return SortOption.MATE_CHR;
         } else if (str.equalsIgnoreCase("readOrder")) {
-            return AlignmentTrack.SortOption.READ_ORDER;
+            return SortOption.READ_ORDER;
         } else if (str.equalsIgnoreCase("readname")) {
-            return AlignmentTrack.SortOption.READ_NAME;
+            return SortOption.READ_NAME;
+        } else if (str.equalsIgnoreCase("alignedReadLength")) {
+            return SortOption.ALIGNED_READ_LENGTH;
         } else {
             try {
-                return AlignmentTrack.SortOption.valueOf(str.toUpperCase());
+                return SortOption.valueOf(str.toUpperCase());
             } catch (IllegalArgumentException e) {
                 log.error("Unknown sort option: " + str);
-                return AlignmentTrack.SortOption.NUCLEOTIDE;
+                return SortOption.NUCLEOTIDE;
             }
         }
 

@@ -36,10 +36,10 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.util.FormatUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.collections.CI;
-import org.broad.igv.util.collections.MultiMap;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.exception.CodecLineParsingException;
@@ -215,7 +215,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             return null;
         }
 
-        String chromosome = genome == null ?chrToken : genome.getCanonicalChrName(chrToken);
+        String chromosome = genome == null ? chrToken : genome.getCanonicalChrName(chrToken);
 
         // GFF coordinates are 1-based inclusive (length = end - start + 1)
         // IGV (UCSC) coordinates are 0-based exclusive.  Adjust start and end accordingly
@@ -235,7 +235,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
         String attributeString = tokens[8];
 
-        MultiMap<String, String> attributes = new MultiMap<String, String>();
+        Map<String, String> attributes = new LinkedHashMap<>();
 
         helper.parseAttributes(attributeString, attributes);
 
@@ -308,26 +308,26 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     static StringBuffer buf = new StringBuffer();
 
-    static String getDescription(MultiMap<String, String> attributes, String type) {
+    static String getDescription(Map<String, String> attributes, String type) {
         buf.setLength(0);
         buf.append(type);
         buf.append("<br>");
-        attributes.printHtml(buf, 100);
+        FormatUtils.printHtml(attributes, buf, 100);
         return buf.toString();
     }
 
 
     public interface Helper {
 
-        String[] getParentIds(MultiMap<String, String> attributes, String attributeString);
+        String[] getParentIds(Map<String, String> attributes, String attributeString);
 
-        void parseAttributes(String attributeString, MultiMap<String, String> map);
+        void parseAttributes(String attributeString, Map<String, String> map);
 
-        String getID(MultiMap<String, String> attributes, String type);
+        String getID(Map<String, String> attributes, String type);
 
         void setUrlDecoding(boolean b);
 
-        String getName(MultiMap<String, String> attributes);
+        String getName(Map<String, String> attributes);
 
         void setNameFields(String[] fields);
 
@@ -363,7 +363,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
 
-        public void parseAttributes(String description, MultiMap<String, String> kvalues) {
+        public void parseAttributes(String description, Map<String, String> kvalues) {
 
             List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');
             for (String kv : kvPairs) {
@@ -386,7 +386,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
          * @return
          */
 
-        public String[] getParentIds(MultiMap<String, String> attributes, String attributeString) {
+        public String[] getParentIds(Map<String, String> attributes, String attributeString) {
 
             if (attributes.size() > 0) {
                 for (String possName : possParentNames) {
@@ -402,7 +402,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
 
-        public String getID(MultiMap<String, String> attributes, String type) {
+        public String getID(Map<String, String> attributes, String type) {
 
             //Search for an attribute == type,  take this as ID
             String id = attributes.get(type);
@@ -432,7 +432,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             return null;
         }
 
-        public String getName(MultiMap<String, String> attributes) {
+        public String getName(Map<String, String> attributes) {
 
             if (attributes.size() > 0 && nameFields != null) {
                 for (String nf : nameFields) {
@@ -470,7 +470,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
 
-        public String[] getParentIds(MultiMap<String, String> attributes, String ignored) {
+        public String[] getParentIds(Map<String, String> attributes, String ignored) {
             String parentIdString = attributes.get("Parent");
             if (parentIdString != null) {
                 return parentIdString.split(",");
@@ -487,14 +487,14 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
          * @param description
          * @param kvalues
          */
-        public void parseAttributes(String description, MultiMap<String, String> kvalues) {
+        public void parseAttributes(String description, Map<String, String> kvalues) {
 
             //List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');
-            String [] kvPairs = Globals.semicolonPattern.split(description.trim());
+            String[] kvPairs = Globals.semicolonPattern.split(description.trim());
             for (String kv : kvPairs) {
                 //int nValues = ParsingUtils.split(kv, tmp, '=');
                 //List<String> tmp = StringUtils.breakQuotedString(kv, '=');
-                String [] tmp = Globals.equalPattern.split(kv);
+                String[] tmp = Globals.equalPattern.split(kv);
                 int nValues = tmp.length;
                 if (nValues > 0) {
                     String key = tmp[0].trim();
@@ -513,7 +513,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             this.useUrlDecoding = useUrlDecoding;
         }
 
-        public String getName(MultiMap<String, String> attributes) {
+        public String getName(Map<String, String> attributes) {
 
             if (attributes.size() > 0 && nameFields != null) {
                 for (String nf : nameFields) {
@@ -526,7 +526,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             return null;
         }
 
-        public String getID(MultiMap<String, String> attributes, String ignore) {
+        public String getID(Map<String, String> attributes, String ignore) {
             return attributes.get("ID");
         }
 

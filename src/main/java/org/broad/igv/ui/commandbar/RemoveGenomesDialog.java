@@ -53,7 +53,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class RemoveGenomesDialog extends JDialog {
+public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
 
     private static Logger log = LogManager.getLogger(RemoveGenomesDialog.class);
 

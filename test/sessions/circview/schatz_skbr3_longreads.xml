@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" locus="All" nextAutoscaleGroup="4" version="8">
+    <Resources>
+        <Resource path="https://s3.amazonaws.com/igv.org.demo/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam" type="bam"/>
+        <Resource path="https://s3.amazonaws.com/igv.org.demo/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt_filtered.vcf" type="vcf"/>
+    </Resources>
+    <Panel height="60" name="DataPanel" width="1076">
+        <Track attributeKey="reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt_filtered.vcf" clazz="org.broad.igv.variant.VariantTrack" colorScale="ContinuousColorScale;0.0;129.0;255,255,255;0,0,178" displayMode="EXPANDED" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.demo/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt_filtered.vcf" name="Sniffles variants" siteColorMode="NONE" squishedHeight="1" visible="true"/>
+    </Panel>
+    <Panel height="461" name="Panel1642655411743" width="1076">
+        <Track attributeKey="reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam Coverage" autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" colorScale="ContinuousColorScale;0.0;47.0;255,255,255;176,176,176" fontSize="10" height="40" id="https://s3.amazonaws.com/igv.org.demo/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam_coverage" name="PacBio coverage" snpThreshold="0.2" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="623.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam Junctions" clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="https://s3.amazonaws.com/igv.org.demo/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam_junctions" name="reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam Junctions" visible="false"/>
+        <Track attributeKey="reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam" clazz="org.broad.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="THIRD_GEN" fontSize="10" height="255" id="https://s3.amazonaws.com/igv.org.demo/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam" name="PacBio reads" visible="true">
+            <RenderOptions showInsertionMarkers="false" smallIndelThreshold="200"/>
+        </Track>
+    </Panel>
+    <Panel height="49" name="FeaturePanel" width="1076">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="Refseq Genes" clazz="org.broad.igv.track.FeatureTrack" featureVisibilityWindow="-1000" fontSize="10" groupByStrand="false" height="36" id="https://s3.amazonaws.com/igv.org.genomes/hg19/ncbiRefSeq.sorted.txt.gz" name="Refseq Genes" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.10652920962199312,0.9072164948453608"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>

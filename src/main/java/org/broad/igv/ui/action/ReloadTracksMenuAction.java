@@ -78,7 +78,7 @@ public class ReloadTracksMenuAction extends MenuAction {
 
         Runnable runnable = () -> {
             try {
-                igv.restoreSessionFromStream(currentSessionFilePath, null, inputStream);
+                igv.loadSessionFromStream(currentSessionFilePath, inputStream);
             } catch (IOException ex) {
                 log.error("Error reloading tracks", ex);
             }

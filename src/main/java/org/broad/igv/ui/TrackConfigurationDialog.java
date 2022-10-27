@@ -36,7 +36,7 @@ import org.broad.igv.ui.color.ColorChooserPanel;
 /**
  * @author jrobinso
  */
-public class TrackConfigurationDialog extends javax.swing.JDialog {
+public class TrackConfigurationDialog extends org.broad.igv.ui.IGVDialog  {
 
     /**
      * Creates new form TrackConfigurationDialog

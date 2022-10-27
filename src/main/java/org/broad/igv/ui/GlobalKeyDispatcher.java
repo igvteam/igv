@@ -37,9 +37,10 @@ import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.SortOption;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
@@ -48,6 +49,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.variant.VariantTrack;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -67,11 +69,28 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
     private final InputMap inputMap = new InputMap();
     private final ActionMap actionMap = new ActionMap();
 
-    public GlobalKeyDispatcher() {
+    private static GlobalKeyDispatcher theInstance;
+
+    public static synchronized GlobalKeyDispatcher getInstance() {
+        if(theInstance == null) {
+            theInstance = new GlobalKeyDispatcher();
+        }
+        return theInstance;
+    }
+
+    private GlobalKeyDispatcher() {
         init();
     }
 
     public boolean dispatchKeyEvent(KeyEvent event) {
+
+        // If the source of this event is a text component don't process it here.
+        final Object source = event.getSource();
+        if(JTextComponent.class.isInstance(source) ||
+                TextComponent.class.isInstance(source)) {
+            return false;   // <= important, returning true will prevent further dispatching of event
+        }
+
 
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(event);
         String actionKey = (String) inputMap.get(ks);
@@ -94,7 +113,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             if (action != null && action.isEnabled()) {
                 // I'm not sure about the parameters
                 action.actionPerformed(
-                        new ActionEvent(event.getSource(), event.getID(),
+                        new ActionEvent(source, event.getID(),
                                 actionKey, ((KeyEvent) event).getModifiers()));
                 return true; // consume event
             }
@@ -233,9 +252,9 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 String sortOptionString = prefMgr.get(SAM_SORT_OPTION);
                 if (sortOptionString != null) {
                     try {
-                        AlignmentTrack.SortOption option = AlignmentTrack.SortOption.valueOf(sortOptionString);
+                        SortOption option = SortOption.valueOf(sortOptionString);
                         String lastSortTag = prefMgr.get(SAM_SORT_BY_TAG);
-                        igv.sortAlignmentTracks(option, lastSortTag);
+                        igv.sortAlignmentTracks(option, lastSortTag, prefMgr.getAsBoolean(SAM_INVERT_SORT));
                     } catch (IllegalArgumentException e1) {
                         log.error("Unrecognized sort option: " + sortOptionString);
                     }
@@ -411,15 +430,36 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
                 if (f != null) {
                     String chr = GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(f.getChr());
-                    double newCenter = f.getStart();
-                    if (!chr.equals(frame.getChrName())) {
-                        // Switch chromosomes.  We have to do some tricks to maintain the same resolution scale.
-                        double range = frame.getEnd() - frame.getOrigin();
-                        int newOrigin = (int) Math.max(newCenter - range / 2, 0);
-                        int newEnd = (int) (newOrigin + range);
-                        frame.jumpTo(chr, newOrigin, newEnd);
-                    } else {
-                        frame.centerOnLocation(newCenter);
+                    double newCenter = (f.getStart() + f.getEnd()) / 2.0;
+
+                    boolean fitToWindow = PreferencesManager.getPreferences().getAsBoolean(NEXT_FIT_TO_WINDOW);
+
+                    if(fitToWindow) {
+                        int flankingRegion = PreferencesManager.getPreferences().getAsInt(Constants.NEXT_FLANKING_REGION);
+                        int delta;
+                        int start = f.getStart();
+                        int end = f.getEnd();
+                        if ((end - start) == 1) {
+                            delta = 20; // Don't show flanking region for single base jumps, use 40bp window
+                        } else if (flankingRegion < 0) {
+                            delta = (-flankingRegion * (end - start)) / 100;
+                        } else {
+                            delta = flankingRegion;
+                        }
+                        start = Math.max(0, start - delta);
+                        end = end + delta;
+                        frame.jumpTo(chr, start, end);
+                    }
+                    else {
+                        if (!chr.equals(frame.getChrName())) {
+                            // Switch chromosomes.  We have to do some tricks to maintain the same resolution scale.
+                            double range = frame.getEnd() - frame.getOrigin();
+                            int newOrigin = (int) Math.max(newCenter - range / 2, 0);
+                            int newEnd = (int) (newOrigin + range);
+                            frame.jumpTo(chr, newOrigin, newEnd);
+                        } else {
+                            frame.centerOnLocation(newCenter);
+                        }
                     }
                 }
             } catch (IOException e) {

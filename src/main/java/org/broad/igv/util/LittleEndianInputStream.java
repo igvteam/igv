@@ -68,4 +68,17 @@ public class LittleEndianInputStream extends htsjdk.tribble.util.LittleEndianInp
 
         }
     }
+
+    @Override
+    public String readString() throws IOException {
+        ByteArrayOutputStream bis = new ByteArrayOutputStream(1000);
+        int b;
+        while ((b = in.read()) != 0) {
+            if(b < 0) {
+                throw new EOFException();
+            }
+            bis.write((byte) b);
+        }
+        return new String(bis.toByteArray());
+    }
 }

@@ -63,7 +63,7 @@ public class UIUtilities {
         chooser.setColor(defaultColor);
         while (true) {
 
-            int response = JOptionPane.showConfirmDialog(IGV.getMainFrame(), chooser,
+            int response = JOptionPane.showConfirmDialog(IGV.getInstance().getMainFrame(), chooser,
                     dialogTitle, JOptionPane.OK_CANCEL_OPTION);
 
             if ((response == JOptionPane.CANCEL_OPTION) || (response == JOptionPane.CLOSED_OPTION)) {
@@ -179,7 +179,7 @@ public class UIUtilities {
 
     public static String bringToFront() {
         // Trick to force window to front, the setAlwaysOnTop works on a Mac,  toFront() does nothing.
-        Frame mainFrame = IGV.getMainFrame();
+        Frame mainFrame = IGV.getInstance().getMainFrame();
         mainFrame.toFront();
         mainFrame.setAlwaysOnTop(true);
         mainFrame.setAlwaysOnTop(false);

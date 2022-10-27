@@ -42,7 +42,7 @@ public class EncodePeakCodecTest {
     @Test
     public void testDecode() throws Exception {
 
-        String line = "chr22\t16847690\t16857344\t.\t354\t.\t5.141275\t14.1\t-1";
+        String line = "chr22\t16847690\t16857344\t.\t354\t.\t5.141275\t14.1\t-1\t100";
         EncodePeakCodec codec = new EncodePeakCodec();
 
         AsciiFeatureCodec codec2 = new EncodePeakCodec();

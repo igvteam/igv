@@ -55,7 +55,7 @@ import java.text.DecimalFormat;
 /**
  * @author jrobinso
  */
-public class HeatmapScaleDialog extends javax.swing.JDialog {
+public class HeatmapScaleDialog extends org.broad.igv.ui.IGVDialog  {
 
 
     boolean canceled = false;

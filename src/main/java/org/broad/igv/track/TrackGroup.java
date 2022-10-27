@@ -113,16 +113,15 @@ public class TrackGroup {
 
     public void add(Track track) {
         if (track == null) {
-            log.info("Attempt to add null track");
+            log.warn("Attempt to add null track");
         } else {
-            log.debug("Adding track " + track.getName());
             tracks.add(track);
         }
     }
 
     public void add(int pos, Track track) {
         if (track == null) {
-            log.info("Attempt to add null track");
+            log.warn("Attempt to add null track");
         } else {
             tracks.add(pos, track);
         }
