@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * @author eflakes
  */
-public class SortDialog extends javax.swing.JDialog {
+public class SortDialog extends org.broad.igv.ui.IGVDialog  {
 
     private boolean isCanceled = true;
 

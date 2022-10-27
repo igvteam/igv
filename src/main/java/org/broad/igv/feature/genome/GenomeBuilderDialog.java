@@ -44,7 +44,7 @@ import java.io.File;
 /**
  * @author Stan Diamond
  */
-public class GenomeBuilderDialog extends JDialog {
+public class GenomeBuilderDialog extends org.broad.igv.ui.IGVDialog  {
 
     boolean canceled;
     File archiveFile;

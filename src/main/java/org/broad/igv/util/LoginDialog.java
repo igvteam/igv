@@ -38,7 +38,7 @@ import java.awt.event.ActionListener;
 /**
  * @author Jim Robinson
  */
-public class LoginDialog extends JDialog {
+public class LoginDialog extends org.broad.igv.ui.IGVDialog  {
 
     boolean canceled = false;
 

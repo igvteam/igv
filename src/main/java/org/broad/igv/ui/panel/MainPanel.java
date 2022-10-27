@@ -26,7 +26,8 @@
 package org.broad.igv.ui.panel;
 
 import com.jidesoft.swing.JideSplitPane;
-import org.broad.igv.logging.*;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
@@ -144,11 +145,15 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
     public void revalidateTrackPanels() {
-        this.applicationHeaderPanel.invalidate();
-        for (TrackPanel tp : this.getTrackPanels()) {
-            tp.invalidate();
-        }
-        this.revalidate();
+        updatePanelDimensions();
+        UIUtilities.invokeOnEventThread(() -> {
+            this.applicationHeaderPanel.invalidate();
+            for (TrackPanel tp : this.getTrackPanels()) {
+                tp.invalidate();
+            }
+            this.invalidate(); // this should not be neccessary, but is harmless
+            this.validate();
+        });
     }
 
     public void removeHeader() {
@@ -164,14 +169,11 @@ public class MainPanel extends JPanel implements Paintable {
 
     @Override
     public void doLayout() {
-
         super.doLayout();
-        layoutFrames();
         applicationHeaderPanel.doLayout();
         for (TrackPanel tp : getTrackPanels()) {
             tp.getScrollPane().doLayout();
         }
-
     }
 
     @Override
@@ -202,8 +204,6 @@ public class MainPanel extends JPanel implements Paintable {
         nameHeaderPanel.setPreferredSize(new java.awt.Dimension(0, 0));
 
         attributeHeaderPanel = new AttributeHeaderPanel();
-        attributeHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
-        attributeHeaderPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         attributeHeaderPanel.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
         attributeHeaderPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         attributeHeaderPanel.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -263,11 +263,11 @@ public class MainPanel extends JPanel implements Paintable {
 
 
     /**
-     * Removes user added panels. Used for resetting sessions
+     * Reset panels to initial state
      */
     public void resetPanels() {
         for (TrackPanel tp : getTrackPanels()) {
-            tp.clearTracks();
+            tp.reset();
         }
         for (TrackPanel tp : getTrackPanels()) {
             final TrackPanelScrollPane tsp = tp.getScrollPane();
@@ -430,12 +430,6 @@ public class MainPanel extends JPanel implements Paintable {
         }
     }
 
-    public void layoutFrames() {
-        synchronized (getTreeLock()) {
-            updatePanelDimensions();
-        }
-    }
-
     public void updatePanelDimensions() {
         Insets insets = applicationHeaderPanel.getInsets();
         namePanelX = insets.left;
@@ -445,13 +439,11 @@ public class MainPanel extends JPanel implements Paintable {
         dataPanelWidth = applicationHeaderPanel.getWidth() - insets.right - dataPanelX;
     }
 
-
-    private int calculateAttributeWidth() {
+    public int calculateAttributeWidth() {
 
         if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_ATTRIBUTE_VIEWS_KEY)) {
             return 0;
         }
-
         Collection<String> attributeKeys = AttributeManager.getInstance().getVisibleAttributes();
         int attributeCount = attributeKeys.size();
         int packWidth = (attributeCount) * (AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH +
@@ -521,17 +513,17 @@ public class MainPanel extends JPanel implements Paintable {
 
         // Get the components of the center pane and sort by Y position.
         Component[] components = centerSplitPane.getComponents();
-        Arrays.sort(components, (component, component1) -> component.getY() - component1.getY());
+        Arrays.sort(components, Comparator.comparingInt(Component::getY));
 
         int dy = components[0].getY();
-
         for (Component c : components) {
 
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.translate(0, dy);
 
-            if (c instanceof Paintable) {
+            if (c instanceof TrackPanelScrollPane) {
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+
                 //Skip if panel has no tracks
                 if (tsp.getTrackPanel().getTracks().size() == 0) {
                     continue;
@@ -539,10 +531,9 @@ public class MainPanel extends JPanel implements Paintable {
 
                 int panelHeight = tsp.getSnapshotHeight(batch);
 
-                Rectangle tspRect = new Rectangle(tsp.getBounds());
-                tspRect.height = panelHeight;
+                Rectangle tspRect = new Rectangle(0, 0, tsp.getWidth(), panelHeight);
 
-                g2d.setClip(new Rectangle(0, 0, tsp.getWidth(), tspRect.height));
+                g2d.setClip(tspRect);
                 tsp.paintOffscreen(g2d, tspRect, batch);
                 dy += tspRect.height;
 

@@ -42,7 +42,7 @@ import org.jdesktop.layout.LayoutStyle;
 /**
  * @author Jim Robinson
  */
-public class FontChooser extends JDialog {
+public class FontChooser extends org.broad.igv.ui.IGVDialog  {
 
     private Font selectedFont;
     boolean canceled = false;

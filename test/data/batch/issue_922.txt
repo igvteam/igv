@@ -1,2 +1,0 @@
-genome hg19
-load https://s3.amazonaws.com/igv.org.test/data/recombRate.igv.txt?foobar=blah

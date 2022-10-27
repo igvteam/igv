@@ -56,7 +56,7 @@ import org.broad.igv.util.ResourceLocator;
 /**
  * @author Jim Robinson
  */
-public class EncodeFileBrowser extends JDialog {
+public class EncodeFileBrowser extends org.broad.igv.ui.IGVDialog  {
 
     private static Logger log = LogManager.getLogger(EncodeFileBrowser.class);
 
@@ -88,7 +88,7 @@ public class EncodeFileBrowser extends JDialog {
             if (records == null) {
                 return null;
             }
-            Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+            Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
             instance = new EncodeFileBrowser(parent, new EncodeTableModel(records.getFirst(), records.getSecond()));
             instanceMap.put(encodeGenomeId, instance);
         }

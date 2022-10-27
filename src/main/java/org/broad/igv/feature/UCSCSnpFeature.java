@@ -26,10 +26,8 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.util.collections.MultiMap;
 
 import java.awt.*;
-import java.util.List;
 
 /**
  * Representation of a feature from a UCSC "snp" file
@@ -106,7 +104,7 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
         return getDescription();
     }
 
-    @Override
+
     public String getDescription() {
 
         StringBuffer desc = new StringBuffer();
@@ -131,76 +129,14 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
 
     // Everything below has to be implemented for IGVFeature.   Sigh....
 
-
-    @Override
-    public void setStart(int start) {
-        this.start = start;
-    }
-
-    @Override
-    public void setEnd(int end) {
-        this.end = end;
-    }
-
-    @Override
-    public String getType() {
-        return "SNP";
-    }
-
-    @Override
-    public String getIdentifier() {
-        return name;
-    }
-
     @Override
     public Strand getStrand() {
         return strand;
     }
 
     @Override
-    public int getLength() {
-        return end - start;
-    }
-
-    @Override
-    public MultiMap<String, String> getAttributes() {
-        return null;
-    }
-
-    @Override
-    public boolean contains(IGVFeature feature) {
-        if (feature == null) {
-            return false;
-        }
-        if (!this.getChr().equals(feature.getChr()) ||
-                this.getStrand() != feature.getStrand()) {
-            return false;
-        }
-        if ((feature.getStart() >= this.getStart()) && (feature.getEnd() <= this.getEnd())) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public boolean contains(double location) {
-        return location >= start && location <= end;
-    }
-
-    @Override
-    public List<Exon> getExons() {
-        return null;
-    }
-
-    @Override
     public Color getColor() {
         return Color.black;
-    }
-
-    @Override
-    public String getURL() {
-        return null;
     }
 
 }

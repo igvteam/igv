@@ -73,7 +73,7 @@ public class BlatTrack extends FeatureTrack {
 
     private void openTableView() {
 
-        BlatQueryWindow win = new BlatQueryWindow(IGV.getMainFrame(), sequence, features);
+        BlatQueryWindow win = new BlatQueryWindow(IGV.getInstance().getMainFrame(), sequence, features);
         win.setVisible(true);
     }
 
@@ -121,6 +121,7 @@ public class BlatTrack extends FeatureTrack {
             if (sequence == null || sequence.length() == 0) {
                 sequence = element.getAttribute("id");  // Bug in versions < 2.11.5
             }
+            this.sequence = sequence;
             String db = element.getAttribute("db");
             if (db == null || db.length() == 0) {
                 db = GenomeManager.getInstance().getCurrentGenome().getBlatDB();

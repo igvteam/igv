@@ -1,1 +1,0 @@
-Empty directory for depositing screenshots during batch execution tests.

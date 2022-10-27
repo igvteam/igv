@@ -29,6 +29,7 @@
 
 package org.broad.igv.ui.util;
 
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
@@ -43,7 +44,7 @@ import java.awt.event.ActionEvent;
  *
  * @author sbusan
  */
-public class ConvertFileDialog extends JDialog {
+public class ConvertFileDialog extends org.broad.igv.ui.IGVDialog  {
 
     ConvertOptions opts = new ConvertOptions();
 
@@ -53,16 +54,6 @@ public class ConvertFileDialog extends JDialog {
         initComponents();
         label.setText("<html>" + message + "</html>");
         okButton.setText("Continue");
-
-        // FIXME: limit input to empty string or integer
-        /*NumberFormat format = NumberFormat.getInstance();
-        NumberFormatter formatter = new NumberFormatter(format);
-        formatter.setValueClass(Integer.class);
-        formatter.setMinimum(0);
-        formatter.setMaximum(Integer.MAX_VALUE);
-        formatter.setAllowsInvalid(false);
-        DefaultFormatterFactory factory = new DefaultFormatterFactory(formatter);
-        startTextField.setFormatterFactory(factory);*/
 
         DefaultComboBoxModel boxModel = new DefaultComboBoxModel();
         for (String chrom : chromosomes){
@@ -74,9 +65,9 @@ public class ConvertFileDialog extends JDialog {
     }
 
     public static ConvertOptions showConvertFileDialog(String message) {
-        ConvertFileDialog dlg = new ConvertFileDialog(IGV.getMainFrame(),
+        ConvertFileDialog dlg = new ConvertFileDialog(IGV.getInstance().getMainFrame(),
                                                       message,
-                                                      IGV.getInstance().getGenomeManager().getCurrentGenome().getAllChromosomeNames());
+                                                      GenomeManager.getInstance().getCurrentGenome().getAllChromosomeNames());
         dlg.setVisible(true);
         dlg.opts.chrom = dlg.chromBox.getSelectedItem().toString();
         dlg.opts.start = Integer.parseInt(dlg.startTextField.getText());

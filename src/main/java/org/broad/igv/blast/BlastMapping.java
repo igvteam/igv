@@ -59,16 +59,6 @@ public class BlastMapping extends BasicFeature {
 
     }
 
-
-    public Block getQueryBlock() {
-        return queryBlock;
-    }
-
-
-    public Block getSubjectBlock() {
-        return subjectBlock;
-    }
-
     @Override
     public String getChr() {
         return queryBlock.getContig();
@@ -77,11 +67,6 @@ public class BlastMapping extends BasicFeature {
     public Strand getStrand() {
         return subjectBlock.getStrand();
     }
-
-    public boolean containsQueryPosition(String contig, int position) {
-        return queryBlock.containsPosition(contig, position);
-    }
-
 
     /**
  * @author jrobinso

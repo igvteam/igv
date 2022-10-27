@@ -60,7 +60,7 @@ import java.util.*;
  * // Return the tool tip text
  * return "tool tip for "+item; }
  */
-public class GeneListManagerUI extends JDialog {
+public class GeneListManagerUI extends org.broad.igv.ui.IGVDialog  {
 
     private static Logger log = LogManager.getLogger(GeneListManagerUI.class);
 

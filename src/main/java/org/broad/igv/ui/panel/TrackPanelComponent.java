@@ -250,7 +250,7 @@ abstract public class TrackPanelComponent extends JPanel {
 
     protected void clearTrackSelections() {
         IGV.getInstance().clearSelections();
-        IGV.getMainFrame().repaint();
+        IGV.getInstance().getMainFrame().repaint();
     }
 
     protected void selectTracks(MouseEvent e) {

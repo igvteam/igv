@@ -79,11 +79,6 @@ public class SMAPFeature extends AbstractFeature {
     }
 
     @Override
-    public String getURL() {
-        return null;
-    }
-
-    @Override
     public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
 
         StringBuffer buf = new StringBuffer();

@@ -36,8 +36,10 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -49,25 +51,26 @@ import java.util.List;
 public class StringUtils {
 
     public static List<String> breakQuotedString(String string, char splitToken) {
-        if(string == null) return null;
-        ArrayList<String> strings = new ArrayList<String >();
+
+        if (string == null) return null;
+        ArrayList<String> strings = new ArrayList<String>();
         if (string.length() == 0) {
             return strings;
         }
 
         char[] characters = string.toCharArray();
         char c;
-        boolean isQuoted = false;
+        char quoteChar = 0;
         StringBuffer buff = new StringBuffer(100);
         for (int i = 0; i < characters.length; i++) {
             c = characters[i];
-            if (isQuoted) {
-                if (c == '"') {
-                    isQuoted = false;
+            if (quoteChar != 0) {
+                if (c == quoteChar) {
+                    quoteChar = 0;
                 }
                 buff.append(c);
-            } else if (c == '"') {
-                isQuoted = true;
+            } else if (c == '"' || c == '\'') {
+                quoteChar = c;
                 buff.append(c);
             } else {
                 if (c == splitToken) {
@@ -161,7 +164,6 @@ public class StringUtils {
      * Return query parameters on a map, borrowed from:
      * https://stackoverflow.com/questions/13592236/parse-a-uri-string-into-name-value-collection
      *
-     *
      * @param url
      * @return parameters
      */
@@ -182,6 +184,7 @@ public class StringUtils {
      * Encode according to UTF-8. We encode
      * spaces as "%20" rather than "+", seems
      * to work better with others.
+     *
      * @param s
      * @return
      */
@@ -202,10 +205,11 @@ public class StringUtils {
      * Attempts to encode only the query portion of a URL,
      * ignoring delimiter characters. If it looks like it's already
      * URL-encoded, does nothing
+     *
      * @param url
      * @return
      */
-    public static URL encodeURLQueryString(URL url) throws MalformedURLException{
+    public static URL encodeURLQueryString(URL url) throws MalformedURLException {
 
         String[] parts = url.toExternalForm().split("\\?", 2);
         //If there are percent signs we assume it's already url encoded
@@ -217,7 +221,7 @@ public class StringUtils {
             for (String kv : params) {
                 String[] kvs = kv.split("\\=", 2);
                 String encString = StringUtils.encodeURL(kvs[0]);
-                if(kvs.length == 2){
+                if (kvs.length == 2) {
                     encString = String.format("%s=%s", encString, StringUtils.encodeURL(kvs[1]));
                 }
                 encParms[ii++] = encString;
@@ -273,15 +277,16 @@ public class StringUtils {
     /**
      * Join the objects in {@code array} with the given {@code separator}
      * Useful for making a comma separated list, or URL query string
+     *
      * @param array
      * @param separator
      * @return
      */
     public static String join(Object[] array, String separator) {
         int num = array.length;
-        if(num == 0) return "";
+        if (num == 0) return "";
         String out = array[0].toString();
-        for(int ii=1; ii < num; ii++) {
+        for (int ii = 1; ii < num; ii++) {
             out += (separator + array[ii].toString());
         }
         return out;
@@ -312,11 +317,21 @@ public class StringUtils {
      * @return
      */
     public static String stripQuotes(String fileString) {
-        if ((fileString.startsWith("\"") && fileString.endsWith("\"")) ||
-                (fileString.startsWith("'") && fileString.endsWith("'"))) {
+        if (isQuoted(fileString)) {
             fileString = fileString.substring(1, fileString.length() - 1);
         }
         return fileString;
+    }
+
+    /**
+     * Test if string is quoted.  Quotes can be single or double, but must match each other.
+     *
+     * @param fileString
+     * @return
+     */
+    public static boolean isQuoted(String fileString) {
+        return (fileString.startsWith("\"") && fileString.endsWith("\"")) ||
+                (fileString.startsWith("'") && fileString.endsWith("'"));
     }
 
 }

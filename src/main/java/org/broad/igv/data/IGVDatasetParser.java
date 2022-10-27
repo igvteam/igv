@@ -437,7 +437,7 @@ public class IGVDatasetParser {
                         if (skippedLineCount < 5) {
                             skippedLineCount++;
                             if (skippedLineCount == 5) {
-                                log.info("Skipping line: " + nextLine + (skippedLineCount < 5 ? "" : " Further skipped lines will not be logged"));
+                                log.warn("Skipping line: " + nextLine + (skippedLineCount < 5 ? "" : " Further skipped lines will not be logged"));
                             }
                         }
                     }

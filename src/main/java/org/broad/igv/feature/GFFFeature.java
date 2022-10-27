@@ -26,14 +26,15 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.util.FormatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author jrobinso
- *         Date: 7/18/13
- *         Time: 9:50 PM
+ * Date: 7/18/13
+ * Time: 9:50 PM
  */
 public class GFFFeature extends BasicFeature {
 
@@ -62,7 +63,7 @@ public class GFFFeature extends BasicFeature {
 
         StringBuffer valueString = new StringBuffer();
 
-        valueString.append("<b>Type:</b>&nbsp;" + this.type);
+        valueString.append("<b>type:</b>&nbsp;" + this.type);
 
         if (attributes != null) {
             valueString.append(getAttributeString());
@@ -79,8 +80,8 @@ public class GFFFeature extends BasicFeature {
 
     public void mergeAttributes(BasicFeature mrnaPart) {
         StringBuffer buf = new StringBuffer();
-        buf.append("<br><b>Type:</b>&nbsp;" + mrnaPart.getType());
-        mrnaPart.getAttributes().printHtml(buf, 100);
+        buf.append("<br><b>type:</b>&nbsp;" + mrnaPart.getType());
+        FormatUtils.printHtml(mrnaPart.getAttributes(), buf, 100);
         componentAttributes.add(buf.toString());
     }
 }

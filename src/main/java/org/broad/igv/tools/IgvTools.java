@@ -648,16 +648,16 @@ public class IgvTools {
 
         if (!ifile.endsWith(".affective.csv")) validateIsTilable(typeString);
 
-//        log.info("toTDF.  File = " + ifile);
-//        log.info("Max zoom = " + maxZoomValue);
+//        log.warn("toTDF.  File = " + ifile);
+//        log.warn("Max zoom = " + maxZoomValue);
 //        if (probeFile != null && probeFile.trim().length() > 0) {
-//            log.info("Probe file = " + probeFile);
+//            log.warn("Probe file = " + probeFile);
 //        }
 //        String wfString = "Window functions: ";
 //        for (WindowFunction wf : windowFunctions) {
 //            wfString += wf.toString() + " ";
 //        }
-//        log.info(wfString);
+//        log.warn(wfString);
 
         boolean isGCT = isGCT(typeString);
         Genome genome = loadGenome(genomeId);
@@ -812,15 +812,15 @@ public class IgvTools {
                         String trackLine, String queryString, int minMapQuality, int countFlags) throws IOException {
 
 
-//        log.info("Computing coverage.  File = " + ifile);
-//        log.info("Max zoom = " + maxZoomValue);
-//        log.info("Window size = " + windowSizeValue);
+//        log.warn("Computing coverage.  File = " + ifile);
+//        log.warn("Max zoom = " + maxZoomValue);
+//        log.warn("Window size = " + windowSizeValue);
 //        String wfString = "Window functions: ";
 //        for (WindowFunction wf : windowFunctions) {
 //            wfString += wf.toString() + " ";
 //        }
-//        log.info(wfString);
-//        log.info("Ext factor = " + extFactorValue);
+//        log.warn(wfString);
+//        log.warn("Ext factor = " + extFactorValue);
 
 
         Genome genome = loadGenome(genomeId);

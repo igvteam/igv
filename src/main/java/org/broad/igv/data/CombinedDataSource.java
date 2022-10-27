@@ -261,8 +261,8 @@ public class CombinedDataSource implements DataSource {
 
     @Override
     public void dispose() {
-        if (trackl != null) trackl.dispose();
-        if (track2 != null) track2.dispose();
+        if (trackl != null) trackl.unload();
+        if (track2 != null) track2.unload();
     }
 
 }

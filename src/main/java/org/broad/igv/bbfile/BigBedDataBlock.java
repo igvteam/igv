@@ -28,14 +28,12 @@ package org.broad.igv.bbfile;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.logging.*;
 import org.broad.igv.util.CompressionUtils;
-import org.broad.igv.util.LittleEndianInputStream;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.DataInputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -47,8 +45,8 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 /*
-*   Container class for reading and storing a block of bed data items.
-* */
+ *   Container class for reading and storing a block of bed data items.
+ * */
 public class BigBedDataBlock {
 
     private static Logger log = LogManager.getLogger(BigBedDataBlock.class);
@@ -66,24 +64,22 @@ public class BigBedDataBlock {
     private byte[] bedBuffer;  // buffer containing leaf block data uncompressed
     private int remDataSize;   // number of unread data bytes
 
-    // byte stream readers
-    private LittleEndianInputStream lbdis;    // low to high byte stream reader
-    private DataInputStream dis;       // high to low byte stream reader
+    private ByteBuffer byteBuffer;
 
     // Bed data extraction members
-    private ArrayList<BedFeature> bedFeatureList; // array of BigBed data
+    private ArrayList<BedData> bedFeatureList; // array of BigBed data
 
     /*
-    *   Constructor for Bed data block reader.
-    *
-    *   Parameters:
-    *       fis - file input stream handle
-    *       leafItem - R+ tree leaf item containing chromosome region and file data location
-    *       chromIDTree - B+ chromosome index tree returns chromosome ID's for names
-    *       isLowToHigh - byte order is low to high if true; else high to low
-    *       uncompressBufSize - byte size for decompression buffer; else 0 for uncompressed
-    * */
-    public BigBedDataBlock(SeekableStream fis, RPTreeLeafNodeItem leafHitItem,
+     *   Constructor for Bed data block reader.
+     *
+     *   Parameters:
+     *       fis - file input stream handle
+     *       leafItem - R+ tree leaf item containing chromosome region and file data location
+     *       chromIDTree - B+ chromosome index tree returns chromosome ID's for names
+     *       isLowToHigh - byte order is low to high if true; else high to low
+     *       uncompressBufSize - byte size for decompression buffer; else 0 for uncompressed
+     * */
+    public BigBedDataBlock(SeekableStream fis, BBFileHeader header, RPTreeLeafNodeItem leafHitItem,
                            Map<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize) {
 
         this.leafHitItem = leafHitItem;
@@ -114,10 +110,9 @@ public class BigBedDataBlock {
         }
 
         // wrap the bed buffer as an input stream
-        if (this.isLowToHigh)
-            lbdis = new LittleEndianInputStream(new ByteArrayInputStream(bedBuffer));
-        else
-            dis = new DataInputStream(new ByteArrayInputStream(bedBuffer));
+        ByteOrder bo = this.isLowToHigh ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN;
+        byteBuffer = ByteBuffer.wrap(bedBuffer);
+        byteBuffer.order(bo);
 
         // initialize unread data size
         remDataSize = bedBuffer.length;
@@ -126,21 +121,21 @@ public class BigBedDataBlock {
     }
 
     /*
-    *   Method returns all Bed features within the decompressed block buffer
-    *
-    *   Parameters:
-    *       selectionRegion - chromosome region for selecting Bed features
-    *       contained - indicates selected data must be contained in selection region
-    *           if true, else may intersect selection region
-    *
-    *   Returns:
-    *      Bed feature items in the data block
-    *
-    *   Note: Remaining bytes to data block are used to determine end of reading
-    *   since a zoom record count for the data block is not known.
-    * */
-    public ArrayList<BedFeature> getBedData(RPChromosomeRegion selectionRegion,
-                                            boolean contained) {
+     *   Method returns all Bed features within the decompressed block buffer
+     *
+     *   Parameters:
+     *       selectionRegion - chromosome region for selecting Bed features
+     *       contained - indicates selected data must be contained in selection region
+     *           if true, else may intersect selection region
+     *
+     *   Returns:
+     *      Bed feature items in the data block
+     *
+     *   Note: Remaining bytes to data block are used to determine end of reading
+     *   since a zoom record count for the data block is not known.
+     * */
+    public ArrayList<BedData> getBedData(RPChromosomeRegion selectionRegion,
+                                         boolean contained) {
         int itemNumber = 0;
         int chromID, chromStart, chromEnd;
         String restOfFields;
@@ -150,24 +145,18 @@ public class BigBedDataBlock {
         int minItemSize = 3 * 4 + 1;
 
         // allocate the bed feature array list
-        bedFeatureList = new ArrayList<BedFeature>();
+        bedFeatureList = new ArrayList<BedData>();
 
         try {
             for (int index = 0; remDataSize >= minItemSize; ++index) {
                 itemNumber = index + 1;
 
                 // read in BigBed item fields - BBFile Table I
-                if (isLowToHigh) {
-                    chromID = lbdis.readInt();
-                    chromStart = lbdis.readInt();
-                    chromEnd = lbdis.readInt();
-                    restOfFields = lbdis.readString();
-                } else {
-                    chromID = dis.readInt();
-                    chromStart = dis.readInt();
-                    chromEnd = dis.readInt();
-                    restOfFields = readHighToLowString();
-                }
+                chromID = byteBuffer.getInt();
+                chromStart = byteBuffer.getInt();
+                chromEnd = byteBuffer.getInt();
+                restOfFields = readHighToLowString();
+
 
                 int leafHitValue = selectionRegion.compareRegions(chromID, chromStart, chromID, chromEnd);
                 if (leafHitValue == -2 || (contained && leafHitValue == -1)) {
@@ -180,7 +169,7 @@ public class BigBedDataBlock {
                 } else {
                     remDataSize -= (minItemSize + restOfFields.length());
                     String chromosome = chromosomeMap.get(chromID);
-                    BedFeature bbItem = new BedFeature(itemNumber, chromosome, chromStart, chromEnd, restOfFields);
+                    BedData bbItem = new BedData(itemNumber, chromosome, chromStart, chromEnd, restOfFields);
                     bedFeatureList.add(bbItem);
                 }
             }
@@ -201,7 +190,7 @@ public class BigBedDataBlock {
         String restOfFields;
         ByteArrayOutputStream bis = new ByteArrayOutputStream(100);
         byte b;
-        while ((b = (byte) dis.read()) != 0) {
+        while ((b = byteBuffer.get()) != 0) {
             bis.write(b);
         }
         restOfFields = new String(bis.toByteArray());

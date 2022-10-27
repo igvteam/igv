@@ -44,7 +44,7 @@ import org.jdesktop.layout.LayoutStyle;
 /**
  * @author Stan Diamond
  */
-public class HeatmapLegendEditor extends JDialog {
+public class HeatmapLegendEditor extends org.broad.igv.ui.IGVDialog  {
     private boolean canceled = true;
     private ContinuousColorScale colorScheme;
     private TrackType type;

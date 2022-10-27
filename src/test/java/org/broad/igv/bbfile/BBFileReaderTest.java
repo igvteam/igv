@@ -55,9 +55,7 @@ public class BBFileReaderTest {
 
         for (BBZoomLevelHeader header : bbReader.getZoomLevels().getZoomLevelHeaders()) {
             assertNotNull(header);
-
             ZoomLevelIterator zlIter = bbReader.getZoomLevelIterator(header.getZoomLevel(), chr, start, chr, end, false);
-
             while (zlIter.hasNext()) {
                 ZoomDataRecord rec = zlIter.next();
                 int n = rec.getBasesCovered();
@@ -65,10 +63,18 @@ public class BBFileReaderTest {
                     assertEquals(chr, rec.getChromName());
                     assertTrue(rec.getChromEnd() >= start && rec.getChromStart() <= end);
                 }
-
             }
         }
 
+        BigBedIterator iter = bbReader.getBigBedIterator(chr, start, chr, end, false);
+        int count = 0;
+        while (iter.hasNext()) {
+            BedData f = iter.next();
+            assertEquals(chr, f.getChromosome());
+            assertTrue(f.getStartBase() <= end && f.getEndBase() >= start);
+            count++;
+        }
+        assertEquals("Feature count", 225, count);
 
     }
 

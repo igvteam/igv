@@ -393,7 +393,7 @@ public class TDFReader {
             try {
                 valueCache.put(wf, Double.parseDouble(maxString));
             } catch (Exception e) {
-                log.info("Warning: value '" + wf.toString() + "' not found in tdf value " + getPath());
+                log.warn("Warning: value '" + wf.toString() + "' not found in tdf value " + getPath());
                 valueCache.put(wf, null);
             }
         }

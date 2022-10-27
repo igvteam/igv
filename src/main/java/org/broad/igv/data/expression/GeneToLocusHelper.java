@@ -218,11 +218,11 @@ public class GeneToLocusHelper {
                         Locus locus = new Locus(chr, start, end);
                         probeLocusMap.put(probe, Arrays.asList(locus));
                     } catch (NumberFormatException e) {
-                        log.info("Skipping line: " + nextLine);
+                        log.warn("Skipping line: " + nextLine);
                         errorCount++;
                         if (errorCount > maxErrors) {
                             probeLocusMap = null;
-                            log.info("Too many errors.  Aborting.");
+                            log.warn("Too many errors.  Aborting.");
                         }
                     }
                 }

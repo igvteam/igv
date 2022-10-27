@@ -124,7 +124,8 @@ public class AlignmentTileLoader implements IGVEventObserver {
                            SpliceJunctionHelper spliceJunctionHelper,
                            AlignmentDataManager.DownsampleOptions downsampleOptions,
                            Map<String, PEStats> peStats,
-                           AlignmentTrack.BisulfiteContext bisulfiteContext) {
+                           AlignmentTrack.BisulfiteContext bisulfiteContext,
+                           AlignmentTrack.RenderOptions renderOptions) {
 
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
         boolean filterFailedReads = prefMgr.getAsBoolean(SAM_FILTER_FAILED_READS);
@@ -296,7 +297,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
             t.finish();
 
             // TODO -- make this optional (on a preference)
-            InsertionManager.getInstance().processAlignments(chr, t.alignments);
+            InsertionManager.getInstance().processAlignments(chr, t.alignments, renderOptions);
 
 
         } catch (java.nio.BufferUnderflowException e) {

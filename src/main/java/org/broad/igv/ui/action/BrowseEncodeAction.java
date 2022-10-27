@@ -25,6 +25,7 @@
 
 package org.broad.igv.ui.action;
 
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.AttributeManager;
@@ -79,7 +80,7 @@ public class BrowseEncodeAction extends MenuAction {
 
         String[] visibleAttributes = {"dataType", "cell", "antibody", "lab"};
         try {
-            Genome genome = igv.getGenomeManager().getCurrentGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
             EncodeFileBrowser browser = EncodeFileBrowser.getInstance(genome.getId());
 
             if (browser == null) {

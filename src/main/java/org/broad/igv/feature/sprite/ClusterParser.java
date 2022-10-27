@@ -39,7 +39,7 @@ public class ClusterParser {
                 }
 
                 if (tokens.length < 2) {
-                    log.info("Skipping line: " + nextLine);
+                    log.warn("Skipping line: " + nextLine);
                     continue;
                 }
 

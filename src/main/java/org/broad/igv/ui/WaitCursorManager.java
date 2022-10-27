@@ -63,8 +63,8 @@ public class WaitCursorManager {
      */
     public static CursorToken showWaitCursor() {
 
-//        log.info("Show wait cursor");
-        UIUtilities.invokeOnEventThread(() -> IGV.getRootPane().getGlassPane().setVisible(true));
+//        log.warn("Show wait cursor");
+        UIUtilities.invokeOnEventThread(() -> IGV.getInstance().getRootPane().getGlassPane().setVisible(true));
         CursorToken token = new CursorToken();
         tokens.add(token);
         return token;
@@ -80,11 +80,11 @@ public class WaitCursorManager {
      */
     public static void removeWaitCursor(CursorToken token) {
 
-//        log.info("Remove wait cursor");
+//        log.warn("Remove wait cursor");
         tokens.remove(token);
         if (tokens.isEmpty()) {
-//            log.info("Remove glass pane");
-            UIUtilities.invokeOnEventThread(() -> IGV.getRootPane().getGlassPane().setVisible(false));
+//            log.warn("Remove glass pane");
+            UIUtilities.invokeOnEventThread(() -> IGV.getInstance().getRootPane().getGlassPane().setVisible(false));
         }
     }
 

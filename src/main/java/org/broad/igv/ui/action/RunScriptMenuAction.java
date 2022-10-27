@@ -53,23 +53,25 @@ public class RunScriptMenuAction extends MenuAction {
      */
     public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand().equalsIgnoreCase("run batch script...")) {
-            File script = chooseScriptFile();
-            if (script != null && script.isFile()) {
-                final BatchRunner bRun = new BatchRunner(script.getPath(), igv);
-                bRun.run();
+            File [] script = chooseScriptFile();
+            if (script != null && script.length > 0) {
+                for(File f : script) {
+                    final BatchRunner bRun = new BatchRunner(f.getPath(), igv);
+                    bRun.run();
+                }
             }
         }
     }
 
 
-    private File chooseScriptFile() {
+    private File [] chooseScriptFile() {
 
         File lastDirectoryFile = PreferencesManager.getPreferences().getLastTrackDirectory();
-        File scriptFile = FileDialogUtils.chooseFile("Select Script", lastDirectoryFile, FileDialog.LOAD);
+        File [] scriptFile = FileDialogUtils.chooseMultiple("Select Script", lastDirectoryFile, null);
 
-        if (scriptFile != null) {
+        if (scriptFile != null && scriptFile.length > 0) {
             // Store the last accessed file location
-            PreferencesManager.getPreferences().setLastTrackDirectory(scriptFile.getParentFile());
+            PreferencesManager.getPreferences().setLastTrackDirectory(scriptFile[0].getParentFile());
         }
 
         igv.resetStatusMessage();

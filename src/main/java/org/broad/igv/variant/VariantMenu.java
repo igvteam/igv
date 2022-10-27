@@ -25,22 +25,17 @@
 
 package org.broad.igv.variant;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.logging.*;
-import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.GroupTracksMenuAction;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -95,17 +90,17 @@ public class VariantMenu extends IGVPopupMenu {
         add(TrackMenuUtils.getChangeFontSizeItem(selectedTracks));
 
         // Color items
-        addSeparator();
-        JMenuItem colorItem = new JMenuItem("Set Track Color...");
-        colorItem.addActionListener(evt -> TrackMenuUtils.changeTrackColor(selectedTracks));
-        add(colorItem);
+//        addSeparator();
+//        JMenuItem colorItem = new JMenuItem("Set Track Color...");
+//        colorItem.addActionListener(evt -> TrackMenuUtils.changeTrackColor(selectedTracks));
+//        add(colorItem);
 
         addSeparator();
         JLabel colorSiteByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT);
         add(colorSiteByItem);
         add(getColorBandByAllelFrequency());
         add(getColorBandByAlleleFraction());
-        add(getColorByNone());
+        //add(getColorByNone());
 
         //Hides
         if (track.isEnableMethylationRateSupport()) {
@@ -205,25 +200,25 @@ public class VariantMenu extends IGVPopupMenu {
         final JMenuItem item = new JCheckBoxMenuItem("Show Genotypes", track.isShowGenotypes());
         item.addActionListener(evt -> {
             track.setShowGenotypes(item.isSelected());
-            IGV.getInstance().getContentPane().revalidateTrackPanels();
+            IGV.getInstance().revalidateTrackPanels();
             IGV.getInstance().getContentPane().repaint();
         });
         return item;
     }
 
     private JMenuItem getColorByGenotype() {
-        final JMenuItem item = new JCheckBoxMenuItem("Genotype", track.getColorMode() == VariantTrack.ColorMode.GENOTYPE);
+        final JMenuItem item = new JCheckBoxMenuItem("Genotype", track.getGenotypeColorMode() == VariantTrack.ColorMode.GENOTYPE);
         item.addActionListener(evt -> {
-            track.setColorMode(VariantTrack.ColorMode.GENOTYPE);
+            track.setGenotypeColorMode(VariantTrack.ColorMode.GENOTYPE);
             IGV.getInstance().getContentPane().repaint();
         });
         return item;
     }
 
     private JMenuItem getColorByMethylationRate() {
-        final JMenuItem item = new JCheckBoxMenuItem("Methylation Rate", track.getColorMode() == VariantTrack.ColorMode.METHYLATION_RATE);
+        final JMenuItem item = new JCheckBoxMenuItem("Methylation Rate", track.getGenotypeColorMode() == VariantTrack.ColorMode.METHYLATION_RATE);
         item.addActionListener(evt -> {
-            track.setColorMode(VariantTrack.ColorMode.METHYLATION_RATE);
+            track.setGenotypeColorMode(VariantTrack.ColorMode.METHYLATION_RATE);
             IGV.getInstance().getContentPane().repaint();
         });
         return item;

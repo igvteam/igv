@@ -32,15 +32,19 @@ package org.broad.igv.ui.action;
 import org.broad.igv.logging.*;
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.google.GoogleUtils;
+import org.broad.igv.util.GoogleUtils;
+import org.broad.igv.oauth.OAuthProvider;
+import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -78,27 +82,27 @@ public class LoadFromURLMenuAction extends MenuAction {
         ta.setPreferredSize(new Dimension(600, 20));
         if (e.getActionCommand().equalsIgnoreCase(LOAD_FROM_URL)) {
 
-            LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getMainFrame());
+            LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame());
             dlg.setVisible(true);
 
             if (!dlg.isCanceled()) {
 
-                String url = dlg.getFileURL();
+                String inputURL = dlg.getFileURL();
 
-                if (url != null && url.trim().length() > 0) {
+                if (inputURL != null && inputURL.trim().length() > 0) {
 
-                    url = mapURL(url.trim());
+                    final String url = mapURL(inputURL.trim());
 
-                    if (url.endsWith(".xml") || url.endsWith(".session")) {
+                    if (url.startsWith("s3://")) {
+                        checkAWSAccessbility(url);
+                    }
+
+                    if (SessionReader.isSessionFile(url)) {
                         try {
-                            boolean merge = false;
-                            String locus = null;
-                            igv.doRestoreSession(url, locus, merge);
+                            LongRunningTask.submit(() -> this.igv.loadSession(url, null));
                         } catch (Exception ex) {
                             MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                         }
-                    } else if (url.startsWith("s3://")) {
-                        checkAWSAccessbility(url);
                     } else {
                         ResourceLocator rl = new ResourceLocator(url.trim());
 
@@ -117,7 +121,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                 }
             }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_FROM_DAS))) {
-            String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter DAS feature source URL",
+            String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter DAS feature source URL",
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
                 ResourceLocator rl = new ResourceLocator(url.trim());
@@ -125,7 +129,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                 igv.loadTracks(Arrays.asList(rl));
             }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
-            String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL to .genome or FASTA file",
+            String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .genome or FASTA file",
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
                 if (url.startsWith("s3://")) {
@@ -147,18 +151,8 @@ public class LoadFromURLMenuAction extends MenuAction {
     private String mapURL(String url) {
 
         url = url.trim();
-
         if (GoogleUtils.isGoogleCloud(url) || GoogleUtils.isGoogleDrive(url)) {
-
             enableGoogleMenu();
-            // if user is not currently logged in, attempt to
-            // log in user
-//            try {
-//               OAuthUtils.getInstance().getProvider().doSecureLogin();
-//            } catch (IOException e) {
-//                log.error("Error connecting to OAuth: " + e.getMessage());
-//            }
-
         }
 
         return url;

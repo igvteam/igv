@@ -1,16 +1,21 @@
 package org.broad.igv.ui.commandbar;
 
 import com.jidesoft.hints.ListDataIntelliHints;
-import org.broad.igv.logging.*;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
+import org.broad.igv.ui.GlobalKeyDispatcher;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.List;
 
 /**
@@ -24,7 +29,9 @@ public class SearchTextField extends JTextField {
 
         setToolTipText("Enter a gene or locus, e.f. EGFR,   chr1,   or chr1:100,000-200,000");
 
-        addActionListener(actionevent -> searchByLocus(getText()));
+        addActionListener(actionevent -> {
+            searchByLocus(getText());
+        });
 
         new SearchHints(this);  // This has the side-effect, apparently, of enabling hints
     }

@@ -117,6 +117,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     private String trackLine = null;
 
     private boolean groupByStrand = false;
+    private String labelField;
 
     public FeatureTrack() {
 
@@ -211,11 +212,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void dispose() {
-        super.dispose();
+    public void unload() {
+        super.unload();
         if (source != null) {
-            source.dispose();
-            source = null;
+            source.close();
         }
     }
 
@@ -232,7 +232,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 //                IGV.getInstance().layoutMainPanel();
 //            }
         } else {
-            log.info("Unknown event type: " + e.getClass());
+            log.warn("Unknown event type: " + e.getClass());
         }
     }
 
@@ -264,7 +264,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     public void setRendererClass(Class rc) {
         try {
-            renderer = (Renderer) rc.newInstance();
+            renderer = (Renderer) rc.getDeclaredConstructor().newInstance();
         } catch (Exception ex) {
             log.error("Error instatiating renderer ", ex);
         }
@@ -401,9 +401,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                     buf.append(vs);
 
                     if (IGV.getInstance().isShowDetailsOnClick()) {
-                        // URL
                         String url = getFeatureURL(igvFeature);
-
                         if (url != null) {
                             buf.append("<br/><a href=\"" + url + "\">" + url + "</a>");
                         }
@@ -441,18 +439,36 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
+    /**
+     * Return an info URL for a specific feature, constructed as follows
+     *
+     * @param igvFeature
+     * @return
+     */
     private String getFeatureURL(IGVFeature igvFeature) {
-        String url = igvFeature.getURL();
+        String url = igvFeature.getURL();    // Explicity URL setting
         if (url == null) {
-            String trackURL = getUrl();
-            if (trackURL != null && igvFeature.getIdentifier() != null) {
-                String encodedID = StringUtils.encodeURL(igvFeature.getIdentifier());
-                url = trackURL.replaceAll("\\$\\$", encodedID);
+            String trackURL = getFeatureInfoURL();   // Template
+            if (trackURL != null) {
+                String idOrName = igvFeature.getIdentifier() != null ?
+                        igvFeature.getIdentifier() :
+                        labelField != null ?
+                                igvFeature.getDisplayName(labelField) :
+                                igvFeature.getName();
+                    url = trackURL.replaceAll("\\$\\$", StringUtils.encodeURL(idOrName));
             }
         }
         return url;
     }
 
+    @Override
+    public String getLabelField() {
+        return labelField;
+    }
+
+    public void setLabelField(String labelField) {
+        this.labelField = labelField;
+    }
 
     /**
      * Get all features which overlap the specified locus
@@ -464,7 +480,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         try {
             Iterator<Feature> iter = source.getFeatures(chr, start, end);
             while (iter.hasNext()) {
-                features.add(iter.next());
+                Feature f = iter.next();
+                if (f.getEnd() >= start && f.getStart() <= end) {
+                    features.add(f);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -649,6 +668,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
         if (!isShowFeatures(frame)) {
+            packedFeaturesMap.clear();
             return true;  // Ready by definition (nothing to paint)
         } else {
             PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
@@ -678,12 +698,21 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         try {
 
-            int delta = (end - start) / 2;
-            int expandedStart = start - delta;
-            int expandedEnd = end + delta;
-            if (expandedEnd < 0) {
-                expandedEnd = Integer.MAX_VALUE;  // overflow
+            int expandedStart;
+            int expandedEnd;
+            int vw = getVisibilityWindow();
+            if (vw > 0) {
+                int delta = (end - start) / 2;
+                expandedStart = start - delta;
+                expandedEnd = end + delta;
+                if (expandedEnd < 0) {
+                    expandedEnd = Integer.MAX_VALUE;  // overflow
+                }
+            } else {
+                expandedStart = 0;
+                expandedEnd = Integer.MAX_VALUE;
             }
+
 
             //Make sure we are only querying within the chromosome we allow for somewhat pathological cases of start
             //being negative and end being outside, but only if directly queried. Our expansion should not
@@ -706,7 +735,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             } else {
                 PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, this.getDisplayMode(), groupByStrand);
                 packedFeaturesMap.put(frame, pf);
-                //log.info("Loaded " + chr + " " + expandedStart + "-" + expandedEnd);
+                //log.warn("Loaded " + chr + " " + expandedStart + "-" + expandedEnd);
             }
 
         } catch (Exception e) {
@@ -855,7 +884,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         Renderer renderer = getRenderer();
 
-        if (getDisplayMode() == DisplayMode.COLLAPSED) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED && !isGroupByStrand()) {
             List<Feature> features = packedFeatures.getFeatures();
             if (features != null) {
                 renderer.render(features, context, inputRect, this);
@@ -903,20 +932,22 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         boolean canScroll = (forward && !frame.windowAtEnd()) || (!forward && frame.getOrigin() > 0);
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
 
+        // Compute a buffer to define "next"
+        double buffer = Math.max(1, frame.getScale());
+
         if (packedFeatures != null && packedFeatures.containsInterval(chr, (int) center - 1, (int) center + 1)) {
             if (packedFeatures.getFeatures().size() > 0 && canScroll) {
+                List<Feature> centerSortedFeatures = packedFeatures.getCenterSortedFeatures();
                 f = (forward ?
-                        FeatureUtils.getFeatureAfter(center, packedFeatures.getFeatures()) :
-                        FeatureUtils.getFeatureBefore(center, packedFeatures.getFeatures()));
-            }
-            if (f == null) {
-                FeatureSource rawSource = source;
-                if (source instanceof CachingFeatureSource) {
-                    rawSource = ((CachingFeatureSource) source).getSource();
-                }
-                f = FeatureTrackUtils.nextFeature(rawSource, chr, packedFeatures.getStart(), packedFeatures.getEnd(), forward);
+                        FeatureUtils.getFeatureCenteredAfter(center + buffer, centerSortedFeatures) :
+                        FeatureUtils.getFeatureCenteredBefore(center - buffer, centerSortedFeatures));
             }
         }
+        if (f == null) {
+            int searchBuferSize = (int) (frame.getScale() * 1000);
+            f = FeatureTrackUtils.nextFeature(source, chr, packedFeatures.getStart(), packedFeatures.getEnd(), center, searchBuferSize, forward);
+        }
+
 
         return f;
     }
@@ -1022,7 +1053,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public void marshalXML(Document document, Element element) {
         element.setAttribute("groupByStrand", String.valueOf(groupByStrand));
-
+        if (labelField != null) {
+            element.setAttribute("featureNameProperty", labelField);
+        }
         super.marshalXML(document, element);
 
     }
@@ -1031,6 +1064,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     public void unmarshalXML(Element element, Integer version) {
 
         super.unmarshalXML(element, version);
+
+        if (element.hasAttribute("featureNameProperty")) {
+            this.labelField = element.getAttribute("featureNameProperty");
+        }
 
         this.groupByStrand = "true".equals(element.getAttribute("groupByStrand"));
 

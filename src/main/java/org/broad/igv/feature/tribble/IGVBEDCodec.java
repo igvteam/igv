@@ -31,9 +31,9 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.StringUtils;
-import org.broad.igv.util.collections.MultiMap;
 import htsjdk.tribble.Feature;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -102,7 +102,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
         // Name
         if (tokenCount > 3) {
             if (isGffTags()) {
-                MultiMap<String, String> atts = new MultiMap<String, String>();
+                Map<String, String> atts = new LinkedHashMap<>();
                 tagHelper.parseAttributes(tokens[3], atts);
                 String name = tagHelper.getName(atts);
                 feature.setName(name);
@@ -205,7 +205,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
         }
 
         if (tokenCount > 14 && featureType == FeatureType.GAPPED_PEAK) {
-            MultiMap<String, String> attributes = new MultiMap<String, String>();
+            Map<String, String> attributes = new LinkedHashMap<>();
             attributes.put("Signal Value", tokens[12]);
             attributes.put("pValue (-log10)", tokens[13]);
             attributes.put("qValue (-log10)", tokens[14]);
@@ -247,7 +247,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
      * @param feature
      * @return
      */
-    private boolean isCoding(BasicFeature feature) {
+    public static boolean isCoding(BasicFeature feature) {
         return feature.hasExons() && feature.getThickStart() > feature.getStart() && feature.getThickEnd() < feature.getEnd()
                 && feature.getStrand() != Strand.NONE;
     }
@@ -297,7 +297,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
     }
 
 
-    private void createExons(int start, String[] tokens, BasicFeature gene, String chr,
+    public static void createExons(int start, String[] tokens, BasicFeature gene, String chr,
                              Strand strand) throws NumberFormatException {
 
         int cdStart = Integer.parseInt(tokens[6]);
@@ -324,10 +324,12 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
                 } else {
                     exonNumber++;
                 }
-
             }
         }
     }
+
+
+
 
     /**
      * Encode a feature as a BED string.

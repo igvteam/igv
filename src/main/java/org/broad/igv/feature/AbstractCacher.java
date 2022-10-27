@@ -81,7 +81,7 @@ public abstract class AbstractCacher {
 
     }
 
-    public void close() throws IOException {
+    public void close()  {
         cache.clear();
     }
 

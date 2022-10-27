@@ -34,20 +34,23 @@
 package org.broad.igv.feature.genome;
 
 
-import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.feature.genome.load.GenomeLoader;
 import org.broad.igv.feature.genome.load.JsonGenomeLoader;
 import org.broad.igv.jbrowse.CircularViewUtilities;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
@@ -67,6 +70,7 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -122,7 +126,7 @@ public class GenomeManager {
                 DirectoryManager.getGenomeCacheDirectory().mkdir();
             }
             archiveFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedFilename);
-            Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+            Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
             Downloader.download(genomeArchiveURL, archiveFile, parent);
         } else {
             archiveFile = new File(genomePath);
@@ -160,7 +164,7 @@ public class GenomeManager {
             final ProgressMonitor[] monitor = {new ProgressMonitor()};
             final ProgressBar.ProgressDialog[] progressDialog = new ProgressBar.ProgressDialog[1];
             UIUtilities.invokeAndWaitOnEventThread(() -> {
-                progressDialog[0] = ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor[0], false);
+                progressDialog[0] = ProgressBar.showProgressDialog(IGV.getInstance().getMainFrame(), "Loading Genome...", monitor[0], false);
             });
 
             try {
@@ -196,7 +200,7 @@ public class GenomeManager {
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             try {
                 String aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
-                if((new File(aliasPath)).exists()) {
+                if ((new File(aliasPath)).exists()) {
                     newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
                 }
             } catch (Exception e) {
@@ -207,7 +211,9 @@ public class GenomeManager {
                 monitor.fireProgress(25);
             }
 
-            if (IGV.hasInstance()) IGV.getInstance().resetSession(null);
+            if (IGV.hasInstance()) {
+                IGV.getInstance().resetSession(null);
+            }
 
             GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
             final Set<String> serverGenomeIDs = genomeListManager.getServerGenomeIDs();
@@ -220,11 +226,11 @@ public class GenomeManager {
                 loadGenomeAnnotations(newGenome);
             }
 
-            if(PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+            if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
                 CircularViewUtilities.changeGenome(newGenome);
             }
 
-            // log.info("Genome loaded.  id= " + newGenome.getId());
+            // log.warn("Genome loaded.  id= " + newGenome.getId());
             return currentGenome;
 
         } catch (SocketException e) {
@@ -232,16 +238,52 @@ public class GenomeManager {
         }
     }
 
-    public void loadGenomeAnnotations(Genome newGenome) {
-        FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();   // Can be null
-        if (IGV.hasInstance()) {
-            IGV.getInstance().setGenomeTracks(geneFeatureTrack);
+    public void loadGenomeAnnotations(Genome genome) {
+        List<ResourceLocator> resources = genome.getAnnotationResources();
+        if (resources != null) {
+            Map<ResourceLocator, List<Track>> annotationTracks = new LinkedHashMap<>();
+            for (ResourceLocator locator : resources) {
+                try {
+                    List<Track> tracks = IGV.getInstance().load(locator);
+                    annotationTracks.put(locator, tracks);
+                } catch (DataLoadException e) {
+                    log.error("Error loading genome annotations", e);
+                }
+            }
+            genome.setAnnotationTracks(annotationTracks);
         }
-        List<ResourceLocator> resources = newGenome.getAnnotationResources();
-        if (resources != null && IGV.hasInstance()) {
-            IGV.getInstance().loadResources(resources);
-            IGV.getInstance().repaint();
+        restoreGenomeTracks(genome);
+        IGV.getInstance().repaint();
+    }
+
+    public void restoreGenomeTracks(Genome genome) {
+        FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Can be null
+        IGV.getInstance().setGenomeTracks(geneFeatureTrack);
+
+        Map<ResourceLocator, List<Track>> annotationTracks = currentGenome.getAnnotationTracks();
+        if (annotationTracks != null) {
+            for (Map.Entry<ResourceLocator, List<Track>> entry : annotationTracks.entrySet()) {
+                IGV.getInstance().addTracks(entry.getValue(), entry.getKey());
+                for (Track track : entry.getValue()) {
+                    ResourceLocator locator = track.getResourceLocator();
+                    String fn = "";
+                    if (locator != null) {
+                        fn = locator.getPath();
+                        int lastSlashIdx = fn.lastIndexOf("/");
+                        if (lastSlashIdx < 0) {
+                            lastSlashIdx = fn.lastIndexOf("\\");
+                        }
+                        if (lastSlashIdx > 0) {
+                            fn = fn.substring(lastSlashIdx + 1);
+                        }
+                    }
+                    track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
+                    track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
+                    track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+                }
+            }
         }
+        IGV.getInstance().revalidateTrackPanels();
     }
 
 
@@ -458,12 +500,12 @@ public class GenomeManager {
         String filename = Utilities.getFileNameFromURL(fastaPath);
 
         File localFile = new File(targetDir, filename);
-        boolean downloaded = Downloader.download(HttpUtils.createURL(fastaPath), localFile, IGV.getMainFrame());
+        boolean downloaded = Downloader.download(HttpUtils.createURL(fastaPath), localFile, IGV.getInstance().getMainFrame());
 
         if (downloaded) {
             URL indexUrl = HttpUtils.createURL(fastaPath + ".fai");
             File localIndexFile = new File(targetDir, filename + ".fai");
-            downloaded = Downloader.download(indexUrl, localIndexFile, IGV.getMainFrame());
+            downloaded = Downloader.download(indexUrl, localIndexFile, IGV.getInstance().getMainFrame());
         }
 
         if (downloaded) {
@@ -471,7 +513,7 @@ public class GenomeManager {
             if (fastaPath.endsWith(".gz")) {
                 URL gziUrl = HttpUtils.createURL(fastaPath + ".gzi");
                 File localGziPath = new File(targetDir, filename + ".gzi");
-                downloaded = Downloader.download(gziUrl, localGziPath, IGV.getMainFrame());
+                downloaded = Downloader.download(gziUrl, localGziPath, IGV.getInstance().getMainFrame());
             }
         }
 

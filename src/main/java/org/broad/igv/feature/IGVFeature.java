@@ -26,36 +26,74 @@
 
 package org.broad.igv.feature;
 
-import htsjdk.samtools.util.Locatable;
-import org.broad.igv.util.collections.MultiMap;
-
 import java.awt.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Interface for features in IGV annotation tracks  (FeatureTrack and derived classes).
+ */
 
 public interface IGVFeature extends LocusScore, NamedFeature {
 
-    public String getType();
+    default String getIdentifier() {
+        return null;
+    }
 
-    public String getIdentifier();
+    default Strand getStrand() {
+        return Strand.NONE;
+    }
 
-    public String getDescription();
+    default int getLength() {
+        return getEnd() - getStart();
+    }
 
-    public Strand getStrand();
+    default List<String> getAttributeKeys() {
+        return Collections.EMPTY_LIST;
+    }
 
-    public int getLength();
+    default String getAttribute(String key) {
+        return null;
+    }
 
-    public MultiMap<String, String> getAttributes();
+    default void removeAttribute(String key) {}
 
-    public boolean contains(IGVFeature feature);
+    /**
+     * Return true if the given feature is completely contained within the bounds of this
+     * feature. amd is on the same strand.
+     * <p/>
+     *
+     * @param feature
+     * @return
+     */
+    default boolean contains(IGVFeature feature) {
+        if (feature == null) {
+            return false;
+        }
+        if (!this.getChr().equals(feature.getChr()) ||
+                this.getStrand() != feature.getStrand()) {
+            return false;
+        }
+        if ((feature.getStart() >= this.getStart()) && (feature.getEnd() <= this.getEnd())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    boolean contains(double location);
+    default boolean contains(double location) {
+        return location >= getStart() && location < getEnd();
+    }
 
-    public List<Exon> getExons();
+    default List<Exon> getExons() {
+        return null;
+    }
 
     public Color getColor();
 
-    public String getURL();
+    default String getURL() {
+        return null;
+    }
 
 }

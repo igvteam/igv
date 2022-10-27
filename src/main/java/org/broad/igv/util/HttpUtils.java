@@ -29,16 +29,14 @@ import biz.source_code.base64Coder.Base64Coder;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPStream;
 import org.broad.igv.logging.*;
-import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;
-import org.broad.igv.google.GoogleUtils;
-import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.oauth.OAuthUtils;
+import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.collections.CI;
 import org.broad.igv.util.ftp.FTPUtils;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -57,7 +55,9 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import static org.broad.igv.prefs.Constants.*;
 import static org.broad.igv.util.stream.SeekableServiceStream.WEBSERVICE_URL;
@@ -97,6 +97,9 @@ public class HttpUtils {
     private final int DEFAULT_REDIRECT_EXPIRATION_MIN = 15;
     private Map<URL, CachedRedirect> redirectCache = new HashMap<URL, CachedRedirect>();
 
+    // oauth tokens set from command line script
+    private Map<Pattern, String> accessTokens = new HashMap<>();
+
     /**
      * @return the single instance
      */
@@ -115,10 +118,49 @@ public class HttpUtils {
         try {
             System.setProperty("java.net.useSystemProxies", "true");
         } catch (Exception e) {
-            log.info("Couldn't set useSystemProxies=true");
+            log.warn("Couldn't set useSystemProxies=true");
         }
 
         byteRangeTestMap = Collections.synchronizedMap(new HashMap());
+    }
+
+    /**
+     * Explicitly set an oAuth access token for the given host.
+     * @param token oAuth access token
+     * @param host host to apply access token to.  Can contain wildcards (e.g. "*.foo.com")
+     */
+    public void setAccessToken(String token, String host) {
+        if(host == null || host.trim().length() == 0) {
+            host = ".*";
+        } else {
+            host = host.replace("*", ".*");
+        }
+        this.accessTokens.put(Pattern.compile(host, Pattern.CASE_INSENSITIVE), token);
+    }
+
+
+    /**
+     * Return an access token, if any, from the access token cache.
+     * @param url
+     * @return
+     */
+    String getAccessTokenFor(URL url) {
+
+        for(Map.Entry<Pattern, String> entry : this.accessTokens.entrySet()) {
+            final Pattern pattern = entry.getKey();
+            Matcher matcher = pattern.matcher(url.getHost());
+            if(matcher.find()) {
+                return entry.getValue();
+            }
+        }
+return null;
+//        if (token == null && oauthProvider != null && oauthProvider.appliesToUrl(url)) {
+//            token = oauthProvider.getAccessToken();
+//        }
+    }
+
+    public void clearAccessTokens() {
+        this.accessTokens.clear();
     }
 
     /**
@@ -214,20 +256,6 @@ public class HttpUtils {
     public String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
         byte[] bytes = this.getContentsAsBytes(url, headers);
         return new String(bytes, "UTF-8");
-    }
-
-    public String getContentsAsGzippedString(URL url) throws IOException {
-        InputStream is = null;
-        HttpURLConnection conn = openConnection(url, null);
-        try {
-            is = conn.getInputStream();
-            return readContents(new GZIPInputStream(is));
-        } catch (IOException e) {
-            readErrorStream(conn);  // Consume content
-            throw e;
-        } finally {
-            if (is != null) is.close();
-        }
     }
 
     public byte[] getContentsAsBytes(URL url, Map<String, String> headers) throws IOException {
@@ -437,39 +465,6 @@ public class HttpUtils {
         }
     }
 
-    /**
-     * Compare a local and remote resource, returning true if it is believed that the
-     * remote file is newer than the local file
-     *
-     * @param file
-     * @param url
-     * @return true if the files are the same or the local file is newer, false if the remote file has been modified wrt the local one.
-     * @throws IOException
-     */
-    public boolean remoteIsNewer(File file, URL url) throws IOException {
-
-        if (!file.exists()) {
-            return false;
-        }
-
-        HttpURLConnection conn = openConnection(url, null, "HEAD");
-
-        // Compare last-modified dates
-        String lastModifiedString = conn.getHeaderField("Last-Modified");
-        if (lastModifiedString == null) {
-            return true;                    // Assume its changed
-        } else {
-            HttpDate date = new HttpDate();
-            date.parse(lastModifiedString);
-            long remoteModifiedTime = date.getTime();
-            long localModifiedTime = file.lastModified();
-            return remoteModifiedTime > localModifiedTime;
-        }
-
-
-    }
-
-
     public void updateProxySettings() {
         boolean useProxy;
         String proxyHost;
@@ -673,16 +668,31 @@ public class HttpUtils {
             }
         }
 
-        // if the url points to a openid location instead of a oauth2.0 location, used the fina and replace
-        // string to dynamically map url - dwm08
-        if (url.getHost().equals(GoogleUtils.GOOGLE_API_HOST) && OAuthUtils.findString != null && OAuthUtils.replaceString != null) {
-            url = HttpUtils.createURL(url.toExternalForm().replaceFirst(OAuthUtils.findString, OAuthUtils.replaceString));
+
+        // If we have an explicitly set oauth token for this URL use it.
+        String token = this.getAccessTokenFor(url);
+
+        // If the URL is protected via an oAuth provider check login, and optionally map url with find/replace string
+        OAuthProvider oauthProvider = OAuthUtils.getInstance().getProviderForURL(url);
+        if (oauthProvider != null) {
+
+            if(token == null) {
+                oauthProvider.checkLogin();
+                token = oauthProvider.getAccessToken();
+            }
+
+            if (oauthProvider.findString != null) {
+                // A hack, supported for backward compatibility but not reccomended
+                url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
+            }
+
         }
 
         // If a presigned URL, check its validity and update if needed
         if (AmazonUtils.isPresignedURL(url.toExternalForm())) {
             url = new URL(AmazonUtils.updatePresignedURL(url.toExternalForm()));
         }
+
 
         // If an S3 url, obtain a signed https url
         if (AmazonUtils.isAwsS3Path(url.toExternalForm())) {
@@ -713,20 +723,20 @@ public class HttpUtils {
         if (proxySettings != null && proxySettings.isProxyDefined()) {
 
             // NOTE: setting disabledSchemes to "" through System.setProperty does not work !!!
-             System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
-             System.setProperty("jdk.http.auth.proxying.disabledSchemes", "");
+            System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+            System.setProperty("jdk.http.auth.proxying.disabledSchemes", "");
 
 //            if (url.getProtocol().equals("https") && proxySettings.isUserPwDefined()) {
 //                conn = new ProxiedHttpsConnection(url, proxySettings.proxyHost, proxySettings.proxyPort,
 //                        proxySettings.user, proxySettings.pw);
 //            } else {
-                Proxy proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
-                conn = (HttpURLConnection) url.openConnection(proxy);
-                if (proxySettings.isUserPwDefined()) {
-                    byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
-                    String encodedUserPwd = String.valueOf(Base64Coder.encode(bytes));
-                    conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
-                }
+            Proxy proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
+            conn = (HttpURLConnection) url.openConnection(proxy);
+            if (proxySettings.isUserPwDefined()) {
+                byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
+                String encodedUserPwd = String.valueOf(Base64Coder.encode(bytes));
+                conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
+            }
 //            }
         }
         if (conn == null && !PreferencesManager.getPreferences().getAsBoolean("PROXY.DISABLE_CHECK")) {
@@ -770,12 +780,10 @@ public class HttpUtils {
 
         conn.setRequestProperty("User-Agent", Globals.applicationString());
 
-        // If this is a Google URL and we have an access token use it.
-        if (GoogleUtils.isGoogleURL(url.toExternalForm())) {
-            String token = OAuthUtils.getInstance().getProvider().getAccessToken();
-            if (token != null) {
-                conn.setRequestProperty("Authorization", "Bearer " + token);
-            }
+
+        // If we have an oauth token use it.
+        if (token != null) {
+            conn.setRequestProperty("Authorization", "Bearer " + token);
         }
 
         if (method.equals("PUT")) {
@@ -860,8 +868,11 @@ public class HttpUtils {
                     message = "File not found: " + url.toString();
                     throw new FileNotFoundException(message);
                 } else if (code == 401) {
-                    if (GoogleUtils.isGoogleURL(url.toExternalForm()) && retries == 0) {
-                        GoogleUtils.checkLogin();
+                    OAuthProvider provider = OAuthUtils.getInstance().getProviderForURL(url);
+                    if (provider != null && retries == 0) {
+                        if (!provider.isLoggedIn()) {
+                            provider.checkLogin();
+                        }
                         return openConnection(url, requestProperties, method, redirectCount, ++retries);
                     }
                     message = "You must log in to access this file";
@@ -1086,7 +1097,7 @@ public class HttpUtils {
                 return new PasswordAuthentication(defaultUserName, defaultPassword);
             }
 
-            Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
+            Frame owner = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
 
             LoginDialog dlg = new LoginDialog(owner, urlString, isProxyChallenge);
             dlg.setVisible(true);
@@ -1107,33 +1118,6 @@ public class HttpUtils {
             }
         }
     }
-
-
-    static boolean isExpectedRangeMissing(URLConnection conn, Map<String, String> requestProperties) {
-        final boolean rangeRequested = (requestProperties != null) && (new CI.CIHashMap<String>(requestProperties)).containsKey("Range");
-        if (!rangeRequested) return false;
-
-        Map<String, List<String>> headerFields = conn.getHeaderFields();
-        boolean rangeReceived = (headerFields != null) && (new CI.CIHashMap<List<String>>(headerFields)).containsKey("Content-Range");
-        return !rangeReceived;
-    }
-
-
-    /**
-     * Provide override for unit tests
-     */
-    public void setAuthenticator(Authenticator authenticator) {
-        Authenticator.setDefault(authenticator);
-    }
-
-    /**
-     * For unit tests
-     */
-    public void resetAuthenticator() {
-        Authenticator.setDefault(new IGVAuthenticator());
-
-    }
-
 
     /**
      * Useful helper function

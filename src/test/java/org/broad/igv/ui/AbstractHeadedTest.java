@@ -74,7 +74,7 @@ public class AbstractHeadedTest {
     @Before
     public void setUp() throws Exception {
         igv.newSession();
-        IGV.getMainFrame().requestFocus();
+        IGV.getInstance().getMainFrame().requestFocus();
 
         TestUtils.resetPrefsFile();
         TestUtils.resetTestUserDefinedGenomes();
@@ -113,7 +113,7 @@ public class AbstractHeadedTest {
         //If IGV is already open, we get the instance.
         if (IGV.hasInstance()) {
             igv = IGV.getInstance();
-            IGV.getMainFrame().setVisible(true);
+            IGV.getInstance().getMainFrame().setVisible(true);
             System.out.println("Using old IGV");
         } else {
             JFrame frame = new JFrame();
@@ -125,7 +125,7 @@ public class AbstractHeadedTest {
         }
         if (genomeFile != null) {
             GenomeManager.getInstance().loadGenome(genomeFile, null);
-            genome = igv.getGenomeManager().getCurrentGenome();
+            genome = GenomeManager.getInstance().getCurrentGenome();
         }
         return igv;
     }
@@ -139,8 +139,8 @@ public class AbstractHeadedTest {
             return;
         }
 
-        IGV.getMainFrame().setVisible(false);
-        IGV.getMainFrame().dispose();
+        IGV.getInstance().getMainFrame().setVisible(false);
+        IGV.getInstance().getMainFrame().dispose();
         IGV.destroyInstance();
     }
 
@@ -159,23 +159,5 @@ public class AbstractHeadedTest {
             System.out.println("You are trying to start a GUI in a headless environment. Aborting test");
         }
         org.junit.Assume.assumeTrue(!headless);
-    }
-
-
-    public void testTest() throws Exception {
-        java.util.List<Track> tracks = IGV.getInstance().getAllTracks();
-        System.out.println("# tracks: " + tracks.size());
-        for (Track track : tracks) {
-            System.out.println(track.getName());
-        }
-
-        java.util.List<Track> featureTracks = IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).getTracks();
-        System.out.println(featureTracks.size());
-    }
-
-    protected static String rewriteRestoreSession(String sessionPath) throws Exception{
-        sessionPath = (TestUtils.replaceTestPaths(new File(sessionPath))).getAbsolutePath();
-        IGV.getInstance().doRestoreSession(sessionPath, null, false);
-        return sessionPath;
     }
 }

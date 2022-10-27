@@ -28,10 +28,11 @@ package org.broad.igv.track;
 //~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.Feature;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -39,7 +40,6 @@ import org.broad.igv.session.SessionAttribute;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TooltipTextFrame;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.AttributeHeaderPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -71,38 +71,11 @@ public abstract class AbstractTrack implements Track {
     public static final boolean DEFAULT_SHOW_FEATURE_NAMES = true;
     private static Logger log = LogManager.getLogger(AbstractTrack.class);
 
-    /**
-     * Classes which we have tried to marshal/unmarshal
-     * and have failed. Since we just use exception catching (slow),
-     * we don't want to repeat failures
-     */
-    public static final Set<Class> knownUnknownTrackClasses = new HashSet<Class>();
-    public static final Class defaultTrackClass = AbstractTrack.class;
-
-    /**
-     * Set default renderer classes by track type.
-     */
-    private static Class defaultRendererClass = BarChartRenderer.class;
-    private static Map<TrackType, Class> defaultRendererMap = new HashMap();
-
-    static {
-        defaultRendererMap.put(TrackType.RNAI, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.COPY_NUMBER, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.CNV, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.ALLELE_SPECIFIC_COPY_NUMBER, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.GENE_EXPRESSION, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.DNA_METHYLATION, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.LOH, HeatmapRenderer.class);
-        defaultRendererMap.put(TrackType.OTHER, BarChartRenderer.class);
-        defaultRendererMap.put(TrackType.CHIP_CHIP, HeatmapRenderer.class);
-    }
-
-
     protected String id;
 
     private String attributeKey;
     private String name;
-    private String url;
+    private String featureInfoURL;
     private boolean itemRGB = true;
 
     private boolean useScore;
@@ -117,8 +90,6 @@ public abstract class AbstractTrack implements Track {
 
     private int top;
     protected int minimumHeight = -1;
-    protected int maximumHeight = 1000;
-
     private TrackType trackType = TrackType.OTHER;
 
     private boolean selected = false;
@@ -179,12 +150,12 @@ public abstract class AbstractTrack implements Track {
         // Ignore by default
     }
 
-    public String getUrl() {
-        return url;
+    public String getFeatureInfoURL() {
+        return featureInfoURL;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setFeatureInfoURL(String featureInfoURL) {
+        this.featureInfoURL = featureInfoURL;
     }
 
     public void setUseScore(boolean useScore) {
@@ -220,11 +191,6 @@ public abstract class AbstractTrack implements Track {
 
     public void setSampleId(String sampleId) {
         this.sampleId = sampleId;
-    }
-
-    @Override
-    public boolean isFilterable() {
-        return true;   // True by default
     }
 
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
@@ -421,7 +387,7 @@ public abstract class AbstractTrack implements Track {
      * @return
      */
     private int getDefaultHeight() {
-        if (XYPlotRenderer.class.isAssignableFrom(getDefaultRendererClass())) {
+        if (getDefaultRenderer() instanceof XYPlotRenderer) {
             return PreferencesManager.getPreferences().getAsInt(CHART_TRACK_HEIGHT_KEY);
         } else {
             return PreferencesManager.getPreferences().getAsInt(TRACK_HEIGHT_KEY);
@@ -448,10 +414,6 @@ public abstract class AbstractTrack implements Track {
         this.minimumHeight = minimumHeight;
     }
 
-    public void setMaximumHeight(int maximumHeight) {
-        this.maximumHeight = maximumHeight;
-    }
-
     /**
      * Return the actual minimum height if one has been set, otherwise get the default for the current renderer.
      *
@@ -459,10 +421,6 @@ public abstract class AbstractTrack implements Track {
      */
     public int getMinimumHeight() {
         return minimumHeight < 0 ? getDefaultMinimumHeight() : minimumHeight;
-    }
-
-    public int getMaximumHeight() {
-        return maximumHeight;
     }
 
     public void setTrackType(TrackType type) {
@@ -532,16 +490,12 @@ public abstract class AbstractTrack implements Track {
         if (force) {
             this.height = preferredHeight;
         } else {
-            this.height = Math.min(Math.max(getMinimumHeight(), preferredHeight), getMaximumHeight());
+            this.height = Math.max(getMinimumHeight(), preferredHeight);
         }
     }
 
     public int getHeight() {
         return (height < 0) ? getDefaultHeight() : height;
-    }
-
-    public boolean hasDataRange() {
-        return dataRange != null;
     }
 
     public DataRange getDataRange() {
@@ -561,10 +515,20 @@ public abstract class AbstractTrack implements Track {
         this.dataRange = axisDefinition;
     }
 
-
-    protected Class getDefaultRendererClass() {
-        Class def = defaultRendererMap.get(getTrackType());
-        return (def == null) ? defaultRendererClass : def;
+    protected Renderer getDefaultRenderer() {
+        TrackType trackType = getTrackType();
+        switch (trackType) {
+            case RNAI:
+            case COPY_NUMBER:
+            case ALLELE_SPECIFIC_COPY_NUMBER:
+            case GENE_EXPRESSION:
+            case DNA_METHYLATION:
+            case LOH:
+            case CHIP_CHIP:
+                return new HeatmapRenderer();
+            default:
+                return new BarChartRenderer();
+        }
     }
 
     public Collection<WindowFunction> getAvailableWindowFunctions() {
@@ -585,8 +549,8 @@ public abstract class AbstractTrack implements Track {
         String popupText = getValueStringAt(frame.getChrName(), e.getChromosomePosition(), e.getMouseEvent().getX(), e.getMouseEvent().getY(), frame);
 
         if (popupText != null) {
-            Color color = IGV.getRootPane().getJMenuBar().getForeground();
-            String htmlColor = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()); 
+            Color color = IGV.getInstance().getRootPane().getJMenuBar().getForeground();
+            String htmlColor = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
             popupText = "<div style=\"color: " + htmlColor + "\">" + popupText + "</div>";
 
             final TooltipTextFrame tf = new TooltipTextFrame(getName(), popupText);
@@ -706,7 +670,7 @@ public abstract class AbstractTrack implements Track {
             setWindowFunction(properties.getWindowingFunction());
         }
         if (properties.getUrl() != null) {
-            setUrl(properties.getUrl());
+            setFeatureInfoURL(properties.getUrl());
         }
 
         Map<String, String> attributes = properties.getAttributes();
@@ -963,7 +927,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     @Override
-    public void dispose() {
+    public void unload() {
         if (this instanceof IGVEventObserver) {
             IGVEventBus.getInstance().unsubscribe((IGVEventObserver) this);
         }
@@ -985,6 +949,22 @@ public abstract class AbstractTrack implements Track {
     }
     // End of Roche-Tessella modification
 
+
+    public void setShowFeatureNames(boolean b) {
+        this.showFeatureNames = b;
+    }
+
+    @Override
+    public boolean isShowFeatureNames() {
+        return showFeatureNames;
+    }
+
+    /**
+     * Restore track from XML serialization -- work in progress
+     * //        <renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+     *
+     * @param element
+     */
 
     @Override
     public void marshalXML(Document document, Element element) {
@@ -1044,22 +1024,6 @@ public abstract class AbstractTrack implements Track {
 
     }
 
-
-    public void setShowFeatureNames(boolean b) {
-        this.showFeatureNames = b;
-    }
-
-    @Override
-    public boolean isShowFeatureNames() {
-        return showFeatureNames;
-    }
-
-    /**
-     * Restore track from XML serialization -- work in progress
-     * //        <renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
-     *
-     * @param element
-     */
 
     @Override
     public void unmarshalXML(Element element, Integer version) {

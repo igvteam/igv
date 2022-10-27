@@ -5,7 +5,6 @@ import org.broad.igv.logging.*;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.Sequence;
-import org.broad.igv.feature.genome.SequenceWrapper;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.feature.gff.GFFFeatureSource;
@@ -70,7 +69,7 @@ public class DotGenomeLoader extends GenomeLoader {
                 if (props != null) {
                     geneFeatureTrack.setProperties(parser.getTrackProperties());
                 }
-                geneFeatureTrack.setUrl(annotationURL);
+                geneFeatureTrack.setFeatureInfoURL(annotationURL);
             }
         }
         return geneFeatureTrack;
@@ -115,7 +114,7 @@ public class DotGenomeLoader extends GenomeLoader {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(cytobandStream));
                 newGenome.setCytobands(CytoBandFileParser.loadData(reader));
             } catch (IOException ex) {
-                log.warn("Error loading cytoband file", ex);
+                log.error("Error loading cytoband file", ex);
                 throw new RuntimeException("Error loading cytoband file" + genomeDescriptor.cytoBandFileName);
             } finally {
                 closeSilently(cytobandStream);

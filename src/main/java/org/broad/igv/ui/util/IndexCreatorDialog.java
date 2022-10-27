@@ -48,7 +48,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 
-public class IndexCreatorDialog extends JDialog {
+public class IndexCreatorDialog extends org.broad.igv.ui.IGVDialog  {
 
     private static Logger log = LogManager.getLogger(IndexCreatorDialog.class);
 

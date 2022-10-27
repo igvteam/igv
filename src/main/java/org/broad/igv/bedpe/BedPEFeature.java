@@ -115,7 +115,7 @@ public class BedPEFeature implements BedPE {
         }
         buf.append(locus1);
         buf.append("<br>" + locus2);
-        buf.append("<br>Score: " + scoreString);
+        buf.append("<br>Score: " + score);
         if(attributes != null) {
             buf.append("<br><hr>");
             for (Map.Entry<String, String> entry : attributes.entrySet()) {

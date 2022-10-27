@@ -45,6 +45,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.broad.igv.ui.IGV.DATA_PANEL_NAME;
+
 /**
  * Class to parse an index aware session file
  *
@@ -81,9 +83,10 @@ public class IndexAwareSessionReader implements SessionReader {
         List<ResourceLocator> aSync = new ArrayList();
 
         // Index aware sessions do not have means to set genome, or if they do we don't use it
+        igv.resetSession(sessionPath);
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        if (genome != null) {
-            IGV.getInstance().setGenomeTracks(genome.getGeneTrack());
+        if (genome != null) {  // Can this ever be null?
+            GenomeManager.getInstance().restoreGenomeTracks(GenomeManager.getInstance().getCurrentGenome());
         }
 
         while ((nextLine = reader.readLine()) != null) {
@@ -120,6 +123,9 @@ public class IndexAwareSessionReader implements SessionReader {
                     // Alignment tracks must be loaded synchronously
                     if (isAlignmentFile(locator.getPath())) {
                         TrackPanel panel = igv.getPanelFor(locator);
+                        if (panel == null) {
+                            panel = igv.getTrackPanel(DATA_PANEL_NAME);
+                        }
                         panel.addTracks(igv.load(locator));
                     } else {
                         aSync.add(locator);
@@ -195,7 +201,7 @@ public class IndexAwareSessionReader implements SessionReader {
         for (ResourceLocator loc : locatorPaths) {
             //TrackPanel panel = IGV.getInstance().getPanelFor(new ResourceLocator(path));
             // If loading from an index aware session use a single panel
-            TrackPanel panel = igv.getTrackPanel(IGV.DATA_PANEL_NAME);
+            TrackPanel panel = igv.getTrackPanel(DATA_PANEL_NAME);
             String path = loc.getPath();
             if (loadedTracks.containsKey(path)) {
                 panel.addTracks(loadedTracks.get(path));

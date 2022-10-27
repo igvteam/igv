@@ -164,7 +164,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
      */
     public void selectGenome(String genomeId) {
 
-        //log.info("Selecting genome " + genomeId);
+        //log.warn("Selecting genome " + genomeId);
 
         GenomeListItem selectedItem = GenomeListManager.getInstance().getGenomeListItem(genomeId);
 
@@ -310,7 +310,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         } else if (e instanceof GenomeResetEvent) {
             refreshGenomeListComboBox();
         } else {
-            log.info("Unknown event class: " + e.getClass());
+            log.warn("Unknown event class: " + e.getClass());
         }
     }
 
@@ -327,7 +327,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     public void searchByLocus(final String searchText) {
 
         if ((searchText != null) && (searchText.length() > 0)) {
-            String homeChr = IGV.getInstance().getGenomeManager().getCurrentGenome().getHomeChromosome();
+            String homeChr = GenomeManager.getInstance().getCurrentGenome().getHomeChromosome();
             if (searchText.equalsIgnoreCase("home") || searchText.equalsIgnoreCase(homeChr)) {
                 homeButtonActionPerformed(null);
             } else {
@@ -365,8 +365,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         locationPanel.add(Box.createRigidArea(new Dimension(10, 36)), JideBoxLayout.FIX);
 
         genomeComboBox = new GenomeComboBox();
-        genomeComboBox.setMinimumSize(new Dimension(180, 27));
-        genomeComboBox.setPreferredSize(new Dimension(180, 27));
+        genomeComboBox.setMinimumSize(new Dimension(210, 27));
+        genomeComboBox.setPreferredSize(new Dimension(210, 27));
+        genomeComboBox.setMaximumSize(new Dimension(300, 27));
         genomeComboBox.setToolTipText(UIConstants.CHANGE_GENOME_TOOLTIP);
 
         genomeComboBox.addPopupMenuListener(new PopupMenuListener() {

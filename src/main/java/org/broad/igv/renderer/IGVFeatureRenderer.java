@@ -39,7 +39,6 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.util.collections.MultiMap;
 
 import java.awt.*;
 import java.awt.font.LineMetrics;
@@ -141,7 +140,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             boolean alternateExonColor = (track instanceof FeatureTrack && ((FeatureTrack) track).isAlternateExonColor());
             Color trackPosColor = track.getColor();
             Color trackNegColor = alternateExonColor ? track.getColor() : track.getAltColor();
-
+            String labelField = track.getLabelField();
 
             for (IGVFeature feature : featureList) {
 
@@ -205,7 +204,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     hasExons = bf.hasExons();
                 }
 
-                 // Add directional arrows and exons, if there is room.
+                // Add directional arrows and exons, if there is room.
                 int pixelYCenter = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
 
                 if (hasExons) {
@@ -226,25 +225,30 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     }
 
                     // This is ugly, but alternatives are probably worse
-                    if (feature instanceof EncodePeakFeature && pixelWidth > 5) {
-                        int peakPosition = ((EncodePeakFeature) feature).getPeakPosition();
-                        if (peakPosition > 0) {
-                            Color c = g2D.getColor();
-                            int peakPixelPosition = (int) ((peakPosition - origin) / locScale);
-                            Color peakColor = c == Color.black ? Color.red : Color.black;
-                            g2D.setColor(peakColor);
-                            int pw = Math.min(3, pixelWidth / 5);
-                            g2D.fillRect(peakPixelPosition - pw/2, pixelYCenter - thinBlockHeight/2 - 1, pw, thinBlockHeight + 2);
-                            g2D.setColor(c);
+                    if (feature.getAttribute("peak") != null && pixelWidth > 5) {
+                        try {
+                            int peakPosition = Integer.parseInt(feature.getAttribute("peak"));
+                            if (peakPosition > 0) {
+                                Color c = g2D.getColor();
+                                int peakPixelPosition = (int) ((feature.getStart() + peakPosition - origin) / locScale);
+                                Color peakColor = c == Color.cyan ? Color.red : Color.cyan;
+                                g2D.setColor(peakColor);
+                                int pw = Math.min(4, pixelWidth / 5);
+                                g2D.fillRect(peakPixelPosition - pw / 2, pixelYCenter - thinBlockHeight / 2 - 1, pw, thinBlockHeight + 2);
+                                g2D.setColor(c);
+                            }
+                        } catch (NumberFormatException e) {
+                            // TODO Unexpected, should this be logged?
                         }
                     }
-
                 }
 
 
                 // Draw name , if there is room
                 if (displayMode != Track.DisplayMode.SQUISHED && track.isShowFeatureNames()) {
-                    String name = feature.getName();
+
+                    String name = labelField != null ? feature.getDisplayName(labelField) : feature.getName();
+
                     if (name != null) {
                         // Limit name display length
                         if (name.length() >= MAX_NAME_LENGTH) {
@@ -268,7 +272,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int verticalSpaceRequiredForText = textBaselineY - (int) trackRectangleY;
 
                         if (verticalSpaceRequiredForText <= trackRectangle.height) {
-                            lastNamePixelEnd = drawFeatureName(feature, track.getDisplayMode(), nameStart, nameEnd,
+                            lastNamePixelEnd = drawFeatureName(name, track.getDisplayMode(), nameStart, nameEnd,
                                     lastNamePixelEnd, fontGraphics, textBaselineY);
                         }
                     }
@@ -402,7 +406,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             //Credit Michael Poidinger and Solomonraj Wilson, Singapore Immunology Network.
             Float exprValue = null;
 
-            MultiMap<String, String> attributes = exon.getAttributes();
+            Map<String, String> attributes = exon.getAttributes();
             if (attributes != null && attributes.containsKey("expr")) {
                 try {
                     exprValue = Float.parseFloat(attributes.get("expr"));
@@ -542,7 +546,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
         // Don't draw strand arrows for very small regions
         // Limit drawing to visible region, we don't really know the viewport pEnd,
-        if ((endX - startX)  < 6) {
+        if ((endX - startX) < 6) {
             return;
         }
 
@@ -577,18 +581,13 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
     }
 
-    final private int drawFeatureName(IGVFeature feature,
+    final private int drawFeatureName(String name,
                                       Track.DisplayMode mode,
                                       int pixelStart,
                                       int pixelEnd,
                                       int lastFeatureEndedAtPixelX,
                                       Graphics2D g2D,
                                       int textBaselineY) {
-
-        String name = feature.getName();
-        if (name == null) {
-            return lastFeatureEndedAtPixelX;
-        }
 
         FontMetrics fm = g2D.getFontMetrics();
         int fontSize = fm.getFont().getSize();
@@ -621,7 +620,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
      * @param locationScale
      * @param yOffset
      * @param trackRectangle
-     * @param idx  exon index
+     * @param idx            exon index
      */
     public void labelAminoAcids(int pStart, Graphics2D fontGraphics, double theOrigin,
                                 RenderContext context, IGVFeature gene, double locationScale,
@@ -630,8 +629,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         Exon exon = gene.getExons().get(idx);
 
-        Exon prevExon = idx == 0 ? null : gene.getExons().get(idx-1);
-        Exon nextExon = (idx+1) < gene.getExons().size() ?gene.getExons().get(idx+1) : null;
+        Exon prevExon = idx == 0 ? null : gene.getExons().get(idx - 1);
+        Exon nextExon = (idx + 1) < gene.getExons().size() ? gene.getExons().get(idx + 1) : null;
 
         AminoAcidSequence aaSequence = exon.getAminoAcidSequence(genome, prevExon, nextExon);
 
@@ -639,7 +638,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             Rectangle aaRect = new Rectangle(pStart, yOffset - blockHeight / 2, 1, blockHeight);
 
             int aaSeqStartPosition = aaSequence.getStart();
-            boolean odd =  exon.getAminoAcidNumber(exon.getCdStart()) % 2 == 1;
+            boolean odd = exon.getAminoAcidNumber(exon.getCdStart()) % 2 == 1;
 
             for (CodonAA acid : aaSequence.getSequence()) {
                 if (acid != null) {
@@ -702,20 +701,20 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     protected Color getFeatureColor(IGVFeature feature, Track track, Color defaultPosColor, Color defaultNegColor) {
 
         // Set color used to draw the feature
-         Color color = null;
+        Color color = null;
 
         // If an alt color is explicitly set use it for negative strand features;
-        if(feature.getStrand() == Strand.NEGATIVE) {
+        if (feature.getStrand() == Strand.NEGATIVE) {
             color = track.getExplicitAltColor();
         }
 
         // If color is explicitly set use it
-        if(color == null) {
-             color = track.getExplicitColor();
+        if (color == null) {
+            color = track.getExplicitColor();
         }
 
         // No explicitly set color, try the feature itself
-        if(color == null && track.isItemRGB()) {
+        if (color == null && track.isItemRGB()) {
             color = feature.getColor();
         }
 

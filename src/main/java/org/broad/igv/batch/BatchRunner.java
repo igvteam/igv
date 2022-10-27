@@ -32,10 +32,12 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.SnapshotUtilities;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 
 public class BatchRunner implements NamedRunnable {
@@ -43,11 +45,22 @@ public class BatchRunner implements NamedRunnable {
     private static Logger log = LogManager.getLogger(BatchRunner.class);
 
     private String inputFile;
+    private String rootPath;
     private IGV igv;
 
     public BatchRunner(final String inputFile, IGV igv) {
         this.inputFile = inputFile;
         this.igv = igv;
+
+        // Find a root path for relative file paths
+        if(FileUtils.isRemote(inputFile)) {
+            rootPath = inputFile;
+        } else {
+            File f = new File(inputFile);
+            if(f.exists()) {
+                rootPath = f.getParent();
+            }
+        }
     }
 
     public String getName() {
@@ -65,10 +78,11 @@ public class BatchRunner implements NamedRunnable {
 
     public void runWithDefaultGenome(String genomeId) {
 
+        log.info("Executing batch script: " + inputFile);
         String inLine;
         setIsBatchMode(true);
 
-        CommandExecutor cmdExe = new CommandExecutor(igv);
+        CommandExecutor cmdExe = new CommandExecutor(igv, rootPath);
         WaitCursorManager.CursorToken cursorToken = null;
         BufferedReader reader = null;
         try {
@@ -85,7 +99,10 @@ public class BatchRunner implements NamedRunnable {
                     }
 
                     log.debug("Executing Command: " + inLine);
-                    cmdExe.execute(inLine);
+                    String result = cmdExe.execute(inLine);
+                    if(!result.equalsIgnoreCase("ok")) {
+                        log.warn(inLine + " => " + result);
+                    }
                     firstCommand = false;
                 }
             }

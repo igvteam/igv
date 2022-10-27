@@ -134,7 +134,7 @@ abstract public class GenomeLoader {
                         if (file.exists()) {
                             localSequenceMap.put(tokens[0], file);
                         } else {
-                            log.info("Sequence file not found: " + file.getAbsolutePath());
+                            log.warn("Sequence file not found: " + file.getAbsolutePath());
                         }
                     }
                 }

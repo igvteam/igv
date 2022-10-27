@@ -1,0 +1,3 @@
+snapshotDirectory $SCRIPT_DIR/snapshots/sampleInfo
+load ../sessions/gbm_subtypes.xml
+snapshot gbm.png

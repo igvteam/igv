@@ -54,9 +54,9 @@ public class ReadStats {
     public double medianRefToReadRatio = 0;
     public double fracReadsWithIndels;
     public double fracReadsWithNs;
+    public double averageCigarLength;
 
     private static final Random RAND = new Random();
-
 
     public void addAlignment(Alignment alignment) {
 
@@ -79,6 +79,9 @@ public class ReadStats {
             if (containsChar(cigarString, 'D') || containsChar(cigarString, 'I')) {
                 indelCount++;
             }
+
+            double cigarLength = alignment.getCigarString().length();
+            averageCigarLength = averageCigarLength * (((double) readCount - 1) / readCount) + (cigarLength / readCount);
         }
     }
 
@@ -132,9 +135,9 @@ public class ReadStats {
     public AlignmentTrack.ExperimentType inferType() {
         compute();
         if (readCount < 100) return null; // Not enough reads
-        if (readLengthStdDev > 100 || medianReadLength > 1000) {
-            return AlignmentTrack.ExperimentType.THIRD_GEN;  // Could also use fracReadsWithIndels
-        } else if (medianRefToReadRatio > 10 || fracReadsWithNs > 0.2) {
+        if ((readLengthStdDev > 100 || medianReadLength > 1000) && averageCigarLength > 100) {
+            return AlignmentTrack.ExperimentType.THIRD_GEN;
+        } else if (medianRefToReadRatio > 5 || fracReadsWithNs > 0.01) {
             return AlignmentTrack.ExperimentType.RNA;
         } else {
             return AlignmentTrack.ExperimentType.OTHER;

@@ -107,7 +107,7 @@ public class LegacyBlatClient {
         if (serverType.equalsIgnoreCase("web_blat")) {
             String urlString = ($url + "?&wb_qtype=" + searchType + "&wb_sort=" + sortOrder +
                     "&wb_output=" + outputType + "&wb_seq=" + userSeq); // + "&hgsid=" + hgsid);
-            //log.info("BLAT: " + urlString);
+            //log.warn("BLAT: " + urlString);
             result = HttpUtils.getInstance().getContentsAsString(new URL(urlString));
 
         } else {

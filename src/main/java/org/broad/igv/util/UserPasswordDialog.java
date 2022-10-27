@@ -37,7 +37,7 @@ import javax.swing.border.*;
 /**
  * @author Jim Robinson
  */
-public class UserPasswordDialog extends JDialog {
+public class UserPasswordDialog extends org.broad.igv.ui.IGVDialog  {
 
     boolean canceled = true;
 

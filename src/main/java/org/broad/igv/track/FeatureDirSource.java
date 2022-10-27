@@ -88,7 +88,7 @@ public class FeatureDirSource implements FeatureSource {
                 BufferedReader reader = null;
                 String path = rootDir + "/" + filename;
                 try {
-                    //log.info("Loading " + path);
+                    //log.warn("Loading " + path);
                     // Load features here
                     ResourceLocator loc = new ResourceLocator(path);
 

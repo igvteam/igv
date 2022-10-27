@@ -31,11 +31,9 @@ import htsjdk.samtools.seekablestream.SeekableStreamFactory;
 import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.batch.CommandListener;
-import org.broad.igv.google.OAuthUtils;
+import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
@@ -49,12 +47,10 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -227,8 +223,6 @@ public class Main {
         // Anti alias settings.   TODO = Are these neccessary anymore ?
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
-
-        checkVersion();
     }
 
     public static void updateTooltipSettings() {
@@ -237,53 +231,6 @@ public class Main {
         ToolTipManager.sharedInstance().setInitialDelay(prefMgr.getAsInt(TOOLTIP_INITIAL_DELAY));
         ToolTipManager.sharedInstance().setReshowDelay(prefMgr.getAsInt(TOOLTIP_RESHOW_DELAY));
         ToolTipManager.sharedInstance().setDismissDelay(prefMgr.getAsInt(TOOLTIP_DISMISS_DELAY));
-
-    }
-
-    private static void checkVersion() {
-
-        Runnable runnable = () -> {
-            try {
-                Version thisVersion = Version.getVersion(Globals.VERSION);
-                if (thisVersion != null) {
-
-                    final String serverVersionString = HttpUtils.getInstance().getContentsAsString(new URL(Globals.getVersionURL())).trim();
-                    // See if user has specified to skip this update
-
-                    Version serverVersion = Version.getVersion(serverVersionString.trim());
-                    if (serverVersion == null) return;
-
-                    if (thisVersion.lessThan(serverVersion)) {
-
-                        log.info("A later version of IGV is available (" + serverVersionString + ")");
-                        final String skipString = PreferencesManager.getPreferences().get(SKIP_VERSION);
-                        boolean skip = false;
-                        if (skipString != null) {
-                            HashSet<String> skipVersion = new HashSet<>(Arrays.asList(skipString.split(",")));
-                            skip = (skipVersion.contains(serverVersionString));
-                        }
-
-                        if (!(skip || Globals.isBatch() || Globals.isHeadless() || Globals.isSuppressMessages())) {
-                            // Inform user, do this only once
-                            final VersionUpdateDialog dlg = new VersionUpdateDialog(serverVersionString);
-                            UIUtilities.invokeOnEventThread(() -> {
-                                dlg.setVisible(true);
-                                if (dlg.isSkipVersion()) {
-                                    String newSkipString = skipString + "," + serverVersionString;
-                                    PreferencesManager.getPreferences().put(SKIP_VERSION, newSkipString);
-                                }
-                            });
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                log.error("Error checking IGV version ");
-            } finally {
-
-            }
-        };
-
-        (new Thread(runnable)).start();
 
     }
 
@@ -306,7 +253,6 @@ public class Main {
      * @param igvArgs command-line arguments
      */
     public static void open(Frame frame, Main.IGVArgs igvArgs) {
-        final IGVPreferences preferences = PreferencesManager.getPreferences();
 
         // Add a listener for the "close" icon, unless its a JFrame
         if (!(frame instanceof JFrame)) {
@@ -350,10 +296,12 @@ public class Main {
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
         // Start IGV's UI itself (frame) and other components
-        IGV.createInstance(frame, igvArgs).startUp(igvArgs);
+       IGV igv = IGV.createInstance(frame, igvArgs);
+
+       igv.startUp(igvArgs);
 
         // TODO Should this be done here?  Will this step on other key dispatchers?
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(GlobalKeyDispatcher.getInstance());
     }
 
     private static void initializeLookAndFeel() {
@@ -363,10 +311,14 @@ public class Main {
             UIManager.setLookAndFeel(lnf);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error setting look and feel", e);
         }
 
         double resolutionScale = Toolkit.getDefaultToolkit().getScreenResolution() / Globals.DESIGN_DPI;
+        if(resolutionScale != 1.0) {
+            log.info("Resoluction scale = " + resolutionScale);
+        }
+
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
         if (resolutionScale > 1.5) {
             if (prefMgr.getAsBoolean(SCALE_FONTS)) {

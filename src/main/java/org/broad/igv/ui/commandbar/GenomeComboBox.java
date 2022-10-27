@@ -106,7 +106,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
                     if (genomeListItem != null && genomeListItem.getPath() != null) {
 
-                        //log.info("Loading " + genomeListItem.getId());
+                        //log.warn("Loading " + genomeListItem.getId());
 
                         //User selected "more", pull up dialog and revert combo box
                         if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {
@@ -116,7 +116,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
                         UIUtilities.invokeAndWaitOnEventThread(() -> {
                             monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                            progressDialog = ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
+                            progressDialog = ProgressBar.showProgressDialog(IGV.getInstance().getMainFrame(), "Loading Genome...", monitor, false);
                         });
 
                         try {
@@ -124,12 +124,12 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                         } catch (GenomeServerException e) {
                             log.error("Error loading genome: " + genomeListItem.getId() + "  " + genomeListItem.getPath(), e);
                             JOptionPane.showMessageDialog(
-                                    IGV.getMainFrame(),
+                                    IGV.getInstance().getMainFrame(),
                                     "Error loading genome: " + genomeListItem.getDisplayableName());
                         } catch (Exception e) {
                             log.error(e);
                             int choice = JOptionPane.showConfirmDialog(
-                                    IGV.getMainFrame(), "The genome [" + genomeListItem.getId() +
+                                    IGV.getInstance().getMainFrame(), "The genome [" + genomeListItem.getId() +
                                             "] could not be read. Would you like to remove the selected entry?",
                                     "", JOptionPane.OK_CANCEL_OPTION);
 
@@ -236,7 +236,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 //Could not reach genome server.  Not necessary to display a message, getServerGenomeArchiveList does it already
                 return;
             }
-            GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), inputListItems);
+            GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getInstance().getMainFrame(), inputListItems);
             UIUtilities.invokeAndWaitOnEventThread(() -> dialog.setVisible(true));
 
             if (dialog.isCanceled()) {

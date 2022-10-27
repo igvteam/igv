@@ -107,9 +107,10 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
         Graphics borderGraphics = g.create();
-        borderGraphics.setColor(Color.darkGray);
+        borderGraphics.setColor(Color.lightGray);
 
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        Graphics2D bg = (Graphics2D) g.create();
         paintImpl(g, rect, true);
 
         borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
@@ -208,7 +209,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     private int printTrackNames(TrackGroup group, Rectangle visibleRect, Rectangle clipRect,
                                 Graphics2D graphics2D, int regionX, int regionY, boolean snapshot) {
 
-
         List<Track> tmp = new ArrayList(group.getVisibleTracks());
         final Color backgroundColor = PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
         graphics2D.setBackground(backgroundColor);
@@ -233,10 +233,10 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                         //Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
                         if (!snapshot && track.isSelected()) {
                             graphics2D.setBackground(Color.LIGHT_GRAY);
-                            graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
                         } else {
                             graphics2D.setBackground(backgroundColor);
                         }
+                        graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
                         track.renderName(graphics2D, rect, visibleRect);
                     }
 

@@ -97,7 +97,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
 
         } else {
-            log.info("Unknown event type: " + event.getClass());
+            log.warn("Unknown event type: " + event.getClass());
         }
     }
 
@@ -244,7 +244,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
     public void setRendererClass(Class rc) {
         try {
-            renderer = (DataRenderer) rc.newInstance();
+            renderer = (DataRenderer) rc.getDeclaredConstructor().newInstance();
         } catch (Exception ex) {
             log.error("Error instantiating renderer ", ex);
         }
@@ -259,7 +259,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     @Override
     public DataRenderer getRenderer() {
         if (renderer == null) {
-            setRendererClass(getDefaultRendererClass());
+            renderer = (DataRenderer) getDefaultRenderer();
         }
         return renderer;
     }

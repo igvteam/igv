@@ -25,6 +25,7 @@
 
 package org.broad.igv.session;
 
+import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -36,10 +37,12 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
 import org.w3c.dom.DOMException;
@@ -50,10 +53,8 @@ import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author jrobinso
@@ -66,7 +67,6 @@ public class SessionWriter {
     private static int CURRENT_VERSION = 8;
     private File outputFile;
     private Document document;
-
 
     /**
      * Save the session as an XML document
@@ -134,7 +134,7 @@ public class SessionWriter {
                 globalElement.setAttribute(SessionAttribute.LOCUS, locus);
             }
 
-            String groupBy = IGV.getInstance().getGroupByAttribute();
+            String groupBy = session.getGroupByAttribute();
             if (groupBy != null) {
                 globalElement.setAttribute(SessionAttribute.GROUP_TRACKS_BY, groupBy);
             }
@@ -147,9 +147,6 @@ public class SessionWriter {
             if (session.isRemoveEmptyPanels()) {
                 globalElement.setAttribute("removeEmptyTracks", "true");
             }
-
-            globalElement.setAttribute(SessionAttribute.HAS_GENE_TRACK, "" + IGV.getInstance().hasGeneTrack());
-            globalElement.setAttribute(SessionAttribute.HAS_SEQ_TRACK, "" + IGV.getInstance().hasSequenceTrack());
 
             // Resource Files
             writeResources(outputFile, globalElement, document);
@@ -171,7 +168,7 @@ public class SessionWriter {
             }
 
             // Hidden attributes
-            if (session.getHiddenAttributes() != null && session.getHiddenAttributes().size() > 0) {
+            if (session.getHiddenAttributes() != null) {
                 writeHiddenAttributes(session, globalElement, document);
             }
 
@@ -182,7 +179,7 @@ public class SessionWriter {
         } catch (Exception e) {
             String message = "Error creating session.";
             log.error(message, e);
-            JOptionPane.showMessageDialog(IGV.getMainFrame(), message);
+            JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(), message);
             throw new RuntimeException(e);
         }
     }
@@ -271,21 +268,18 @@ public class SessionWriter {
 
             Element geneListElement = document.createElement(SessionElement.GENE_LIST);
             geneListElement.setAttribute(SessionAttribute.NAME, geneList.getName());
-
             StringBuffer genes = new StringBuffer();
             for (String gene : geneList.getLoci()) {
                 genes.append(gene);
                 genes.append("\n");
             }
-
             geneListElement.setTextContent(genes.toString());
-
             globalElement.appendChild(geneListElement);
 
 
-            // Now store the list of frames visible
+            // Now store the list of frames visible.  This seems redundant, but frame extent can be changed after
+            // "gene list" definition, for example by zooming out or panning in a frame
             for (ReferenceFrame frame : FrameManager.getFrames()) {
-
                 Element frameElement = document.createElement(SessionElement.FRAME);
                 frameElement.setAttribute(SessionAttribute.NAME, frame.getName());
                 frameElement.setAttribute(SessionAttribute.CHR, frame.getChrName());
@@ -431,8 +425,16 @@ public class SessionWriter {
                 IGV.getInstance().getDataResourceLocators();
 
         if (currentTrackFileLocators != null) {
+
+            // Filter data files that are included in genome annotations
+            List<ResourceLocator> genomeResources = GenomeManager.getInstance().getCurrentGenome().getAnnotationResources();
+            Set<String> absoluteGenomeAnnotationPaths = genomeResources == null ? Collections.emptySet() :
+                    genomeResources.stream().map(rl -> rl.getPath()).collect(Collectors.toSet());
+
             for (ResourceLocator locator : currentTrackFileLocators) {
-                locators.add(locator);
+                if (!absoluteGenomeAnnotationPaths.contains(locator.getPath())) {
+                    locators.add(locator);
+                }
             }
         }
 

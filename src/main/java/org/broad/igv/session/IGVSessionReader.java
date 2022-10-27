@@ -25,7 +25,6 @@
 
 package org.broad.igv.session;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.data.CombinedDataSource;
@@ -33,11 +32,14 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.dsi.DSITrack;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
@@ -71,6 +73,7 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Class to parse an IGV session file
@@ -79,16 +82,14 @@ public class IGVSessionReader implements SessionReader {
 
     private static Logger log = LogManager.getLogger(IGVSessionReader.class);
     private static String INPUT_FILE_KEY = "INPUT_FILE_KEY";
-
     private static Map<String, String> attributeSynonymMap = new HashMap();
     private static WeakReference<IGVSessionReader> currentReader;
 
-    //package-private for unit testing
-    Collection<ResourceLocator> dataFiles;
-
+    Collection<ResourceLocator> dataFiles; //package-private for unit testing
     private Collection<ResourceLocator> missingDataFiles;
     private boolean panelElementPresent = false;    // Until proven otherwise
     private int version;
+    private String genomePath;
 
     private IGV igv;
 
@@ -109,13 +110,27 @@ public class IGVSessionReader implements SessionReader {
      */
     private final Map<String, List<Track>> allTracks = Collections.synchronizedMap(new LinkedHashMap<>());
 
+    private final Set<String> erroredResources = Collections.synchronizedSet(new HashSet<>());
+
     public List<Track> getTracksById(String trackId) {
         List<Track> tracks = allTracks.get(trackId);
-        if(tracks == null) {
+        if (tracks == null) {
             // ID is usually a full file path or URL.  See if we can find the track with just filename
-            if(!FileUtils.isRemote(trackId)) {
+            if (!FileUtils.isRemote(trackId)) {
                 String fn = (new File(trackId)).getName();
                 tracks = allTracks.get(fn);
+            }
+            if (tracks == null) {
+                // If still no match search for legacy gene annotation specifier
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                String legacyGeneTrackID = genome.getId() + "_genes";
+                if (trackId.equals(legacyGeneTrackID)) {
+                    if (genome.getGeneTrack() != null) {
+                        return Arrays.asList(genome.getGeneTrack());
+                    } else if (genome.getAnnotationTracks() != null && genome.getAnnotationTracks().size() > 0) {
+                        return genome.getAnnotationTracks().values().iterator().next();
+                    }
+                }
             }
         }
         return tracks;
@@ -152,9 +167,7 @@ public class IGVSessionReader implements SessionReader {
 
     public void loadSession(InputStream inputStream, Session session, String sessionPath) {
 
-        log.debug("Load session");
-
-        Document document = null;
+        Document document;
         try {
             document = Utilities.createDOMDocumentFromXmlStream(inputStream);
         } catch (Exception e) {
@@ -233,42 +246,28 @@ public class IGVSessionReader implements SessionReader {
 
         if (genomeId != null && genomeId.length() > 0) {
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
-                // We don't have to reload the genome, but we do need to restore the annotation tracks
-                Track geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-                if (geneTrack != null) {
-                    igv.setGenomeTracks(geneTrack);
-                }
-                // TODO -- json genome annotation tracks
-
+                igv.resetSession(rootPath);
+                GenomeManager.getInstance().restoreGenomeTracks(GenomeManager.getInstance().getCurrentGenome());
             } else {
-                // Selecting a genome will "reset" the session so we have to
-                // save the path and restore it.
-                String sessionPath = session.getPath();
                 try {
                     GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
                     if (item != null) {
+                        genomePath = item.getPath();
                         GenomeManager.getInstance().loadGenome(item.getPath(), null);
                     } else {
-                        String genomePath = genomeId;
+                        genomePath = genomeId;
                         if (!ParsingUtils.fileExists(genomePath)) {
-                            genomePath = FileUtils.getAbsolutePath(genomeId, rootPath);
+                            genomePath = getAbsolutePath(genomeId, rootPath);
                         }
-                        if (ParsingUtils.fileExists(genomePath)) {
-                            GenomeManager.getInstance().loadGenome(genomePath, null);
-
-                        } else {
-                            MessageUtils.showMessage("Warning: Could not locate genome: " + genomeId);
-                        }
+                        GenomeManager.getInstance().loadGenome(genomePath, null);
                     }
                 } catch (IOException e) {
                     MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
                     log.error("Error loading genome: " + genomeId, e);
                 }
-                session.setPath(sessionPath);
             }
         }
 
-        session.setUcscId(getAttribute(element, SessionAttribute.UCSC_ID));
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY));
 
@@ -318,7 +317,7 @@ public class IGVSessionReader implements SessionReader {
                     } else if (track.getResourceLocator() != null) {
                         TrackPanel panel = trackPanelCache.get(track.getResourceLocator().getPath());
                         if (panel == null) {
-                            panel = IGV.getInstance().getPanelFor(track.getResourceLocator());
+                            panel = IGV.getInstance().getPanelFor(track);
                             trackPanelCache.put(track.getResourceLocator().getPath(), panel);
                         }
                         panel.addTrack(track);
@@ -414,6 +413,13 @@ public class IGVSessionReader implements SessionReader {
 
             MessageUtils.showMessage(message.toString());
         }
+
+        // Filter data files that are included in genome annotations.  This is to work around a bug introduced with
+        // json genomes where the genome annotation resources were (doubly) included as session
+        List<ResourceLocator> genomeResources = GenomeManager.getInstance().getCurrentGenome().getAnnotationResources();
+        Set<String> absoluteGenomeAnnotationPaths = genomeResources == null ? Collections.emptySet() :
+                genomeResources.stream().map(rl -> rl.getPath()).collect(Collectors.toSet());
+
         if (dataFiles.size() > 0) {
 
             final List<String> errors = new ArrayList<String>();
@@ -425,8 +431,12 @@ public class IGVSessionReader implements SessionReader {
             List<Runnable> synchronousLoads = new ArrayList<Runnable>();
 
             for (final ResourceLocator locator : dataFiles) {
-                Runnable runnable = () -> {
 
+                if (absoluteGenomeAnnotationPaths.contains(FileUtils.getAbsolutePath(locator.getPath(), genomePath))) {
+                    continue;
+                }
+
+                Runnable runnable = () -> {
                     try {
                         List<Track> tracks = igv.load(locator);
                         for (Track track : tracks) {
@@ -442,9 +452,9 @@ public class IGVSessionReader implements SessionReader {
                                 continue;
                             }
                             // id is often an absolute file path.  Use just the filename if unique
-                            if(!FileUtils.isRemote(id)) {
+                            if (!FileUtils.isRemote(id)) {
                                 String fn = (new File(id)).getName();
-                                if(!allTracks.containsKey(fn)) {
+                                if (!allTracks.containsKey(fn)) {
                                     id = fn;
                                 }
                             }
@@ -458,6 +468,7 @@ public class IGVSessionReader implements SessionReader {
                             trackList.add(track);
                         }
                     } catch (Exception e) {
+                        erroredResources.add(locator.getPath());
                         log.error("Error loading resource " + locator.getPath(), e);
                         String ms = "<b>" + locator.getPath() + "</b><br>&nbsp;&nbsp;" + e.toString() + "<br>";
                         errors.add(ms);
@@ -542,7 +553,9 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        String absolutePath = (rootPath == null || "ga4gh".equals(type) || ParsingUtils.isDataURL(path)) ? path : FileUtils.getAbsolutePath(path, rootPath);
+        String absolutePath = (rootPath == null || "ga4gh".equals(type) || ParsingUtils.isDataURL(path)) ?
+                path :
+                getAbsolutePath(path, rootPath);
 
         fullToRelPathMap.put(absolutePath, path);
 
@@ -551,12 +564,12 @@ public class IGVSessionReader implements SessionReader {
         if (index != null) resourceLocator.setIndexPath(index);
 
         if (coverage != null) {
-            String absoluteCoveragePath = coverage.equals(".") ? coverage : FileUtils.getAbsolutePath(coverage, rootPath);
+            String absoluteCoveragePath = coverage.equals(".") ? coverage : getAbsolutePath(coverage, rootPath);
             resourceLocator.setCoverage(absoluteCoveragePath);
         }
 
         if (mapping != null) {
-            String absoluteMappingPath = mapping.equals(".") ? mapping : FileUtils.getAbsolutePath(mapping, rootPath);
+            String absoluteMappingPath = mapping.equals(".") ? mapping : getAbsolutePath(mapping, rootPath);
             resourceLocator.setMappingPath(absoluteMappingPath);
         }
 
@@ -570,7 +583,7 @@ public class IGVSessionReader implements SessionReader {
         if (infolink == null) {
             infolink = getAttribute(element, SessionAttribute.INFOLINK);
         }
-        resourceLocator.setTrackInforURL(infolink);
+        resourceLocator.setTrackInfoURL(infolink);
 
 
         // Label is deprecated in favor of name.
@@ -630,18 +643,15 @@ public class IGVSessionReader implements SessionReader {
     }
 
     private void processHiddenAttributes(Session session, Element element, HashMap additionalInformation) {
-
         NodeList elements = element.getChildNodes();
-        if (elements.getLength() > 0) {
-            Set<String> attributes = new HashSet();
-            for (int i = 0; i < elements.getLength(); i++) {
-                Node childNode = elements.item(i);
-                if (childNode.getNodeName().equals("Attribute")) {
-                    attributes.add(((Element) childNode).getAttribute(SessionAttribute.NAME));
-                }
+        Set<String> attributes = new HashSet();
+        for (int i = 0; i < elements.getLength(); i++) {
+            Node childNode = elements.item(i);
+            if (childNode.getNodeName().equals("Attribute")) {
+                attributes.add(((Element) childNode).getAttribute(SessionAttribute.NAME));
             }
-            session.setHiddenAttributes(attributes);
         }
+        session.setHiddenAttributes(attributes);
     }
 
 
@@ -884,14 +894,13 @@ public class IGVSessionReader implements SessionReader {
         String id = getAttribute(element, SessionAttribute.ID);
 
         // Find track matching element id, created earlier from "Resource or File" elements, or during genome load.
-        // Normally this is a single track, but that can't be assumed as uniqueness
-        // of "id" is not enforce.
+        // Normally this is a single track, but that can't be assumed as uniqueness of "id" is not enforced.
         List<Track> matchedTracks = getTracksById(id);
 
         if (matchedTracks == null) {
             //Try creating an absolute path for the id
             if (id != null) {
-                matchedTracks = allTracks.get(FileUtils.getAbsolutePath(id, rootPath));
+                matchedTracks = allTracks.get(getAbsolutePath(id, rootPath));
             }
         }
 
@@ -901,52 +910,60 @@ public class IGVSessionReader implements SessionReader {
             }
             leftoverTrackDictionary.remove(id);
         } else {
-
-            // No match found, element represents a track not created from "Resource" or genome load.  These included
+            // No match found, element represents either (1) a track from a file that errored during load, for example
+            // a file that has been deleted, or (2) a track not created from "Resource" or genome load.  These include
             // reference sequence, combined,  and merged tracks.
+
+            // Check for errors during load
+//            String absPath = getAbsolutePath(id, rootPath);
+//            if (erroredResources.contains(id) || erroredResources.contains(absPath)) {
+//                return Collections.emptyList();
+//            }
+
+//            String className = getAttribute(element, "clazz");
+//            if (className != null &&
+//                    (className.contains("MergedTracks") ||
+//                            className.contains("CombinedDataTrack") ||
+//                            className.contains("SequenceTrack") ||
+//                            className.contains("BlatTrack"))) {
             String className = getAttribute(element, "clazz");
-            if (className != null) {
-                try {
+            try {
+                Track track = createTrack(className, element);
+                if (track != null) {
 
-                    Track track = createTrack(className, element);
-                    if (track != null) {
+                    track.unmarshalXML(element, version);
+                    matchedTracks = Arrays.asList(track);
+                    allTracks.put(track.getId(), matchedTracks);   // Important for second pass
 
-                        track.unmarshalXML(element, version);
-                        matchedTracks = Arrays.asList(track);
-                        allTracks.put(track.getId(), matchedTracks);
-
-                        // Special tracks
-                        if (className.contains("CombinedDataTrack")) {
-                            combinedDataSourceTracks.add(new Pair(track, element));
-                        }
-
-                        if (className.contains("MergedTracks")) {
-                            List<DataTrack> memberTracks = processChildTracks(session, element, additionalInformation, rootPath);
-                            ((MergedTracks) track).setMemberTracks(memberTracks);
-
-                            NodeList nodeList = element.getElementsByTagName("DataRange");
-                            if (nodeList != null && nodeList.getLength() > 0) {
-                                Element dataRangeElement = (Element) nodeList.item(0);
-                                try {
-                                    DataRange dataRange = new DataRange(dataRangeElement, version);
-                                    ((MergedTracks) track).setDataRange(dataRange);
-                                } catch (Exception e) {
-                                    log.error("Unrecognized DataRange");
-                                }
-                            }
-
-                        }
-
-
-                    } else {
-                        log.info("Warning.  No tracks were found with id: " + id + " in session file");
+                    // Special tracks
+                    if (className.contains("CombinedDataTrack")) {
+                        combinedDataSourceTracks.add(new Pair(track, element));
                     }
-                } catch (Exception e) {
-                    log.error("Error restoring track: " + element.toString(), e);
-                    MessageUtils.showMessage("Error loading track: " + element.toString());
+
+                    if (className.contains("MergedTracks")) {
+                        List<DataTrack> memberTracks = processChildTracks(session, element, additionalInformation, rootPath);
+                        ((MergedTracks) track).setMemberTracks(memberTracks);
+
+                        NodeList nodeList = element.getElementsByTagName("DataRange");
+                        if (nodeList != null && nodeList.getLength() > 0) {
+                            Element dataRangeElement = (Element) nodeList.item(0);
+                            try {
+                                DataRange dataRange = new DataRange(dataRangeElement, version);
+                                track.setDataRange(dataRange);
+                            } catch (Exception e) {
+                                log.error("Unrecognized DataRange");
+                            }
+                        }
+                    }
+                } else {
+                    log.warn("Warning.  No tracks were found with id: " + id + " in session file");
                 }
+            } catch (Exception e) {
+                log.error("Error restoring track: " + element.toString(), e);
+                MessageUtils.showMessage("Error loading track: " + element.toString());
             }
         }
+        //}
 
         NodeList elements = element.getChildNodes();
         process(session, elements, additionalInformation, rootPath);
@@ -1117,7 +1134,7 @@ public class IGVSessionReader implements SessionReader {
         } else {
             if (allTracks == null)
                 throw new IllegalStateException("No session reader and no tracks to search to resolve Track references");
-            matchingTracks = new ArrayList<Track>();
+            matchingTracks = new ArrayList<>();
             for (Track track : allTracks) {
                 if (trackId.equals(track.getId())) {
                     matchingTracks.add(track);
@@ -1169,7 +1186,7 @@ public class IGVSessionReader implements SessionReader {
             return new FeatureTrack();
         } else if (className.contains("MotifTrack")) {
             return new MotifTrack();
-        }else if (className.contains("GisticTrack")) {
+        } else if (className.contains("GisticTrack")) {
             return new GisticTrack();
         } else if (className.contains("InteractionTrack")) {
             return new InteractionTrack();
@@ -1191,10 +1208,8 @@ public class IGVSessionReader implements SessionReader {
             return new VariantTrack();
         } else if (className.contains("SequenceTrack")) {
             return new SequenceTrack("Reference sequence");
-        }
-
-        else {
-            log.info("Unrecognized class name: " + className);
+        } else {
+            log.warn("Unrecognized class name: " + className);
             try {
                 Class clazz = SessionElement.getClass(className);
                 return (Track) clazz.getConstructor().newInstance();
@@ -1210,6 +1225,17 @@ public class IGVSessionReader implements SessionReader {
         for (TrackPanel trackPanel : panels) {
             trackPanel.removeAllTracks();
         }
+    }
+
+    private String getAbsolutePath(String path, String rootPath) {
+        String absolute = FileUtils.getAbsolutePath(path, rootPath);
+        if (!(new File(absolute)).exists() && path.startsWith("~")) {
+            String tmp = FileUtils.getAbsolutePath(path.replaceFirst("~", System.getProperty("user.home")), rootPath);
+            if ((new File(tmp)).exists()) {
+                absolute = tmp;
+            }
+        }
+        return absolute;
     }
 
 }

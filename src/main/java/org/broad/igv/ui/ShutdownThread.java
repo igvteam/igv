@@ -43,9 +43,9 @@ public class ShutdownThread extends Thread {
         CommandListener.halt();
         if (IGV.hasInstance()) {
             IGV.getInstance().saveStateForExit();
-            PreferencesManager.getPreferences().setApplicationFrameBounds(IGV.getMainFrame().getBounds());
+            PreferencesManager.getPreferences().setApplicationFrameBounds(IGV.getInstance().getMainFrame().getBounds());
             for (Track t : IGV.getInstance().getAllTracks()) {
-                t.dispose();
+                t.unload();
             }
         }
         LogFileHandler.getInstance().closeHandler();

@@ -101,6 +101,9 @@ public class AlignmentPacker {
             // Now alphabetize (sort) and pack the groups
             List<Object> keys = new ArrayList<Object>(groupedAlignments.keySet());
             Comparator<Object> groupComparator = getGroupComparator(renderOptions.getGroupByOption());
+            if(renderOptions.isInvertGroupSorting()){
+                groupComparator = groupComparator.reversed();
+            }
             Collections.sort(keys, groupComparator);
 
             for (Object key : keys) {
@@ -428,7 +431,7 @@ public class AlignmentPacker {
                 if (mate == null) {
                     return null;
                 }
-                if (mate.isMapped() == false) {
+                if (!mate.isMapped()) {
                     return "UNMAPPED";
                 } else {
                     return mate.getChr();
@@ -475,6 +478,8 @@ public class AlignmentPacker {
                 movieName = readNameParts[0];
                 zmw = readNameParts[1];
                 return movieName + "/" + zmw;
+            case MAPPING_QUALITY:
+                return al.getMappingQuality();
         }
         return null;
     }
@@ -544,7 +549,7 @@ public class AlignmentPacker {
             while (bucketNumber < bucketArray.length) {
 
                 if (bucketNumber < 0) {
-                    log.info("Negative bucket number: " + bucketNumber);
+                    log.warn("Negative bucket number: " + bucketNumber);
                 }
 
                 bucket = bucketArray[bucketNumber];

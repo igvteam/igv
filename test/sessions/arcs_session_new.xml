@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" hasGeneTrack="false" hasSequenceTrack="true" locus="chr1:0-249250621" version="8">
+    <Resources>
+        <Resource path="https://s3.amazonaws.com/igv.org.demo/GSM1872886_GM12878_CTCF_PET.bedpe.txt" type="bedpe"/>
+    </Resources>
+    <Panel height="480" name="DataPanel" width="1133">
+        <Track attributeKey="GSM1872886_GM12878_CTCF_PET.bedpe.txt" autoscale="true" clazz="org.broad.igv.bedpe.InteractionTrack" color="180,25,137" direction="UP" fontSize="10" graphType="NESTED_ARC" height="250" id="https://s3.amazonaws.com/igv.org.demo/GSM1872886_GM12878_CTCF_PET.bedpe.txt" name="GSM1872886_GM12878_CTCF_PET.bedpe.txt" showBlocks="false" thickness="1" visible="true"/>
+    </Panel>
+    <Panel height="73" name="FeaturePanel" width="1133">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="RefSeq Genes" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;444.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" height="35" id="hg19_genes" name="RefSeq Genes" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.8607142857142858"/>
+</Session>

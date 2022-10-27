@@ -38,7 +38,6 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
@@ -56,20 +55,10 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class CytobandPanel extends JPanel implements IGVEventObserver {
+public class CytobandPanel extends JPanel {
 
     private static int bandHeight = 10;
     private boolean isDragging = false;
-
-    /**
-     * left genomic coordinate of region in view (base pairs)
-     */
-    private double viewOrigin;
-
-    /**
-     * right genomic coordinate of region in view (base pairs)
-     */
-    private double viewEnd;
 
     /**
      * Scale in base-pairs per pixel == chromosome length / panel width
@@ -86,14 +75,11 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
     public CytobandPanel(ReferenceFrame frame, boolean mouseable) {
 
         this.frame = frame;
-        this.viewOrigin = frame.getOrigin();
-        this.viewEnd = frame.getEnd();
 
         if (mouseable) {
             initMouseAdapter();
         }
         cytobandRenderer = (new CytobandRenderer());
-        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
 
     }
 
@@ -130,9 +116,8 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
 
         // The test is true if we are zoomed in
         if (getReferenceFrame().getZoom() > 0) {
-
-            double origin = viewOrigin;
-            double end = viewEnd;
+            double origin = frame.getOrigin();
+            double end = frame.getEnd();
 
             int pixelStart = (int) (origin / cytobandScale);
             int pixelEnd = (int) (end / cytobandScale);
@@ -161,6 +146,8 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
         MouseInputAdapter mouseAdapter = new IGVMouseInputAdapter() {
 
             int lastMousePressX;
+            double viewOrigin;
+            double viewEnd;
 
             public void igvMouseClicked(MouseEvent e) {
                 if (currentCytobands == null) return;
@@ -191,6 +178,8 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
                 lastMousePressX = e.getX();
+                viewOrigin = frame.getOrigin();
+                viewEnd = frame.getEnd();
             }
 
             @Override
@@ -223,7 +212,7 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
                 if ((delta != 0) && (cytobandScale > 0)) {
                     // Constrain to bounds of chromosome
                     double chrLength = CytobandPanel.this.frame.getChromosomeLength();
-                    double deltaBP = Math.min( Math.max(-viewOrigin, delta * cytobandScale), chrLength - viewEnd);
+                    double deltaBP = Math.min(Math.max(-viewOrigin, delta * cytobandScale), chrLength - viewEnd);
                     viewOrigin += deltaBP;
                     viewEnd += deltaBP;
                     // TODO Constrain to chromosome bounds?
@@ -250,14 +239,4 @@ public class CytobandPanel extends JPanel implements IGVEventObserver {
         return frame;
     }
 
-    @Override
-    public void receiveEvent(Object e) {
-        if (e instanceof ViewChange) {
-            ViewChange event = (ViewChange) e;
-            if (event.type == ViewChange.Type.ChromosomeChange || event.type == ViewChange.Type.LocusChange) {
-                this.viewOrigin = frame.getOrigin();
-                this.viewEnd = frame.getEnd();
-            }
-        }
-    }
 }

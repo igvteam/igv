@@ -99,7 +99,7 @@ public class InsertionManager {
     }
 
     
-    public synchronized void processAlignments(String chr, List<Alignment> alignments) {
+    public synchronized void processAlignments(String chr, List<Alignment> alignments, AlignmentTrack.RenderOptions renderOptions) {
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         chr = genome == null ? chr : genome.getCanonicalChrName(chr);
@@ -116,8 +116,8 @@ public class InsertionManager {
         }
 
         int minLength = 0;
-        if (PreferencesManager.getPreferences().getAsBoolean(SAM_HIDE_SMALL_INDEL)) {
-            minLength = PreferencesManager.getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+        if (renderOptions != null && renderOptions.isHideSmallIndels()) {
+            minLength = renderOptions.getSmallIndelThreshold();
         }
 
         for (Alignment a : alignments) {

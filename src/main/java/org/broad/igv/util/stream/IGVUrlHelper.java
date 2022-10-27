@@ -81,9 +81,9 @@ public class IGVUrlHelper implements URLHelper {
     }
 
     public boolean exists() {
-        //log.info("Checking resoure " + url.toExternalForm());
+        //log.warn("Checking resoure " + url.toExternalForm());
         boolean exists = HttpUtils.getInstance().resourceAvailable(url.toExternalForm());
-        //log.info("Exists: " + exists);
+        //log.warn("Exists: " + exists);
         return exists;
     }
 }

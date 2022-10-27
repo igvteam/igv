@@ -27,19 +27,15 @@
 package org.broad.igv.ui.util;
 
 import com.jidesoft.swing.JideBoxLayout;
-import com.jidesoft.swing.JideButton;
 import org.broad.igv.logging.*;
-import org.broad.igv.google.OAuthProvider;
+import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.google.OAuthUtils;
 //import org.broad.igv.event.StopEvent;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.TimerTask;
 

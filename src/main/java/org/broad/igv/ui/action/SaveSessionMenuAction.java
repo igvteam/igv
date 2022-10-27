@@ -102,9 +102,7 @@ public class SaveSessionMenuAction extends MenuAction {
         final File sf = sessionFile;
         WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
         try {
-            saveSession(igv, sf);
-            // No errors so save last location
-            PreferencesManager.getPreferences().setLastTrackDirectory(sf.getParentFile());
+            igv.saveSession(sf);
 
         } catch (Exception e2) {
             JOptionPane.showMessageDialog(igv.getMainFrame(), "There was an error writing to " + sf.getName() + "(" + e2.getMessage() + ")");
@@ -115,20 +113,6 @@ public class SaveSessionMenuAction extends MenuAction {
 
 
         }
-
-
     }
 
-    /**
-     * Saves current IGV session to {@code targetFile}. As a side effect,
-     * sets the current sessions path (does NOT set the last session directory)
-     * @param igv
-     * @param targetFile
-     * @throws IOException
-     */
-    public static void saveSession(IGV igv, File targetFile) throws IOException{
-        Session currentSession = igv.getSession();
-        currentSession.setPath(targetFile.getAbsolutePath());
-        (new SessionWriter()).saveSession(currentSession, targetFile);
-    }
 }

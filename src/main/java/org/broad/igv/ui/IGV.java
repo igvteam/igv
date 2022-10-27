@@ -36,8 +36,6 @@ package org.broad.igv.ui;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
-import htsjdk.samtools.seekablestream.SeekableFileStream;
-import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -45,17 +43,20 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.*;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.Range;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.*;
-import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.prefs.Constants;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionSelectionEvent;
+import org.broad.igv.sam.SortOption;
 import org.broad.igv.session.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.WaitCursorManager.CursorToken;
@@ -68,7 +69,8 @@ import org.broad.igv.variant.VariantTrack;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
@@ -98,12 +100,14 @@ public class IGV implements IGVEventObserver {
     private static Logger log = LogManager.getLogger(IGV.class);
     private static IGV theInstance;
 
+    public static final String DATA_PANEL_NAME = "DataPanel";
+    public static final String FEATURE_PANEL_NAME = "FeaturePanel";
+
     // Window components
     private Frame mainFrame;
     private JRootPane rootPane;
     private IGVContentPane contentPane;
     private IGVMenuBar menuBar;
-
     private StatusWindow statusWindow;
 
     // Glass panes
@@ -116,28 +120,16 @@ public class IGV implements IGVEventObserver {
     public static Cursor zoomOutCursor;
     public static Cursor dragNDropCursor;
 
-    //Session session;
-    Session session;
-
-    private GenomeManager genomeManager;
-
     /**
-     * Attribute used to group tracks.  Normally "null".  Set from the "Tracks" menu.
+     * Object to hold state that defines a user session.  There is always a user session, even if not initialized
+     * from a "session" file.
      */
-    private String groupByAttribute = null;
-
-
-    private Map<String, List<Track>> overlayTracksMap = new HashMap();
-    private Set<Track> overlaidTracks = new HashSet();
-
-    public static final String DATA_PANEL_NAME = "DataPanel";
-    public static final String FEATURE_PANEL_NAME = "FeaturePanel";
-
+    private Session session;
 
     // Misc state
+    private Map<String, List<Track>> overlayTracksMap = new HashMap();
+    private Set<Track> overlaidTracks = new HashSet();
     private LinkedList<String> recentSessionList = new LinkedList<String>();
-
-    private List<JComponent> otherToolMenus = new ArrayList<>();
 
     // Vertical line that follows the mouse
     private boolean rulerEnabled;
@@ -157,31 +149,15 @@ public class IGV implements IGVEventObserver {
         return theInstance;
     }
 
+    public static boolean hasInstance() {
+        return theInstance != null;
+    }
+
     @ForTesting
     static void destroyInstance() {
         IGVMenuBar.destroyInstance();
         theInstance = null;
     }
-
-    public static boolean hasInstance() {
-        return theInstance != null;
-    }
-
-    public static JRootPane getRootPane() {
-        return getInstance().rootPane;
-    }
-
-    /**
-     * The IGV GUI has one master frame containing all other elements.
-     * This method returns that frame.
-     *
-     * @return
-     * @api
-     */
-    public static Frame getMainFrame() {
-        return getInstance().mainFrame;
-    }
-
 
     /**
      * Creates new IGV
@@ -192,18 +168,11 @@ public class IGV implements IGVEventObserver {
 
         final IGVPreferences preferences = PreferencesManager.getPreferences();
 
+        session = new Session(null);
+
         mainFrame = frame;
 
-        // Start CommandsServer **before** loading the initial genome (since that object might be hosted privately)
-        try {
-            startCommandsServer(igvArgs, preferences);
-        } catch (InterruptedException ie) {
-            log.info(ie.getMessage());
-        }
-
-        genomeManager = GenomeManager.getInstance();
         mainFrame.addWindowListener(new WindowAdapter() {
-
 
             @Override
             public void windowLostFocus(WindowEvent windowEvent) {
@@ -232,9 +201,6 @@ public class IGV implements IGVEventObserver {
 
             }
         });
-
-
-        session = new Session(null);
 
         // Create cursors
         createHandCursor();
@@ -285,53 +251,13 @@ public class IGV implements IGVEventObserver {
         subscribeToEvents();
     }
 
-    private void consumeEvents(Component glassPane) {
-
-        glassPane.addMouseListener(new IGVMouseInputAdapter() {
-            @Override
-            public void igvMouseClicked(MouseEvent e) {
-
-                Point glassPanePoint = e.getPoint();
-                Container container = IGV.this.contentPane;
-                Point containerPoint = SwingUtilities.convertPoint(glassPane,
-                        glassPanePoint, container);
-
-                Component component = SwingUtilities.getDeepestComponentAt(
-                        container, containerPoint.x, containerPoint.y);
-
-                if (component == IGV.this.contentPane.getStatusBar().stopButton) {
-                    IGVEventBus.getInstance().post(new StopEvent());
-                }
-                e.consume();
-
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
-                e.consume();
-
-            }
-        });
-        glassPane.setFocusable(true);
-        glassPane.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                e.consume();
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                e.consume();
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                e.consume();
-            }
-        });
+    public JRootPane getRootPane() {
+        return rootPane;
     }
 
+    public Frame getMainFrame() {
+        return mainFrame;
+    }
 
     public GhostGlassPane getDnDGlassPane() {
         return dNdGlassPane;
@@ -415,7 +341,7 @@ public class IGV implements IGVEventObserver {
             String genomeDisplayName = genomeBuilderDialog.getGenomeDisplayName();
             String genomeId = genomeBuilderDialog.getGenomeId();
 
-            GenomeListItem genomeListItem = getGenomeManager().defineGenome(
+            GenomeListItem genomeListItem = GenomeManager.getInstance().defineGenome(
                     genomeZipFile, cytobandFileName, geneAnnotFileName,
                     fastaFileName, chrAliasFile, genomeDisplayName,
                     genomeId, monitor);
@@ -471,12 +397,11 @@ public class IGV implements IGVEventObserver {
      */
     public Future loadTracks(final Collection<ResourceLocator> locators) {
 
-        contentPane.getStatusBar().setMessage("Loading ...");
-
-        log.debug("Run loadTracks");
-
         Future toRet = null;
         if (locators != null && !locators.isEmpty()) {
+
+            contentPane.getStatusBar().setMessage("Loading ...");
+
             NamedRunnable runnable = new NamedRunnable() {
                 public void run() {
                     //Collect size statistics before loading
@@ -484,12 +409,7 @@ public class IGV implements IGVEventObserver {
                     loadResources(locators);
                     resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
                     showLoadedTrackCount();
-                    IGV.this.getMainPanel().updatePanelDimensions();  // Visible attributes might have changed
-                    UIUtilities.invokeAndWaitOnEventThread(() -> {
-                        IGV.this.getMainPanel().applicationHeaderPanel.doLayout();  // Forcing this is neccessary if # of attributes change, not sure why
-                        IGV.this.getMainPanel().revalidate();
-                    });
-                    IGV.this.repaint();
+                    revalidateTrackPanels();
                 }
 
                 public String getName() {
@@ -641,7 +561,6 @@ public class IGV implements IGVEventObserver {
             PreferencesManager.getPreferences().remove(RECENT_SESSIONS);
             PreferencesManager.getPreferences().setRecentSessions(recentSessions);
         }
-
     }
 
     final public void doShowAttributeDisplay(boolean enableAttributeView) {
@@ -656,9 +575,9 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    // TODO -- move all of this attribute stuff out of IGV,  perhaps to
-    // some Attribute helper class.
-
+    /**
+     * Set the attributes to show in the attribute panel for this session.
+     */
     final public void doSelectDisplayableAttribute() {
 
         List<String> allAttributes = AttributeManager.getInstance().getAttributeNames();
@@ -667,16 +586,8 @@ public class IGV implements IGVEventObserver {
         dlg.setVisible(true);
 
         if (!dlg.isCanceled()) {
-            // If any "default" attributes are checked turn off hide default option
-            Set<String> selections = dlg.getSelections();
-            for (String att : AttributeManager.defaultTrackAttributes) {
-                if (selections.contains(att)) {
-                    PreferencesManager.getPreferences().put(SHOW_DEFAULT_TRACK_ATTRIBUTES, true);
-                    break;
-                }
-            }
             IGV.getInstance().getSession().setHiddenAttributes(dlg.getNonSelections());
-            getMainPanel().revalidateTrackPanels();
+            revalidateTrackPanels();
         }
     }
 
@@ -829,7 +740,7 @@ public class IGV implements IGVEventObserver {
                 try {
                     fistCursor = createCustomCursor(handImage, new Point(8, 6), "Move", Cursor.HAND_CURSOR);
                 } catch (Exception e) {
-                    log.info("Warning: could not create fistCursor");
+                    log.warn("Warning: could not create fistCursor");
                     fistCursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
                 }
 
@@ -884,70 +795,15 @@ public class IGV implements IGVEventObserver {
         try {
             return mainFrame.getToolkit().createCustomCursor(image, hotspot, name);
         } catch (Exception e) {
-            log.info("Could not create cursor: " + name);
+            log.warn("Could not create cursor: " + name);
             return Cursor.getPredefinedCursor(defaultCursor);
         }
-    }
-
-    /**
-     * Set the session to the file specified by {@code sessionPath}
-     * If you want to create a new session, consider {@link #newSession()}
-     * as that preserves the gene track.
-     *
-     * @param sessionPath
-     */
-    public void resetSession(String sessionPath) {
-
-        List<Track> oldTracks = getAllTracks();
-        clearAllTracks();
-        AttributeManager.getInstance().clearAllAttributes();
-        String tile = sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath;
-        mainFrame.setTitle(tile);
-        menuBar.resetSessionActions();
-        AttributeManager.getInstance().clearAllAttributes();
-        if (session == null) {
-            session = new Session(sessionPath);
-        } else {
-            session.reset(sessionPath);
-        }
-        getMainPanel().resetPanels();
-
-        groupByAttribute = null;
-        for (TrackPanel sp : getTrackPanels()) {
-            if (DATA_PANEL_NAME.equals(sp.getName())) {
-                sp.reset();
-                break;
-            }
-        }
-
-        getMainPanel().updatePanelDimensions();
-        getMainPanel().revalidateTrackPanels();
-
-        //TODO -- this is a very blunt way to clean up -- change to close files associated with this session
-        SeekableFileStream.closeAllInstances();
-
     }
 
     private void subscribeToEvents() {
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
         IGVEventBus.getInstance().subscribe(InsertionSelectionEvent.class, this);
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
-    }
-
-    /**
-     * Creates a new IGV session, and restores the gene track afterwards.
-     * For that reason, if one wishes to keep the default gene track, this method
-     * should be used, rather than resetSession
-     */
-    public void newSession() {
-        resetSession(null);
-        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        if (currentGenome != null) {
-            GenomeManager.getInstance().loadGenomeAnnotations(currentGenome);
-        }
-        this.menuBar.disableReloadSession();
-        goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
-        this.repaint();
     }
 
     /**
@@ -1067,69 +923,85 @@ public class IGV implements IGVEventObserver {
         return session;
     }
 
-    /**
-     * Restore a session from a local file, and optionally go to a locus.  Called upon startup and from user action.
-     *
-     * @param sessionFile
-     * @param locus
-     */
-    final public void doRestoreSession(final File sessionFile, final String locus) {
-        if (sessionFile.exists()) {
-            doRestoreSession(sessionFile.getAbsolutePath(), locus, false);
-        } else {
-            String message = "Session file does not exist! : " + sessionFile.getAbsolutePath();
-            log.error(message);
-            MessageUtils.showMessage(message);
-        }
-    }
 
     /**
-     * Load a session file, possibly asynchronously (if on the event dispatch thread).
+     * Reset session state, and associate the session object with the given path to a session file.
      *
      * @param sessionPath
-     * @param locus
-     * @param merge
      */
-    public void doRestoreSession(final String sessionPath,
-                                 final String locus,
-                                 final boolean merge) {
+    public void resetSession(String sessionPath) {
 
-        Runnable runnable = () -> restoreSessionSynchronous(sessionPath, locus, merge);
-        LongRunningTask.submit(runnable);
+        session.reset(sessionPath);
+        AttributeManager.getInstance().clearAllAttributes();
+        mainFrame.setTitle(sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath);
+        menuBar.resetSessionActions();
+
+        getMainPanel().resetPanels();   // Also clears all tracks
+        getMainPanel().updatePanelDimensions();
+        revalidateTrackPanels();
     }
 
+
     /**
-     * Load a session file in the current thread.  This should not be called from the event dispatch thread.
+     * Creates a new IGV session
+     */
+    public void newSession() {
+        resetSession(null);
+        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        if (currentGenome != null) {
+            GenomeManager.getInstance().restoreGenomeTracks(currentGenome);
+        }
+        this.menuBar.disableReloadSession();
+        goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
+        revalidateTrackPanels();
+    }
+
+
+    /**
+     * Load a session file, then jump to the specified locus if supplied.  This runs in the current thread, and should
+     * not be called from the event dispatch thread.
      *
-     * @param merge
      * @param sessionPath
      * @param locus
      * @return true if successful
      */
-    public boolean restoreSessionSynchronous(String sessionPath, String locus, boolean merge) {
+    public boolean loadSession(String sessionPath, String locus) {
 
         InputStream inputStream = null;
         try {
-            try {
-                inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
-            } catch (IOException e) {
-                log.error("Error loading session", e);
-                MessageUtils.showMessage("Error loading session: " + sessionPath);
-                return false;
-            }
-
-            if (!merge) {
-                // Do this first, it closes all open SeekableFileStreams.
-                resetSession(sessionPath);
-            }
-
             setStatusBarMessage("Opening session...");
-            return restoreSessionFromStream(sessionPath, locus, inputStream);
+
+            inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
+            boolean success = loadSessionFromStream(sessionPath, inputStream);
+
+            if (success) {
+
+                session.setPath(sessionPath);
+
+                String searchText = locus == null ? session.getLocus() : locus;
+                if (!FrameManager.isGeneListMode() && searchText != null && searchText.trim().length() > 0) {
+                    goToLocus(searchText);
+                }
+
+                mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+                if (!recentSessionList.contains(sessionPath)) {
+                    recentSessionList.addFirst(sessionPath);
+                }
+                this.menuBar.enableReloadSession();
+
+                //If there's a RegionNavigatorDialog, kill it.
+                //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
+                RegionNavigatorDialog.destroyInstance();
+            }
+
+            return success;
 
         } catch (Exception e) {
-            String message = "Error loading session session : <br>&nbsp;&nbsp;" + sessionPath + "<br>" + e.getMessage();
-            log.error(message, e);
-            throw new RuntimeException(e);
+            String message = "Error loading session session: " + e.getMessage();
+            MessageUtils.showMessage(message);
+            recentSessionList.remove(sessionPath);
+            log.error(message);
+            return false;
         } finally {
             if (inputStream != null) {
                 try {
@@ -1137,29 +1009,34 @@ public class IGV implements IGVEventObserver {
                 } catch (IOException iOException) {
                     log.error("Error closing session stream", iOException);
                 }
-                resetStatusMessage();
             }
+            resetStatusMessage();
         }
     }
 
-    public boolean restoreSessionFromStream(String sessionPath, String locus, InputStream inputStream) throws IOException {
+    /**
+     * Load a session from the input stream.  Currently there are
+     * 2 sources for the input stream (1) a local or remote file, and (2) an in memory byte array.  The latter is
+     * used to support the "reloadTracks" menu function.
+     *
+     * @param sessionPath
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
 
-        boolean isUCSC = sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"));
-        boolean isIndexAware = sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"));
-        final SessionReader sessionReader = isUCSC ?
-                new UCSCSessionReader(this) :
-                (isIndexAware ? new IndexAwareSessionReader(this) : new IGVSessionReader(this));
+    public boolean loadSessionFromStream(String sessionPath, InputStream inputStream) throws IOException {
+
+        final SessionReader sessionReader;
+        if (sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
+            sessionReader = new UCSCSessionReader(this);
+        } else if (sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
+            sessionReader = new IndexAwareSessionReader(this);
+        } else {
+            sessionReader = new IGVSessionReader(this);
+        }
 
         sessionReader.loadSession(inputStream, session, sessionPath);
-
-        String searchText = locus == null ? session.getLocus() : locus;
-
-        // NOTE: Nothing to do if chr == all as that is the default
-        if (!FrameManager.isGeneListMode() && searchText != null &&
-                !searchText.equals(Globals.CHR_ALL) &&
-                searchText.trim().length() > 0) {
-            goToLocus(searchText);
-        }
 
         double[] dividerFractions = session.getDividerFractions();
         if (dividerFractions != null) {
@@ -1167,52 +1044,39 @@ public class IGV implements IGVEventObserver {
         }
         session.clearDividerLocations();
 
-        //If there's a RegionNavigatorDialog, kill it.
-        //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
-        RegionNavigatorDialog.destroyInstance();
-
-        if (sessionPath != null) {
-            mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-            if (!getRecentSessionList().contains(sessionPath)) {
-                getRecentSessionList().addFirst(sessionPath);
-            }
-            this.menuBar.enableReloadSession();
-        }
-
-        if(PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
-            CircularViewUtilities.clearAll();
-        }
-
-        repaint();
+        revalidateTrackPanels();
         return true;
     }
 
-
     /**
-     * Uses either current session.getPersistent, or preferences, depending
-     * on if IGV has an instance or not. Generally intended for testing
+     * Saves current session to {@code targetFile}. As a side effect,
+     * sets the current sessions path (does NOT set the last session directory)
      *
-     * @param key
-     * @param def
-     * @return
-     * @see Session#getPersistent(String, String)
-     * @see IGVPreferences#getPersistent(String, String)
+     * @param targetFile
+     * @throws IOException
      */
-    public static String getPersistent(String key, String def) {
-        if (IGV.hasInstance()) {
-            return IGV.getInstance().getSession().getPersistent(key, def);
-        } else {
-            return PreferencesManager.getPreferences().getPersistent(key, def);
-        }
-    }
+    public void saveSession(File targetFile) throws IOException {
+        (new SessionWriter()).saveSession(session, targetFile);
 
+        String sessionPath = targetFile.getAbsolutePath();
+        session.setPath(sessionPath);
+        mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+        if (!recentSessionList.contains(sessionPath)) {
+            recentSessionList.addFirst(sessionPath);
+        }
+        this.menuBar.enableReloadSession();
+
+        // No errors so save last location
+        PreferencesManager.getPreferences().setLastTrackDirectory(targetFile.getParentFile());
+
+    }
 
     /**
      * Reset the default status message, which is the number of tracks loaded.
      */
     public void resetStatusMessage() {
-        contentPane.getStatusBar().setMessage("" +
-                getVisibleTrackCount() + " tracks loaded");
+        UIUtilities.invokeAndWaitOnEventThread(() -> contentPane.getStatusBar().setMessage("" +
+                getVisibleTrackCount() + " tracks loaded"));
 
     }
 
@@ -1224,11 +1088,7 @@ public class IGV implements IGVEventObserver {
     }
 
     private void closeWindow(final ProgressBar.ProgressDialog progressDialog) {
-        UIUtilities.invokeOnEventThread(new Runnable() {
-            public void run() {
-                progressDialog.setVisible(false);
-            }
-        });
+        UIUtilities.invokeOnEventThread(() -> progressDialog.setVisible(false));
     }
 
     /**
@@ -1241,28 +1101,6 @@ public class IGV implements IGVEventObserver {
      */
     public void goToLocus(String locus) {
         contentPane.getCommandBar().searchByLocus(locus);
-    }
-
-    /**
-     * To to multiple loci,  creating a new gene list if required.  This method is provided to support control of
-     * multiple panels from a command or external program.
-     *
-     * @param loci
-     */
-    public void goToLociList(List<String> loci) {
-
-        List<ReferenceFrame> frames = FrameManager.getFrames();
-        if (frames.size() == loci.size()) {
-            for (int i = 0; i < loci.size(); i++) {
-                frames.get(i).jumpTo(new Locus(loci.get(i)));
-            }
-            repaint();
-        } else {
-            GeneList geneList = new GeneList("", loci, false);
-            getSession().setCurrentGeneList(geneList);
-            resetFrames();
-        }
-
     }
 
     public void tweakPanelDivider() {
@@ -1292,12 +1130,6 @@ public class IGV implements IGVEventObserver {
     public IGVContentPane getContentPane() {
         return contentPane;
     }
-
-    public GenomeManager getGenomeManager() {
-        return genomeManager;
-    }
-
-    JCheckBoxMenuItem showPeakMenuItem;
 
     public boolean isShowDetailsOnClick() {
         return contentPane != null && contentPane.getCommandBar().getDetailsBehavior() == ShowDetailsBehavior.CLICK;
@@ -1330,7 +1162,6 @@ public class IGV implements IGVEventObserver {
      */
     public void loadResources(Collection<ResourceLocator> locators) {
 
-        log.info("Loading " + locators.size() + " resources.");
         final MessageCollection messages = new MessageCollection();
 
         for (final ResourceLocator locator : locators) {
@@ -1382,13 +1213,15 @@ public class IGV implements IGVEventObserver {
      * @param tracks
      * @param locator
      */
-    void addTracks(List<Track> tracks, ResourceLocator locator) {
+    public void addTracks(List<Track> tracks, ResourceLocator locator) {
+
         if (tracks.size() > 0) {
             String path = locator.getPath();
+            Track representativeTrack = tracks.get(0);
 
             // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
             // is greater than 10
-            TrackPanel panel = getPanelFor(locator);
+            TrackPanel panel = getPanelFor(representativeTrack);
             if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
                     path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
                 Track t = tracks.get(0);
@@ -1404,7 +1237,7 @@ public class IGV implements IGVEventObserver {
 
     /**
      * Load a resource and return the tracks.
-     * Does not automatically add anything
+     * Does not add tracks to igv instance
      *
      * @param locator
      * @return A list of loaded tracks
@@ -1427,10 +1260,9 @@ public class IGV implements IGVEventObserver {
                 track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
                 track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
                 track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
-
             }
         }
-
+        //revalidateTrackPanels();
         return newTracks;
     }
 
@@ -1441,9 +1273,8 @@ public class IGV implements IGVEventObserver {
     public void load(final ResourceLocator locator, final TrackPanel panel) throws DataLoadException {
 
         // If this is a session  TODO -- need better "is a session?" test
-        if (locator.getPath().endsWith(".xml") || locator.getPath().endsWith(("session"))) {
-            boolean merge = false;  // TODO -- ask user?
-            this.doRestoreSession(locator.getPath(), null, merge);
+        if (SessionReader.isSessionFile(locator.getPath())) {
+            LongRunningTask.submit(() -> this.loadSession(locator.getPath(), null));
         } else {
             // Not a session, load into target panel
             Runnable runnable = () -> {
@@ -1456,22 +1287,58 @@ public class IGV implements IGVEventObserver {
     }
 
     /**
-     * Return a DataPanel appropriate for the resource type
+     * Return a DataPanel for the given track.
+     *
+     * @param track
+     * @return
+     */
+    public TrackPanel getPanelFor(Track track) {
+
+        if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
+            return getTrackPanel(DATA_PANEL_NAME);
+        }
+
+        ResourceLocator locator = track.getResourceLocator();
+        if (locator != null) {
+            TrackPanel panel = getPanelFor(locator);
+            if (panel != null) {
+                return panel;
+            }
+        }
+
+        if(track.getClass() == FeatureTrack.class && !PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY))
+            return getTrackPanel(FEATURE_PANEL_NAME);
+        else {
+            return getTrackPanel(DATA_PANEL_NAME);
+        }
+    }
+
+    /**
+     * Return a DataPanel appropriate for the resource type.  This method should be considered deprecated in
+     * favor of getPanelFor(Track), however the UCSCSessionReader still uses this form.
      *
      * @param locator
      * @return
      */
     public TrackPanel getPanelFor(ResourceLocator locator) {
-        String path = locator.getPath().toLowerCase();
-        if ("alist".equals(locator.getFormat())) {
+
+        final String format = locator.getFormat();
+        if ("alist".equals(format)) {
             return getVcfBamPanel();
         } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
             return getTrackPanel(DATA_PANEL_NAME);
-        } else if (TrackLoader.isAlignmentTrack(locator.getFormat())) {
+        } else if (TrackLoader.isAlignmentTrack(format)) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
         } else {
-            return getDefaultPanel(locator);
+            if (format != null && format.equalsIgnoreCase("das")) {
+                return getTrackPanel(FEATURE_PANEL_NAME);
+            }
+            if (isAnnotationFile(format)) {
+                return getTrackPanel(FEATURE_PANEL_NAME);
+            } else {
+                return null;  // Can't determine from locator
+            }
         }
     }
 
@@ -1502,43 +1369,24 @@ public class IGV implements IGVEventObserver {
         }
     }
 
-
-    private TrackPanel getDefaultPanel(ResourceLocator locator) {
-
-        final String format = locator.getFormat();
-        if (format != null && format.equalsIgnoreCase("das")) {
-            return getTrackPanel(FEATURE_PANEL_NAME);
-        }
-        if (isAnnotationFile(locator.getFormat())) {
-            return getTrackPanel(FEATURE_PANEL_NAME);
-        } else {
-            return getTrackPanel(DATA_PANEL_NAME);
-        }
-    }
-
     private boolean isAnnotationFile(String format) {
         Set<String> annotationFormats = new HashSet<>(Arrays.asList("refflat", "ucscgene",
                 "genepred", "ensgene", "refgene", "gff", "gtf", "gff3", "embl", "bed", "gistic",
-                "bedz", "repmask", "dranger", "ucscsnp", "genepredext"));
+                "bedz", "repmask", "dranger", "ucscsnp", "genepredext", "bigbed"));
         return annotationFormats.contains(format);
     }
 
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, String tag) {
-        sortAlignmentTracks(option, null, tag);
+    public void sortAlignmentTracks(SortOption option, String tag, final boolean invertSort) {
+        sortAlignmentTracks(option, null, tag, invertSort);
     }
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, Double location, String tag) {
-        double actloc;
-        List<Track> alignmentTracks = getAllTracks().stream()
+    public void sortAlignmentTracks(SortOption option, Double location, String tag, boolean invertSort) {
+        List<AlignmentTrack> alignmentTracks = getAllTracks().stream()
                 .filter(track -> track instanceof AlignmentTrack)
+                .map(track -> (AlignmentTrack)track)
+                .peek(track -> track.sortRows(option, location, tag, invertSort))
                 .collect(Collectors.toList());
-        for (Track t : alignmentTracks) {
-            for (ReferenceFrame frame : FrameManager.getFrames()) {
-                actloc = location != null ? location : frame.getCenter();
-                ((AlignmentTrack) t).sortRows(option, frame, actloc, tag);
-            }
-        }
         this.repaint(alignmentTracks);
     }
 
@@ -1593,35 +1441,6 @@ public class IGV implements IGVEventObserver {
                 ((AlignmentTrack) t).packAlignments();
             }
         }
-    }
-
-
-    public void setTrackDisplayMode(Track.DisplayMode mode, String trackName) {
-        for (Track t : getAllTracks()) {
-            if (trackName == null || t.getName().equals(trackName)) {
-                t.setDisplayMode(mode);
-            }
-        }
-
-    }
-
-
-    public void setSequenceTrackStrand(Strand trackStrand) {
-        for (Track t : getAllTracks()) {
-            if (t instanceof SequenceTrack) {
-                ((SequenceTrack) t).setStrand(trackStrand);
-            }
-        }
-
-    }
-
-    public void setSequenceShowTranslation(boolean shouldShowTranslation) {
-        for (Track t : getAllTracks()) {
-            if (t instanceof SequenceTrack) {
-                ((SequenceTrack) t).setShowTranslation(shouldShowTranslation);
-            }
-        }
-
     }
 
 
@@ -1717,12 +1536,6 @@ public class IGV implements IGVEventObserver {
             allTracks.addAll(tp.getTracks());
         }
         return allTracks;
-    }
-
-    public void clearAllTracks() {
-        for (TrackPanel tp : getTrackPanels()) {
-            tp.clearTracks();
-        }
     }
 
     public List<FeatureTrack> getFeatureTracks() {
@@ -1838,8 +1651,9 @@ public class IGV implements IGVEventObserver {
             if (t instanceof IGVEventObserver) {
                 IGVEventBus.getInstance().unsubscribe((IGVEventObserver) t);
             }
-            t.dispose();
+            t.unload();
         }
+        revalidateTrackPanels();
     }
 
     /**
@@ -1853,21 +1667,14 @@ public class IGV implements IGVEventObserver {
         TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
                 getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
         SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
-
         panel.addTrack(newSeqTrack);
+
         if (newGeneTrack != null) {
+            newGeneTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, newGeneTrack.getName());
+            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
+            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, newGeneTrack.getTrackType().toString());
             panel.addTrack(newGeneTrack);
         }
-
-    }
-
-    public boolean hasGeneTrack() {
-        FeatureTrack geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-        if (geneTrack == null) return false;
-        for (Track t : getFeatureTracks()) {
-            if (geneTrack == t) return true;
-        }
-        return false;
     }
 
     public boolean hasSequenceTrack() {
@@ -2005,12 +1812,12 @@ public class IGV implements IGVEventObserver {
     // Groups
 
     public String getGroupByAttribute() {
-        return groupByAttribute;
+        return session.getGroupByAttribute();
     }
 
 
     public void setGroupByAttribute(String attributeName) {
-        groupByAttribute = attributeName;
+        session.setGroupByAttribute(attributeName);
         resetGroups();
         // Some tracks need to respond to changes in grouping, fire notification event
         IGVEventBus.getInstance().post(new TrackGroupEvent(this));
@@ -2020,7 +1827,7 @@ public class IGV implements IGVEventObserver {
     private void resetGroups() {
         log.debug("Resetting Groups");
         for (TrackPanel trackPanel : getTrackPanels()) {
-            trackPanel.groupTracksByAttribute(groupByAttribute);
+            trackPanel.groupTracksByAttribute(session.getGroupByAttribute());
         }
     }
 
@@ -2052,7 +1859,7 @@ public class IGV implements IGVEventObserver {
      *
      * @param igvArgs: Used to specify a different port.
      */
-    private static void startCommandsServer(Main.IGVArgs igvArgs, IGVPreferences prefMgr) throws InterruptedException {
+    private static void startCommandsServer(Main.IGVArgs igvArgs, IGVPreferences prefMgr) {
         // Port # can be overriden with "-p" command line switch
         boolean portEnabled = prefMgr.getAsBoolean(PORT_ENABLED);
         String portString = igvArgs.getPort();
@@ -2067,13 +1874,13 @@ public class IGV implements IGVEventObserver {
         }
     }
 
+
     /**
      * Swing worker class to startup IGV
      */
     public class StartupRunnable implements Runnable {
 
         Main.IGVArgs igvArgs;
-        ProgressBar.ProgressDialog progressDialog;
 
         StartupRunnable(Main.IGVArgs args) {
             this.igvArgs = args;
@@ -2083,6 +1890,10 @@ public class IGV implements IGVEventObserver {
         public void run() {
 
             final IGVPreferences preferences = PreferencesManager.getPreferences();
+
+            // Start CommandsServer **before** loading the initial genome, as credentials might need to be set for
+            // privately hosted genomes.
+            startCommandsServer(igvArgs, preferences);
 
             UIUtilities.invokeAndWaitOnEventThread(() -> {
                 mainFrame.setIconImage(getIconImage());
@@ -2163,11 +1974,11 @@ public class IGV implements IGVEventObserver {
                         boolean success = false;
                         if (HttpUtils.isRemoteURL(igvArgs.getSessionFile())) {
                             boolean merge = false;
-                            success = restoreSessionSynchronous(igvArgs.getSessionFile(), igvArgs.getLocusString(), merge);
+                            success = loadSession(igvArgs.getSessionFile(), igvArgs.getLocusString());
                         } else {
                             File sf = new File(igvArgs.getSessionFile());
                             if (sf.exists()) {
-                                success = restoreSessionSynchronous(sf.getAbsolutePath(), igvArgs.getLocusString(), false);
+                                success = loadSession(sf.getAbsolutePath(), igvArgs.getLocusString());
                             }
                         }
                         if (!success) {
@@ -2286,7 +2097,7 @@ public class IGV implements IGVEventObserver {
 
     public static void copySequenceToClipboard(Genome genome, String chr, int start, int end, Strand strand) {
         try {
-            IGV.getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            IGV.getInstance().getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             byte[] seqBytes = genome.getSequence(chr, start, end);
 
             if (seqBytes == null) {
@@ -2302,7 +2113,7 @@ public class IGV implements IGVEventObserver {
             }
 
         } finally {
-            IGV.getMainFrame().setCursor(Cursor.getDefaultCursor());
+            getInstance().getMainFrame().setCursor(Cursor.getDefaultCursor());
         }
     }
 
@@ -2346,28 +2157,26 @@ public class IGV implements IGVEventObserver {
         } else if (event instanceof GenomeChangeEvent) {
             repaint();
         } else {
-            log.info("Unknown event type: " + event.getClass());
+            log.warn("Unknown event type: " + event.getClass());
         }
     }
 
 
     public void resetFrames() {
         UIUtilities.invokeOnEventThread(() -> {
-                    contentPane.getMainPanel().headerPanelContainer.createHeaderPanels();
+                    getMainPanel().headerPanelContainer.createHeaderPanels();
                     for (TrackPanel tp : getTrackPanels()) {
                         tp.createDataPanels();
                     }
                     contentPane.getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
-                    contentPane.getMainPanel().applicationHeaderPanel.revalidate();
-                    contentPane.getMainPanel().validate();
-                    repaint(contentPane.getMainPanel());
+                    revalidateTrackPanels();
                 }
         );
     }
 
     public void revalidateTrackPanels() {
         UIUtilities.invokeOnEventThread(() -> {
-            contentPane.revalidateTrackPanels();
+            getMainPanel().revalidateTrackPanels();
             repaint(rootPane);
         });
     }
@@ -2421,16 +2230,24 @@ public class IGV implements IGVEventObserver {
             // In batch mode everything is done synchronously on the event thread
             UIUtilities.invokeAndWaitOnEventThread(() -> {
 
-                for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    for (Track track : trackList) {
-                        if (track.isReadyToPaint(frame) == false) {
-                            track.load(frame);
+                CursorToken token = WaitCursorManager.showWaitCursor();
+                try {
+                    for (ReferenceFrame frame : FrameManager.getFrames()) {
+                        for (Track track : trackList) {
+                            if (track.isReadyToPaint(frame) == false) {
+                                track.load(frame);
+                            }
                         }
                     }
+                    Autoscaler.autoscale(getAllTracks());
+                    checkPanelLayouts();
+                    component.paintImmediately(component.getBounds());
+                } finally {
+                    WaitCursorManager.removeWaitCursor(token);
+                    synchronized (IGV.getInstance()) {
+                        IGV.getInstance().notifyAll();
+                    }
                 }
-                Autoscaler.autoscale(getAllTracks());
-                checkPanelLayouts();
-                component.paintImmediately(component.getBounds());
             });
 
         } else {
@@ -2494,7 +2311,7 @@ public class IGV implements IGVEventObserver {
     private void checkPanelLayouts() {
         for (TrackPanel tp : getTrackPanels()) {
             if (tp.isHeightChanged()) {
-                tp.revalidate();
+                UIUtilities.invokeOnEventThread(() -> tp.revalidate());
             }
         }
     }

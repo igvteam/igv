@@ -25,18 +25,20 @@
 
 package org.broad.igv.sam;
 
-import org.broad.igv.logging.*;
+import com.google.common.primitives.Ints;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
+import org.broad.igv.sam.mods.BaseModificationRenderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -45,9 +47,8 @@ import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -61,6 +62,12 @@ public class AlignmentRenderer {
 
     private static final Color negStrandColor = new Color(150, 150, 230);
     private static final Color posStrandColor = new Color(230, 150, 150);
+
+    private static final Color firstOfPairColor = new Color(150, 150, 230);
+    private static final Color secondOfPairColor = new Color(230, 150, 150);
+    private static final Color firstAndSecondofPairColor = new Color(150, 150, 0);
+    private static final Color neitherForOrSecondOfPair = new Color(198, 106, 245, 255);
+
     private static final Color RL_COLOR = new Color(0, 150, 0);
     private static final Color RR_COLOR = new Color(20, 50, 200);
     private static final Color LL_COLOR = new Color(0, 150, 150);
@@ -309,7 +316,8 @@ public class AlignmentRenderer {
                 Color alignmentColor = getAlignmentColor(alignment, track);
                 final boolean leaveMargin = (this.track.getDisplayMode() != Track.DisplayMode.SQUISHED);
                 if ((pixelWidth < 2) &&
-                        !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) || renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) &&
+                        !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) ||
+                                renderOptions.getColorOption().isBaseMod()) &&
                                 (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
@@ -530,8 +538,8 @@ public class AlignmentRenderer {
         IGVPreferences prefs = this.track.getPreferences();
         boolean flagLargeIndels = prefs.getAsBoolean(SAM_FLAG_LARGE_INDELS);
         int largeInsertionsThreshold = prefs.getAsInt(SAM_LARGE_INDELS_THRESHOLD);
-        boolean hideSmallIndelsBP = prefs.getAsBoolean(SAM_HIDE_SMALL_INDEL);
-        int indelThresholdBP = prefs.getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+        boolean hideSmallIndelsBP = renderOptions.isHideSmallIndels();
+        int indelThresholdBP = renderOptions.getSmallIndelThreshold();
         boolean quickConsensus = renderOptions.isQuickConsensusMode();
         final float snpThreshold = prefs.getAsFloat(SAM_ALLELE_THRESHOLD);
 
@@ -631,7 +639,7 @@ public class AlignmentRenderer {
         // Draw blocks
         // Get a graphics context for outlining alignment blocks.
         Graphics2D outlineGraphics = null;
-        final HashMap<String, Color> selectedReadNames = this.track.selectedReadNames;
+        final HashMap<String, Color> selectedReadNames = this.track.getSelectedReadNames();
         if (selectedReadNames.containsKey(alignment.getReadName())) {
             Color c = selectedReadNames.get(alignment.getReadName());
             c = (c == null) ? Color.blue : c;
@@ -712,6 +720,117 @@ public class AlignmentRenderer {
             leftmost = false;
         }
 
+        // Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
+        // that is proportional to the base quality score, or flow signal deviation, whichever is selected.
+
+        final ColorOption colorOption = renderOptions.getColorOption();
+        if (locScale < 100) {
+
+            boolean showAllBases = renderOptions.isShowAllBases() &&
+                    !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ); // Disable showAllBases in bisulfite mode
+
+            if (renderOptions.isShowMismatches() || showAllBases) {
+
+                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
+
+                    boolean haveBases = (block.hasBases() && block.getLength() > 0);
+                    if (!haveBases) {
+                        continue;   // nothing to draw
+                    }
+
+                    String chr = context.getChr();
+                    final int start = block.getStart();
+                    final int end = block.getEnd();
+                    if (end <= bpStart) { // block ends before the visible context
+                        continue; // move to next block
+                    } else if (start >= bpEnd) { // block starts after the visible context
+                        break; // done examining blocks
+                    }
+
+                    boolean isSoftClip = block.isSoftClip();
+
+                    // Get the reference sequence
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                    final byte[] reference = isSoftClip ? softClippedReference : genome.getSequence(chr, start, end);
+
+                    if (reference == null && !showAllBases) {
+                        continue;   // No reference to compare to.
+                    }
+
+                    // Compute bounds
+                    int pY = (int) rowRect.getY();
+                    int dY = (int) rowRect.getHeight();
+                    dX = (int) Math.max(1, (1.0 / locScale));
+
+                    BisulfiteBaseInfo bisinfo = null;
+                    boolean nomeseqMode = (colorOption.equals(AlignmentTrack.ColorOption.NOMESEQ));
+                    boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(colorOption);
+                    if (nomeseqMode) {
+                        bisinfo = new BisulfiteBaseInfoNOMeseq(reference, alignment, block, renderOptions.bisulfiteContext);
+                    } else if (bisulfiteMode) {
+                        bisinfo = new BisulfiteBaseInfo(reference, alignment, block, renderOptions.bisulfiteContext);
+                    }
+
+                    ByteSubarray blockBases = block.getBases();
+                    final int s = (int) Math.max(Math.floor(bpStart), start);
+                    final int e = (int) Math.min(Math.ceil(bpEnd), end);
+                    for (int loc = s; loc < e; loc++) {
+
+                        int idx = loc - start;
+
+                        boolean misMatch = AlignmentUtils.isMisMatch(reference, blockBases, isSoftClip, idx);
+
+                        // if base is modified paint rectangle
+                        if (showAllBases || (!bisulfiteMode && misMatch) ||
+                                (bisulfiteMode && (DisplayStatus.NOTHING != bisinfo.getDisplayStatus(idx)))) {
+                            char c = (char) blockBases.getByte(idx);
+
+                            double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
+                            int pX = (int) (((double) loc + bisulfiteXaxisShift - bpStart) / locScale);
+
+                            // Don't draw out of clipping rect
+                            if (pX > rowRect.getMaxX()) {
+                                break;
+                            } else if (pX + dX < rowRect.getX()) {
+                                continue;
+                            }
+                            Color color = null;
+                            if (bisulfiteMode) {
+                                color = bisinfo.getDisplayColor(idx);
+                            } else if (colorOption.isBaseMod()) {
+                                color = Color.GRAY;
+                            } else {
+                                color = nucleotideColors.get(c);
+                            }
+                            if (color == null) {
+                                color = Color.black;
+                            }
+
+                            if (renderOptions.getShadeBasesOption()) {
+                                byte qual = block.getQuality(loc - start);
+                                color = getShadedColor(qual, color, alignmentColor, prefs);
+                            }
+
+                            BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
+
+                            final boolean showBase =
+                                    isSoftClip ||
+                                            bisulfiteMode ||
+                                            // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
+                                            (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
+                            if (showBase) {
+                                drawBase(gAlignment, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), bisulfiteMode, bisstatus);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Base modification
+        if (colorOption.isBaseMod()) {
+            BaseModificationRenderer.drawModifications(alignment, bpStart, locScale, rowRect, context.getGraphics(), colorOption);
+        }
 
         // DRAW Insertions
         AlignmentBlock[] insertions = alignment.getInsertions();
@@ -762,164 +881,6 @@ public class AlignmentRenderer {
             }
         }
 
-        // Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
-        // that is proportional to the base quality score, or flow signal deviation, whichever is selected.
-
-        if (locScale < 100) {
-
-            ColorOption colorOption = renderOptions.getColorOption();
-            boolean showAllBases = renderOptions.isShowAllBases() &&
-                    !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ); // Disable showAllBases in bisulfite mode
-
-            if (renderOptions.isShowMismatches() || showAllBases) {
-
-                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-
-                    boolean haveBases = (block.hasBases() && block.getLength() > 0);
-                    if (!haveBases) {
-                        continue;   // nothing to draw
-                    }
-
-                    String chr = context.getChr();
-                    final int start = block.getStart();
-                    final int end = block.getEnd();
-                    if (end <= bpStart) { // block ends before the visible context
-                        continue; // move to next block
-                    } else if (start >= bpEnd) { // block starts after the visible context
-                        break; // done examining blocks
-                    }
-
-                    boolean isSoftClip = block.isSoftClip();
-
-                    // Get the reference sequence
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                    final byte[] reference = isSoftClip ? softClippedReference : genome.getSequence(chr, start, end);
-
-                    if (reference == null && !showAllBases) {
-                        continue;   // No reference to compare to.
-                    }
-
-                    // Compute bounds
-                    int pY = (int) rowRect.getY();
-                    int dY = (int) rowRect.getHeight();
-                    dX = (int) Math.max(1, (1.0 / locScale));
-
-                    BisulfiteBaseInfo bisinfo = null;
-                    boolean nomeseqMode = (renderOptions.getColorOption().equals(AlignmentTrack.ColorOption.NOMESEQ));
-                    boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption());
-                    if (nomeseqMode) {
-                        bisinfo = new BisulfiteBaseInfoNOMeseq(reference, alignment, block, renderOptions.bisulfiteContext);
-                    } else if (bisulfiteMode) {
-                        bisinfo = new BisulfiteBaseInfo(reference, alignment, block, renderOptions.bisulfiteContext);
-                    }
-
-                    ByteSubarray blockBases = block.getBases();
-                    final int s = (int) Math.max(Math.floor(bpStart), start);
-                    final int e = (int) Math.min(Math.ceil(bpEnd), end);
-                    for (int loc = s; loc < e; loc++) {
-
-                        int idx = loc - start;
-
-                        boolean misMatch = AlignmentUtils.isMisMatch(reference, blockBases, isSoftClip, idx);
-
-                        // if base is modified paint rectangle
-                        if (showAllBases || (!bisulfiteMode && misMatch) ||
-                                (bisulfiteMode && (DisplayStatus.NOTHING != bisinfo.getDisplayStatus(idx)))) {
-                            char c = (char) blockBases.getByte(idx);
-
-                            Color color = null;
-                            if (bisulfiteMode) {
-                                color = bisinfo.getDisplayColor(idx);
-                            } else if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
-                                color = Color.GRAY;
-                            } else {
-                                color = nucleotideColors.get(c);
-                            }
-                            if (color == null) {
-                                color = Color.black;
-                            }
-
-                            if (renderOptions.getShadeBasesOption()) {
-                                byte qual = block.getQuality(loc - start);
-                                color = getShadedColor(qual, color, alignmentColor, prefs);
-                            }
-
-                            double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
-
-                            // If there is room for text draw the character, otherwise
-                            // just draw a rectangle to represent the
-                            int pX = (int) (((double) loc + bisulfiteXaxisShift - bpStart) / locScale);
-
-                            // Don't draw out of clipping rect
-                            if (pX > rowRect.getMaxX()) {
-                                break;
-                            } else if (pX + dX < rowRect.getX()) {
-                                continue;
-                            }
-
-                            BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
-
-                            final boolean showBase =
-                                    isSoftClip ||
-                                            bisulfiteMode ||
-                                            // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
-                                            (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
-                            if (showBase) {
-                                drawBase(gAlignment, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), bisulfiteMode, bisstatus);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-
-        // Base modification
-        if (renderOptions.getColorOption() == ColorOption.BASE_MODIFICATION) {
-            Map<Integer, BaseModification> baseModifications = alignment.getBaseModificationMap();
-            if (baseModifications != null) {
-                double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
-                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
-                    // Compute bounds
-                    int pY = (int) rowRect.getY();
-                    int dY = (int) rowRect.getHeight();
-                    dX = (int) Math.max(1, (1.0 / locScale));
-                    Graphics g = context.getGraphics();
-
-                    for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
-
-                        if (baseModifications.containsKey(i)) {
-
-                            BaseModification mod = baseModifications.get(i);
-                            int l = Byte.toUnsignedInt(mod.likelihood);
-                            if(l < threshold) continue;
-
-                            Color c = BaseModification.getModColor(mod.modification, mod.likelihood);
-                            g.setColor(c);
-
-                            int blockIdx = i - block.getBases().startOffset;
-                            int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
-
-                            // Don't draw out of clipping rect
-                            if (pX > rowRect.getMaxX()) {
-                                break;
-                            } else if (pX + dX < rowRect.getX()) {
-                                continue;
-                            }
-
-                            // Expand narrow width to make more visible
-                            if(dX < 3) {
-                                dX = 3;
-                                pX--;
-                            }
-
-                            g.fillRect(pX, pY, dX, Math.max(1, dY-2));
-                        }
-                    }
-                }
-            }
-        }
-
     }
 
     /**
@@ -950,7 +911,7 @@ public class AlignmentRenderer {
             int pX0i = pX, dXi = dX;
 
             // If bisulfite mode, we expand the rectangle to make it more visible
-            if (bisulfiteMode && bisstatus.equals(DisplayStatus.COLOR)) {
+            if (bisulfiteMode && bisstatus.equals(DisplayStatus.RECTANGLE)) {
                 if (dXi < 3) {
                     int expansion = dXi;
                     pX0i -= expansion;
@@ -1043,8 +1004,8 @@ public class AlignmentRenderer {
             InsertionMarker expandedInsertion = InsertionManager.getInstance().getSelectedInsertion(context.getReferenceFrame().getChrName());
             int expandedPosition = expandedInsertion == null ? -1 : expandedInsertion.position;
 
-            boolean hideSmallIndelsBP = prefs.getAsBoolean(SAM_HIDE_SMALL_INDEL);
-            int indelThresholdBP = prefs.getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
+            boolean hideSmallIndelsBP = renderOptions.isHideSmallIndels();
+            int indelThresholdBP = renderOptions.getSmallIndelThreshold();
 
             for (AlignmentBlock aBlock : insertions) {
 
@@ -1197,7 +1158,7 @@ public class AlignmentRenderer {
 
         Color defaultColor = track.getColor();
         Color c = defaultColor;
-        AlignmentTrack.RenderOptions renderOptions = track.renderOptions;
+        AlignmentTrack.RenderOptions renderOptions = track.getRenderOptions();
         ColorOption colorOption = renderOptions.getColorOption();
         String readNameParts[];
 
@@ -1213,6 +1174,8 @@ public class AlignmentRenderer {
 
             case BISULFITE:
             case BASE_MODIFICATION:
+            case BASE_MODIFICATION_5MC:
+            case BASE_MODIFICATION_C:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
                 c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;
@@ -1240,26 +1203,25 @@ public class AlignmentRenderer {
 //                   boolean sameChr = isPairedAlignment || alignment.getMate().getChr().equals(alignment.getChr());
                     String mateChr = mate == null ? null : mate.getChr();
                     boolean sameChr = isPairedAlignment || (mateChr != null && mateChr.equals(alignment.getChr()));
-                    if (sameChr ) {
-                        if( track.getExperimentType() != AlignmentTrack.ExperimentType.RNA) {
-                            int readDistance = Math.abs(alignment.getInferredInsertSize());
-                            if (readDistance != 0) {
+                    if (sameChr) {
+                        int readDistance = Math.abs(alignment.getInferredInsertSize());
+                        if (readDistance != 0) {
 
-                                int minThreshold = renderOptions.getMinInsertSize();
-                                int maxThreshold = renderOptions.getMaxInsertSize();
-                                PEStats peStats = getPEStats(alignment, renderOptions);
-                                if (renderOptions.isComputeIsizes() && peStats != null) {
-                                    minThreshold = peStats.getMinThreshold();
-                                    maxThreshold = peStats.getMaxThreshold();
-                                }
+                            int minThreshold = renderOptions.getMinInsertSize();
+                            int maxThreshold = renderOptions.getMaxInsertSize();
+                            PEStats peStats = getPEStats(alignment, renderOptions);
+                            if (renderOptions.isComputeIsizes() && peStats != null) {
+                                minThreshold = peStats.getMinThreshold();
+                                maxThreshold = peStats.getMaxThreshold();
+                            }
 
-                                if (readDistance < minThreshold) {
-                                    c = smallISizeColor;
-                                } else if (readDistance > maxThreshold) {
-                                    c = largeISizeColor;
-                                }
+                            if (readDistance < minThreshold) {
+                                c = smallISizeColor;
+                            } else if (readDistance > maxThreshold) {
+                                c = largeISizeColor;
                             }
                         }
+
                         //return renderOptions.insertSizeColorScale.getColor(readDistance);
                     } else {
                         c = ChromosomeColors.getColor(alignment.getMate().getChr());
@@ -1284,6 +1246,19 @@ public class AlignmentRenderer {
                     c = negStrandColor;
                 } else if (fragmentStrand == Strand.POSITIVE) {
                     c = posStrandColor;
+                }
+                break;
+            case READ_ORDER:
+                if (alignment.isPaired()){
+                    if(alignment.isFirstOfPair() && !alignment.isSecondOfPair()){
+                        c = firstOfPairColor;
+                    } else if(!alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
+                        c = secondOfPairColor;
+                    } else if (alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
+                        c = firstAndSecondofPairColor;
+                    } else {
+                        c = neitherForOrSecondOfPair;
+                    }
                 }
                 break;
             case READ_GROUP:
@@ -1368,15 +1343,41 @@ public class AlignmentRenderer {
         }
         if (c == null) c = defaultColor;
 
-        if (alignment.getMappingQuality() == 0 && renderOptions.isFlagZeroQualityAlignments()) {
-            // Maping Q = 0
-            float alpha = 0.15f;
-            // Assuming white background TODO -- this should probably be passed in
-            return ColorUtilities.getCompositeColor(Color.white, c, alpha);
-        }
-
+        c = shadeByMappingQuality(c, renderOptions, alignment.getMappingQuality());
         return c;
 
+    }
+
+    private Color shadeByMappingQuality(final Color initialColor, final AlignmentTrack.RenderOptions renderOptions, final int mappingQuality) {
+        final float minAlpha = 0.15f;
+        final float maxAlpha = 1;
+        int maxMapQCutoff = renderOptions.getMappingQualityHigh();
+        int minMapQCutoff = renderOptions.getMappingQualityLow();
+        maxMapQCutoff = Ints.constrainToRange(maxMapQCutoff, 1, 255);
+        minMapQCutoff = Ints.constrainToRange(minMapQCutoff, 0, maxMapQCutoff - 1);
+
+        int clippedMQ = Ints.constrainToRange(mappingQuality, minMapQCutoff, maxMapQCutoff);
+        float alphaRange = maxAlpha - minAlpha;
+        float normalizedMQ = (float) (clippedMQ - minMapQCutoff) / (float) (maxMapQCutoff - minMapQCutoff);
+        // Assuming white background TODO -- this should probably be passed in
+        final Color backgroundColor = Color.white;
+
+        // MQ of zero has special meaning, and pre-empts shading by mapping quality if "flag zero quality" is set
+        if (mappingQuality == 0 && renderOptions.isFlagZeroQualityAlignments()) {
+            return ColorUtilities.getCompositeColor(backgroundColor, initialColor, minAlpha);
+        } else {
+            switch (renderOptions.getShadeAlignmentsOption()) {
+                case NONE:
+                    return initialColor;
+                case MAPPING_QUALITY_LOW:
+                    normalizedMQ = 1 - normalizedMQ; //invert this and fall through.
+                case MAPPING_QUALITY_HIGH:
+                    float actualAlpha = minAlpha + alphaRange * normalizedMQ;
+                    return ColorUtilities.getCompositeColor(backgroundColor, initialColor, actualAlpha);
+                default:
+                    return initialColor;
+            }
+        }
     }
 
     private ColorTable getTenXColorTable(String group) {

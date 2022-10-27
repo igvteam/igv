@@ -44,8 +44,9 @@ public class BasicFeature extends AbstractFeature {
     private static Logger log = LogManager.getLogger(BasicFeature.class);
 
     String representation;
+
     protected List<Exon> exons;
-    protected int level = 1;
+
     protected float score = Float.NaN;
     protected float confidence;
     String identifier;
@@ -83,7 +84,6 @@ public class BasicFeature extends AbstractFeature {
         this.color = feature.color;
         this.description = feature.description;
         this.exons = feature.exons;
-        this.level = feature.level;
         this.score = feature.score;
         this.identifier = feature.identifier;
         this.type = feature.type;
@@ -119,46 +119,51 @@ public class BasicFeature extends AbstractFeature {
     @Override
     public void setStart(int start) {
         super.setStart(start);
-        this.thickStart = start;
+        if(start > thickStart) {
+            this.thickStart = start;
+        }
     }
 
     @Override
     public void setEnd(int end) {
         super.setEnd(end);
-        this.thickEnd = end;
+        if(end < thickEnd || thickEnd == 0) {
+            this.thickEnd = end;
+        }
     }
 
     /**
      * Defined in interface {@linkplain LocusScore}
      */
     public String getValueString(double position, int mouseX, WindowFunction ignored) {
-        StringBuffer valueString = new StringBuffer();
 
+        StringBuffer valueString = new StringBuffer();
 
         String name = getName();
         if (name != null && name.length() > 0) {
-            valueString.append("<b>" + name + "</b><br>");
+            valueString.append("<b>name</b>:&nbsp;" + name);
         }
 
+        valueString.append("<br><b>location</b>:&nbsp;");
         valueString.append(getLocusString());
-        if(strand == Strand.POSITIVE) {
+        if (strand == Strand.POSITIVE) {
             valueString.append(" (+)");
-        } else if(strand == Strand.NEGATIVE) {
+        } else if (strand == Strand.NEGATIVE) {
             valueString.append(" (-)");
         }
 
         if (type != null && type.length() > 0) {
-            valueString.append("<br>Type = " + type);
+            valueString.append("<br><b>type</b>:&nbsp;" + type);
         }
-        if ((identifier != null) && ((name == null || name.length() == 0) || !name.equals(identifier))) {
-            valueString.append("<br>id = " + identifier);
+        if ((identifier != null && identifier.length() > 0) && ((name == null || name.length() == 0) || !name.equals(identifier))) {
+            valueString.append("<br><b>id</b>:&nbsp;" + identifier);
         }
 
         if (!Float.isNaN(score)) {
-            valueString.append("<br>Score = " + score);
+            valueString.append("<br><b>score</b>:&nbsp;" + score);
         }
         if (description != null) {
-            valueString.append("<br>" + description);
+            valueString.append("<br><b>score</b>:&nbsp;" + description);
         }
         if (attributes != null) {
             valueString.append(getAttributeString());
@@ -276,7 +281,6 @@ public class BasicFeature extends AbstractFeature {
     }
 
 
-    @Override
     public String getIdentifier() {
         return identifier;
     }
@@ -287,6 +291,15 @@ public class BasicFeature extends AbstractFeature {
 
     public void setURL(String link) {
         this.link = link;
+    }
+
+    @Override
+    public String getDisplayName(String property) {
+        if (property.equals("id")) {
+            return identifier;
+        } else {
+            return super.getDisplayName(property);
+        }
     }
 
     public String getURL() {
@@ -345,8 +358,8 @@ public class BasicFeature extends AbstractFeature {
      *
      * @param featurePositions Must be 0-based.
      * @return Positions relative to genome (0-based). Will contain "-1"s for
-     *         positions not found. Sorted ascending for positive strand,
-     *         descending for negative strand.
+     * positions not found. Sorted ascending for positive strand,
+     * descending for negative strand.
      */
     int[] featureToGenomePosition(int[] featurePositions) {
         List<Exon> exons = getExons();
