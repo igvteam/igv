@@ -286,8 +286,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
         for (final AlignmentTrack.BisulfiteContext item : AlignmentTrack.BisulfiteContext.values()) {
 
-            String optionStr = getBisulfiteContextPubStr(item);
-            JRadioButtonMenuItem m1 = new JRadioButtonMenuItem(optionStr);
+            JRadioButtonMenuItem m1 = new JRadioButtonMenuItem(item.getLabel());
             m1.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BISULFITE && renderOptions.bisulfiteContext == item);
             m1.addActionListener(aEvt -> {
                 alignmentTrack.setColorOption(AlignmentTrack.ColorOption.BISULFITE);
@@ -1327,10 +1326,5 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             }
         }
     }
-
-    private static String getBisulfiteContextPubStr(AlignmentTrack.BisulfiteContext item) {
-        return AlignmentTrack.bisulfiteContextToPubString.get(item);
-    }
-
 
 }

@@ -51,7 +51,6 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
@@ -150,10 +149,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     }
 
-    public enum BisulfiteContext {
-        CG, CHH, CHG, HCG, GCH, WCG, NONE
-    }
-
     enum OrientationType {
         RR, LL, RL, LR, UNKNOWN
     }
@@ -166,43 +161,84 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private static final int INSERTION_ROW_HEIGHT = 9;
     private static final int DS_MARGIN_2 = 5;
 
-    static final Map<BisulfiteContext, String> bisulfiteContextToPubString = new HashMap<>();
+    public enum BisulfiteContext {
+        CG("CG", new byte[]{}, new byte[]{'G'}),
+        CHH("CHH", new byte[]{}, new byte[]{'H', 'H'}),
+        CHG("CHG", new byte[]{}, new byte[]{'H', 'G'}),
+        HCG("HCG", new byte[]{'H'}, new byte[]{'G'}),
+        GCH("GCH", new byte[]{'G'}, new byte[]{'H'}),
+        WCG("WCG", new byte[]{'W'}, new byte[]{'G'}),
+        NONE("None", null, null);
 
-    static {
-        bisulfiteContextToPubString.put(BisulfiteContext.CG, "CG");
-        bisulfiteContextToPubString.put(BisulfiteContext.CHH, "CHH");
-        bisulfiteContextToPubString.put(BisulfiteContext.CHG, "CHG");
-        bisulfiteContextToPubString.put(BisulfiteContext.HCG, "HCG");
-        bisulfiteContextToPubString.put(BisulfiteContext.GCH, "GCH");
-        bisulfiteContextToPubString.put(BisulfiteContext.WCG, "WCG");
-        bisulfiteContextToPubString.put(BisulfiteContext.NONE, "None");
-    }
+        private final String label;
+        private final byte[] preContext;
+        private final byte[] postContext;
 
-    private static final Map<BisulfiteContext, Pair<byte[], byte[]>> bisulfiteContextToContextString = new HashMap<>();
+        /**
+         * @param contextb      The residue in the context string (IUPAC)
+         * @param referenceBase The reference sequence (already checked that offsetidx is within bounds)
+         * @param readBase      The read sequence (already checked that offsetidx is within bounds)
+         */
+        private static boolean positionMatchesContext(byte contextb, final byte referenceBase, final byte readBase) {
+            boolean matchesContext = AlignmentUtils.compareBases(contextb, referenceBase);
+            if (!matchesContext) {
+                return false; // Don't need to check any further
+            }
 
-    static {
-        bisulfiteContextToContextString.put(BisulfiteContext.CG, new Pair<>(new byte[]{}, new byte[]{'G'}));
-        bisulfiteContextToContextString.put(BisulfiteContext.CHH, new Pair<>(new byte[]{}, new byte[]{'H', 'H'}));
-        bisulfiteContextToContextString.put(BisulfiteContext.CHG, new Pair<>(new byte[]{}, new byte[]{'H', 'G'}));
-        bisulfiteContextToContextString.put(BisulfiteContext.HCG, new Pair<>(new byte[]{'H'}, new byte[]{'G'}));
-        bisulfiteContextToContextString.put(BisulfiteContext.GCH, new Pair<>(new byte[]{'G'}, new byte[]{'H'}));
-        bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<>(new byte[]{'W'}, new byte[]{'G'}));
+            // For the read, we have to handle C separately
+            boolean matchesReadContext = AlignmentUtils.compareBases(contextb, readBase);
+            if (AlignmentUtils.compareBases((byte) 'T', readBase)) {
+                matchesReadContext |= AlignmentUtils.compareBases(contextb, (byte) 'C');
+            }
+
+            return matchesReadContext;
+        }
+
+        public BisulfiteContext getMatchingBisulfiteContext(final byte[] reference, final ByteSubarray read, final int idx) {
+            boolean matchesContext = true;
+
+            // First do the "post" context
+            int minLen = Math.min(reference.length, read.length);
+            if ((idx + postContext.length) >= minLen) {
+                matchesContext = false;
+            } else {
+                // Cut short whenever we don't match
+                for (int posti = 0; matchesContext && (posti < postContext.length); posti++) {
+                    byte contextb = postContext[posti];
+                    int offsetidx = idx + 1 + posti;
+
+                    matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read.getByte(offsetidx));
+                }
+            }
+
+            // Now do the pre context
+            if ((idx - preContext.length) < 0) {
+                matchesContext = false;
+            } else {
+                // Cut short whenever we don't match
+                for (int prei = 0; matchesContext && (prei < preContext.length); prei++) {
+                    byte contextb = preContext[prei];
+                    int offsetidx = idx - (preContext.length - prei);
+
+                    matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read.getByte(offsetidx));
+                }
+            }
+
+            return (matchesContext) ? this : null;
+        }
+
+        public String getLabel() { return label; }
+
+        BisulfiteContext(String label, byte[] preContext, byte[] postContext){
+            this.label = label;
+            this.preContext = preContext;
+            this.postContext = postContext;
+        }
     }
 
     public static boolean isBisulfiteColorType(ColorOption o) {
         return (o.equals(ColorOption.BISULFITE) || o.equals(ColorOption.NOMESEQ));
     }
-
-    public static byte[] getBisulfiteContextPreContext(BisulfiteContext item) {
-        Pair<byte[], byte[]> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
-        return pair.getFirst();
-    }
-
-    public static byte[] getBisulfiteContextPostContext(BisulfiteContext item) {
-        Pair<byte[], byte[]> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
-        return pair.getSecond();
-    }
-
 
     private final AlignmentDataManager dataManager;
     private final SequenceTrack sequenceTrack;

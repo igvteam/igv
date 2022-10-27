@@ -209,65 +209,7 @@ public class BisulfiteBaseInfo {
         }
 
         // Get the context and see if it matches our desired context.
-        byte[] preContext = AlignmentTrack.getBisulfiteContextPreContext(bisulfiteContext);
-        byte[] postContext = AlignmentTrack.getBisulfiteContextPostContext(bisulfiteContext);
-
-        boolean matchesContext = true;
-
-        // First do the "post" context
-        int minLen = Math.min(reference.length, read.length);
-        if ((idx + postContext.length) >= minLen) {
-            matchesContext = false;
-        } else {
-            // Cut short whenever we don't match
-            for (int posti = 0; matchesContext && (posti < postContext.length); posti++) {
-                byte contextb = postContext[posti];
-                int offsetidx = idx + 1 + posti;
-                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read.getByte(offsetidx));
-
-                //				System.err.printf("POST posMatchesContext(posti=%d, contextb=%c, refb=%c, readb=%c, offsetidx=%d) = %s\n",
-                //						posti, contextb, reference[offsetidx], read[offsetidx], offsetidx, matchesContext);
-
-            }
-        }
-
-        // Now do the pre context
-        if ((idx - preContext.length) < 0) {
-            matchesContext = false;
-        } else {
-            // Cut short whenever we don't match
-            for (int prei = 0; matchesContext && (prei < preContext.length); prei++) {
-                byte contextb = preContext[prei];
-                int offsetidx = idx - (preContext.length - prei);
-                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read.getByte(offsetidx));
-                //				System.err.printf("PRE posMatchesContext(prei=%d, contextb=%c, refb=%c, readb=%c, offsetidx=%d) = %s\n",
-                //						prei, contextb, reference[offsetidx], read[offsetidx], offsetidx, matchesContext);
-            }
-        }
-
-        return (matchesContext) ? bisulfiteContext : null;
-    }
-
-    /**
-     * @param contextb      The residue in the context string (IUPAC)
-     * @param referenceBase The reference sequence (already checked that offsetidx is within bounds)
-     * @param readBase      The read sequence (already checked that offsetidx is within bounds)
-     * @return
-     */
-    protected boolean positionMatchesContext(byte contextb, final byte referenceBase, final byte readBase) {
-
-        boolean matchesContext = AlignmentUtils.compareBases(contextb, referenceBase);
-        if (!matchesContext) {
-            return false; // Don't need to check any further
-        }
-
-        // For the read, we have to handle C separately
-        boolean matchesReadContext = AlignmentUtils.compareBases(contextb, readBase);
-        if (AlignmentUtils.compareBases((byte) 'T', readBase)) {
-            matchesReadContext |= AlignmentUtils.compareBases(contextb, (byte) 'C');
-        }
-
-        return matchesReadContext;
+        return bisulfiteContext.getMatchingBisulfiteContext(reference, read, idx);
     }
 
     public Color getDisplayColor(int idx) {
