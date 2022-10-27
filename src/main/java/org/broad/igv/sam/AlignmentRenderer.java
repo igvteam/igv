@@ -28,7 +28,6 @@ package org.broad.igv.sam;
 import org.broad.igv.ext.ExtensionManager;
 import org.broad.igv.ext.render.IColorByTagExtension;
 import org.broad.igv.ext.render.IIndelRenderingExtension;
-import org.broad.igv.logging.*;
 import com.google.common.primitives.Ints;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;

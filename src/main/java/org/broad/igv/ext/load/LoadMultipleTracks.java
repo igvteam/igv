@@ -1,6 +1,6 @@
 package org.broad.igv.ext.load;
 
-import org.broad.igv.google.GoogleUtils;
+import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.ui.action.LoadFromURLMenuAction;
 import org.broad.igv.util.ResourceLocator;
 
