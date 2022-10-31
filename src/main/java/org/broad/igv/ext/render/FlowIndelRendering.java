@@ -428,7 +428,7 @@ public class FlowIndelRendering implements IIndelRenderingExtension {
         if ( loc >= (bases.length - 1) )
             return 0;
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        byte              delBase = genome.getReference(samAlignment.getChr(), gap.getStart());
+        final byte delBase = (byte) Character.toUpperCase(genome.getReference(samAlignment.getChr(), gap.getStart()));
         if ( (delBase == bases[loc]) ||  (delBase == bases[loc+1]) )
             return 0;
 
