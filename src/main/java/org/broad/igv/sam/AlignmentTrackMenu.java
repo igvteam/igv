@@ -1,5 +1,7 @@
 package org.broad.igv.sam;
 
+import htsjdk.samtools.SAMTag;
+import htsjdk.samtools.util.Locatable;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
@@ -39,6 +41,7 @@ import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -125,7 +128,10 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         if (clickedAlignment != null) {
             addGoToMate(e, clickedAlignment);
             showMateRegion(e, clickedAlignment);
+            //Supplementary/chimeric items, only if the read has an SA tag
+            addShowChimericRegions(alignmentTrack, e, clickedAlignment);
         }
+
         addInsertSizeMenuItem();
 
         // Third gen (primarily) items
@@ -169,6 +175,27 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         addShowItems();
 
 
+    }
+
+    private void addShowChimericRegions(final AlignmentTrack alignmentTrack, final TrackClickEvent e, final Alignment clickedAlignment) {
+        JMenuItem item = new JMenuItem("View supplementary (chimeric) alignments in split screen");
+        if (clickedAlignment.getAttribute(SAMTag.SA.name()) != null) {
+            item.setEnabled(true);
+            item.addActionListener(aEvt -> {
+                final String saTag = clickedAlignment.getAttribute(SAMTag.SA.name()).toString();
+                try {
+                    List<SupplementaryAlignment> supplementaryAlignments = SupplementaryAlignment.parseFromSATag(saTag);
+                    alignmentTrack.setSelectedAlignment(clickedAlignment);
+                    addNewLociToFrames(e.getFrame(), supplementaryAlignments);
+                } catch (final Exception ex) {
+                    MessageUtils.showMessage("Failed to handle SA tag: " + saTag + " due to " + ex.getMessage());
+                    item.setEnabled(false);
+                }
+            });
+        } else {
+            item.setEnabled(false);
+        }
+        add(item);
     }
 
 
@@ -1155,77 +1182,73 @@ class AlignmentTrackMenu extends IGVPopupMenu {
      * Need a better name for this method.
      */
     private void splitScreenMate(ReferenceFrame frame, Alignment alignment) {
-
         if (alignment != null) {
             ReadMate mate = alignment.getMate();
             if (mate != null && mate.isMapped()) {
-
                 alignmentTrack.setSelectedAlignment(alignment);
-
-                String mateChr = mate.getChr();
-                int mateStart = mate.start - 1;
-
-                String locus1 = frame.getFormattedLocusString();
-
-                // Generate a locus string for the read mate.  Keep the window width (in base pairs) == to the current range
-                Range range = frame.getCurrentRange();
-                int length = range.getLength();
-                int s2 = Math.max(0, mateStart - length / 2);
-                int e2 = s2 + length;
-                String startStr = String.valueOf(s2);
-                String endStr = String.valueOf(e2);
-                String mateLocus = mateChr + ":" + startStr + "-" + endStr;
-
-                Session currentSession = IGV.getInstance().getSession();
-
-                List<String> loci;
-                if (FrameManager.isGeneListMode()) {
-                    loci = new ArrayList<>(FrameManager.getFrames().size());
-                    for (ReferenceFrame ref : FrameManager.getFrames()) {
-                        //If the frame-name is a locus, we use it unaltered
-                        //Don't want to reprocess, easy to get off-by-one
-                        String name = ref.getName();
-                        if (Locus.fromString(name) != null) {
-                            loci.add(name);
-                        } else {
-                            loci.add(ref.getFormattedLocusString());
-                        }
-
-                    }
-                    loci.add(mateLocus);
-                } else {
-                    loci = Arrays.asList(locus1, mateLocus);
-                }
-
-                StringBuilder listName = new StringBuilder();
-                for (String s : loci) {
-                    listName.append(s + "   ");
-                }
-
-                GeneList geneList = new GeneList(listName.toString(), loci, false);
-                currentSession.setCurrentGeneList(geneList);
-                
-                Comparator<String> geneListComparator = (n0, n1) -> {
-                    ReferenceFrame f0 = FrameManager.getFrame(n0);
-                    ReferenceFrame f1 = FrameManager.getFrame(n1);
-
-                    String chr0 = f0 == null ? "" : f0.getChrName();
-                    String chr1 = f1 == null ? "" : f1.getChrName();
-                    int s0 = f0 == null ? 0 : f0.getCurrentRange().getStart();
-                    int s1 = f1 == null ? 0 : f1.getCurrentRange().getStart();
-
-                    int chrComp = ChromosomeNameComparator.get().compare(chr0, chr1);
-                    if (chrComp != 0) return chrComp;
-                    return s0 - s1;
-                };
-
-                //Need to sort the frames by position
-                currentSession.sortGeneList(geneListComparator);
-                IGV.getInstance().resetFrames();
+                addNewLociToFrames(frame, List.of(mate));
             } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
             }
         }
+    }
+
+    private static void addNewLociToFrames(final ReferenceFrame frame, final List<? extends Locatable> toIncludeInSplit) {
+        final List<String> newLoci = toIncludeInSplit.stream()
+                .map(locatable -> getLocusStringForAlignment(frame, locatable))
+                .collect(Collectors.toList());
+        List<String> loci = createLociList(frame, newLoci);
+        String listName = String.join("   ", loci); // TODO check the trailing "   " was unnecessary
+
+        GeneList geneList = new GeneList(listName, loci, false);
+
+        final Session currentSession = IGV.getInstance().getSession();
+        currentSession.setCurrentGeneList(geneList);
+
+        Comparator<String> geneListComparator = (n0, n1) -> {
+            ReferenceFrame f0 = FrameManager.getFrame(n0);
+            ReferenceFrame f1 = FrameManager.getFrame(n1);
+
+            String chr0 = f0 == null ? "" : f0.getChrName();
+            String chr1 = f1 == null ? "" : f1.getChrName();
+            int s0 = f0 == null ? 0 : f0.getCurrentRange().getStart();
+            int s1 = f1 == null ? 0 : f1.getCurrentRange().getStart();
+
+            int chrComp = ChromosomeNameComparator.get().compare(chr0, chr1);
+            if (chrComp != 0) return chrComp;
+            return s0 - s1;
+        };
+
+        //Need to sort the frames by position
+        currentSession.sortGeneList(geneListComparator);
+        IGV.getInstance().resetFrames();
+    }
+
+    private static List<String> createLociList(final ReferenceFrame frame, final List<String> lociToAdd) {
+        final List<String> loci = new ArrayList<>(FrameManager.getFrames().size() + lociToAdd.size());
+        if (FrameManager.isGeneListMode()) {
+            for (ReferenceFrame ref : FrameManager.getFrames()) {
+                //If the frame-name is a locus, we use it unaltered
+                //Don't want to reprocess, easy to get off-by-one
+                String name = ref.getName();
+                loci.add(Locus.fromString(name) != null ? name : ref.getFormattedLocusString());
+            }
+        } else {
+            loci.add(frame.getFormattedLocusString());
+        }
+        loci.addAll(lociToAdd);
+        return loci;
+    }
+
+    private static String getLocusStringForAlignment(final ReferenceFrame frame, final Locatable alignment) {
+        int adjustedMateStart = alignment.getStart() - 1;
+
+        // Generate a locus string for the alignment.  Keep the window width (in base pairs) == to the current range
+        Range range = frame.getCurrentRange();
+        int length = range.getLength();
+        int start = Math.max(0, adjustedMateStart - length / 2);
+        int end = start + length;
+        return alignment.getContig() + ":" + start + "-" + end;
     }
 
 
