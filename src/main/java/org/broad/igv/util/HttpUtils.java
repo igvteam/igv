@@ -126,11 +126,12 @@ public class HttpUtils {
 
     /**
      * Explicitly set an oAuth access token for the given host.
+     *
      * @param token oAuth access token
-     * @param host host to apply access token to.  Can contain wildcards (e.g. "*.foo.com")
+     * @param host  host to apply access token to.  Can contain wildcards (e.g. "*.foo.com")
      */
     public void setAccessToken(String token, String host) {
-        if(host == null || host.trim().length() == 0) {
+        if (host == null || host.trim().length() == 0) {
             host = ".*";
         } else {
             host = host.replace("*", ".*");
@@ -141,19 +142,20 @@ public class HttpUtils {
 
     /**
      * Return an access token, if any, from the access token cache.
+     *
      * @param url
      * @return
      */
     String getAccessTokenFor(URL url) {
 
-        for(Map.Entry<Pattern, String> entry : this.accessTokens.entrySet()) {
+        for (Map.Entry<Pattern, String> entry : this.accessTokens.entrySet()) {
             final Pattern pattern = entry.getKey();
             Matcher matcher = pattern.matcher(url.getHost());
-            if(matcher.find()) {
+            if (matcher.find()) {
                 return entry.getValue();
             }
         }
-return null;
+        return null;
 //        if (token == null && oauthProvider != null && oauthProvider.appliesToUrl(url)) {
 //            token = oauthProvider.getAccessToken();
 //        }
@@ -676,7 +678,7 @@ return null;
         OAuthProvider oauthProvider = OAuthUtils.getInstance().getProviderForURL(url);
         if (oauthProvider != null) {
 
-            if(token == null) {
+            if (token == null) {
                 oauthProvider.checkLogin();
                 token = oauthProvider.getAccessToken();
             }
@@ -873,14 +875,10 @@ return null;
 
         if (proxySettings != null && proxySettings.isProxyDefined()) {
 
-            // NOTE: setting disabledSchemes to "" through System.setProperty does not work !!!
+            // Allow basic auth for proxy authorization
             System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
             System.setProperty("jdk.http.auth.proxying.disabledSchemes", "");
 
-//            if (url.getProtocol().equals("https") && proxySettings.isUserPwDefined()) {
-//                conn = new ProxiedHttpsConnection(url, proxySettings.proxyHost, proxySettings.proxyPort,
-//                        proxySettings.user, proxySettings.pw);
-//            } else {
             Proxy proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
             conn = (HttpURLConnection) url.openConnection(proxy);
             if (proxySettings.isUserPwDefined()) {
@@ -888,8 +886,9 @@ return null;
                 String encodedUserPwd = String.valueOf(Base64Coder.encode(bytes));
                 conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
             }
-//            }
         }
+
+        // Try system property, unless disabled
         if (conn == null && !PreferencesManager.getPreferences().getAsBoolean("PROXY.DISABLE_CHECK")) {
             Proxy sysProxy = getSystemProxy(url.toExternalForm());
             if (sysProxy != null && sysProxy.type() != Proxy.Type.DIRECT) {
