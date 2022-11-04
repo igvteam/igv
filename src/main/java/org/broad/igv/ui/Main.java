@@ -93,14 +93,9 @@ public class Main {
         }
         checkDotIgvDirectory();
 
+        HttpUtils.getInstance().updateProxySettings();
+
         htsjdk.tribble.util.ParsingUtils.setURLHelperFactory(IGVUrlHelperFactory.getInstance());
-
-        try {
-            OAuthUtils.getInstance();  // Initialize oauth
-        } catch (Exception e) {
-            log.error("Warning: Error fetching oAuth properties: " + e.getMessage());
-        }
-
 
         Runnable runnable = () -> {
             if (Globals.IS_WINDOWS && System.getProperty("os.name").contains("10")) {
@@ -290,8 +285,6 @@ public class Main {
         if (igvArgs.getGenomeServerURL() != null) {
             PreferencesManager.getPreferences().overrideGenomeServerURL(igvArgs.getGenomeServerURL());
         }
-
-        HttpUtils.getInstance().updateProxySettings();
 
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
