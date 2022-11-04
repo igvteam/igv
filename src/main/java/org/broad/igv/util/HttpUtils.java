@@ -719,37 +719,7 @@ return null;
             url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
         }
 
-        HttpURLConnection conn = null;
-        if (proxySettings != null && proxySettings.isProxyDefined()) {
-
-            // NOTE: setting disabledSchemes to "" through System.setProperty does not work !!!
-            System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
-            System.setProperty("jdk.http.auth.proxying.disabledSchemes", "");
-
-//            if (url.getProtocol().equals("https") && proxySettings.isUserPwDefined()) {
-//                conn = new ProxiedHttpsConnection(url, proxySettings.proxyHost, proxySettings.proxyPort,
-//                        proxySettings.user, proxySettings.pw);
-//            } else {
-            Proxy proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
-            conn = (HttpURLConnection) url.openConnection(proxy);
-            if (proxySettings.isUserPwDefined()) {
-                byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
-                String encodedUserPwd = String.valueOf(Base64Coder.encode(bytes));
-                conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
-            }
-//            }
-        }
-        if (conn == null && !PreferencesManager.getPreferences().getAsBoolean("PROXY.DISABLE_CHECK")) {
-            Proxy sysProxy = getSystemProxy(url.toExternalForm());
-            if (sysProxy != null && sysProxy.type() != Proxy.Type.DIRECT) {
-                conn = (HttpURLConnection) url.openConnection(sysProxy);
-            }
-        }
-
-        // If connection is still null no proxy is used
-        if (conn == null) {
-            conn = (HttpURLConnection) url.openConnection();
-        }
+        HttpURLConnection conn = openProxiedConnection(url);
 
         if (!"HEAD".equals(method)) {
             conn.setRequestProperty("Accept", "text/plain");
@@ -893,6 +863,43 @@ return null;
                     throw new HttpResponseException(code, message, details);
                 }
             }
+        }
+        return conn;
+    }
+
+    public HttpURLConnection openProxiedConnection(URL url) throws IOException {
+
+        HttpURLConnection conn = null;
+
+        if (proxySettings != null && proxySettings.isProxyDefined()) {
+
+            // NOTE: setting disabledSchemes to "" through System.setProperty does not work !!!
+            System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+            System.setProperty("jdk.http.auth.proxying.disabledSchemes", "");
+
+//            if (url.getProtocol().equals("https") && proxySettings.isUserPwDefined()) {
+//                conn = new ProxiedHttpsConnection(url, proxySettings.proxyHost, proxySettings.proxyPort,
+//                        proxySettings.user, proxySettings.pw);
+//            } else {
+            Proxy proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
+            conn = (HttpURLConnection) url.openConnection(proxy);
+            if (proxySettings.isUserPwDefined()) {
+                byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
+                String encodedUserPwd = String.valueOf(Base64Coder.encode(bytes));
+                conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
+            }
+//            }
+        }
+        if (conn == null && !PreferencesManager.getPreferences().getAsBoolean("PROXY.DISABLE_CHECK")) {
+            Proxy sysProxy = getSystemProxy(url.toExternalForm());
+            if (sysProxy != null && sysProxy.type() != Proxy.Type.DIRECT) {
+                conn = (HttpURLConnection) url.openConnection(sysProxy);
+            }
+        }
+
+        // If connection is still null no proxy is used
+        if (conn == null) {
+            conn = (HttpURLConnection) url.openConnection();
         }
         return conn;
     }
