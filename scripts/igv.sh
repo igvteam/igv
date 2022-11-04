@@ -25,6 +25,7 @@ if [ -e "$HOME/.igv/java_arguments" ]; then
         @"${prefix}/igv.args" \
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
+        -Djava.net.useSystemProxies=true \
         @"$HOME/.igv/java_arguments" \
         --module=org.igv/org.broad.igv.ui.Main "$@"
 else
@@ -32,5 +33,6 @@ else
         @"${prefix}/igv.args" \
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
+        -Djava.net.useSystemProxies=true \
         --module=org.igv/org.broad.igv.ui.Main "$@"
 fi
