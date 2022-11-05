@@ -260,14 +260,14 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         public void updateToolTipText(TrackClickEvent tce) {
             toolTipText = track.getValueStringAt(tce.getFrame().getChrName(), tce.getChromosomePosition(), tce.getMouseEvent().getX(), tce.getMouseEvent().getY(), tce.getFrame());
-            toolTipText = "<html>" + toolTipText;
+            toolTipText = toolTipText == null ? "" : "<html>" + toolTipText;
             setToolTipText(toolTipText);
         }
 
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
-            Rectangle bounds = new Rectangle(this.getParent().getBounds());       // Parent is the scroll pane
+            Rectangle bounds = new Rectangle(getBounds());
             bounds.y = 0;
             RenderContext context = new RenderContext(this, (Graphics2D) g, frame, bounds);
             track.render(context, bounds);
