@@ -232,7 +232,7 @@ public class CommandListener implements Runnable {
                                         log.info("Oauth token received");
                                         provider.setAccessToken(params.get("token"));
                                     }
-                                    sendTextResponse(out, "SUCCESS");
+                                    sendTextResponse(out, "Authorization successful.  You may close this tab.");
 
                                     if (PreferencesManager.getPreferences().getAsBoolean(Constants.PORT_ENABLED) == false) {
                                         // Turn off port
