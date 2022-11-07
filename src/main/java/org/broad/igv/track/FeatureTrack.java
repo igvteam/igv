@@ -298,7 +298,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     public int getNumberOfFeatureLevels() {
         if (packedFeaturesMap.size() > 0) {
-            int n = 0;
+            int n = 1;
             for (PackedFeatures pf : packedFeaturesMap.values()) {
                 //dhmay adding null check.  To my mind this shouldn't be necessary, but we're encountering
                 //it intermittently.  Food for future thought
