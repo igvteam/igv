@@ -731,13 +731,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         boolean leaveMargin = getDisplayMode() != DisplayMode.SQUISHED;
 
         // Insertion interval
-        Graphics2D g = context.getGraphic2DForColor(Color.red);
-        Rectangle iRect = new Rectangle(inputRect.x, insertionRect.y, inputRect.width, insertionRect.height);
-        g.fill(iRect);
-        List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
+        if(this.renderOptions.isShowInsertionMarkers()) {
+            Graphics2D g = context.getGraphic2DForColor(Color.red);
+            Rectangle iRect = new Rectangle(inputRect.x, insertionRect.y, inputRect.width, insertionRect.height);
+            g.fill(iRect);
 
-        iRect.x += context.translateX;
-        insertionIntervals.add(new InsertionInterval(iRect, insertionMarker));
+            List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
+
+            iRect.x += context.translateX;
+            insertionIntervals.add(new InsertionInterval(iRect, insertionMarker));
+        }
 
 
         inputRect.y += DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0 + INSERTION_ROW_HEIGHT + DS_MARGIN_2;
