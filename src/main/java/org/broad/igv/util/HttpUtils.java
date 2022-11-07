@@ -671,23 +671,25 @@ public class HttpUtils {
         }
 
 
-        // If we have an explicitly set oauth token for this URL use it.
+        // If we have an explicitly set oauth token for this URL use it.  This is used by port and batch commands
+        // and will ovveride oAuth authentication check
         String token = this.getAccessTokenFor(url);
 
-        // If the URL is protected via an oAuth provider check login, and optionally map url with find/replace string
-        OAuthProvider oauthProvider = OAuthUtils.getInstance().getProviderForURL(url);
-        if (oauthProvider != null) {
+        if (token == null) {
 
-            if (token == null) {
-                oauthProvider.checkLogin();
+            // If the URL is protected via an oAuth provider fetch token, and optionally map url with find/replace string.
+            OAuthProvider oauthProvider = OAuthUtils.getInstance().getProviderForURL(url);
+            if (oauthProvider != null) {
+                //Google is skipped here as we don't yet know if the url is protected or not.  Login is invoked after 401 error
+                if(!oauthProvider.isGoogle()) {
+                    oauthProvider.checkLogin();
+                }
                 token = oauthProvider.getAccessToken();
+                if (oauthProvider.findString != null) {
+                    // A hack, supported for backward compatibility but not reccomended
+                    url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
+                }
             }
-
-            if (oauthProvider.findString != null) {
-                // A hack, supported for backward compatibility but not reccomended
-                url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
-            }
-
         }
 
         // If a presigned URL, check its validity and update if needed
