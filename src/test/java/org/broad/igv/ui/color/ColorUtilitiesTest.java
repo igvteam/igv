@@ -54,4 +54,12 @@ public class ColorUtilitiesTest {
         Color c = ColorUtilities.stringToColor("#AAAAAA");
         assertEquals(grey, c);
     }
+
+    @Test
+    public void testRGBToColor() throws Exception {
+        // Test parsing javascript style rgb string
+        String rgbString = "rgb(0,0,255)";
+        Color b = ColorUtilities.stringToColor(rgbString);
+        assertEquals(Color.blue, b);
+    }
 }
