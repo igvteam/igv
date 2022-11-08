@@ -201,6 +201,10 @@ public class ColorUtilities {
 
         Color c = null;
         if (string.contains(",")) {
+            if(string.startsWith("rgb(") && string.endsWith(")")) {
+                // javascript style string
+                string = string.substring(4, string.length() - 1);
+            }
             if (string.contains(".")) {
                 String[] rgb = string.split(",");
                 int red = (int) (255 * Double.parseDouble(rgb[0]));
