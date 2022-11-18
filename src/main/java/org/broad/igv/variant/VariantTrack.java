@@ -236,8 +236,17 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         boolean bypassFileAutoDiscovery = prefMgr.getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY);
         if (vcfToBamMapping == null && path != null && !bypassFileAutoDiscovery) {
-            if (ParsingUtils.fileExists(path + ".mapping")) {
-                vcfToBamMapping = path + ".mapping";
+	    String mappingFile = "";
+            int queryStart = path.indexOf("?");
+            if (queryStart > -1)
+            {
+                String query =  path.substring(queryStart);
+                path = path.substring(0,queryStart);
+                mappingFile = path + ".mapping" + query;
+            }
+
+            if (ParsingUtils.fileExists(mappingFile)) {
+                vcfToBamMapping = mappingFile;
             }
         }
 
