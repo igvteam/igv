@@ -24,7 +24,7 @@ public class PreferencesManager implements IGVEventObserver {
     private static List<PreferenceGroup> preferenceGroupList;
     private static Logger log = LogManager.getLogger(PreferencesManager.class);
     private static Map<String, IGVPreferences> preferencesMap = Collections.synchronizedMap(new HashMap<>());
-    private static IGVPreferences genericDefaults;
+    private static Map<String, String> genericDefaults;
 
     private static String prefFile;  // User preferences file
 
@@ -79,15 +79,14 @@ public class PreferencesManager implements IGVEventObserver {
                 }
             }
 
-            genericDefaults = new IGVPreferences(defaultPreferences.get(NULL_CATEGORY), null, null);
 
-            Map<String, String> defaults = defaultPreferences.get(NULL_CATEGORY);
+            genericDefaults = defaultPreferences.get(NULL_CATEGORY);
             Map<String, String> rnaDefaults = defaultPreferences.get(RNA);
             Map<String, String> thirdGenDefaults = defaultPreferences.get(THIRD_GEN);
 
             Map<String, Map<String, String>> userPrefs = loadUserPreferences();
 
-            final IGVPreferences nullPrefs = new IGVPreferences(userPrefs.get(NULL_CATEGORY), defaults, null);
+            final IGVPreferences nullPrefs = new IGVPreferences(userPrefs.get(NULL_CATEGORY), genericDefaults, null);
             extractMutationColors(nullPrefs);
             preferencesMap.put(NULL_CATEGORY, nullPrefs);
             preferencesMap.put(RNA, new IGVPreferences(userPrefs.get(RNA), rnaDefaults, nullPrefs));
@@ -116,6 +115,9 @@ public class PreferencesManager implements IGVEventObserver {
         }
     }
 
+    public static String getDefault(String key) {
+        return genericDefaults.get(key);
+    }
     public static IGVPreferences getPreferences() {
         return getPreferences(NULL_CATEGORY);
     }
