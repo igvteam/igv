@@ -171,14 +171,18 @@ public class JsonGenomeLoader extends GenomeLoader {
                 }
             }
 
-            JsonElement ucscIDElement = json.get("ucscID");
-            if (ucscIDElement != null) {
-                newGenome.setUcscID(ucscIDElement.getAsString());
-            }
             JsonElement blatDB = json.get("blatDB");
             if (blatDB != null) {
                 newGenome.setUcscID(blatDB.getAsString());
             }
+            JsonElement ucscIDElement = json.get("ucscID");
+            if (ucscIDElement != null) {
+                newGenome.setUcscID(ucscIDElement.getAsString());
+                if(blatDB == null) {
+                    newGenome.setBlatDB(ucscIDElement.getAsString());
+                }
+            }
+
             JsonElement aliasURL = json.get("aliasURL");
             if (aliasURL != null) {
                 String aliasPath = FileUtils.getAbsolutePath(aliasURL.getAsString(), genomePath);
