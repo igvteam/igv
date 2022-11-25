@@ -383,7 +383,7 @@ public class Genome {
     }
 
     public String getBlatDB() {
-        return blatDB != null ? blatDB : id;
+        return blatDB;
     }
 
     public void setBlatDB(String blatDB) {
