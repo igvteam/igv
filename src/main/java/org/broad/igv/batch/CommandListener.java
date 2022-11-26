@@ -35,6 +35,7 @@ import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.StringUtils;
@@ -389,8 +390,11 @@ public class CommandListener implements Runnable {
                 // Default for merge is "false" for session files,  "true" otherwise
                 boolean merge;
                 if (mergeValue != null) {
-                    // Explicit setting
-                    merge = mergeValue.equalsIgnoreCase("true");
+                    if("ask".equals(mergeValue)) {
+                        merge = !MessageUtils.confirm("Unload current session before loading new tracks?");
+                    } else {
+                        merge = mergeValue.equalsIgnoreCase("true");
+                    }
                 } else if (file.endsWith(".xml") || file.endsWith(".php") || file.endsWith(".php3")) {
                     // Session file
                     merge = false;
