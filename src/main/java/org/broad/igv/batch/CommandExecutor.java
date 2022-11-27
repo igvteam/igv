@@ -104,7 +104,7 @@ public class CommandExecutor {
         log.debug("Executing: " + commandLine);
         try {
             if (args.size() == 0) {
-                return "Empty command string";
+                return result;
             }
 
             String cmd = args.get(0).toLowerCase();
@@ -623,24 +623,13 @@ public class CommandExecutor {
             return result;
         }
 
-        String genomePath = genomeID;
-        if (!ParsingUtils.fileExists(genomePath)) {
-            String workingDirectory = System.getProperty("user.dir", "");
-            genomePath = FileUtils.getAbsolutePath(genomeID, workingDirectory);
-        }
-        if (ParsingUtils.fileExists(genomePath)) {
-            try {
-                GenomeManager.getInstance().loadGenome(genomePath, null);
-            } catch (IOException e) {
-                result = "ERROR: Could not load genome: " + genomeID;
-                MessageUtils.showMessage(result);
-            }
-
-        } else {
-            result = "ERROR: Could not locate genome: " + genomeID;
+        String genomePath = resolveFileReference(genomeID);
+        try {
+            GenomeManager.getInstance().loadGenome(genomePath, null);
+        } catch (IOException e) {
+            result = "ERROR: Could not load genome: " + genomeID;
             MessageUtils.showMessage(result);
         }
-
 
         return result;
     }
@@ -756,18 +745,8 @@ public class CommandExecutor {
 
         // Loop through files
         for (int fi = 0; fi < files.size(); fi++) {
-            String f = files.get(fi);
-            if (!FileUtils.isRemote(f)) {
-                File maybeFile = getFile(f);
-                if (maybeFile.exists()) {
-                    f = maybeFile.getAbsolutePath();
-                } else {
-                    maybeFile = new File(this.scriptDir, StringUtils.stripQuotes(f));
-                    if (maybeFile.exists()) {
-                        f = maybeFile.getAbsolutePath();
-                    }
-                }
-            }
+
+            String f = resolveFileReference(files.get(fi));
 
             if (isDataURL && formats == null) {
                 return "Error: format must be specified for dataURLs";
@@ -838,6 +817,19 @@ public class CommandExecutor {
         }
 
         return CommandListener.OK;
+    }
+
+    private String resolveFileReference(String f) {
+
+        if (FileUtils.isRemote(f)) {
+            return f;
+        } else {
+            File maybeFile = getFile(f);
+            if (maybeFile.exists()) {
+                f = maybeFile.getAbsolutePath();
+            }
+            return f;
+        }
     }
 
 
@@ -956,6 +948,7 @@ public class CommandExecutor {
      * @return
      */
     private File getFile(String path) {
+
         // Strip trailing & leading quotes
         path = StringUtils.stripQuotes(path);
 
@@ -1050,11 +1043,11 @@ public class CommandExecutor {
                 reverseString = param4;
             } else {
                 locusString = param2;
-                reverseString =  param3;
+                reverseString = param3;
             }
 
             // Special case, "reverse" is a resered word for inverting sorting.  Locus is optional
-            if(reverseString == null && "reverse".equalsIgnoreCase(locusString)) {
+            if (reverseString == null && "reverse".equalsIgnoreCase(locusString)) {
                 reverseString = locusString;
                 locusString = null;
             }

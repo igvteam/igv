@@ -22,3 +22,7 @@ goto chr1:16270500-16270600
 load "../data/folder with spaces/test+wp.wig"
 snapshot "test+wp.png"
 
+# Test genome in quoted string
+genome "../data/genomes/hg18.unittest.genome"
+
+
