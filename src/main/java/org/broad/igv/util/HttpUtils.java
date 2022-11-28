@@ -203,7 +203,7 @@ public class HttpUtils {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
         }
 
-        if (GoogleUtils.isGoogleCloud(urlString)) {
+        if (GoogleUtils.isGoogleURL(urlString)) {
             if (urlString.indexOf("alt=media") < 0) {
                 urlString = URLUtils.addParameter(urlString, "alt=media");
             }
@@ -675,16 +675,27 @@ public class HttpUtils {
         // and will ovveride oAuth authentication check
         String token = this.getAccessTokenFor(url);
 
+        // CHIP
+        log.info("Open connection for " + url + " cache token = " + token);
+
         if (token == null) {
 
             // If the URL is protected via an oAuth provider fetch token, and optionally map url with find/replace string.
             OAuthProvider oauthProvider = OAuthUtils.getInstance().getProviderForURL(url);
+
+            // CHIP
+            log.info(url.toExternalForm() + "PROVIDER: " + (oauthProvider == null ?  "null" : oauthProvider.isGoogle() ? "google" : "other"));
+
             if (oauthProvider != null) {
                 //Google is skipped here as we don't yet know if the url is protected or not.  Login is invoked after 401 error
                 if(!oauthProvider.isGoogle()) {
                     oauthProvider.checkLogin();
                 }
                 token = oauthProvider.getAccessToken();
+
+                // CHIP
+                log.info(url .toExternalForm() + " TOKEN: " + token);
+
                 if (oauthProvider.findString != null) {
                     // A hack, supported for backward compatibility but not reccomended
                     url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
@@ -720,7 +731,10 @@ public class HttpUtils {
                 GoogleUtils.getProjectID() != null &&
                 GoogleUtils.getProjectID().length() > 0 &&
                 !hasQueryParameter(url, "userProject")) {
+
             url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
+            // CHIP
+            log.info("Requestor Pays: " + url);
         }
 
         HttpURLConnection conn = openProxiedConnection(url);
@@ -843,6 +857,11 @@ public class HttpUtils {
                     throw new FileNotFoundException(message);
                 } else if (code == 401) {
                     OAuthProvider provider = OAuthUtils.getInstance().getProviderForURL(url);
+
+                    // CHIP
+                    log.info("401 - " + url.toExternalForm());
+                    log.info(url.toExternalForm() + "PROVIDER: " + (provider == null ?  "null" : provider.isGoogle() ? "google" : "other"));
+
                     if (provider != null && retries == 0) {
                         if (!provider.isLoggedIn()) {
                             provider.checkLogin();
@@ -860,7 +879,7 @@ public class HttpUtils {
                     message = conn.getResponseMessage();
                     String details = readErrorStream(conn);
 
-                    if (url.getHost().equals("www.googleapis.com") && details.contains("requester pays bucket")) {
+                    if (GoogleUtils.isGoogleURL(url.toExternalForm()) && details.contains("requester pays bucket")) {
                         MessageUtils.showMessage("<html>" + details + "<br>Use Google menu to set project.");
                     }
 
