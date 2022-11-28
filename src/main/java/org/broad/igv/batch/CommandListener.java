@@ -225,15 +225,20 @@ public class CommandListener implements Runnable {
                                 if (command.equals("/oauthCallback")) {
 
                                     OAuthProvider provider = OAuthUtils.getInstance().getProviderForState(params.get("state"));
-
-                                    if (params.containsKey("code")) {
+                                    if (params.containsKey("error")) {
+                                        sendTextResponse(out, "Error authorizing IGV: " + params.get("error"));
+                                    } else if (params.containsKey("code")) {
                                         provider.setAuthorizationCode(params.get("code"));
+                                        sendTextResponse(out, "Authorization successful.  You may close this tab.");
                                     } else if (params.containsKey("token")) {
                                         // Very doubtful this is ever called -- its not a normal OAuth flow
                                         log.info("Oauth token received");
                                         provider.setAccessToken(params.get("token"));
+                                        sendTextResponse(out, "Authorization successful.  You may close this tab.");
+                                    } else {
+                                        sendTextResponse(out, "Unsuccessful authorization response: " + inputLine);
                                     }
-                                    sendTextResponse(out, "Authorization successful.  You may close this tab.");
+
 
                                     if (PreferencesManager.getPreferences().getAsBoolean(Constants.PORT_ENABLED) == false) {
                                         // Turn off port
@@ -390,7 +395,7 @@ public class CommandListener implements Runnable {
                 // Default for merge is "false" for session files,  "true" otherwise
                 boolean merge;
                 if (mergeValue != null) {
-                    if("ask".equals(mergeValue)) {
+                    if ("ask".equals(mergeValue)) {
                         merge = !MessageUtils.confirm("Unload current session before loading new tracks?");
                     } else {
                         merge = mergeValue.equalsIgnoreCase("true");
