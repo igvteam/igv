@@ -29,12 +29,9 @@ public class GoogleUtils {
     public static final String GOOGLE_DRIVE_HOST = "drive.google.com";
 
     public static boolean isGoogleURL(String url) {
-        return url != null && (isGoogleCloud(url) || isGoogleDrive(url) || isGoogleStorageURL(url));
+        return url != null && (isGoogleDrive(url) || isGoogleStorageURL(url));
     }
 
-    public static boolean isGoogleCloud(String url) {
-        return url != null && (url.startsWith("gs://") || url.contains(GOOGLE_API_HOST));
-    }
 
     public static boolean isGoogleDrive(String url) {
         return url != null && (url.contains(GOOGLE_DRIVE_HOST) || url.contains("www.googleapis.com/drive"));

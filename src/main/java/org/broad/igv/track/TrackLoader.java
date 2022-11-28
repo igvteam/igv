@@ -938,7 +938,7 @@ public class TrackLoader {
                 String path = locator.getPath();
                 boolean bypassFileAutoDiscovery =
                         PreferencesManager.getPreferences().getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY) ||
-                                GoogleUtils.isGoogleCloud(locator.getPath()) ||
+                                GoogleUtils.isGoogleURL(locator.getPath()) ||
                                 path.contains("dropbox.com") ||
                                 path.contains("dataformat=.bam") ||
                                 path.contains("/query.cgi?");

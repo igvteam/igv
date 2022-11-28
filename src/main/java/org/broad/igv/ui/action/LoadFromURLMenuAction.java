@@ -109,7 +109,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                         if (dlg.getIndexURL() != null) {
                             String indexUrl = dlg.getIndexURL().trim();
 
-                            if (GoogleUtils.isGoogleCloud(indexUrl) || GoogleUtils.isGoogleDrive(indexUrl)) {
+                            if (GoogleUtils.isGoogleURL(indexUrl)) {
                                 enableGoogleMenu();
                             }
 
@@ -151,7 +151,7 @@ public class LoadFromURLMenuAction extends MenuAction {
     private String mapURL(String url) {
 
         url = url.trim();
-        if (GoogleUtils.isGoogleCloud(url) || GoogleUtils.isGoogleDrive(url)) {
+        if (GoogleUtils.isGoogleURL(url)) {
             enableGoogleMenu();
         }
 

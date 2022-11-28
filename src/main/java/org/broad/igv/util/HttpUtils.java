@@ -203,7 +203,7 @@ public class HttpUtils {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
         }
 
-        if (GoogleUtils.isGoogleCloud(urlString)) {
+        if (GoogleUtils.isGoogleURL(urlString)) {
             if (urlString.indexOf("alt=media") < 0) {
                 urlString = URLUtils.addParameter(urlString, "alt=media");
             }
@@ -679,12 +679,14 @@ public class HttpUtils {
 
             // If the URL is protected via an oAuth provider fetch token, and optionally map url with find/replace string.
             OAuthProvider oauthProvider = OAuthUtils.getInstance().getProviderForURL(url);
+
             if (oauthProvider != null) {
                 //Google is skipped here as we don't yet know if the url is protected or not.  Login is invoked after 401 error
                 if(!oauthProvider.isGoogle()) {
                     oauthProvider.checkLogin();
                 }
                 token = oauthProvider.getAccessToken();
+
                 if (oauthProvider.findString != null) {
                     // A hack, supported for backward compatibility but not reccomended
                     url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
@@ -720,6 +722,7 @@ public class HttpUtils {
                 GoogleUtils.getProjectID() != null &&
                 GoogleUtils.getProjectID().length() > 0 &&
                 !hasQueryParameter(url, "userProject")) {
+
             url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
         }
 
@@ -860,7 +863,7 @@ public class HttpUtils {
                     message = conn.getResponseMessage();
                     String details = readErrorStream(conn);
 
-                    if (url.getHost().equals("www.googleapis.com") && details.contains("requester pays bucket")) {
+                    if (GoogleUtils.isGoogleURL(url.toExternalForm()) && details.contains("requester pays bucket")) {
                         MessageUtils.showMessage("<html>" + details + "<br>Use Google menu to set project.");
                     }
 
