@@ -327,6 +327,10 @@ public class OAuthProvider {
         // Check expiration time, with 1 minute cushion
         if (accessToken == null || (System.currentTimeMillis() > (expirationTime - Globals.TOKEN_EXPIRE_GRACE_TIME))) {
             log.debug("Refreshing access token!");
+
+            // CHIP
+            log.info("Refreshing access token");
+
             if (refreshToken != null) {
                 try {
                     this.refreshAccessToken();
@@ -379,6 +383,9 @@ public class OAuthProvider {
     }
 
     public boolean isLoggedIn() {
+
+        // CHIP
+        log.info("access token = " + accessToken);
         return accessToken != null;
     }
 
@@ -409,6 +416,10 @@ public class OAuthProvider {
     public synchronized void checkLogin() {
         // if user is not currently logged in, attempt to
         // log in user if not logged in dwm08
+
+        // CHIP
+        log.info("check login");
+
         if (!isLoggedIn()) {
             try {
                 openAuthorizationPage();
@@ -429,6 +440,8 @@ public class OAuthProvider {
                 e1.printStackTrace();
             }
         }
+        // CHIP
+        log.info("Login check count (i) = " + i);
     }
 
     /**
