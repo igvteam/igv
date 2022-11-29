@@ -55,6 +55,8 @@ MUTATION_Non-coding_Transcript_COLOR	Non-coding Transcript	color	0,0,150
 MUTATION_Other_AA_changing_COLOR	Other AA Changing	color	0,150,150
 MUTATION_Other_likely_neutral_COLOR	Other Likely Neutral	color	225,180,225
 MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
+##Coordinate System
+MUT_COORDS	Mut file coordinate convention. 0 = zero based half-open, 1 = one based fully closed.	select 0|1	0
 
 #Charts
 CHART.DRAW_TOP_BORDER	Draw top border	boolean	FALSE

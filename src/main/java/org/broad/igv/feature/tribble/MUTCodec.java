@@ -34,6 +34,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Mutation;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -44,6 +46,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static org.broad.igv.prefs.Constants.MUT_COORDS;
 
 /**
  * Codec for .mut and .maf mutation files
@@ -70,6 +74,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
     private int tumorAllele1Column = -1;
     private int tumorAllele2Column = -1;
     private int errorCount = 0;
+    private TrackProperties.BaseCoord coords = TrackProperties.BaseCoord.ZERO;
 
 
     public MUTCodec(String path, Genome genome) {
@@ -92,10 +97,10 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
     }
 
     public Void readActualHeader(LineIterator reader) {
-        String nextLine = null;
 
+        TrackProperties.BaseCoord coordsValue = null;
         while (reader.hasNext()) {
-            nextLine = reader.peek();
+            String nextLine = reader.peek();
             if (nextLine.startsWith("#")) {
                 if (nextLine.startsWith("#samples")) {
                     String[] tokens = Globals.whitespacePattern.split(nextLine, 2);
@@ -107,9 +112,31 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                             samples[i] = samples[i].trim();
                         }
                     }
+                } else if (nextLine.startsWith("#coords")) {
+                    String[] tokens = Globals.equalPattern.split(nextLine);
+                    if(tokens.length > 1) {
+                        String value = tokens[1].trim();
+                        if (value.equals("0")) {
+                            coordsValue = TrackProperties.BaseCoord.ZERO;
+                        } else if (value.equals("1")) {
+                            coordsValue = TrackProperties.BaseCoord.ONE;
+                        } else {
+                            log.error("Unknown #coords value: " + value + "  Legal values are 0 and 1");
+                        }
+                    } else {
+                        log.error("#coords directive must have value, e.g.  #coords=1");
+                    }
                 }
                 reader.next();
                 continue;
+            }
+
+            // If coords are explicitly set use setting, otherwise check preferences
+            if(coordsValue != null) {
+                this.coords = coordsValue;
+            } else {
+                this.coords = "1".equals(PreferencesManager.getPreferences().get(MUT_COORDS, "0")) ?
+                        TrackProperties.BaseCoord.ONE : TrackProperties.BaseCoord.ZERO;
             }
 
             String[] tokens = Globals.tabPattern.split(nextLine);
@@ -153,7 +180,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
 
             int start;
             try {
-                start = Integer.parseInt(tokens[startColumn].trim()) - 1;
+                start = Integer.parseInt(tokens[startColumn].trim());
             } catch (NumberFormatException e) {
                 errorCount++;
                 if (errorCount > 100) {
@@ -175,6 +202,14 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                     log.warn("Error parsing line: " + line);
                     return null;
                 }
+            }
+
+
+            // MAF files use the 1-based inclusive convention for coordinates.  The convention is not
+            // specified for MUT files, and it appears both conventions have been used.  We can detect
+            // the convention used for single base mutations by testing start == end.
+            if (isMAF || (start == end) || coords == TrackProperties.BaseCoord.ONE) {
+                start--;
             }
 
             String sampleId = "Unknown";
@@ -422,6 +457,6 @@ Match_Norm_Seq_Allele2
 
     @Override
     public boolean canDecode(String path) {
-       return isMutationAnnotationFile(new ResourceLocator(path));
+        return isMutationAnnotationFile(new ResourceLocator(path));
     }
 }
