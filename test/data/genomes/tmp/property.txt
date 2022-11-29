@@ -1,0 +1,7 @@
+id=hg18.unittest
+name=Human hg18 (unit test)
+cytobandFile=hg18_cytoBand.txt
+geneFile=hg18_refGene.txt
+sequenceLocation=http://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg18/hg18.fasta
+geneTrackName=RefSeq genes
+url= http://www.ncbi.nlm.nih.gov/nuccore/$$

@@ -1,0 +1,17 @@
+{
+  "reference": {
+    "id": "hg38",
+    "name": "Human (GRCh38/hg38)",
+    "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa",
+    "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.fai",
+    "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/hg38/annotations/cytoBandIdeo.txt.gz",
+    "aliasURL": "https://s3.amazonaws.com/igv.org.genomes/hg38/hg38_alias.tab"
+  },
+  "tracks": [
+    {
+      "name": "Refseq Genes",
+      "format": "refgene",
+      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz"
+    }
+  ]
+}

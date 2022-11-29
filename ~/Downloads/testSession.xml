@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" hasGeneTrack="false" hasSequenceTrack="true" locus="All" version="8">
+    <Resources>
+        <Resource path="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H2azDex100nmSig.bigWig" type="bigwig"/>
+        <Resource path="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me2Dex100nmSig.bigWig" type="bigwig"/>
+        <Resource path="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H2azEtoh02Sig.bigWig" type="bigwig"/>
+        <Resource path="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me1Etoh02Sig.bigWig" type="bigwig"/>
+        <Resource path="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me1Dex100nmSig.bigWig" type="bigwig"/>
+    </Resources>
+    <Panel height="507" name="DataPanel" width="1133">
+        <Track attributeKey="wgEncodeBroadHistoneA549H2azDex100nmSig.bigWig" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H2azDex100nmSig.bigWig" name="wgEncodeBroadHistoneA549H2azDex100nmSig.bigWig" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="28.428928" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="wgEncodeBroadHistoneA549H3k04me2Dex100nmSig.bigWig" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me2Dex100nmSig.bigWig" name="wgEncodeBroadHistoneA549H3k04me2Dex100nmSig.bigWig" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="30.280243" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="wgEncodeBroadHistoneA549H2azEtoh02Sig.bigWig" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H2azEtoh02Sig.bigWig" name="wgEncodeBroadHistoneA549H2azEtoh02Sig.bigWig" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="25.630081" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="wgEncodeBroadHistoneA549H3k04me1Etoh02Sig.bigWig" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me1Etoh02Sig.bigWig" name="wgEncodeBroadHistoneA549H3k04me1Etoh02Sig.bigWig" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="21.989162" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="wgEncodeBroadHistoneA549H3k04me1Dex100nmSig.bigWig" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me1Dex100nmSig.bigWig" name="wgEncodeBroadHistoneA549H3k04me1Dex100nmSig.bigWig" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="19.333092" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="46" name="FeaturePanel" width="1133">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="false" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.9089285714285714"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>
