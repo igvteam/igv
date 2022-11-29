@@ -1,0 +1,455 @@
+#coords=1
+chr	start	end	patient	type	gene	phase	center	shared	strand	site	supertype	context	class	newbase	status	validation	call	evidence	filtered	use	hypermutated
+1	2072180	2072180	TCGA-06-0206	Missense	PRKCZ	1	BCM	No	+	PRKCZ|chr1:2072180-2072180	Missense	cgggcGcggga	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+1	2106249	2106249	TCGA-02-0083	Missense	PRKCZ	1	BCM	No	+	PRKCZ|chr1:2106249-2106249	Missense	agtcaGagttc	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	6112865	6112865	TCGA-06-0189	Missense	CHD5	1	genome.wustl.edu	No	-	CHD5|chr1:6112865-6112865	Missense	acccgCacaat	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+1	11224264	11224264	TCGA-02-0083	Missense	FRAP1	1	genome.wustl.edu	No	-	FRAP1|chr1:11224264-11224264	Missense	ctcgaGcaatg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	12175619	12175619	TCGA-06-0126	Missense	TNFRSF1B	1	genome.wustl.edu	No	+	TNFRSF1B|chr1:12175619-12175619	Missense	tgtccAcacga	A	C	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+1	15717209	15717209	TCGA-02-0083	Missense	CASP9	1	BCM	No	-	CASP9|chr1:15717209-15717209	Missense	ttctgGaggat	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	16347951	16347951	TCGA-02-0114	Missense	EPHA2	1	BCM	No	-	EPHA2|chr1:16347951-16347951	Missense	tggtgGcgcca	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	23758222	23758222	TCGA-02-0114	Missense	ID3	1	broad.mit.edu	No	-	ID3|chr1:23758222-23758222	Missense	atggcCcccac	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	27555547	27555547	TCGA-02-0028	Missense	MAP3K6	1	broad.mit.edu	No	-	MAP3K6|chr1:27555547-27555547	Missense	aacggGagtac	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	114742087	114742087	TCGA-02-0010	Nonsense	TRIM33	1	broad.mit.edu	No	-	TRIM33|chr1:114742087-114742087	Nonsense	atttgAaggta	A	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	115060270	115060270	TCGA-02-0085	Missense	NRAS	1	BCM	No	-	NRAS|chr1:115060270-115060270	Missense	agcagGtggtg	G (other)	A	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+1	149055490	149055490	TCGA-02-0083	Missense	ARNT	1	genome.wustl.edu	No	-	ARNT|chr1:149055490-149055490	Missense	tagccCctcct	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	153299877	153299877	TCGA-02-0083	Missense	ADAM15	1	BCM	No	+	ADAM15|chr1:153299877-153299877	Missense	atctgGtccct	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	165625522	165625522	TCGA-02-0043	Missense	POU2F1	1	BCM	No	+	POU2F1|chr1:165625522-165625522	Missense	aaagcGaattg	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	195340175	195340175	TCGA-02-0010	Missense	ASPM	1	broad.mit.edu	No	-	ASPM|chr1:195340175-195340175	Missense	agctgTtataa	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	195365053	195365053	TCGA-02-0010	Missense	ASPM	1	broad.mit.edu	No	-	ASPM|chr1:195365053-195365053	Missense	ctttgTccaag	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	202010148	202010148	TCGA-02-0114	Missense	LAX1	1	genome.wustl.edu	No	+	LAX1|chr1:202010148-202010148	Missense	gtggaAgccag	A	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	202674772	202674772	TCGA-02-0043	Missense	PIK3C2B	1	broad.mit.edu	No	-	PIK3C2B|chr1:202674772-202674772	Missense	aggtgGagcat	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	202774027	202774027	TCGA-06-0129	Missense	MDM4	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	MDM4|chr1:202774027-202774027	Missense	gcctaCctcag	C (other)	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+1	202854501	202854501	TCGA-02-0043	Missense	LRRN2	1	BCM	No	-	LRRN2|chr1:202854501-202854501	Missense	tccggGagatg	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	206025059	206025059	TCGA-02-0010	Missense	CD46	1	BCM	No	+	CD46|chr1:206025059-206025059	Missense	ctgtgAttgtt	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	212237253	212237253	TCGA-02-0010	Missense	PROX1	1	broad.mit.edu	No	+	PROX1|chr1:212237253-212237253	Missense	gctgcGccagc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+1	212853776	212853776	TCGA-02-0055	Missense	CENPF	1	genome.wustl.edu	No	+	CENPF|chr1:212853776-212853776	Missense	tcagaAaattc	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+1	212888794	212888794	TCGA-02-0099	Splice_site	CENPF	1	genome.wustl.edu	No	+	CENPF|chr1:212888794-212888794	Other	gcaaaGtaagt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	5751538	5751538	TCGA-06-0173	Nonsense	SOX11	1	broad.mit.edu	No	+	SOX11|chr2:5751538-5751538	Nonsense	acttcGagttc	G (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+2	5751587	5751587	TCGA-02-0010	Missense	SOX11	1	broad.mit.edu	No	+	SOX11|chr2:5751587-5751587	Missense	gggggActggc	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	15999768	15999768	TCGA-02-0028	Missense	MYCN	1	broad.mit.edu	No	+	MYCN|chr2:15999768-15999768	Missense	gacccCcccgg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	47484039	47484039	TCGA-02-0075	Missense	MSH2	1	genome.wustl.edu	No	+	MSH2|chr2:47484039-47484039	Missense	tggggCcggca	C (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+2	47557079	47557079	TCGA-02-0083	Missense	MSH2	1	genome.wustl.edu	No	+	MSH2|chr2:47557079-47557079	Missense	aattgGgtgtt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	47880076	47880076	TCGA-02-0114	Missense	MSH6	1	BCM	No	+	MSH6|chr2:47880076-47880076	Missense	gagtgGaacag	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	47881696	47881696	TCGA-02-0010	Missense	MSH6	1	BCM	No	+	MSH6|chr2:47881696-47881696	Missense	aagaaCggagg	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	47881792	47881792	TCGA-02-0083	Missense	MSH6	1	BCM	No	+	MSH6|chr2:47881792-47881792	Missense	tcgcaGtgttg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	47886856	47886856	TCGA-02-0043	Missense	MSH6	1	BCM	No	+	MSH6|chr2:47886856-47886856	Missense	aggtaCtgcaa	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	60541333	60541333	TCGA-06-0176	Missense	BCL11A	1	broad.mit.edu	No	-	BCL11A|chr2:60541333-60541333	Missense	gcagaCgcagc	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+2	60542011	60542011	TCGA-06-0133	Missense	BCL11A	1	broad.mit.edu	No	-	BCL11A|chr2:60542011-60542011	Missense	actacGgcttc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+2	60542638	60542638	TCGA-02-0083	Missense	BCL11A	1	broad.mit.edu	No	-	BCL11A|chr2:60542638-60542638	Missense	tgaatCcaatg	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	60542986	60542986	TCGA-02-0028	Missense	BCL11A	1	broad.mit.edu	No	-	BCL11A|chr2:60542986-60542986	Missense	aacacGcacag	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	102332064	102332064	TCGA-02-0007	Missense	IL1RL1	1	BCM	No	+	IL1RL1|chr2:102332064-102332064	Missense	ccagaTtctgc	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+2	127170093	127170093	TCGA-02-0114	Missense	GYPC	1	genome.wustl.edu	No	+	GYPC|chr2:127170093-127170093	Missense	ccaagGgcacg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	189576409	189576409	TCGA-02-0043	Missense	COL3A1	1	broad.mit.edu	No	+	COL3A1|chr2:189576409-189576409	Missense	tcaaaGgtgaa	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	189576733	189576733	TCGA-02-0083	Missense	COL3A1	1	broad.mit.edu	No	+	COL3A1|chr2:189576733-189576733	Missense	tcgtgGtcttc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	191571219	191571219	TCGA-06-0185	Missense	STAT1	1	BCM	No	-	STAT1|chr2:191571219-191571219	Missense	caagaAgatgt	A	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+2	215948361	215948361	TCGA-02-0083	Missense	FN1	1	broad.mit.edu	No	-	FN1|chr2:215948361-215948361	Missense	ttcagCcattg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	215948606	215948606	TCGA-02-0010	Missense	FN1	1	broad.mit.edu	No	-	FN1|chr2:215948606-215948606	Missense	tcgacGcctcc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	215997243	215997243	TCGA-02-0114	Missense	FN1	1	broad.mit.edu	No	-	FN1|chr2:215997243-215997243	Missense	tcttaCcattc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	215998200	215998200	TCGA-02-0114	Missense	FN1	1	broad.mit.edu	No	-	FN1|chr2:215998200-215998200	Missense	ctcacCcccag	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	219249113	219249113	TCGA-02-0014	Nonsense	STK36	1	genome.wustl.edu	No	+	STK36|chr2:219249113-219249113	Nonsense	ctctgGtctgt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	222055639	222055639	TCGA-02-0083	Missense	EPHA4	1	genome.wustl.edu	No	-	EPHA4|chr2:222055639-222055639	Missense	tgctcCcctga	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	227368280	227368280	TCGA-02-0010	Missense	IRS1	1	genome.wustl.edu	No	-	IRS1|chr2:227368280-227368280	Missense	gaaacGccaca	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	227370416	227370416	TCGA-02-0033	Missense	IRS1	1	genome.wustl.edu	No	-	IRS1|chr2:227370416-227370416	Missense	ctcctCggatg	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+2	233961724	233961724	TCGA-02-0114	Missense	DGKD	1	broad.mit.edu	No	+	DGKD|chr2:233961724-233961724	Missense	agggcGaacgc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+2	240599706	240599706	TCGA-02-0099	Splice_site	NDUFA10	1	genome.wustl.edu	No	-	NDUFA10|chr2:240599706-240599706	Other	atgagGtgagc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	366197	366197	TCGA-02-0114	Missense	CHL1	1	broad.mit.edu	No	+	CHL1|chr3:366197-366197	Missense	aacagCcactc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	27208682	27208682	TCGA-02-0010	Missense	NEK10	1	genome.wustl.edu	No	-	NEK10|chr3:27208682-27208682	Missense	cgatgAtatca	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	30666785	30666785	TCGA-02-0014	Missense	TGFBR2	1	broad.mit.edu	No	+	TGFBR2|chr3:30666785-30666785	Missense	agaacAtaaca	A	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	37017543	37017543	TCGA-02-0083	Missense	MLH1	1	genome.wustl.edu	No	+	MLH1|chr3:37017543-37017543	Missense	ttcgaGgtgag	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	37042321	37042321	TCGA-02-0083	Missense	MLH1	1	genome.wustl.edu	No	+	MLH1|chr3:37042321-37042321	Missense	cccagGccatt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	37056750	37056750	TCGA-02-0014	Missense	MLH1	1	genome.wustl.edu	No	+	MLH1|chr3:37056750-37056750	Missense	acagcAtcaaa	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	41240577	41240577	TCGA-02-0028	Splice_site	CTNNB1	1	genome.wustl.edu	No	+	CTNNB1|chr3:41240577-41240577	Other	tcaagGtttgt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	46454625	46454625	TCGA-02-0114	Splice_site	LTF	1	genome.wustl.edu	No	-	LTF|chr3:46454625-46454625	Other	tcgcaGgctaa	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	46471868	46471868	TCGA-02-0010	Missense	LTF	1	genome.wustl.edu	No	-	LTF|chr3:46471868-46471868	Missense	tgtgtCgcctg	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	50288996	50288996	TCGA-02-0083	Missense	SEMA3B	1	genome.wustl.edu	No	+	SEMA3B|chr3:50288996-50288996	Missense	aggtgGcagcg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	53188716	53188716	TCGA-06-0145	Missense	PRKCD	1	BCM	No	+	PRKCD|chr3:53188716-53188716	Missense	aggggCgcgtc	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+3	129846483	129846483	TCGA-02-0099	Missense	RPN1	1	genome.wustl.edu	No	-	RPN1|chr3:129846483-129846483	Missense	atttgGaagta	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	143659194	143659194	TCGA-02-0010	Nonsense	ATR	1	broad.mit.edu	No	-	ATR|chr3:143659194-143659194	Nonsense	tttttCgaaga	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	172205794	172205794	TCGA-02-0014	Missense	SLC2A2	1	broad.mit.edu	No	-	SLC2A2|chr3:172205794-172205794	Missense	atgtgGctcag	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	180399335	180399355	TCGA-06-0166	Inframe_Del	PIK3CA	1	BCM	No	+	PIK3CA|chr3:180399335-180399355	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+3	180399357	180399359	TCGA-02-0046	Inframe_Del	PIK3CA	1	BCM	No	+	PIK3CA|chr3:180399357-180399359	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+3	180399570	180399570	TCGA-02-0116	Missense	PIK3CA	1	BCM	No	+	PIK3CA|chr3:180399570-180399570	Missense	aagacGacttt	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+3	180404247	180404247	TCGA-02-0047	Missense	PIK3CA	1	BCM	No	+	PIK3CA|chr3:180404247-180404247	Missense	gtgaaTgtaaa	T	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+3	180410674	180410674	TCGA-02-0037	Missense	PIK3CA	1	BCM	No	+	PIK3CA|chr3:180410674-180410674	Missense	aacacTgtcca	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+3	180434766	180434766	TCGA-06-0171	Missense	PIK3CA	1	BCM, hgsc.bcm.edu	No	+	PIK3CA|chr3:180434766-180434766	Missense	aacaaAtgaat	A	G	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+3	187469360	187469361	TCGA-02-0054	Frameshift_Ins	DGKG	1	BCM	No	-	DGKG|chr3:187469360-187469361	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+3	197096286	197096286	TCGA-02-0043	Nonsense	TNK2	1	broad.mit.edu	No	-	TNK2|chr3:197096286-197096286	Nonsense	gaaagCgactg	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+3	197098255	197098255	TCGA-06-0189	Nonsense	TNK2	1	broad.mit.edu	No	-	TNK2|chr3:197098255-197098255	Nonsense	gtcgtGgatga	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+3	197106537	197106537	TCGA-02-0014	Missense	TNK2	1	broad.mit.edu	No	-	TNK2|chr3:197106537-197106537	Missense	gcctgGctggg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+4	8633952	8633952	TCGA-02-0009	Missense	GPR78	1	genome.wustl.edu	No	+	GPR78|chr4:8633952-8633952	Missense	gctacGccgga	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+4	54828591	54828591	TCGA-06-0174	Missense	PDGFRA	1	BCM, genome.wustl.edu	Yes	+	PDGFRA|chr4:54828591-54828591	Missense	tcctgGctgaa	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+4	55288766	55288766	TCGA-02-0083	Missense	KIT	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	KIT|chr4:55288766-55288766	Missense	ctggaGctttc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+4	153463593	153463593	TCGA-02-0028	Missense	FBXW7	1	broad.mit.edu, genome.wustl.edu	Yes	-	FBXW7|chr4:153463593-153463593	Missense	gagttGtgtgg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+4	153471357	153471357	TCGA-02-0010	Nonsense	FBXW7	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	FBXW7|chr4:153471357-153471357	Nonsense	ggaggCgagga	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+4	154436236	154436236	TCGA-02-0058	Missense	TRIM2	1	BCM	No	+	TRIM2|chr4:154436236-154436236	Missense	ggcagCccatg	C (other)	T	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+4	158462195	158462197	TCGA-06-0213	Inframe_Del	GRIA2	1	BCM	No	+	GRIA2|chr4:158462195-158462197	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+5	1332521	1332521	TCGA-02-0010	Missense	TERT	1	genome.wustl.edu	No	-	TERT|chr5:1332521-1332521	Missense	gcggcGccccg	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+5	1346683	1346683	TCGA-02-0043	Missense	TERT	1	genome.wustl.edu	No	-	TERT|chr5:1346683-1346683	Missense	ccgagGaggag	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+5	67624894	67624894	TCGA-02-0003	Missense	PIK3R1	1	genome.wustl.edu	No	+	PIK3R1|chr5:67624894-67624894	Missense	aagggGgaaat	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+5	67625310	67625312	TCGA-02-0021	Inframe_Del	PIK3R1	1	genome.wustl.edu	No	+	PIK3R1|chr5:67625310-67625312	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+5	67625370	67625372	TCGA-02-0028	Inframe_Del	PIK3R1	1	genome.wustl.edu	No	+	PIK3R1|chr5:67625370-67625372	Other	Indel	Indel	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Hypermutated
+5	67626840	67626857	TCGA-06-0178	Inframe_Del	PIK3R1	1	genome.wustl.edu	No	+	PIK3R1|chr5:67626840-67626857	Other	Indel	Indel	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+5	67626841	67626841	TCGA-02-0089	Missense	PIK3R1	1	genome.wustl.edu	No	+	PIK3R1|chr5:67626841-67626841	Missense	aaattGacaaa	G (GpA)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+5	67626855	67626855	TCGA-02-0074	Missense	PIK3R1	1	genome.wustl.edu	No	+	PIK3R1|chr5:67626855-67626855	Missense	atgaaCagcat	C (other)	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+5	67626884	67626885	TCGA-06-0129	Frameshift_Del	PIK3R1	1	genome.wustl.edu	No	+	PIK3R1|chr5:67626884-67626885	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+5	67626890	67626892	TCGA-02-0114	Inframe_Del	PIK3R1	1	genome.wustl.edu	No	+	PIK3R1|chr5:67626890-67626892	Other	Indel	Indel	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Hypermutated
+5	67627006	67627008	TCGA-06-0133	Inframe_Del	PIK3R1	1	genome.wustl.edu	No	+	PIK3R1|chr5:67627006-67627008	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+5	96112135	96112135	TCGA-02-0043	Missense	CAST	1	broad.mit.edu	No	+	CAST|chr5:96112135-96112135	Missense	gccggCtacct	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+5	149477555	149477555	TCGA-02-0114	Missense	PDGFRB	1	BCM	No	-	PDGFRB|chr5:149477555-149477555	Missense	ccatcCttcgg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+5	149495455	149495455	TCGA-02-0083	Missense	PDGFRB	1	BCM	No	-	PDGFRB|chr5:149495455-149495455	Missense	aaatgGccaag	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+5	151029489	151029489	TCGA-02-0010	Missense	SPARC	1	broad.mit.edu	No	-	SPARC|chr5:151029489-151029489	Missense	ctttgCcacaa	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+5	179624427	179624427	TCGA-02-0028	Missense	MAPK9	1	broad.mit.edu	No	-	MAPK9|chr5:179624427-179624427	Missense	taaatGtgttt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+5	179640065	179640065	TCGA-02-0014	Missense	MAPK9	1	broad.mit.edu	No	-	MAPK9|chr5:179640065-179640065	Missense	gctctGgggcc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+5	179978410	179978410	TCGA-06-0201	Missense	FLT4	1	genome.wustl.edu	No	-	FLT4|chr5:179978410-179978410	Missense	accgaGggcgg	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+6	36212465	36212465	TCGA-02-0083	Missense	MAPK13	1	BCM	No	+	MAPK13|chr6:36212465-36212465	Missense	acgtgGtgacc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+6	37247171	37247171	TCGA-02-0011	Missense	PIM1	1	BCM	No	+	PIM1|chr6:37247171-37247171	Missense	cctcaAtcgcg	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+6	43083723	43083723	TCGA-02-0069	Missense	PPP2R5D	1	broad.mit.edu	No	+	PPP2R5D|chr6:43083723-43083723	Missense	tctatGgcaag	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+6	56466808	56466808	TCGA-02-0114	Missense	DST	1	genome.wustl.edu	No	-	DST|chr6:56466808-56466808	Missense	tgaaaGaaaaa	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+6	56534115	56534115	TCGA-02-0043	Missense	DST	1	genome.wustl.edu	No	-	DST|chr6:56534115-56534115	Missense	agacaCctgca	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+6	56564994	56564994	TCGA-06-0125	Missense	DST	1	genome.wustl.edu	No	-	DST|chr6:56564994-56564994	Missense	cttatCtgaac	C (TpC)	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+6	56576971	56576971	TCGA-06-0145	Missense	DST	1	genome.wustl.edu	No	-	DST|chr6:56576971-56576971	Missense	atatgGagtat	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+6	56580657	56580657	TCGA-02-0083	Missense	DST	1	genome.wustl.edu	No	-	DST|chr6:56580657-56580657	Missense	tgatgGaaaca	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+6	56581605	56581605	TCGA-02-0010	Missense	DST	1	genome.wustl.edu	No	-	DST|chr6:56581605-56581605	Missense	ctctgAgaagg	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+6	56591932	56591932	TCGA-02-0014	Missense	DST	1	genome.wustl.edu	No	-	DST|chr6:56591932-56591932	Missense	agatgGtttta	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+6	56607311	56607311	TCGA-06-0148	Missense	DST	1	genome.wustl.edu	No	-	DST|chr6:56607311-56607311	Missense	tggaaGgtcat	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+6	69760544	69760544	TCGA-02-0010	Missense	BAI3	1	genome.wustl.edu	No	+	BAI3|chr6:69760544-69760544	Missense	aagggCaagtt	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+6	70149531	70149531	TCGA-02-0083	Missense	BAI3	1	genome.wustl.edu	No	+	BAI3|chr6:70149531-70149531	Missense	atataCcaaat	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+6	94177152	94177152	TCGA-02-0083	Missense	EPHA7	1	BCM	No	-	EPHA7|chr6:94177152-94177152	Missense	ctggtCcatta	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+6	94177566	94177566	TCGA-02-0003	Missense	EPHA7	1	BCM	No	-	EPHA7|chr6:94177566-94177566	Missense	gatacGaacat	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+6	108989360	108989360	TCGA-02-0083	Missense	FOXO3	1	broad.mit.edu	No	+	FOXO3|chr6:108989360-108989360	Missense	ggagcGgcacg	G (CpG)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+6	117769074	117769074	TCGA-02-0089	Missense	ROS1	1	broad.mit.edu	No	-	ROS1|chr6:117769074-117769074	Missense	ccttgGttcca	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+6	117790458	117790458	TCGA-02-0114	Splice_site	ROS1	1	broad.mit.edu	No	-	ROS1|chr6:117790458-117790458	Other	tccagGtatga	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+6	142441713	142441713	TCGA-06-0178	Missense	NMBR	1	BCM	No	-	NMBR|chr6:142441713-142441713	Missense	taaccCcatgg	C (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+6	142451232	142451232	TCGA-02-0010	Missense	NMBR	1	BCM	No	-	NMBR|chr6:142451232-142451232	Missense	cctggCggccg	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	6005414	6005414	TCGA-02-0028	Nonsense	PMS2	1	BCM	No	-	PMS2|chr7:6005414-6005414	Nonsense	tggtcCaggtc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	15692146	15692146	TCGA-02-0028	Missense	MEOX2	1	genome.wustl.edu	No	-	MEOX2|chr7:15692146-15692146	Missense	gggctCcagca	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	17881916	17881916	TCGA-02-0083	Missense	SNX13	1	BCM	No	-	SNX13|chr7:17881916-17881916	Missense	ggcaaCcttat	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	42046363	42046363	TCGA-02-0083	Missense	GLI3	1	BCM	No	-	GLI3|chr7:42046363-42046363	Missense	aacagGcacca	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	55177569	55177569	TCGA-06-0237	Missense	EGFR	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	EGFR|chr7:55177569-55177569	Missense	ggtccTtggga	T	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55187768	55187768	TCGA-06-0154	Missense	EGFR	1	BCM, broad.mit.edu	Yes	+	EGFR|chr7:55187768-55187768	Missense	ccgggCgctgc	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55189204	55189204	TCGA-02-0021	Missense	EGFR	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	EGFR|chr7:55189204-55189204	Missense	tctgcCgcaaa	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55189237	55189237	TCGA-02-0007	Missense	EGFR	1	BCM, broad.mit.edu	Yes	+	EGFR|chr7:55189237-55189237	Missense	aggacAcctgc	A	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55189315	55189315	TCGA-02-0089	Missense	EGFR	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	EGFR|chr7:55189315-55189315	Missense	ttggtGccacc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55189316	55189316	TCGA-02-0054	Missense	EGFR	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	EGFR|chr7:55189316-55189316	Missense	tggtgCcacct	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55189316	55189316	TCGA-06-0156	Missense	EGFR	1	broad.mit.edu	Yes	+	EGFR|chr7:55189316-55189316	Missense	tggtgCcacct	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55189316	55189316	TCGA-06-0148	Missense	EGFR	1	broad.mit.edu, genome.wustl.edu	Yes	+	EGFR|chr7:55189316-55189316	Missense	tggtgCcacct	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55189316	55189316	TCGA-06-0157	Missense	EGFR	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	EGFR|chr7:55189316-55189316	Missense	tggtgCcacct	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55200533	55200533	TCGA-02-0116	Missense	EGFR	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	EGFR|chr7:55200533-55200533	Missense	gcccgGcagga	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55200537	55200537	TCGA-06-0125	Missense	EGFR	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	EGFR|chr7:55200537-55200537	Missense	ggcagGagtca	G (GpA)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55200537	55200537	TCGA-02-0046	Missense	EGFR	1	BCM, broad.mit.edu, genome.wustl.edu, hgsc.bcm.edu	Yes	+	EGFR|chr7:55200537-55200537	Missense	ggcagGagtca	G (GpA)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55200603	55200603	TCGA-02-0003	Missense	EGFR	1	BCM, broad.mit.edu, genome.wustl.edu, hgsc.bcm.edu	Yes	+	EGFR|chr7:55200603-55200603	Missense	cctgtGccatc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55205721	55205721	TCGA-06-0156	Missense	EGFR	1	BCM	Yes	+	EGFR|chr7:55205721-55205721	Missense	ctcctCctgcc	C (TpC)	T	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+7	55208201	55208201	TCGA-06-0185	Missense	EGFR	1	BCM, genome.wustl.edu	Yes	+	EGFR|chr7:55208201-55208201	Missense	ggatgGtgggg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	55208288	55208288	TCGA-02-0010	Missense	EGFR	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	EGFR|chr7:55208288-55208288	Missense	cgctgCggagg	C (CpG)	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	79671071	79671071	TCGA-06-0209	Missense	GNAI1	1	broad.mit.edu	No	+	GNAI1|chr7:79671071-79671071	Missense	tcaaaGatctt	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	93892889	93892889	TCGA-06-0126	Missense	COL1A2	1	genome.wustl.edu	No	+	COL1A2|chr7:93892889-93892889	Missense	aggtcGcgatg	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	95676178	95676178	TCGA-02-0083	Missense	SLC25A13	1	broad.mit.edu	No	-	SLC25A13|chr7:95676178-95676178	Missense	atattCcattt	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	98391837	98391837	TCGA-02-0114	Missense	TRRAP	1	genome.wustl.edu	No	+	TRRAP|chr7:98391837-98391837	Missense	agtggGagctg	G (GpA)	A	Valid	Valid	Valid	Validated	OK	Use_nonsilent	Hypermutated
+7	98400280	98400280	TCGA-02-0099	Missense	TRRAP	1	genome.wustl.edu	No	+	TRRAP|chr7:98400280-98400280	Missense	agatgGtccgg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	98447697	98447697	TCGA-02-0010	Missense	TRRAP	1	genome.wustl.edu	No	+	TRRAP|chr7:98447697-98447697	Missense	agaggAcacgt	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	99219625	99219625	TCGA-02-0099	Missense	CYP3A4	1	genome.wustl.edu	No	-	CYP3A4|chr7:99219625-99219625	Missense	tcccaGacttg	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	104994978	104994978	TCGA-02-0083	Missense	RINT1	1	BCM	No	+	RINT1|chr7:104994978-104994978	Missense	ttggcCtaata	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	116168234	116168234	TCGA-02-0114	Nonsense	MET	1	BCM, genome.wustl.edu	Yes	+	MET|chr7:116168234-116168234	Nonsense	ggctgGtgcca	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	116199281	116199281	TCGA-02-0010	Splice_site	MET	1	BCM	Yes	+	MET|chr7:116199281-116199281	Other	gaaggTatatt	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	116546849	116546849	TCGA-02-0021	Splice_site	ST7	1	broad.mit.edu	No	+	ST7|chr7:116546849-116546849	Other	gttctAgatat	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	116705516	116705516	TCGA-02-0099	Missense	WNT2	1	BCM	No	-	WNT2|chr7:116705516-116705516	Missense	gtcagGactgc	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	137886376	137886376	TCGA-06-0171	Missense	TRIM24	1	BCM	No	+	TRIM24|chr7:137886376-137886376	Missense	ccttcGtgcaa	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+7	150327287	150327287	TCGA-02-0114	Missense	NOS3	1	genome.wustl.edu	No	+	NOS3|chr7:150327287-150327287	Missense	ttgggGgcctg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	150329333	150329333	TCGA-02-0114	Missense	NOS3	1	genome.wustl.edu	No	+	NOS3|chr7:150329333-150329333	Missense	ccaggGggggc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+7	155288984	155288984	TCGA-06-0124	Missense	SHH	1	BCM	No	-	SHH|chr7:155288984-155288984	Missense	tctacGtgatc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+8	38391465	38391465	TCGA-02-0060	Missense	FGFR1	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	FGFR1|chr8:38391465-38391465	Missense	ataaaAagaca	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+8	48873436	48873436	TCGA-02-0099	Missense	PRKDC	1	genome.wustl.edu	No	-	PRKDC|chr8:48873436-48873436	Missense	aaattCcaatg	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+8	48912493	48912493	TCGA-02-0114	Missense	PRKDC	1	genome.wustl.edu	No	-	PRKDC|chr8:48912493-48912493	Missense	ggttaCcttca	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+8	57025643	57025643	TCGA-02-0083	Missense	LYN	1	genome.wustl.edu	No	+	LYN|chr8:57025643-57025643	Missense	tgtggCcaaac	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+8	57241776	57241776	TCGA-02-0055	Missense	PLAG1	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	PLAG1|chr8:57241776-57241776	Missense	ctgatGgagtt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+8	75920181	75920181	TCGA-02-0080	Missense	PI15	1	broad.mit.edu	No	+	PI15|chr8:75920181-75920181	Missense	tttggGccact	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+8	75923999	75923999	TCGA-02-0010	Missense	PI15	1	broad.mit.edu	No	+	PI15|chr8:75923999-75923999	Missense	atctgTgtttt	T	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+8	91017009	91017009	TCGA-02-0099	Missense	NBN	1	genome.wustl.edu	No	-	NBN|chr8:91017009-91017009	Missense	acaatCcttat	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+8	93157428	93157428	TCGA-02-0083	Missense	RUNX1T1	1	broad.mit.edu	No	-	RUNX1T1|chr8:93157428-93157428	Missense	ttggaGagcac	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+8	120014420	120014420	TCGA-02-0010	Missense	TNFRSF11B	1	BCM	No	-	TNFRSF11B|chr8:120014420-120014420	Missense	aagggCgctac	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	21827925	21827925	TCGA-06-0156	Missense	MTAP	1	broad.mit.edu	No	+	MTAP|chr9:21827925-21827925	Missense	cctcaGtcctt	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+9	21961053	21961053	TCGA-02-0010	Missense	CDKN2A	1	BCM, genome.wustl.edu	Yes	-	CDKN2A|chr9:21961053-21961053	Missense	cggggCgcggc	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	21961124	21961125	TCGA-02-0083	Frameshift_Del	CDKN2A	1	genome.wustl.edu	Yes	-	CDKN2A|chr9:21961124-21961125	Other	Indel	Indel	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Hypermutated
+9	21961127	21961128	TCGA-02-0083	Frameshift_Del	CDKN2A	1	BCM	Yes	-	CDKN2A|chr9:21961127-21961128	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	21964782	21964782	TCGA-02-0114	Nonsense	CDKN2A	1	BCM, genome.wustl.edu	Yes	-	CDKN2A|chr9:21964782-21964782	Nonsense	gactgGctggc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	23691590	23691590	TCGA-02-0083	Missense	ELAVL2	1	genome.wustl.edu	No	-	ELAVL2|chr9:23691590-23691590	Missense	aagggGtgtag	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	34542713	34542713	TCGA-02-0083	Missense	CNTFR	1	BCM	No	-	CNTFR|chr9:34542713-34542713	Missense	ctggaCtgagg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	36836902	36836902	TCGA-06-0214	Missense	PAX5	1	genome.wustl.edu	No	-	PAX5|chr9:36836902-36836902	Missense	tccctAcagcc	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+9	74974800	74974800	TCGA-02-0028	Missense	ANXA1	1	BCM	No	+	ANXA1|chr9:74974800-74974800	Missense	caaagGagatt	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	93527042	93527042	TCGA-02-0083	Missense	ROR2	1	BCM	No	-	ROR2|chr9:93527042-93527042	Missense	tgcggGaggag	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	93535351	93535351	TCGA-02-0010	Missense	ROR2	1	BCM	No	-	ROR2|chr9:93535351-93535351	Missense	ccatcGcccgc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	97249179	97249179	TCGA-06-0125	Nonsense	PTCH1	1	BCM	No	-	PTCH1|chr9:97249179-97249179	Nonsense	accccCgaggg	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+9	109287936	109287936	TCGA-02-0010	Missense	KLF4	1	genome.wustl.edu	No	-	KLF4|chr9:109287936-109287936	Missense	cggggCaccgc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	109289919	109289919	TCGA-02-0010	Missense	KLF4	1	genome.wustl.edu	No	-	KLF4|chr9:109289919-109289919	Missense	acgacGtgagc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	116837402	116837402	TCGA-06-0188	Missense	TNC	1	broad.mit.edu	No	-	TNC|chr9:116837402-116837402	Missense	ctactGaggtt	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+9	116878675	116878675	TCGA-02-0083	Missense	TNC	1	broad.mit.edu	No	-	TNC|chr9:116878675-116878675	Missense	aacagGcctcg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	116888335	116888335	TCGA-02-0010	Missense	TNC	1	broad.mit.edu	No	-	TNC|chr9:116888335-116888335	Missense	ggatcGccaat	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	134761810	134761810	TCGA-02-0114	Missense	TSC1	1	genome.wustl.edu	No	-	TSC1|chr9:134761810-134761810	Missense	cagcaGcgagc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	135631024	135631024	TCGA-02-0114	Splice_site	VAV2	1	genome.wustl.edu	No	-	VAV2|chr9:135631024-135631024	Other	caccaGccgcc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	138509420	138509420	TCGA-02-0114	Missense	NOTCH1	1	genome.wustl.edu	No	-	NOTCH1|chr9:138509420-138509420	Missense	gctgaCcccgg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+9	138510658	138510658	TCGA-02-0083	Missense	NOTCH1	1	genome.wustl.edu	No	-	NOTCH1|chr9:138510658-138510658	Missense	gcctgGcggtg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	3814279	3814279	TCGA-02-0114	Missense	KLF6	1	genome.wustl.edu	No	-	KLF6|chr10:3814279-3814279	Missense	ggaatCcgaac	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	3817172	3817172	TCGA-02-0010	Missense	KLF6	1	genome.wustl.edu	No	-	KLF6|chr10:3817172-3817172	Missense	ccaggAgctcc	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	8140468	8140468	TCGA-02-0010	Missense	GATA3	1	genome.wustl.edu	No	+	GATA3|chr10:8140468-8140468	Missense	gccacGccagc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	8155865	8155865	TCGA-02-0028	Missense	GATA3	1	genome.wustl.edu	No	+	GATA3|chr10:8155865-8155865	Missense	gtcctCcctga	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	12038348	12038348	TCGA-02-0083	Missense	UPF2	1	broad.mit.edu	No	-	UPF2|chr10:12038348-12038348	Missense	tgttaGaagat	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	12199705	12199705	TCGA-02-0114	Missense	DHTKD1	1	broad.mit.edu	No	+	DHTKD1|chr10:12199705-12199705	Missense	aaatgGcacca	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	12331616	12331616	TCGA-06-0141	Missense	CDC123	1	broad.mit.edu	No	+	CDC123|chr10:12331616-12331616	Missense	acagtGaagtg	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	26865111	26865111	TCGA-06-0154	Missense	APBB1IP	1	broad.mit.edu	No	+	APBB1IP|chr10:26865111-26865111	Missense	ttttaCgggct	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	29011215	29011215	TCGA-02-0114	Missense	BAMBI	1	genome.wustl.edu	No	+	BAMBI|chr10:29011215-29011215	Missense	cagtgGgcacg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	31831344	31831344	TCGA-02-0114	Missense	ZEB1	1	genome.wustl.edu	No	+	ZEB1|chr10:31831344-31831344	Missense	ttgaaGagttt	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	50497778	50497778	TCGA-02-0083	Missense	CHAT	1	BCM	No	+	CHAT|chr10:50497778-50497778	Missense	ccaggGgctgc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	50505694	50505694	TCGA-06-0125	Missense	CHAT	1	BCM	No	+	CHAT|chr10:50505694-50505694	Missense	ccgccGtctca	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	74826987	74826987	TCGA-02-0083	Missense	ANXA7	1	broad.mit.edu	No	-	ANXA7|chr10:74826987-74826987	Missense	ttctgGgtatc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	76407199	76407199	TCGA-02-0114	Missense	MYST4	1	broad.mit.edu	No	+	MYST4|chr10:76407199-76407199	Missense	cttggGaggta	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	76459177	76459177	TCGA-02-0043	Missense	MYST4	1	broad.mit.edu	No	+	MYST4|chr10:76459177-76459177	Missense	agaggGaaacc	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	89643789	89643789	TCGA-06-0184	Missense	PTEN	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89643789-89643789	Missense	tatggGatttc	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89680799	89680800	TCGA-06-0197	Frameshift_Del	PTEN	1	BCM	Yes	+	PTEN|chr10:89680799-89680800	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89680800	89680801	TCGA-06-0157	Frameshift_Del	PTEN	1	genome.wustl.edu	Yes	+	PTEN|chr10:89680800-89680801	Other	Indel	Indel	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+10	89680800	89680801	TCGA-06-0197	Frameshift_Del	PTEN	1	genome.wustl.edu	Yes	+	PTEN|chr10:89680800-89680801	Other	Indel	Indel	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+10	89680805	89680806	TCGA-02-0052	Frameshift_Del	PTEN	1	BCM, genome.wustl.edu	Yes	+	PTEN|chr10:89680805-89680806	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89682772	89682772	TCGA-06-0190	Missense	PTEN	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89682772-89682772	Missense	gaagaCcataa	C (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89682783	89682783	TCGA-02-0014	Missense	PTEN	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89682783-89682783	Missense	cccacCacagc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	89682810	89682811	TCGA-06-0156	Frameshift_Del	PTEN	1	BCM	Yes	+	PTEN|chr10:89682810-89682811	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89682884	89682884	TCGA-06-0138	Nonsense	PTEN	1	BCM, broad.mit.edu	Yes	+	PTEN|chr10:89682884-89682884	Nonsense	agggaCgaact	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89682884	89682884	TCGA-06-0176	Nonsense	PTEN	1	BCM, broad.mit.edu	Yes	+	PTEN|chr10:89682884-89682884	Nonsense	agggaCgaact	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89682885	89682885	TCGA-02-0027	Frameshift_Del	PTEN	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89682885-89682885	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89682887	89682887	TCGA-02-0055	Missense	PTEN	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89682887-89682887	Missense	gacgaActggt	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89682891	89682891	TCGA-06-0187	Missense	PTEN	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89682891-89682891	Missense	aactgGtgtaa	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89682971	89682971	TCGA-02-0001	Frameshift_Del	PTEN	1	genome.wustl.edu	Yes	+	PTEN|chr10:89682971-89682971	Other	Indel	Indel	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+10	89682972	89682972	TCGA-06-0195	Missense	PTEN	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89682972-89682972	Missense	agtaaGgacca	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89701862	89701862	TCGA-06-0166	Missense	PTEN	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89701862-89701862	Missense	agtaaCtattc	C (other)	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89701862	89701862	TCGA-02-0021	Missense	PTEN	1	BCM	Yes	+	PTEN|chr10:89701862-89701862	Missense	agtaaCtattc	C (other)	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89701879	89701879	TCGA-02-0038	Missense	PTEN	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89701879-89701879	Missense	agaggCgctat	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89701893	89701893	TCGA-02-0099	Nonsense	PTEN	1	broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89701893-89701893	Nonsense	tattaTtatag	T	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	89701940	89701940	TCGA-02-0007	Missense	PTEN	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89701940-89701940	Missense	ggcacTgttgt	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89707658	89707658	TCGA-02-0113	Nonsense	PTEN	1	BCM, genome.wustl.edu	Yes	+	PTEN|chr10:89707658-89707658	Nonsense	gacggGaagac	G (GpA)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89707676	89707676	TCGA-02-0075	Missense	PTEN	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89707676-89707676	Missense	tgtacTttgag	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89710659	89710659	TCGA-06-0124	Missense	PTEN	1	BCM, genome.wustl.edu	Yes	+	PTEN|chr10:89710659-89710659	Missense	aaataCattct	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89710781	89710784	TCGA-06-0125	Frameshift_Del	PTEN	1	BCM	Yes	+	PTEN|chr10:89710781-89710784	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89710784	89710787	TCGA-06-0125	Frameshift_Del	PTEN	1	genome.wustl.edu	Yes	+	PTEN|chr10:89710784-89710787	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89710784	89710787	TCGA-06-0206	Frameshift_Del	PTEN	1	genome.wustl.edu	Yes	+	PTEN|chr10:89710784-89710787	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89710788	89710788	TCGA-02-0071	Nonsense	PTEN	1	genome.wustl.edu	Yes	+	PTEN|chr10:89710788-89710788	Nonsense	tacttTaacaa	T	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	89710797	89710797	TCGA-06-0188	Frameshift_Del	PTEN	1	genome.wustl.edu	Yes	+	PTEN|chr10:89710797-89710797	Other	Indel	Indel	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+10	89710811	89710815	TCGA-06-0168	Frameshift_Del	PTEN	1	genome.wustl.edu	Yes	+	PTEN|chr10:89710811-89710815	Other	Indel	Indel	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+10	89710832	89710832	TCGA-06-0213	Nonsense	PTEN	1	broad.mit.edu, genome.wustl.edu	Yes	+	PTEN|chr10:89710832-89710832	Nonsense	ccaacCgatac	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	123288210	123288210	TCGA-02-0033	Missense	FGFR2	1	genome.wustl.edu	No	-	FGFR2|chr10:123288210-123288210	Missense	gaaacCagcac	C (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+10	124348403	124348403	TCGA-02-0028	Missense	DMBT1	1	genome.wustl.edu	No	+	DMBT1|chr10:124348403-124348403	Missense	tgatgCcaatg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	128009005	128009005	TCGA-02-0010	Missense	ADAM12	1	genome.wustl.edu	No	-	ADAM12|chr10:128009005-128009005	Missense	tggggAcctct	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+10	129073048	129073048	TCGA-02-0010	Missense	DOCK1	1	broad.mit.edu	No	+	DOCK1|chr10:129073048-129073048	Missense	gtggtCggagg	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	6426862	6426862	TCGA-06-0122	Missense	TRIM3	1	broad.mit.edu	No	-	TRIM3|chr11:6426862-6426862	Missense	ccactGcttta	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+11	6434421	6434421	TCGA-02-0083	Missense	TRIM3	1	broad.mit.edu	No	-	TRIM3|chr11:6434421-6434421	Missense	cggacGgcacg	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	6586561	6586561	TCGA-02-0010	Missense	ILK	1	BCM	No	+	ILK|chr11:6586561-6586561	Missense	tgtggAcaaag	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	9552534	9552534	TCGA-06-0190	Missense	WEE1	1	BCM	No	+	WEE1|chr11:9552534-9552534	Missense	gggcgGgcgaa	G (other)	A	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+11	18380975	18380975	TCGA-02-0083	Missense	LDHA	1	genome.wustl.edu	No	+	LDHA|chr11:18380975-18380975	Missense	cttgaCctacg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	18381850	18381850	TCGA-02-0014	Missense	LDHA	1	genome.wustl.edu	No	+	LDHA|chr11:18381850-18381850	Missense	tggtgTctctc	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	107611687	107611687	TCGA-02-0010	Missense	ATM	1	broad.mit.edu	No	+	ATM|chr11:107611687-107611687	Missense	tttacGgagct	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	107620796	107620796	TCGA-02-0010	Missense	ATM	1	broad.mit.edu	No	+	ATM|chr11:107620796-107620796	Missense	ggctgTcaact	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	111095932	111095932	TCGA-02-0114	Missense	SNF1LK2	1	broad.mit.edu	No	+	SNF1LK2|chr11:111095932-111095932	Missense	gcctgGggcag	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	111096956	111096956	TCGA-06-0176	Missense	SNF1LK2	1	broad.mit.edu	No	+	SNF1LK2|chr11:111096956-111096956	Missense	gccggCggctc	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+11	118654485	118654485	TCGA-02-0083	Missense	CBL	1	broad.mit.edu	No	+	CBL|chr11:118654485-118654485	Missense	tgaacCcatcg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	118661372	118661372	TCGA-02-0083	Nonsense	CBL	1	broad.mit.edu	No	+	CBL|chr11:118661372-118661372	Nonsense	ccctgGacagg	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	125008322	125008322	TCGA-06-0145	Missense	CHEK1	1	BCM	No	+	CHEK1|chr11:125008322-125008322	Missense	taatcGtgagc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+11	125028953	125028953	TCGA-02-0043	Splice_site	CHEK1	1	BCM	No	+	CHEK1|chr11:125028953-125028953	Other	ctaagGtattt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	128143273	128143273	TCGA-02-0114	Missense	FLI1	1	broad.mit.edu	No	+	FLI1|chr11:128143273-128143273	Missense	gggcgGaggcg	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+11	128186040	128186040	TCGA-02-0009	Missense	FLI1	1	broad.mit.edu	No	+	FLI1|chr11:128186040-128186040	Missense	ccaacGtcccc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+12	6630758	6630758	TCGA-02-0083	Missense	ING4	1	broad.mit.edu	No	-	ING4|chr12:6630758-6630758	Missense	ctcggGggaaa	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	6630798	6630798	TCGA-02-0114	Nonsense	ING4	1	broad.mit.edu	No	-	ING4|chr12:6630798-6630798	Nonsense	gagtgGttcca	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	6647395	6647395	TCGA-02-0114	Missense	ZNF384	1	genome.wustl.edu	No	-	ZNF384|chr12:6647395-6647395	Missense	cccagGcccag	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	6652748	6652748	TCGA-02-0114	Missense	ZNF384	1	genome.wustl.edu	No	-	ZNF384|chr12:6652748-6652748	Missense	cagctCctacc	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	9116623	9116623	TCGA-02-0028	Missense	A2M	1	genome.wustl.edu	No	-	A2M|chr12:9116623-9116623	Missense	gcaaaTtccaa	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	9150104	9150104	TCGA-02-0024	Missense	A2M	1	genome.wustl.edu	No	-	A2M|chr12:9150104-9150104	Missense	tctttGggcag	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+12	25289551	25289551	TCGA-02-0069	Missense	KRAS	1	genome.wustl.edu	No	-	KRAS|chr12:25289551-25289551	Missense	agctgGtggcg	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+12	43212631	43212631	TCGA-02-0083	Missense	NELL2	1	broad.mit.edu	No	-	NELL2|chr12:43212631-43212631	Missense	gtgaaGgtcag	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	54780232	54780232	TCGA-02-0083	Missense	ERBB3	1	BCM	No	+	ERBB3|chr12:54780232-54780232	Missense	ccagaGccttt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	56151942	56151942	TCGA-06-0133	Missense	GLI1	1	broad.mit.edu	No	+	GLI1|chr12:56151942-56151942	Missense	tgtggCtattc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+12	56288721	56288721	TCGA-02-0107	Missense	DTX3	1	broad.mit.edu	No	+	DTX3|chr12:56288721-56288721	Missense	cacagGgagac	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+12	56407992	56407992	TCGA-02-0014	Missense	CENTG1	1	BCM	No	-	CENTG1|chr12:56407992-56407992	Missense	gcaagGtcaag	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	56408033	56408033	TCGA-02-0043	Missense	CENTG1	1	BCM	No	-	CENTG1|chr12:56408033-56408033	Missense	cgagaGtcaga	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	56444898	56444898	TCGA-02-0043	Missense	CYP27B1	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	CYP27B1|chr12:56444898-56444898	Missense	gtctgGggcgc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	56445112	56445112	TCGA-02-0080	Missense	CYP27B1	1	BCM, genome.wustl.edu	Yes	-	CYP27B1|chr12:56445112-56445112	Missense	ttgtgCctggg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+12	56482213	56482213	TCGA-02-0114	Nonsense	AVIL	1	broad.mit.edu	No	-	AVIL|chr12:56482213-56482213	Nonsense	atttgGagtgt	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	63175611	63175611	TCGA-02-0114	Missense	TBK1	1	broad.mit.edu	No	+	TBK1|chr12:63175611-63175611	Missense	cagacGcatgg	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	67516737	67516737	TCGA-02-0085	Missense	MDM2	1	broad.mit.edu	No	+	MDM2|chr12:67516737-67516737	Missense	ctgtgTatcag	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+12	108019967	108019967	TCGA-02-0083	Missense	UNG	1	BCM	No	+	UNG|chr12:108019967-108019967	Missense	gcgtgGctggg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	111372572	111372572	TCGA-02-0028	Missense	PTPN11	1	genome.wustl.edu	No	+	PTPN11|chr12:111372572-111372572	Missense	gagggGagaaa	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	111395220	111395220	TCGA-06-0171	Missense	PTPN11	1	genome.wustl.edu	No	+	PTPN11|chr12:111395220-111395220	Missense	aacatCctgcc	C (TpC)	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+12	117103657	117103657	TCGA-02-0075	Missense	TAOK3	1	broad.mit.edu	No	-	TAOK3|chr12:117103657-117103657	Missense	agcacCgcctc	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+12	119280036	119280036	TCGA-02-0083	Missense	MSI1	1	broad.mit.edu	No	-	MSI1|chr12:119280036-119280036	Missense	agtgtGtgaaa	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	119286911	119286911	TCGA-02-0114	Missense	MSI1	1	broad.mit.edu	No	-	MSI1|chr12:119286911-119286911	Missense	ggcgaGcacag	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	121222973	121222973	TCGA-02-0083	Nonsense	IL31	1	genome.wustl.edu	No	-	IL31|chr12:121222973-121222973	Nonsense	gttttCagagt	C (TpC)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	131012246	131012246	TCGA-02-0083	Nonsense	EP400	1	BCM	No	+	EP400|chr12:131012246-131012246	Nonsense	agatgCaggct	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	131076211	131076211	TCGA-02-0114	Missense	EP400	1	BCM	No	+	EP400|chr12:131076211-131076211	Missense	gtgatGcagac	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+12	131094732	131094732	TCGA-02-0114	Missense	EP400	1	BCM	No	+	EP400|chr12:131094732-131094732	Missense	tgcagGagagg	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+13	27829760	27829760	TCGA-06-0173	Missense	FLT1	1	BCM	No	-	FLT1|chr13:27829760-27829760	Missense	atgaaGgtgtc	G (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	31788650	31788650	TCGA-02-0010	Missense	BRCA2	1	broad.mit.edu	No	+	BRCA2|chr13:31788650-31788650	Missense	gacacGctgca	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+13	31809250	31809250	TCGA-06-0169	Missense	BRCA2	1	broad.mit.edu	No	+	BRCA2|chr13:31809250-31809250	Missense	acgaaCccatt	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	31809542	31809542	TCGA-02-0014	Missense	BRCA2	1	broad.mit.edu	No	+	BRCA2|chr13:31809542-31809542	Missense	ggaaaTcaagc	T	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+13	47834984	47834984	TCGA-06-0176	Nonsense	RB1	1	BCM, broad.mit.edu	Yes	+	RB1|chr13:47834984-47834984	Nonsense	cacctCgaaca	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	47835032	47835069	TCGA-02-0055	Frameshift_Del	RB1	1	BCM, genome.wustl.edu	Yes	+	RB1|chr13:47835032-47835069	Other	Indel	Indel	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+13	47845597	47845597	TCGA-06-0195	Nonsense	RB1	1	BCM, broad.mit.edu	Yes	+	RB1|chr13:47845597-47845597	Nonsense	gtgatCaacct	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	47925250	47925250	TCGA-02-0052	Splice_site	RB1	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	RB1|chr13:47925250-47925250	Other	atatgTaagca	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	47928486	47928486	TCGA-06-0213	Missense	RB1	1	BCM	Yes	+	RB1|chr13:47928486-47928486	Missense	aaaaaGgttag	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	47931824	47931824	TCGA-06-0184	Splice_site	RB1	1	BCM, broad.mit.edu	Yes	+	RB1|chr13:47931824-47931824	Other	ccacaGtgtat	G (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	47931840	47931840	TCGA-06-0184	Missense	RB1	1	BCM, broad.mit.edu	Yes	+	RB1|chr13:47931840-47931840	Missense	agcctAtctcc	A	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	47931968	47931968	TCGA-02-0033	Nonsense	RB1	1	BCM, genome.wustl.edu	Yes	+	RB1|chr13:47931968-47931968	Nonsense	tggacCaagta	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	47937375	47937375	TCGA-02-0007	Nonsense	RB1	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	+	RB1|chr13:47937375-47937375	Nonsense	ttcctCgaagc	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	47945496	47945496	TCGA-06-0206	Splice_site	RB1	1	BCM, broad.mit.edu	Yes	+	RB1|chr13:47945496-47945496	Other	tgacaGaatct	G (GpA)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	94484895	94484895	TCGA-02-0083	Missense	ABCC4	1	broad.mit.edu	No	-	ABCC4|chr13:94484895-94484895	Missense	gcaagGcagaa	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+13	94613377	94613377	TCGA-02-0037	Missense	ABCC4	1	broad.mit.edu	No	-	ABCC4|chr13:94613377-94613377	Missense	attcaGgtaaa	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+13	113008879	113008879	TCGA-02-0083	Missense	LAMP1	1	broad.mit.edu	No	+	LAMP1|chr13:113008879-113008879	Missense	cttctCtgctg	C (TpC)	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+13	113021973	113021973	TCGA-02-0116	Splice_site	LAMP1	1	broad.mit.edu	No	+	LAMP1|chr13:113021973-113021973	Other	acacgGtaggg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+14	55148856	55148856	TCGA-02-0083	Missense	KTN1	1	broad.mit.edu	No	+	KTN1|chr14:55148856-55148856	Missense	ttaggGaaaga	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+14	59263887	59263887	TCGA-02-0021	Missense	RTN1	1	broad.mit.edu	No	-	RTN1|chr14:59263887-59263887	Missense	ggccgCggagg	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+14	94150664	94150664	TCGA-06-0209	Missense	SERPINA3	1	genome.wustl.edu	No	+	SERPINA3|chr14:94150664-94150664	Missense	cacacGtggac	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+14	101617806	101617806	TCGA-02-0010	Missense	HSP90AA1	1	BCM	No	-	HSP90AA1|chr14:101617806-101617806	Missense	agtagActaat	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+14	101675353	101675353	TCGA-02-0083	Missense	HSP90AA1	1	BCM	No	-	HSP90AA1|chr14:101675353-101675353	Missense	cgccgCcgttt	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+15	32316305	32316305	TCGA-06-0133	Missense	SLC12A6	1	BCM	No	-	SLC12A6|chr15:32316305-32316305	Missense	agcatGacagt	G (GpA)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+15	32317006	32317006	TCGA-02-0102	Missense	SLC12A6	1	BCM	No	-	SLC12A6|chr15:32317006-32317006	Missense	agtagCccaat	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+15	55330914	55330914	TCGA-02-0114	Splice_site	TCF12	1	BCM	No	+	TCF12|chr15:55330914-55330914	Other	ccctgGtaaga	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+15	55341606	55341607	TCGA-02-0114	Frameshift_Del	TCF12	1	BCM	No	+	TCF12|chr15:55341606-55341607	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+15	55342601	55342601	TCGA-06-0128	Splice_site	TCF12	1	BCM	No	+	TCF12|chr15:55342601-55342601	Other	tgttaGgtggc	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+15	72077554	72077554	TCGA-02-0083	Missense	PML	1	genome.wustl.edu	No	+	PML|chr15:72077554-72077554	Missense	cctggCcccta	C (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+15	77008808	77008808	TCGA-02-0043	Splice_site	CTSH	1	genome.wustl.edu	No	-	CTSH|chr15:77008808-77008808	Other	gcaagGtaact	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+15	82233332	82233332	TCGA-02-0028	Nonsense	ADAMTSL3	1	BCM	No	+	ADAMTSL3|chr15:82233332-82233332	Nonsense	gcttgGggcga	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+15	82481336	82481336	TCGA-02-0083	Missense	ADAMTSL3	1	BCM	No	+	ADAMTSL3|chr15:82481336-82481336	Missense	tccggGactgc	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+15	86528499	86528499	TCGA-02-0043	Missense	NTRK3	1	genome.wustl.edu	No	-	NTRK3|chr15:86528499-86528499	Missense	gctcaAcgccg	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+15	88818012	88818012	TCGA-02-0083	Missense	IQGAP1	1	BCM	No	+	IQGAP1|chr15:88818012-88818012	Missense	gcgctCccaca	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+15	88818856	88818856	TCGA-02-0075	Missense	IQGAP1	1	BCM	No	+	IQGAP1|chr15:88818856-88818856	Missense	taaccAgcagc	A	G	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+15	89225202	89225202	TCGA-02-0010	Missense	FURIN	1	genome.wustl.edu	No	+	FURIN|chr15:89225202-89225202	Missense	gcaccGcccct	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+15	89225687	89225687	TCGA-02-0028	Missense	FURIN	1	genome.wustl.edu	No	+	FURIN|chr15:89225687-89225687	Missense	aggggCcggcc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+15	89225991	89225991	TCGA-02-0010	Missense	FURIN	1	genome.wustl.edu	No	+	FURIN|chr15:89225991-89225991	Missense	ccgtgGcctca	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+16	2038750	2038750	TCGA-02-0047	Missense	TSC2	1	genome.wustl.edu	No	+	TSC2|chr16:2038750-2038750	Missense	aaataCtgaga	C (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+16	2064367	2064367	TCGA-02-0010	Missense	TSC2	1	genome.wustl.edu	No	+	TSC2|chr16:2064367-2064367	Missense	tggccGtccca	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+16	2070190	2070190	TCGA-02-0010	Missense	TSC2	1	genome.wustl.edu	No	+	TSC2|chr16:2070190-2070190	Missense	ttggcGccctg	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+16	2290056	2290056	TCGA-02-0043	Missense	ABCA3	1	genome.wustl.edu	No	-	ABCA3|chr16:2290056-2290056	Missense	tgaagCcgagc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+16	11256592	11256592	TCGA-02-0114	Missense	SOCS1	1	genome.wustl.edu	No	-	SOCS1|chr16:11256592-11256592	Missense	ctgggGgcccc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+16	24138810	24138810	TCGA-06-0185	Missense	PRKCB1	1	broad.mit.edu	No	+	PRKCB1|chr16:24138810-24138810	Missense	acttcGacaaa	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+16	49341571	49341571	TCGA-02-0114	Missense	CYLD	1	genome.wustl.edu	No	+	CYLD|chr16:49341571-49341571	Missense	gttagCagaga	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+16	65554895	65554895	TCGA-06-0139	Missense	CES3	1	genome.wustl.edu	No	+	CES3|chr16:65554895-65554895	Missense	cacagGtgcct	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+16	65555760	65555760	TCGA-02-0114	Splice_site	CES3	1	genome.wustl.edu	No	+	CES3|chr16:65555760-65555760	Other	ccccaGcactg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+16	73821184	73821184	TCGA-06-0176	Missense	BCAR1	1	BCM	No	-	BCAR1|chr16:73821184-73821184	Missense	tgtggCgcaca	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+16	73821401	73821401	TCGA-02-0099	Missense	BCAR1	1	BCM	No	-	BCAR1|chr16:73821401-73821401	Missense	gactgGaacag	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	7514728	7514728	TCGA-02-0024	Nonsense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7514728-7514728	Nonsense	tgttcCgagag	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517636	7517636	TCGA-06-0128	Frameshift_Del	TP53	1	BCM	Yes	-	TP53|chr17:7517636-7517636	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517651	7517651	TCGA-06-0188	Missense	TP53	1	BCM, genome.wustl.edu	Yes	-	TP53|chr17:7517651-7517651	Missense	cctagCactgc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517652	7517652	TCGA-06-0188	Splice_site	TP53	1	BCM, genome.wustl.edu	Yes	-	TP53|chr17:7517652-7517652	Other	tcctaGcactg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517819	7517819	TCGA-02-0003	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7517819-7517819	Missense	gagacCggcgc	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517819	7517819	TCGA-02-0046	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7517819-7517819	Missense	gagacCggcgc	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517821	7517821	TCGA-06-0195	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7517821-7517821	Missense	gagagAccggc	A	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517830	7517830	TCGA-02-0001	Missense	TP53	1	BCM, genome.wustl.edu	Yes	-	TP53|chr17:7517830-7517830	Missense	ctgtcCtggga	C (other)	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517831	7517831	TCGA-02-0083	Missense	TP53	1	BCM, genome.wustl.edu	Yes	-	TP53|chr17:7517831-7517831	Missense	cctgtCctggg	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	7517836	7517836	TCGA-02-0114	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7517836-7517836	Missense	ttgtgCctgtc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	7517845	7517845	TCGA-06-0206	Missense	TP53	1	BCM, genome.wustl.edu	Yes	-	TP53|chr17:7517845-7517845	Missense	ggtgcGtgttt	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517846	7517846	TCGA-02-0080	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7517846-7517846	Missense	aggtgCgtgtt	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517846	7517846	TCGA-02-0010	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7517846-7517846	Missense	aggtgCgtgtt	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	7517849	7517849	TCGA-02-0058	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7517849-7517849	Missense	ttgagGtgcgt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517854	7517854	TCGA-06-0197	Missense	TP53	1	broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7517854-7517854	Missense	cagctTtgagg	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7517867	7517867	TCGA-06-0195	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7517867-7517867	Missense	tactgGgacgg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7518234	7518234	TCGA-02-0034	Missense	TP53	1	BCM, genome.wustl.edu	Yes	-	TP53|chr17:7518234-7518234	Missense	cactgGaagac	G (GpA)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7518263	7518263	TCGA-02-0033	Missense	TP53	1	BCM, genome.wustl.edu	Yes	-	TP53|chr17:7518263-7518263	Missense	gaaccGgaggc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7518263	7518263	TCGA-06-0241	Missense	TP53	1	BCM, genome.wustl.edu	Yes	-	TP53|chr17:7518263-7518263	Missense	gaaccGgaggc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7518273	7518273	TCGA-06-0190	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7518273-7518273	Missense	tgggcGgcatg	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7518303	7518303	TCGA-02-0074	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7518303-7518303	Missense	actacAactac	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7518928	7518928	TCGA-02-0055	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7518928-7518928	Missense	atagtGtggtg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7518937	7518937	TCGA-02-0054	Nonsense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7518937-7518937	Nonsense	cttttCgacat	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7518974	7518975	TCGA-02-0014	Frameshift_Del	TP53	1	genome.wustl.edu	Yes	-	TP53|chr17:7518974-7518975	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	7518990	7518990	TCGA-06-0237	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7518990-7518990	Missense	tcttaTccgag	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7519120	7519120	TCGA-02-0089	Missense	TP53	1	broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7519120-7519120	Missense	cccacCatgag	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7519121	7519121	TCGA-02-0003	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7519121-7519121	Missense	ccccaCcatga	C (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7519126	7519126	TCGA-02-0046	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7519126-7519126	Missense	gctgcCcccac	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7519128	7519128	TCGA-02-0114	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7519128-7519128	Missense	gcgctGccccc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	7519131	7519131	TCGA-02-0010	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7519131-7519131	Missense	gaggcGctgcc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	7519131	7519131	TCGA-02-0037	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7519131-7519131	Missense	gaggcGctgcc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7519132	7519132	TCGA-02-0011	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7519132-7519132	Missense	tgaggCgctgc	C (CpG)	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7519182	7519182	TCGA-06-0130	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7519182-7519182	Missense	cgtccGcgcca	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7519182	7519182	TCGA-06-0184	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7519182-7519182	Missense	cgtccGcgcca	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7519237	7519238	TCGA-06-0221	Frameshift_Del	TP53	1	genome.wustl.edu	Yes	-	TP53|chr17:7519237-7519238	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7519251	7519251	TCGA-02-0034	Missense	TP53	1	BCM	Yes	-	TP53|chr17:7519251-7519251	Missense	gttttGccaac	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7519267	7519267	TCGA-02-0075	Missense	TP53	1	BCM, broad.mit.edu, genome.wustl.edu	Yes	-	TP53|chr17:7519267-7519267	Missense	ctgccCtcaac	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	7520118	7520122	TCGA-06-0156	Frameshift_Del	TP53	1	BCM	Yes	-	TP53|chr17:7520118-7520122	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	8051651	8051651	TCGA-02-0114	Missense	AURKB	1	broad.mit.edu	No	-	AURKB|chr17:8051651-8051651	Missense	agaagGtgatg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	19225977	19225977	TCGA-02-0014	Missense	MAPK7	1	genome.wustl.edu	No	+	MAPK7|chr17:19225977-19225977	Missense	cccctGcccca	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	26574560	26574598	TCGA-02-0001	Splice_site	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26574560-26574598	Other	atgctAgtaac	A	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+17	26580304	26580304	TCGA-02-0075	Nonsense	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26580304-26580304	Nonsense	ttgggGgagtg	G (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	26581118	26581118	TCGA-02-0028	Missense	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26581118-26581118	Missense	ggtcaGgtaag	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	26609550	26609550	TCGA-02-0107	Missense	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26609550-26609550	Missense	ctcagAtttat	A	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	26610175	26610175	TCGA-02-0033	Splice_site	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26610175-26610175	Other	gtgtaGatact	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	26610182	26610182	TCGA-06-0190	Missense	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26610182-26610182	Missense	tacttCagagt	C (TpC)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	26612877	26612877	TCGA-06-0201	Nonsense	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26612877-26612877	Nonsense	gaagaCgacct	C (CpG)	T	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+17	26677105	26677108	TCGA-02-0107	Frameshift_Del	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26677105-26677108	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	26677114	26677114	TCGA-02-0115	Nonsense	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26677114-26677114	Nonsense	aagtgGtttgt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	26678919	26678919	TCGA-06-0214	Missense	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26678919-26678919	Missense	caaaaGatgtc	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	26678984	26678984	TCGA-06-0201	Splice_site	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26678984-26678984	Other	ttacgGtaggt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	26686128	26686128	TCGA-06-0124	Nonsense	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26686128-26686128	Nonsense	aaaaaCagatg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	26687479	26687479	TCGA-02-0086	Frameshift_Del	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26687479-26687479	Other	Indel	Indel	Indel	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+17	26688511	26688511	TCGA-02-0028	Splice_site	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26688511-26688511	Other	ttacaGaagag	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	26689934	26689934	TCGA-06-0184	Frameshift_Del	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26689934-26689934	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	26691678	26691678	TCGA-02-0028	Nonsense	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26691678-26691678	Nonsense	ttttgGgtagc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	26691722	26691722	TCGA-06-0124	Nonsense	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26691722-26691722	Nonsense	gtattCagcag	C (TpC)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	26691733	26691733	TCGA-02-0010	Missense	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26691733-26691733	Missense	gtaccGcactt	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	26691739	26691739	TCGA-02-0086	Frameshift_Del	NF1	1	genome.wustl.edu	No	+	NF1|chr17:26691739-26691739	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	35116841	35116841	TCGA-02-0080	Missense	ERBB2	1	genome.wustl.edu	No	+	ERBB2|chr17:35116841-35116841	Missense	ccaccTctacc	T	?	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	35116922	35116922	TCGA-02-0115	Splice_site	ERBB2	1	genome.wustl.edu	No	+	ERBB2|chr17:35116922-35116922	Other	gcaggTgaggc	T	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	35119867	35119867	TCGA-02-0069	Missense	ERBB2	1	genome.wustl.edu	No	+	ERBB2|chr17:35119867-35119867	Missense	cagtgAcgcgc	A	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	35121736	35121736	TCGA-02-0089	Missense	ERBB2	1	genome.wustl.edu	No	+	ERBB2|chr17:35121736-35121736	Missense	gatccTgcacc	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	35121760	35121760	TCGA-02-0116	Missense	ERBB2	1	genome.wustl.edu	No	+	ERBB2|chr17:35121760-35121760	Missense	tgcacAaccaa	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	35121767	35121767	TCGA-02-0089	Missense	ERBB2	1	genome.wustl.edu	No	+	ERBB2|chr17:35121767-35121767	Missense	ccaagAggtga	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	35121782	35121782	TCGA-02-0115	Missense	ERBB2	1	genome.wustl.edu	No	+	ERBB2|chr17:35121782-35121782	Missense	agaggAtggaa	A	G	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	35121805	35121805	TCGA-02-0115	Missense	ERBB2	1	genome.wustl.edu	No	+	ERBB2|chr17:35121805-35121805	Missense	agaagTgcagc	T	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	35133731	35133731	TCGA-02-0107	Missense	ERBB2	1	genome.wustl.edu	No	+	ERBB2|chr17:35133731-35133731	Missense	tccagTggcca	T	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	35134527	35134527	TCGA-02-0069	Missense	ERBB2	1	genome.wustl.edu	No	+	ERBB2|chr17:35134527-35134527	Missense	tggtgTgggct	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	35134527	35134527	TCGA-02-0113	Missense	ERBB2	1	genome.wustl.edu	No	+	ERBB2|chr17:35134527-35134527	Missense	tggtgTgggct	T	C	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+17	37735120	37735121	TCGA-02-0114	Frameshift_Del	STAT3	1	BCM	No	-	STAT3|chr17:37735120-37735121	Other	Indel	Indel	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	42723325	42723325	TCGA-06-0141	Missense	ITGB3	1	broad.mit.edu	No	+	ITGB3|chr17:42723325-42723325	Missense	aaatcCgttct	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	42724694	42724694	TCGA-02-0083	Missense	ITGB3	1	broad.mit.edu	No	+	ITGB3|chr17:42724694-42724694	Missense	gtgtgGggtat	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	42742529	42742529	TCGA-02-0010	Missense	ITGB3	1	broad.mit.edu	No	+	ITGB3|chr17:42742529-42742529	Missense	agaggCcacgt	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	45539183	45539183	TCGA-02-0043	Missense	PDK2	1	BCM	No	+	PDK2|chr17:45539183-45539183	Missense	ccaacCcagcc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	45619111	45619111	TCGA-02-0043	Missense	COL1A1	1	BCM	No	-	COL1A1|chr17:45619111-45619111	Missense	ccaccCtcaag	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	45623200	45623200	TCGA-02-0083	Missense	COL1A1	1	BCM	No	-	COL1A1|chr17:45623200-45623200	Missense	ctggcCctgct	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	45628312	45628312	TCGA-02-0083	Missense	COL1A1	1	BCM	No	-	COL1A1|chr17:45628312-45628312	Missense	gtcctCctggc	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	45630091	45630091	TCGA-02-0043	Splice_site	COL1A1	1	BCM	No	-	COL1A1|chr17:45630091-45630091	Other	atgatGtaagt	G (other)	Indel	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	62215542	62215542	TCGA-02-0083	Missense	PRKCA	1	broad.mit.edu	No	+	PRKCA|chr17:62215542-62215542	Missense	agccaCcattc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	63463748	63463748	TCGA-06-0141	Missense	KPNA2	1	broad.mit.edu	No	+	KPNA2|chr17:63463748-63463748	Missense	tgcccGtcttc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+17	74363373	74363373	TCGA-02-0083	Nonsense	TIMP2	1	BCM	No	-	TIMP2|chr17:74363373-74363373	Nonsense	ccaagCaggag	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+17	74479447	74479447	TCGA-02-0028	Missense	LGALS3BP	1	broad.mit.edu	No	-	LGALS3BP|chr17:74479447-74479447	Missense	acaaaGccctg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+18	41700876	41700876	TCGA-02-0083	Missense	KIAA1632	1	BCM	No	-	KIAA1632|chr18:41700876-41700876	Missense	tttcaGcagcc	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+18	42074101	42074101	TCGA-02-0099	Missense	C18orf25	1	genome.wustl.edu	No	+	C18orf25|chr18:42074101-42074101	Missense	cacagGagcta	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+18	46858703	46858703	TCGA-02-0028	Nonsense	SMAD4	1	broad.mit.edu	No	+	SMAD4|chr18:46858703-46858703	Nonsense	ggctgGggacc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+18	58790915	58790915	TCGA-06-0176	Missense	PHLPP	1	broad.mit.edu	No	+	PHLPP|chr18:58790915-58790915	Missense	tgtcaTgcaaa	T	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+18	59136627	59136627	TCGA-02-0089	Missense	BCL2	1	genome.wustl.edu	No	-	BCL2|chr18:59136627-59136627	Missense	ggcctGcgctc	G (other)	A	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+19	7244845	7244845	TCGA-06-0147	Missense	INSR	1	BCM	No	-	INSR|chr19:7244845-7244845	Missense	tggccGcgctg	G (CpG)	A	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+19	40903582	40903582	TCGA-02-0057	Missense	MLL4	1	broad.mit.edu	No	+	MLL4|chr19:40903582-40903582	Missense	tccaaCcccca	C (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+19	40908522	40908522	TCGA-02-0114	Missense	MLL4	1	broad.mit.edu	No	+	MLL4|chr19:40908522-40908522	Missense	gcccaGctatc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+19	40916372	40916372	TCGA-02-0010	Missense	MLL4	1	broad.mit.edu	No	+	MLL4|chr19:40916372-40916372	Missense	cagtgCgtggg	C (CpG)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+19	46435815	46435815	TCGA-02-0083	Missense	AXL	1	genome.wustl.edu	No	+	AXL|chr19:46435815-46435815	Missense	acaccCcttat	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+19	50482763	50482763	TCGA-06-0147	Splice_site	MARK4	1	BCM	No	+	MARK4|chr19:50482763-50482763	Other	cccccGtgagt	G (CpG)	A	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+19	51892838	51892838	TCGA-02-0080	Missense	PRKD2	1	broad.mit.edu	No	-	PRKD2|chr19:51892838-51892838	Missense	acaagGacacg	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+19	52115128	52115128	TCGA-02-0083	Nonsense	GRLF1	1	BCM	No	+	GRLF1|chr19:52115128-52115128	Nonsense	ccttgGgaaga	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+19	54150026	54150026	TCGA-02-0055	Missense	BAX	1	genome.wustl.edu	No	+	BAX|chr19:54150026-54150026	Missense	cagagGcgggg	G (other)	A	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+19	56195600	56195600	TCGA-02-0028	Missense	KLK8	1	broad.mit.edu	No	-	KLK8|chr19:56195600-56195600	Missense	ccaacCccatt	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+20	10581166	10581166	TCGA-02-0043	Missense	JAG1	1	BCM	No	-	JAG1|chr20:10581166-10581166	Missense	tgagcCctggc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+20	29871752	29871752	TCGA-02-0043	Missense	MYLK2	1	broad.mit.edu	No	+	MYLK2|chr20:29871752-29871752	Missense	aactaGcagcc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+20	30361377	30361377	TCGA-02-0083	Missense	KIF3B	1	BCM	No	+	KIF3B|chr20:30361377-30361377	Missense	agaacCccaaa	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+20	39177465	39177465	TCGA-02-0083	Missense	TOP1	1	genome.wustl.edu	No	+	TOP1|chr20:39177465-39177465	Missense	gcagcCcgagg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+20	56849073	56849073	TCGA-02-0010	Missense	GNAS	1	BCM	No	+	GNAS|chr20:56849073-56849073	Missense	ccgacGcctcc	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+20	56863479	56863479	TCGA-02-0083	Missense	GNAS	1	BCM	No	+	GNAS|chr20:56863479-56863479	Missense	ggatgCctccg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+21	45131203	45131203	TCGA-02-0014	Missense	ITGB2	1	broad.mit.edu	No	-	ITGB2|chr21:45131203-45131203	Missense	gggcaCcgtgg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+21	45144662	45144662	TCGA-06-0158	Splice_site	ITGB2	1	broad.mit.edu	No	-	ITGB2|chr21:45144662-45144662	Other	aattcGtaagt	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+21	46358384	46358384	TCGA-02-0028	Missense	COL6A2	1	genome.wustl.edu	No	+	COL6A2|chr21:46358384-46358384	Missense	tgggcCctctg	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+22	16455484	16455484	TCGA-02-0083	Missense	ATP6V1E1	1	broad.mit.edu	No	-	ATP6V1E1|chr22:16455484-16455484	Missense	tccggGgagcc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+22	16590158	16590158	TCGA-02-0083	Missense	BCL2L13	1	BCM	No	+	BCL2L13|chr22:16590158-16590158	Missense	tgaggGcaagt	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+22	21853559	21853559	TCGA-02-0083	Missense	BCR	1	genome.wustl.edu	No	+	BCR|chr22:21853559-21853559	Missense	cagccGcgtcg	G (CpG)	A	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Hypermutated
+22	21926057	21926057	TCGA-02-0102	Missense	BCR	1	genome.wustl.edu	No	+	BCR|chr22:21926057-21926057	Missense	accaaGatggg	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+22	26476992	26476992	TCGA-02-0028	Missense	MN1	1	genome.wustl.edu	No	-	MN1|chr22:26476992-26476992	Missense	gtgacGccaag	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+22	37019247	37019247	TCGA-02-0010	Missense	CSNK1E	1	broad.mit.edu	No	-	CSNK1E|chr22:37019247-37019247	Missense	atctcGggaag	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+22	39894533	39894533	TCGA-02-0114	Missense	EP300	1	BCM	No	+	EP300|chr22:39894533-39894533	Missense	taaaaCcaggc	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+22	39903299	39903299	TCGA-06-0133	Missense	EP300	1	BCM	No	+	EP300|chr22:39903299-39903299	Missense	cccctCccaat	C (TpC)	T	Somatic	Unknown	Somatic	Verified	OK	Use_nonsilent	Non-hypermutated
+22	39904088	39904088	TCGA-02-0028	Missense	EP300	1	BCM	No	+	EP300|chr22:39904088-39904088	Missense	agaggGctggc	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+X	20103288	20103288	TCGA-06-0157	Missense	RPS6KA3	1	BCM	No	-	RPS6KA3|chrX:20103288-20103288	Missense	tcagcTttttc	T	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+X	48935116	48935116	TCGA-06-0157	Missense	SYP	1	broad.mit.edu	No	-	SYP|chrX:48935116-48935116	Missense	ggttcGtgttt	G (CpG)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+X	70237836	70237836	TCGA-02-0083	Missense	MLLT7	1	genome.wustl.edu	No	+	MLLT7|chrX:70237836-70237836	Missense	cagctCccttt	C (TpC)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+X	70504111	70504111	TCGA-06-0213	Missense	TAF1	1	BCM	No	+	TAF1|chrX:70504111-70504111	Missense	tttggGgctgg	G (other)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+X	70591395	70591395	TCGA-06-0176	Missense	TAF1	1	BCM	No	+	TAF1|chrX:70591395-70591395	Missense	agaaaGcctgg	G (other)	C	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Non-hypermutated
+X	110442569	110442569	TCGA-02-0083	Missense	DCX	1	genome.wustl.edu	No	-	DCX|chrX:110442569-110442569	Missense	gtctcCcatct	C (other)	T	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
+X	129111203	129111203	TCGA-02-0114	Missense	AIFM1	1	genome.wustl.edu	No	-	AIFM1|chrX:129111203-129111203	Missense	aagagGatgaa	G (GpA)	A	Somatic	Valid	Somatic	Validated	OK	Use_nonsilent	Hypermutated
