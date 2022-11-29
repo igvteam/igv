@@ -5,12 +5,12 @@ load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
 load gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
 load gs://genomics-public-data/platinum-genomes/bam/NA12889_S1.bam
 load gs://genomics-public-data/platinum-genomes/bam/NA12890_S1.bam
-#snapshot
+snapshot
 goto myc muc1
-#snapshot myc_myc1.png
-# goto tp53
-# zoomin
-# zoomin
-# zoomin
-# squish
-#snapshot tp53_squished.png
+snapshot myc_myc1.png
+goto tp53
+zoomin
+zoomin
+zoomin
+squish
+snapshot tp53_squished.png

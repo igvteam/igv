@@ -1,2 +1,0 @@
-# Should cause IGV to close
-exit
