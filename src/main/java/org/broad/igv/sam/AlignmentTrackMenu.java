@@ -1205,22 +1205,8 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         final Session currentSession = IGV.getInstance().getSession();
         currentSession.setCurrentGeneList(geneList);
 
-        Comparator<String> geneListComparator = (n0, n1) -> {
-            ReferenceFrame f0 = FrameManager.getFrame(n0);
-            ReferenceFrame f1 = FrameManager.getFrame(n1);
-
-            String chr0 = f0 == null ? "" : f0.getChrName();
-            String chr1 = f1 == null ? "" : f1.getChrName();
-            int s0 = f0 == null ? 0 : f0.getCurrentRange().getStart();
-            int s1 = f1 == null ? 0 : f1.getCurrentRange().getStart();
-
-            int chrComp = ChromosomeNameComparator.get().compare(chr0, chr1);
-            if (chrComp != 0) return chrComp;
-            return s0 - s1;
-        };
-
         //Need to sort the frames by position
-        currentSession.sortGeneList(geneListComparator);
+        currentSession.sortGeneList(FrameManager.getFrameC);
         IGV.getInstance().resetFrames();
     }
 

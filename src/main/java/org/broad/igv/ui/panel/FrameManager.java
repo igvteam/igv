@@ -247,17 +247,14 @@ public class FrameManager implements IGVEventObserver {
 
     public static void sortFrames(final Track t) {
 
-        Collections.sort(frames, new Comparator<ReferenceFrame>() {
-            @Override
-            public int compare(ReferenceFrame o1, ReferenceFrame o2) {
-                float s1 = t.getRegionScore(o1.getChromosome().getName(), (int) o1.getOrigin(), (int) o1.getEnd(),
-                        o1.getZoom(), RegionScoreType.SCORE, o1.getName());
-                float s2 = t.getRegionScore(o2.getChromosome().getName(), (int) o2.getOrigin(), (int) o2.getEnd(),
-                        o2.getZoom(), RegionScoreType.SCORE, o2.getName());
-                return (s1 == s2 ? 0 : (s1 > s2) ? -1 : 1);
-            }
-        });
-
+        frames.sort(Comparator.comparingDouble((ReferenceFrame f) ->
+                t.getRegionScore(f.getChromosome().getName(),
+                        (int) f.getOrigin(),
+                        (int) f.getEnd(),
+                        f.getZoom(),
+                        RegionScoreType.SCORE,
+                        f.getName()))
+                .reversed());
     }
 
     /**
@@ -343,7 +340,12 @@ public class FrameManager implements IGVEventObserver {
         currentSession.setCurrentGeneList(geneList);
 
         // sort the frames by position
-        currentSession.sortGeneList((n0, n1) -> {
+        currentSession.sortGeneList(getFrameComparator());
+        IGV.getInstance().resetFrames();
+    }
+
+    private static Comparator<String> getFrameComparator() {
+        return (n0, n1) -> {
             ReferenceFrame f0 = getFrame(n0);
             ReferenceFrame f1 = getFrame(n1);
 
@@ -355,8 +357,7 @@ public class FrameManager implements IGVEventObserver {
             int chrComp = ChromosomeNameComparator.get().compare(chr0, chr1);
             if (chrComp != 0) return chrComp;
             return s0 - s1;
-        });
-        IGV.getInstance().resetFrames();
+        };
     }
 
 
