@@ -816,7 +816,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         for (ReferenceFrame frame : frames) {
             final double actloc = location != null ? location : frame.getCenter();
             final AlignmentInterval interval = getDataManager().getLoadedInterval(frame);
-            interval.sortRows(option, actloc, tag, invertSort);
+            if(interval != null) {
+                interval.sortRows(option, actloc, tag, invertSort);
+            } else {
+                log.warn("Attempt to sort alignments prior to loading");
+            }
         }
     }
 
