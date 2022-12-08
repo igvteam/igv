@@ -1543,7 +1543,6 @@ public class IGV implements IGVEventObserver {
     }
 
     public List<DataTrack> getDataTracks() {
-        Iterable<DataTrack> dataTracksIter = Iterables.filter(getAllTracks(), DataTrack.class);
         return Lists.newArrayList(Iterables.filter(getAllTracks(), DataTrack.class));
     }
 
