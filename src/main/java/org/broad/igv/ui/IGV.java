@@ -1539,15 +1539,16 @@ public class IGV implements IGVEventObserver {
     }
 
     public List<FeatureTrack> getFeatureTracks() {
-        Iterable<FeatureTrack> featureTracksIter = Iterables.filter(getAllTracks(), FeatureTrack.class);
-        List<FeatureTrack> featureTracks = Lists.newArrayList(featureTracksIter);
-        return featureTracks;
+        return Lists.newArrayList(Iterables.filter(getAllTracks(), FeatureTrack.class));
     }
 
     public List<DataTrack> getDataTracks() {
         Iterable<DataTrack> dataTracksIter = Iterables.filter(getAllTracks(), DataTrack.class);
-        List<DataTrack> dataTracks = Lists.newArrayList(dataTracksIter);
-        return dataTracks;
+        return Lists.newArrayList(Iterables.filter(getAllTracks(), DataTrack.class));
+    }
+
+    public List<AlignmentTrack> getAlignmentTracks() {
+        return Lists.newArrayList(Iterables.filter(getAllTracks(), AlignmentTrack.class));
     }
 
     public void clearSelections() {
