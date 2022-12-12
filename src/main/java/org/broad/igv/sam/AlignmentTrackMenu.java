@@ -6,7 +6,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
@@ -14,7 +13,6 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sashimi.SashimiPlot;
-import org.broad.igv.session.Session;
 import org.broad.igv.tools.PFMExporter;
 import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.track.Track;
@@ -178,7 +176,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     }
 
     private void addShowChimericRegions(final AlignmentTrack alignmentTrack, final TrackClickEvent e, final Alignment clickedAlignment) {
-        JMenuItem item = new JMenuItem("View supplementary (chimeric) alignments in split screen");
+        JMenuItem item = new JMenuItem("View chimeric alignments in split screen");
         if (clickedAlignment.getAttribute(SAMTag.SA.name()) != null) {
             item.setEnabled(true);
             item.addActionListener(aEvt -> {
@@ -1199,14 +1197,10 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                 .collect(Collectors.toList());
         List<String> loci = createLociList(frame, newLoci);
         String listName = String.join("   ", loci); // TODO check the trailing "   " was unnecessary
-
-        GeneList geneList = new GeneList(listName, loci, false);
-
-        final Session currentSession = IGV.getInstance().getSession();
-        currentSession.setCurrentGeneList(geneList);
-
         //Need to sort the frames by position
-        currentSession.sortGeneList(FrameManager.getFrameC);
+        GeneList geneList = new GeneList(listName, loci, false);
+        geneList.sort(FrameManager.FRAME_COMPARATOR);
+        IGV.getInstance().getSession().setCurrentGeneList(geneList);
         IGV.getInstance().resetFrames();
     }
 

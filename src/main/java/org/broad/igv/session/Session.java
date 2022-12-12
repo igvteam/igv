@@ -415,11 +415,6 @@ public class Session implements IGVEventObserver {
         }
     }
 
-    public void sortGeneList(Comparator<String> comparator) {
-        getCurrentGeneList().sort(comparator);
-        this.setCurrentGeneList(getCurrentGeneList());
-    }
-
     public int getVersion() {
         return version;
     }
@@ -486,7 +481,7 @@ public class Session implements IGVEventObserver {
      * position string.  UCSC conventions  are followed for coordinates,
      * specifically the internal representation is "zero" based (first base is
      * numbered 0) but the display representation is "one" based (first base is
-     * numbered 1).   Consequently 1 is substracted from the parsed positions
+     * numbered 1).   Consequently, 1 is subtracted from the parsed positions
      */
     private static int[] getStartEnd(String posString) {
         try {

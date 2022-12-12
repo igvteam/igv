@@ -36,7 +36,6 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.session.Session;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -51,6 +50,20 @@ import java.util.stream.Collectors;
  * @date Sep 10, 2010
  */
 public class FrameManager implements IGVEventObserver {
+
+    public static final Comparator<String> FRAME_COMPARATOR = (n0, n1) -> {
+        ReferenceFrame f0 = getFrame(n0);
+        ReferenceFrame f1 = getFrame(n1);
+
+        String chr0 = f0 == null ? "" : f0.getChrName();
+        String chr1 = f1 == null ? "" : f1.getChrName();
+        int s0 = f0 == null ? 0 : f0.getCurrentRange().getStart();
+        int s1 = f1 == null ? 0 : f1.getCurrentRange().getStart();
+
+        int chrComp = ChromosomeNameComparator.get().compare(chr0, chr1);
+        if (chrComp != 0) return chrComp;
+        return s0 - s1;
+    };
 
     private static List<ReferenceFrame> frames = new ArrayList();
     private static ReferenceFrame defaultFrame;
@@ -139,7 +152,7 @@ public class FrameManager implements IGVEventObserver {
         if (gl == null) {
             frames.add(getDefaultFrame());
         } else {
-            List<String> lociNotFound = new ArrayList();
+            List<String> lociNotFound = new ArrayList<>();
             List<String> loci = gl.getLoci();
             if (loci.size() == 1) {
                 Locus locus = getLocus(loci.get(0));
@@ -335,29 +348,11 @@ public class FrameManager implements IGVEventObserver {
             }
         }
 
+        //Need to sort the frames by position
         GeneList geneList = new GeneList("Current frames", loci, false);
-        Session currentSession = IGV.getInstance().getSession();
-        currentSession.setCurrentGeneList(geneList);
-
-        // sort the frames by position
-        currentSession.sortGeneList(getFrameComparator());
+        geneList.sort(FRAME_COMPARATOR);
+        IGV.getInstance().getSession().setCurrentGeneList(geneList);
         IGV.getInstance().resetFrames();
-    }
-
-    private static Comparator<String> getFrameComparator() {
-        return (n0, n1) -> {
-            ReferenceFrame f0 = getFrame(n0);
-            ReferenceFrame f1 = getFrame(n1);
-
-            String chr0 = f0 == null ? "" : f0.getChrName();
-            String chr1 = f1 == null ? "" : f1.getChrName();
-            int s0 = f0 == null ? 0 : f0.getCurrentRange().getStart();
-            int s1 = f1 == null ? 0 : f1.getCurrentRange().getStart();
-
-            int chrComp = ChromosomeNameComparator.get().compare(chr0, chr1);
-            if (chrComp != 0) return chrComp;
-            return s0 - s1;
-        };
     }
 
 
