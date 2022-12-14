@@ -191,6 +191,9 @@ SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	TRUE
 SAM.LINK_READS	Link alignments by tag	boolean	FALSE
 SAM.LINK_TAG	Linking tag	string	READNAME
 
+##SMRT Kinetics
+SMRT_KINETICS.SHOW_OPTIONS	Show visibility options for SMRT kinetics data	boolean	FALSE
+
 #Proxy
 PROXY.DISABLE_CHECK	Disable check for system proxy	boolean	FALSE
 PROXY.USE	Use proxy	boolean	FALSE

@@ -315,9 +315,11 @@ public class AlignmentRenderer {
                 double pixelWidth = pixelEnd - pixelStart;
                 Color alignmentColor = getAlignmentColor(alignment, track);
                 final boolean leaveMargin = (this.track.getDisplayMode() != Track.DisplayMode.SQUISHED);
+                final ColorOption colorOption = renderOptions.getColorOption();
                 if ((pixelWidth < 2) &&
-                        !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) ||
-                                renderOptions.getColorOption().isBaseMod()) &&
+                        !((AlignmentTrack.isBisulfiteColorType(colorOption) ||
+                                colorOption.isBaseMod() ||
+                                colorOption.isSMRTKinetics()) &&
                                 (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
@@ -797,7 +799,8 @@ public class AlignmentRenderer {
                             Color color = null;
                             if (bisulfiteMode) {
                                 color = bisinfo.getDisplayColor(idx);
-                            } else if (colorOption.isBaseMod()) {
+                            } else if (colorOption.isBaseMod() ||
+                                       colorOption.isSMRTKinetics()) {
                                 color = Color.GRAY;
                             } else {
                                 color = nucleotideColors.get(c);
@@ -830,6 +833,56 @@ public class AlignmentRenderer {
         // Base modification
         if (colorOption.isBaseMod()) {
             BaseModificationRenderer.drawModifications(alignment, bpStart, locScale, rowRect, context.getGraphics(), colorOption);
+        }
+
+        // Kinetic data
+        if (colorOption.isSMRTKinetics()) {
+            short[] smrtFrameCounts;
+            if (ColorOption.SMRT_SUBREAD_IPD == colorOption) {
+                smrtFrameCounts = alignment.getSmrtSubreadIpd();
+            } else if (ColorOption.SMRT_SUBREAD_PW == colorOption) {
+                smrtFrameCounts = alignment.getSmrtSubreadPw();
+            } else if (ColorOption.SMRT_CCS_FWD_IPD == colorOption || ColorOption.SMRT_CCS_REV_IPD == colorOption) {
+                final boolean isForwardStrand = (ColorOption.SMRT_CCS_FWD_IPD == colorOption);
+                smrtFrameCounts = alignment.getSmrtCcsIpd(isForwardStrand);
+            } else {
+                final boolean isForwardStrand = (ColorOption.SMRT_CCS_FWD_PW == colorOption);
+                smrtFrameCounts = alignment.getSmrtCcsPw(isForwardStrand);
+            }
+
+            if (smrtFrameCounts != null) {
+                // Compute bounds
+                int pY = (int) rowRect.getY();
+                int dY = (int) rowRect.getHeight();
+                dX = (int) Math.max(1, (1.0 / locScale));
+                Graphics g = context.getGraphics();
+
+                for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
+                    ByteSubarray bases = block.getBases();
+                    final int startOffset = bases.startOffset;
+                    final int stopOffset = startOffset + bases.length;
+                    for (int i = startOffset; i < stopOffset; i++) {
+                        g.setColor(getSmrtFrameCountColor(smrtFrameCounts[i]));
+
+                        int blockIdx = i - block.getBases().startOffset;
+                        int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
+
+                        // Don't draw out of clipping rect
+                        if (pX > rowRect.getMaxX()) {
+                            break;
+                        } else if (pX + dX < rowRect.getX()) {
+                            continue;
+                        }
+
+                        // Expand narrow width to make more visible
+                        if (dX < 3) {
+                            dX = 3;
+                            pX--;
+                        }
+                        g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
+                    }
+                }
+            }
         }
 
         // DRAW Insertions
@@ -943,6 +996,56 @@ public class AlignmentRenderer {
         }
         Color color = ColorUtilities.getCompositeColor(backgroundColor, foregroundColor, alpha);
         return color;
+    }
+
+    private static int blendColorValue(int v1, int v2, float v2Frac) {
+        return Math.min(255, (int) (v1 + (v2 - v1) * v2Frac));
+    }
+
+    private static Color blendColors(Color c1, Color c2, float c2Frac) {
+        assert(c2Frac >= 0.0 && c2Frac <= 1.0);
+        return new Color(blendColorValue(c1.getRed(), c2.getRed(), c2Frac),
+                blendColorValue(c1.getGreen(), c2.getGreen(), c2Frac),
+                blendColorValue(c1.getBlue(), c2.getBlue(), c2Frac));
+    }
+
+    /**
+     * Set base color for SMRT sequencing frame count
+     *
+     * This color scheme uses multiple transitions to help visually distinguish a large range of time intervals.
+     *
+     * Color scheme:
+     * The color starts out as transparent at a frame count of 0.
+     * - Color transition 1 goes from transparent to opaque red
+     * - Color transition 2 goes from red to yellow
+     * - Color transition 3 goes from yellow to cyan
+     *
+     * Transition 3 will mostly be visible when uncompressed frame counts are used. It helps to visually distinguish
+     * exceptional polymerase stalling events.
+     */
+    private static Color getSmrtFrameCountColor(short shortFrameCount) {
+        final int transition1MaxFrameCount = 100;
+        final int transition2MaxFrameCount = 600;
+        final int transition3MaxFrameCount = 6000;
+        final Color color1 = Color.red;
+        final Color color2 = Color.yellow;
+        final Color color3 = Color.cyan;
+
+        final int frameCount = Short.toUnsignedInt(shortFrameCount);
+        final int alpha = Math.min(255, (frameCount*255)/transition1MaxFrameCount);
+        Color blendedColor;
+        if (frameCount <= transition1MaxFrameCount) {
+            blendedColor = color1;
+        } else if (frameCount <= transition2MaxFrameCount) {
+            float color2Fraction = (frameCount-transition1MaxFrameCount)/((float) (transition2MaxFrameCount-transition1MaxFrameCount));
+            blendedColor = blendColors(color1, color2, color2Fraction);
+        } else if (frameCount <= transition3MaxFrameCount) {
+            float color3Fraction = (frameCount-transition2MaxFrameCount)/((float) (transition3MaxFrameCount-transition2MaxFrameCount));
+            blendedColor = blendColors(color2, color3, color3Fraction);
+        } else {
+            blendedColor = color3;
+        }
+        return new Color(blendedColor.getRed(), blendedColor.getGreen(), blendedColor.getBlue(), alpha);
     }
 
     private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter,
@@ -1176,6 +1279,12 @@ public class AlignmentRenderer {
             case BASE_MODIFICATION:
             case BASE_MODIFICATION_5MC:
             case BASE_MODIFICATION_C:
+            case SMRT_SUBREAD_IPD:
+            case SMRT_SUBREAD_PW:
+            case SMRT_CCS_FWD_IPD:
+            case SMRT_CCS_FWD_PW:
+            case SMRT_CCS_REV_IPD:
+            case SMRT_CCS_REV_PW:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
                 c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;
