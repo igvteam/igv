@@ -105,24 +105,15 @@ public class SAMAlignment implements Alignment {
     public AlignmentBlockImpl[] insertions;
     List<Gap> gaps;
     char[] gapTypes;
-
-    /**
-     * Map of position -> base modification
-     */
-    private List<BaseModificationSet> baseModificationSets;
-
-    private short[] smrtSubreadIpdVals;
-    private short[] smrtSubreadPwVals;
-    private short[] smrtCcsFwdIpdVals;
-    private short[] smrtCcsFwdPwVals;
-    private short[] smrtCcsRevIpdVals;
-    private short[] smrtCcsRevPwVals;
-
     protected String mateSequence = null;
     protected String pairOrientation = "";
     private Strand firstOfPairStrand;
     private Strand secondOfPairStrand;
 
+    /**
+     * Map of position -> base modification
+     */
+    private List<BaseModificationSet> baseModificationSets;
     private SMRTKinetics smrtKinetics;
 
     public SAMAlignment(SAMRecord record) {
