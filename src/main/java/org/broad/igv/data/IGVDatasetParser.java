@@ -173,7 +173,7 @@ public class IGVDatasetParser {
             }
 
             // Parse comments and directives, if any
-            nextLine = reader.readLine().trim();
+            nextLine = reader.readLine();
             while (nextLine.startsWith("#") || (nextLine.trim().length() == 0)) {
                 headerRows++;
 
