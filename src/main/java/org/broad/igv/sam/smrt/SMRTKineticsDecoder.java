@@ -1,4 +1,4 @@
-package org.broad.igv.sam;
+package org.broad.igv.sam.smrt;
 
 /// Decode SMRT kinetic values from uint8 compressed code to an approximation of the
 /// original frame count.
@@ -7,17 +7,20 @@ public class SMRTKineticsDecoder {
 
     private static final int base = 1 << 6;
 
-    private final short[] frameCounts;
+    private static short[] frameCounts;
 
-    public SMRTKineticsDecoder() {
-        frameCounts = new short[256];
-        for (int i = 0; i < 256; ++i) {
-            frameCounts[i] = decodeFrameCount((byte) i);
-        }
+    private SMRTKineticsDecoder() {
+
     }
 
     /// Convert compressed byte to frame count from cached LUT
-    public short lookupFrameCount(byte val) {
+    public static short lookupFrameCount(byte val) {
+        if(frameCounts == null) {
+            frameCounts = new short[256];
+            for (int i = 0; i < 256; ++i) {
+                frameCounts[i] = decodeFrameCount((byte) i);
+            }
+        }
         return frameCounts[val & 0xFF];
     }
 

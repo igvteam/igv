@@ -33,6 +33,7 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.sam.mods.BaseModificationUtils;
 import org.broad.igv.sam.mods.BaseModificationSet;
+import org.broad.igv.sam.smrt.SMRTKinetics;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
@@ -73,6 +74,10 @@ public interface Alignment extends LocusScore {
     java.util.List<Gap> getGaps();
 
     int getInferredInsertSize();
+
+    default int getLeadingHardClipLength() {
+        return 0;
+    }
 
     int getMappingQuality();
 
@@ -167,13 +172,8 @@ public interface Alignment extends LocusScore {
 
     default List<BaseModificationSet> getBaseModificationSets() { return null;}
 
-    default short[] getSmrtSubreadIpd() { return null;}
+    default SMRTKinetics getSmrtKinetics() { return null;}
 
-    default short[] getSmrtSubreadPw() { return null;}
-
-    default short[] getSmrtCcsIpd(boolean isForwardStrand) { return null;}
-
-    default short[] getSmrtCcsPw(boolean isForwardStrand) { return null;}
 
     default String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
         return getValueString(position, mouseX, (WindowFunction) null);

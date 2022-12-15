@@ -39,6 +39,7 @@ import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.sam.mods.BaseModificationRenderer;
+import org.broad.igv.sam.smrt.SMRTKinetics;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -838,16 +839,17 @@ public class AlignmentRenderer {
         // Kinetic data
         if (colorOption.isSMRTKinetics()) {
             short[] smrtFrameCounts;
+            SMRTKinetics smrtKinetics = alignment.getSmrtKinetics();
             if (ColorOption.SMRT_SUBREAD_IPD == colorOption) {
-                smrtFrameCounts = alignment.getSmrtSubreadIpd();
+                smrtFrameCounts = smrtKinetics.getSmrtSubreadIpd();
             } else if (ColorOption.SMRT_SUBREAD_PW == colorOption) {
-                smrtFrameCounts = alignment.getSmrtSubreadPw();
+                smrtFrameCounts = smrtKinetics.getSmrtSubreadPw();
             } else if (ColorOption.SMRT_CCS_FWD_IPD == colorOption || ColorOption.SMRT_CCS_REV_IPD == colorOption) {
                 final boolean isForwardStrand = (ColorOption.SMRT_CCS_FWD_IPD == colorOption);
-                smrtFrameCounts = alignment.getSmrtCcsIpd(isForwardStrand);
+                smrtFrameCounts = smrtKinetics.getSmrtCcsIpd(isForwardStrand);
             } else {
                 final boolean isForwardStrand = (ColorOption.SMRT_CCS_FWD_PW == colorOption);
-                smrtFrameCounts = alignment.getSmrtCcsPw(isForwardStrand);
+                smrtFrameCounts = smrtKinetics.getSmrtCcsPw(isForwardStrand);
             }
 
             if (smrtFrameCounts != null) {

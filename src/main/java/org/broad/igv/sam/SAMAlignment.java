@@ -41,6 +41,8 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.mods.BaseModificationUtils;
 import org.broad.igv.sam.mods.BaseModificationSet;
+import org.broad.igv.sam.smrt.SMRTKinetics;
+import org.broad.igv.sam.smrt.SMRTKineticsDecoder;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
@@ -121,7 +123,7 @@ public class SAMAlignment implements Alignment {
     private Strand firstOfPairStrand;
     private Strand secondOfPairStrand;
 
-    private SMRTKineticsDecoder smrtKineticsDecoder;
+    private SMRTKinetics smrtKinetics;
 
     public SAMAlignment(SAMRecord record) {
 
@@ -166,8 +168,6 @@ public class SAMAlignment implements Alignment {
         setPairOrientation();
         setPairStrands();
         createAlignmentBlocks();
-
-        this.smrtKineticsDecoder = new SMRTKineticsDecoder();
     }
 
     public SAMRecord getRecord() {
@@ -350,107 +350,11 @@ public class SAMAlignment implements Alignment {
         return baseModificationSets;
     }
 
-    /**
-     * Given the compressed byte code array of CCS kinetic values from the SAM aux field do the following:
-     * - Initialize frame count array, decode compressed kinetic byte codes into frame counts and copy these into it
-     * - Reverse frame count sequence if reverseSequence is true
-     * - If the read has a leading hard-clip, remove all frame counts from the hard-clipped region
-     *
-     * Returns the processed frame count array
-     */
-    private short[] parseSmrtKineticByteCodes(byte[] smrtKineticByteCodes, boolean reverseSequence) {
-        if (smrtKineticByteCodes.length == 0) {
-            return null;
+    public SMRTKinetics getSmrtKinetics() {
+        if (smrtKinetics == null) {
+            smrtKinetics = new SMRTKinetics(this);
         }
-
-        int hardClipLength = getLeadingHardClipLength();
-        int kineticValLength = smrtKineticByteCodes.length - hardClipLength;
-        assert(kineticValLength > 0);
-        short[] ccsKineticVals = new short[kineticValLength];
-
-        int byteCodeIndex = 0;
-        for (byte ccsKineticByteCode : smrtKineticByteCodes) {
-            int valIndex = byteCodeIndex;
-            byteCodeIndex++;
-            if (reverseSequence) {
-                valIndex = smrtKineticByteCodes.length - (valIndex+1);
-            }
-            if (valIndex < hardClipLength) continue;
-            valIndex -= hardClipLength;
-            ccsKineticVals[valIndex] = smrtKineticsDecoder.lookupFrameCount(ccsKineticByteCode);
-        }
-        return ccsKineticVals;
-    }
-
-    /**
-     * Given the original uint16 CCS kinetic frame count array from the SAM aux field do the following:
-     * - Initialize the processed frame count array and copy values into it
-     * - Reverse frame count sequence if reverseSequence is true
-     * - If the read has a leading hard-clip, remove all frame counts from the hard-clipped region
-     *
-     * Returns the processed frame count array
-     */
-    private short[] parseAuxSmrtKineticFrameCounts(short[] auxSmrtKineticFrameCounts, boolean reverseSequence) {
-        if (auxSmrtKineticFrameCounts.length == 0) {
-            return null;
-        }
-
-        int hardClipLength = getLeadingHardClipLength();
-        int kineticValLength = auxSmrtKineticFrameCounts.length - hardClipLength;
-        assert(kineticValLength > 0);
-        short[] ccsKineticVals = new short[kineticValLength];
-
-        int auxIndex = 0;
-        for (short ccsKineticFrameCount : auxSmrtKineticFrameCounts) {
-            int valIndex = auxIndex;
-            auxIndex++;
-            if (reverseSequence) {
-                valIndex = auxSmrtKineticFrameCounts.length - (valIndex+1);
-            }
-            if (valIndex < hardClipLength) continue;
-            valIndex -= hardClipLength;
-            ccsKineticVals[valIndex] = ccsKineticFrameCount;
-        }
-        return ccsKineticVals;
-    }
-
-    private short[] getSmrtKineticsVals(short[] smrtKineticVals, String tag, boolean bytesReversedInBam) {
-        if (smrtKineticVals == null && record.hasAttribute(tag)) {
-            final boolean reverseSequence = (bytesReversedInBam ^ isNegativeStrand());
-            Object tagValue = record.getAttribute(tag);
-            if (tagValue instanceof byte[]) {
-                smrtKineticVals = parseSmrtKineticByteCodes((byte[]) (tagValue), reverseSequence);
-            } else if (tagValue instanceof short[]) {
-                smrtKineticVals = parseAuxSmrtKineticFrameCounts((short[]) (tagValue), reverseSequence);
-            } else {
-                throw new RuntimeException("Unexpected format in SMRT kinetic aux tag '" + tag + "'");
-            }
-        }
-        return smrtKineticVals;
-    }
-
-    public short[] getSmrtSubreadIpd() {
-        return getSmrtKineticsVals(smrtSubreadIpdVals, "ip", false);
-    }
-
-    public short[] getSmrtSubreadPw() {
-        return getSmrtKineticsVals(smrtSubreadPwVals, "pw", false);
-    }
-
-    public short[] getSmrtCcsIpd(boolean isForwardStrand) {
-        if (isForwardStrand ^ isNegativeStrand()) {
-            return getSmrtKineticsVals(smrtCcsFwdIpdVals, "fi", false);
-        } else {
-            return getSmrtKineticsVals(smrtCcsRevIpdVals, "ri", true);
-        }
-    }
-
-    public short[] getSmrtCcsPw(boolean isForwardStrand) {
-        if (isForwardStrand ^ isNegativeStrand()) {
-            return getSmrtKineticsVals(smrtCcsFwdPwVals, "fp", false);
-        } else {
-            return getSmrtKineticsVals(smrtCcsRevPwVals, "rp", true);
-        }
+        return smrtKinetics;
     }
 
     /**
@@ -495,7 +399,7 @@ public class SAMAlignment implements Alignment {
     /**
      * Return the number of bases hard-clipped from the leading-edge (leftmost view in IGV) of the alignment
      */
-    private int getLeadingHardClipLength() {
+    public int getLeadingHardClipLength() {
         int clipLength = 0;
 
         String cigarString = record.getCigarString();
@@ -779,27 +683,28 @@ public class SAMAlignment implements Alignment {
                 }
             } else if (colorOption.isSMRTKinetics()) {
                 Integer readIndex = positionToReadIndex(position);
+                SMRTKinetics sk = getSmrtKinetics();
                 if (readIndex != null) {
                     if (colorOption == AlignmentTrack.ColorOption.SMRT_SUBREAD_IPD) {
-                        short[] ipdVals = getSmrtSubreadIpd();
+                        short[] ipdVals = sk.getSmrtSubreadIpd();
                         if (ipdVals != null) {
                             return "Subread IPD: " + Short.toUnsignedInt(ipdVals[readIndex]) + " Frames";
                         }
                     } else if (colorOption == AlignmentTrack.ColorOption.SMRT_SUBREAD_PW) {
-                        short[] pwVals = getSmrtSubreadPw();
+                        short[] pwVals = sk.getSmrtSubreadPw();
                         if (pwVals != null) {
                             return "Subread PW: " + Short.toUnsignedInt(pwVals[readIndex]) + " Frames";
                         }
                     } else if (colorOption == AlignmentTrack.ColorOption.SMRT_CCS_FWD_IPD || colorOption == AlignmentTrack.ColorOption.SMRT_CCS_REV_IPD) {
                         final boolean isForwardStrand = (colorOption == AlignmentTrack.ColorOption.SMRT_CCS_FWD_IPD);
-                        short[] ipdVals = getSmrtCcsIpd(isForwardStrand);
+                        short[] ipdVals = sk.getSmrtCcsIpd(isForwardStrand);
                         if (ipdVals != null) {
                             final String strand = (isForwardStrand ? "fwd" : "rev");
                             return "CCS " + strand + "-strand aligned IPD: " + Short.toUnsignedInt(ipdVals[readIndex]) + " Frames";
                         }
                     } else {
                         final boolean isForwardStrand = (colorOption == AlignmentTrack.ColorOption.SMRT_CCS_FWD_PW);
-                        short[] pwVals = getSmrtCcsPw(isForwardStrand);
+                        short[] pwVals = sk.getSmrtCcsPw(isForwardStrand);
                         if (pwVals != null) {
                             final String strand = (isForwardStrand ? "fwd" : "rev");
                             return "CCS " + strand + "-strand aligned PW: " + Short.toUnsignedInt(pwVals[readIndex]) + " Frames";
