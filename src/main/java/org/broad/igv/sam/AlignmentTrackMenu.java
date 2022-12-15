@@ -578,6 +578,22 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             group.add(mi);
         }
 
+        if (alignmentTrack.getPreferences().getAsBoolean(SMRT_KINETICS_SHOW_OPTIONS)) {
+            // Show additional options to help visualize SMRT kinetics data
+            mappings.clear();
+            mappings.put("SMRT subread IPD", AlignmentTrack.ColorOption.SMRT_SUBREAD_IPD);
+            mappings.put("SMRT subread PW", AlignmentTrack.ColorOption.SMRT_SUBREAD_PW);
+            mappings.put("SMRT CCS fwd-strand aligned IPD", AlignmentTrack.ColorOption.SMRT_CCS_FWD_IPD);
+            mappings.put("SMRT CCS fwd-strand aligned PW", AlignmentTrack.ColorOption.SMRT_CCS_FWD_PW);
+            mappings.put("SMRT CCS rev-strand aligned IPD", AlignmentTrack.ColorOption.SMRT_CCS_REV_IPD);
+            mappings.put("SMRT CCS rev-strand aligned PW",AlignmentTrack.ColorOption.SMRT_CCS_REV_PW);
+            colorMenu.addSeparator();
+            for (Map.Entry<String, AlignmentTrack.ColorOption> el : mappings.entrySet()) {
+                JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
+                colorMenu.add(mi);
+                group.add(mi);
+            }
+        }
 
         add(colorMenu);
 
