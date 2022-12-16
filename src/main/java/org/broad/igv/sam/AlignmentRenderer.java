@@ -39,6 +39,7 @@ import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.sam.mods.BaseModificationRenderer;
+import org.broad.igv.sam.smrt.SMRTKineticsRenderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -315,9 +316,11 @@ public class AlignmentRenderer {
                 double pixelWidth = pixelEnd - pixelStart;
                 Color alignmentColor = getAlignmentColor(alignment, track);
                 final boolean leaveMargin = (this.track.getDisplayMode() != Track.DisplayMode.SQUISHED);
+                final ColorOption colorOption = renderOptions.getColorOption();
                 if ((pixelWidth < 2) &&
-                        !((AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) ||
-                                renderOptions.getColorOption().isBaseMod()) &&
+                        !((AlignmentTrack.isBisulfiteColorType(colorOption) ||
+                                colorOption.isBaseMod() ||
+                                colorOption.isSMRTKinetics()) &&
                                 (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
@@ -797,7 +800,8 @@ public class AlignmentRenderer {
                             Color color = null;
                             if (bisulfiteMode) {
                                 color = bisinfo.getDisplayColor(idx);
-                            } else if (colorOption.isBaseMod()) {
+                            } else if (colorOption.isBaseMod() ||
+                                       colorOption.isSMRTKinetics()) {
                                 color = Color.GRAY;
                             } else {
                                 color = nucleotideColors.get(c);
@@ -830,6 +834,11 @@ public class AlignmentRenderer {
         // Base modification
         if (colorOption.isBaseMod()) {
             BaseModificationRenderer.drawModifications(alignment, bpStart, locScale, rowRect, context.getGraphics(), colorOption);
+        }
+
+        // Kinetic data
+        if (colorOption.isSMRTKinetics()) {
+            SMRTKineticsRenderer.drawSmrtKinetics(alignment, bpStart, locScale, rowRect, context.getGraphics(), colorOption);
         }
 
         // DRAW Insertions
@@ -944,6 +953,7 @@ public class AlignmentRenderer {
         Color color = ColorUtilities.getCompositeColor(backgroundColor, foregroundColor, alpha);
         return color;
     }
+
 
     private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter,
                                      int pxTop, int pxH, int pxWmax, int translateX, AlignmentBlock insertionBlock) {
@@ -1176,6 +1186,12 @@ public class AlignmentRenderer {
             case BASE_MODIFICATION:
             case BASE_MODIFICATION_5MC:
             case BASE_MODIFICATION_C:
+            case SMRT_SUBREAD_IPD:
+            case SMRT_SUBREAD_PW:
+            case SMRT_CCS_FWD_IPD:
+            case SMRT_CCS_FWD_PW:
+            case SMRT_CCS_REV_IPD:
+            case SMRT_CCS_REV_PW:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
                 c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;

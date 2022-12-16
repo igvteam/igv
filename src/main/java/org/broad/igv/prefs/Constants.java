@@ -175,6 +175,8 @@ final public class Constants {
     public static final String SAM_DISPLAY_PAIRED = "SAM.DISPLAY_PAIRED";
     public static final String KNOWN_SNPS = "KNOWN_SNPS_FILE";
 
+    public static final String SMRT_KINETICS_SHOW_OPTIONS = "SMRT_KINETICS.SHOW_OPTIONS";
+
     // Sequence track settings
     public static final String SEQUENCE_TRANSLATION_STRAND = "SEQUENCE_TRANSLATION_STRAND";
     public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
