@@ -176,7 +176,7 @@ public class MergedAlignmentReader implements AlignmentReader {
                 if (iterate) {
                     iter = reader.iterator();
                 } else {
-                    String seq = readerChrNameMaps.get(reader).get(chr);
+                    String seq = readerChrNameMaps.containsKey(reader) ? readerChrNameMaps.get(reader).get(chr) : chr;
                     iter = reader.query(seq, start, end, contained);
                 }
                 allIterators.add(iter);
