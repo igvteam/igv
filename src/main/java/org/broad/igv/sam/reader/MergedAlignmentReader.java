@@ -46,6 +46,7 @@ import java.util.*;
 public class MergedAlignmentReader implements AlignmentReader {
 
     private static Logger log = LogManager.getLogger(MergedAlignmentReader.class);
+    private final Genome genome;
 
     List<AlignmentReader> readers;
     List<String> sequenceNames;
@@ -56,6 +57,7 @@ public class MergedAlignmentReader implements AlignmentReader {
 
     public MergedAlignmentReader(List<AlignmentReader> readers) throws IOException {
         this.readers = readers;
+        this.genome = GenomeManager.getInstance().getCurrentGenome();
         loadSequenceNames();
     }
 
@@ -104,8 +106,6 @@ public class MergedAlignmentReader implements AlignmentReader {
      * @return
      */
     public void loadSequenceNames() throws IOException {
-
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
         readerChrNameMaps = new HashMap<>();
 
@@ -245,7 +245,7 @@ public class MergedAlignmentReader implements AlignmentReader {
             public int compare(RecordIterWrapper wrapper1, RecordIterWrapper wrapper2) {
                 Alignment a1 = wrapper1.nextRecord;
                 Alignment a2 = wrapper2.nextRecord;
-                int chrCompare = a1.getChr().compareTo(a2.getChr());
+                int chrCompare = genome.getCanonicalChrName(a1.getChr()).compareTo(genome.getCanonicalChrName(a2.getChr()));
                 if (chrCompare != 0) {
                     return chrCompare;
                 } else {
