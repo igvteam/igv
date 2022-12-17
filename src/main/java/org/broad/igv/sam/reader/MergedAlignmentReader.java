@@ -245,8 +245,12 @@ public class MergedAlignmentReader implements AlignmentReader {
             public int compare(RecordIterWrapper wrapper1, RecordIterWrapper wrapper2) {
                 Alignment a1 = wrapper1.nextRecord;
                 Alignment a2 = wrapper2.nextRecord;
-                return a1.getAlignmentStart() - a2.getAlignmentStart();
-
+                int chrCompare = a1.getChr().compareTo(a2.getChr());
+                if (chrCompare != 0) {
+                    return chrCompare;
+                } else {
+                    return a1.getAlignmentStart() - a2.getAlignmentStart();
+                }
             }
         }
     }
