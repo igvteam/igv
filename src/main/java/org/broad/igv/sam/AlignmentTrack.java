@@ -1340,6 +1340,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Range groupByPos;
         private Boolean invertSorting;
         private boolean invertGroupSorting;
+        private boolean groupAll;
         private Boolean showInsertionMarkers;
         private Boolean hideSmallIndels;
         private Integer smallIndelThreshold;
@@ -1424,6 +1425,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         void setInvertGroupSorting(boolean invertGroupSorting) {
             this.invertGroupSorting = invertGroupSorting;
+        }
+
+        public void setGroupAll(boolean groupAll) {
+            this.groupAll = groupAll;
         }
 
         void setLinkByTag(String linkByTag) {
@@ -1580,6 +1585,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         public boolean isInvertGroupSorting() {
             return invertGroupSorting;
+        }
+
+        public boolean isGroupAll() {
+            return groupAll;
         }
 
         public String getLinkByTag() {

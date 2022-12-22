@@ -197,6 +197,11 @@ public class HttpUtils {
      */
     public static String mapURL(String urlString) throws MalformedURLException {
 
+        // Check explicit mappings first
+        if(urlMappings.containsKey(urlString)) {
+            return urlMappings.get(urlString);
+        }
+
         if (urlString.startsWith("htsget://")) {
             urlString = urlString.replace("htsget://", "https://");
         } else if (urlString.startsWith("gs://")) {
@@ -1189,4 +1194,17 @@ public class HttpUtils {
             return maxAge;
         }
     }
+
+    private static Map<String, String> urlMappings;
+    static {
+        // mutable map
+        urlMappings = new HashMap<>();
+        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta", "https://igv.genepattern.org/genomes/seq/hg19/hg19.fasta");
+        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta.fai", "https://igv.genepattern.org/genomes/seq/hg19/hg19.fasta.fai");
+        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/cytoBand.txt", "https://igv.genepattern.org/genomes/seq/hg19/cytoBand.txt");
+        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa", "https://igv.genepattern.org/genomes/seq/hg38/hg38.fa");
+        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.fai", "https://igv.genepattern.org/genomes/seq/hg38/hg38.fa.fai");
+    }
+
+
 }

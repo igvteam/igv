@@ -9,6 +9,7 @@ import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.session.Session;
@@ -211,8 +212,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             boolean success = haplotypeUtils.clusterAlignments(frame.getChrName(), start, end, nClusters);
 
             if (success) {
-                alignmentTrack.groupAlignments(AlignmentTrack.GroupOption.HAPLOTYPE, null, null);
-                alignmentTrack.repaint();
+                groupAlignments(AlignmentTrack.GroupOption.HAPLOTYPE, null, null);
             }
 
             //dataManager.sortRows(SortOption.HAPLOTYPE, frame, (end + start) / 2, null);
@@ -338,6 +338,9 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     }
 
     void addGroupMenuItem(final TrackClickEvent te) {//ReferenceFrame frame) {
+
+
+
         final MouseEvent me = te.getMouseEvent();
         ReferenceFrame frame = te.getFrame();
         if (frame == null) {
@@ -363,7 +366,8 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             JCheckBoxMenuItem mi = new JCheckBoxMenuItem(option.label);
             mi.setSelected(renderOptions.getGroupByOption() == option);
             mi.addActionListener(aEvt -> {
-                alignmentTrack.groupAlignments(option, null, null);
+                    groupAlignments(option, null, null);
+
             });
             groupMenu.add(mi);
             group.add(mi);
@@ -374,9 +378,9 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
             if (tag != null) {
                 if (tag.trim().length() > 0) {
-                    alignmentTrack.groupAlignments(AlignmentTrack.GroupOption.TAG, tag, null);
+                    groupAlignments(AlignmentTrack.GroupOption.TAG, tag, null);
                 } else {
-                    alignmentTrack.groupAlignments(AlignmentTrack.GroupOption.NONE, null, null);
+                    groupAlignments(AlignmentTrack.GroupOption.NONE, null, null);
                 }
             }
 
@@ -399,7 +403,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                     ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
             newGroupByPosOption.addActionListener(aEvt -> {
                 Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
-                alignmentTrack.groupAlignments(AlignmentTrack.GroupOption.BASE_AT_POS, null, groupByPos);
+                groupAlignments(AlignmentTrack.GroupOption.BASE_AT_POS, null, groupByPos);
             });
             groupMenu.add(newGroupByPosOption);
             group.add(newGroupByPosOption);
@@ -410,6 +414,15 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         invertGroupNameSortingOption.setSelected(renderOptions.isInvertGroupSorting());
         invertGroupNameSortingOption.addActionListener(aEvt -> {
             renderOptions.setInvertGroupSorting(!renderOptions.isInvertGroupSorting());
+            dataManager.packAlignments(renderOptions);
+            alignmentTrack.repaint();
+        });
+        groupMenu.add(invertGroupNameSortingOption);
+
+        JCheckBoxMenuItem groupAllOption = new JCheckBoxMenuItem("Reverse group order");
+        groupAllOption.setSelected(renderOptions.isInvertGroupSorting());
+        groupAllOption.addActionListener(aEvt -> {
+            renderOptions.setGroupAll(!renderOptions.isGroupAll());
             dataManager.packAlignments(renderOptions);
             alignmentTrack.repaint();
         });
@@ -586,7 +599,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             mappings.put("SMRT CCS fwd-strand aligned IPD", AlignmentTrack.ColorOption.SMRT_CCS_FWD_IPD);
             mappings.put("SMRT CCS fwd-strand aligned PW", AlignmentTrack.ColorOption.SMRT_CCS_FWD_PW);
             mappings.put("SMRT CCS rev-strand aligned IPD", AlignmentTrack.ColorOption.SMRT_CCS_REV_IPD);
-            mappings.put("SMRT CCS rev-strand aligned PW",AlignmentTrack.ColorOption.SMRT_CCS_REV_PW);
+            mappings.put("SMRT CCS rev-strand aligned PW", AlignmentTrack.ColorOption.SMRT_CCS_REV_PW);
             colorMenu.addSeparator();
             for (Map.Entry<String, AlignmentTrack.ColorOption> el : mappings.entrySet()) {
                 JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
@@ -1184,7 +1197,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
                 GeneList geneList = new GeneList(listName.toString(), loci, false);
                 currentSession.setCurrentGeneList(geneList);
-                
+
                 Comparator<String> geneListComparator = (n0, n1) -> {
                     ReferenceFrame f0 = FrameManager.getFrame(n0);
                     ReferenceFrame f1 = FrameManager.getFrame(n1);
@@ -1249,6 +1262,16 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         renderOptions.setLinkedReads(linkReads);
         dataManager.packAlignments(renderOptions);
         repaint();
+    }
+
+    private void groupAlignments(AlignmentTrack.GroupOption option, String tag, Range pos) {
+        if (alignmentTrack.getPreferences().getAsBoolean(SAM_GROUP_ALL)) {
+            for(AlignmentTrack t : IGV.getInstance().getAlignmentTracks()) {
+                t.groupAlignments(option, tag, pos);
+            }
+        } else {
+            alignmentTrack.groupAlignments(option, tag, pos);
+        }
     }
 
 

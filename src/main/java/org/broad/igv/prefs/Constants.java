@@ -145,6 +145,7 @@ final public class Constants {
     public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
     public static final String SAM_SORT_BY_TAG = "SAM.SORT_BY_TAG";
     public static final String SAM_GROUP_BY_TAG = "SAM.GROUP_BY_TAG";
+    public static final String SAM_GROUP_ALL = "SAM.GROUP_ALL";
     public static final String SAM_LINK_BY_TAGS = "SAM.LINK_BY_TAGS";
     public static final String SAM_GROUP_BY_POS = "SAM.GROUP_BY_POS";
     public static final String SAM_BISULFITE_CONTEXT = "SAM.BISULFITE_CONTEXT";
