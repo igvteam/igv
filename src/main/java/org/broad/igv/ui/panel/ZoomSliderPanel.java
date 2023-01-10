@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
 public class ZoomSliderPanel extends JPanel {
 
     private static final Color TRANSPARENT_GRAY = new Color(200, 200, 200, 150);
-    private static final Color TRANSPARENT_BLUE = new Color(27, 96, 246, 50);
+    private static final Color TRANSPARENT_BLUE = new Color(27, 96, 246, 25);
     static Color TICK_GRAY = new Color(90, 90, 90);
     static Color TICK_BLUE = new Color(25, 50, 200);
 
