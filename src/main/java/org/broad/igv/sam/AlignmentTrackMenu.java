@@ -9,6 +9,7 @@ import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.session.Session;
@@ -211,7 +212,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             boolean success = haplotypeUtils.clusterAlignments(frame.getChrName(), start, end, nClusters);
 
             if (success) {
-                alignmentTrack.groupAlignments(AlignmentTrack.GroupOption.HAPLOTYPE, null, null);
+                groupAlignments(AlignmentTrack.GroupOption.HAPLOTYPE, null, null);
                 alignmentTrack.repaint();
             }
 
@@ -363,7 +364,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             JCheckBoxMenuItem mi = new JCheckBoxMenuItem(option.label);
             mi.setSelected(renderOptions.getGroupByOption() == option);
             mi.addActionListener(aEvt -> {
-                alignmentTrack.groupAlignments(option, null, null);
+                groupAlignments(option, null, null);
             });
             groupMenu.add(mi);
             group.add(mi);
@@ -374,9 +375,9 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getGroupByTag());
             if (tag != null) {
                 if (tag.trim().length() > 0) {
-                    alignmentTrack.groupAlignments(AlignmentTrack.GroupOption.TAG, tag, null);
+                    groupAlignments(AlignmentTrack.GroupOption.TAG, tag, null);
                 } else {
-                    alignmentTrack.groupAlignments(AlignmentTrack.GroupOption.NONE, null, null);
+                    groupAlignments(AlignmentTrack.GroupOption.NONE, null, null);
                 }
             }
 
@@ -399,7 +400,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                     ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
             newGroupByPosOption.addActionListener(aEvt -> {
                 Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
-                alignmentTrack.groupAlignments(AlignmentTrack.GroupOption.BASE_AT_POS, null, groupByPos);
+                groupAlignments(AlignmentTrack.GroupOption.BASE_AT_POS, null, groupByPos);
             });
             groupMenu.add(newGroupByPosOption);
             group.add(newGroupByPosOption);
@@ -415,8 +416,27 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         });
         groupMenu.add(invertGroupNameSortingOption);
 
+        JCheckBoxMenuItem groupAllOption = new JCheckBoxMenuItem("Group all tracks");
+        groupAllOption.setSelected(alignmentTrack.getPreferences().getAsBoolean(SAM_GROUP_ALL));
+        groupAllOption.addActionListener(aEvt -> {
+            alignmentTrack.getPreferences().put(SAM_GROUP_ALL, groupAllOption.getState());
+        });
+        groupMenu.add(groupAllOption);
+
         add(groupMenu);
     }
+
+    private void groupAlignments(AlignmentTrack.GroupOption option, String tag, Range pos) {
+
+        if(alignmentTrack.getPreferences().getAsBoolean(SAM_GROUP_ALL)) {
+            for(AlignmentTrack t : IGV.getInstance().getAlignmentTracks()) {
+                t.groupAlignments(option, tag, pos);
+            }
+        } else {
+            alignmentTrack.groupAlignments(option, tag, pos);
+        }
+    }
+
 
     /**
      * Sort menu
