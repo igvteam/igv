@@ -364,8 +364,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             JCheckBoxMenuItem mi = new JCheckBoxMenuItem(option.label);
             mi.setSelected(renderOptions.getGroupByOption() == option);
             mi.addActionListener(aEvt -> {
-                    groupAlignments(option, null, null);
-
+                groupAlignments(option, null, null);
             });
             groupMenu.add(mi);
             group.add(mi);
@@ -607,7 +606,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             mappings.put("SMRT CCS fwd-strand aligned IPD", AlignmentTrack.ColorOption.SMRT_CCS_FWD_IPD);
             mappings.put("SMRT CCS fwd-strand aligned PW", AlignmentTrack.ColorOption.SMRT_CCS_FWD_PW);
             mappings.put("SMRT CCS rev-strand aligned IPD", AlignmentTrack.ColorOption.SMRT_CCS_REV_IPD);
-            mappings.put("SMRT CCS rev-strand aligned PW", AlignmentTrack.ColorOption.SMRT_CCS_REV_PW);
+            mappings.put("SMRT CCS rev-strand aligned PW",AlignmentTrack.ColorOption.SMRT_CCS_REV_PW);
             colorMenu.addSeparator();
             for (Map.Entry<String, AlignmentTrack.ColorOption> el : mappings.entrySet()) {
                 JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
@@ -1205,7 +1204,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
                 GeneList geneList = new GeneList(listName.toString(), loci, false);
                 currentSession.setCurrentGeneList(geneList);
-
+                
                 Comparator<String> geneListComparator = (n0, n1) -> {
                     ReferenceFrame f0 = FrameManager.getFrame(n0);
                     ReferenceFrame f1 = FrameManager.getFrame(n1);
