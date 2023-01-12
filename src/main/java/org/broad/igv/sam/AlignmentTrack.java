@@ -348,11 +348,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public void init() {
-        if (experimentType == null) {
+        if (experimentType == null || experimentType == ExperimentType.UNKOWN) {
             ExperimentType type = dataManager.inferType();
-            if (type != null) {
-                setExperimentType(type);
-            }
+            setExperimentType(type);
         }
     }
 
@@ -1020,7 +1018,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
-    public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN}
+    public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN, UNKOWN}
 
 
     class RenderRollback {
