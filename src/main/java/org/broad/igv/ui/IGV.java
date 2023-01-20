@@ -1388,14 +1388,14 @@ public class IGV implements IGVEventObserver {
 
 
     public void sortAlignmentTracks(SortOption option, String tag, final boolean invertSort) {
-        sortAlignmentTracks(option, null, tag, invertSort);
+        sortAlignmentTracks(option, null, tag, invertSort, null);
     }
 
-    public void sortAlignmentTracks(SortOption option, Double location, String tag, boolean invertSort) {
+    public void sortAlignmentTracks(SortOption option, Double location, String tag, boolean invertSort, Set<String> priorityRecords) {
         List<AlignmentTrack> alignmentTracks = getAllTracks().stream()
                 .filter(track -> track instanceof AlignmentTrack)
                 .map(track -> (AlignmentTrack)track)
-                .peek(track -> track.sortRows(option, location, tag, invertSort))
+                .peek(track -> track.sortRows(option, location, tag, invertSort, priorityRecords))
                 .collect(Collectors.toList());
         this.repaint(alignmentTracks);
     }
@@ -2254,7 +2254,7 @@ public class IGV implements IGVEventObserver {
                 try {
                     for (ReferenceFrame frame : FrameManager.getFrames()) {
                         for (Track track : trackList) {
-                            if (track.isReadyToPaint(frame) == false) {
+                            if (!track.isReadyToPaint(frame)) {
                                 track.load(frame);
                             }
                         }
@@ -2279,11 +2279,11 @@ public class IGV implements IGVEventObserver {
                 return;
             }
 
-            List<CompletableFuture> futures = new ArrayList();
+            List<CompletableFuture> futures = new ArrayList<>();
 
             for (ReferenceFrame frame : FrameManager.getFrames()) {
                 for (Track track : trackList) {
-                    if (track.isReadyToPaint(frame) == false) {
+                    if (!track.isReadyToPaint(frame)) {
                         futures.add(CompletableFuture.runAsync(() -> track.load(frame), threadExecutor));
                     }
                 }
@@ -2296,9 +2296,9 @@ public class IGV implements IGVEventObserver {
                     component.repaint();
                 });
             } else {
-                // One ore more tracks require loading before repaint.   Load all needed tracks, autscale if needed, then
-                // repaint.  The autoscale step is key, since tracks can be grouped for autoscaling it is neccessary that
-                // all data is loaded before any track is repainted.  Otherwise tracks be loaded an painted independently.
+                // One or more tracks require loading before repaint.   Load all needed tracks, autoscale if needed, then
+                // repaint.  The autoscale step is key, since tracks can be grouped for autoscaling it is necessary that
+                // all data is loaded before any track is repainted.  Otherwise tracks be loaded and painted independently.
 
                 final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
                 WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();

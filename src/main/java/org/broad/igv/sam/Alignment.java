@@ -29,6 +29,7 @@
  */
 package org.broad.igv.sam;
 
+import htsjdk.samtools.Cigar;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.sam.mods.BaseModificationUtils;
@@ -57,7 +58,7 @@ public interface Alignment extends LocusScore {
         return "";
     }
 
-    String getChr();
+    default String getChr(){ return getContig();}
 
     int getAlignmentStart();
 
@@ -69,9 +70,16 @@ public interface Alignment extends LocusScore {
 
     AlignmentBlock[] getInsertions();
 
-    String getCigarString();
+    /**
+     * @return the CIGAR string of the alignment if present, otherwise "*", should not return null
+     */
+    default String getCigarString(){ return "*";}
 
-    java.util.List<Gap> getGaps();
+    default Cigar getCigar() {
+        return  Cigar.fromCigarString(getCigarString());
+    }
+
+    List<Gap> getGaps();
 
     int getInferredInsertSize();
 
@@ -81,7 +89,7 @@ public interface Alignment extends LocusScore {
 
     int getMappingQuality();
 
-    ReadMate getMate();
+    default ReadMate getMate() { return null;}
 
     Strand getReadStrand();
 
@@ -107,7 +115,7 @@ public interface Alignment extends LocusScore {
 
     byte getPhred(double position);
 
-    Object getAttribute(String key);
+    default Object getAttribute(String key) { return null; }
 
     void setMateSequence(String sequence);
 
@@ -125,15 +133,15 @@ public interface Alignment extends LocusScore {
      */
     Color getYcColor();
 
-    String getSample();
+    default String getSample(){ return null;}
 
-    String getReadGroup();
+    default String getReadGroup(){ return null;}
 
-    String getLibrary();
+    default String getLibrary(){ return null;}
 
     String getClipboardString(double location, int mouseX);
 
-    void finish();
+    default void finish(){};
 
     default AlignmentBlock getInsertionAt(int position) {
         final AlignmentBlock[] insertions = getInsertions();
@@ -159,6 +167,13 @@ public interface Alignment extends LocusScore {
          }
          return null;
      }
+
+    /**
+     * Use the alignments CIGAR to count the clipping operations on either end
+     */
+    default ClippingCounts getClippingCounts(){
+        return ClippingCounts.fromCigar(getCigar());
+    }
 
     default void setHaplotypeName(String hap) {}
 
@@ -189,4 +204,5 @@ public interface Alignment extends LocusScore {
     default Alignment getSpecificAlignment(double location) {
         return this.contains(location) ? this : null;
     }
+
 }

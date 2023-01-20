@@ -29,7 +29,6 @@
  */
 package org.broad.igv.sam;
 
-import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
@@ -40,8 +39,6 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
-import org.broad.igv.sam.mods.BaseModificationColors;
-import org.broad.igv.sam.mods.BaseModificationCounts;
 import org.broad.igv.sam.mods.BaseModificationCoverageRenderer;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;

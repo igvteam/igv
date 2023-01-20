@@ -27,15 +27,19 @@
 package org.broad.igv.ui.util;
 
 import com.jidesoft.swing.JideBoxLayout;
+import org.broad.igv.event.StopEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.ui.IGV;
 //import org.broad.igv.event.StopEvent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.TimerTask;
 
@@ -78,6 +82,7 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
 
         stopButton = new JButton();
         stopButton.setBorder(BorderFactory.createLineBorder(Color.black));
+        stopButton.addActionListener(e -> IGVEventBus.getInstance().post(new StopEvent()));
         stopButton.setIcon(new javax.swing.ImageIcon(
                 getClass().getResource("/toolbarButtonGraphics/general/Stop16.gif")));
         stopButton.setMaximumSize(new java.awt.Dimension(16, 16));

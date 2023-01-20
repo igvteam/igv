@@ -1,5 +1,6 @@
 package org.broad.igv.sam;
 
+import com.google.gson.annotations.Since;
 import htsjdk.samtools.SAMTag;
 import htsjdk.samtools.util.Locatable;
 import org.broad.igv.Globals;
@@ -17,6 +18,7 @@ import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
+import org.broad.igv.ui.AlignmentDiagramFrame;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.panel.FrameManager;
@@ -37,6 +39,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -48,7 +52,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 class AlignmentTrackMenu extends IGVPopupMenu {
 
-    private static Logger log = LogManager.getLogger(AlignmentTrackMenu.class);
+    private static final Logger log = LogManager.getLogger(AlignmentTrackMenu.class);
 
     private final AlignmentTrack alignmentTrack;
     private final AlignmentDataManager dataManager;
@@ -138,7 +142,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
         // Select alignment items
         addSeparator();
-        addSelectByNameItem();
+        addSelectByNameItem(alignmentTrack,  e);
         addClearSelectionsMenuItem();
 
         // Copy items
@@ -179,9 +183,28 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                 try {
                     List<SupplementaryAlignment> supplementaryAlignments = SupplementaryAlignment.parseFromSATag(saTag);
                     alignmentTrack.setSelectedAlignment(clickedAlignment);
-                    addNewLociToFrames(e.getFrame(), supplementaryAlignments);
+                    addNewLociToFrames(e.getFrame(), supplementaryAlignments, alignmentTrack.getSelectedReadNames().keySet());
                 } catch (final Exception ex) {
                     MessageUtils.showMessage("Failed to handle SA tag: " + saTag + " due to " + ex.getMessage());
+                    item.setEnabled(false);
+                }
+            });
+        } else {
+            item.setEnabled(false);
+        }
+        add(item);
+    }
+
+    private void addShowDiagram(final TrackClickEvent e, final Alignment clickedAlignment){
+        JMenuItem item = new JMenuItem("Supplementary Reads Diagram");
+        if (clickedAlignment != null && clickedAlignment.getAttribute(SAMTag.SA.name()) != null) {
+            item.setEnabled(true);
+            item.addActionListener(aEvt -> {
+                try {
+                    final AlignmentDiagramFrame frame = new AlignmentDiagramFrame(clickedAlignment, new Dimension(500, 100));
+                    frame.setVisible(true);
+                } catch (final Exception ex) {
+                    MessageUtils.showMessage("Failed to handle SA tag: " + clickedAlignment.getAttribute(SAMTag.SA.name()) + " due to " + ex.getMessage());
                     item.setEnabled(false);
                 }
             });
@@ -322,11 +345,12 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
     }
 
-    void addSelectByNameItem() {
-        // Change track height by attribute
+    void addSelectByNameItem(AlignmentTrack track, TrackClickEvent e) {
         JMenuItem item = new JMenuItem("Select by name...");
+        final Alignment alignment = track.getAlignmentAt(e);
+        String alignmentName = alignment == null ? "" : alignment.getReadName();
         item.addActionListener(aEvt -> {
-            String val = MessageUtils.showInputDialog("Enter read name: ");
+            String val = MessageUtils.showInputDialog("Enter read name: ", alignmentName);
             if (val != null && val.trim().length() > 0) {
                 alignmentTrack.getSelectedReadNames().put(val, alignmentTrack.getReadNamePalette().get(val));
                 alignmentTrack.repaint();
@@ -375,7 +399,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         AlignmentTrack.GroupOption[] groupOptions = {
                 AlignmentTrack.GroupOption.NONE, AlignmentTrack.GroupOption.STRAND, AlignmentTrack.GroupOption.FIRST_OF_PAIR_STRAND, AlignmentTrack.GroupOption.SAMPLE,
                 AlignmentTrack.GroupOption.LIBRARY, AlignmentTrack.GroupOption.READ_GROUP, AlignmentTrack.GroupOption.MATE_CHROMOSOME,
-                AlignmentTrack.GroupOption.PAIR_ORIENTATION, AlignmentTrack.GroupOption.SUPPLEMENTARY, AlignmentTrack.GroupOption.REFERENCE_CONCORDANCE,
+                AlignmentTrack.GroupOption.PAIR_ORIENTATION, AlignmentTrack.GroupOption.CHIMERIC, AlignmentTrack.GroupOption.SUPPLEMENTARY, AlignmentTrack.GroupOption.REFERENCE_CONCORDANCE,
                 AlignmentTrack.GroupOption.MOVIE, AlignmentTrack.GroupOption.ZMW, AlignmentTrack.GroupOption.READ_ORDER, AlignmentTrack.GroupOption.LINKED, AlignmentTrack.GroupOption.PHASE,
                 AlignmentTrack.GroupOption.MAPPING_QUALITY
         };
@@ -477,7 +501,8 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         mappings.put("read order", SortOption.READ_ORDER);
         mappings.put("read name", SortOption.READ_NAME);
         mappings.put("aligned read length", SortOption.ALIGNED_READ_LENGTH);
-// mappings.put("supplementary flag", SortOption.SUPPLEMENTARY);
+        mappings.put("left clip", SortOption.LEFT_CLIP);
+        mappings.put("right clip", SortOption.RIGHT_CLIP);
 
         if (dataManager.isPairedEnd()) {
             mappings.put("insert size", SortOption.INSERT_SIZE);
@@ -873,21 +898,21 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
         /* Add a "Copy left clipped sequence" item if there is  left clipping. */
         int minimumBlatLength = BlatClient.MINIMUM_BLAT_LENGTH;
-        int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
-        if (clipping[1] > 0) {
-            String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping[1]);
+        ClippingCounts clipping = alignment.getClippingCounts();
+        if (clipping.getLeftSoft() > 0) {
+            String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping.getLeftSoft());
             final JMenuItem lccItem = new JMenuItem("Copy left-clipped sequence");
             add(lccItem);
             lccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(lcSeq));
         }
 
         /* Add a "Copy right clipped sequence" item if there is  right clipping. */
-        if (clipping[3] > 0) {
+        if (clipping.getRightHard() > 0) {
             int seqLength = seq.length();
             String rcSeq = getClippedSequence(
                     alignment.getReadSequence(),
                     alignment.getReadStrand(),
-                    seqLength - clipping[3],
+                    seqLength - clipping.getRightHard(),
                     seqLength);
 
             final JMenuItem rccItem = new JMenuItem("Copy right-clipped sequence");
@@ -930,11 +955,11 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         }
 
         int minimumBlatLength = BlatClient.MINIMUM_BLAT_LENGTH;
-        int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
+        ClippingCounts clipping = alignment.getClippingCounts();
 
         /* Add a "BLAT left clipped sequence" item if there is significant left clipping. */
-        if (clipping[1] > minimumBlatLength) {
-            String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping[1]);
+        if (clipping.getLeftSoft() > minimumBlatLength) {
+            String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping.getLeftSoft());
             final JMenuItem lcbItem = new JMenuItem("BLAT left-clipped sequence");
             add(lcbItem);
             lcbItem.addActionListener(aEvt ->
@@ -942,14 +967,14 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             );
         }
         /* Add a "BLAT right clipped sequence" item if there is significant right clipping. */
-        if (clipping[3] > minimumBlatLength) {
+        if (clipping.getRightSoft() > minimumBlatLength) {
 
             String seq = alignment.getReadSequence();
             int seqLength = seq.length();
             String rcSeq = getClippedSequence(
                     alignment.getReadSequence(),
                     alignment.getReadStrand(),
-                    seqLength - clipping[3],
+                    seqLength - clipping.getRightSoft(),
                     seqLength);
 
             final JMenuItem rcbItem = new JMenuItem("BLAT right-clipped sequence");
@@ -1081,7 +1106,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
         //Supplementary/chimeric items, only if the read has an SA tag
         addShowChimericRegions(alignmentTrack, tce, clickedAlignment);
-
+        addShowDiagram(tce, clickedAlignment);
 
         final JMenuItem qcItem = new JCheckBoxMenuItem("Quick consensus mode");
         qcItem.setSelected(renderOptions.isQuickConsensusMode());
@@ -1166,6 +1191,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                 int newStart = (int) Math.max(0, (start + (alignment.getEnd() - alignment.getStart()) / 2 - range / 2));
                 int newEnd = newStart + (int) range;
                 frame.jumpTo(chr, newStart, newEnd);
+                sortSelectedReadsToTheTop(alignmentTrack.getSelectedReadNames().keySet());
                 frame.recordHistory();
             } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
@@ -1183,14 +1209,14 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             ReadMate mate = alignment.getMate();
             if (mate != null && mate.isMapped()) {
                 alignmentTrack.setSelectedAlignment(alignment);
-                addNewLociToFrames(frame, List.of(mate));
+                addNewLociToFrames(frame, List.of(mate), alignmentTrack.getSelectedReadNames().keySet());
             } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
             }
         }
     }
 
-    private static void addNewLociToFrames(final ReferenceFrame frame, final List<? extends Locatable> toIncludeInSplit) {
+    private static void addNewLociToFrames(final ReferenceFrame frame, final List<? extends Locatable> toIncludeInSplit, final Set<String> selectedReadNames) {
         final List<String> newLoci = toIncludeInSplit.stream()
                 .map(locatable -> getLocusStringForAlignment(frame, locatable))
                 .collect(Collectors.toList());
@@ -1198,9 +1224,26 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         String listName = String.join("   ", loci); // TODO check the trailing "   " was unnecessary
         //Need to sort the frames by position
         GeneList geneList = new GeneList(listName, loci, false);
-        geneList.sort(FrameManager.FRAME_COMPARATOR);
+        geneList.sort(Comparator.comparing(Locus::fromString, SortOption.POSITION_COMPARATOR));
         IGV.getInstance().getSession().setCurrentGeneList(geneList);
         IGV.getInstance().resetFrames();
+
+        /*
+        We want the sort to happen after the frame refresh / track loading begins.
+        This puts the sort onto the event thread so that it happens after loading has already started.
+        Since loading reads happens asynchronously on a different thread from the event thread, it is likely
+        that the loading won't be done by the time the sort fires.  In that case the sort will be set as the
+        action to perform when the load is finished
+        See {@link AlignmentTrack#sortRows(SortOption, Double, String, boolean, Set)}
+        */
+        sortSelectedReadsToTheTop(selectedReadNames);
+    }
+
+    private static void sortSelectedReadsToTheTop(final Set<String> selectedReadNames) {
+        //copy this in case it changes out from under us
+        Set<String> selectedReadNameCopy = new HashSet<>(selectedReadNames);
+        UIUtilities.invokeOnEventThread(() ->
+                IGV.getInstance().sortAlignmentTracks(SortOption.NONE, null, null, false, selectedReadNameCopy));
     }
 
     private static List<String> createLociList(final ReferenceFrame frame, final List<String> lociToAdd) {

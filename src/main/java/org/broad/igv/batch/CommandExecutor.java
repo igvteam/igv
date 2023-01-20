@@ -1082,7 +1082,7 @@ public class CommandExecutor {
 
             boolean invertSort = "reverse".equalsIgnoreCase(reverseString);
 
-            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag, invertSort);
+            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag, invertSort, null);
             return "OK";
         }
     }

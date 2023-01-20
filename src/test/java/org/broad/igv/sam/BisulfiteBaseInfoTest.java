@@ -87,11 +87,6 @@ public class BisulfiteBaseInfoTest {
         }
 
         @Override
-        public ReadMate getMate() {
-            return null;
-        }
-
-        @Override
         public Strand getReadStrand() {
             return null;
         }
@@ -99,11 +94,6 @@ public class BisulfiteBaseInfoTest {
         @Override
         public int getInferredInsertSize() {
             return 0;
-        }
-
-        @Override
-        public String getCigarString() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
         @Override
@@ -158,11 +148,6 @@ public class BisulfiteBaseInfoTest {
 
         public String getSample() {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public Object getAttribute(String key) {
-            return null;
         }
 
         @Override
@@ -333,11 +318,6 @@ public class BisulfiteBaseInfoTest {
         @Override
         public String getClipboardString(double location, int mouseX) {
             return null;
-        }
-
-        @Override
-        public void finish() {
-
         }
     }
 }

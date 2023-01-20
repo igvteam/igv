@@ -164,6 +164,8 @@ final public class Constants {
     public static final String SAM_LARGE_INDELS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
     public static final String SAM_FLAG_CLIPPING = "SAM.FLAG_CLIPPING";
     public static final String SAM_CLIPPING_THRESHOLD = "SAM.CLIPPING_THRESHOLD";
+
+    public static final String SAM_SHOW_CONNECTED_CHR_NAME = "SAM.SHOW_CONNECTED_CHR_NAME";
     public static final String SAM_SHOW_GROUP_SEPARATOR = "SAM.SHOW_GROUP_SEPARATOR";
     public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
     public static final String SAM_HIDE_SMALL_INDEL = "SAM.HIDE_SMALL_INDEL";

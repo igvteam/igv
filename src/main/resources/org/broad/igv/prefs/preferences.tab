@@ -123,6 +123,7 @@ SAM.SMALL_INDEL_BP_THRESHOLD	Indel size threshold (bases)	integer	0
 ---
 SAM.FLAG_CLIPPING	Flag clipping > threshold	boolean	FALSE
 SAM.CLIPPING_THRESHOLD	Flag clipping threshold (bases)	integer	0
+SAM.SHOW_CONNECTED_CHR_NAME	Show connected chromosome name	boolean	TRUE
 ---
 SAM.QUICK_CONSENSUS_MODE	Quick consensus mode	boolean	FALSE
 SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
