@@ -806,7 +806,7 @@ public abstract class AbstractTrack implements Track {
             double centerValue = (getTrackType() == TrackType.ALLELE_SPECIFIC_COPY_NUMBER)
                     ? 1.0 : 2.0;
 
-            return (float) (Math.log(Math.max(Float.MIN_VALUE, dataY) / centerValue) / Globals.log2);
+            return (float) (Globals.log2(Math.max(Float.MIN_VALUE, dataY) / centerValue));
         } else {
             return dataY;
         }

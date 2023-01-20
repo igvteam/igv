@@ -498,7 +498,7 @@ public class ReferenceFrame {
 
     protected void calculateMaxZoom() {
         this.maxZoom = Globals.CHR_ALL.equals(this.chrName) ? 0 :
-                (int) Math.ceil(Math.log(getChromosomeLength() / minBP) / Globals.log2);
+                (int) Math.ceil(Globals.log2(getChromosomeLength() / minBP));
     }
 
     public String getChrName() {
@@ -715,7 +715,8 @@ public class ReferenceFrame {
      * @return
      */
     public int calculateZoom(double start, double end) {
-        return (int) Math.round((Math.log((getChromosomeLength() / (end - start)) * (((double) widthInPixels) / binsPerTile)) / Globals.log2));
+        final double windowLength = Math.min(end - start, getChromosomeLength());
+        return (int) Math.round(Globals.log2((getChromosomeLength() / windowLength) * (((double) widthInPixels) / binsPerTile)));
     }
 
 
