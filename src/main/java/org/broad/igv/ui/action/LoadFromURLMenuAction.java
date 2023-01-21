@@ -29,12 +29,10 @@
  */
 package org.broad.igv.ui.action;
 
+import org.broad.igv.Globals;
 import org.broad.igv.logging.*;
-import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.GoogleUtils;
-import org.broad.igv.oauth.OAuthProvider;
-import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.SessionReader;
@@ -43,18 +41,13 @@ import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
 
@@ -64,9 +57,7 @@ import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
 public class LoadFromURLMenuAction extends MenuAction {
 
     static Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
-    public static final String LOAD_FROM_DAS = "Load from DAS...";
     public static final String LOAD_FROM_URL = "Load from URL...";
-    public static final String LOAD_FILE_AND_INDEX_FROM_URLS = "Load file and index from URLs...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
     private IGV igv;
 
@@ -87,59 +78,58 @@ public class LoadFromURLMenuAction extends MenuAction {
 
             if (!dlg.isCanceled()) {
 
-                String inputURL = dlg.getFileURL();
+                String inputURLs = dlg.getFileURL();
+                if (inputURLs != null && inputURLs.trim().length() > 0) {
 
-                if (inputURL != null && inputURL.trim().length() > 0) {
-
-                    final String url = mapURL(inputURL.trim());
-
-                    if (url.startsWith("s3://")) {
-                        checkAWSAccessbility(url);
-                    }
-
-                    if (SessionReader.isSessionFile(url)) {
+                    String[] inputs = Globals.whitespacePattern.split(inputURLs.trim());
+                    checkURLs(inputs);
+                    if (inputs.length == 1 && SessionReader.isSessionFile(inputs[0])) {
+                        // Session URL
+                        String url = inputs[0];
+                        if (url.startsWith("s3://")) {
+                            checkAWSAccessbility(url);
+                        }
                         try {
                             LongRunningTask.submit(() -> this.igv.loadSession(url, null));
                         } catch (Exception ex) {
                             MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                         }
                     } else {
-                        ResourceLocator rl = new ResourceLocator(url.trim());
-
-                        if (dlg.getIndexURL() != null) {
-                            String indexUrl = dlg.getIndexURL().trim();
-
-                            if (GoogleUtils.isGoogleURL(indexUrl)) {
-                                enableGoogleMenu();
+                        // Files, possibly indexed
+                        String[] indexes = null;
+                        String indexURLs = dlg.getIndexURL();
+                        if (indexURLs != null && indexURLs.trim().length() > 0) {
+                            indexes = Globals.whitespacePattern.split(indexURLs.trim());
+                            if (indexes.length != inputs.length) {
+                                throw new RuntimeException("The number of Index URLs must equal the number of File URLs");
                             }
-
-                            rl.setIndexPath(indexUrl);
+                            checkURLs(indexes);
                         }
-                        igv.loadTracks(Arrays.asList(rl));
 
+                        ArrayList<ResourceLocator> locators = new ArrayList<>();
+                        for (int i = 0; i < inputs.length; i++) {
+                            String url = inputs[i];
+                            ResourceLocator rl = new ResourceLocator(url.trim());
+                            if (indexes != null) {
+                                String indexUrl = indexes[i];
+                                rl.setIndexPath(indexUrl);
+                            }
+                            locators.add(rl);
+                        }
+                        igv.loadTracks(locators);
                     }
                 }
             }
-        } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_FROM_DAS))) {
-            String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter DAS feature source URL",
-                    JOptionPane.QUESTION_MESSAGE);
-            if (url != null && url.trim().length() > 0) {
-                ResourceLocator rl = new ResourceLocator(url.trim());
-                rl.setFormat("das");
-                igv.loadTracks(Arrays.asList(rl));
-            }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
+
             String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .genome or FASTA file",
                     JOptionPane.QUESTION_MESSAGE);
+
             if (url != null && url.trim().length() > 0) {
-                if (url.startsWith("s3://")) {
-                    checkAWSAccessbility(url);
-                } else if (url.startsWith("ftp://")) {
-                    MessageUtils.showMessage("FTP protocol is not supported");
-                }
+                url = url.trim();
                 try {
-                    url = mapURL(url);
-                    GenomeManager.getInstance().loadGenome(url.trim(), null);
+                    checkURLs(new String[]{url});
+                    GenomeManager.getInstance().loadGenome(url, null);
                 } catch (Exception e1) {
                     MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
                 }
@@ -148,15 +138,18 @@ public class LoadFromURLMenuAction extends MenuAction {
         }
     }
 
-    private String mapURL(String url) {
-
-        url = url.trim();
-        if (GoogleUtils.isGoogleURL(url)) {
-            enableGoogleMenu();
+    private void checkURLs(String[] urls) {
+        for (String url : urls) {
+            if (url.startsWith("s3://")) {
+                checkAWSAccessbility(url);
+            } else if (GoogleUtils.isGoogleURL(url)) {
+                enableGoogleMenu();
+            } else if (url.startsWith("ftp://")) {
+                MessageUtils.showMessage("FTP protocol is not supported");
+            }
         }
-
-        return url;
     }
+
 
     private void enableGoogleMenu() {
 
@@ -183,32 +176,6 @@ public class LoadFromURLMenuAction extends MenuAction {
             // User has not yet done Amazon->Login sequence
             AmazonUtils.checkLogin();
         }
-    }
-
-    private boolean ping(String url) {
-        InputStream is = null;
-        try {
-            Map<String, String> params = new HashMap();
-            params.put("Range", "bytes=0-10");
-            byte[] buffer = new byte[10];
-            is = HttpUtils.getInstance().openConnectionStream(HttpUtils.createURL(url), params);
-            is.read(buffer);
-            is.close();
-        } catch (HttpResponseException e1) {
-            MessageUtils.showMessage(e1.getMessage());
-            return false;
-        } catch (IOException e) {
-            log.error(e);
-
-        } finally {
-            if (is != null) try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return true;
     }
 }
 

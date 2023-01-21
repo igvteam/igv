@@ -39,7 +39,8 @@ public class GoogleUtils {
 
     public static boolean isGoogleStorageURL(String url) {
         return url != null &&
-                (url.startsWith("https://www.googleapis.com/storage") ||
+                (url.startsWith("gs://") ||
+                        url.startsWith("https://www.googleapis.com/storage") ||
                         url.startsWith("https://storage.cloud.google.com")  ||
                         url.startsWith("https://storage.googleapis.com"));
     }
