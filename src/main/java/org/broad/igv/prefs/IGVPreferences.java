@@ -262,19 +262,27 @@ public class IGVPreferences {
         mutationColorScheme = null;
     }
 
+    /**
+     * Update preference.  This command is ignored if in batch mode *
+     * @param key
+     * @param value
+     */
     public void put(String key, String value) {
-        key = key.trim();
 
-        // Explicitly setting removes override
-        overrideKeys.remove(key);
+        if (!Globals.isBatch()) {
+            key = key.trim();
 
-        if (value == null || value.trim().length() == 0) {
-            userPreferences.remove(key);
-        } else {
-            userPreferences.put(key, value);
+            // Explicitly setting removes override
+            overrideKeys.remove(key);
+
+            if (value == null || value.trim().length() == 0) {
+                userPreferences.remove(key);
+            } else {
+                userPreferences.put(key, value);
+            }
+            updateCaches(key, value);
+            IGVEventBus.getInstance().post(new PreferencesChangeEvent());
         }
-        updateCaches(key, value);
-        IGVEventBus.getInstance().post(new PreferencesChangeEvent());
     }
 
     public void put(String key, boolean b) {
@@ -358,9 +366,9 @@ public class IGVPreferences {
 
     private void checkForAttributePanelChanges(Map<String, String> updatedPreferenceMap) {
         if (updatedPreferenceMap.containsKey(SHOW_ATTRIBUTE_VIEWS_KEY) || updatedPreferenceMap.containsKey(SHOW_DEFAULT_TRACK_ATTRIBUTES)) {
-           if(IGV.hasInstance()) {
-               IGV.getInstance().revalidateTrackPanels();
-           }
+            if (IGV.hasInstance()) {
+                IGV.getInstance().revalidateTrackPanels();
+            }
         }
     }
 
