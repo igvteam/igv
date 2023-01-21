@@ -26,9 +26,7 @@
 package org.broad.igv;
 
 import org.broad.igv.logging.*;
-import org.broad.igv.renderer.SequenceRenderer;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -88,7 +86,6 @@ public class Globals {
     public static String VERSION;
     public static String BUILD;
     public static String TIMESTAMP;
-    public static double log2 = Math.log(2);
 
 
     final public static boolean IS_WINDOWS =
@@ -197,4 +194,7 @@ public class Globals {
         return curVersion.compareTo(minVersion) >= 0;
     }
 
+    public static double log2(final double value) {
+        return Math.log(value) / Math.log(2);
+    }
 }

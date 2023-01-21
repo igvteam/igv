@@ -506,10 +506,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         dataManager.load(referenceFrame, renderOptions, true);
     }
 
+    @Override
+    public int getVisibilityWindow() {
+        return (int) dataManager.getVisibilityWindow();
+    }
+
     public void render(RenderContext context, Rectangle rect) {
 
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
-        if (viewWindowSize > dataManager.getVisibilityWindow()) {
+        if (viewWindowSize > getVisibilityWindow()) {
             Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g2 = context.getGraphic2DForColor(Color.gray);
             GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g2);

@@ -192,7 +192,7 @@ public class ExpressionFormatter {
                             throw new RuntimeException("Negative value detected in input file: " + line);
                         }
 
-                        double v = Math.log(data[dataIdx]) / Globals.log2;
+                        double v = Globals.log2(data[dataIdx]);
                         scaledData[dataIdx] = v;
                         nonNullData[nNonNull] = v;
                         nNonNull++;

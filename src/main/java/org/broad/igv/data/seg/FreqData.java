@@ -120,7 +120,7 @@ public class FreqData {
 
                     for (LocusScore seg : segments) {
                         final float segScore = logNormalized ? seg.getScore() :
-                                (float) (Math.log(seg.getScore() / 2) / Globals.log2);
+                                (float) (Globals.log2(seg.getScore() / 2));
 
                         if (segScore > ampThreshold || segScore < delThreshold) {
 

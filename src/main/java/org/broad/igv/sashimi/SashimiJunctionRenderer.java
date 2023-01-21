@@ -362,7 +362,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         int length = pixelJunctionEnd - pixelJunctionStart;
         int minArcHeight = (trackRectangle.height - 1) / 8;
         //We adjust the height slightly by length of junction, just so arcs don't overlap as much
-        int arcHeight = minArcHeight + (int) (Math.log(length) / Globals.log2);
+        int arcHeight = minArcHeight + (int) (Globals.log2(length));
 
         int minY = (int) trackRectangle.getCenterY() + Math.min(pixelYStartOffset - arcHeight, pixelYEndOffset - arcHeight);
         //Check if arc goes too high. All arcs going below have the same height,
