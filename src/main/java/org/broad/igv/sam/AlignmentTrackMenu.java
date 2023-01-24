@@ -853,21 +853,21 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
         /* Add a "Copy left clipped sequence" item if there is  left clipping. */
         int minimumBlatLength = BlatClient.MINIMUM_BLAT_LENGTH;
-        int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
-        if (clipping[1] > 0) {
-            String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping[1]);
+        SAMAlignment.ClipCounts clipping = SAMAlignment.getClipping(alignment.getCigarString());
+        if (clipping.getLeftSoft() > 0) {
+            String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping.getLeftSoft());
             final JMenuItem lccItem = new JMenuItem("Copy left-clipped sequence");
             add(lccItem);
             lccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(lcSeq));
         }
 
         /* Add a "Copy right clipped sequence" item if there is  right clipping. */
-        if (clipping[3] > 0) {
+        if (clipping.getRightHard() > 0) {
             int seqLength = seq.length();
             String rcSeq = getClippedSequence(
                     alignment.getReadSequence(),
                     alignment.getReadStrand(),
-                    seqLength - clipping[3],
+                    seqLength - clipping.getRightHard(),
                     seqLength);
 
             final JMenuItem rccItem = new JMenuItem("Copy right-clipped sequence");
@@ -910,11 +910,11 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         }
 
         int minimumBlatLength = BlatClient.MINIMUM_BLAT_LENGTH;
-        int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
+        SAMAlignment.ClipCounts clipping = SAMAlignment.getClipping(alignment.getCigarString());
 
         /* Add a "BLAT left clipped sequence" item if there is significant left clipping. */
-        if (clipping[1] > minimumBlatLength) {
-            String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping[1]);
+        if (clipping.getLeftSoft() > minimumBlatLength) {
+            String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping.getLeftSoft());
             final JMenuItem lcbItem = new JMenuItem("BLAT left-clipped sequence");
             add(lcbItem);
             lcbItem.addActionListener(aEvt ->
@@ -922,14 +922,14 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             );
         }
         /* Add a "BLAT right clipped sequence" item if there is significant right clipping. */
-        if (clipping[3] > minimumBlatLength) {
+        if (clipping.getRightSoft() > minimumBlatLength) {
 
             String seq = alignment.getReadSequence();
             int seqLength = seq.length();
             String rcSeq = getClippedSequence(
                     alignment.getReadSequence(),
                     alignment.getReadStrand(),
-                    seqLength - clipping[3],
+                    seqLength - clipping.getRightSoft(),
                     seqLength);
 
             final JMenuItem rcbItem = new JMenuItem("BLAT right-clipped sequence");

@@ -42,7 +42,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.mods.BaseModificationUtils;
 import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.sam.smrt.SMRTKinetics;
-import org.broad.igv.sam.smrt.SMRTKineticsDecoder;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
@@ -749,37 +748,27 @@ public class SAMAlignment implements Alignment {
         buf.append("Clipping = ");
 
         // Identify the number of hard and soft clipped bases.
-        Matcher lclipMatcher = Pattern.compile("^(([0-9]+)H)?(([0-9]+)S)?").matcher(cigarString);
-        Matcher rclipMatcher = Pattern.compile("(([0-9]+)S)?(([0-9]+)H)?$").matcher(cigarString);
-        int lclipHard = 0, lclipSoft = 0, rclipHard = 0, rclipSoft = 0;
-        if (lclipMatcher.find()) {
-            lclipHard = lclipMatcher.group(2) == null ? 0 : Integer.parseInt(lclipMatcher.group(2), 10);
-            lclipSoft = lclipMatcher.group(4) == null ? 0 : Integer.parseInt(lclipMatcher.group(4), 10);
-        }
-        if (rclipMatcher.find()) {
-            rclipHard = rclipMatcher.group(4) == null ? 0 : Integer.parseInt(rclipMatcher.group(4), 10);
-            rclipSoft = rclipMatcher.group(2) == null ? 0 : Integer.parseInt(rclipMatcher.group(2), 10);
-        }
+        ClipCounts clipping = getClipping(cigarString);
 
-        if (lclipHard + lclipSoft + rclipHard + rclipSoft == 0) {
+        if (!clipping.isClipped()){
             buf.append("None");
         } else {
-            if (lclipHard + lclipSoft > 0) {
+            if (clipping.isLeftClipped()) {
                 buf.append("Left");
-                if (lclipHard > 0) {
-                    buf.append(" " + Globals.DECIMAL_FORMAT.format(lclipHard) + " hard");
+                if (clipping.getLeftHard() > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(clipping.getLeftHard()) + " hard");
                 }
-                if (lclipSoft > 0) {
-                    buf.append(" " + Globals.DECIMAL_FORMAT.format(lclipSoft) + " soft");
+                if (clipping.getLeftSoft() > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(clipping.getLeftSoft()) + " soft");
                 }
             }
-            if (rclipHard + rclipSoft > 0) {
-                buf.append((lclipHard + lclipSoft > 0 ? "; " : "") + "Right");
-                if (rclipHard > 0) {
-                    buf.append(" " + Globals.DECIMAL_FORMAT.format(rclipHard) + " hard");
+            if (clipping.isRightClipped()) {
+                buf.append((clipping.isClipped() ? "; " : "") + "Right");
+                if (clipping.getRightHard() > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(clipping.getRightHard()) + " hard");
                 }
-                if (rclipSoft > 0) {
-                    buf.append(" " + Globals.DECIMAL_FORMAT.format(rclipSoft) + " soft");
+                if (clipping.getRightSoft() > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(clipping.getRightSoft()) + " soft");
                 }
             }
         }
@@ -1121,14 +1110,14 @@ public class SAMAlignment implements Alignment {
         String numMismatches = nm == null ? "?" : nm.toString();
         int lenOnRef = getAlignmentEnd() - getAlignmentStart();
 
-        int[] clipping = getClipping(getCigarString());
+        ClipCounts clipping = getClipping(getCigarString());
         String clippingString = "";
-        if (clipping[0] + clipping[1] + clipping[2] + clipping[3] > 0) {
-            if (clipping[0] > 0) clippingString += clipping[0] + "H";
-            if (clipping[1] > 0) clippingString += clipping[1] + "S";
+        if (clipping.isClipped()) {
+            if (clipping.getLeftHard() > 0) clippingString += clipping.getLeftHard() + "H";
+            if (clipping.getLeftSoft() > 0) clippingString += clipping.getLeftSoft() + "S";
             clippingString += " ... ";
-            if (clipping[3] > 0) clippingString += clipping[3] + "S";
-            if (clipping[2] > 0) clippingString += clipping[2] + "H";
+            if (clipping.getRightSoft() > 0) clippingString += clipping.getRightSoft() + "S";
+            if (clipping.getRightHard() > 0) clippingString += clipping.getRightHard() + "H";
         }
 
         return chr + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart()) + "-" +
@@ -1138,7 +1127,7 @@ public class SAMAlignment implements Alignment {
 
     }
 
-    public static int[] getClipping(String cigarString) {
+    public static ClipCounts getClipping(String cigarString) {
         // Identify the number of hard and soft clipped bases.
         Matcher lclipMatcher = Pattern.compile("^(([0-9]+)H)?(([0-9]+)S)?").matcher(cigarString);
         Matcher rclipMatcher = Pattern.compile("(([0-9]+)S)?(([0-9]+)H)?$").matcher(cigarString);
@@ -1151,7 +1140,38 @@ public class SAMAlignment implements Alignment {
             rclipHard = rclipMatcher.group(4) == null ? 0 : Integer.parseInt(rclipMatcher.group(4), 10);
             rclipSoft = rclipMatcher.group(2) == null ? 0 : Integer.parseInt(rclipMatcher.group(2), 10);
         }
-        return new int[]{lclipHard, lclipSoft, rclipHard, rclipSoft};
+        return new ClipCounts(lclipHard, lclipSoft, rclipHard, rclipSoft);
+    }
+
+    public static final class ClipCounts {
+        private final int leftHard;
+        private final int leftSoft;
+        private final int rightHard;
+        private final int rightSoft;
+
+        private ClipCounts(final int leftHard, final int leftSoft, final int rightHard, final int rightSoft) {
+            this.leftHard = leftHard;
+            this.leftSoft = leftSoft;
+            this.rightHard = rightHard;
+            this.rightSoft = rightSoft;
+        }
+        public boolean isClipped(){
+            return leftHard + leftSoft + rightHard + rightSoft > 0;
+        }
+        public int getLeftHard() { return leftHard; }
+        public int getLeftSoft() { return leftSoft; }
+        public int getRightHard() { return rightHard; }
+        public int getRightSoft() { return rightSoft; }
+        public boolean isLeftClipped() {
+            return getLeft() > 0;
+        }
+        public int getLeft() { return leftSoft + leftHard; }
+        public boolean isRightClipped(){
+            return getRight() > 0;
+        }
+        public int getRight() { return rightSoft + rightHard; }
+
+
     }
 
     private static boolean operatorIsMatch(boolean showSoftClipped, char operator) {

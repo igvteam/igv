@@ -576,9 +576,9 @@ public class AlignmentRenderer {
         /* Clipping */
         boolean flagClipping = prefs.getAsBoolean(SAM_FLAG_CLIPPING);
         int clippingThreshold = prefs.getAsInt(SAM_CLIPPING_THRESHOLD);
-        int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
-        boolean leftClipped = flagClipping && ((clipping[0] + clipping[1]) > clippingThreshold);
-        boolean rightClipped = flagClipping && ((clipping[2] + clipping[3]) > clippingThreshold);
+        SAMAlignment.ClipCounts clipping = SAMAlignment.getClipping(alignment.getCigarString());
+        boolean leftClipped = flagClipping && (clipping.getLeft() > clippingThreshold);
+        boolean rightClipped = flagClipping && (clipping.getRight() > clippingThreshold);
 
         double bpStart = context.getOrigin();
         double bpEnd = Math.ceil(context.getEndLocation());
