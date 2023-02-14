@@ -312,7 +312,8 @@ public class CommandListener implements Runnable {
     private static final String CONNECTION_CLOSE = "Connection: close";
     private static final String NO_CACHE = "Cache-Control: no-cache, no-store";
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin: *";
-
+    private static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers: access-control-allow-origin";
+    
     private void sendTextResponse(PrintWriter out, String result) {
         sendHTTPResponse(out, result, "text/html", "GET");
     }
@@ -346,7 +347,8 @@ public class CommandListener implements Runnable {
 
         out.print(HTTP_NO_RESPONSE);
         out.print(CRLF);
-        out.print(ACCESS_CONTROL_ALLOW_ORIGIN);
+        out.println(ACCESS_CONTROL_ALLOW_ORIGIN);
+        out.print(ACCESS_CONTROL_ALLOW_HEADERS);
         out.print(CRLF);
         out.println("Access-Control-Allow-Methods: HEAD, GET, OPTIONS");
         out.print(CRLF);
