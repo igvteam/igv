@@ -347,7 +347,8 @@ public class CommandListener implements Runnable {
 
         out.print(HTTP_NO_RESPONSE);
         out.print(CRLF);
-        out.println(ACCESS_CONTROL_ALLOW_ORIGIN);
+        out.print(ACCESS_CONTROL_ALLOW_ORIGIN);
+        out.print(CRLF);
         out.print(ACCESS_CONTROL_ALLOW_HEADERS);
         out.print(CRLF);
         out.println("Access-Control-Allow-Methods: HEAD, GET, OPTIONS");
