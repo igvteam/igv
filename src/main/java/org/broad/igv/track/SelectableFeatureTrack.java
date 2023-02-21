@@ -50,7 +50,7 @@ public class SelectableFeatureTrack extends FeatureTrack {
 
     public SelectableFeatureTrack(FeatureTrack geneTrack) {
         super(geneTrack);
-        this.setRendererClass(SelectableFeatureRenderer.class);
+        this.setRenderer(new SelectableFeatureRenderer());
     }
 
     @Override

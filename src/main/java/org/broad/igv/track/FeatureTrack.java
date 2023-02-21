@@ -363,7 +363,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     public Renderer getRenderer() {
         if (renderer == null) {
-            setRendererClass(IGVFeatureRenderer.class);
+            setRenderer(new IGVFeatureRenderer());
         }
         return renderer;
     }

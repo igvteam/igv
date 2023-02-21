@@ -125,7 +125,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             // Override expand/collpase setting -- expanded sashimi plots make no sense
             spliceJunctionTrack.setDisplayMode(Track.DisplayMode.COLLAPSED);
 
-            spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
+            spliceJunctionTrack.setRenderer(new SashimiJunctionRenderer());
 
             Color color = plotColors.get(colorInd);
             colorInd = (colorInd + 1) % plotColors.size();

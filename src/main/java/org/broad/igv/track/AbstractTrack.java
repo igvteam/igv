@@ -934,7 +934,7 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    protected void setRenderer(Renderer renderer) {
+    public void setRenderer(Renderer renderer) {
         //Here as setter for corresponding getter, subclasses should override
     }
 

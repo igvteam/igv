@@ -329,7 +329,7 @@ public class TrackLoader {
         List<Feature> features = SMAPParser.parseFeatures(locator, genome);
         FeatureCollectionSource src = new FeatureCollectionSource(features, genome);
         FeatureTrack track = new FeatureTrack(locator, locator.getName(), src);
-        track.setRendererClass(SMAPRenderer.class);
+        track.setRenderer(new SMAPRenderer());
         track.setDisplayMode(Track.DisplayMode.EXPANDED);
         newTracks.add(track);
     }
@@ -526,7 +526,7 @@ public class TrackLoader {
             t.setTrackLine(tp.getTrackLine());
         }
 
-        t.setRendererClass(DSIRenderer.class);
+        t.setRenderer(new DSIRenderer());
 
         newTracks.add(t);
     }
@@ -590,8 +590,8 @@ public class TrackLoader {
             for (String trackName : ds.getTrackNames()) {
                 DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
                 String trackId = path + "_" + trackName;
-                Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-                track.setRendererClass(HeatmapRenderer.class);
+                DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+                track.setRenderer(new HeatmapRenderer());
                 track.setProperties(trackProperties);
                 newTracks.add(track);
             }
@@ -644,7 +644,7 @@ public class TrackLoader {
             track.setProperties(trackProperties);
 
             if (type == TrackType.ALLELE_FREQUENCY) {
-                track.setRendererClass(PointsRenderer.class);
+                track.setRenderer(new PointsRenderer());
                 track.setHeight(40);
             }
             newTracks.add(track);
@@ -1019,7 +1019,7 @@ public class TrackLoader {
         List<FeatureTrack> mutationTracks = loader.loadMutationTracks(locator, genome);
         for (FeatureTrack track : mutationTracks) {
             track.setTrackType(TrackType.MUTATION);
-            track.setRendererClass(MutationRenderer.class);
+            track.setRenderer(new MutationRenderer());
             newTracks.add(track);
         }
     }
@@ -1077,7 +1077,7 @@ public class TrackLoader {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-            track.setRendererClass(HeatmapRenderer.class);
+            track.setRenderer(new HeatmapRenderer());
             track.setTrackType(ds.getType());
 
             if (props != null) {

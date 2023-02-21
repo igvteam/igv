@@ -258,7 +258,7 @@ public class TrackMenuUtils {
                 }
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        changeRenderer(tracks, rendererClass);
+                        changeRendererClass(tracks, rendererClass);
                     }
                 });
                 menu.add(item);
@@ -384,27 +384,6 @@ public class TrackMenuUtils {
         }
 
 
-    }
-
-    private static void addCombinedDataTrack(List<DataTrack> dataTracks, CombinedDataSource.Operation op) {
-        String text = "";
-        switch (op) {
-            case ADD:
-                text = "Sum";
-                break;
-            case SUBTRACT:
-                text = "Difference";
-                break;
-        }
-        DataTrack track0 = dataTracks.get(0);
-        DataTrack track1 = dataTracks.get(1);
-        CombinedDataSource source = new CombinedDataSource(track0, track1, op);
-
-        DataSourceTrack newTrack = new DataSourceTrack(null, track0.getId() + track1.getId() + text, text, source);
-        changeRenderer(Arrays.<Track>asList(newTrack), track0.getRenderer().getClass());
-        newTrack.setDataRange(track0.getDataRange());
-        newTrack.setColorScale(track0.getColorScale());
-        IGV.getInstance().addTracks(Arrays.<Track>asList(newTrack), PanelName.DATA_PANEL);
     }
 
     /**
@@ -1019,7 +998,7 @@ public class TrackMenuUtils {
     }
 
 
-    public static void changeRenderer(final Collection<Track> selectedTracks, Class rendererClass) {
+    public static void changeRendererClass(final Collection<Track> selectedTracks, Class rendererClass) {
         for (Track track : selectedTracks) {
             track.setRendererClass(rendererClass);
         }

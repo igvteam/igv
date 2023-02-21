@@ -81,7 +81,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));
-        setRendererClass(SpliceJunctionRenderer.class);
+        this.renderer = new SpliceJunctionRenderer();
         if (dataManager != null) {
             dataManager.unsubscribe(this);
         }
@@ -92,6 +92,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     }
 
     public SpliceJunctionTrack() {
+        this.renderer = new SpliceJunctionRenderer();
     }
 
     @Override
@@ -384,7 +385,9 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         }
 
         if(element.hasAttribute("maxdepth")) {
-            ((SpliceJunctionRenderer) renderer).setMaxDepth((int) Float.parseFloat(element.getAttribute("maxdepth")));
+            if(renderer != null && renderer instanceof SpliceJunctionRenderer) {
+                ((SpliceJunctionRenderer) renderer).setMaxDepth((int) Float.parseFloat(element.getAttribute("maxdepth")));
+            }
         }
 
     }
