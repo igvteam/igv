@@ -1,3 +1,4 @@
+
 /*
  * The MIT License (MIT)
  *
@@ -73,9 +74,9 @@ public class IGVPreferences {
     Set<String> overrideKeys = new HashSet<>();
 
     // Cached non-string preference values
-    private Map<String, Boolean> booleanCache = new Hashtable();
-    private Map<String, Object> objectCache = new Hashtable();
-    private Map<TrackType, ContinuousColorScale> colorScaleCache = new Hashtable();
+    private Map<String, Boolean> booleanCache = new Hashtable<>();
+    private Map<String, Object> objectCache = new Hashtable<>();
+    private Map<TrackType, ContinuousColorScale> colorScaleCache = new Hashtable<>();
     private PaletteColorTable mutationColorScheme = null;
 
     public IGVPreferences() {
@@ -141,7 +142,7 @@ public class IGVPreferences {
             boolValue = Boolean.valueOf(get(key, value));
             booleanCache.put(key, boolValue);
         }
-        return boolValue.booleanValue();
+        return boolValue;
     }
 
     /**
@@ -159,7 +160,7 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return 0;
             }
-            value = new Integer(get(key, defValue));
+            value = Integer.valueOf(get(key, defValue));
             objectCache.put(key, value);
         }
         return value.intValue();
@@ -201,7 +202,7 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return 0;
             }
-            value = new Float(get(key, defValue));
+            value = Float.valueOf(get(key, defValue));
             objectCache.put(key, value);
         }
         return value.floatValue();
@@ -235,7 +236,7 @@ public class IGVPreferences {
 
     public boolean getAntiAliasing() {
 
-        if (userPreferences.containsKey(Constants.ENABLE_ANTIALISING) || Globals.IS_LINUX == false) {
+        if (userPreferences.containsKey(Constants.ENABLE_ANTIALISING) || !Globals.IS_LINUX) {
             return getAsBoolean(Constants.ENABLE_ANTIALISING);
         } else {
             // Linux with no explicit setting
@@ -252,9 +253,9 @@ public class IGVPreferences {
     private void updateCaches(String key, String value) {
         key = key.trim();
         if (booleanCache.containsKey(key)) {
-            booleanCache.put(key, new Boolean(value));
+            booleanCache.put(key, Boolean.valueOf(value));
         }
-        colorScaleCache.remove(key);
+        colorScaleCache.remove(key); //TODO color scale cache doesn't use key strings so something here is wrong.
         objectCache.remove(key);
         mutationColorScheme = null;
     }
@@ -417,7 +418,7 @@ public class IGVPreferences {
         userPreferences.remove(key);
         booleanCache.remove(key);
         objectCache.remove(key);
-        colorScaleCache.remove(key);
+        colorScaleCache.remove(key); //TODO same issue of cache not using String keys
         IGVEventBus.getInstance().post(new PreferencesChangeEvent());
 
     }

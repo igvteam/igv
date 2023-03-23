@@ -307,7 +307,7 @@ public class IGVSessionReader implements SessionReader {
             //For resetting track panels later
             List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = null;
             trackPanelAttrs = igv.getTrackPanelAttrs();
-            
+
             for (List<Track> tracks : tmp) {
                 for (Track track : tracks) {
                     if (track == geneTrack) {
@@ -536,10 +536,10 @@ public class IGVSessionReader implements SessionReader {
 
         // URL to a database or webservice -- this is not common
         String serverURL = getAttribute(element, SessionAttribute.SERVER_URL);
-        
+
         String path = getAttribute(element, SessionAttribute.PATH);
 
-        // Older sessions used the "name" attribute for the path.  
+        // Older sessions used the "name" attribute for the path.
         if (oldSession && name != null) {
             path = name;
             int idx = name.lastIndexOf("/");
@@ -630,7 +630,7 @@ public class IGVSessionReader implements SessionReader {
         String end = getAttribute(element, SessionAttribute.END_INDEX);
         String description = getAttribute(element, SessionAttribute.DESCRIPTION);
 
-        RegionOfInterest region = new RegionOfInterest(chromosome, new Integer(start), new Integer(end), description);
+        RegionOfInterest region = new RegionOfInterest(chromosome, Integer.parseInt(start), Integer.parseInt(end), description);
         igv.addRegionOfInterest(region);
 
         NodeList elements = element.getChildNodes();
