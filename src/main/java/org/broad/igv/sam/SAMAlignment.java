@@ -330,12 +330,17 @@ public class SAMAlignment implements Alignment {
 
             Object mm = record.hasAttribute("Mm") ? record.getAttribute("Mm") : record.getAttribute("MM");
             byte[] ml = (byte[]) (record.hasAttribute("Ml") ? record.getAttribute("Ml") : record.getAttribute("ML"));
-            byte[] sequence = record.getReadBases();
 
-            if (mm.toString().length() == 0) { // TODO -- more extensive validation?
-                baseModificationSets = Collections.EMPTY_LIST;
-            } else {
-                baseModificationSets = BaseModificationUtils.getBaseModificationSets(mm.toString(), ml, sequence, isNegativeStrand());
+            // Minimal tag validation
+            if(mm instanceof String && (ml == null || ml instanceof byte [])) {
+
+                byte[] sequence = record.getReadBases();
+
+                if (mm.toString().length() == 0) { // TODO -- more extensive validation?
+                    baseModificationSets = Collections.EMPTY_LIST;
+                } else {
+                    baseModificationSets = BaseModificationUtils.getBaseModificationSets((String) mm, ml, sequence, isNegativeStrand());
+                }
             }
         }
         return baseModificationSets;
