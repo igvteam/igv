@@ -248,6 +248,12 @@ public class IGV implements IGVEventObserver {
         }
         mainFrame.setBounds(applicationBounds);
 
+        // Autoload session autosave if user preferences say to do that
+        if (DirectoryManager.getAutosavedSession().exists() && PreferencesManager.getPreferences().getAsBoolean(AUTOLOAD_LAST_AUTOSAVE)) {
+            File sessionAutosave = DirectoryManager.getAutosavedSession();
+            loadSession(sessionAutosave.getAbsolutePath(), null);
+        }
+
         subscribeToEvents();
     }
 
@@ -561,6 +567,16 @@ public class IGV implements IGVEventObserver {
             PreferencesManager.getPreferences().remove(RECENT_SESSIONS);
             PreferencesManager.getPreferences().setRecentSessions(recentSessions);
         }
+
+        // Autosave current session
+        try {
+            File sessionAutosave = DirectoryManager.getAutosavedSessionCreateIfNotExists();
+            saveSession(sessionAutosave);
+        }
+        catch(Exception e) {
+            log.error("Error autosaving session", e);
+        }
+
     }
 
     final public void doShowAttributeDisplay(boolean enableAttributeView) {

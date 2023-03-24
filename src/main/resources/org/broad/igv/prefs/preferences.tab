@@ -1,5 +1,6 @@
 #General
 SESSION.RELATIVE_PATH	Use relative paths in session files	boolean	TRUE
+AUTOLOAD_LAST_AUTOSAVE	Load last autosaved session on startup	boolean	FALSE
 IGV.single.track.pane	Display all tracks in a single panel	boolean	FALSE
 IGV.track.show.attribute.views	Show attribute panel	boolean	FALSE
 SHOW_DEFAULT_TRACK_ATTRIBUTES	Show default track attributes	boolean	FALSE

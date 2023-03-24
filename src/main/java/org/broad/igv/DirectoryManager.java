@@ -263,6 +263,32 @@ public class DirectoryManager {
 
     }
 
+    /**
+     * Creates and returns a file object for the file where a user's session is autosaved on exit.
+     *
+     * @return File object for the session autosave file
+     */
+    public static File getAutosavedSession() {
+        File autosavedSessionFile = new File(getIgvDirectory(), "session_autosave.xml");
+        return autosavedSessionFile;
+    }
+
+    /**
+     * Creates and returns a file object for the file where a user's session is autosaved on exit.
+     * If the file does not exist in the file system (at "~/igv/session_autosave.xml"), creates it.
+     *
+     * @return File object for the session autosave file
+     * @throws IOException
+     */
+    public static synchronized File getAutosavedSessionCreateIfNotExists() throws IOException {
+
+        File autosavedSessionFile = new File(getIgvDirectory(), "session_autosave.xml");
+        if (!autosavedSessionFile.exists()) {
+            autosavedSessionFile.createNewFile();
+        }
+        return autosavedSessionFile;
+    }
+
 
     /**
      * Return the user preferences property file  ("~/igv/prefs.properties").
