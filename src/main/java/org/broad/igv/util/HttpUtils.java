@@ -226,6 +226,8 @@ public class HttpUtils {
             urlString = urlString.replace("//www.dropbox.com", "//dl.dropboxusercontent.com");
         } else if (host.equals("drive.google.com")) {
             urlString = GoogleUtils.driveDownloadURL(urlString);
+        } else if (host.equals("igv.genepattern.org")) {
+            urlString = urlString.replace("//igv.genepattern.org", "//igv-genepattern-org.s3.amazonaws.com");
         }
 
         // data.broadinstitute.org requires https
