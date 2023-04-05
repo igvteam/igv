@@ -1,8 +1,13 @@
 package org.broad.igv.sam;
 
+import htsjdk.samtools.util.Locatable;
 import org.broad.igv.Globals;
 
-public class SupplementaryAlignment {
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class SupplementaryAlignment implements Locatable {
 
     public String chr;
     public int start;
@@ -28,6 +33,11 @@ public class SupplementaryAlignment {
                 + " (" + strand + ") = " + Globals.DECIMAL_FORMAT.format(lenOnRef) + "bp  @MAPQ " + mapQ + " NM" + numMismatches;
     }
 
+    public static List<SupplementaryAlignment> parseFromSATag(String saTag){
+        return Arrays.stream(Globals.semicolonPattern.split(saTag))
+                .map(SupplementaryAlignment::new)
+                .collect(Collectors.toList());
+    }
 
     int computeLengthOnReference(String cigarString) {
 
@@ -52,5 +62,20 @@ public class SupplementaryAlignment {
 
         }
         return len;
+    }
+
+    @Override
+    public String getContig() {
+        return chr;
+    }
+
+    @Override
+    public int getStart() {
+        return start;
+    }
+
+    @Override
+    public int getEnd() {
+        return start + lenOnRef;
     }
 }
