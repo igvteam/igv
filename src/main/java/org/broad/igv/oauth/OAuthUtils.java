@@ -143,6 +143,9 @@ public class OAuthUtils {
 
 
     private String loadAsString(String urlOrPath) throws IOException {
+        if(HttpUtils.isRemoteURL(urlOrPath)) {
+            urlOrPath = HttpUtils.mapURL(urlOrPath);
+        }
         InputStream is = null;
         try {
             is = openInputStream(urlOrPath);
