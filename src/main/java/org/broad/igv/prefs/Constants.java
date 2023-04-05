@@ -34,6 +34,7 @@ final public class Constants {
     public static final String SHOW_GENOME_SERVER_WARNING = "SHOW_GENOME_SERVER_WARNING";
     public static final String CN_FREQ_AMP_THRESHOLD = "CN_FREQ.AMP_THRESHOLD";
     public static final String CN_FREQ_DEL_THRESHOLD = "CN_FREQ.DEL_THRESHOLD";
+    public static final String AUTOLOAD_LAST_AUTOSAVE = "AUTOLOAD_LAST_AUTOSAVE";
 
     //
     public static final String RECENT_SESSIONS = "IGV.Session.recent.sessions";
