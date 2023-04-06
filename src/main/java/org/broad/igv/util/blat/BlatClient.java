@@ -68,13 +68,12 @@ public class BlatClient {
         }
         urlpref = urlpref.trim();
 
-        if (serverType.equalsIgnoreCase("web_blat") || !urlpref.contains("$SEQUENCE")) {
+        if (serverType.equalsIgnoreCase("web_blat")) {
             return LegacyBlatClient.blat(userSeq);
 
         } else {
 
             String dbEncoded = URLEncoder.encode(db, "UTF-8");
-            urlpref = urlpref.replace("$SEQUENCE", userSeq).replace("$DB", dbEncoded);
 
             //Strip leading "file://" protocol, if any
             if (urlpref.startsWith("file://")) {
@@ -84,12 +83,24 @@ public class BlatClient {
             String jsonString = null;
 
             try {
-
                 // If urlpref is not a URL, assume it is a command line program.  An example might be
                 // blat.sh $SEQUENCE $DB
 
                 if (URLUtils.isURL(urlpref)) {
-                    jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(urlpref));
+                    if (urlpref.contains("$SEQUENCE")) {
+                        // Old "GET" style url
+                        urlpref = urlpref.replace("$SEQUENCE", userSeq).replace("$DB", dbEncoded);
+                        jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(urlpref));
+                    } else {
+                        // New "POST" style url -- can handle large sequences
+                        Map params = new HashMap();
+                        params.put("userSeq", userSeq);
+                        params.put("db", dbEncoded);
+                        params.put("type", "DNA");
+                        params.put("output", "json");
+                        jsonString = HttpUtils.getInstance().doPost(new URL(urlpref), params);
+                    }
+
                 } else {
                     jsonString = RuntimeUtils.exec(urlpref);
                 }
