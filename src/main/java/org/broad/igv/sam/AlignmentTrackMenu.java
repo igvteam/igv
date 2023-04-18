@@ -10,7 +10,6 @@ import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.tools.PFMExporter;
@@ -126,15 +125,12 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         if (clickedAlignment != null) {
             addGoToMate(e, clickedAlignment);
             showMateRegion(e, clickedAlignment);
-            //Supplementary/chimeric items, only if the read has an SA tag
-            addShowChimericRegions(alignmentTrack, e, clickedAlignment);
         }
-
         addInsertSizeMenuItem();
 
         // Third gen (primarily) items
         addSeparator();
-        addThirdGenItems();
+        addThirdGenItems(clickedAlignment, e);
 
         // Display mode items
         addSeparator();
@@ -171,11 +167,10 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         // Show alignments, coverage, splice junctions
         addSeparator();
         addShowItems();
-
-
     }
 
     private void addShowChimericRegions(final AlignmentTrack alignmentTrack, final TrackClickEvent e, final Alignment clickedAlignment) {
+
         JMenuItem item = new JMenuItem("View chimeric alignments in split screen");
         if (clickedAlignment.getAttribute(SAMTag.SA.name()) != null) {
             item.setEnabled(true);
@@ -1082,7 +1077,11 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         }
     }
 
-    void addThirdGenItems() {
+    void addThirdGenItems(Alignment clickedAlignment, final TrackClickEvent tce) {
+
+        //Supplementary/chimeric items, only if the read has an SA tag
+        addShowChimericRegions(alignmentTrack, tce, clickedAlignment);
+
 
         final JMenuItem qcItem = new JCheckBoxMenuItem("Quick consensus mode");
         qcItem.setSelected(renderOptions.isQuickConsensusMode());
