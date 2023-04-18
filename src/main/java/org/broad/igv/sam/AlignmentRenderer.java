@@ -801,7 +801,7 @@ public class AlignmentRenderer {
                             if (bisulfiteMode) {
                                 color = bisinfo.getDisplayColor(idx);
                             } else if (colorOption.isBaseMod() ||
-                                       colorOption.isSMRTKinetics()) {
+                                    colorOption.isSMRTKinetics()) {
                                 color = Color.GRAY;
                             } else {
                                 color = nucleotideColors.get(c);
@@ -817,8 +817,8 @@ public class AlignmentRenderer {
 
                             BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
 
-                            final boolean showBase =
-                                    isSoftClip ||
+                            final boolean showBase = showAllBases ||
+                                            isSoftClip ||
                                             bisulfiteMode ||
                                             // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
                                             (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
@@ -1265,10 +1265,10 @@ public class AlignmentRenderer {
                 }
                 break;
             case READ_ORDER:
-                if (alignment.isPaired()){
-                    if(alignment.isFirstOfPair() && !alignment.isSecondOfPair()){
+                if (alignment.isPaired()) {
+                    if (alignment.isFirstOfPair() && !alignment.isSecondOfPair()) {
                         c = firstOfPairColor;
-                    } else if(!alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
+                    } else if (!alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
                         c = secondOfPairColor;
                     } else if (alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
                         c = firstAndSecondofPairColor;
