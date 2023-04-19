@@ -817,8 +817,8 @@ public class AlignmentRenderer {
 
                             BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
 
-                            final boolean showBase =
-                                    isSoftClip ||
+                            final boolean showBase = showAllBases ||
+                                            isSoftClip ||
                                             bisulfiteMode ||
                                             // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
                                             (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
@@ -1268,7 +1268,7 @@ public class AlignmentRenderer {
                 if (alignment.isPaired()){
                     if(alignment.isFirstOfPair() && !alignment.isSecondOfPair()){
                         c = firstOfPairColor;
-                    } else if(!alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
+                    } else if (!alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
                         c = secondOfPairColor;
                     } else if (alignment.isFirstOfPair() && alignment.isSecondOfPair()) {
                         c = firstAndSecondofPairColor;
