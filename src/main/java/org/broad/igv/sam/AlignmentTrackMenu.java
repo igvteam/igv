@@ -172,7 +172,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     private void addShowChimericRegions(final AlignmentTrack alignmentTrack, final TrackClickEvent e, final Alignment clickedAlignment) {
 
         JMenuItem item = new JMenuItem("View chimeric alignments in split screen");
-        if (clickedAlignment.getAttribute(SAMTag.SA.name()) != null) {
+        if (clickedAlignment != null && clickedAlignment.getAttribute(SAMTag.SA.name()) != null) {
             item.setEnabled(true);
             item.addActionListener(aEvt -> {
                 final String saTag = clickedAlignment.getAttribute(SAMTag.SA.name()).toString();
