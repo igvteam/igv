@@ -248,12 +248,6 @@ public class IGV implements IGVEventObserver {
         }
         mainFrame.setBounds(applicationBounds);
 
-        // Autoload session autosave if user preferences say to do that
-        if (DirectoryManager.getAutosavedSession().exists() && PreferencesManager.getPreferences().getAsBoolean(AUTOLOAD_LAST_AUTOSAVE)) {
-            File sessionAutosave = DirectoryManager.getAutosavedSession();
-            loadSession(sessionAutosave.getAbsolutePath(), null);
-        }
-
         subscribeToEvents();
     }
 
@@ -1936,8 +1930,10 @@ public class IGV implements IGVEventObserver {
                 }
 
             } else {
-                boolean genomeLoaded = false;
+                // Check whether autosave is set to load and exists
+                boolean loadAutosave = DirectoryManager.getAutosavedSession().exists() && PreferencesManager.getPreferences().getAsBoolean(AUTOLOAD_LAST_AUTOSAVE);
 
+                boolean genomeLoaded = false;
                 if (igvArgs.getGenomeId() != null) {
                     String genomeId = igvArgs.getGenomeId();
                     try {
@@ -1948,8 +1944,8 @@ public class IGV implements IGVEventObserver {
                         log.error("Error loading genome: " + genomeId, e);
                     }
                 }
-
-                if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
+                // If we're not loading a session file, attempt to load a default genome file
+                if(igvArgs.getSessionFile() == null && !loadAutosave && !genomeLoaded) {
                     String genomeId = preferences.getDefaultGenome();
                     try {
                         GenomeManager.getInstance().loadGenomeById(genomeId);
@@ -1958,19 +1954,19 @@ public class IGV implements IGVEventObserver {
                         MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
                         log.error("Error loading genome: " + genomeId, e);
                     }
-                }
 
-                if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
-                    String genomeId = GenomeListManager.DEFAULT_GENOME.getId();
-                    try {
-                        GenomeManager.getInstance().loadGenomeById(genomeId);
-                    } catch (IOException e) {
-                        MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                        log.error("Error loading genome: " + genomeId, e);
+                    if (!genomeLoaded) {
+                        genomeId = GenomeListManager.DEFAULT_GENOME.getId();
+                        try {
+                            GenomeManager.getInstance().loadGenomeById(genomeId);
+                        } catch (IOException e) {
+                            MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                            log.error("Error loading genome: " + genomeId, e);
+                        }
                     }
                 }
 
-                if (igvArgs.getSessionFile() != null || igvArgs.getDataFileStrings() != null) {
+                if (igvArgs.getSessionFile() != null || igvArgs.getDataFileStrings() != null || loadAutosave) {
 
                     if (log.isDebugEnabled()) {
                         log.debug("Loading session data");
@@ -2000,7 +1996,6 @@ public class IGV implements IGVEventObserver {
                         if (!success) {
                             String genomeId = preferences.getDefaultGenome();
                             contentPane.getCommandBar().selectGenome(genomeId);
-
                         }
                     } else if (igvArgs.getDataFileStrings() != null) {
 
@@ -2067,6 +2062,15 @@ public class IGV implements IGVEventObserver {
                             locators.add(rl);
                         }
                         loadTracks(locators);
+                    } else if (loadAutosave) {
+                        // Get the last autosave and attempt to load
+                        File sessionAutosave = DirectoryManager.getAutosavedSession();
+                        boolean success = loadSession(sessionAutosave.getAbsolutePath(), null);
+                        // Load the default genome if unsuccessful
+                        if (!success) {
+                            String genomeId = preferences.getDefaultGenome();
+                            contentPane.getCommandBar().selectGenome(genomeId);
+                        }
                     }
 
 
