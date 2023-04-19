@@ -112,7 +112,7 @@ public class VariantMenu extends IGVPopupMenu {
         }
 
         // Show genotypes
-        if (track.getAllSamples().size() > 0) {
+        if (track.sampleCount() > 0) {
             addSeparator();
             add(getShowGenotypes());
         }
