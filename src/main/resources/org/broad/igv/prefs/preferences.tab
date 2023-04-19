@@ -218,7 +218,7 @@ MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://data.broadinstitute.or
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
 
-BLAT_URL	BLAT URL	String	http://genome.ucsc.edu/cgi-bin/hgBlat
+BLAT_URL	BLAT URL	String	http://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=$SEQUENCE&type=DNA&db=$DB&output=json
 ---
 
 ## Tooltip
