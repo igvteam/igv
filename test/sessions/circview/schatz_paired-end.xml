@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Session genome="hg19" locus="chr17:37276854-37277154" version="8">
+<Session genome="hg19" locus="chr17:37276853-37277154" version="8">
     <Resources>
         <Resource path="https://s3.amazonaws.com/igv.org.demo/SKBR3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam" type="bam"/>
         <Resource path="https://s3.amazonaws.com/igv.org.demo/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt_filtered.tra.vcf" type="vcf"/>
     </Resources>
-    <Panel height="137" name="DataPanel" width="1465">
+    <Panel height="75" name="DataPanel" width="1465">
         <Track attributeKey="reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt_filtered.tra.vcf" clazz="org.broad.igv.variant.VariantTrack" colorScale="ContinuousColorScale;0.0;10.0;255,255,255;0,0,178" displayMode="EXPANDED" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.demo/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt_filtered.tra.vcf" name="reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt_filtered.tra.vcf" siteColorMode="ALLELE_FREQUENCY" visible="true"/>
-    </Panel>
-    <Panel height="134" name="Panel1643653158403" width="1465">
-        <Track attributeKey="SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam.delly_noalt_filtered.vcf.gz" clazz="org.broad.igv.variant.VariantTrack" colorScale="ContinuousColorScale;0.0;52.0;255,255,255;0,0,178" displayMode="EXPANDED" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.demo/SKBR3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam.delly_noalt_filtered.vcf.gz" name="Delly SVs" siteColorMode="ALLELE_FREQUENCY" squishedHeight="1" visible="true"/>
     </Panel>
     <Panel height="2648" name="Panel1643653129901" width="1465">
         <Track attributeKey="SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam Coverage" autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" fontSize="10" id="https://s3.amazonaws.com/igv.org.demo/SKBR3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam_coverage" name="Illumina Coverage" snpThreshold="0.2" visible="true">
@@ -19,11 +16,11 @@
             <RenderOptions/>
         </Track>
     </Panel>
-    <Panel height="136" name="FeaturePanel" width="1465">
+    <Panel height="168" name="FeaturePanel" width="1465">
         <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="true" visible="true"/>
         <Track attributeKey="Refseq Genes" clazz="org.broad.igv.track.FeatureTrack" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.genomes/hg19/ncbiRefSeq.sorted.txt.gz" name="Refseq Genes" visible="true"/>
     </Panel>
-    <PanelLayout dividerFractions="0.18051948051948052,0.36103896103896105,0.8168831168831169"/>
+    <PanelLayout dividerFractions="0.1,0.7753246753246753"/>
     <HiddenAttributes>
         <Attribute name="DATA FILE"/>
         <Attribute name="DATA TYPE"/>
