@@ -24,7 +24,9 @@ public class BaseModificationRenderer {
             case BASE_MODIFICATION_C:
                 draw5mC(alignment, bpStart, locScale, rowRect, g, true);
                 break;
-
+            case BASE_MODIFICATION_6MA:
+                draw6mA(alignment, bpStart, locScale, rowRect, g);
+                break;
             default:
                 draw(alignment, bpStart, locScale, rowRect, g);
         }
@@ -186,4 +188,76 @@ public class BaseModificationRenderer {
         }
     }
 
+    /**
+     * Helper function for AlignmentRenderer.  Draw base modifications over alignment for "6mA" mode.
+     * <p>
+     * If multiple modifications are specified for a base the modification with the highest probability is
+     * drawn.
+     *
+     * @param alignment
+     * @param bpStart
+     * @param locScale
+     * @param rowRect
+     * @param g
+     */
+    private static void draw6mA(
+            Alignment alignment,
+            double bpStart,
+            double locScale,
+            Rectangle rowRect,
+            Graphics g) {
+
+        List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
+        if (baseModificationSets == null) { return; }
+
+        for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
+            // Compute bounds
+            int pY = (int) rowRect.getY();
+            int dY = (int) rowRect.getHeight();
+            int dX = (int) Math.max(1, (1.0 / locScale));
+
+            for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
+
+                int blockIdx = i - block.getBases().startOffset;
+                int pX = (int) ((block.getStart() + blockIdx - bpStart) / locScale);
+
+                // Don't draw out of clipping rect
+                if (pX > rowRect.getMaxX()) {
+                    break;
+                } else if (pX + dX < rowRect.getX()) {
+                    continue;
+                }
+
+                // Search all sets for modifications of this base, select modification with largest likelihood
+                int lh = -1;
+                String modification = null;
+
+                for (BaseModificationSet bmSet : baseModificationSets) {
+
+                    if (bmSet.getCanonicalBase() != 'A' && bmSet.getCanonicalBase() != 'T') continue;
+                    if (! bmSet.getModification().equals("a")) continue;
+
+                    if (bmSet.containsPosition(i)) {
+                        int l = Byte.toUnsignedInt(bmSet.getLikelihoods().get(i));
+                        if (modification == null || l > lh) {
+                            modification = bmSet.getModification();
+                            lh = l;
+                        }
+                    }
+                }
+
+                if (modification != null) {
+                    Color c = BaseModificationColors.getModColor(modification, (byte) lh, AlignmentTrack.ColorOption.BASE_MODIFICATION_6MA);
+                    g.setColor(c);
+
+                    // Expand narrow width to make more visible
+                    if (dX < 3) {
+                        dX = 3;
+                        pX--;
+                    }
+                    g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
+                }
+            }
+        }
+    }
 }
