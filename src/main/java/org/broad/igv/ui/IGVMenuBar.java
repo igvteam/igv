@@ -375,7 +375,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             String[] sessions = recentSessions.split(";");
             for (String sessionPath : sessions) {
                 if (!sessionPath.equals("null") &&
-                        !igv.getRecentSessionList().contains(sessionPath)) {
+                        !igv.getRecentSessionList().contains(sessionPath) &&
+                        (new File(sessionPath)).exists()) {
                     igv.getRecentSessionList().add(sessionPath);
                 }
 

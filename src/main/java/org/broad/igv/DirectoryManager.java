@@ -31,6 +31,7 @@ import org.broad.igv.logging.LogFileHandler;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -41,6 +42,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Optional;
 import java.util.prefs.Preferences;
 
 /**
@@ -54,6 +59,7 @@ public class DirectoryManager {
     private static File USER_HOME;
     private static File USER_DIRECTORY;    // FileSystemView.getFileSystemView().getDefaultDirectory();
     private static File IGV_DIRECTORY;     // The IGV application directory
+    private static File AUTOSAVE_DIRECTORY;
     private static File GENOME_CACHE_DIRECTORY;
     private static File GENE_LIST_DIRECTORY;
     private static File BAM_CACHE_DIRECTORY;
@@ -179,6 +185,22 @@ public class DirectoryManager {
         return override;
     }
 
+    public static File getAutosaveDirectory() {
+        if (AUTOSAVE_DIRECTORY == null) {
+
+            //Create the Genome Cache
+            AUTOSAVE_DIRECTORY = new File(getIgvDirectory(), "autosave");
+            if (!AUTOSAVE_DIRECTORY.exists()) {
+                AUTOSAVE_DIRECTORY.mkdir();
+            }
+            if (!AUTOSAVE_DIRECTORY.canRead()) {
+                throw new DataLoadException("Cannot read from user directory", AUTOSAVE_DIRECTORY.getAbsolutePath());
+            } else if (!AUTOSAVE_DIRECTORY.canWrite()) {
+                throw new DataLoadException("Cannot write to user directory", AUTOSAVE_DIRECTORY.getAbsolutePath());
+            }
+        }
+        return AUTOSAVE_DIRECTORY;
+    }
 
     public static File getGenomeCacheDirectory() {
         if (GENOME_CACHE_DIRECTORY == null) {
@@ -264,28 +286,46 @@ public class DirectoryManager {
     }
 
     /**
-     * Creates and returns a file object for the file where a user's session is autosaved on exit.
+     * Returns a file object for the file corresponding to the user's last autosave, or an empty optional if the
+     * autosave directory is empty
      *
      * @return File object for the session autosave file
      */
-    public static File getAutosavedSession() {
-        File autosavedSessionFile = new File(getIgvDirectory(), "session_autosave.xml");
-        return autosavedSessionFile;
+    public static Optional<File> getLatestAutosavedSession() {
+        // The most recent autosave is the one in the autosave directory with the most recent date in its title,
+        // therefore it will come last if we sort
+        File[] autosaves = getAutosaveDirectory().listFiles();
+        // If autosaves is empty, return an empty option
+        if(autosaves.length == 0) {
+            return Optional.empty();
+        }
+        Arrays.sort(autosaves);
+        return Optional.of(autosaves[autosaves.length-1]);
     }
 
     /**
-     * Creates and returns a file object for the file where a user's session is autosaved on exit.
-     * If the file does not exist in the file system (at "~/igv/session_autosave.xml"), creates it.
+     * Creates a new autosave session file and returns a file object for it.
      *
      * @return File object for the session autosave file
      * @throws IOException
      */
-    public static synchronized File getAutosavedSessionCreateIfNotExists() throws IOException {
+    public static synchronized File getNewSessionAutosaveFile() throws IOException {
+        // Create a filename for the new autosave file that includes the current datetime
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date());
+        String newAutosaveFilename = "session_autosave" + currentDate + ".xml";
 
-        File autosavedSessionFile = new File(getIgvDirectory(), "session_autosave.xml");
-        if (!autosavedSessionFile.exists()) {
-            autosavedSessionFile.createNewFile();
+        // Create the file
+        File autosavedSessionFile = new File(getAutosaveDirectory(), newAutosaveFilename);
+        autosavedSessionFile.createNewFile();
+
+        // If this puts the number of autosave files over the maximum, delete the oldest (the first in alphabetical
+        // order)
+        File[] autosaves = getAutosaveDirectory().listFiles();
+        if(autosaves.length > PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP)) {
+            Arrays.sort(autosaves);
+            autosaves[0].delete();
         }
+
         return autosavedSessionFile;
     }
 
@@ -374,6 +414,7 @@ public class DirectoryManager {
 
         }
 
+        AUTOSAVE_DIRECTORY = null;
         GENOME_CACHE_DIRECTORY = null;
         GENE_LIST_DIRECTORY = null;
         BAM_CACHE_DIRECTORY = null;
