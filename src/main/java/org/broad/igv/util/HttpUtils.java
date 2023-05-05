@@ -644,6 +644,7 @@ public class HttpUtils {
         return openConnection(url, Collections.<String, String>emptyMap(), "DELETE");
     }
 
+    // Called by IGVSeekableHTTPStream.openInputStreamForRange
     public HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
         return openConnection(url, requestProperties, "GET");
     }
@@ -1153,6 +1154,19 @@ public class HttpUtils {
             }
             n += count;
         }
+    }
+
+    /**
+     * Return true if URL has a known "Signed" signature.  There is no expecation this is comprehensive, but it
+     * does match Amazon and Google patterns and possibly others*
+     *
+     * @param url
+     * @return
+     */
+    public static boolean isSignedURL(String url) {
+        Pattern pattern = Pattern.compile("X-.*-Signature");
+        Matcher matcher = pattern.matcher(url);
+        return matcher.find();
     }
 
     public class UnsatisfiableRangeException extends RuntimeException {
