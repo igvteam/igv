@@ -198,7 +198,7 @@ public class HttpUtils {
     public static String mapURL(String urlString) throws MalformedURLException {
 
         // Check explicit mappings first
-        if(urlMappings.containsKey(urlString)) {
+        if (urlMappings.containsKey(urlString)) {
             return urlMappings.get(urlString);
         }
 
@@ -690,7 +690,7 @@ public class HttpUtils {
 
             if (oauthProvider != null) {
                 //Google is skipped here as we don't yet know if the url is protected or not.  Login is invoked after 401 error
-                if(!oauthProvider.isGoogle()) {
+                if (!oauthProvider.isGoogle()) {
                     oauthProvider.checkLogin();
                 }
                 token = oauthProvider.getAccessToken();
@@ -1212,6 +1212,7 @@ public class HttpUtils {
     }
 
     private static Map<String, String> urlMappings;
+
     static {
         // mutable map
         urlMappings = new HashMap<>();
