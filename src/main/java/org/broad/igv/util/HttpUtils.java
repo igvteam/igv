@@ -198,7 +198,7 @@ public class HttpUtils {
     public static String mapURL(String urlString) throws MalformedURLException {
 
         // Check explicit mappings first
-        if(urlMappings.containsKey(urlString)) {
+        if (urlMappings.containsKey(urlString)) {
             return urlMappings.get(urlString);
         }
 
@@ -644,6 +644,7 @@ public class HttpUtils {
         return openConnection(url, Collections.<String, String>emptyMap(), "DELETE");
     }
 
+    // Called by IGVSeekableHTTPStream.openInputStreamForRange
     public HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
         return openConnection(url, requestProperties, "GET");
     }
@@ -689,7 +690,7 @@ public class HttpUtils {
 
             if (oauthProvider != null) {
                 //Google is skipped here as we don't yet know if the url is protected or not.  Login is invoked after 401 error
-                if(!oauthProvider.isGoogle()) {
+                if (!oauthProvider.isGoogle()) {
                     oauthProvider.checkLogin();
                 }
                 token = oauthProvider.getAccessToken();
@@ -1155,6 +1156,19 @@ public class HttpUtils {
         }
     }
 
+    /**
+     * Return true if URL has a known "Signed" signature.  There is no expecation this is comprehensive, but it
+     * does match Amazon and Google patterns and possibly others*
+     *
+     * @param url
+     * @return
+     */
+    public static boolean isSignedURL(String url) {
+        Pattern pattern = Pattern.compile("X-.*-Signature");
+        Matcher matcher = pattern.matcher(url);
+        return matcher.find();
+    }
+
     public class UnsatisfiableRangeException extends RuntimeException {
 
         String message;
@@ -1198,6 +1212,7 @@ public class HttpUtils {
     }
 
     private static Map<String, String> urlMappings;
+
     static {
         // mutable map
         urlMappings = new HashMap<>();

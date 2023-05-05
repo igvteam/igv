@@ -26,6 +26,7 @@
 package org.broad.igv.util.stream;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.logging.*;
 import org.broad.igv.util.HttpUtils;
 
@@ -39,6 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ *
  */
 public class IGVSeekableHTTPStream extends SeekableStream {
 
@@ -78,15 +80,14 @@ public class IGVSeekableHTTPStream extends SeekableStream {
     public int read(byte[] buffer, int offset, int len) throws IOException {
 
         int attempts = 0;
-        while(attempts < 3) {
+        while (attempts < 3) {
             try {
                 return _read(buffer, offset, len);
             } catch (java.net.SocketException e) {
-                if(attempts < 3) {
+                if (attempts < 3) {
                     attempts++;
                     log.error("Socket exception. Trying again.", e);
-                }
-                else {
+                } else {
                     throw e;
                 }
             }
@@ -140,9 +141,7 @@ public class IGVSeekableHTTPStream extends SeekableStream {
 
         } catch (HttpUtils.UnsatisfiableRangeException e) {
             return handleUnsatisfiableRange(n);
-        }
-
-        catch (IOException e) {
+        } catch (IOException e) {
 
             if (e.getMessage().contains("416") || (e instanceof EOFException)) {
                 return handleUnsatisfiableRange(n);
@@ -182,6 +181,27 @@ public class IGVSeekableHTTPStream extends SeekableStream {
     }
 
     public InputStream openInputStreamForRange(long start, long end) throws IOException {
+
+        // To safely do a range query we should limit it to the content length.  Try to determine content-length,
+        // there is no guarantee this will succeed.
+        if (!HttpUtils.isSignedURL(url.toExternalForm())) {
+            try {
+                contentLength = HttpUtils.getInstance().getContentLength(url);
+            } catch (Exception e) {
+                log.error("Error fetching content-length", e);
+            }
+        }
+
+        // Check content length, if known
+        if (contentLength > 0) {
+            if (start >= contentLength) {
+                throw new IOException("Start (" + start + ") is > content length(" + contentLength + ")");
+            } else if (start == contentLength) {
+
+            } else {
+                end = contentLength - 1;
+            }
+        }
 
         String byteRange = "bytes=" + start + "-" + end;
         Map<String, String> params = new HashMap();

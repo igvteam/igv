@@ -50,6 +50,17 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
     static String broadURLString = "https://igv-genepattern-org.s3.amazonaws.com/test/fasta/chr22.fa";
 
     @Test
+    public void testSignedURLMatch() throws Exception {
+        String aws = "https://amazonaws.com?X-Amz-Signature=foo";  //X-Amz-Signature"
+        assertTrue(HttpUtils.isSignedURL(aws));
+        String google = "https://google.com?X-Goog-Signature=bar";
+        assertTrue(HttpUtils.isSignedURL(google));
+        String noMatch = "https://www.google.com";
+        assertFalse(HttpUtils.isSignedURL(noMatch));
+    }
+
+
+    @Test
     public void testGetContentLength() throws IOException {
         // Open an input stream just to check permissions
         HttpURLConnection conn = null;
