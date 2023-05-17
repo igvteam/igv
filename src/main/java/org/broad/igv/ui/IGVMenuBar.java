@@ -97,6 +97,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenu toolsMenu;
     private JMenu googleMenu;
     private JMenu AWSMenu;
+    private AutosaveMenu autosaveMenu;
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
     private IGV igv;
@@ -321,6 +322,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         reloadSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         reloadSessionItem.setEnabled(false);
         menuItems.add(reloadSessionItem);
+
+        autosaveMenu = new AutosaveMenu();
+        menuItems.add(autosaveMenu);
 
         menuItems.add(new JSeparator());
 

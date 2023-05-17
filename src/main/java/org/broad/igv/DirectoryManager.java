@@ -31,7 +31,6 @@ import org.broad.igv.logging.LogFileHandler;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -42,10 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Optional;
 import java.util.prefs.Preferences;
 
 /**
@@ -188,7 +183,6 @@ public class DirectoryManager {
     public static File getAutosaveDirectory() {
         if (AUTOSAVE_DIRECTORY == null) {
 
-            //Create the Genome Cache
             AUTOSAVE_DIRECTORY = new File(getIgvDirectory(), "autosave");
             if (!AUTOSAVE_DIRECTORY.exists()) {
                 AUTOSAVE_DIRECTORY.mkdir();
@@ -283,50 +277,6 @@ public class DirectoryManager {
         }
         return logFile;
 
-    }
-
-    /**
-     * Returns a file object for the file corresponding to the user's last autosave, or an empty optional if the
-     * autosave directory is empty
-     *
-     * @return File object for the session autosave file
-     */
-    public static Optional<File> getLatestAutosavedSession() {
-        // The most recent autosave is the one in the autosave directory with the most recent date in its title,
-        // therefore it will come last if we sort
-        File[] autosaves = getAutosaveDirectory().listFiles();
-        // If autosaves is empty, return an empty option
-        if(autosaves.length == 0) {
-            return Optional.empty();
-        }
-        Arrays.sort(autosaves);
-        return Optional.of(autosaves[autosaves.length-1]);
-    }
-
-    /**
-     * Creates a new autosave session file and returns a file object for it.
-     *
-     * @return File object for the session autosave file
-     * @throws IOException
-     */
-    public static synchronized File getNewSessionAutosaveFile() throws IOException {
-        // Create a filename for the new autosave file that includes the current datetime
-        String currentDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date());
-        String newAutosaveFilename = "session_autosave" + currentDate + ".xml";
-
-        // Create the file
-        File autosavedSessionFile = new File(getAutosaveDirectory(), newAutosaveFilename);
-        autosavedSessionFile.createNewFile();
-
-        // If this puts the number of autosave files over the maximum, delete the oldest (the first in alphabetical
-        // order)
-        File[] autosaves = getAutosaveDirectory().listFiles();
-        if(autosaves.length > PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP)) {
-            Arrays.sort(autosaves);
-            autosaves[0].delete();
-        }
-
-        return autosavedSessionFile;
     }
 
 

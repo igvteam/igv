@@ -1,11 +1,10 @@
-package org.broad.igv.session;
+package org.broad.igv.session.autosave;
 
-import org.broad.igv.DirectoryManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.session.Session;
 import org.broad.igv.ui.IGV;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.TimerTask;
 
@@ -35,10 +34,8 @@ public class AutosaveTimerTask extends TimerTask {
         // Get the current session so we can save it
         Session session = igv.getSession();
         try {
-            // Create a new autosave file
-            File autosaveFile = DirectoryManager.getNewSessionAutosaveFile();
-            // Save to the file
-            (new SessionWriter()).saveSession(session, autosaveFile);
+            // Save the session to a new file in the autosave directory
+            SessionAutosaveManager.saveTimedSessionAutosaveFile(session);
         }
         catch (IOException err) {
             log.error("Failed to autosave session", err);

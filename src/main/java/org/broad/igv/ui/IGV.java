@@ -51,6 +51,7 @@ import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
@@ -58,6 +59,8 @@ import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionSelectionEvent;
 import org.broad.igv.sam.SortOption;
 import org.broad.igv.session.*;
+import org.broad.igv.session.autosave.AutosaveTimerTask;
+import org.broad.igv.session.autosave.SessionAutosaveManager;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.WaitCursorManager.CursorToken;
 import org.broad.igv.ui.commandbar.GenomeListManager;
@@ -256,9 +259,11 @@ public class IGV implements IGVEventObserver {
 
         subscribeToEvents();
 
-        // Start running periodic autosaves
-        int timerDelay = PreferencesManager.getPreferences().getAsInt(AUTOSAVE_FREQUENCY) * 60000; // Convert timer delay to ms
-        sessionAutosaveTimer.scheduleAtFixedRate(new AutosaveTimerTask(this), timerDelay, timerDelay);
+        // Start running periodic autosaves (unless the user has specified not to retain timed autosaves
+        if(PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP) > 0) {
+            int timerDelay = PreferencesManager.getPreferences().getAsInt(AUTOSAVE_FREQUENCY) * 60000; // Convert timer delay to ms
+            sessionAutosaveTimer.scheduleAtFixedRate(new AutosaveTimerTask(this), timerDelay, timerDelay);
+        }
     }
 
     public JRootPane getRootPane() {
@@ -575,8 +580,7 @@ public class IGV implements IGVEventObserver {
         // Autosave current session
         try {
             sessionAutosaveTimer.cancel();
-            File sessionAutosave = DirectoryManager.getNewSessionAutosaveFile();
-            saveSession(sessionAutosave);
+            SessionAutosaveManager.saveExitSessionAutosaveFile(session);
         }
         catch(Exception e) {
             log.error("Error autosaving session", e);
@@ -1942,7 +1946,7 @@ public class IGV implements IGVEventObserver {
 
             } else {
                 // Check whether autosave is set to load and exists
-                boolean loadAutosave = DirectoryManager.getLatestAutosavedSession().isPresent() && PreferencesManager.getPreferences().getAsBoolean(AUTOLOAD_LAST_AUTOSAVE);
+                boolean loadAutosave = SessionAutosaveManager.getExitSessionAutosaveFile().isPresent() && PreferencesManager.getPreferences().getAsBoolean(AUTOLOAD_LAST_AUTOSAVE);
 
                 boolean genomeLoaded = false;
                 if (igvArgs.getGenomeId() != null) {
@@ -2075,7 +2079,7 @@ public class IGV implements IGVEventObserver {
                         loadTracks(locators);
                     } else if (loadAutosave) {
                         // Get the last autosave and attempt to load
-                        File sessionAutosave = DirectoryManager.getLatestAutosavedSession().get();
+                        File sessionAutosave = SessionAutosaveManager.getExitSessionAutosaveFile().get();
                         boolean success = loadSession(sessionAutosave.getAbsolutePath(), null);
                         // Load the default genome if unsuccessful
                         if (!success) {
