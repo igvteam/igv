@@ -2279,7 +2279,7 @@ public class IGV implements IGVEventObserver {
                 return;
             }
 
-            List<CompletableFuture> futures = new ArrayList<>();
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
 
             for (ReferenceFrame frame : FrameManager.getFrames()) {
                 for (Track track : trackList) {
@@ -2319,6 +2319,7 @@ public class IGV implements IGVEventObserver {
                     });
                     return null;
                 }).exceptionally(ex -> {
+                    WaitCursorManager.removeWaitCursor(token);
                     log.error("Error loading track data", ex);
                     isLoading = false;
                     pending = null;

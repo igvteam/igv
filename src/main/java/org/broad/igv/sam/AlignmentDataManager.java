@@ -342,13 +342,13 @@ public class AlignmentDataManager implements IGVEventObserver {
 
             intervalCache.add(loadedInterval);
 
-            packAlignments(renderOptions);
+            loadedInterval.packAlignments(renderOptions);
 
         } finally {
             currentlyLoading = null;
         }
 
-          IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
+        IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
 
     }
 
