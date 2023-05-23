@@ -11,7 +11,7 @@ DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases), < 0 disables vi
 ## Session Autosave
 AUTOLOAD_LAST_AUTOSAVE	Load last autosaved session on startup	boolean	FALSE
 AUTOSAVE_FREQUENCY	How often, in minutes, to autosave the current session	integer	10
-AUTOSAVES_TO_KEEP	How many autosaved session files to keep	integer	5
+AUTOSAVES_TO_KEEP	How many autosaved session files to keep (0 disables timed autosave)	integer	0
 
 ##Jump To Next Feature Options (f/b Keys)
 NEXT_FIT_TO_WINDOW	Fit feature to window (with optional padding).	boolean	FALSE

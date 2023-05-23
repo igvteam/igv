@@ -31,7 +31,9 @@ package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.logging.*;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionWriter;
@@ -78,7 +80,12 @@ public class SaveSessionMenuAction extends MenuAction {
 
         String currentSessionFilePath = igv.getSession().getPath();
 
-        String initFile = currentSessionFilePath == null ? UIConstants.DEFAULT_SESSION_FILE : currentSessionFilePath;
+        // Get the parent dir of the session file so we can check if it's in the autosave directory
+        File parentDir = currentSessionFilePath == null ? null : new File(new File(currentSessionFilePath).getParent());
+
+        // If the filepath is null or the file is in the autosave dir, use the default session file name
+        String initFile = currentSessionFilePath == null  || parentDir.equals(DirectoryManager.getAutosaveDirectory()) ?
+                UIConstants.DEFAULT_SESSION_FILE : currentSessionFilePath;
         sessionFile = FileDialogUtils.chooseFile("Save Session",
                 PreferencesManager.getPreferences().getLastTrackDirectory(),
                 new File(initFile),
