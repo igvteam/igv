@@ -9,9 +9,10 @@ FLANKING_REGION	"Search for feature" padding region in bp, < 0 is interpreted as
 DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases), < 0 disables visibility window.	float	-1
 
 ## Session Autosave
+AUTOSAVE_ON_EXIT	Automatically save session on exit	boolean	TRUE
 AUTOLOAD_LAST_AUTOSAVE	Load last autosaved session on startup	boolean	FALSE
 AUTOSAVE_FREQUENCY	How often, in minutes, to autosave the current session	integer	10
-AUTOSAVES_TO_KEEP	How many autosaved session files to keep (0 disables timed autosave)	integer	0
+AUTOSAVES_TO_KEEP	How many timed autosave session files to keep (0 disables timed autosave)	integer	0
 
 ##Jump To Next Feature Options (f/b Keys)
 NEXT_FIT_TO_WINDOW	Fit feature to window (with optional padding).	boolean	FALSE

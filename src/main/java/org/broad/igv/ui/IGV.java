@@ -577,14 +577,19 @@ public class IGV implements IGVEventObserver {
             PreferencesManager.getPreferences().setRecentSessions(recentSessions);
         }
 
-        // Autosave current session
-        try {
-            sessionAutosaveTimer.cancel();
-            SessionAutosaveManager.saveExitSessionAutosaveFile(session);
+        // Stop the timer that is triggering the timed autosave
+        this.stopTimedAutosave();
+
+        // Autosave current session if configured to do so
+        if(PreferencesManager.getPreferences().getAsBoolean(AUTOSAVE_ON_EXIT)) {
+            try {
+                SessionAutosaveManager.saveExitSessionAutosaveFile(session);
+            }
+            catch(Exception e) {
+                log.error("Error autosaving session", e);
+            }
         }
-        catch(Exception e) {
-            log.error("Error autosaving session", e);
-        }
+
 
     }
 
@@ -1946,7 +1951,14 @@ public class IGV implements IGVEventObserver {
 
             } else {
                 // Check whether autosave is set to load and exists
-                boolean loadAutosave = SessionAutosaveManager.getExitSessionAutosaveFile().isPresent() && PreferencesManager.getPreferences().getAsBoolean(AUTOLOAD_LAST_AUTOSAVE);
+                boolean autosavePresent = false;
+                try {
+                    autosavePresent = SessionAutosaveManager.getMostRecentAutosaveFile().isPresent();
+                }
+                catch(Exception e) {
+                    log.error("Failure trying to get most recent autosave file", e);
+                }
+                boolean loadAutosave = autosavePresent && PreferencesManager.getPreferences().getAsBoolean(AUTOLOAD_LAST_AUTOSAVE);
 
                 boolean genomeLoaded = false;
                 if (igvArgs.getGenomeId() != null) {
@@ -2078,9 +2090,16 @@ public class IGV implements IGVEventObserver {
                         }
                         loadTracks(locators);
                     } else if (loadAutosave) {
-                        // Get the last autosave and attempt to load
-                        File sessionAutosave = SessionAutosaveManager.getExitSessionAutosaveFile().get();
-                        boolean success = loadSession(sessionAutosave.getAbsolutePath(), null);
+                        boolean success = false;
+                        try {
+                            // Get the last autosave and attempt to load
+                            File sessionAutosave = SessionAutosaveManager.getMostRecentAutosaveFile().get();
+                            success = loadSession(sessionAutosave.getAbsolutePath(), null);
+                        }
+                        catch(Exception e) {
+                            log.error("Failure trying to load most recent autosave file", e);
+                        }
+
                         // Load the default genome if unsuccessful
                         if (!success) {
                             String genomeId = preferences.getDefaultGenome();
@@ -2357,6 +2376,13 @@ public class IGV implements IGVEventObserver {
                 filter(TrackGroup::isVisible).
                 flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
                 collect(Collectors.toList());
+    }
+
+    /**
+     * Stops the scheduled autosave task
+     */
+    public void stopTimedAutosave() {
+        sessionAutosaveTimer.cancel();
     }
 
     // Thread pool for loading data

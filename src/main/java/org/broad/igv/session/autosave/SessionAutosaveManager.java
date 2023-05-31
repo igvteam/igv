@@ -8,6 +8,9 @@ import org.broad.igv.session.SessionWriter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,7 +28,7 @@ public class SessionAutosaveManager {
      * @return Optional containing a File object for the session autosave file or empty
      */
     public static synchronized Optional<File> getExitSessionAutosaveFile() {
-        File autosavedSessionFile = new File(DirectoryManager.getAutosaveDirectory(), "session_autosave.xml");
+        File autosavedSessionFile = new File(DirectoryManager.getAutosaveDirectory(), "exit_session_autosave.xml");
         if(!autosavedSessionFile.exists()) {
             return Optional.empty();
         }
@@ -41,18 +44,23 @@ public class SessionAutosaveManager {
      */
     public static synchronized void saveExitSessionAutosaveFile(Session session) throws IOException {
         // Get the file we use for saving sessions on exit
-        File autosavedSessionFile = new File(DirectoryManager.getAutosaveDirectory(), "session_autosave.xml");
+        File autosavedSessionFile = new File(DirectoryManager.getAutosaveDirectory(), "exit_session_autosave.xml");
         // Save the session
         (new SessionWriter()).saveSession(session, autosavedSessionFile);
     }
 
     /**
-     * Gets a File object for each file in the autosave directory and returns an array of those objects
+     * Gets a File object for each timed autosave session file in the autosave directory and returns an array of those
+     * objects
      *
      * @return Array of autosave files
      */
-    public static synchronized File[] getSessionAutosaveFiles() {
-        return DirectoryManager.getAutosaveDirectory().listFiles();
+    public static synchronized File[] getTimedSessionAutosaveFiles() {
+        File[] autosaveFiles = DirectoryManager.getAutosaveDirectory().listFiles();
+        // Remove the exit session autosave file from the list
+        return Arrays.stream(autosaveFiles)
+                .filter(file -> !file.getName().equals("exit_session_autosave.xml"))
+                .toArray(File[]::new);
     }
 
     /**
@@ -72,15 +80,40 @@ public class SessionAutosaveManager {
 
         // If this puts the number of timed autosave files over the maximum, delete the oldest (the first in
         // alphabetical order that is the one created on exit)
-        List<File> autosaves = Arrays.stream(DirectoryManager.getAutosaveDirectory().listFiles())
-                .filter(file -> !file.getName().equals("session_autosave.xml"))
-                .collect(Collectors.toList());
-        if(autosaves.size() > PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP)) {
-            Collections.sort(autosaves);
-            autosaves.get(0).delete();
+        File[] autosaves = getTimedSessionAutosaveFiles();
+        if(autosaves.length > PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP)) {
+            Arrays.sort(autosaves);
+            autosaves[0].delete();
         }
 
         // Save the session
         (new SessionWriter()).saveSession(session, autosavedSessionFile);
+    }
+
+    /**
+     * Gets a File object for the most recent file in the autosave directory, or an empty optional if the directory is
+     * empty
+     *
+     * @return Optional containing a File object for the session autosave file or empty
+     */
+    public static synchronized Optional<File> getMostRecentAutosaveFile() throws IOException{
+        File[] autosaveFiles = DirectoryManager.getAutosaveDirectory().listFiles();
+        if(autosaveFiles.length < 1) {
+            return Optional.empty();
+        }
+        // Check the creation dates of the files so we can figure out which is the most recent
+        int latestIndex = 0;
+        long latestCreationTime = Files.readAttributes(autosaveFiles[0].toPath(), BasicFileAttributes.class)
+                .creationTime().toMillis();
+        for(int i = 1; i < autosaveFiles.length; i++) {
+            // This file is the new latest if its creationTime is later than the current latest
+            long currentCreationTime = Files.readAttributes(autosaveFiles[i].toPath(), BasicFileAttributes.class)
+                    .creationTime().toMillis();
+            if(currentCreationTime > latestCreationTime) {
+                latestCreationTime = currentCreationTime;
+                latestIndex = i;
+            }
+        }
+        return Optional.of(autosaveFiles[latestIndex]);
     }
 }

@@ -4,6 +4,7 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.session.Session;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.IOException;
 import java.util.TimerTask;
@@ -38,7 +39,11 @@ public class AutosaveTimerTask extends TimerTask {
             SessionAutosaveManager.saveTimedSessionAutosaveFile(session);
         }
         catch (IOException err) {
-            log.error("Failed to autosave session", err);
+            // If autosaving fails, notify the user and stop autosaving
+            final String message = "Failure while trying to autosave session. Timed autosave will be disabled until IGV is restarted.";
+            log.error(message, err);
+            MessageUtils.showMessage(message + "\n" + err);
+            igv.stopTimedAutosave();
         }
 
     }
