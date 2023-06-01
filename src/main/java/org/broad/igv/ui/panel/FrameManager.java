@@ -25,6 +25,7 @@
 
 package org.broad.igv.ui.panel;
 
+import com.jidesoft.utils.SortedList;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -65,7 +66,7 @@ public class FrameManager implements IGVEventObserver {
         return s0 - s1;
     };
 
-    private static List<ReferenceFrame> frames = new ArrayList();
+    private static List<ReferenceFrame> frames = new ArrayList<>();
     private static ReferenceFrame defaultFrame;
 
     public static final String DEFAULT_FRAME_NAME = "genome";

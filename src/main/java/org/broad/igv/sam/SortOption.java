@@ -1,11 +1,18 @@
 package org.broad.igv.sam;
 
+import htsjdk.samtools.SAMTag;
+import htsjdk.samtools.util.Locatable;
+import org.broad.igv.feature.genome.ChromosomeNameComparator;
+
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
 public enum SortOption {
+
     START {
         @Override
         Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
@@ -100,6 +107,20 @@ public enum SortOption {
             //todo It would be nice to sort by something smarter than hash code but the possibility of mixed tag types makes that more complicated
         }
     },
+    LEFT_CLIP {
+        @Override
+        Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
+            return Comparator.comparing((Alignment a) -> a.getClippingCounts().isLeftClipped()).reversed()
+                    .thenComparing(Alignment::getAlignmentStart);
+        }
+    },
+    RIGHT_CLIP {
+        @Override
+        Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
+            return Comparator.comparing((Alignment a) -> a.getClippingCounts().isRightClipped()).reversed()
+                    .thenComparing(Alignment::getAlignmentEnd);
+        }
+    },
     SUPPLEMENTARY {
         @Override
         Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
@@ -154,4 +175,8 @@ public enum SortOption {
     // center alignment anyway
     abstract Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase);
 
+
+    public static final Comparator<Locatable> POSITION_COMPARATOR = Comparator.nullsFirst(Comparator.comparing(Locatable::getContig, ChromosomeNameComparator.get()))
+            .thenComparing(Locatable::getStart)
+            .thenComparing(Locatable::getEnd);
 }

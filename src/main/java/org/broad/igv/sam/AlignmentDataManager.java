@@ -25,6 +25,7 @@
 
 package org.broad.igv.sam;
 
+import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
@@ -341,13 +342,13 @@ public class AlignmentDataManager implements IGVEventObserver {
 
             intervalCache.add(loadedInterval);
 
-            packAlignments(renderOptions);
+            loadedInterval.packAlignments(renderOptions);
 
         } finally {
             currentlyLoading = null;
         }
 
-        //  IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
+        IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
 
     }
 
@@ -379,7 +380,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
 
-        String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
+        String sequence = chrMappings.getOrDefault(chr, chr);
 
         DownsampleOptions downsampleOptions = new DownsampleOptions();
 
@@ -390,7 +391,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         AlignmentTileLoader.AlignmentTile t = getLoader().loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, peStats, bisulfiteContext, renderOptions);
-      List<Alignment> alignments = t.getAlignments();
+        List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
         return new AlignmentInterval(chr, start, end, alignments, t.getCounts(), spliceJunctionHelper, downsampledIntervals);
     }

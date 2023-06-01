@@ -1,5 +1,6 @@
 package org.broad.igv.jbrowse;
 
+import htsjdk.samtools.SAMTag;
 import org.broad.igv.Globals;
 import org.broad.igv.bedpe.BedPE;
 import org.broad.igv.bedpe.BedPEFeature;
@@ -51,21 +52,20 @@ class Chord {
         return c;
     }
 
-    public static List<Chord>  fromSAString(Alignment a) {
-
-        String sastring = a.getAttribute("SA").toString();
+    public static List<Chord> fromSAString(Alignment a) {
+        String sastring = a.getAttribute(SAMTag.SA.name()).toString();
         String[] records = Globals.semicolonPattern.split(sastring);
         List<Chord> chords = new ArrayList<>();
         int n = 0;
         for (String rec : records) {
-            SupplementaryAlignment sa = new SupplementaryAlignment(rec);
+            SupplementaryAlignment sa = SupplementaryAlignment.fromSingleSaTagRecord(rec);
             if (sa.start != a.getStart()) {
                 Chord c = new Chord();
                 c.uniqueId = a.getReadName() + "_" + n++;
                 c.refName = shortName(a.getChr());
                 c.start = a.getStart();
                 c.end = a.getEnd();
-                c.mate = new Mate(shortName(sa.chr), sa.start, sa.start + sa.lenOnRef);
+                c.mate = new Mate(shortName(sa.chr), sa.start, sa.start + sa.getLenOnRef());
                 chords.add(c);
             }
         }

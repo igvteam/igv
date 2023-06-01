@@ -43,22 +43,41 @@ import org.broad.igv.sam.smrt.SMRTKineticsRenderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.color.*;
+import org.broad.igv.ui.color.ColorPalette;
+import org.broad.igv.ui.color.ColorTable;
+import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.color.GreyscaleColorTable;
+import org.broad.igv.ui.color.HSLColorTable;
+import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static org.broad.igv.prefs.Constants.*;
+import static org.broad.igv.prefs.Constants.SAM_ALLELE_THRESHOLD;
+import static org.broad.igv.prefs.Constants.SAM_BASE_QUALITY_MAX;
+import static org.broad.igv.prefs.Constants.SAM_BASE_QUALITY_MIN;
+import static org.broad.igv.prefs.Constants.SAM_CLIPPING_THRESHOLD;
+import static org.broad.igv.prefs.Constants.SAM_COLOR_A;
+import static org.broad.igv.prefs.Constants.SAM_COLOR_C;
+import static org.broad.igv.prefs.Constants.SAM_COLOR_G;
+import static org.broad.igv.prefs.Constants.SAM_COLOR_N;
+import static org.broad.igv.prefs.Constants.SAM_COLOR_T;
+import static org.broad.igv.prefs.Constants.SAM_FLAG_CLIPPING;
+import static org.broad.igv.prefs.Constants.SAM_FLAG_LARGE_INDELS;
+import static org.broad.igv.prefs.Constants.SAM_LARGE_INDELS_THRESHOLD;
+import static org.broad.igv.prefs.Constants.SAM_SHOW_CENTER_LINE;
+import static org.broad.igv.prefs.Constants.SAM_SHOW_CONNECTED_CHR_NAME;
 
 /**
  * @author jrobinso
  */
 public class AlignmentRenderer {
 
-    private static Logger log = LogManager.getLogger(AlignmentRenderer.class);
+    private static final Logger log = LogManager.getLogger(AlignmentRenderer.class);
 
 
     private static final Color negStrandColor = new Color(150, 150, 230);
@@ -72,18 +91,22 @@ public class AlignmentRenderer {
     private static final Color RL_COLOR = new Color(0, 150, 0);
     private static final Color RR_COLOR = new Color(20, 50, 200);
     private static final Color LL_COLOR = new Color(0, 150, 150);
-    private static Color smallISizeColor = new Color(0, 0, 150);
-    private static Color largeISizeColor = new Color(200, 0, 0);
+    private static final Color smallISizeColor = new Color(0, 0, 150);
+    private static final Color largeISizeColor = new Color(200, 0, 0);
     private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
 
+    //chimeric read connecting on the same contig colors
+    private static final Color INVERSION_COLOR = new Color( 200, 0, 0);
+    private static final Color NON_INVERSION_COLOR = new Color ( 230, 150, 150);
+
     // Clipping colors
-    private static Color clippedColor = new Color(255, 20, 147);
+    private static final Color clippedColor = new Color(255, 20, 147);
 
     // Indel colors
     public static Color purple = new Color(118, 24, 220);
-    private static Color deletionColor = Color.black;
-    private static Color skippedColor = new Color(150, 184, 200);
-    private static Color unknownGapColor = new Color(0, 150, 0);
+    private static final Color deletionColor = Color.black;
+    private static final Color skippedColor = new Color(150, 184, 200);
+    private static final Color unknownGapColor = new Color(0, 150, 0);
 
     // Bisulfite colors
     private static final Color bisulfiteColorFw1 = new Color(195, 195, 195);
@@ -102,7 +125,7 @@ public class AlignmentRenderer {
 
     public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
     // A "dummy" reference for soft-clipped reads.
-    private static byte[] softClippedReference = new byte[1000];
+    private static final byte[] softClippedReference = new byte[1000];
 
     private static ColorTable readGroupColors;
     private static ColorTable sampleColors;
@@ -116,7 +139,7 @@ public class AlignmentRenderer {
         // pre-seed from orientation colors
 
         // fr Orientations (e.g. Illumina paired-end libraries)
-        frOrientationTypes = new HashMap();
+        frOrientationTypes = new HashMap<>();
         //LR
         frOrientationTypes.put("F1R2", AlignmentTrack.OrientationType.LR);
         frOrientationTypes.put("F2R1", AlignmentTrack.OrientationType.LR);
@@ -139,7 +162,7 @@ public class AlignmentRenderer {
         frOrientationTypes.put("RF", AlignmentTrack.OrientationType.RL);
 
         // rf orienation  (e.g. Illumina mate-pair libraries)
-        rfOrientationTypes = new HashMap();
+        rfOrientationTypes = new HashMap<>();
         //LR
         rfOrientationTypes.put("R1F2", AlignmentTrack.OrientationType.LR);
         rfOrientationTypes.put("R2F1", AlignmentTrack.OrientationType.LR);
@@ -162,7 +185,7 @@ public class AlignmentRenderer {
         rfOrientationTypes.put("FR", AlignmentTrack.OrientationType.RL);
 
         // f1f2 orienation  (e.g. SOLID libraries, AlignmentTrack.OrientationType.second read appears first on + strand (leftmost))
-        f2f1OrientationTypes = new HashMap();
+        f2f1OrientationTypes = new HashMap<>();
         //LR
         f2f1OrientationTypes.put("F2F1", AlignmentTrack.OrientationType.LR);
         f2f1OrientationTypes.put("R1R2", AlignmentTrack.OrientationType.LR);
@@ -179,8 +202,8 @@ public class AlignmentRenderer {
         f2f1OrientationTypes.put("R2R1", AlignmentTrack.OrientationType.RL);
         f2f1OrientationTypes.put("F1F2", AlignmentTrack.OrientationType.RL);
 
-        // f1f2 orienation  (e.g. SOLID libraries, AlignmentTrack.OrientationType.actually is this one even possible?)
-        f1f2OrientationTypes = new HashMap();
+        // f1f2 orientation  (e.g. SOLID libraries, AlignmentTrack.OrientationType.actually is this one even possible?)
+        f1f2OrientationTypes = new HashMap<>();
         //LR
         f1f2OrientationTypes.put("F1F2", AlignmentTrack.OrientationType.LR);
         f1f2OrientationTypes.put("R2R1", AlignmentTrack.OrientationType.LR);
@@ -202,7 +225,7 @@ public class AlignmentRenderer {
         movieColors = new PaletteColorTable(palette);
         zmwColors = new PaletteColorTable(palette);
         defaultTagColors = new PaletteColorTable(palette);
-        tagValueColors = new HashMap();
+        tagValueColors = new HashMap<>();
 
         typeToColorMap = new HashMap<>(5);
         typeToColorMap.put(AlignmentTrack.OrientationType.LL, LL_COLOR);
@@ -214,7 +237,7 @@ public class AlignmentRenderer {
 
         IGVPreferences prefs = PreferencesManager.getPreferences();
 
-        nucleotideColors = new HashMap();
+        nucleotideColors = new HashMap<>();
 
         Color a = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_A), Color.green);
         Color c = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_C), Color.blue);
@@ -262,7 +285,6 @@ public class AlignmentRenderer {
 
         Graphics2D g2 = context.getGraphics2D("LINK_LINE");
         alpha = 0.3f;
-        type = AlphaComposite.SRC_OVER;
         alignmentAlphaComposite = AlphaComposite.getInstance(type, alpha);
         g2.setComposite(alignmentAlphaComposite);
 
@@ -373,7 +395,7 @@ public class AlignmentRenderer {
         List<Alignment> barcodedAlignments = alignment.alignments;
 
         if (barcodedAlignments.size() > 0) {
-            boolean mixedStrand = (alignment instanceof LinkedAlignment && alignment.getStrand() == Strand.NONE);
+            boolean mixedStrand = alignment.getStrand() == Strand.NONE;
             Alignment firstAlignment = barcodedAlignments.get(0);
             if (barcodedAlignments.size() > 1) {
                 Graphics2D gline = context.getGraphics2D("LINK_LINE");
@@ -576,15 +598,15 @@ public class AlignmentRenderer {
         /* Clipping */
         boolean flagClipping = prefs.getAsBoolean(SAM_FLAG_CLIPPING);
         int clippingThreshold = prefs.getAsInt(SAM_CLIPPING_THRESHOLD);
-        int[] clipping = SAMAlignment.getClipping(alignment.getCigarString());
-        boolean leftClipped = flagClipping && ((clipping[0] + clipping[1]) > clippingThreshold);
-        boolean rightClipped = flagClipping && ((clipping[2] + clipping[3]) > clippingThreshold);
+        ClippingCounts clipping = alignment.getClippingCounts();
+        boolean leftClipped = flagClipping && (clipping.getLeft() > clippingThreshold);
+        boolean rightClipped = flagClipping && (clipping.getRight() > clippingThreshold);
 
         double bpStart = context.getOrigin();
         double bpEnd = Math.ceil(context.getEndLocation());
 
         // Draw gaps (deletions and junctions)
-        java.util.List<Gap> gaps = alignment.getGaps();
+        List<Gap> gaps = alignment.getGaps();
         if (gaps != null) {
             for (Gap gap : gaps) {
                 int gapStart = gap.getStart();
@@ -643,8 +665,9 @@ public class AlignmentRenderer {
         // Get a graphics context for outlining alignment blocks.
         Graphics2D outlineGraphics = null;
         final HashMap<String, Color> selectedReadNames = this.track.getSelectedReadNames();
-        if (selectedReadNames.containsKey(alignment.getReadName())) {
-            Color c = selectedReadNames.get(alignment.getReadName());
+        final String readName = alignment.getReadName();
+        if (selectedReadNames.containsKey(readName)) {
+            Color c = selectedReadNames.get(readName);
             c = (c == null) ? Color.blue : c;
             outlineGraphics = context.getGraphics2D("THICK_STROKE");
             gAlignment.setColor(c);
@@ -711,14 +734,11 @@ public class AlignmentRenderer {
                 if (outlineGraphics != null) {
                     outlineGraphics.draw(blockShape);
                 }
-                if (leftmost && leftClipped) {
-                    clippedGraphics.drawLine(xPoly[0], yPoly[0], xPoly[1], yPoly[1]);
-                    clippedGraphics.drawLine(xPoly[5], yPoly[5] - 1, xPoly[0], yPoly[0]);
-                }
-                if (rightmost && rightClipped) {
-                    clippedGraphics.drawLine(xPoly[2], yPoly[2], xPoly[3], yPoly[3]);
-                    clippedGraphics.drawLine(xPoly[3], yPoly[3], xPoly[4], yPoly[4] - 1);
-                }
+
+                final SupplementaryAlignment.SupplementaryNeighbors supplementaryRenderingInfo = SupplementaryAlignment.getAdjacentSupplementaryReads(alignment);
+                final boolean drawLeftClip = leftmost && leftClipped;
+                final boolean drawRightClip = rightmost && rightClipped;
+                drawClippedEnds(clippedGraphics, xPoly, yPoly, drawLeftClip, drawRightClip, supplementaryRenderingInfo);
             }
             leftmost = false;
         }
@@ -890,6 +910,101 @@ public class AlignmentRenderer {
             }
         }
 
+    }
+
+    private static void drawClippedEnds(final Graphics2D g, final int[] xPoly, final int[] yPoly,
+                                        final boolean drawLeftClip, final boolean drawRightClip,
+                                        final SupplementaryAlignment.SupplementaryNeighbors sri) {
+        /*
+                5       4
+             0 <|=======|> 3
+                1       2
+         */
+        final int xLeftPoint = xPoly[0];
+        final int xLeft = xPoly[1];
+        final int xRightPoint = xPoly[3];
+        final int xRight = xPoly[2];
+        final int yMiddle = yPoly[0];
+        final int yBottom = yPoly[5];
+        final int yTop = yPoly[1];
+        final Color savedColor = g.getColor();
+        final int arrowWidth = 3;
+        String leftContigLabel = null;
+        String rightContigLabel = null;
+        try {
+            //left side
+            if (drawLeftClip) {
+                if (sri != null && sri.previous != null) {
+                    final SupplementaryAlignment previous = sri.previous;
+                    if (previous.contigsMatch(sri.alignment)) {
+                        g.setColor(previous.getStrand() == sri.alignment.getReadStrand() ? NON_INVERSION_COLOR : INVERSION_COLOR);
+                    } else {
+                        if (previous.getContig() != null) {
+                            g.setColor(ChromosomeColors.getColor(previous.getContig()));
+                            leftContigLabel = previous.getContig();
+                        } else {
+                            log.warn("previous is missing contig: " + previous);
+                        }
+                    }
+                    final Polygon thickLeftArrow = new Polygon(
+                            new int[]{xLeftPoint, xLeft, xLeft + arrowWidth, xLeft + arrowWidth, xLeft},
+                            new int[]{yMiddle, yBottom, yBottom, yTop, yTop},
+                            5);
+                    g.drawPolygon(thickLeftArrow);
+                    g.fillPolygon(thickLeftArrow);
+                    g.setColor(savedColor);
+                }
+                g.drawLine(xLeftPoint, yMiddle, xLeft, yBottom);
+                g.drawLine(xLeft, yTop - 1, xLeftPoint, yMiddle);
+            }
+            //right side
+            if (drawRightClip) {
+                if (sri != null && sri.next != null) {
+                    final SupplementaryAlignment next = sri.next;
+                    if (next.contigsMatch(sri.alignment)) {
+                        //TODO Set to scaled color by contig position
+                        g.setColor(next.getStrand() == sri.alignment.getReadStrand() ? NON_INVERSION_COLOR : INVERSION_COLOR);
+                    } else {
+                        g.setColor(ChromosomeColors.getColor(next.getContig()));
+                        rightContigLabel = next.getContig();
+                    }
+                    Polygon thickRightArrow = new Polygon(new int[]{xRightPoint, xRight, xRight - arrowWidth, xRight - arrowWidth, xRight},
+                            new int[]{yMiddle, yBottom, yBottom, yTop, yTop}, 5);
+                    g.drawPolygon(thickRightArrow);
+                    g.fillPolygon(thickRightArrow);
+                    g.setColor(savedColor);
+                }
+                g.drawLine(xRight, yBottom, xRightPoint, yMiddle);
+                g.drawLine(xRightPoint, yMiddle, xRight, yTop - 1);
+            }
+            //contig names
+            if(PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_CONNECTED_CHR_NAME)) {
+                if (leftContigLabel != null || rightContigLabel != null) {
+                    final int height = yBottom - yTop;
+                    int textHeight = g.getFontMetrics().getHeight();
+                    if (textHeight <= height + 4) {
+                        int leftTextWidth = leftContigLabel != null ? g.getFontMetrics().stringWidth(leftContigLabel) : 0;
+                        int rightContigWidth = rightContigLabel != null ? g.getFontMetrics().stringWidth(rightContigLabel) : 0;
+
+                        final int width = xRight - xLeft;
+                        int totalTextWidth = leftTextWidth + rightContigWidth + g.getFontMetrics().stringWidth(" ");
+                        final int distanceFromArrow = 4;
+                        if (totalTextWidth <= width + 2 * distanceFromArrow) {
+                            if (leftContigLabel != null) {
+                                g.setColor(ChromosomeColors.getColor(leftContigLabel));
+                                g.drawString(leftContigLabel, xLeft + distanceFromArrow, yBottom - 1);
+                            }
+                            if (rightContigLabel != null) {
+                                g.setColor(ChromosomeColors.getColor(rightContigLabel));
+                                g.drawString(rightContigLabel, xRight - (rightContigWidth + distanceFromArrow), yBottom - 1);
+                            }
+                        }
+                    }
+                }
+            }
+        } finally {
+            g.setColor(savedColor);
+        }
     }
 
     /**

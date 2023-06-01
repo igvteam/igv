@@ -797,7 +797,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     }
 
     /**
-     * A utility class for sceduling single-click actions "in the future",
+     * A utility class for schedueling single-click actions "in the future",
      *
      * @author jrobinso
      * @date Dec 17, 2010

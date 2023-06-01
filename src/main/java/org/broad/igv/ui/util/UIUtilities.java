@@ -167,10 +167,7 @@ public class UIUtilities {
         } else {
             try {
                 SwingUtilities.invokeAndWait(runnable);
-            } catch (InterruptedException e) {
-                log.error("Error invoking runnable", e);
-                UIUtilities.invokeOnEventThread(runnable);
-            } catch (InvocationTargetException e) {
+            } catch (InterruptedException | InvocationTargetException e) {
                 log.error("Error invoking runnable", e);
                 UIUtilities.invokeOnEventThread(runnable);
             }

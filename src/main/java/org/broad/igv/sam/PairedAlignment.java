@@ -216,33 +216,13 @@ public class PairedAlignment implements Alignment {
         return firstAlignment == null ? "" : firstAlignment.getReadSequence();
     }
 
-    public String getCigarString() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public ReadMate getMate() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
+    @Override
     public boolean isPaired() {
         return false;  //Counter intuitive, but the pair does not have a mate
     }
 
     public boolean isNegativeStrand() {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-
-    public String getSample() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public String getReadGroup() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public Object getAttribute(String key) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void setMateSequence(String sequence) {

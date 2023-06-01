@@ -246,12 +246,6 @@ public class LinkedAlignment implements Alignment {
         return insertions;
     }
 
-
-    @Override
-    public String getCigarString() {
-        return null;
-    }
-
     @Override
     public List<Gap> getGaps() {
         return null;
@@ -260,11 +254,6 @@ public class LinkedAlignment implements Alignment {
     @Override
     public int getInferredInsertSize() {
         return 0;
-    }
-
-    @Override
-    public ReadMate getMate() {
-        return null;
     }
 
     @Override
@@ -372,17 +361,6 @@ public class LinkedAlignment implements Alignment {
     @Override
     public String getSample() {
         return sample;
-    }
-
-    @Override
-    public String getReadGroup() {
-
-        return null;
-    }
-
-    @Override
-    public String getLibrary() {
-        return null;
     }
 
     @Override

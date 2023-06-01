@@ -102,7 +102,7 @@ public class AlignmentInterval extends Locus {
      *  @param option
      * @param location
      */
-    public void sortRows(SortOption option, double location, String tag, boolean invertSort) {
+    public void sortRows(SortOption option, double location, String tag, boolean invertSort, Set<String> priorityRecords) {
 
         PackedAlignments packedAlignments = getPackedAlignments();
         if (packedAlignments == null) {
@@ -111,7 +111,14 @@ public class AlignmentInterval extends Locus {
 
         final int center = (int) location;
         byte referenceBase = this.getReference(center);
-        final Comparator<Row> rowComparator =  option.getComparator(center, referenceBase, tag, invertSort);
+        Comparator<Row> rowComparator =  option.getComparator(center, referenceBase, tag, invertSort);
+
+        if( priorityRecords != null && !priorityRecords.isEmpty()){
+            rowComparator = Comparator.comparing((Row row) -> row.getAlignments().stream()
+                            .anyMatch( aln -> priorityRecords.contains(aln.getReadName())))
+                    .reversed()
+                    .thenComparing(rowComparator);
+        }
 
         for (List<Row> alignmentRows : packedAlignments.values()) {
             alignmentRows.sort(rowComparator);

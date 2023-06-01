@@ -28,6 +28,7 @@ package org.broad.igv.sam;
 
 import org.broad.igv.Globals;
 import org.broad.igv.event.AlignmentTrackEvent;
+import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.FeatureUtils;
@@ -65,6 +66,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -74,7 +76,7 @@ import static org.broad.igv.prefs.Constants.*;
 
 public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
-    private static Logger log = LogManager.getLogger(AlignmentTrack.class);
+    private static final Logger log = LogManager.getLogger(AlignmentTrack.class);
 
     // Alignment colors
     static final Color DEFAULT_ALIGNMENT_COLOR = new Color(185, 185, 185); //200, 200, 200);
@@ -151,6 +153,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         PAIR_ORIENTATION("pair orientation"),
         MATE_CHROMOSOME("chromosome of mate"),
         NONE("none"),
+        CHIMERIC("chimeric"),
         SUPPLEMENTARY("supplementary flag"),
         BASE_AT_POS("base at position"),
         MOVIE("movie"),
@@ -286,6 +289,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private ColorTable readNamePalette;
     private final HashMap<String, Color> selectedReadNames = new HashMap<>();
 
+    private final HashMap<ReferenceFrame, Consumer<ReferenceFrame>> actionToPerformOnFrameLoad = new HashMap<>();
 
     /**
      * Create a new alignment track
@@ -335,7 +339,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         spliceJunctionTrack.setHeight(60);
         this.spliceJunctionTrack = spliceJunctionTrack;
 
-        if (renderOptions.colorOption == ColorOption.BISULFITE) {
+        if (renderOptions.getColorOption() == ColorOption.BISULFITE) {
             setExperimentType(ExperimentType.BISULFITE);
         }
         readNamePalette = new PaletteColorTable(ColorUtilities.getDefaultPalette());
@@ -345,6 +349,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(AlignmentTrackEvent.class, this);
+        IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
     }
 
     public void init() {
@@ -383,6 +388,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     break;
             }
 
+        } else if( event instanceof DataLoadedEvent){
+            final DataLoadedEvent dataLoaded = (DataLoadedEvent) event;
+            actionToPerformOnFrameLoad.computeIfPresent(dataLoaded.getReferenceFrame(), (k, v) -> {
+                v.accept(k);
+                return null;
+            });
         }
     }
 
@@ -598,8 +609,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         // Check for YC tag
-        if (renderOptions.colorOption == null && dataManager.hasYCTags()) {
-            renderOptions.colorOption = ColorOption.YC_TAG;
+        if (renderOptions.getColorOption() == null && dataManager.hasYCTags()) {
+            renderOptions.setColorOption(ColorOption.YC_TAG);
         }
 
         Map<String, PEStats> peStats = dataManager.getPEStats();
@@ -815,15 +826,20 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return null;
     }
 
-    public void sortRows(final SortOption option, final Double location, final String tag, final boolean invertSort) {
+    public void sortRows(final SortOption option, final Double location, final String tag, final boolean invertSort, final Set<String> priorityRecords) {
         final List<ReferenceFrame> frames = FrameManager.getFrames();
         for (ReferenceFrame frame : frames) {
-            final double actloc = location != null ? location : frame.getCenter();
-            final AlignmentInterval interval = getDataManager().getLoadedInterval(frame);
-            if(interval != null) {
-                interval.sortRows(option, actloc, tag, invertSort);
+            Consumer<ReferenceFrame> sort = (ReferenceFrame f)  -> {
+                final AlignmentInterval interval = getDataManager().getLoadedInterval(f);
+                final double actloc = location != null ? location : f.getCenter();
+                interval.sortRows(option, actloc, tag, invertSort, priorityRecords);
+            };
+            //If the data is loaded sort now, otherwise delay until we get a message that it is loaded.
+            if(getDataManager().isLoaded(frame)){
+               sort.accept(frame);
             } else {
-                log.warn("Attempt to sort alignments prior to loading");
+                log.debug("Attempt to sort alignments prior to loading");
+                actionToPerformOnFrameLoad.put(frame, sort);
             }
         }
     }
@@ -854,7 +870,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         renderOptions.setGroupByOption(option);
         dataManager.packAlignments(renderOptions);
         repaint();
-
     }
 
     public void setBisulfiteContext(BisulfiteContext option) {
@@ -1009,7 +1024,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     public void setViewAsPairs(boolean vAP) {
         // TODO -- generalize this test to all incompatible pairings
-        if (vAP && renderOptions.groupByOption == GroupOption.STRAND) {
+        if (vAP && renderOptions.getGroupByOption() == GroupOption.STRAND) {
             boolean ungroup = MessageUtils.confirm("\"View as pairs\" is incompatible with \"Group by strand\". Ungroup?");
             if (ungroup) {
                 renderOptions.setGroupByOption(null);
@@ -1025,39 +1040,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN, UNKOWN}
 
-
-    class RenderRollback {
-        final ColorOption colorOption;
-        final GroupOption groupByOption;
-        final String groupByTag;
-        final String colorByTag;
-        final String linkByTag;
-        final DisplayMode displayMode;
-        final int expandedHeight;
-        final boolean showGroupLine;
-
-        RenderRollback(RenderOptions renderOptions, DisplayMode displayMode) {
-            this.colorOption = renderOptions.colorOption;
-            this.groupByOption = renderOptions.groupByOption;
-            this.colorByTag = renderOptions.colorByTag;
-            this.groupByTag = renderOptions.groupByTag;
-            this.displayMode = displayMode;
-            this.expandedHeight = AlignmentTrack.this.expandedHeight;
-            this.showGroupLine = AlignmentTrack.this.showGroupLine;
-            this.linkByTag = renderOptions.linkByTag;
-        }
-
-        void restore(RenderOptions renderOptions) {
-            renderOptions.colorOption = this.colorOption;
-            renderOptions.groupByOption = this.groupByOption;
-            renderOptions.colorByTag = this.colorByTag;
-            renderOptions.groupByTag = this.groupByTag;
-            renderOptions.linkByTag = this.linkByTag;
-            AlignmentTrack.this.expandedHeight = this.expandedHeight;
-            AlignmentTrack.this.showGroupLine = this.showGroupLine;
-            AlignmentTrack.this.setDisplayMode(this.displayMode);
-        }
-    }
 
     public boolean isRemoved() {
         return removed;
@@ -1313,6 +1295,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     public static class RenderOptions implements Cloneable, Persistable {
 
         public static final String NAME = "RenderOptions";
+        private static final Logger log = LogManager.getLogger(RenderOptions.class);
 
         private AlignmentTrack track;
         private Boolean shadeBasesOption;

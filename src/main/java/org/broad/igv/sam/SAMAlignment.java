@@ -29,9 +29,11 @@
  */
 package org.broad.igv.sam;
 
+import htsjdk.samtools.Cigar;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SAMTag;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
@@ -42,12 +44,12 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.mods.BaseModificationUtils;
 import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.sam.smrt.SMRTKinetics;
-import org.broad.igv.sam.smrt.SMRTKineticsDecoder;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,7 +58,7 @@ import java.util.regex.Pattern;
  */
 public class SAMAlignment implements Alignment {
 
-    private static Logger log = LogManager.getLogger(SAMAlignment.class);
+    private static final Logger log = LogManager.getLogger(SAMAlignment.class);
 
     public static final char DELETE_CHAR = '-';
     public static final char SKIP_CHAR = '=';
@@ -115,6 +117,23 @@ public class SAMAlignment implements Alignment {
      */
     private List<BaseModificationSet> baseModificationSets;
     private SMRTKinetics smrtKinetics;
+
+    private enum CacheKey {CLIPPING_COUNTS, SA_GROUP};
+
+    /**
+     * Use this to cache an expensive to compute value on this record and retrieve it as necessary.
+     */
+    @SuppressWarnings("unchecked")
+    private <T> T getCachedOrCompute(CacheKey key, Supplier<T> supplier){
+        final Object value = record.getTransientAttribute(key);
+        if (value == null) {
+            final T newValue = supplier.get();
+            record.setTransientAttribute(key, newValue);
+            return newValue;
+        } else {
+            return (T)value;
+        }
+    }
 
     public SAMAlignment(SAMRecord record) {
 
@@ -195,6 +214,10 @@ public class SAMAlignment implements Alignment {
         }
     }
 
+    private Object getAttribute(SAMTag key) {
+        return key == null ? null : record.getAttribute(key);
+    }
+
     public boolean isFirstOfPair() {
         return isPaired() && (flags & FIRST_OF_PAIR_FLAG) != 0;
     }
@@ -253,6 +276,17 @@ public class SAMAlignment implements Alignment {
 
     public String getCigarString() {
         return record.getCigarString();
+    }
+
+    @Override
+    public Cigar getCigar() {
+        return record.getCigar();
+    }
+
+    @Override
+    public ClippingCounts getClippingCounts(){
+            return getCachedOrCompute(CacheKey.CLIPPING_COUNTS,
+                    () -> ClippingCounts.fromCigar(record.getCigar()));
     }
 
     public String getReadSequence() {
@@ -476,7 +510,7 @@ public class SAMAlignment implements Alignment {
                 gapTypes = new char[nGaps];
             }
             if (nRealGaps > 0) {
-                gaps = new ArrayList<Gap>();
+                gaps = new ArrayList<>();
             }
 
             // Adjust start to include soft clipped bases a
@@ -580,7 +614,7 @@ public class SAMAlignment implements Alignment {
      */
     private static List<CigarOperator> buildOperators(String cigarString) {
 
-        java.util.List<CigarOperator> operators = new ArrayList();
+        java.util.List<CigarOperator> operators = new ArrayList<>();
         StringBuilder buffer = new StringBuilder(4);
 
         // Create list of cigar operators
@@ -608,6 +642,7 @@ public class SAMAlignment implements Alignment {
     }
 
 
+    @Override
     public String getClipboardString(double location, int mouseX) {
         return getAlignmentValueString(location, mouseX, (AlignmentTrack.RenderOptions) null);
     }
@@ -621,6 +656,7 @@ public class SAMAlignment implements Alignment {
         return null;
     }
 
+    @Override
     public String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
 
         boolean truncate = renderOptions != null;
@@ -754,37 +790,27 @@ public class SAMAlignment implements Alignment {
         buf.append("Clipping = ");
 
         // Identify the number of hard and soft clipped bases.
-        Matcher lclipMatcher = Pattern.compile("^(([0-9]+)H)?(([0-9]+)S)?").matcher(cigarString);
-        Matcher rclipMatcher = Pattern.compile("(([0-9]+)S)?(([0-9]+)H)?$").matcher(cigarString);
-        int lclipHard = 0, lclipSoft = 0, rclipHard = 0, rclipSoft = 0;
-        if (lclipMatcher.find()) {
-            lclipHard = lclipMatcher.group(2) == null ? 0 : Integer.parseInt(lclipMatcher.group(2), 10);
-            lclipSoft = lclipMatcher.group(4) == null ? 0 : Integer.parseInt(lclipMatcher.group(4), 10);
-        }
-        if (rclipMatcher.find()) {
-            rclipHard = rclipMatcher.group(4) == null ? 0 : Integer.parseInt(rclipMatcher.group(4), 10);
-            rclipSoft = rclipMatcher.group(2) == null ? 0 : Integer.parseInt(rclipMatcher.group(2), 10);
-        }
+        ClippingCounts clipping = getClippingCounts();
 
-        if (lclipHard + lclipSoft + rclipHard + rclipSoft == 0) {
+        if (!clipping.isClipped()){
             buf.append("None");
         } else {
-            if (lclipHard + lclipSoft > 0) {
+            if (clipping.isLeftClipped()) {
                 buf.append("Left");
-                if (lclipHard > 0) {
-                    buf.append(" " + Globals.DECIMAL_FORMAT.format(lclipHard) + " hard");
+                if (clipping.getLeftHard() > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(clipping.getLeftHard()) + " hard");
                 }
-                if (lclipSoft > 0) {
-                    buf.append(" " + Globals.DECIMAL_FORMAT.format(lclipSoft) + " soft");
+                if (clipping.getLeftSoft() > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(clipping.getLeftSoft()) + " soft");
                 }
             }
-            if (rclipHard + rclipSoft > 0) {
-                buf.append((lclipHard + lclipSoft > 0 ? "; " : "") + "Right");
-                if (rclipHard > 0) {
-                    buf.append(" " + Globals.DECIMAL_FORMAT.format(rclipHard) + " hard");
+            if (clipping.isRightClipped()) {
+                buf.append((clipping.isLeftClipped() ? "; " : "") + "Right");
+                if (clipping.getRightHard() > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(clipping.getRightHard()) + " hard");
                 }
-                if (rclipSoft > 0) {
-                    buf.append(" " + Globals.DECIMAL_FORMAT.format(rclipSoft) + " soft");
+                if (clipping.getRightSoft() > 0) {
+                    buf.append(" " + Globals.DECIMAL_FORMAT.format(clipping.getRightSoft()) + " soft");
                 }
             }
         }
@@ -814,10 +840,10 @@ public class SAMAlignment implements Alignment {
             }
         }
 
-        Object suppAlignment = this.getAttribute("SA");
+        Object suppAlignment = this.getAttribute(SAMTag.SA);
         if (suppAlignment != null) {
             buf.append("----------------------<br>");
-            buf.append(getSupplAlignmentString(suppAlignment.toString()));
+            buf.append(getSupplAlignmentString());
             buf.append("<br>");
         }
 
@@ -936,28 +962,43 @@ public class SAMAlignment implements Alignment {
 
     private String getMlTagString(SAMRecord.SAMTagAndValue tag) {
         byte[] bytes = (byte[]) tag.value;
-        String buf = "";
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < bytes.length; i++) {
-            if (i > 0) buf += ",";
-            buf += Byte.toUnsignedInt(bytes[i]);
-        }
-        return buf;
-    }
-
-    private String getSupplAlignmentString(String sa) {
-
-        StringBuffer buf = new StringBuffer();
-        buf.append("SupplementaryAlignments");
-        String[] records = Globals.semicolonPattern.split(sa);
-        for (String rec : records) {
-            try {
-                SupplementaryAlignment a = new SupplementaryAlignment(rec);
-                buf.append("<br>" + a.printString());
-            } catch (Exception e) {
-                buf.append("<br>* Invalid SA entry (not listed) *");
-            }
+            if (i > 0) buf.append(",");
+            buf.append(Byte.toUnsignedInt(bytes[i]));
         }
         return buf.toString();
+    }
+
+    private String getSupplAlignmentString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SupplementaryAlignments");
+        final List<SupplementaryAlignment> supplementaryAlignments = getSupplementaryAlignments();
+        final int insertionIndex = SupplementaryAlignment.getInsertionIndex(this, supplementaryAlignments);
+        int i = 0;
+        for (SupplementaryAlignment sa: supplementaryAlignments) {
+            if(i == insertionIndex) { //Add this read into the list
+                sb.append(getThisReadDescriptionForSAList());
+            }
+            i++;
+            try {
+                sb.append("<br>" + sa.printString());
+            } catch (Exception e) {
+                sb.append("<br>* Invalid SA entry (not listed) *");
+            }
+        }
+        if(i == insertionIndex){
+            sb.append(getThisReadDescriptionForSAList());
+        }
+        return sb.toString();
+    }
+
+    private String getThisReadDescriptionForSAList() {
+        return "<br>" +
+                "<b>"
+                + chr + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" + Globals.DECIMAL_FORMAT.format(getAlignmentEnd())
+                + " (" + getReadStrand().toShortString() + ")" +
+                "</b>";
     }
 
 
@@ -992,12 +1033,6 @@ public class SAMAlignment implements Alignment {
 
     public java.util.List<Gap> getGaps() {
         return gaps;
-    }
-
-
-    @Override
-    public void finish() {
-
     }
 
     @Override
@@ -1122,18 +1157,18 @@ public class SAMAlignment implements Alignment {
     public String getSynopsisString() {
 
         char st = isNegativeStrand() ? '-' : '+';
-        Object nm = getAttribute("NM");
+        Object nm = getAttribute(SAMTag.NM);
         String numMismatches = nm == null ? "?" : nm.toString();
         int lenOnRef = getAlignmentEnd() - getAlignmentStart();
 
-        int[] clipping = getClipping(getCigarString());
+        ClippingCounts clipping = getClippingCounts();
         String clippingString = "";
-        if (clipping[0] + clipping[1] + clipping[2] + clipping[3] > 0) {
-            if (clipping[0] > 0) clippingString += clipping[0] + "H";
-            if (clipping[1] > 0) clippingString += clipping[1] + "S";
+        if (clipping.isClipped()) {
+            if (clipping.getLeftHard() > 0) clippingString += clipping.getLeftHard() + "H";
+            if (clipping.getLeftSoft() > 0) clippingString += clipping.getLeftSoft() + "S";
             clippingString += " ... ";
-            if (clipping[3] > 0) clippingString += clipping[3] + "S";
-            if (clipping[2] > 0) clippingString += clipping[2] + "H";
+            if (clipping.getRightSoft() > 0) clippingString += clipping.getRightSoft() + "S";
+            if (clipping.getRightHard() > 0) clippingString += clipping.getRightHard() + "H";
         }
 
         return chr + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart()) + "-" +
@@ -1141,22 +1176,6 @@ public class SAMAlignment implements Alignment {
                 + " (" + st + ") = " + Globals.DECIMAL_FORMAT.format(lenOnRef) + "BP  @MAPQ=" + getMappingQuality() +
                 " NM=" + numMismatches + " CLIPPING=" + clippingString;
 
-    }
-
-    public static int[] getClipping(String cigarString) {
-        // Identify the number of hard and soft clipped bases.
-        Matcher lclipMatcher = Pattern.compile("^(([0-9]+)H)?(([0-9]+)S)?").matcher(cigarString);
-        Matcher rclipMatcher = Pattern.compile("(([0-9]+)S)?(([0-9]+)H)?$").matcher(cigarString);
-        int lclipHard = 0, lclipSoft = 0, rclipHard = 0, rclipSoft = 0;
-        if (lclipMatcher.find()) {
-            lclipHard = lclipMatcher.group(2) == null ? 0 : Integer.parseInt(lclipMatcher.group(2), 10);
-            lclipSoft = lclipMatcher.group(4) == null ? 0 : Integer.parseInt(lclipMatcher.group(4), 10);
-        }
-        if (rclipMatcher.find()) {
-            rclipHard = rclipMatcher.group(4) == null ? 0 : Integer.parseInt(rclipMatcher.group(4), 10);
-            rclipSoft = rclipMatcher.group(2) == null ? 0 : Integer.parseInt(rclipMatcher.group(2), 10);
-        }
-        return new int[]{lclipHard, lclipSoft, rclipHard, rclipSoft};
     }
 
     private static boolean operatorIsMatch(boolean showSoftClipped, char operator) {
@@ -1191,4 +1210,16 @@ public class SAMAlignment implements Alignment {
         return hapDistance;
     }
 
+    public List<SupplementaryAlignment> getSupplementaryAlignments(){
+        return getCachedOrCompute(CacheKey.SA_GROUP,
+                () -> {
+                    Object rawSAValue = this.getAttribute(SAMTag.SA);
+                    if (rawSAValue == null) {
+                        return null;
+                    } else {
+                        final List<SupplementaryAlignment> sas = Collections.unmodifiableList(SupplementaryAlignment.parseFromSATag(rawSAValue.toString()));
+                        return sas;
+                    }
+                });
+    }
 }
