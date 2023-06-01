@@ -1,13 +1,18 @@
 #General
 SESSION.RELATIVE_PATH	Use relative paths in session files	boolean	TRUE
-AUTOLOAD_LAST_AUTOSAVE	Load last autosaved session on startup	boolean	FALSE
 IGV.single.track.pane	Display all tracks in a single panel	boolean	FALSE
 IGV.track.show.attribute.views	Show attribute panel	boolean	FALSE
 SHOW_DEFAULT_TRACK_ATTRIBUTES	Show default track attributes	boolean	FALSE
 SHOW_REGION_BARS	Show region-of-interest boundaries	boolean	FALSE
 ENABLE_GOOGLE_MENU	Enable Google access	boolean	FALSE	Enable loading from Google apis.
 FLANKING_REGION	"Search for feature" padding region in bp, < 0 is interpreted as a percentage.	integer	2000	
-DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases), < 0 disables visibility window.	float	-1	
+DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases), < 0 disables visibility window.	float	-1
+
+## Session Autosave
+AUTOSAVE_ON_EXIT	Automatically save session on exit	boolean	TRUE
+AUTOLOAD_LAST_AUTOSAVE	Load last autosaved session on startup	boolean	FALSE
+AUTOSAVE_FREQUENCY	How often, in minutes, to autosave the current session	integer	10
+AUTOSAVES_TO_KEEP	How many timed autosave session files to keep (0 disables timed autosave)	integer	0
 
 ##Jump To Next Feature Options (f/b Keys)
 NEXT_FIT_TO_WINDOW	Fit feature to window (with optional padding).	boolean	FALSE

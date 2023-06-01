@@ -97,6 +97,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenu toolsMenu;
     private JMenu googleMenu;
     private JMenu AWSMenu;
+    private AutosaveMenu autosaveMenu;
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
     private IGV igv;
@@ -322,6 +323,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         reloadSessionItem.setEnabled(false);
         menuItems.add(reloadSessionItem);
 
+        autosaveMenu = new AutosaveMenu();
+        menuItems.add(autosaveMenu);
+
         menuItems.add(new JSeparator());
 
         // ***** Snapshots
@@ -375,7 +379,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             String[] sessions = recentSessions.split(";");
             for (String sessionPath : sessions) {
                 if (!sessionPath.equals("null") &&
-                        !igv.getRecentSessionList().contains(sessionPath)) {
+                        !igv.getRecentSessionList().contains(sessionPath) &&
+                        (new File(sessionPath)).exists()) {
                     igv.getRecentSessionList().add(sessionPath);
                 }
 
