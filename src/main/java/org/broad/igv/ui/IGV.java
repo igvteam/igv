@@ -939,13 +939,33 @@ public class IGV implements IGVEventObserver {
     }
 
 
+    /**
+     * Scroll panel(s) containing track with specified name to the top.  Supports batch command "scrolltotrack" *
+     *
+     * @param trackName
+     * @return
+     */
     public boolean scrollToTrack(String trackName) {
+        boolean found = false;
         for (TrackPanel tp : getTrackPanels()) {
             if (tp.getScrollPane().getNamePanel().scrollTo(trackName)) {
-                return true;
+                found = true;
             }
+            }
+        return found;
         }
-        return false;
+
+
+    /**
+     * Scroll all panels to the top (position 0).  Supports batch command "scrolltotop"
+     *
+     * @return
+     */
+    public void scrollToTop() {
+        for (TrackPanel tp : getTrackPanels()) {
+            tp.getScrollPane().getNamePanel().scrollToPosition(0);
+
+        }
     }
 
 

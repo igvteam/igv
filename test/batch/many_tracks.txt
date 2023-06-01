@@ -1,0 +1,45 @@
+new
+maxPanelHeight: 10000
+goto chr1:637-9,175
+load ../data/gff/canonical.eden.unsorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+load ../data/gff/canonical.eden.sorted.gff3
+scrollToTop
+snapshot

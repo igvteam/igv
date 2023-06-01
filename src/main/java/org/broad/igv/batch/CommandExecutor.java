@@ -121,6 +121,9 @@ public class CommandExecutor {
             } else if (cmd.equalsIgnoreCase("scrolltotrack") || cmd.equalsIgnoreCase("gototrack")) {
                 boolean res = this.igv.scrollToTrack(StringUtils.stripQuotes(param1));
                 result = res ? "OK" : String.format("Error: Track %s not found", param1);
+            } else if (cmd.equalsIgnoreCase("scrolltotop") ) {
+                this.igv.scrollToTop();
+                result = "OK";
             } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
                 result = setSnapshotDirectory(param1);
             } else if (cmd.equalsIgnoreCase("snapshot")) {
