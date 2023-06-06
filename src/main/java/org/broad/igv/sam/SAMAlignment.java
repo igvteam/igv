@@ -58,6 +58,9 @@ import java.util.regex.Pattern;
  */
 public class SAMAlignment implements Alignment {
 
+    public static final int MAX_CIGAR_STRING_LENGTH_TO_DISPLAY = 50;
+    public static final Pattern RIGHT_CIGAR_PATTERN = Pattern.compile("[A-Z](.{1," + MAX_CIGAR_STRING_LENGTH_TO_DISPLAY / 2 + "})$");
+    public static final Pattern LEFT_CIGAR_PATTERN = Pattern.compile("^(.{1," + (MAX_CIGAR_STRING_LENGTH_TO_DISPLAY / 2 - 1) + "}[A-Z])");
     private static final Logger log = LogManager.getLogger(SAMAlignment.class);
 
     public static final char DELETE_CHAR = '-';
@@ -772,11 +775,10 @@ public class SAMAlignment implements Alignment {
         String cigarString = getCigarString();
         // Abbreviate long CIGAR strings.  Retain the start and end of the CIGAR, which show
         // clipping; trim the middle.
-        int maxCigarStringLength = 1000;
-        if (cigarString.length() > maxCigarStringLength) {
+        if (cigarString.length() > MAX_CIGAR_STRING_LENGTH_TO_DISPLAY) {
             // Match only full <length><operator> pairs at the beginning and end of the string.
-            Matcher lMatcher = Pattern.compile("^(.{1," + Integer.toString(maxCigarStringLength / 2 - 1) + "}[A-Z])").matcher(cigarString);
-            Matcher rMatcher = Pattern.compile("[A-Z](.{1," + Integer.toString(maxCigarStringLength / 2) + "})$").matcher(cigarString);
+            Matcher lMatcher = LEFT_CIGAR_PATTERN.matcher(cigarString);
+            Matcher rMatcher = RIGHT_CIGAR_PATTERN.matcher(cigarString);
             cigarString = (lMatcher.find() ? lMatcher.group(1) : "") + "..." + (rMatcher.find() ? rMatcher.group(1) : "");
         }
 
