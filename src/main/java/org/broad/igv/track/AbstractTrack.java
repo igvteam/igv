@@ -82,7 +82,7 @@ public abstract class AbstractTrack implements Track {
     private float viewLimitMin = Float.NaN;     // From UCSC track line
     private float viewLimitMax = Float.NaN;  // From UCSC track line
 
-    protected int fontSize = PreferencesManager.getPreferences().getAsInt(DEFAULT_FONT_SIZE);
+    protected int fontSize;
     private boolean showDataRange = true;
     protected String sampleId;
 
@@ -140,6 +140,14 @@ public abstract class AbstractTrack implements Track {
     }
 
     private void init() {
+
+        try {
+            fontSize = PreferencesManager.getPreferences().getAsInt(DEFAULT_FONT_SIZE);
+        }
+        catch(Exception e) {
+            log.error("Error initializing font size. ", e);
+        }
+
         showDataRange = PreferencesManager.getPreferences().getAsBoolean(CHART_SHOW_DATA_RANGE);
         if (PreferencesManager.getPreferences().getAsBoolean(EXPAND_FEAUTRE_TRACKS)) {
             displayMode = DisplayMode.EXPANDED;
