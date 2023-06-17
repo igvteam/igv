@@ -399,5 +399,9 @@ public class BaseModificationsTest {
             assertTrue(expectedPositions.contains(pos));
             assertEquals('G', seq.charAt(pos));
         }
+
+        for(int i=0; i<=255; i++) {
+            System.out.println(i + "  " + ((byte) i) + "   " +  Byte.toUnsignedInt((byte) i));
+        }
     }
 }
