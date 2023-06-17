@@ -24,9 +24,11 @@ public class BaseModificationRenderer {
             case BASE_MODIFICATION_C:
                 draw5mC(alignment, bpStart, locScale, rowRect, g, true);
                 break;
-
+            case BASE_MODIFICATION_6MA:
+                draw(alignment, bpStart, locScale, rowRect, g, true);
+                break;
             default:
-                draw(alignment, bpStart, locScale, rowRect, g);
+                draw(alignment, bpStart, locScale, rowRect, g, false);
         }
 
     }
@@ -45,7 +47,8 @@ public class BaseModificationRenderer {
             double bpStart,
             double locScale,
             Rectangle rowRect,
-            Graphics g) {
+            Graphics g,
+            boolean onlyDraw6mA) {
 
         List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
 
@@ -73,6 +76,10 @@ public class BaseModificationRenderer {
                     byte lh = 0;
                     String modification = null;
                     for (BaseModificationSet bmSet : baseModificationSets) {
+                        if (onlyDraw6mA) {
+                            if (bmSet.getCanonicalBase() != 'A' && bmSet.getCanonicalBase() != 'T') continue;
+                            if (! bmSet.getModification().equals("a")) continue;
+                        }
                         if (bmSet.containsPosition(i)) {
                             if (modification == null || Byte.toUnsignedInt(bmSet.getLikelihoods().get(i)) > Byte.toUnsignedInt(lh)) {
                                 modification = bmSet.getModification();
@@ -185,5 +192,4 @@ public class BaseModificationRenderer {
             }
         }
     }
-
 }

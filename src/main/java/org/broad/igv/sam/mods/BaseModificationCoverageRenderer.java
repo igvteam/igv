@@ -31,8 +31,11 @@ public class BaseModificationCoverageRenderer {
             case BASE_MODIFICATION_C:
                 draw5MC(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, true);
                 break;
+            case BASE_MODIFICATION_6MA:
+                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, true);
+                break;
             default:
-                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts);
+                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, false);
         }
     }
 
@@ -43,7 +46,8 @@ public class BaseModificationCoverageRenderer {
                              int dX,
                              int barHeight,
                              int pos,
-                             AlignmentCounts alignmentCounts) {
+                             AlignmentCounts alignmentCounts,
+                             boolean onlyDraw6mA) {
 
         BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
 
@@ -53,6 +57,12 @@ public class BaseModificationCoverageRenderer {
 
             for (BaseModificationCounts.Key key : modificationCounts.getAllModifications()) {
 
+                String modification = key.getModification();
+                if (onlyDraw6mA) {
+                    if (key.getCanonicalBase() != 'A' && key.getCanonicalBase() != 'T') continue;
+                    if (!modification.equals("a")) continue;
+                }
+
                 // The number of modification calls, some of which might have likelihood of zero
                 int modificationCount = modificationCounts.getCount(pos, key);
 
@@ -60,8 +70,6 @@ public class BaseModificationCoverageRenderer {
 
                     byte base = (byte) key.getBase();
                     byte complement = SequenceUtil.complement(base);
-                    char modStrand = key.getStrand();
-                    String modification = key.getModification();
 
                     // Count of bases at this location that could potentially be modified, accounting for strand
                     int baseCount = alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement);

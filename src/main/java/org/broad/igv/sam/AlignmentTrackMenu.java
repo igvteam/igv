@@ -636,6 +636,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         mappings.put("base modification", AlignmentTrack.ColorOption.BASE_MODIFICATION);
         mappings.put("base modification (5mC)", AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC);
         mappings.put("base modification (all C)", AlignmentTrack.ColorOption.BASE_MODIFICATION_C);
+        mappings.put("base modification (6mA)", AlignmentTrack.ColorOption.BASE_MODIFICATION_6MA);
         colorMenu.addSeparator();
         for (Map.Entry<String, AlignmentTrack.ColorOption> el : mappings.entrySet()) {
             JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());

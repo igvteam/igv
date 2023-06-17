@@ -1301,6 +1301,7 @@ public class AlignmentRenderer {
             case BASE_MODIFICATION:
             case BASE_MODIFICATION_5MC:
             case BASE_MODIFICATION_C:
+            case BASE_MODIFICATION_6MA:
             case SMRT_SUBREAD_IPD:
             case SMRT_SUBREAD_PW:
             case SMRT_CCS_FWD_IPD:
