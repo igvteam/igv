@@ -23,32 +23,25 @@ public class BaseModificationColors {
 
     private static Logger log = LogManager.getLogger(BaseModificationColors.class);
 
-
-    static Color mColor = Color.red;
-    static Color hColor = new Color(11, 132, 165);
-    static Color oColor = new Color(111, 78, 129);
-    static Color fColor = new Color(246, 200, 95);
-    static Color cColor = new Color(157, 216, 102);
-    static Color gColor = new Color(255, 160, 86);
-    static Color eColor = new Color(141, 221, 208);
-    static Color bColor = new Color(202, 71, 47);
     static Color genericColor = new Color(132, 178, 158);
     public static Color noModColor5MC = Color.blue;
 
+    public static Color color6ma = new Color(51, 0, 111);
     static HashMap<String, Color> colors = new HashMap<>();
 
     // 5MC overrides -- avoid colors close to blue for "C" modificatoins
     static HashMap<String, Color> colors5MC = new HashMap<>();
 
     static {
-        colors.put("m", mColor);
-        colors.put("h", hColor);
-        colors.put("o", oColor);
-        colors.put("f", fColor);
-        colors.put("c", cColor);
-        colors.put("g", gColor);
-        colors.put("e", eColor);
-        colors.put("b", bColor);
+        colors.put("m", Color.red);
+        colors.put("h", new Color(11, 132, 165));
+        colors.put("o", new Color(111, 78, 129));
+        colors.put("f", new Color(246, 200, 95));
+        colors.put("c", new Color(157, 216, 102));
+        colors.put("g", new Color(255, 160, 86));
+        colors.put("e", new Color(141, 221, 208));
+        colors.put("b", new Color(202, 71, 47));
+        colors.put("a", new Color(51, 0, 111));
         colors5MC.put("h", new Color(255, 0, 255));
     }
 
@@ -124,6 +117,8 @@ public class BaseModificationColors {
         if ((colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC ||
                 colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_C) && colors5MC.containsKey(modification)) {
             return colors5MC.get(modification);
+        } else if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_6MA) {
+            return color6ma;
         } else if (colors.containsKey(modification)) {
             return colors.get(modification);
         } else {
