@@ -703,7 +703,7 @@ public class SAMAlignment implements Alignment {
                         for (BaseModificationSet bmSet : baseModificationSets) {
                             if (bmSet.containsPosition(p)) {
                                 if (modString.length() > 0) modString += "<br>";
-                                modString += BaseModificationUtils.valueString(bmSet.getModification(), bmSet.getLikelihoods().get(p));
+                                modString += bmSet.valueString(p);
                             }
                         }
                         if (modString.length() > 0) {

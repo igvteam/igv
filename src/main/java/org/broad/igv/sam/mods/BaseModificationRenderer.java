@@ -25,10 +25,10 @@ public class BaseModificationRenderer {
                 draw5mC(alignment, bpStart, locScale, rowRect, g, true);
                 break;
             case BASE_MODIFICATION_6MA:
-                draw(alignment, bpStart, locScale, rowRect, g, true);
+                draw(alignment, bpStart, locScale, rowRect, g, "a");
                 break;
             default:
-                draw(alignment, bpStart, locScale, rowRect, g, false);
+                draw(alignment, bpStart, locScale, rowRect, g, null);
         }
 
     }
@@ -48,7 +48,7 @@ public class BaseModificationRenderer {
             double locScale,
             Rectangle rowRect,
             Graphics g,
-            boolean onlyDraw6mA) {
+            String filter) {
 
         List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
 
@@ -76,14 +76,12 @@ public class BaseModificationRenderer {
                     byte lh = 0;
                     String modification = null;
                     for (BaseModificationSet bmSet : baseModificationSets) {
-                        if (onlyDraw6mA) {
-                            if (bmSet.getCanonicalBase() != 'A' && bmSet.getCanonicalBase() != 'T') continue;
-                            if (! bmSet.getModification().equals("a")) continue;
-                        }
-                        if (bmSet.containsPosition(i)) {
-                            if (modification == null || Byte.toUnsignedInt(bmSet.getLikelihoods().get(i)) > Byte.toUnsignedInt(lh)) {
-                                modification = bmSet.getModification();
-                                lh = bmSet.getLikelihoods().get(i);
+                        if (filter == null  || filter.equals(bmSet.getModification())) {
+                            if (bmSet.containsPosition(i)) {
+                                if (modification == null || Byte.toUnsignedInt(bmSet.getLikelihoods().get(i)) > Byte.toUnsignedInt(lh)) {
+                                    modification = bmSet.getModification();
+                                    lh = bmSet.getLikelihoods().get(i);
+                                }
                             }
                         }
                     }
