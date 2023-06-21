@@ -1,19 +1,15 @@
 package org.broad.igv.sam.mods;
 
-import htsjdk.samtools.util.SequenceUtil;
-import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentCounts;
-import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.track.RenderContext;
 
 import java.awt.*;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BaseModificationCoverageRenderer {
+
+
 
     public static void drawModifications(RenderContext context,
                                          int pX,
@@ -32,10 +28,10 @@ public class BaseModificationCoverageRenderer {
                 draw5MC(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, true);
                 break;
             case BASE_MODIFICATION_6MA:
-                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, true);
+                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, "a");
                 break;
             default:
-                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, false);
+                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, null);
         }
     }
 
@@ -47,47 +43,69 @@ public class BaseModificationCoverageRenderer {
                              int barHeight,
                              int pos,
                              AlignmentCounts alignmentCounts,
-                             boolean onlyDraw6mA) {
+                             String filter) {
 
         BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
 
         if (modificationCounts != null) {
 
+            final  BaseModificationKey mCKey =  BaseModificationKey.getKey('C', '+', "m");
+            final  BaseModificationKey mGKey =  BaseModificationKey.getKey('G', '-', "m");
+
             Graphics2D graphics = context.getGraphics();
 
-            for (BaseModificationCounts.Key key : modificationCounts.getAllModifications()) {
+            Set<BaseModificationKey> allModificationKeys = modificationCounts.getAllModificationKeys();
+            boolean cpgMode = allModificationKeys.contains(mCKey) && !allModificationKeys.contains(mGKey);
 
+            // Merge complementary sets (same modification, opposite strands)
+            Map<String, Float> likelihoodSums = new LinkedHashMap<>();
+            for (BaseModificationKey key : allModificationKeys) {
                 String modification = key.getModification();
-                if (onlyDraw6mA) {
-                    if (key.getCanonicalBase() != 'A' && key.getCanonicalBase() != 'T') continue;
-                    if (!modification.equals("a")) continue;
-                }
+                if(filter != null && !filter.equals(modification)) continue;
+                float currentCount = likelihoodSums.containsKey(modification) ? likelihoodSums.get(modification) : 0;
+                likelihoodSums.put(modification, currentCount + modificationCounts.getLikelhoodSum(pos, key));
+            }
 
-                // The number of modification calls, some of which might have likelihood of zero
-                int modificationCount = modificationCounts.getCount(pos, key);
+            // Color bar by likelihood weighted count
+            int total = alignmentCounts.getTotalCount(pos);
 
-                if (barHeight > 0 && modificationCount > 0) {
+            for (String modification : likelihoodSums.keySet()) {
 
-                    byte base = (byte) key.getBase();
-                    byte complement = SequenceUtil.complement(base);
+                if (likelihoodSums.get(modification) > 0) {
 
-                    // Count of bases at this location that could potentially be modified, accounting for strand
-                    int baseCount = alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement);
+                    float modFraction;
+                    if (cpgMode & "m".equals(modification)) {
+                        // Special mode for out-of-spec 5mC CpG convention.
+                        // Calls are made for the CG dinucleotide and only recorded on 1 strand.  We adjust the height
+                        // of the bar to account for the missing G- calls.  This is an approximation and assumes the
+                        // distribution of calls is ~ equal on both strands.
+                        final byte base = (byte) 'C'; //key.getCanonicalBase();
+                        final byte compl = (byte) 'G'; //SequenceUtil.complement(base);
+                        final int posCount = alignmentCounts.getPosCount(pos, base);
+                        final int negCount = alignmentCounts.getNegCount(pos, compl);
 
-                    int calledBarHeight = (int) ((((float) modificationCount) / baseCount) * barHeight);
-                    Color modColor = BaseModificationColors.getModColor(modification, (byte) 255, ColorOption.BASE_MODIFICATION);
+                        // Is this a "C" or "G" reference site?  We want to determine this from the counts data directly, this should work for all but pahtological edge cases
+                        final int cCounts = alignmentCounts.getCount(pos, base);
+                        final int gCounts = alignmentCounts.getCount(pos, compl);
+                        final boolean cSite = cCounts > gCounts;
+                        final int referenceCounts = cSite ? cCounts : gCounts;
 
-                    float averageLikelihood = (float) (modificationCounts.getLikelhoodSum(pos, key)) / (modificationCount * 255);
-                    int modHeight = (int) (averageLikelihood * calledBarHeight);
 
-                    // Generic modification
-                    float threshold = PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
-                    if (averageLikelihood > threshold && modHeight > 0) {
-                        int baseY = pBottom - modHeight;
-                        graphics.setColor(modColor);
-                        graphics.fillRect(pX, baseY, dX, modHeight);
-                        pBottom = baseY;
+                        final int detectable = cSite ? posCount : negCount;
+
+                        modFraction = (((float) referenceCounts) / total) * (likelihoodSums.get(modification) / (detectable * 255f));
+
+                    } else {
+                        modFraction = likelihoodSums.get(modification) / (total * 255f);
+
                     }
+                    int modHeight = Math.round(modFraction * barHeight);
+
+                    int baseY = pBottom - modHeight;
+                    Color modColor = BaseModificationColors.getModColor(modification, (byte) 255, ColorOption.BASE_MODIFICATION);
+                    graphics.setColor(modColor);
+                    graphics.fillRect(pX, baseY, dX, modHeight);
+                    pBottom = baseY;
                 }
             }
         }
@@ -111,7 +129,7 @@ public class BaseModificationCoverageRenderer {
 
             Map<String, Integer> likelihoodSums = new HashMap<>();
             Map<String, Integer> modCounts = new HashMap<>();
-            for (BaseModificationCounts.Key key : modificationCounts.getAllModifications()) {
+            for (BaseModificationKey key : modificationCounts.getAllModificationKeys()) {
 
                 // This coloring mode is exclusively for "C" modifications
                 if (key.getCanonicalBase() != 'C') continue;

@@ -38,7 +38,7 @@ public class BaseModificationCountsTest {
         int[] expectedPositions = {13846181, 13846182, 13846227, 13846228, 13846232, 13846233, 13846234};
         int[] expectedCounts =    {1,        1,        1,        2,        1,        1,        1       };
 
-        BaseModificationCounts.Key key = new BaseModificationCounts.Key('C', '+', "m");
+        BaseModificationKey key =  BaseModificationKey.getKey('C', '+', "m");
 
         for(int i=0; i<expectedPositions.length; i++) {
             int c = counts.getCount(expectedPositions[i] - 1, key);
