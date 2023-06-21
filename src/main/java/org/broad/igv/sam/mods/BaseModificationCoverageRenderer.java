@@ -89,11 +89,8 @@ public class BaseModificationCoverageRenderer {
                         final int gCounts = alignmentCounts.getCount(pos, compl);
                         final boolean cSite = cCounts > gCounts;
                         final int referenceCounts = cSite ? cCounts : gCounts;
-
-
-                        final int detectable = cSite ? posCount : negCount;
-
-                        modFraction = (((float) referenceCounts) / total) * (likelihoodSums.get(modification) / (detectable * 255f));
+                        final int strandCount = cSite ? posCount : negCount;
+                        modFraction = (((float) referenceCounts) / total) * (likelihoodSums.get(modification) / (strandCount * 255f));
 
                     } else {
                         modFraction = likelihoodSums.get(modification) / (total * 255f);
@@ -122,10 +119,14 @@ public class BaseModificationCoverageRenderer {
 
         BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
 
+        if(pos == 119094768) {
+            System.out.println();
+        }
+
         if (modificationCounts != null) {
 
             final byte base = (byte) 'C';
-            final byte complement = (byte) 'G';
+            final byte compl = (byte) 'G';
 
             Map<String, Integer> likelihoodSums = new HashMap<>();
             Map<String, Integer> modCounts = new HashMap<>();
@@ -146,20 +147,27 @@ public class BaseModificationCoverageRenderer {
 
             if (likelihoodSums.size() > 0) {
 
-                // Count of bases at this location that could potentially be modified
-                double modifiableBaseCount = alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, complement);
+                // Special mode for out-of-spec 5mC CpG convention.
+                // Calls are made for the CG dinucleotide and only recorded on 1 strand.  We adjust the height
+                // of the bar to account for the missing G- calls.  This is an approximation and assumes the
+                // distribution of calls is ~ equal on both strands.
 
-                // Compute "snp factor", ratio of count of base calls that could be modfied (on either strand) to
+                // Is this a "C" or "G" reference site?  We want to determine this from the counts data directly, this should work for all but pahtological edge cases
+                final int cCounts = alignmentCounts.getCount(pos, base);
+                final int gCounts = alignmentCounts.getCount(pos, compl);
+                final boolean cSite = cCounts > gCounts;
+                final int referenceCounts = cSite ? cCounts : gCounts;
+
+               // Compute "snp factor", ratio of count of base calls that could be modfied (on either strand) to
                 // total count. This is normally close to 1, but can be less due non CG bases at this location (e.g. snps)
-                double cgCount = alignmentCounts.getCount(pos, base) + alignmentCounts.getCount(pos, complement);
-                double snpFactor = cgCount / alignmentCounts.getTotalCount(pos);
+                double snpFactor = ((double) referenceCounts) / alignmentCounts.getTotalCount(pos);
 
                 double calledBarHeight = snpFactor * barHeight;
-                double t = modifiableBaseCount * 255;   // If all bases are called this is the total sum of all likelihoods, including "no mod" likelihood
+                double t = referenceCounts * 255;   // If all bases are called this is the total sum of all likelihoods, including "no mod" likelihood
 
                 // Likelihood of no modification.  It is assumed that the likelihood of no modification == (1 - sum(likelihood))
-                int c = Collections.max(modCounts.values());
-                double noModProb = c * 255;
+                //int c = Collections.max(modCounts.values());
+                double noModProb = t;
                 for (String m : modCounts.keySet()) {
                     if (likelihoodSums.containsKey(m)) {
                         noModProb -= likelihoodSums.get(m);
