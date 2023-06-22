@@ -53,6 +53,7 @@ import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -81,6 +82,8 @@ public class GWASTrack extends AbstractTrack {
     private Map<String, List<GWASFeature>> gData;
     Genome genome;
     private String[] columns;
+
+    private Pattern delimiter;
     IGV igv;
 
     /**
@@ -96,9 +99,11 @@ public class GWASTrack extends AbstractTrack {
                      String name,
                      Map<String, List<GWASFeature>> gData,
                      String[] columns,
+                     Pattern delimiter,
                      Genome genome) {
         super(locator, id, name);
 
+        this.delimiter = delimiter;
         this.genome = genome;
         this.igv = IGV.getInstance(); // TODO replace with parameter
 
@@ -123,8 +128,8 @@ public class GWASTrack extends AbstractTrack {
         this.columns = columns;
     }
 
-    public GWASTrack() {
-    }
+
+
 
     private double getMaxValue(Map<String, List<GWASFeature>> gData) {
         double maxValue = -1;
@@ -428,7 +433,7 @@ public class GWASTrack extends AbstractTrack {
         if (description != null) {
             descriptionString = "";
             int headersSize = this.columns.length;
-            String[] tokens = Globals.singleTabMultiSpacePattern.split(description);
+            String[] tokens = this.delimiter.split(description);
 
             for (int i = 0; i < headersSize; i++) {
                 String tmpHeaderToken = this.columns[i];

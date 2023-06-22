@@ -53,7 +53,7 @@ public class GWASParser {
     Genome genome;
     private GWASColumns columns;
 
-    private Pattern delimiterPattern;
+    public Pattern delimiter;
 
     private int warningCount;
 
@@ -90,16 +90,15 @@ public class GWASParser {
             String headerLine = reader.readLine();
 
             // Try to determine delimiter pattern -- default is tab, but some older files might use whitespace
-            this.delimiterPattern = headerLine.indexOf('\t') > 0 ? Globals.tabPattern : Globals.whitespacePattern;
+            this.delimiter = headerLine.indexOf('\t') > 0 ? Globals.tabPattern : Globals.whitespacePattern;
 
-            if (!this.columns.parseHeader(headerLine, this.delimiterPattern))
+            if (!this.columns.parseHeader(headerLine, this.delimiter))
                 throw new ParserException("Error while parsing header line.", 0, nextLine);
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
                 nextLine = nextLine.trim();
                 rowCounter++;
-                GWASFeature f = null;
-                f = parseLine(nextLine, rowCounter);
+                GWASFeature f  = parseLine(nextLine, rowCounter);
                 if (f != null) {
                     List<GWASFeature> featureList = features.get(f.chr);
                     if (featureList == null) {
@@ -138,7 +137,7 @@ public class GWASParser {
      */
     private GWASFeature parseLine(String nextLine, long lineNumber) {
 
-        String[] tokens = this.delimiterPattern.split(nextLine);
+        String[] tokens = this.delimiter.split(nextLine);
 
         if (tokens.length >= 3) {
 

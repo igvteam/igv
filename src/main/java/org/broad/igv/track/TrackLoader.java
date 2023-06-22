@@ -545,8 +545,7 @@ public class TrackLoader {
 
         GWASParser gwasParser = new GWASParser(locator, genome);
         Map<String, List<GWASFeature>> gwasData = gwasParser.parse();
-
-        GWASTrack gwasTrack = new GWASTrack(locator, locator.getPath(), locator.getFileName(), gwasData, gwasParser.getColumnHeaders(), genome);
+        GWASTrack gwasTrack = new GWASTrack(locator, locator.getPath(), locator.getFileName(), gwasData, gwasParser.getColumnHeaders(), gwasParser.delimiter, genome);
         newTracks.add(gwasTrack);
 
     }
