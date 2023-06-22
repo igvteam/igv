@@ -104,10 +104,10 @@ public class GWASTrack extends AbstractTrack {
 
         IGVPreferences prefs = PreferencesManager.getPreferences();
 
-        // Set range from 0 to highest value rounded to greater integer
-        setMaxValue(gData);
-        int mv = (int) Math.ceil(maxValue);
-        super.setDataRange(new DataRange(0, (mv / 2), mv));
+        // Set inital range from 0 to highest value rounded to greater integer, or 25.  This assumes pvalues
+        double maxValue = getMaxValue(gData);
+        int mv = Math.min(25, (int) Math.ceil(maxValue));
+        super.setDataRange(new DataRange(0, mv));
 
         // Get default values
         super.setHeight(prefs.getAsInt(Constants.GWAS_TRACK_HEIGHT));
@@ -126,12 +126,14 @@ public class GWASTrack extends AbstractTrack {
     public GWASTrack() {
     }
 
-    private void setMaxValue(Map<String, List<GWASFeature>> gData) {
+    private double getMaxValue(Map<String, List<GWASFeature>> gData) {
+        double maxValue = -1;
         for (List<GWASFeature> features : gData.values()) {
             for (GWASFeature f : features) {
                 if (f.value > maxValue) maxValue = f.value;
             }
         }
+        return maxValue;
     }
 
     @Override

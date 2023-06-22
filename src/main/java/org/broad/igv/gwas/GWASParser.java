@@ -146,7 +146,7 @@ public class GWASParser {
             final String posString = tokens[this.columns.locationCol].trim();
             if(posString.indexOf(";") > 0 || posString.length() == 0 || posString.indexOf('x') > 0) {
                 if(warningCount < MAX_WARNING) {
-                    log.warn(locator.getFileName() + " line number: " + lineNumber + ".  Expected numeric position at column " + this.columns.locationCol + " Found " + tokens[this.columns.locationCol]);
+                    log.warn(locator.getFileName() + " line number: " + lineNumber + ".  expected numeric position at column " + this.columns.locationCol + " Found " + tokens[this.columns.locationCol]);
                 } else if (warningCount == MAX_WARNING) {
                     log.warn("Max warning count excedeed for " + locator.getPath());
                 }
@@ -161,10 +161,15 @@ public class GWASParser {
 
             int position;
             try {
-
                 position = Integer.parseInt(posString) - 1;
             } catch (NumberFormatException e) {
-                throw new ParserException("Column " + this.columns.locationCol + " must be a numeric value.", lineNumber, nextLine);
+                if(warningCount < MAX_WARNING) {
+                    log.warn(locator.getFileName() + " line number: " + lineNumber + ".  expected numeric position at column " + this.columns.locationCol + " Found " + tokens[this.columns.locationCol]);
+                } else if (warningCount == MAX_WARNING) {
+                    log.warn("Max warning count excedeed for " + locator.getPath());
+                }
+                warningCount++;
+                return null;
             }
 
             // Check if the p-value is NA
