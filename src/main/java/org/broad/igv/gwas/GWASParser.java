@@ -160,7 +160,7 @@ public class GWASParser {
 
             int position;
             try {
-                position = Integer.parseInt(posString) - 1;
+                position = Integer.parseInt(posString);
             } catch (NumberFormatException e) {
                 if(warningCount < MAX_WARNING) {
                     log.warn(locator.getFileName() + " line number: " + lineNumber + ".  expected numeric position at column " + this.columns.locationCol + " Found " + tokens[this.columns.locationCol]);

@@ -228,9 +228,9 @@ public class GWASTrack extends AbstractTrack {
                     // Get location, e.g. start for the data point
                     int start;
                     if (chrName.equalsIgnoreCase("all"))
-                        start = genome.getGenomeCoordinate(feature.chr, feature.position);
+                        start = genome.getGenomeCoordinate(feature.chr, feature.position - 1);
                     else
-                        start = feature.position;
+                        start = feature.position - 1;
 
                     // Based on location, calculate X-coordinate, or break if outside of the view
                     double pX = ((start - origin) / locScale);
