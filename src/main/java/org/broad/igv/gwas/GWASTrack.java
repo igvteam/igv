@@ -126,17 +126,6 @@ public class GWASTrack extends AbstractTrack {
         this.columns = columns;
     }
 
-
-    private double getMaxValue(Map<String, List<GWASFeature>> gData) {
-        double maxValue = -1;
-        for (List<GWASFeature> features : gData.values()) {
-            for (GWASFeature f : features) {
-                if (f.value > maxValue) maxValue = f.value;
-            }
-        }
-        return maxValue;
-    }
-
     @Override
     public boolean isNumeric() {
         return true;
