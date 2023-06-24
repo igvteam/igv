@@ -11,6 +11,7 @@ public class GWASFeature  {
     String line;
     int pixelX;
     int pixelY;
+    int pixelSize;
 
     public GWASFeature(String chr, int position, double value, String line) {
         this.chr = chr;

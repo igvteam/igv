@@ -77,12 +77,12 @@ public class GWASParser {
     }
 
 
-    public Map<String, List<GWASFeature>> parse() throws IOException {
+    public GWASData parse() throws IOException {
 
         BufferedReader reader = null;
         String nextLine = null;
         int rowCounter = 0;
-        Map<String, List<GWASFeature>> features = new HashMap<>();
+        GWASData data = new GWASData();
 
         try {
             reader = ParsingUtils.openBufferedReader(locator);
@@ -98,23 +98,13 @@ public class GWASParser {
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
                 nextLine = nextLine.trim();
                 rowCounter++;
-                GWASFeature f  = parseLine(nextLine, rowCounter);
+                GWASFeature f = parseLine(nextLine, rowCounter);
                 if (f != null) {
-                    List<GWASFeature> featureList = features.get(f.chr);
-                    if (featureList == null) {
-                        featureList = new ArrayList<>();
-                        features.put(f.chr, featureList);
-                    }
-                    featureList.add(f);
+                    data.addFeature(f);
                 }
             }
-
-            // Sort features by position
-            for (List<GWASFeature> featureList : features.values()) {
-                featureList.sort(Comparator.comparingInt(o -> o.position));
-            }
-
-            return features;
+            data.finish();
+            return data;
 
         } catch (Exception e) {
             if (nextLine != null && rowCounter != 0) {
@@ -143,8 +133,8 @@ public class GWASParser {
 
 
             final String posString = tokens[this.columns.locationCol].trim();
-            if(posString.indexOf(";") > 0 || posString.length() == 0 || posString.indexOf('x') > 0) {
-                if(warningCount < MAX_WARNING) {
+            if (posString.indexOf(";") > 0 || posString.length() == 0 || posString.indexOf('x') > 0) {
+                if (warningCount < MAX_WARNING) {
                     log.warn(locator.getFileName() + " line number: " + lineNumber + ".  expected numeric position at column " + this.columns.locationCol + " Found " + tokens[this.columns.locationCol]);
                 } else if (warningCount == MAX_WARNING) {
                     log.warn("Max warning count excedeed for " + locator.getPath());
@@ -162,7 +152,7 @@ public class GWASParser {
             try {
                 position = Integer.parseInt(posString);
             } catch (NumberFormatException e) {
-                if(warningCount < MAX_WARNING) {
+                if (warningCount < MAX_WARNING) {
                     log.warn(locator.getFileName() + " line number: " + lineNumber + ".  expected numeric position at column " + this.columns.locationCol + " Found " + tokens[this.columns.locationCol]);
                 } else if (warningCount == MAX_WARNING) {
                     log.warn("Max warning count excedeed for " + locator.getPath());
@@ -178,14 +168,14 @@ public class GWASParser {
                     // Check for extreme low values
                     String pvalString = tokens[this.columns.pCol];
                     int idx = pvalString.indexOf("E");
-                    if(idx > 0) {
-                        int exp = Integer.parseInt(pvalString.substring(idx+1));
+                    if (idx > 0) {
+                        int exp = Integer.parseInt(pvalString.substring(idx + 1));
                         if (exp < log10(Double.MIN_VALUE)) {
                             p = -1 * exp;
                         }
                     }
 
-                    if(p == 0) {
+                    if (p == 0) {
                         p = Double.parseDouble(tokens[this.columns.pCol]);
                         if (p <= 0) {
                             throw new NumberFormatException();
@@ -262,14 +252,4 @@ public class GWASParser {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        GWASParser parser = new GWASParser(new ResourceLocator("test/data/gwas/smallp.gwas"), null);
-        Map<String, List<GWASFeature>> data = parser.parse();
-        for (List<GWASFeature> features : data.values()) {
-            for (GWASFeature f : features) {
-                double val = f.value;
-                System.out.println(val);
-            }
-        }
-    }
 }

@@ -73,13 +73,11 @@ public class GWASTrack extends AbstractTrack {
     private boolean alternatingColors;
     private Color primaryColor;
     private Color secondaryColor;
-    private double trackMinY;
     private double maxY;
-    private double scale;
     private boolean drawYAxis = true;
     private boolean showAxis = true;
     double maxValue = -1;
-    private Map<String, List<GWASFeature>> gData;
+    private GWASData gData;
     Genome genome;
     private String[] columns;
 
@@ -97,7 +95,7 @@ public class GWASTrack extends AbstractTrack {
     public GWASTrack(ResourceLocator locator,
                      String id,
                      String name,
-                     Map<String, List<GWASFeature>> gData,
+                     GWASData gData,
                      String[] columns,
                      Pattern delimiter,
                      Genome genome) {
@@ -110,9 +108,9 @@ public class GWASTrack extends AbstractTrack {
         IGVPreferences prefs = PreferencesManager.getPreferences();
 
         // Set inital range from 0 to highest value rounded to greater integer, or 25.  This assumes pvalues
-        double maxValue = getMaxValue(gData);
-        int mv = Math.min(25, (int) Math.ceil(maxValue));
-        super.setDataRange(new DataRange(0, mv));
+        float maxValue = Math.min(25, (float) Math.ceil(gData.getMaxValue()));
+        float minValue = (float) Math.floor(gData.getMinValue());
+        super.setDataRange(new DataRange(minValue, maxValue));
 
         // Get default values
         super.setHeight(prefs.getAsInt(Constants.GWAS_TRACK_HEIGHT));
@@ -126,19 +124,6 @@ public class GWASTrack extends AbstractTrack {
         this.showAxis = prefs.getAsBoolean(Constants.GWAS_SHOW_AXIS);
         this.gData = gData;
         this.columns = columns;
-    }
-
-
-
-
-    private double getMaxValue(Map<String, List<GWASFeature>> gData) {
-        double maxValue = -1;
-        for (List<GWASFeature> features : gData.values()) {
-            for (GWASFeature f : features) {
-                if (f.value > maxValue) maxValue = f.value;
-            }
-        }
-        return maxValue;
     }
 
     @Override
@@ -156,207 +141,140 @@ public class GWASTrack extends AbstractTrack {
         // Nothing to do, track is initialized with all data
     }
 
-    public void render(RenderContext context, Rectangle arect) {
+    public void render(RenderContext context, Rectangle rect) {
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        this.trackMinY = arect.getMinY();
-        Rectangle adjustedRect = calculateDrawingRect(arect);
-        double adjustedRectMaxX = adjustedRect.getMaxX();
-        double adjustedRectMaxY = adjustedRect.getMaxY();
-        double adjustedRectY = adjustedRect.getY();
-        this.maxY = adjustedRectMaxY;
-        this.scale = context.getScale();
-        int bufferX = (int) adjustedRectMaxX;
-        int bufferY = (int) adjustedRectMaxY;
-        Color[][] drawBuffer = new Color[bufferX + 1][bufferY + 1];
+
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
-        // Get the Y axis definition, consisting of minimum, maximum, and base value.  Often
-        // the base value is == min value which is == 0.
+        Graphics2D g = null;
 
-        DataRange axisDefinition = this.getDataRange();
-        float maxValue = axisDefinition.getMaximum();
-        float minValue = axisDefinition.getMinimum();
+        try {
+            g = (Graphics2D) context.getGraphics().create();
+            g.setClip(rect);
 
-        // Calculate the Y scale factor.
-        double yScaleFactor = adjustedRect.getHeight() / (maxValue - minValue);
+            Rectangle plotRect = calculateDrawingRect(rect);
 
-        //int lastPx = 0;
-        String chrName = context.getChr();
-        List<String> chrList;
-        if (chrName.equals("All")) {
-            chrList = genome.getLongChromosomeNames();
-        } else {
-            chrList = Arrays.asList(chrName);
-        }
-        double dx = Math.ceil(1 / locScale) + 1;
-        double rangeMaxValue = Math.ceil(maxValue);
+            DataRange dataRange = this.getDataRange();
+            float maxValue = dataRange.getMaximum();
+            float minValue = dataRange.getMinimum();
+            double pointSizeScaleFactor = ((double) (this.maxPointSize - this.minPointSize)) / (maxValue - minValue);
 
-        double pointSizeScale = rangeMaxValue / maxPointSize;
+            String chrName = context.getChr();
+            List<String> chrList;
+            if (chrName.equals("All")) {
+                chrList = genome.getLongChromosomeNames();
+            } else {
+                chrList = Arrays.asList(chrName);
+            }
 
-        Color drawColor = this.primaryColor;
+            Color drawColor = this.primaryColor;
 
-        int xMinPointSize = (int) (1 / locScale);
 
-        // Loop through data points, chromosome by chromosome
+            // Loop through data points, chromosome by chromosome
 
-        int chrCounter = 0;
-        for (String chr : chrList) {
+            int chrCounter = 0;
+            for (String chr : chrList) {
 
-            List<GWASFeature> featureList = gData.get(chr);
+                List<GWASFeature> featureList = gData.get(chr);
 
-            if (featureList != null) {
+                if (featureList != null) {
 
-                // Choose a color for the chromosome
-                // Use specific color for each chromosome
-                if (this.useChrColors)
-                    drawColor = ChromosomeColors.getColor(chr);
+                    if (this.useChrColors)
+                        drawColor = ChromosomeColors.getColor(chr);
+                    else if (this.alternatingColors) {
+                        if (chrCounter % 2 == 0)
+                            drawColor = this.secondaryColor;
+                        else
+                            drawColor = this.primaryColor;
+                    }
 
-                    // Use two alternating colors for chromosomes
-                else if (this.alternatingColors) {
-                    if (chrCounter % 2 == 0)
-                        drawColor = this.secondaryColor;
-                    else
-                        drawColor = this.primaryColor;
-                }
+                    // Loop through data points
+                    for (GWASFeature feature : featureList) {
 
-                // Loop through data points in a chromosome
-                Graphics2D g = context.getGraphics();
-                for (GWASFeature feature : featureList) {
+                        // Get location, e.g. start for the data point
+                        int start;
+                        if (chrName.equalsIgnoreCase("all"))
+                            start = genome.getGenomeCoordinate(feature.chr, feature.position) - 1;
+                        else
+                            start = feature.position - 1;
 
-                    // Get location, e.g. start for the data point
-                    int start;
-                    if (chrName.equalsIgnoreCase("all"))
-                        start = genome.getGenomeCoordinate(feature.chr, feature.position - 1);
-                    else
-                        start = feature.position - 1;
 
-                    // Based on location, calculate X-coordinate, or break if outside of the view
-                    double pX = ((start - origin) / locScale);
-                    if ((pX + dx < 0))
-                        continue;
-                    else if (pX > adjustedRectMaxX)
-                        break;
+                        // Based on value of the data point, calculate Y-coordinate
+                        double dataY = feature.value;
 
-                    // Based on value of the data point, calculate Y-coordinate
-                    double dataY = feature.value;
+                        if (!Double.isNaN(dataY)) {
 
-                    if (!Double.isNaN(dataY)) {
-
-                        int xPointSize = (int) Math.ceil(dataY / pointSizeScale);
-
-                        // Scale y size based on the used range, data value and max point size
-                        int yPointSize = xPointSize;
-                        if (yPointSize < minPointSize)
-                            yPointSize = minPointSize;
-
-                        // If x minimum size is smaller than point minimum size, use minimum point size
-                        if (xMinPointSize < minPointSize)
-                            xMinPointSize = minPointSize;
-
-                        if (xPointSize < xMinPointSize)
-                            xPointSize = xMinPointSize;
-
-                        // Point sizes divided by two to center locations of large points
-                        int x = (int) pX - (xPointSize / 2);
-                        int y = ((int) Math.min(adjustedRectMaxY, adjustedRectY + (maxValue - dataY) * yScaleFactor)) - (yPointSize / 2);
-
-                        int maxDrawX = x + xPointSize;
-                        int maxDrawY = y + yPointSize;
-                        if (x < 0)
-                            x = 0;
-                        if (y < 0)
-                            y = 0;
-
-                        if (maxDrawX > adjustedRectMaxX)
-                            maxDrawX = (int) adjustedRectMaxX;
-                        if (maxDrawY > adjustedRectMaxY)
-                            maxDrawY = (int) adjustedRectMaxY;
-
-                        g.setColor(drawColor);
-                        g.fillRect(x, y, maxDrawX - x, maxDrawY - y);
-                        feature.pixelX = (x + maxDrawX) / 2;
-                        feature.pixelY = (y + maxDrawY) / 2;
+                            int pixelSize = Math.min(this.maxPointSize, this.minPointSize + (int) (pointSizeScaleFactor * (dataY - minValue)));
+                            int x = (int) ((start - origin + 0.5) / locScale) - pixelSize / 2;
+                            int y = computeYPixelValue(plotRect, this.dataRange, dataY) - pixelSize / 2;
+                            g.setColor(drawColor);
+                            g.fillOval(x, y, pixelSize, pixelSize);
+                            feature.pixelX = x;
+                            feature.pixelY = y;
+                            feature.pixelSize = pixelSize;
+                        }
                     }
                 }
+                chrCounter++;
             }
-            chrCounter++;
-        }
 
-        // Draw the legend axis
-        if (showAxis) {
-            this.renderAxis(context, arect);
+            // Draw the legend axis
+            if (showAxis) {
+                this.renderAxis(context, plotRect);
+            }
+
+        } finally {
+            if (g != null) g.dispose();
         }
 
     }
 
 
-    void renderAxis(RenderContext context, Rectangle arect) {
+    void renderAxis(RenderContext context, Rectangle plotRect) {
 
-        Rectangle drawingRect = calculateDrawingRect(arect);
+        Graphics2D g = null;
 
-        Color labelColor = PreferencesManager.getPreferences().getAsBoolean(Constants.CHART_COLOR_TRACK_NAME) ? getColor() : Color.black;
-        Graphics2D labelGraphics = context.getGraphic2DForColor(labelColor);
-        //Graphics2D labelGraphics = context.getGraphic2DForColor(Color.black);
+        try {
+            g = (Graphics2D) context.getGraphics().create();
 
-        labelGraphics.setFont(FontManager.getFont(8));
+            g.setColor(Color.black);
+            g.setFont(FontManager.getFont(11));
 
-        String tmpDisplayName = this.getDisplayName();
-        if (tmpDisplayName != null && tmpDisplayName.length() > 0 && PreferencesManager.getPreferences().getAsBoolean(Constants.CHART_DRAW_TRACK_NAME)) {
-            // Only attempt if track height is > 25 pixels
-            if (arect.getHeight() > 25) {
-                Rectangle labelRect = new Rectangle(arect.x, arect.y + 10, arect.width, 10);
-                labelGraphics.setFont(FontManager.getFont(10));
-                GraphicUtils.drawCenteredText(tmpDisplayName, labelRect, labelGraphics);
-            }
-        }
-
-        //if (IGVPreferences.getInstance().getAsBoolean(IGVPreferences.CHART_DRAW_Y_AXIS)) {
-        if (this.drawYAxis) {
-            labelGraphics = context.getGraphic2DForColor(Color.black);
-            labelGraphics.setFont(FontManager.getFont(11));
-
-
-            Rectangle axisRect = new Rectangle(arect.x, arect.y + 1, AXIS_AREA_WIDTH, arect.height);
+            Rectangle axisRect = new Rectangle(plotRect.x, plotRect.y + 1, AXIS_AREA_WIDTH, plotRect.height);
             DataRange axisDefinition = getDataRange();
             float maxValue = axisDefinition.getMaximum();
             float minValue = axisDefinition.getMinimum();
 
-
             // Bottom (minimum tick mark)
-            int pY = computeYPixelValue(drawingRect, axisDefinition, minValue);
+            int pY = computeYPixelValue(plotRect, axisDefinition, minValue);
 
-            labelGraphics.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, pY,
-                    axisRect.x + AXIS_AREA_WIDTH - 5, pY);
-            GraphicUtils.drawRightJustifiedText(formatter.format(minValue),
-                    axisRect.x + AXIS_AREA_WIDTH - 15, pY, labelGraphics);
+            g.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, pY, axisRect.x + AXIS_AREA_WIDTH - 5, pY);
+            GraphicUtils.drawRightJustifiedText(formatter.format(minValue), axisRect.x + AXIS_AREA_WIDTH - 15, pY, g);
 
             // Top (maximum tick mark)
-            int topPY = computeYPixelValue(drawingRect, axisDefinition, maxValue);
+            int topPY = computeYPixelValue(plotRect, axisDefinition, maxValue);
 
-            labelGraphics.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, topPY,
-                    axisRect.x + AXIS_AREA_WIDTH - 5, topPY);
-            GraphicUtils.drawRightJustifiedText(formatter.format(maxValue),
-                    axisRect.x + AXIS_AREA_WIDTH - 15, topPY + 4, labelGraphics);
+            g.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, topPY, axisRect.x + AXIS_AREA_WIDTH - 5, topPY);
+            GraphicUtils.drawRightJustifiedText(formatter.format(maxValue), axisRect.x + AXIS_AREA_WIDTH - 15, topPY + 4, g);
 
             // Connect top and bottom
-            labelGraphics.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, topPY,
-                    axisRect.x + AXIS_AREA_WIDTH - 10, pY);
+            g.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, topPY, axisRect.x + AXIS_AREA_WIDTH - 10, pY);
 
             // Draw middle tick marks from top to bottom, draw only if space available
             int lastY = pY;
             for (int i = (int) minValue + 1; i < (int) maxValue; i++) {
 
-                int midPY = computeYPixelValue(drawingRect, axisDefinition, i);
+                int midPY = computeYPixelValue(plotRect, axisDefinition, i);
                 if ((midPY < lastY - 15) && (midPY < pY - 15) && (midPY > topPY + 15)) {
-                    labelGraphics.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, midPY,
-                            axisRect.x + AXIS_AREA_WIDTH - 5, midPY);
-                    GraphicUtils.drawRightJustifiedText(formatter.format(i),
-                            axisRect.x + AXIS_AREA_WIDTH - 15, midPY + 4, labelGraphics);
+                    g.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, midPY, axisRect.x + AXIS_AREA_WIDTH - 5, midPY);
+                    GraphicUtils.drawRightJustifiedText(formatter.format(i), axisRect.x + AXIS_AREA_WIDTH - 15, midPY + 4, g);
                     lastY = midPY;
                 }
             }
+        } finally {
+            if (g != null) g.dispose();
         }
     }
 
@@ -386,40 +304,35 @@ public class GWASTrack extends AbstractTrack {
      * Find index of data point closest to given chromosomal location and y-coordinate
      */
     GWASFeature findFeature(String chr, int mouseX, int mouseY) {
-        final int pixelThreshold = 3;
-        List<GWASFeature> featureList;
-        if ("all".equalsIgnoreCase(chr)) {
-            featureList = new ArrayList<>();
-            for (List<GWASFeature> chrFeatures : this.gData.values()) {
-                for (GWASFeature f : chrFeatures) {
-                    if (Math.abs(mouseX - f.pixelX) <= pixelThreshold && Math.abs(mouseY - f.pixelY) <= pixelThreshold) {
-                        featureList.add(f);
-                    }
+
+        List<GWASFeature> closeFeatures;
+        Collection<String> chromosomes = "all".equalsIgnoreCase(chr) ? this.gData.keySet() : Arrays.asList(chr);
+        closeFeatures = new ArrayList<>();
+        for (String c : chromosomes) {
+            List<GWASFeature> chrFeatures = this.gData.get(c);
+            for (GWASFeature f : chrFeatures) {
+                int pixelSize = Math.max(3, f.pixelSize);
+                if (Math.abs(mouseX - f.pixelX) <= pixelSize && Math.abs(mouseY - f.pixelY) <= pixelSize) {
+                    closeFeatures.add(f);
                 }
             }
-        } else {
-            featureList = this.gData.get(chr);
         }
-        if (featureList == null) {
+        if (closeFeatures.isEmpty()) {
             return null;
+        } else if (closeFeatures.size() == 1) {
+            return closeFeatures.get(0);
         } else {
-            List<GWASFeature> closeFeatures = featureList.stream()
-                    .filter(f -> Math.abs(mouseX - f.pixelX) <= pixelThreshold && Math.abs(mouseY - f.pixelY) <= pixelThreshold)
-                    .collect(Collectors.toList());
-            if (closeFeatures.isEmpty()) {
-                return null;
-            } else {
-                closeFeatures.sort((o1, o2) -> {
-                    double d1 = Math.sqrt((mouseX - o1.pixelX) * (mouseX - o1.pixelX) + (mouseY - o1.pixelY) * (mouseY - o1.pixelY));
-                    double d2 = Math.sqrt((mouseX - o2.pixelX) * (mouseX - o2.pixelX) + (mouseY - o2.pixelY) * (mouseY - o2.pixelY));
-                    if (d1 == d2) return 0;
-                    else if (d1 > d2) return 1;
-                    else return -1;
-                });
-                return closeFeatures.get(0);
-            }
+            closeFeatures.sort((o1, o2) -> {
+                double d1 = Math.sqrt((mouseX - o1.pixelX) * (mouseX - o1.pixelX) + (mouseY - o1.pixelY) * (mouseY - o1.pixelY));
+                double d2 = Math.sqrt((mouseX - o2.pixelX) * (mouseX - o2.pixelX) + (mouseY - o2.pixelY) * (mouseY - o2.pixelY));
+                if (d1 == d2) return 0;
+                else if (d1 > d2) return 1;
+                else return -1;
+            });
+            return closeFeatures.get(0);
         }
     }
+
 
     /**
      * Get description for a data point at given chromosome and index. If description is not cached, re-populate cache.
@@ -703,12 +616,9 @@ public class GWASTrack extends AbstractTrack {
 
         element.setAttribute("maxPointSize", String.valueOf(maxPointSize));
         element.setAttribute("minPointSize", String.valueOf(minPointSize));
-        element.setAttribute("scale", String.valueOf(scale));
-        element.setAttribute("trackMinY", String.valueOf(trackMinY));
-        element.setAttribute("maxY", String.valueOf(maxY));
         element.setAttribute("useChrColors", String.valueOf(useChrColors));
         element.setAttribute("singleColor", String.valueOf(singleColor));
-        element.setAttribute("drawYAxis", String.valueOf(drawYAxis));
+        element.setAttribute("showAxis", String.valueOf(showAxis));
         element.setAttribute("alternatingColors", String.valueOf(alternatingColors));
         if (primaryColor != null) {
             element.setAttribute("primaryColor", ColorUtilities.colorToString(primaryColor));
@@ -727,12 +637,9 @@ public class GWASTrack extends AbstractTrack {
 
         maxPointSize = Integer.parseInt(element.getAttribute("maxPointSize"));
         minPointSize = Integer.parseInt(element.getAttribute("minPointSize"));
-        scale = Double.parseDouble(element.getAttribute("scale"));
-        trackMinY = Double.parseDouble(element.getAttribute("trackMinY"));
-        maxY = Double.parseDouble(element.getAttribute("maxY"));
         useChrColors = Boolean.parseBoolean(element.getAttribute("useChrColors"));
         singleColor = Boolean.parseBoolean(element.getAttribute("singleColor"));
-        drawYAxis = Boolean.parseBoolean(element.getAttribute("drawYAxis"));
+        showAxis = Boolean.parseBoolean(element.getAttribute("showAxis")) || Boolean.parseBoolean(element.getAttribute("drawYAxis"));
         alternatingColors = Boolean.parseBoolean(element.getAttribute("alternatingColors"));
         if (element.hasAttribute("primaryColor")) {
             primaryColor = ColorUtilities.stringToColor(element.getAttribute("primaryColor"));

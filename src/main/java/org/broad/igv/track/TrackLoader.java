@@ -58,6 +58,7 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
+import org.broad.igv.gwas.GWASData;
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.gwas.GWASFeature;
 import org.broad.igv.gwas.GWASParser;
@@ -544,7 +545,7 @@ public class TrackLoader {
     private void loadGWASFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         GWASParser gwasParser = new GWASParser(locator, genome);
-        Map<String, List<GWASFeature>> gwasData = gwasParser.parse();
+        GWASData gwasData = gwasParser.parse();
         GWASTrack gwasTrack = new GWASTrack(locator, locator.getPath(), locator.getFileName(), gwasData, gwasParser.getColumnHeaders(), gwasParser.delimiter, genome);
         newTracks.add(gwasTrack);
 
