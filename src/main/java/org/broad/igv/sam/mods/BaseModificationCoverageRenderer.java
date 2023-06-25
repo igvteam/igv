@@ -76,15 +76,15 @@ public class BaseModificationCoverageRenderer {
                     float modFraction;
                     if (cpgMode & "m".equals(modification)) {
                         // Special mode for out-of-spec 5mC CpG convention.
-                        // Calls are made for the CG dinucleotide and only recorded on 1 strand.  We adjust the height
-                        // of the bar to account for the missing G- calls.  This is an approximation and assumes the
-                        // distribution of calls is ~ equal on both strands.
-                        final byte base = (byte) 'C'; //key.getCanonicalBase();
-                        final byte compl = (byte) 'G'; //SequenceUtil.complement(base);
+                        // Calls are made for the CG dinucleotide and only recorded for the canonical "C".  We adjust the height
+                        // of the bar to account for the missing G- calls.
+                        final byte base = (byte) 'C';
+                        final byte compl = (byte) 'G';
                         final int posCount = alignmentCounts.getPosCount(pos, base);
                         final int negCount = alignmentCounts.getNegCount(pos, compl);
 
-                        // Is this a "C" or "G" reference site?  We want to determine this from the counts data directly, this should work for all but pahtological edge cases
+                        // Is this a "C" or "G" reference site?  We want to determine this from the counts data
+                        // directly, this should work for all but pathological edge cases
                         final int cCounts = alignmentCounts.getCount(pos, base);
                         final int gCounts = alignmentCounts.getCount(pos, compl);
                         final boolean cSite = cCounts > gCounts;
@@ -119,10 +119,6 @@ public class BaseModificationCoverageRenderer {
 
         BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
 
-        if(pos == 119094768) {
-            System.out.println();
-        }
-
         if (modificationCounts != null) {
 
             final byte base = (byte) 'C';
@@ -152,13 +148,14 @@ public class BaseModificationCoverageRenderer {
                 // of the bar to account for the missing G- calls.  This is an approximation and assumes the
                 // distribution of calls is ~ equal on both strands.
 
-                // Is this a "C" or "G" reference site?  We want to determine this from the counts data directly, this should work for all but pahtological edge cases
+                // Is this a "C" or "G" reference site?  We want to determine this from the counts data directly,
+                // this should work for all but pathological edge cases
                 final int cCounts = alignmentCounts.getCount(pos, base);
                 final int gCounts = alignmentCounts.getCount(pos, compl);
                 final boolean cSite = cCounts > gCounts;
                 final int referenceCounts = cSite ? cCounts : gCounts;
 
-               // Compute "snp factor", ratio of count of base calls that could be modfied (on either strand) to
+               // Compute "snp factor", ratio of count of base calls that could be modified  to
                 // total count. This is normally close to 1, but can be less due non CG bases at this location (e.g. snps)
                 double snpFactor = ((double) referenceCounts) / alignmentCounts.getTotalCount(pos);
 
