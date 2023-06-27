@@ -15,7 +15,8 @@ public class BaseModificationRenderer {
             double locScale,
             Rectangle rowRect,
             Graphics g,
-            AlignmentTrack.ColorOption colorOption) {
+            AlignmentTrack.ColorOption colorOption,
+            String basemodFilter) {
 
         switch (colorOption) {
             case BASE_MODIFICATION_5MC:
@@ -28,7 +29,7 @@ public class BaseModificationRenderer {
                 draw(alignment, bpStart, locScale, rowRect, g, "a");
                 break;
             default:
-                draw(alignment, bpStart, locScale, rowRect, g, null);
+                draw(alignment, bpStart, locScale, rowRect, g, basemodFilter);
         }
 
     }

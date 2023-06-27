@@ -531,7 +531,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             drawBarBisulfite(context, pX, bottomY, dX, barHeight, totalCount, bc);
                         }
                     } else if (colorOption.isBaseMod()) {
-                        BaseModificationCoverageRenderer.drawModifications(context, pX, bottomY, dX, barHeight, pos, alignmentCounts, colorOption);
+                        String basemodFilter = alignmentTrack != null ? alignmentTrack.getRenderOptions().getBasemodFilter() : null;
+                        BaseModificationCoverageRenderer.drawModifications(context, pX, bottomY, dX, barHeight, pos, alignmentCounts, colorOption, basemodFilter);
                     } else {
                         if (refBases != null) {
                             int refIdx = pos - intervalStart;
