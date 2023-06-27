@@ -40,8 +40,12 @@ public class BaseModificationUtils {
 
     public static String valueString(String modification, byte likelihood) {
         int l = (int) (100.0 * Byte.toUnsignedInt(likelihood) / 255);
-        return "Base modification: " +
-                ((codeValues.containsKey(modification)) ? codeValues.get(modification) : "Uknown") + " (" + l + "%)";
+        return "Base modification: " + modificationName(modification) + " (" + l + "%)";
+    }
+
+
+    public static String modificationName(String modification) {
+        return ((codeValues.containsKey(modification)) ? codeValues.get(modification) : modification);
     }
 
 

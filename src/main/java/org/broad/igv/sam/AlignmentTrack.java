@@ -131,7 +131,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
-
     public enum ShadeAlignmentsOption {
         NONE("none"),
         MAPPING_QUALITY_HIGH("mapping quality high"),
@@ -252,9 +251,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return (matchesContext) ? this : null;
         }
 
-        public String getLabel() { return label; }
+        public String getLabel() {
+            return label;
+        }
 
-        BisulfiteContext(String label, byte[] preContext, byte[] postContext){
+        BisulfiteContext(String label, byte[] preContext, byte[] postContext) {
             this.label = label;
             this.preContext = preContext;
             this.postContext = postContext;
@@ -389,7 +390,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     break;
             }
 
-        } else if( event instanceof DataLoadedEvent){
+        } else if (event instanceof DataLoadedEvent) {
             final DataLoadedEvent dataLoaded = (DataLoadedEvent) event;
             actionToPerformOnFrameLoad.computeIfPresent(dataLoaded.getReferenceFrame(), (k, v) -> {
                 v.accept(k);
@@ -747,7 +748,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         boolean leaveMargin = getDisplayMode() != DisplayMode.SQUISHED;
 
         // Insertion interval
-        if(this.renderOptions.isShowInsertionMarkers()) {
+        if (this.renderOptions.isShowInsertionMarkers()) {
             Graphics2D g = context.getGraphic2DForColor(Color.red);
             Rectangle iRect = new Rectangle(inputRect.x, insertionRect.y, inputRect.width, insertionRect.height);
             g.fill(iRect);
@@ -830,14 +831,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     public void sortRows(final SortOption option, final Double location, final String tag, final boolean invertSort, final Set<String> priorityRecords) {
         final List<ReferenceFrame> frames = FrameManager.getFrames();
         for (ReferenceFrame frame : frames) {
-            Consumer<ReferenceFrame> sort = (ReferenceFrame f)  -> {
+            Consumer<ReferenceFrame> sort = (ReferenceFrame f) -> {
                 final AlignmentInterval interval = getDataManager().getLoadedInterval(f);
                 final double actloc = location != null ? location : f.getCenter();
                 interval.sortRows(option, actloc, tag, invertSort, priorityRecords);
             };
             //If the data is loaded sort now, otherwise delay until we get a message that it is loaded.
-            if(getDataManager().isLoaded(frame)){
-               sort.accept(frame);
+            if (getDataManager().isLoaded(frame)) {
+                sort.accept(frame);
             } else {
                 log.debug("Attempt to sort alignments prior to loading");
                 actionToPerformOnFrameLoad.put(frame, sort);
@@ -934,7 +935,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
         return null;
     }
-
 
 
     Alignment getAlignmentAt(final TrackClickEvent te) {
@@ -1331,6 +1331,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean hideSmallIndels;
         private Integer smallIndelThreshold;
 
+        private String basemodFilter;
+
         BisulfiteContext bisulfiteContext = BisulfiteContext.CG;
         Map<String, PEStats> peStats;
 
@@ -1601,6 +1603,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return smallIndelThreshold == null ? getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD) : smallIndelThreshold;
         }
 
+        public String getBasemodFilter() {
+            return basemodFilter;
+        }
+
+        public void setBasemodFilter(String basemodFilter) {
+            this.basemodFilter = basemodFilter;
+        }
 
         @Override
         public void marshalXML(Document document, Element element) {
@@ -1697,6 +1706,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if (showInsertionMarkers != null) {
                 element.setAttribute("showInsertionMarkers", showInsertionMarkers.toString());
+            }
+            if (basemodFilter != null) {
+                element.setAttribute("basemodfilter", basemodFilter);
             }
         }
 
@@ -1800,6 +1812,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (element.hasAttribute("showInsertionMarkers")) {
                 showInsertionMarkers = Boolean.parseBoolean(element.getAttribute("showInsertionMarkers"));
             }
+            if (element.hasAttribute("basemodfilter")) {
+                basemodFilter = element.getAttribute("basemodfilter");
+            }
+
         }
     }
 

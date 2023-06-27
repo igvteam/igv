@@ -18,7 +18,8 @@ public class BaseModificationCoverageRenderer {
                                          int barHeight,
                                          int pos,
                                          AlignmentCounts alignmentCounts,
-                                         ColorOption colorOption) {
+                                         ColorOption colorOption,
+                                         String basemodFilter) {
 
         switch (colorOption) {
             case BASE_MODIFICATION_5MC:
@@ -31,7 +32,7 @@ public class BaseModificationCoverageRenderer {
                 draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, "a");
                 break;
             default:
-                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, null);
+                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, basemodFilter);
         }
     }
 

@@ -12,6 +12,7 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.mods.BaseModificationUtils;
 import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.tools.PFMExporter;
 import org.broad.igv.track.SequenceTrack;
@@ -142,7 +143,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
         // Select alignment items
         addSeparator();
-        addSelectByNameItem(alignmentTrack,  e);
+        addSelectByNameItem(alignmentTrack, e);
         addClearSelectionsMenuItem();
 
         // Copy items
@@ -195,7 +196,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         add(item);
     }
 
-    private void addShowDiagram(final TrackClickEvent e, final Alignment clickedAlignment){
+    private void addShowDiagram(final TrackClickEvent e, final Alignment clickedAlignment) {
         JMenuItem item = new JMenuItem("Supplementary Reads Diagram");
         if (clickedAlignment != null && clickedAlignment.getAttribute(SAMTag.SA.name()) != null) {
             item.setEnabled(true);
@@ -472,8 +473,8 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
     private void groupAlignments(AlignmentTrack.GroupOption option, String tag, Range pos) {
 
-        if(alignmentTrack.getPreferences().getAsBoolean(SAM_GROUP_ALL)) {
-            for(AlignmentTrack t : IGV.getInstance().getAlignmentTracks()) {
+        if (alignmentTrack.getPreferences().getAsBoolean(SAM_GROUP_ALL)) {
+            for (AlignmentTrack t : IGV.getInstance().getAlignmentTracks()) {
                 t.groupAlignments(option, tag, pos);
             }
         } else {
@@ -563,10 +564,18 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     }
 
     private JRadioButtonMenuItem getColorMenuItem(String label, final AlignmentTrack.ColorOption option) {
+        return getColorMenuItem(label, option, null);
+
+    }
+
+    private JRadioButtonMenuItem getColorMenuItem(String label, final AlignmentTrack.ColorOption option, String extra) {
         JRadioButtonMenuItem mi = new JRadioButtonMenuItem(label);
         mi.setSelected(renderOptions.getColorOption() == option);
         mi.addActionListener(aEvt -> {
             alignmentTrack.setColorOption(option);
+            if (option == AlignmentTrack.ColorOption.BASE_MODIFICATION) {
+                renderOptions.setBasemodFilter(extra);
+            }
             alignmentTrack.repaint();
         });
 
@@ -632,18 +641,42 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         colorMenu.add(getBisulfiteContextMenuItem(group));
 
         // Base modifications
-        mappings.clear();
-        mappings.put("base modification", AlignmentTrack.ColorOption.BASE_MODIFICATION);
-        mappings.put("base modification (5mC)", AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC);
-        mappings.put("base modification (all C)", AlignmentTrack.ColorOption.BASE_MODIFICATION_C);
-        mappings.put("base modification (6mA)", AlignmentTrack.ColorOption.BASE_MODIFICATION_6MA);
+        JRadioButtonMenuItem bmMenuItem;
+
         colorMenu.addSeparator();
-        for (Map.Entry<String, AlignmentTrack.ColorOption> el : mappings.entrySet()) {
-            JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
-            colorMenu.add(mi);
-            group.add(mi);
+
+        Set<String> allModifications = dataManager.getAllBaseModifications();
+
+        bmMenuItem = getColorMenuItem("CpG modification (5mC)", AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC);
+        bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC);
+        bmMenuItem.setEnabled(allModifications.contains("m"));
+        colorMenu.add(bmMenuItem);
+        group.add(bmMenuItem);
+
+        bmMenuItem = getColorMenuItem("CpG modification (all C)", AlignmentTrack.ColorOption.BASE_MODIFICATION_C);
+        bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_C);
+        bmMenuItem.setEnabled(allModifications.contains("m") || allModifications.contains("h"));
+        colorMenu.add(bmMenuItem);
+        group.add(bmMenuItem);
+
+        colorMenu.addSeparator();
+
+        bmMenuItem = getColorMenuItem("base modification (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION);
+        bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && renderOptions.getBasemodFilter() == null);
+        bmMenuItem.setEnabled(!allModifications.isEmpty());
+        colorMenu.add(bmMenuItem);
+        group.add(bmMenuItem);
+
+        for(String m : allModifications) {
+            String name = BaseModificationUtils.modificationName(m);
+            bmMenuItem = getColorMenuItem("base modification (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION, m);
+            bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && m.equals(renderOptions.getBasemodFilter()));
+            colorMenu.add(bmMenuItem);
+            group.add(bmMenuItem);
         }
 
+
+        // SMRT kinetics
         if (alignmentTrack.getPreferences().getAsBoolean(SMRT_KINETICS_SHOW_OPTIONS)) {
             // Show additional options to help visualize SMRT kinetics data
             mappings.clear();
@@ -652,7 +685,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             mappings.put("SMRT CCS fwd-strand aligned IPD", AlignmentTrack.ColorOption.SMRT_CCS_FWD_IPD);
             mappings.put("SMRT CCS fwd-strand aligned PW", AlignmentTrack.ColorOption.SMRT_CCS_FWD_PW);
             mappings.put("SMRT CCS rev-strand aligned IPD", AlignmentTrack.ColorOption.SMRT_CCS_REV_IPD);
-            mappings.put("SMRT CCS rev-strand aligned PW",AlignmentTrack.ColorOption.SMRT_CCS_REV_PW);
+            mappings.put("SMRT CCS rev-strand aligned PW", AlignmentTrack.ColorOption.SMRT_CCS_REV_PW);
             colorMenu.addSeparator();
             for (Map.Entry<String, AlignmentTrack.ColorOption> el : mappings.entrySet()) {
                 JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
