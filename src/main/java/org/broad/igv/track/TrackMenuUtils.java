@@ -1365,12 +1365,7 @@ public class TrackMenuUtils {
     public static JMenuItem getChangeFontSizeItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Change Font Size...");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                changeFontSize(selectedTracks);
-            }
-        });
+        item.addActionListener(evt -> changeFontSize(selectedTracks));
         return item;
     }
 
