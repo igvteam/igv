@@ -25,6 +25,13 @@ DEFAULT_FONT_SIZE	Default font size	integer	10
 SCALE_FONTS	Scale fonts	boolean	FALSE	Scale fonts for high resolution screens. Requires restart.
 ENABLE_ANTIALIASING	Enable anti-aliasing	boolean	TRUE
 
+##Nucleotide Colors
+COLOR.A	A	color	0,150,0
+COLOR.C	C	color	0,0,255
+COLOR.T	T	color	255,0,0
+COLOR.G	G	color	209,113,5
+COLOR.N	n	color	128,128,128
+
 #Tracks
 IGV.chart.track.height	Default numeric track height (pixels)	integer	40
 IGV.track.height	Default feature track height (pixels)	integer	15
@@ -327,11 +334,6 @@ CBIO_EXPRESSION_DOWN_THRESHOLD	1
 DETAILS_BEHAVIOR	CLICK
 SHOW_SIZE_WARNING	TRUE
 SKIP_VERSION
-COLOR.A	0,150,0
-COLOR.C	0,0,255
-COLOR.T	255,0,0
-COLOR.G	209,113,5
-COLOR.N	128,128,128
 
 SASHIMI.SHOW_COVERAGE	TRUE
 GENE_LIST_BED_FORMAT	FALSE
