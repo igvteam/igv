@@ -103,7 +103,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         BASE_MODIFICATION,
         BASE_MODIFICATION_5MC,
         BASE_MODIFICATION_C,
-        BASE_MODIFICATION_6MA,
         SMRT_SUBREAD_IPD,
         SMRT_SUBREAD_PW,
         SMRT_CCS_FWD_IPD,
@@ -112,7 +111,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         SMRT_CCS_REV_PW;
 
         public boolean isBaseMod() {
-            return this == BASE_MODIFICATION || this == BASE_MODIFICATION_5MC || this == BASE_MODIFICATION_C || this == BASE_MODIFICATION_6MA;
+            return this == BASE_MODIFICATION ||  this == BASE_MODIFICATION_C;
         }
 
         public boolean isSMRTKinetics() {
@@ -1738,7 +1737,17 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 maxInsertSize = Integer.parseInt(element.getAttribute("maxInsertSize"));
             }
             if (element.hasAttribute("colorOption")) {
-                colorOption = ColorOption.valueOf(element.getAttribute("colorOption"));
+                // Convert deprecated options
+                final String attributeValue = element.getAttribute("colorOption");
+                if("BASE_MODIFICATION_6MA".equals(attributeValue)) {
+                    colorOption = ColorOption.BASE_MODIFICATION;
+                    basemodFilter = "a";
+                } else if("BASE_MODIFICATION_5MC".equals(attributeValue)) {
+                    colorOption = ColorOption.BASE_MODIFICATION_C;
+                    basemodFilter = "m";
+                } else {
+                    colorOption = ColorOption.valueOf(attributeValue);
+                }
             }
             if (element.hasAttribute("sortOption")) {
                 sortOption = SortOption.valueOf((element.getAttribute("sortOption")));

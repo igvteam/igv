@@ -123,7 +123,8 @@ public class BaseModificationCounts {
             if (modCounts.containsKey(position)) {
                 final Integer count = modCounts.get(position);
                 int lh = (int) (((100.0f / 255) * getLikelhoodSum(position, entry.getKey())) / count);
-                buffer.append("Modification: " + key.modification + " (" + key.base + key.strand + ", " + count + "  @ " + lh + "%)<br>");
+                String modName = BaseModificationUtils.modificationName(key.modification);
+                buffer.append("Modification: " + modName + " (" + key.base + key.strand + ", " + count + "  @ " + lh + "%)<br>");
             }
         }
         return buffer.toString();

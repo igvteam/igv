@@ -646,33 +646,39 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         colorMenu.addSeparator();
 
         Set<String> allModifications = dataManager.getAllBaseModifications();
+        if (allModifications.size() > 0) {
 
-        bmMenuItem = getColorMenuItem("CpG modification (5mC)", AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC);
-        bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC);
-        bmMenuItem.setEnabled(allModifications.contains("m"));
-        colorMenu.add(bmMenuItem);
-        group.add(bmMenuItem);
+            Set<String> cModifications = allModifications.stream().filter(m -> BaseModificationUtils.cModifications.contains(m)).collect(Collectors.toSet());
 
-        bmMenuItem = getColorMenuItem("CpG modification (all C)", AlignmentTrack.ColorOption.BASE_MODIFICATION_C);
-        bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_C);
-        bmMenuItem.setEnabled(allModifications.contains("m") || allModifications.contains("h"));
-        colorMenu.add(bmMenuItem);
-        group.add(bmMenuItem);
+            for (String m : cModifications) {
+                String name = BaseModificationUtils.modificationName(m);
+                bmMenuItem = getColorMenuItem("base modification (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION_C, m);
+                bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_C && m.equals(renderOptions.getBasemodFilter()));
+                colorMenu.add(bmMenuItem);
+                group.add(bmMenuItem);
+            }
 
-        colorMenu.addSeparator();
+            if (cModifications.size() > 1) {
+                bmMenuItem = getColorMenuItem("CpG modification (all C)", AlignmentTrack.ColorOption.BASE_MODIFICATION_C);
+                bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_C);
+                colorMenu.add(bmMenuItem);
+                group.add(bmMenuItem);
+            }
 
-        bmMenuItem = getColorMenuItem("base modification (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION);
-        bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && renderOptions.getBasemodFilter() == null);
-        bmMenuItem.setEnabled(!allModifications.isEmpty());
-        colorMenu.add(bmMenuItem);
-        group.add(bmMenuItem);
-
-        for(String m : allModifications) {
-            String name = BaseModificationUtils.modificationName(m);
-            bmMenuItem = getColorMenuItem("base modification (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION, m);
-            bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && m.equals(renderOptions.getBasemodFilter()));
-            colorMenu.add(bmMenuItem);
-            group.add(bmMenuItem);
+            colorMenu.addSeparator();
+            for (String m : allModifications) {
+                String name = BaseModificationUtils.modificationName(m);
+                bmMenuItem = getColorMenuItem("base modification (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION, m);
+                bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && m.equals(renderOptions.getBasemodFilter()));
+                colorMenu.add(bmMenuItem);
+                group.add(bmMenuItem);
+            }
+            if (allModifications.size() > 1) {
+                bmMenuItem = getColorMenuItem("base modification (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION);
+                bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && renderOptions.getBasemodFilter() == null);
+                colorMenu.add(bmMenuItem);
+                group.add(bmMenuItem);
+            }
         }
 
 

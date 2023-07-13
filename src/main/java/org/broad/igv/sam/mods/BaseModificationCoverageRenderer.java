@@ -22,20 +22,24 @@ public class BaseModificationCoverageRenderer {
                                          String basemodFilter) {
 
         switch (colorOption) {
-            case BASE_MODIFICATION_5MC:
-                draw5MC(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, false);
-                break;
             case BASE_MODIFICATION_C:
-                draw5MC(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, true);
-                break;
-            case BASE_MODIFICATION_6MA:
-                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, "a");
+                draw5MC(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, basemodFilter);
                 break;
             default:
-                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, basemodFilter);
+                draw(context, pX, pBottom, dX, barHeight, pos, alignmentCounts, colorOption, basemodFilter);
         }
     }
 
+    /*
+    chr11:119,094,758
+Total count: 26
+A : 0
+C : 26 (100%, 16+, 10- )
+G : 0
+T : 0
+N : 0Modification: m (C+, 15 @ 47%)
+
+     */
 
     private static void draw(RenderContext context,
                              int pX,
@@ -44,7 +48,10 @@ public class BaseModificationCoverageRenderer {
                              int barHeight,
                              int pos,
                              AlignmentCounts alignmentCounts,
+                             ColorOption colorOption,
                              String filter) {
+
+        boolean debug = pos == 119094762;
 
         BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
 
@@ -70,15 +77,15 @@ public class BaseModificationCoverageRenderer {
             // Color bar by likelihood weighted count
             int total = alignmentCounts.getTotalCount(pos);
 
+            int sumModHeight = 0;
             for (String modification : likelihoodSums.keySet()) {
 
                 if (likelihoodSums.get(modification) > 0) {
 
                     float modFraction;
                     if (cpgMode & "m".equals(modification)) {
-                        // Special mode for out-of-spec 5mC CpG convention.
-                        // Calls are made for the CG dinucleotide and only recorded for the canonical "C".  We adjust the height
-                        // of the bar to account for the missing G- calls.
+                        // Special mode for out-of-spec 5mC CpG convention.  Calls are recorded for C+ only.
+                        // We adjust the height of the bar to account for the missing G- calls.
                         final byte base = (byte) 'C';
                         final byte compl = (byte) 'G';
                         final int posCount = alignmentCounts.getPosCount(pos, base);
@@ -92,18 +99,18 @@ public class BaseModificationCoverageRenderer {
                         final int referenceCounts = cSite ? cCounts : gCounts;
                         final int strandCount = cSite ? posCount : negCount;
                         modFraction = (((float) referenceCounts) / total) * (likelihoodSums.get(modification) / (strandCount * 255f));
-
                     } else {
                         modFraction = likelihoodSums.get(modification) / (total * 255f);
-
                     }
                     int modHeight = Math.round(modFraction * barHeight);
 
                     int baseY = pBottom - modHeight;
-                    Color modColor = BaseModificationColors.getModColor(modification, (byte) 255, ColorOption.BASE_MODIFICATION);
+                    Color modColor = BaseModificationColors.getModColor(modification, (byte) 255, colorOption);
                     graphics.setColor(modColor);
                     graphics.fillRect(pX, baseY, dX, modHeight);
                     pBottom = baseY;
+
+                    if(debug) System.out.println("draw  " + modification + "  " + modHeight);
                 }
             }
         }
@@ -116,7 +123,9 @@ public class BaseModificationCoverageRenderer {
                                 int barHeight,
                                 int pos,
                                 AlignmentCounts alignmentCounts,
-                                boolean allMods) {
+                                String basemodFilter) {
+
+        boolean debug = pos == 119094768;
 
         BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
 
@@ -131,7 +140,7 @@ public class BaseModificationCoverageRenderer {
 
                 // This coloring mode is exclusively for "C" modifications
                 if (key.getCanonicalBase() != 'C') continue;
-                if (key.getModification().equals("m") || allMods) {
+                if (key.getModification().equals(basemodFilter) || basemodFilter == null) {
                     String mod = key.getModification();
                     final int count = modificationCounts.getCount(pos, key);
                     if (count > 0) {
@@ -183,13 +192,14 @@ public class BaseModificationCoverageRenderer {
                 String[] orderedMods = likelihoodSums.keySet().toArray(new String[0]);
                 Arrays.sort(orderedMods, (o1, o2) -> -1 * o1.compareTo(o2));
                 for (String m : orderedMods) {
-                    Color mColor = BaseModificationColors.getModColor(m, (byte) 255, ColorOption.BASE_MODIFICATION_5MC);
+                    Color mColor = BaseModificationColors.getModColor(m, (byte) 255, ColorOption.BASE_MODIFICATION_C);
                     int mModHeight = (int) Math.round(((likelihoodSums.get(m)) / t) * calledBarHeight);
                     if (mModHeight > 0) {
                         baseY -= mModHeight;
                         graphics.setColor(mColor);
                         graphics.fillRect(pX, baseY, dX, mModHeight);
                     }
+                    if(debug) System.out.println("draw5mC  " + m + "  " + mModHeight);
                 }
             }
         }

@@ -19,14 +19,8 @@ public class BaseModificationRenderer {
             String basemodFilter) {
 
         switch (colorOption) {
-            case BASE_MODIFICATION_5MC:
-                draw5mC(alignment, bpStart, locScale, rowRect, g, false);
-                break;
             case BASE_MODIFICATION_C:
-                draw5mC(alignment, bpStart, locScale, rowRect, g, true);
-                break;
-            case BASE_MODIFICATION_6MA:
-                draw(alignment, bpStart, locScale, rowRect, g, "a");
+                draw5mC(alignment, bpStart, locScale, rowRect, g, basemodFilter);
                 break;
             default:
                 draw(alignment, bpStart, locScale, rowRect, g, basemodFilter);
@@ -128,7 +122,7 @@ public class BaseModificationRenderer {
             double locScale,
             Rectangle rowRect,
             Graphics g,
-            boolean allMods) {
+            String basemodFilter) {
 
         List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
         if (baseModificationSets != null) {
@@ -161,7 +155,7 @@ public class BaseModificationRenderer {
 
                         // This coloring mode is exclusively for "C" modifications, either 5mC or all C mods
                         if (bmSet.getCanonicalBase() != 'C') continue;
-                        if (bmSet.getModification().equals("m") || allMods) {
+                        if (bmSet.getModification().equals(basemodFilter) || basemodFilter == null) {
                             if (bmSet.containsPosition(i)) {
                                 int l = Byte.toUnsignedInt(bmSet.getLikelihoods().get(i));
                                 noModificationLikelihood -= l;
@@ -177,7 +171,7 @@ public class BaseModificationRenderer {
 
                         Color c = noModificationLikelihood > lh ?
                                 BaseModificationColors.getNoModColor((byte) noModificationLikelihood) :
-                                BaseModificationColors.getModColor(modification, (byte) lh, AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC);
+                                BaseModificationColors.getModColor(modification, (byte) lh, AlignmentTrack.ColorOption.BASE_MODIFICATION_C);
                         g.setColor(c);
 
                         // Expand narrow width to make more visible
