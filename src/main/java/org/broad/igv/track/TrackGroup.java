@@ -115,7 +115,15 @@ public class TrackGroup {
         if (track == null) {
             log.warn("Attempt to add null track");
         } else {
-            tracks.add(track);
+            boolean alreadyExists = false;
+            for(Track t : tracks) {
+                if (track.getName().equals(t.getName())) {
+                    alreadyExists = true;
+                    break;
+                }
+            }
+
+            if (!alreadyExists) tracks.add(track);
         }
     }
 
