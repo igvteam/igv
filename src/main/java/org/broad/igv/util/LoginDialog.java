@@ -165,6 +165,7 @@ public class LoginDialog extends org.broad.igv.ui.IGVDialog  {
                         okButtonActionPerformed(e);
                     }
                 });
+                this.getRootPane().setDefaultButton(okButton);
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 5), 0, 0));
