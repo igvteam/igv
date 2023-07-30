@@ -33,49 +33,49 @@ package org.broad.igv.util.collections;
  * ArrayList type collection for int types.  Purpose is to avoid the need to create an object for each entry
  * in the standard java collections.
  */
-public class IntArrayList {
+public class ByteArrayList {
 
 
-    private transient int[] elements;
+    private transient byte[] elements;
 
     private int size;
 
 
-    public IntArrayList() {
+    public ByteArrayList() {
         this(100);
     }
 
-    public IntArrayList(int initialCapacity) {
+    public ByteArrayList(int initialCapacity) {
         if (initialCapacity < 0)
             throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
-        this.elements = new int[initialCapacity];
+        this.elements = new byte[initialCapacity];
     }
 
-    public IntArrayList(int[] elements) {
+    public ByteArrayList(byte[] elements) {
         this.elements = elements;
         size = elements.length;
     }
 
-    public void add(int e) {
+    public void add(byte e) {
         if (size + 1 >= elements.length) {
             grow();
         }
         elements[size++] = e;
     }
 
-    public void addAll(int[] args) {
-        int[] newElements = new int[size + args.length];
+    public void addAll(byte[] args) {
+        byte[] newElements = new byte[size + args.length];
         System.arraycopy(elements, 0, newElements, 0, size);
         System.arraycopy(args, 0, newElements, size, args.length);
         elements = newElements;
         size += args.length;
     }
 
-    public void addAll(IntArrayList aList) {
+    public void addAll(ByteArrayList aList) {
         addAll(aList.toArray());
     }
 
-    public int get(int idx) {
+    public byte get(int idx) {
         return elements[idx];
     }
 
@@ -102,13 +102,13 @@ public class IntArrayList {
         } else {
             newCapacity = (oldCapacity * 3) / 2 + 1;
         }
-        int[] tmp = new int[newCapacity];
+        byte[] tmp = new byte[newCapacity];
         System.arraycopy(elements, 0, tmp, 0, elements.length);
         elements = tmp;
     }
 
 
-    public int[] toArray() {
+    public byte[] toArray() {
         trimToSize();
         return elements;
     }
@@ -117,13 +117,13 @@ public class IntArrayList {
     private void trimToSize() {
         int oldCapacity = elements.length;
         if (size < oldCapacity) {
-            int[] tmp = new int[size];
+            byte[] tmp = new byte[size];
             System.arraycopy(elements, 0, tmp, 0, size);
             elements = tmp;
         }
     }
 
-    public void set(int idx, int i) {
+    public void set(int idx, byte i) {
         while(idx >= elements.length) {
             grow();
         }

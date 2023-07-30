@@ -41,6 +41,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.sam.mods.BaseModficationFilter;
 import org.broad.igv.session.Persistable;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
@@ -101,8 +102,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         LINK_STRAND,
         YC_TAG,
         BASE_MODIFICATION,
-        BASE_MODIFICATION_5MC,
-        BASE_MODIFICATION_C,
+        BASE_MODIFICATION_2COLOR,
         SMRT_SUBREAD_IPD,
         SMRT_SUBREAD_PW,
         SMRT_CCS_FWD_IPD,
@@ -111,7 +111,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         SMRT_CCS_REV_PW;
 
         public boolean isBaseMod() {
-            return this == BASE_MODIFICATION ||  this == BASE_MODIFICATION_C;
+            return this == BASE_MODIFICATION || this == BASE_MODIFICATION_2COLOR;
         }
 
         public boolean isSMRTKinetics() {
@@ -1330,7 +1330,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean hideSmallIndels;
         private Integer smallIndelThreshold;
 
-        private String basemodFilter;
+        private BaseModficationFilter basemodFilter;
 
         BisulfiteContext bisulfiteContext = BisulfiteContext.CG;
         Map<String, PEStats> peStats;
@@ -1602,11 +1602,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return smallIndelThreshold == null ? getPreferences().getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD) : smallIndelThreshold;
         }
 
-        public String getBasemodFilter() {
+        public BaseModficationFilter getBasemodFilter() {
             return basemodFilter;
         }
 
-        public void setBasemodFilter(String basemodFilter) {
+        public void setBasemodFilter(BaseModficationFilter basemodFilter) {
             this.basemodFilter = basemodFilter;
         }
 
@@ -1707,7 +1707,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 element.setAttribute("showInsertionMarkers", showInsertionMarkers.toString());
             }
             if (basemodFilter != null) {
-                element.setAttribute("basemodfilter", basemodFilter);
+                element.setAttribute("basemodfilter", basemodFilter.toString());
             }
         }
 
@@ -1741,11 +1741,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 final String attributeValue = element.getAttribute("colorOption");
                 if("BASE_MODIFICATION_6MA".equals(attributeValue)) {
                     colorOption = ColorOption.BASE_MODIFICATION;
-                    basemodFilter = "a";
+                    basemodFilter = new BaseModficationFilter("a");
                 } else if("BASE_MODIFICATION_5MC".equals(attributeValue)) {
-                    colorOption = ColorOption.BASE_MODIFICATION_C;
-                    basemodFilter = "m";
-                } else {
+                    colorOption = ColorOption.BASE_MODIFICATION_2COLOR;
+                    basemodFilter = new BaseModficationFilter(null, 'C');
+                } else if("BASE_MODIFICATION_C".equals(attributeValue)) {
+                    colorOption = ColorOption.BASE_MODIFICATION;
+                    basemodFilter = new BaseModficationFilter(null, 'C');
+                }else {
                     colorOption = ColorOption.valueOf(attributeValue);
                 }
             }
@@ -1822,7 +1825,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 showInsertionMarkers = Boolean.parseBoolean(element.getAttribute("showInsertionMarkers"));
             }
             if (element.hasAttribute("basemodfilter")) {
-                basemodFilter = element.getAttribute("basemodfilter");
+                basemodFilter = BaseModficationFilter.fromString(element.getAttribute("basemodfilter"));
             }
 
         }

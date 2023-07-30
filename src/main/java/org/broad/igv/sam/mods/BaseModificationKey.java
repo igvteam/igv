@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class BaseModificationKey {
+public class BaseModificationKey implements Comparable {
     char base;
     char strand;
     String modification;
@@ -24,7 +24,10 @@ public class BaseModificationKey {
             keyCache.put(name, key);
             return key;
         }
+    }
 
+    public static BaseModificationKey getNomodKey(char base) {
+        return getKey(base, '+', "NONE");
     }
 
     private BaseModificationKey(char base, char strand, String modification) {
@@ -66,4 +69,39 @@ public class BaseModificationKey {
     public String toString() {
         return "" + base + strand + modification;
     }
+
+
+    static Map<String, Integer> modificationRankOrder ;
+
+    @Override
+    public int compareTo(Object o) {
+        BaseModificationKey otherKey = (BaseModificationKey) o;
+        String mod1 = this.modification;
+        String mod2 = otherKey.modification;
+
+        if(mod1.equals(mod2)) {
+            return (byte) this.strand - (byte) otherKey.strand;
+        }
+
+        if(modificationRankOrder == null) {
+            modificationRankOrder = new HashMap<>();
+            String [] tmp = {"NONE_C", "NONE_T", "NONE_G", "NONE_A", "m", "h", "f", "c", "C", "g", "e", "b", "T", "U", "a", "A", "o", "G", "n", "N"};
+            for(int idx = 0; idx < tmp.length; idx++) {
+                modificationRankOrder.put(tmp[idx], idx);
+            }
+        }
+        if (modificationRankOrder.containsKey(mod1) & modificationRankOrder.containsKey(mod2)) {
+            return modificationRankOrder.get(mod1) - modificationRankOrder.get(mod2);
+        } else if (modificationRankOrder.containsKey(mod1)) {
+            return 1;
+        } else if (modificationRankOrder.containsKey(mod2)) {
+            return -1;
+        } else {
+            return mod1.compareTo(mod2);
+        }
+    }
+
+
+
+
 }

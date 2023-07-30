@@ -36,6 +36,7 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.mods.BaseModificationKey;
 import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -69,7 +70,9 @@ public class AlignmentDataManager implements IGVEventObserver {
     private Map<String, PEStats> peStats;
     private SpliceJunctionHelper.LoadOptions loadOptions;
 
-    private Set<String> allBaseModifications = new HashSet<>();
+    private Set<BaseModificationKey> allBaseModificationKeys = new HashSet<>();
+
+    private Set<String> simplexBaseModfications = new HashSet<>();
 
     private Range currentlyLoading;
 
@@ -198,8 +201,8 @@ public class AlignmentDataManager implements IGVEventObserver {
     /**
      * Return all base modfications seen in loaded alignments
      */
-    public Set<String> getAllBaseModifications() {
-        return allBaseModifications;
+    public Set<BaseModificationKey> getAllBaseModificationKeys() {
+        return allBaseModificationKeys;
     }
 
     public boolean isPairedEnd() {
@@ -407,13 +410,27 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     private void updateBaseModfications(List<Alignment> alignments) {
+
         for(Alignment a : alignments) {
             List<BaseModificationSet> bmSets = a.getBaseModificationSets();
             if(bmSets != null) {
                 for(BaseModificationSet bms : bmSets) {
-                    allBaseModifications.add(bms.getModification());
+                    allBaseModificationKeys.add(BaseModificationKey.getKey(bms.getBase(), bms.getStrand(), bms.getModification()));
                 }
             }
+        }
+        // Search for simplex modifications (single strand read, e.g. C+m with no G-m)
+        Map<String, BaseModificationKey> tmp = new HashMap<>();
+        for(BaseModificationKey key : allBaseModificationKeys) {
+            if(tmp.containsKey(key.getModification())) {
+                tmp.remove(key);
+            } else {
+                tmp.put(key.getModification(), key);
+            }
+        }
+        for(Map.Entry<String, BaseModificationKey> entries : tmp.entrySet()) {
+            simplexBaseModfications.add(entries.getKey());
+            simplexBaseModfications.add("NONE_" + entries.getValue().getCanonicalBase());
         }
     }
 
@@ -571,6 +588,10 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public Collection<AlignmentInterval> getLoadedIntervals() {
         return intervalCache;
+    }
+
+    public Set<String> getSimplexBaseModifications() {
+        return simplexBaseModfications;
     }
 
     public static class DownsampleOptions {
