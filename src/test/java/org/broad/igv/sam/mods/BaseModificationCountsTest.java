@@ -70,11 +70,11 @@ public class BaseModificationCountsTest {
         assertTrue("No data retrieved:  " + readCount, readCount > 0);
 
         BaseModificationKey cmKey = BaseModificationKey.getKey('C', '+', "m");
-        int aboveThreshold = counts.getCount(119094723, cmKey, 127);
+        int aboveThreshold = counts.getCount(119094723, cmKey, 0.5f);
         assertEquals("Counts above threshold", 3, aboveThreshold);
 
-        BaseModificationKey noModKey = BaseModificationKey.getKey('C', '+', "NONE");
-        int belowThreshold = counts.getCount( 119094723, noModKey, 127);
+        BaseModificationKey noModKey = BaseModificationKey.getKey('C', '+', "NONE_C");
+        int belowThreshold = counts.getCount( 119094723, noModKey, 0.5f);
         assertEquals("Counts below threshold", 12, belowThreshold);
     }
 }
