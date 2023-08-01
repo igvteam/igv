@@ -16,7 +16,8 @@ public class BaseModificationRenderer {
             Rectangle rowRect,
             Graphics g,
             AlignmentTrack.ColorOption colorOption,
-            BaseModficationFilter filter) {
+            BaseModficationFilter filter,
+            float threshold) {
 
         List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
 
@@ -59,13 +60,15 @@ public class BaseModificationRenderer {
                         }
                     }
 
-                    if(modificationFound) {
+                    if (modificationFound) {
+                        float modThreshold = threshold * 255;
+                        float nomodThreshold = (threshold < 0.5 ? 1 - threshold : threshold) * 255;
                         Color c = null;
-                        if (noModLh > 127 && colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR) {
-                            c = BaseModificationColors.getModColor("NONE_" + canonicalBase, noModLh, colorOption);
-                        } else if (modification != null && maxLh > 127 &&
+                        if (modification != null && maxLh > modThreshold &&
                                 (filter == null || filter.pass(modification, canonicalBase)))         /* || flag == . */ {
                             c = BaseModificationColors.getModColor(modification, maxLh, colorOption);
+                        } else if (noModLh > nomodThreshold && colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR) {
+                            c = BaseModificationColors.getModColor("NONE_" + canonicalBase, noModLh, colorOption);
                         }
                         if (c != null) {
                             g.setColor(c);

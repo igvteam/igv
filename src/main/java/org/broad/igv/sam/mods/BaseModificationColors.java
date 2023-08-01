@@ -2,8 +2,11 @@ package org.broad.igv.sam.mods;
 
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
-
+import static org.broad.igv.prefs.Constants.*;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,32 +31,25 @@ public class BaseModificationColors {
     static HashMap<String, Color> colors5MC = new HashMap<>();
 
     static Color genericColor = new Color(132, 178, 158);
-    public static Color noModColor = Color.blue;
 
-    static Color hColor = new Color(11, 132, 165);
-    static Color oColor = new Color(111, 78, 129);
-    static Color fColor = new Color(246, 200, 95);
-    static Color cColor = new Color(157, 216, 102);
-    static Color gColor = new Color(255, 160, 86);
-    static Color eColor = new Color(141, 221, 208);
-    static Color bColor = new Color(0, 100, 47);
-    static Color aColor = new Color(51, 0, 111);
-
-    static {
-        colors.put("m", Color.red);
-        colors.put("h", hColor);
-        colors.put("o", oColor);
-        colors.put("f", fColor);
-        colors.put("c", cColor);
-        colors.put("g", gColor);
-        colors.put("e", eColor);
-        colors.put("b", bColor);
-        colors.put("a", aColor);
-        colors.put("NONE_A", noModColor);
-        colors.put("NONE_C", noModColor);
-        colors.put("NONE_T", noModColor);
-        colors.put("NONE_G", noModColor);
-        colors5MC.put("h", new Color(255, 0, 255));  // Modify h for 5mC to distinguish from blue
+    public static void updateColors () {
+        IGVPreferences preferences =  PreferencesManager.getPreferences();
+        colors.put("m", preferences.getAsColor(BASEMOD_M_COLOR));
+        colors.put("h", preferences.getAsColor(BASEMOD_H_COLOR));
+        colors.put("o", preferences.getAsColor(BASEMOD_O_COLOR));
+        colors.put("f", preferences.getAsColor(BASEMOD_F_COLOR));
+        colors.put("c", preferences.getAsColor(BASEMOD_C_COLOR));
+        colors.put("g", preferences.getAsColor(BASEMOD_G_COLOR));
+        colors.put("e", preferences.getAsColor(BASEMOD_E_COLOR));
+        colors.put("b", preferences.getAsColor(BASEMOD_B_COLOR));
+        colors.put("a", preferences.getAsColor(BASEMOD_A_COLOR));
+        colors.put("other", preferences.getAsColor(BASEMOD_OTHER_COLOR));
+        colors.put("NONE_A", preferences.getAsColor(BASEMOD_NONE_A_COLOR));
+        colors.put("NONE_C", preferences.getAsColor(BASEMOD_NONE_C_COLOR));
+        colors.put("NONE_U", preferences.getAsColor(BASEMOD_NONE_C_COLOR));
+        colors.put("NONE_T", preferences.getAsColor(BASEMOD_NONE_T_COLOR));
+        colors.put("NONE_G", preferences.getAsColor(BASEMOD_NONE_G_COLOR));
+        colors.put("NONE_N", preferences.getAsColor(BASEMOD_NONE_N_COLOR));
     }
 
     /**
@@ -64,8 +60,10 @@ public class BaseModificationColors {
 
     public static Color getModColor(String modification, int l, AlignmentTrack.ColorOption colorOption) {
 
+        if(colors.isEmpty()) updateColors();
+
         // Note the pallete will always return a color, either an initially seeded one if supplied or a random color.
-        Color baseColor = getBaseColor(modification, colorOption);
+        Color baseColor = getBaseColor(modification);
 
         if (l > 210) {
             return baseColor;
@@ -81,7 +79,7 @@ public class BaseModificationColors {
     }
 
 
-    private static Color getBaseColor(String modification, AlignmentTrack.ColorOption colorOption) {
+    private static Color getBaseColor(String modification) {
         if (colors.containsKey(modification)) {
             return colors.get(modification);
         } else {

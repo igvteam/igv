@@ -853,7 +853,7 @@ public class AlignmentRenderer {
 
         // Base modification
         if (colorOption.isBaseMod()) {
-            BaseModificationRenderer.drawModifications(alignment, bpStart, locScale, rowRect, context.getGraphics(), colorOption, renderOptions.getBasemodFilter());
+            BaseModificationRenderer.drawModifications(alignment, bpStart, locScale, rowRect, context.getGraphics(), colorOption, renderOptions.getBasemodFilter(), renderOptions.getBasemodThreshold());
         }
 
         // Kinetic data

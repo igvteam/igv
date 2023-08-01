@@ -1332,6 +1332,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         private BaseModficationFilter basemodFilter;
 
+        private Float basemodThreshold;
+
         BisulfiteContext bisulfiteContext = BisulfiteContext.CG;
         Map<String, PEStats> peStats;
 
@@ -1606,6 +1608,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return basemodFilter;
         }
 
+        public float getBasemodThreshold() {
+            return basemodThreshold == null ? getPreferences().getAsFloat(BASEMOD_THRESHOLD) : basemodThreshold.floatValue();
+        }
+
+        public void setBasemodThreshold(float basemodThreshold) {
+            this.basemodThreshold = basemodThreshold;
+        }
+
         public void setBasemodFilter(BaseModficationFilter basemodFilter) {
             this.basemodFilter = basemodFilter;
         }
@@ -1707,7 +1717,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 element.setAttribute("showInsertionMarkers", showInsertionMarkers.toString());
             }
             if (basemodFilter != null) {
-                element.setAttribute("basemodfilter", basemodFilter.toString());
+                element.setAttribute("basemodFilter", basemodFilter.toString());
+            }
+            if(basemodThreshold != null) {
+                element.setAttribute("basemodThredhold", String.valueOf(basemodThreshold));
             }
         }
 
@@ -1824,10 +1837,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (element.hasAttribute("showInsertionMarkers")) {
                 showInsertionMarkers = Boolean.parseBoolean(element.getAttribute("showInsertionMarkers"));
             }
-            if (element.hasAttribute("basemodfilter")) {
+            if (element.hasAttribute("basemodFilter")) {
                 basemodFilter = BaseModficationFilter.fromString(element.getAttribute("basemodfilter"));
             }
-
+            if (element.hasAttribute("basemodThreshold")) {
+                basemodFilter = BaseModficationFilter.fromString(element.getAttribute("basemodThreshold"));
+            }
         }
     }
 

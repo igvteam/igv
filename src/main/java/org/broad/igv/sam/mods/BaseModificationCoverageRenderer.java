@@ -20,18 +20,20 @@ public class BaseModificationCoverageRenderer {
                                          AlignmentCounts alignmentCounts,
                                          ColorOption colorOption,
                                          BaseModficationFilter filter,
+                                         float threshold,
                                          Set<String> simplexModifications) {
-
-        int modThreshold = 255 / 2;
 
         BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
 
         if (modificationCounts != null) {
 
+            float modThreshold = threshold;
+            float nomodThreshold = threshold < 0.5 ? 1 - threshold : threshold;
+
             Set<BaseModificationKey> allModificationKeys =  modificationCounts.getAllModificationKeys();
             List<BaseModificationKey> sortedKeys = new ArrayList<>(allModificationKeys);
             Collections.sort(sortedKeys);
-            
+
             // Color bar modification counts (# of modifications > threshold)
             int total = alignmentCounts.getTotalCount(pos);
 
@@ -49,7 +51,8 @@ public class BaseModificationCoverageRenderer {
 
                 if (detectable == 0) continue;  //No informative reads
 
-                int count = modificationCounts.getCount(pos, key, modThreshold);
+                float t = key.modification.startsWith("NONE_") ? nomodThreshold : threshold;
+                int count = modificationCounts.getCount(pos, key, t);
                 float modFraction = (((float) modifiable) / total) * (((float) count) / detectable);
                 int modHeight = Math.round(modFraction * barHeight);
 

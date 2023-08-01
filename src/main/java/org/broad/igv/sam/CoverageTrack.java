@@ -534,7 +534,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                         }
                     } else if (colorOption.isBaseMod()) {
                         BaseModficationFilter basemodFilter = alignmentTrack != null ? alignmentTrack.getRenderOptions().getBasemodFilter() : null;
-                        BaseModificationCoverageRenderer.drawModifications(context, pX, bottomY, dX, barHeight, pos, alignmentCounts, colorOption, basemodFilter, simplexModifications);
+                        float threshold = alignmentTrack.getRenderOptions().getBasemodThreshold();
+                        BaseModificationCoverageRenderer.drawModifications(context, pX, bottomY, dX, barHeight, pos, alignmentCounts, colorOption, basemodFilter, threshold, simplexModifications);
                     } else {
                         if (refBases != null) {
                             int refIdx = pos - intervalStart;
