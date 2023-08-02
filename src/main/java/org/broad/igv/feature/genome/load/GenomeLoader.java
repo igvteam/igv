@@ -71,7 +71,7 @@ abstract public class GenomeLoader {
             return loadChrAliases(br);
         } catch (IOException e) {
             log.error("Error loading chr alias table", e);
-            MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be avaliable<br>" +
+            MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be available<br>" +
                     e.toString());
             return null;
         } finally {

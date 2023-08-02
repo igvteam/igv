@@ -639,7 +639,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         // Base modifications
         JRadioButtonMenuItem bmMenuItem;
 
-
         Set<String> allModifications = dataManager.getAllBaseModificationKeys().stream().map(bmKey -> bmKey.getModification()).collect(Collectors.toSet());
         if (allModifications.size() > 0) {
             BaseModficationFilter filter = renderOptions.getBasemodFilter();

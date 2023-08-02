@@ -35,6 +35,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -50,6 +51,7 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.OverlayTracksMenuAction;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -135,6 +137,20 @@ public class CommandExecutor {
                 result = load(param1, args.size() > 2 ? args.subList(2, args.size()) : null);
             } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
                 result = genome(param1);
+            } else if (cmd.equalsIgnoreCase("currentGenomePath")) {
+                result = "";
+                if (GenomeManager.getInstance().getCurrentGenome() == null) {
+                    return result;
+                }
+                String id = GenomeManager.getInstance().getCurrentGenome().getId();
+                if (id != null)
+                {
+                    GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(id);
+                    if (item != null) {
+                        result = item.getPath();
+                    }
+                }
+                return result;
             } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
                 igv.newSession();
             } else if (cmd.equalsIgnoreCase("region")) {

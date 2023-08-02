@@ -23,6 +23,7 @@ public class BaseModificationCoverageRenderer {
                                          float threshold,
                                          Set<String> simplexModifications) {
 
+
         BaseModificationCounts modificationCounts = alignmentCounts.getModifiedBaseCounts();
 
         if (modificationCounts != null) {

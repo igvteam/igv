@@ -19,6 +19,7 @@ public class BaseModificationRenderer {
             BaseModficationFilter filter,
             float threshold) {
 
+
         List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
 
         if (baseModificationSets != null) {

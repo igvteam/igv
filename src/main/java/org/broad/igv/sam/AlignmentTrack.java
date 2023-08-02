@@ -1334,6 +1334,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         private Float basemodThreshold;
 
+
         BisulfiteContext bisulfiteContext = BisulfiteContext.CG;
         Map<String, PEStats> peStats;
 
@@ -1617,6 +1618,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         public void setBasemodFilter(BaseModficationFilter basemodFilter) {
+
             this.basemodFilter = basemodFilter;
         }
 
@@ -1721,6 +1723,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if(basemodThreshold != null) {
                 element.setAttribute("basemodThredhold", String.valueOf(basemodThreshold));
+
             }
         }
 
@@ -1843,6 +1846,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (element.hasAttribute("basemodThreshold")) {
                 basemodFilter = BaseModficationFilter.fromString(element.getAttribute("basemodThreshold"));
             }
+
         }
     }
 
