@@ -2,9 +2,11 @@ package org.broad.igv.sam.mods;
 
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
-
+import static org.broad.igv.prefs.Constants.*;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,103 +25,62 @@ public class BaseModificationColors {
 
     private static Logger log = LogManager.getLogger(BaseModificationColors.class);
 
-    static Color genericColor = new Color(132, 178, 158);
-    public static Color noModColor5MC = Color.blue;
-
-    public static Color color6ma = new Color(51, 0, 111);
     static HashMap<String, Color> colors = new HashMap<>();
 
     // 5MC overrides -- avoid colors close to blue for "C" modificatoins
     static HashMap<String, Color> colors5MC = new HashMap<>();
 
-    static {
-        colors.put("m", Color.red);
-        colors.put("h", new Color(11, 132, 165));
-        colors.put("o", new Color(111, 78, 129));
-        colors.put("f", new Color(246, 200, 95));
-        colors.put("c", new Color(157, 216, 102));
-        colors.put("g", new Color(255, 160, 86));
-        colors.put("e", new Color(141, 221, 208));
-        colors.put("b", new Color(202, 71, 47));
-        colors.put("a", new Color(51, 0, 111));
-        colors5MC.put("h", new Color(255, 0, 255));
+    static Color genericColor = new Color(132, 178, 158);
+
+    public static void updateColors () {
+        IGVPreferences preferences =  PreferencesManager.getPreferences();
+        colors.put("m", preferences.getAsColor(BASEMOD_M_COLOR));
+        colors.put("h", preferences.getAsColor(BASEMOD_H_COLOR));
+        colors.put("o", preferences.getAsColor(BASEMOD_O_COLOR));
+        colors.put("f", preferences.getAsColor(BASEMOD_F_COLOR));
+        colors.put("c", preferences.getAsColor(BASEMOD_C_COLOR));
+        colors.put("g", preferences.getAsColor(BASEMOD_G_COLOR));
+        colors.put("e", preferences.getAsColor(BASEMOD_E_COLOR));
+        colors.put("b", preferences.getAsColor(BASEMOD_B_COLOR));
+        colors.put("a", preferences.getAsColor(BASEMOD_A_COLOR));
+        colors.put("other", preferences.getAsColor(BASEMOD_OTHER_COLOR));
+        colors.put("NONE_A", preferences.getAsColor(BASEMOD_NONE_A_COLOR));
+        colors.put("NONE_C", preferences.getAsColor(BASEMOD_NONE_C_COLOR));
+        colors.put("NONE_U", preferences.getAsColor(BASEMOD_NONE_C_COLOR));
+        colors.put("NONE_T", preferences.getAsColor(BASEMOD_NONE_T_COLOR));
+        colors.put("NONE_G", preferences.getAsColor(BASEMOD_NONE_G_COLOR));
+        colors.put("NONE_N", preferences.getAsColor(BASEMOD_NONE_N_COLOR));
     }
 
     /**
      * Cache for modified colors
      */
     static Map<String, Color> modColorMap = new HashMap<>();
-    static Map<String, Color> modColorMap5MC = new HashMap<>();
 
 
-    public static Color getModColor(String modification, byte likelihood, AlignmentTrack.ColorOption colorOption) {
+    public static Color getModColor(String modification, int l, AlignmentTrack.ColorOption colorOption) {
+
+        if(colors.isEmpty()) updateColors();
 
         // Note the pallete will always return a color, either an initially seeded one if supplied or a random color.
-        Color baseColor = getBaseColor(modification, colorOption);
+        Color baseColor = getBaseColor(modification);
 
-        int l = Byte.toUnsignedInt(likelihood);
-        if (l > 255) {
+        if (l > 210) {
             return baseColor;
         }
 
         String key = modification + "--" + l;
-        if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC ||
-                colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_C) {
-
-            if (!modColorMap5MC.containsKey(key)) {
-                int alpha = Math.min(255, (int) (l * l / 64f - 4 * l + 256));    // quadratic
-                if (l >= 128) {
-                    modColorMap5MC.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha));
-                } else {
-                    modColorMap5MC.put(key, new Color(noModColor5MC.getRed(), noModColor5MC.getGreen(), noModColor5MC.getBlue(), alpha));
-                }
-            }
-
-            return modColorMap5MC.get(key);
-
-        } else {
-            if (l > 250) {
-                return baseColor;
-            }
-            double threshold = 256 * PreferencesManager.getPreferences().getAsFloat("SAM.BASEMOD_THRESHOLD");
-            if (l < threshold) {
-                l = 0;
-            }
-            if (!modColorMap.containsKey(key)) {
-                modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), l));
-            }
-            return modColorMap.get(key);
+        if (!modColorMap.containsKey(key)) {
+            int alpha = Math.max(20, Math.min(255, (int) (l * l / 64f - 4 * l + 256)));
+            modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha));
         }
-    }
-
-    public static Color getNoModColor(byte likelihood) {
-
-        // Note the pallete will always return a color, either an initially seeded one if supplied or a random color.
-        Color baseColor = noModColor5MC;
-
-        int l = Byte.toUnsignedInt(likelihood);
-        if (l > 255) {
-            return baseColor;
-        }
-
-        String key = "NOMOD--" + l;
-
-        if (!modColorMap5MC.containsKey(key)) {
-            int alpha = Math.min(255, (int) (l * l / 64f - 4 * l + 256));    // quadratic
-            modColorMap5MC.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha));
-        }
-
-        return modColorMap5MC.get(key);
+        return modColorMap.get(key);
 
     }
 
-    private static Color getBaseColor(String modification, AlignmentTrack.ColorOption colorOption) {
-        if ((colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_5MC ||
-                colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_C) && colors5MC.containsKey(modification)) {
-            return colors5MC.get(modification);
-        } else if (colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_6MA) {
-            return color6ma;
-        } else if (colors.containsKey(modification)) {
+
+    private static Color getBaseColor(String modification) {
+        if (colors.containsKey(modification)) {
             return colors.get(modification);
         } else {
             return genericColor;

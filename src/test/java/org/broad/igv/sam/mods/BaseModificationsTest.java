@@ -70,6 +70,7 @@ public class BaseModificationsTest {
 
         //                                          ....45..........6.......4...8.0.....
         //top-rev	16	*	0	0	*	*	0	0	ATATGGCATATCCCCCGCCGATCCGCTAGAGATCCT	*	Mm:Z:C+m,1,3,0;	Ml:B:C,128,153,179
+        //sequence actually read                    TATACCGTATAGGGGGCGGCTAGGCGATCTCTAGGT  <= read direction
         byte[] sequence = "ATATGGCATATCCCCCGCCGATCCGCTAGAGATCCT".getBytes();
         String mm = "C+m,1,3,0";
         byte[] ml = {(byte) 128, (byte) 153, (byte) 179};

@@ -40,6 +40,7 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.sam.mods.BaseModificationColors;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -326,6 +327,13 @@ public class IGVPreferences {
             for (String key : SAM_REFRESH_KEYS) {
                 if (updatedPreferenceMap.containsKey(key)) {
                     refreshSAM = true;
+                    break;
+                }
+            }
+            for (String key : BASEMOD_COLOR_KEYS) {
+                if (updatedPreferenceMap.containsKey(key)) {
+                    refreshSAM = true;
+                    BaseModificationColors.updateColors();
                     break;
                 }
             }

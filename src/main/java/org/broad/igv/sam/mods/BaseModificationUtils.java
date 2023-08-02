@@ -34,8 +34,9 @@ public class BaseModificationUtils {
         codeValues.put("A", "Unknown A");
         codeValues.put("G", "Unknown G");
         codeValues.put("N", "Unknown");
-
     }
+
+    public static Set<String> cModifications = new HashSet<>(Arrays.asList("m", "h", "f", "c", "C"));
 
 
     public static String valueString(String modification, byte likelihood) {

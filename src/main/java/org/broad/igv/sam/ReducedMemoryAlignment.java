@@ -468,8 +468,17 @@ public class ReducedMemoryAlignment implements Alignment {
                 return 0;
             } else {
                 return (int) Math.round(total[offset]);
-
             }
+        }
+
+        @Override
+        public int getTotalPositiveCount(int pos) {
+            throw new RuntimeException(" Method getTotalPositiveCount not implemented");
+        }
+
+        @Override
+        public int getTotalNegativeCount(int pos) {
+            throw new RuntimeException(" Method getTotalNegativeCount not implemented");
         }
 
         @Override

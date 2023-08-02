@@ -9,15 +9,16 @@ public class BaseModificationSet {
 
     char base;
     char strand;
-
     String modification;
     Map<Integer, Byte> likelihoods;
+    char canonicalBase;
 
     public BaseModificationSet(char base, char strand, String modification,  Map<Integer, Byte> likelihoods) {
         this.base = base;
         this.modification = modification;
         this.strand = strand;
         this.likelihoods = likelihoods;
+        this.canonicalBase = strand == '+' ? base : (char) SequenceUtil.complement((byte) base);
     }
 
     public char getBase() {
@@ -25,7 +26,7 @@ public class BaseModificationSet {
     }
 
     public char getCanonicalBase() {
-        return strand == '+' ? base : (char) SequenceUtil.complement((byte) base);
+        return canonicalBase;
     }
 
     public String getModification() {

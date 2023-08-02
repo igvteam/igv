@@ -3,6 +3,7 @@ package org.broad.igv.sam.mods;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.util.collections.ByteArrayList;
 
 import java.util.*;
 
@@ -17,21 +18,15 @@ public class BaseModificationCounts {
      */
     LinkedHashSet<BaseModificationKey> allModifications;
 
-    /**
-     * Map for counts for each modification (e.g. m, h, etc). Key is base+modification identifier, value is map of position -> count
-     */
-    Map<BaseModificationKey, Map<Integer, Integer>> counts;
 
-    /**
-     * Map for capturing modification likelihood "pileup", key is modification identifier,
-     * value is map of position -> sum of likelihoods for modifications at that position
-     */
-    Map<BaseModificationKey, Map<Integer, Integer>> likelihoodSums;
+    Map<BaseModificationKey, Map<Integer, ByteArrayList>> likelihoods;
+
+    transient float lastThreshold;
+
 
     public BaseModificationCounts() {
         allModifications = new LinkedHashSet<>();
-        counts = new HashMap<>();
-        likelihoodSums = new HashMap<>();
+        likelihoods = new HashMap<>();
     }
 
     /**
@@ -53,63 +48,69 @@ public class BaseModificationCounts {
                 // Loop through read sequence index ("i")
                 for (int i = block.getBases().startOffset; i < block.getBases().startOffset + block.getBases().length; i++) {
 
-                    for (BaseModificationSet bmset : baseModificationSets) {
+                    int blockIdx = i - block.getBases().startOffset;
+                    int position = block.getStart() + blockIdx;
 
-                        //String modification = bmset.getModification();
-                        BaseModificationKey key = BaseModificationKey.getKey(bmset.getBase(), bmset.getStrand(), bmset.getModification());
-                        Map<Integer, Byte> likelihoods = bmset.getLikelihoods();
+                    // Loop through base modification sets
+                    char canonicalBase = 0;
+                    int noModLH = 255;
+                    for (BaseModificationSet bmSet : baseModificationSets) {
+                        final Map<Integer, Byte> bmSetLikelihoods = bmSet.getLikelihoods();
+                        if (bmSetLikelihoods != null && bmSet.containsPosition(i)) {  // TODO or flag == '.' and readbase = bmSet.canonicalbase
+                            byte byteLikelihood = bmSetLikelihoods.get(i);
+                            BaseModificationKey modKey = BaseModificationKey.getKey(bmSet.getBase(), bmSet.getStrand(), bmSet.getModification());
+                            allModifications.add(modKey);
+                            pushLikelihood(position, byteLikelihood, modKey);
 
-                        if (bmset.containsPosition(i)) {
-
-                            int lh = Byte.toUnsignedInt(likelihoods.get(i));
-
-                            Map<Integer, Integer> modCounts = counts.get(key);
-                            if (modCounts == null) {
-                                modCounts = new HashMap<>();
-                                counts.put(key, modCounts);
-                            }
-
-                            Map<Integer, Integer> modLikelihoods = likelihoodSums.get(key);
-                            if (modLikelihoods == null) {
-                                modLikelihoods = new HashMap<>();
-                                likelihoodSums.put(key, modLikelihoods);
-                            }
-
-                            int blockIdx = i - block.getBases().startOffset;
-                            int position = block.getStart() + blockIdx;   // genomic position
-
-                            int c = modCounts.containsKey(position) ? modCounts.get(position) + 1 : 1;
-
-
-                            int l = modLikelihoods.containsKey(position) ? modLikelihoods.get(position) + lh : lh;
-                            modCounts.put(position, c);
-                            modLikelihoods.put(position, l);
-
+                            canonicalBase = bmSet.getCanonicalBase();   // Assumed same for all modifications at this position, modificatons on both bases at a position not supported
+                            noModLH -= Byte.toUnsignedInt(byteLikelihood);
                         }
-                        allModifications.add(key);
                     }
+
+                    if (canonicalBase != 0) {
+                        BaseModificationKey noModKey = BaseModificationKey.getKey(canonicalBase, '+', "NONE_" + canonicalBase);
+                        allModifications.add(noModKey);
+                        pushLikelihood(position, (byte) noModLH, noModKey);
+                    }
+
                 }
             }
         }
     }
 
-    public int getCount(int position, BaseModificationKey key) {
-        Map<Integer, Integer> modCounts = counts.get(key);
-        if (modCounts != null && modCounts.containsKey(position)) {
-            return modCounts.get(position);
-        } else {
+    private void pushLikelihood(int position, byte byteLikelihood, BaseModificationKey modKey) {
+        Map<Integer, ByteArrayList> t = likelihoods.get(modKey);
+        if (t == null) {
+            t = new HashMap<>();
+            likelihoods.put(modKey, t);
+        }
+        ByteArrayList byteArrayList = t.get(position);
+        if (byteArrayList == null) {
+            byteArrayList = new ByteArrayList(100);
+            t.put(position, byteArrayList);
+        }
+        byteArrayList.add(byteLikelihood);
+    }
+
+    public int getCount(int position, BaseModificationKey key, float threshold) {
+        lastThreshold = threshold;
+        float scaledThreshold = threshold *  255;
+        Map<Integer, ByteArrayList> t = likelihoods.get(key);
+        ByteArrayList byteArrayList = t.get(position);
+        if (byteArrayList == null) {
             return 0;
+        } else {
+            int count = 0;
+            for (int i = 0; i < byteArrayList.size(); i++) {
+                int lh = Byte.toUnsignedInt(byteArrayList.get(i));
+                if (lh > scaledThreshold) {
+                    count++;
+                }
+            }
+            return count;
         }
     }
 
-    public int getLikelhoodSum(int position, BaseModificationKey key) {
-        Map<Integer, Integer> modLikelihoods = likelihoodSums.get(key);
-        if (modLikelihoods != null && modLikelihoods.containsKey(position)) {
-            return modLikelihoods.get(position);
-        } else {
-            return getCount(position, key) * 255;
-        }
-    }
 
     public Set<BaseModificationKey> getAllModificationKeys() {
         return allModifications;
@@ -117,32 +118,27 @@ public class BaseModificationCounts {
 
     public String getValueString(int position, AlignmentTrack.ColorOption colorOption) {
         StringBuffer buffer = new StringBuffer();
-        for (Map.Entry<BaseModificationKey, Map<Integer, Integer>> entry : counts.entrySet()) {
+
+        //    /**
+        //     * Map for capturing modification likelihood "pileup", key is modification identifier,
+        //     * value is map of position -> sum of likelihoods for modifications at that position
+        //     */
+        //    Map<BaseModificationKey, Map<Integer, Integer>> likelihoodSums;
+
+
+        for (Map.Entry<BaseModificationKey, Map<Integer, ByteArrayList>> entry : likelihoods.entrySet()) {
             BaseModificationKey key = entry.getKey();
-            Map<Integer, Integer> modCounts = entry.getValue();
-            if (modCounts.containsKey(position)) {
-                final Integer count = modCounts.get(position);
-                int lh = (int) (((100.0f / 255) * getLikelhoodSum(position, entry.getKey())) / count);
-                buffer.append("Modification: " + key.modification + " (" + key.base + key.strand + ", " + count + "  @ " + lh + "%)<br>");
+            Map<Integer, ByteArrayList> t = entry.getValue();
+            if (t.containsKey(position)) {
+                if(key.modification.startsWith("NONE_")) continue;
+                int count = this.getCount(position, key, lastThreshold);
+                if(count > 0) {
+                    String modName = BaseModificationUtils.modificationName(key.modification);
+                    buffer.append("Modification " + modName + " (" + key.base + key.strand + "): " + count + " with likelihood > " + (lastThreshold * 100) + "%<br>");
+                }
             }
         }
+
         return buffer.toString();
     }
-
-    /**
-     * For debugging
-     */
-    public void dump() {
-        for (Map.Entry<BaseModificationKey, Map<Integer, Integer>> entry : counts.entrySet()) {
-
-            String modification = entry.getKey().toString();
-            Map<Integer, Integer> modCounts = entry.getValue();
-            System.out.println("Modification: " + modification);
-            for (Map.Entry<Integer, Integer> modKey : modCounts.entrySet()) {
-                System.out.println(modKey.getKey() + "  " + modKey.getValue());
-            }
-        }
-    }
-
-
 }

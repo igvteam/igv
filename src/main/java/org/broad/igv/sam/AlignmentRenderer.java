@@ -853,7 +853,7 @@ public class AlignmentRenderer {
 
         // Base modification
         if (colorOption.isBaseMod()) {
-            BaseModificationRenderer.drawModifications(alignment, bpStart, locScale, rowRect, context.getGraphics(), colorOption, renderOptions.getBasemodFilter());
+            BaseModificationRenderer.drawModifications(alignment, bpStart, locScale, rowRect, context.getGraphics(), colorOption, renderOptions.getBasemodFilter(), renderOptions.getBasemodThreshold());
         }
 
         // Kinetic data
@@ -1299,9 +1299,7 @@ public class AlignmentRenderer {
 
             case BISULFITE:
             case BASE_MODIFICATION:
-            case BASE_MODIFICATION_5MC:
-            case BASE_MODIFICATION_C:
-            case BASE_MODIFICATION_6MA:
+            case BASE_MODIFICATION_2COLOR:
             case SMRT_SUBREAD_IPD:
             case SMRT_SUBREAD_PW:
             case SMRT_CCS_FWD_IPD:

@@ -145,7 +145,6 @@ SAM.FILTER_URL	URL or path to read group filter file	string	null
 ##Coverage Track Options
 SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2
 SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
-SAM.BASEMOD_THRESHOLD	Base modification average probability threshold (0-1)	float	0
 
 ##Insert Size Options
 SAM.COMPUTE_ISIZES	Compute insert size thresholds	boolean	TRUE
@@ -199,8 +198,33 @@ SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	TRUE
 SAM.LINK_READS	Link alignments by tag	boolean	FALSE
 SAM.LINK_TAG	Linking tag	string	READNAME
 
+
+#Base Mods
+
+BASEMOD.THRESHOLD	Base modification likelihood threshold (0-1)	float	0.5
+
+## Modified base colors
+BASEMOD.M_COLOR	5mC	color	255,0,0
+BASEMOD.H_COLOR	5hmC	color	255,0,255
+BASEMOD.F_COLOR	5fC	color	246,200,95
+BASEMOD.C_COLOR	5caC	color	157,216,102
+BASEMOD.G_COLOR	5hmU	color	255,160,86
+BASEMOD.E_COLOR	5fU	color	141,221,208
+BASEMOD.B_COLOR	5caU	color	0,100,47
+BASEMOD.A_COLOR	6mA	color	51,0,111
+BASEMOD.O_COLOR	8oxoG	color	111,78,129
+BASEMOD.OTHER_COLOR	Other	color	132,178,158
+
+## Unomdified base colors (2-color option)
+BASEMOD.NONE_A_COLOR	A	color	0,0,255
+BASEMOD.NONE_C_COLOR	C	color	0,0,255
+BASEMOD.NONE_T_COLOR	T	color	0,0,255
+BASEMOD.NONE_G_COLOR	G	color	0,0,255
+BASEMOD.NONE_N_COLOR	G	color	0,0,255
+
 ##SMRT Kinetics
 SMRT_KINETICS.SHOW_OPTIONS	Show visibility options for SMRT kinetics data	boolean	FALSE
+
 
 #Proxy
 PROXY.DISABLE_CHECK	Disable check for system proxy	boolean	FALSE
