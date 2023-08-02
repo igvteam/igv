@@ -71,6 +71,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     private SpliceJunctionHelper.LoadOptions loadOptions;
 
     private Set<BaseModificationKey> allBaseModificationKeys = new HashSet<>();
+
     private Set<String> simplexBaseModfications = new HashSet<>();
 
     private Range currentlyLoading;
@@ -200,10 +201,8 @@ public class AlignmentDataManager implements IGVEventObserver {
     /**
      * Return all base modfications seen in loaded alignments
      */
-
     public Set<BaseModificationKey> getAllBaseModificationKeys() {
         return allBaseModificationKeys;
-
     }
 
     public boolean isPairedEnd() {
@@ -412,6 +411,10 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     private void updateBaseModfications(List<Alignment> alignments) {
 
+        for(Alignment a : alignments) {
+            List<BaseModificationSet> bmSets = a.getBaseModificationSets();
+            if(bmSets != null) {
+                for(BaseModificationSet bms : bmSets) {
                     allBaseModificationKeys.add(BaseModificationKey.getKey(bms.getBase(), bms.getStrand(), bms.getModification()));
                 }
             }
@@ -429,7 +432,6 @@ public class AlignmentDataManager implements IGVEventObserver {
             simplexBaseModfications.add(entries.getKey());
             simplexBaseModfications.add("NONE_" + entries.getValue().getCanonicalBase());
         }
-
     }
 
     public AlignmentTrack.ExperimentType inferType() {
