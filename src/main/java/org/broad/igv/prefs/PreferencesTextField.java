@@ -4,7 +4,7 @@ import javax.swing.*;
 
 public class PreferencesTextField<T extends JTextField>{
     T obj;
-    PreferencesTextField(T obj) {
+    public PreferencesTextField(T obj) {
         this.obj = obj;
     }
     public String getPreferenceText() {
