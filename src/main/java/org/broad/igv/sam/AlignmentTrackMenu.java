@@ -645,6 +645,22 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
             colorMenu.addSeparator();
             if (allModifications.size() > 1) {
+                bmMenuItem = getColorMenuItem("base modification (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION);
+                bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && filter == null);
+                colorMenu.add(bmMenuItem);
+                group.add(bmMenuItem);
+            }
+
+            for (String m : allModifications) {
+                String name = BaseModificationUtils.modificationName(m);
+                bmMenuItem = getColorMenuItem("base modification (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION, m);
+                bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && (filter != null && filter.pass(m)));
+                colorMenu.add(bmMenuItem);
+                group.add(bmMenuItem);
+            }
+
+            colorMenu.addSeparator();
+            if (allModifications.size() > 1) {
                 bmMenuItem = getColorMenuItem("base modification 2-color (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR);
                 bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR && filter == null);
                 colorMenu.add(bmMenuItem);
@@ -661,21 +677,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                 group.add(bmMenuItem);
             }
 
-            colorMenu.addSeparator();
-            if (allModifications.size() > 1) {
-                bmMenuItem = getColorMenuItem("base modification (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION);
-                bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && filter == null);
-                colorMenu.add(bmMenuItem);
-                group.add(bmMenuItem);
-            }
-
-            for (String m : allModifications) {
-                String name = BaseModificationUtils.modificationName(m);
-                bmMenuItem = getColorMenuItem("base modification (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION, m);
-                bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && (filter != null && filter.pass(m)));
-                colorMenu.add(bmMenuItem);
-                group.add(bmMenuItem);
-            }
 
         }
 

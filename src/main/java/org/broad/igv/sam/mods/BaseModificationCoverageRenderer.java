@@ -29,9 +29,9 @@ public class BaseModificationCoverageRenderer {
         if (modificationCounts != null) {
 
             float modThreshold = threshold;
-            float nomodThreshold = threshold < 0.5 ? 1 - threshold : threshold;
+            float nomodThreshold = Math.max(0.5f, 1 - threshold);
 
-            Set<BaseModificationKey> allModificationKeys =  modificationCounts.getAllModificationKeys();
+            Set<BaseModificationKey> allModificationKeys = modificationCounts.getAllModificationKeys();
             List<BaseModificationKey> sortedKeys = new ArrayList<>(allModificationKeys);
             Collections.sort(sortedKeys);
 
@@ -41,7 +41,8 @@ public class BaseModificationCoverageRenderer {
             for (BaseModificationKey key : sortedKeys) {
 
                 if (filter != null && !filter.pass(key.modification, key.getCanonicalBase())) continue;
-                if(key.modification.startsWith("NONE_") && colorOption != ColorOption.BASE_MODIFICATION_2COLOR) continue;
+                if (key.modification.startsWith("NONE_") && colorOption != ColorOption.BASE_MODIFICATION_2COLOR)
+                    continue;
 
                 byte base = (byte) key.getBase();
                 final byte compl = SequenceUtil.complement(base);
@@ -52,7 +53,7 @@ public class BaseModificationCoverageRenderer {
 
                 if (detectable == 0) continue;  //No informative reads
 
-                float t = key.modification.startsWith("NONE_") ? nomodThreshold : threshold;
+                float t = key.modification.startsWith("NONE_") ? nomodThreshold : modThreshold;
                 int count = modificationCounts.getCount(pos, key, t);
                 float modFraction = (((float) modifiable) / total) * (((float) count) / detectable);
                 int modHeight = Math.round(modFraction * barHeight);
@@ -69,7 +70,6 @@ public class BaseModificationCoverageRenderer {
     }
 
     static Map<String, Integer> modRankOrder;
-
 
 
 }

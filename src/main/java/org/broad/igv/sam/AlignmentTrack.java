@@ -1760,10 +1760,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     basemodFilter = new BaseModficationFilter("a");
                 } else if("BASE_MODIFICATION_5MC".equals(attributeValue)) {
                     colorOption = ColorOption.BASE_MODIFICATION_2COLOR;
-                    basemodFilter = new BaseModficationFilter(null, 'C');
+                   // basemodFilter = new BaseModficationFilter(null, 'C');
                 } else if("BASE_MODIFICATION_C".equals(attributeValue)) {
                     colorOption = ColorOption.BASE_MODIFICATION;
-                    basemodFilter = new BaseModficationFilter(null, 'C');
+                   // basemodFilter = new BaseModficationFilter(null, 'C');
                 }else {
                     colorOption = ColorOption.valueOf(attributeValue);
                 }

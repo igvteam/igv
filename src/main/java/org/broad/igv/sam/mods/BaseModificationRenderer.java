@@ -63,7 +63,7 @@ public class BaseModificationRenderer {
 
                     if (modificationFound) {
                         float modThreshold = threshold * 255;
-                        float nomodThreshold = (threshold < 0.5 ? 1 - threshold : threshold) * 255;
+                        float nomodThreshold = Math.max(0.5f, 1 - threshold) * 255;
                         Color c = null;
                         if (modification != null && maxLh > modThreshold &&
                                 (filter == null || filter.pass(modification, canonicalBase)))         /* || flag == . */ {
