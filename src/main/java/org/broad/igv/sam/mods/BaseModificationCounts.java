@@ -126,6 +126,8 @@ public class BaseModificationCounts {
         //    Map<BaseModificationKey, Map<Integer, Integer>> likelihoodSums;
 
 
+        buffer.append("<br>---------<br>");
+        buffer.append("Modifications with likelihood > " + (lastThreshold * 100) + "%");
         for (Map.Entry<BaseModificationKey, Map<Integer, ByteArrayList>> entry : likelihoods.entrySet()) {
             BaseModificationKey key = entry.getKey();
             Map<Integer, ByteArrayList> t = entry.getValue();
@@ -134,7 +136,7 @@ public class BaseModificationCounts {
                 int count = this.getCount(position, key, lastThreshold);
                 if(count > 0) {
                     String modName = BaseModificationUtils.modificationName(key.modification);
-                    buffer.append("Modification " + modName + " (" + key.base + key.strand + "): " + count + " with likelihood > " + (lastThreshold * 100) + "%<br>");
+                    buffer.append("<br>&nbsp;&nbsp;" + modName + " (" + key.base + key.strand + "): " + count );
                 }
             }
         }

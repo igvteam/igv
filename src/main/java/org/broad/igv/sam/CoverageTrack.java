@@ -375,7 +375,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                     buf.append(counts.getValueStringAt((int) position));
                     final AlignmentTrack.ColorOption colorOption = alignmentTrack.getRenderOptions().getColorOption();
                     if (colorOption.isBaseMod() && counts.getModifiedBaseCounts() != null) {
-                        buf.append("<hr>");
+                        buf.append("<br>");
                         buf.append(counts.getModifiedBaseCounts().getValueString((int) position, colorOption));
                     }
                 }
