@@ -339,6 +339,8 @@ public class CommandListener implements Runnable {
                 out.print(result);
                 out.print(CRLF);
             }
+        } else {
+            out.print(CRLF);
         }
         out.close();
     }
