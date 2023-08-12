@@ -55,7 +55,7 @@ public class BaseModificationCountsTest {
         String chr = "chr11";
         int start = 119094722;
         int end = 119094724;
-        boolean includeNoMods = false;
+        boolean includeNoMods = true;
 
         ResourceLocator locator = new ResourceLocator(bamfile);
         locator.setIndexPath(indexFile);
