@@ -34,6 +34,10 @@ public class BaseModificationUtils {
         codeValues.put("A", "Unknown A");
         codeValues.put("G", "Unknown G");
         codeValues.put("N", "Unknown");
+        codeValues.put("NONE_C", "Unmodified");
+        codeValues.put("NONE_T", "Unmodified");
+        codeValues.put("NONE_G", "Unmodified");
+        codeValues.put("NONE_A", "Unmodified");
     }
 
     public static Set<String> cModifications = new HashSet<>(Arrays.asList("m", "h", "f", "c", "C"));

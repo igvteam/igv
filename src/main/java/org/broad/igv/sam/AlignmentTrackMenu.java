@@ -10,6 +10,7 @@ import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.mods.BaseModficationFilter;
 import org.broad.igv.sam.mods.BaseModificationUtils;
@@ -562,17 +563,26 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     }
 
     private JRadioButtonMenuItem getColorMenuItem(String label, final AlignmentTrack.ColorOption option) {
-        return getColorMenuItem(label, option, null);
-
-    }
-
-    private JRadioButtonMenuItem getColorMenuItem(String label, final AlignmentTrack.ColorOption option, String extra) {
         JRadioButtonMenuItem mi = new JRadioButtonMenuItem(label);
         mi.setSelected(renderOptions.getColorOption() == option);
         mi.addActionListener(aEvt -> {
             alignmentTrack.setColorOption(option);
-            renderOptions.setBasemodFilter(extra == null ? null : new BaseModficationFilter(extra));
             alignmentTrack.repaint();
+        });
+        return mi;
+    }
+
+    private JRadioButtonMenuItem getBasemodColorMenuItem(String label, final AlignmentTrack.ColorOption option, boolean groupByStrand, String filter) {
+        JRadioButtonMenuItem mi = new JRadioButtonMenuItem(label);
+        mi.setSelected(renderOptions.getColorOption() == option);
+        mi.addActionListener(aEvt -> {
+            alignmentTrack.setColorOption(option);
+            renderOptions.setBasemodFilter(filter == null ? null : new BaseModficationFilter(filter));
+            if (groupByStrand) {
+                alignmentTrack.groupAlignments(AlignmentTrack.GroupOption.FIRST_OF_PAIR_STRAND, null, null);
+            } else {
+                alignmentTrack.repaint();
+            }
         });
 
         return mi;
@@ -642,10 +652,10 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         Set<String> allModifications = dataManager.getAllBaseModificationKeys().stream().map(bmKey -> bmKey.getModification()).collect(Collectors.toSet());
         if (allModifications.size() > 0) {
             BaseModficationFilter filter = renderOptions.getBasemodFilter();
-
+            boolean groupByStrand = alignmentTrack.getPreferences().getAsBoolean(BASEMOD_GROUP_BY_STRAND);
             colorMenu.addSeparator();
             if (allModifications.size() > 1) {
-                bmMenuItem = getColorMenuItem("base modification (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION);
+                bmMenuItem = getBasemodColorMenuItem("base modification (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION, groupByStrand, null);
                 bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && filter == null);
                 colorMenu.add(bmMenuItem);
                 group.add(bmMenuItem);
@@ -653,7 +663,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
             for (String m : allModifications) {
                 String name = BaseModificationUtils.modificationName(m);
-                bmMenuItem = getColorMenuItem("base modification (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION, m);
+                bmMenuItem = getBasemodColorMenuItem("base modification (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION, groupByStrand, m);
                 bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && (filter != null && filter.pass(m)));
                 colorMenu.add(bmMenuItem);
                 group.add(bmMenuItem);
@@ -661,7 +671,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
             colorMenu.addSeparator();
             if (allModifications.size() > 1) {
-                bmMenuItem = getColorMenuItem("base modification 2-color (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR);
+                bmMenuItem = getBasemodColorMenuItem("base modification 2-color (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR, groupByStrand, null);
                 bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR && filter == null);
                 colorMenu.add(bmMenuItem);
                 group.add(bmMenuItem);
@@ -669,7 +679,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
             for (String m : allModifications) {
                 String name = BaseModificationUtils.modificationName(m);
-                bmMenuItem = getColorMenuItem("base modification 2-color (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR, m);
+                bmMenuItem = getBasemodColorMenuItem("base modification 2-color (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR, groupByStrand, m);
                 bmMenuItem.setSelected(renderOptions.getColorOption() ==
                         AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR &&
                         (filter != null && filter.pass(m)));

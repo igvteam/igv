@@ -201,7 +201,8 @@ SAM.LINK_TAG	Linking tag	string	READNAME
 
 #Base Mods
 
-BASEMOD.THRESHOLD	Base modification likelihood threshold (0-1)	float	0.5
+BASEMOD.THRESHOLD	Base modification likelihood threshold (0-1)	float	0
+BASEMOD.GROUP_BY_STRAND	Group alignments by strand	boolean	TRUE
 
 ## Modified base colors
 BASEMOD.M_COLOR	5mC	color	255,0,0

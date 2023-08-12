@@ -5,8 +5,12 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.AlignmentRenderer;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.ui.color.ColorUtilities;
+
 import static org.broad.igv.prefs.Constants.*;
+
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,13 +31,11 @@ public class BaseModificationColors {
 
     static HashMap<String, Color> colors = new HashMap<>();
 
-    // 5MC overrides -- avoid colors close to blue for "C" modificatoins
-    static HashMap<String, Color> colors5MC = new HashMap<>();
-
+    static Color neutralColor =  new Color(195, 195, 195);
     static Color genericColor = new Color(132, 178, 158);
 
-    public static void updateColors () {
-        IGVPreferences preferences =  PreferencesManager.getPreferences();
+    public static void updateColors() {
+        IGVPreferences preferences = PreferencesManager.getPreferences();
         colors.put("m", preferences.getAsColor(BASEMOD_M_COLOR));
         colors.put("h", preferences.getAsColor(BASEMOD_H_COLOR));
         colors.put("o", preferences.getAsColor(BASEMOD_O_COLOR));
@@ -50,6 +52,7 @@ public class BaseModificationColors {
         colors.put("NONE_T", preferences.getAsColor(BASEMOD_NONE_T_COLOR));
         colors.put("NONE_G", preferences.getAsColor(BASEMOD_NONE_G_COLOR));
         colors.put("NONE_N", preferences.getAsColor(BASEMOD_NONE_N_COLOR));
+        modColorMap.clear();
     }
 
     /**
@@ -60,18 +63,17 @@ public class BaseModificationColors {
 
     public static Color getModColor(String modification, int l, AlignmentTrack.ColorOption colorOption) {
 
-        if(colors.isEmpty()) updateColors();
+        if (colors.isEmpty()) updateColors();
 
         // Note the pallete will always return a color, either an initially seeded one if supplied or a random color.
         Color baseColor = getBaseColor(modification);
 
-        if (l > 210) {
-            return baseColor;
-        }
-
-        String key = modification + "--" + l;
+        String key = modification + l + colorOption;
         if (!modColorMap.containsKey(key)) {
-            int alpha = Math.max(20, Math.min(255, (int) (l * l / 64f - 4 * l + 256)));
+            int alpha = colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR ?
+                    Math.max(20, Math.min(255, 20 + (int) (l * l / 50f - 4 * l + 200))) :
+                    Math.max(20, (int) Math.min(255, 6.127e-3*l*l));
+
             modColorMap.put(key, new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha));
         }
         return modColorMap.get(key);

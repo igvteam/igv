@@ -40,8 +40,9 @@ public class BaseModificationCountsTest {
 
         BaseModificationKey key =  BaseModificationKey.getKey('C', '+', "m");
 
+        boolean includeNoMods = false;
         for(int i=0; i<expectedPositions.length; i++) {
-            int c = counts.getCount(expectedPositions[i] - 1, key, 0);
+            int c = counts.getCount(expectedPositions[i] - 1, key, 0, includeNoMods);
             assertEquals("Unexpected count at position " + expectedPositions[i], expectedCounts[i], c);
         }
     }
@@ -54,6 +55,7 @@ public class BaseModificationCountsTest {
         String chr = "chr11";
         int start = 119094722;
         int end = 119094724;
+        boolean includeNoMods = false;
 
         ResourceLocator locator = new ResourceLocator(bamfile);
         locator.setIndexPath(indexFile);
@@ -70,11 +72,11 @@ public class BaseModificationCountsTest {
         assertTrue("No data retrieved:  " + readCount, readCount > 0);
 
         BaseModificationKey cmKey = BaseModificationKey.getKey('C', '+', "m");
-        int aboveThreshold = counts.getCount(119094723, cmKey, 0.5f);
+        int aboveThreshold = counts.getCount(119094723, cmKey, 0.5f, includeNoMods);
         assertEquals("Counts above threshold", 3, aboveThreshold);
 
         BaseModificationKey noModKey = BaseModificationKey.getKey('C', '+', "NONE_C");
-        int belowThreshold = counts.getCount( 119094723, noModKey, 0.5f);
+        int belowThreshold = counts.getCount( 119094723, noModKey, 0.5f, includeNoMods);
         assertEquals("Counts below threshold", 12, belowThreshold);
     }
 }

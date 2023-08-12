@@ -20,3 +20,5 @@ out/
 *.csi.gz
 *.sai
 /test/batch/snapshots/
+/src/main/java/org/broad/igv/sam/mods/BMScale.java
+/src/main/java/org/broad/igv/sam/mods/BMScale.form

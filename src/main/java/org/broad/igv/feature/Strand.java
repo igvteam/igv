@@ -25,9 +25,9 @@
 
 
 /*
-* To change this template, choose Tools | Templates
-* and open the template in the editor.
-*/
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 
 package org.broad.igv.feature;
 
@@ -40,16 +40,21 @@ public enum Strand {
 
     private final String shortString;
 
-    private Strand(String shortString){
+    private Strand(String shortString) {
         this.shortString = shortString;
     }
+
     public static Strand fromString(String strandString) {
         return strandString.equals("+") || strandString.equalsIgnoreCase("POSITIVE")
                 ? POSITIVE : (strandString.equals("-") || strandString.equalsIgnoreCase("NEGATIVE")
                 ? NEGATIVE : NONE);
     }
 
-    public String toShortString(){
+    public String toShortString() {
         return shortString;
+    }
+
+    public String toString() {
+        return this == POSITIVE ? "+" : this == NEGATIVE ? "-" : "";
     }
 }

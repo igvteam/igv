@@ -28,9 +28,6 @@ public class BaseModificationCoverageRenderer {
 
         if (modificationCounts != null) {
 
-            float modThreshold = threshold;
-            float nomodThreshold = Math.max(0.5f, 1 - threshold);
-
             Set<BaseModificationKey> allModificationKeys = modificationCounts.getAllModificationKeys();
             List<BaseModificationKey> sortedKeys = new ArrayList<>(allModificationKeys);
             Collections.sort(sortedKeys);
@@ -53,13 +50,17 @@ public class BaseModificationCoverageRenderer {
 
                 if (detectable == 0) continue;  //No informative reads
 
-                float t = key.modification.startsWith("NONE_") ? nomodThreshold : modThreshold;
-                int count = modificationCounts.getCount(pos, key, t);
+                int count = modificationCounts.getCount(pos, key, threshold, colorOption == ColorOption.BASE_MODIFICATION_2COLOR);
+                if (count == 0) continue;
+
                 float modFraction = (((float) modifiable) / total) * (((float) count) / detectable);
                 int modHeight = Math.round(modFraction * barHeight);
 
+                int likelihoodSum = modificationCounts.getLikelihoodSum(pos, key, threshold, colorOption == ColorOption.BASE_MODIFICATION_2COLOR);
+                int averageLikelihood = (int) ((double) likelihoodSum) / count;
+
                 int baseY = pBottom - modHeight;
-                Color modColor = BaseModificationColors.getModColor(key.modification, 255, colorOption);
+                Color modColor = BaseModificationColors.getModColor(key.modification, averageLikelihood, colorOption);
                 Graphics2D graphics = context.getGraphics();
                 graphics.setColor(modColor);
                 graphics.fillRect(pX, baseY, dX, modHeight);

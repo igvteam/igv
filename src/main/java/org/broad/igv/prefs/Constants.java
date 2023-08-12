@@ -200,6 +200,7 @@ final public class Constants {
     public static final String BASEMOD_NONE_T_COLOR = "BASEMOD.NONE_T_COLOR";
     public static final String BASEMOD_NONE_G_COLOR = "BASEMOD.NONE_G_COLOR";
     public static final String BASEMOD_NONE_N_COLOR = "BASEMOD.NONE_N_COLOR";
+    public static final String BASEMOD_GROUP_BY_STRAND = "BASEMOD.GROUP_BY_STRAND";
     public static final String SMRT_KINETICS_SHOW_OPTIONS = "SMRT_KINETICS.SHOW_OPTIONS";
 
     // Sequence track settings

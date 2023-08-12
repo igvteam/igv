@@ -46,30 +46,26 @@ public class BaseModificationRenderer {
                     int noModLh = 255;
                     String modification = null;
                     char canonicalBase = 0;
-                    boolean modificationFound = false;
                     for (BaseModificationSet bmSet : baseModificationSets) {
                         if (bmSet.containsPosition(i)) {
                             int lh = Byte.toUnsignedInt(bmSet.getLikelihoods().get(i));
-                            // TODO ELSE if flag == '.' lh = 0
                             noModLh -= lh;
-                            if (modification == null || lh > maxLh) {
+                            if ((filter == null || filter.pass(bmSet.getModification(), canonicalBase)) && (modification == null || lh > maxLh)) {
                                 modification = bmSet.getModification();
                                 canonicalBase = bmSet.getCanonicalBase();
                                 maxLh = lh;
-                                modificationFound = modificationFound || filter == null || filter.pass(modification, canonicalBase);
                             }
                         }
                     }
 
-                    if (modificationFound) {
-                        float modThreshold = threshold * 255;
-                        float nomodThreshold = Math.max(0.5f, 1 - threshold) * 255;
+                    if (modification != null) {
+
                         Color c = null;
-                        if (modification != null && maxLh > modThreshold &&
-                                (filter == null || filter.pass(modification, canonicalBase)))         /* || flag == . */ {
-                            c = BaseModificationColors.getModColor(modification, maxLh, colorOption);
-                        } else if (noModLh > nomodThreshold && colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR) {
+                        final float scaledThreshold = threshold * 255;
+                        if (noModLh > maxLh && colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR && noModLh >= scaledThreshold) {
                             c = BaseModificationColors.getModColor("NONE_" + canonicalBase, noModLh, colorOption);
+                        } else if (maxLh >= scaledThreshold) {
+                            c = BaseModificationColors.getModColor(modification, maxLh, colorOption);
                         }
                         if (c != null) {
                             g.setColor(c);
@@ -81,6 +77,7 @@ public class BaseModificationRenderer {
                             }
                             g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
                         }
+
                     }
                 }
             }
