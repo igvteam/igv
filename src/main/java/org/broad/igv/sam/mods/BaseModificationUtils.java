@@ -2,6 +2,8 @@ package org.broad.igv.sam.mods;
 
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.AlignmentTrack;
@@ -40,15 +42,6 @@ public class BaseModificationUtils {
         codeValues.put("NONE_A", "Unmodified");
     }
 
-    public static Set<String> cModifications = new HashSet<>(Arrays.asList("m", "h", "f", "c", "C"));
-
-
-    public static String valueString(String modification, byte likelihood) {
-        int l = (int) (100.0 * Byte.toUnsignedInt(likelihood) / 255);
-        return "Base modification: " + modificationName(modification) + " (" + l + "%)";
-    }
-
-
     public static String modificationName(String modification) {
         return ((codeValues.containsKey(modification)) ? codeValues.get(modification) : modification);
     }
@@ -67,7 +60,6 @@ public class BaseModificationUtils {
      */
     public static List<BaseModificationSet> getBaseModificationSets(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand) {
 
-        byte[] origSequence = sequence;
         if (isNegativeStrand) {
             sequence = AlignmentUtils.reverseComplementCopy(sequence);
         }
@@ -83,7 +75,15 @@ public class BaseModificationUtils {
             String[] tokens = mmi.split(","); //Globals.commaPattern.split(mm);
             char base = tokens[0].charAt(0);
             char strand = tokens[0].charAt(1);
-            boolean skippedBasesCalled = tokens[0].endsWith(".");    // False by default.
+            boolean skippedBasesCalled;
+            if(tokens[0].endsWith(".")) {
+                skippedBasesCalled = true;
+            } else if(tokens[0].endsWith("?")) {
+                skippedBasesCalled = false;
+            } else {
+                skippedBasesCalled = PreferencesManager.getPreferences().getAsBoolean(Constants.BASEMOD_SKIPPED_BASES);
+            }
+
 
             if (tokens.length == 1) {
                 // Legal but not handled yet, indicates modification is not present.  Perhaps not relevant for visualization

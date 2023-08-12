@@ -56,10 +56,6 @@ public class BaseModificationSet {
                 ((codeValues.containsKey(modification)) ? codeValues.get(modification) : "Uknown") +  " (" + l + "%)";
     }
 
-    public boolean is5mC() {
-        return modification.equals("m") &&  ((base == 'C' && strand == '+') || (base == 'G' && strand == '-'));
-    }
-
     static Map<String, String> codeValues;
 
     static {

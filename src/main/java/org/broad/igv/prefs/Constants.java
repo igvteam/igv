@@ -201,6 +201,7 @@ final public class Constants {
     public static final String BASEMOD_NONE_G_COLOR = "BASEMOD.NONE_G_COLOR";
     public static final String BASEMOD_NONE_N_COLOR = "BASEMOD.NONE_N_COLOR";
     public static final String BASEMOD_GROUP_BY_STRAND = "BASEMOD.GROUP_BY_STRAND";
+    public static final String BASEMOD_SKIPPED_BASES = "BASEMOD.SKIPPED_BASES";
     public static final String SMRT_KINETICS_SHOW_OPTIONS = "SMRT_KINETICS.SHOW_OPTIONS";
 
     // Sequence track settings
@@ -313,7 +314,8 @@ final public class Constants {
             SAM_FILTER_SECONDARY_ALIGNMENTS,
             SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
             SAM_JUNCTION_MIN_FLANKING_WIDTH,
-            SAM_JUNCTION_MIN_COVERAGE
+            SAM_JUNCTION_MIN_COVERAGE,
+            BASEMOD_SKIPPED_BASES
     );
 
     /**
