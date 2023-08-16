@@ -22,7 +22,7 @@ jobs:
           repository: Ultimagen/igv-jdk
           ref: main
           path: igv-jdk
-          token: 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
+          token: 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
           lfs: true
       - name: Build igv-jdk
         run: cd igv-jdk; chmod +x ./build.sh; ./build.sh
