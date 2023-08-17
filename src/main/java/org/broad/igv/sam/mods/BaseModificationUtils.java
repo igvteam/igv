@@ -127,7 +127,7 @@ public class BaseModificationUtils {
 
                     if (base == 'N' || sequence[p] == base) {
                         int position = isNegativeStrand ? sequence.length - 1 - p : p;
-                        if (matchCount == skip && idx < tokens.length) {
+                        if (matchCount == skip) { // && idx < tokens.length) {
                             for (String modification : modifications) {
                                 byte likelihood = ml == null ? (byte) 255 : ml[mlIdx++];
                                 likelihoodMap.get(modification).put(position, likelihood);
@@ -136,16 +136,17 @@ public class BaseModificationUtils {
                                 skip = Integer.parseInt(tokens[idx++]);
                                 matchCount = 0;
                             } else {
-                                if (!skippedBasesCalled) {
-                                    // If skipped bases are not called unmodified we are done.  If they are we need
-                                    // to scan the entire sequence
+                                if (skippedBasesCalled) {
+                                    // MM tag is exhausted, but continue scanning for skipped bases
+                                    skip = -1;
+                                } else {
+                                    // If skipped bases are not called unmodified we are done.
                                     break;
                                 }
                             }
                         } else {
                             if (skippedBasesCalled) {
-                                // Skipped bases are assumed be called "modification present with 0% probability",
-                                // i.e modification has been called to be not present (as opposed to unknown)
+                                // Skipped bases =>  "modification present with 0% probability"
                                 for (String modification : modifications) {
                                     byte likelihood = 0;
                                     likelihoodMap.get(modification).put(position, likelihood);
