@@ -151,8 +151,8 @@ public class BaseModificationUtils {
                                     likelihoodMap.get(modification).put(position, likelihood);
                                 }
                             }
+                            matchCount++;
                         }
-                        matchCount++;
                     }
                     p++;
                 }

@@ -35,9 +35,8 @@ public class BaseModificationCountsTest {
         }
         assertTrue("No data retrieved:  " + readCount, readCount > 0);
 
-        // Positions and counts manually computed from alignment & MM tag
-        int[] expectedPositions = {13845691, 13845746, 13845752, 13845759};
-        int[] expectedCounts =    {1,        1,        1,        1     };
+        int[] expectedPositions = {13846181, 13846182, 13846227, 13846228, 13846232, 13846233, 13846234};
+        int[] expectedCounts =    {1,        1,        1,        2,        1,        1,        1       };
 
         BaseModificationKey key =  BaseModificationKey.getKey('C', '+', "m");
 
