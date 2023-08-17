@@ -1841,7 +1841,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 showInsertionMarkers = Boolean.parseBoolean(element.getAttribute("showInsertionMarkers"));
             }
             if (element.hasAttribute("basemodFilter")) {
-                basemodFilter = BaseModficationFilter.fromString(element.getAttribute("basemodfilter"));
+                basemodFilter = BaseModficationFilter.fromString(element.getAttribute("basemodFilter"));
             }
             if (element.hasAttribute("basemodThreshold")) {
                 basemodFilter = BaseModficationFilter.fromString(element.getAttribute("basemodThreshold"));

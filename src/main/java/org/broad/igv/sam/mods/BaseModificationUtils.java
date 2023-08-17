@@ -76,9 +76,9 @@ public class BaseModificationUtils {
             char base = tokens[0].charAt(0);
             char strand = tokens[0].charAt(1);
             boolean skippedBasesCalled;
-            if(tokens[0].endsWith(".")) {
+            if (tokens[0].endsWith(".")) {
                 skippedBasesCalled = true;
-            } else if(tokens[0].endsWith("?")) {
+            } else if (tokens[0].endsWith("?")) {
                 skippedBasesCalled = false;
             } else {
                 skippedBasesCalled = PreferencesManager.getPreferences().getAsBoolean(Constants.BASEMOD_SKIPPED_BASES);
@@ -117,8 +117,6 @@ public class BaseModificationUtils {
                     likelihoodMap.put(m, new HashMap<>());
                 }
 
-
-                int nPositions = tokens.length - 1;
                 int idx = 1;  // position array index,  positions start at index 1
                 int skip = Integer.parseInt(tokens[idx++]);
 
@@ -129,7 +127,7 @@ public class BaseModificationUtils {
 
                     if (base == 'N' || sequence[p] == base) {
                         int position = isNegativeStrand ? sequence.length - 1 - p : p;
-                        if (matchCount == skip) {
+                        if (matchCount == skip && idx < tokens.length) {
                             for (String modification : modifications) {
                                 byte likelihood = ml == null ? (byte) 255 : ml[mlIdx++];
                                 likelihoodMap.get(modification).put(position, likelihood);
@@ -138,7 +136,11 @@ public class BaseModificationUtils {
                                 skip = Integer.parseInt(tokens[idx++]);
                                 matchCount = 0;
                             } else {
-                                break;
+                                if (!skippedBasesCalled) {
+                                    // If skipped bases are not called unmodified we are done.  If they are we need
+                                    // to scan the entire sequence
+                                    break;
+                                }
                             }
                         } else {
                             if (skippedBasesCalled) {
@@ -149,8 +151,8 @@ public class BaseModificationUtils {
                                     likelihoodMap.get(modification).put(position, likelihood);
                                 }
                             }
-                            matchCount++;
                         }
+                        matchCount++;
                     }
                     p++;
                 }

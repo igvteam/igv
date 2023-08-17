@@ -31,8 +31,6 @@ public class BaseModificationColors {
 
     static HashMap<String, Color> colors = new HashMap<>();
 
-    static Color neutralColor =  new Color(195, 195, 195);
-    static Color genericColor = new Color(132, 178, 158);
 
     public static void updateColors() {
         IGVPreferences preferences = PreferencesManager.getPreferences();
@@ -85,7 +83,7 @@ public class BaseModificationColors {
         if (colors.containsKey(modification)) {
             return colors.get(modification);
         } else {
-            return genericColor;
+            return colors.get("other");
         }
     }
 

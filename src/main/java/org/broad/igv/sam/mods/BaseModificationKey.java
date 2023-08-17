@@ -26,9 +26,6 @@ public class BaseModificationKey implements Comparable {
         }
     }
 
-    public static BaseModificationKey getNomodKey(char base) {
-        return getKey(base, '+', "NONE");
-    }
 
     private BaseModificationKey(char base, char strand, String modification) {
         this.base = base;

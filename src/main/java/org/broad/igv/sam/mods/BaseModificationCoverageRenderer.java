@@ -37,7 +37,11 @@ public class BaseModificationCoverageRenderer {
 
             for (BaseModificationKey key : sortedKeys) {
 
-                if (filter != null && !filter.pass(key.modification, key.getCanonicalBase())) continue;
+                try {
+                    if (filter != null && !filter.pass(key.modification, key.getCanonicalBase())) continue;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 if (key.modification.startsWith("NONE_") && colorOption != ColorOption.BASE_MODIFICATION_2COLOR)
                     continue;
 

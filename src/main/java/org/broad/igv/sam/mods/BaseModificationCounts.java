@@ -25,7 +25,7 @@ public class BaseModificationCounts {
     Map<BaseModificationKey, Map<Integer, ByteArrayList>> maxLikelihoods;
 
     /**
-     * Likelihood of no modification (1 - sum(likelihoods)) for each position and base moodification key*
+     * Maximum likelihood including no-modification (1 - sum(likelihoods)) for each position and base moodification key*
      */
     Map<BaseModificationKey, Map<Integer, ByteArrayList>> nomodLikelihoods;
 
