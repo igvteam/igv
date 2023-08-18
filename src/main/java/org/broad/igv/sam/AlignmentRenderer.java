@@ -639,9 +639,11 @@ public class AlignmentRenderer {
                     gapGraphics.setColor(unknownGapColor);
                 } else if (gap.getType() == SAMAlignment.SKIPPED_REGION) {
                     gapGraphics.setColor(skippedColor);
-                } else if (h > 5) {
-                    gapGraphics = context.getGraphics2D("THICK_STROKE");
+                } else {
                     gapGraphics.setColor(deletionColor);
+                    if (h > 5) {
+                        gapGraphics = context.getGraphics2D("THICK_STROKE");
+                    }
                 }
 
                 gapGraphics.drawLine(gapPxStart, y + h / 2, gapPxEnd, y + h / 2);
