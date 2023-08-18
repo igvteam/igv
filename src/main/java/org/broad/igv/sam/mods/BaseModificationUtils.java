@@ -36,10 +36,10 @@ public class BaseModificationUtils {
         codeValues.put("A", "Unknown A");
         codeValues.put("G", "Unknown G");
         codeValues.put("N", "Unknown");
-        codeValues.put("NONE_C", "Unmodified");
-        codeValues.put("NONE_T", "Unmodified");
-        codeValues.put("NONE_G", "Unmodified");
-        codeValues.put("NONE_A", "Unmodified");
+        codeValues.put("NONE_C", "Unmodified C");
+        codeValues.put("NONE_T", "Unmodified T");
+        codeValues.put("NONE_G", "Unmodified G");
+        codeValues.put("NONE_A", "Unmodified A");
     }
 
     public static String modificationName(String modification) {

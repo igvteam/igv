@@ -53,6 +53,8 @@ public class BaseModificationCounts {
 
             for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
 
+                if(block.isSoftClip()) continue;
+
                 // Loop through read sequence for this block
                 for (int blockIdx = 0; blockIdx < block.getBases().length; blockIdx++) {
 
@@ -162,7 +164,9 @@ public class BaseModificationCounts {
     }
 
     public String getValueString(int position, AlignmentTrack.ColorOption colorOption) {
+
         StringBuffer buffer = new StringBuffer();
+        StringBuffer nomodBuffer = new StringBuffer();
 
         //    /**
         //     * Map for capturing modification likelihood "pileup", key is modification identifier,
@@ -174,21 +178,26 @@ public class BaseModificationCounts {
         buffer.append("<br>---------<br>");
         buffer.append("Modifications with likelihood > " + (lastThreshold * 100) + "%");
 
-        for (BaseModificationKey key : maxLikelihoods.keySet()) {
-            Map<Integer, ByteArrayList> t = maxLikelihoods.get(key);
-            if (key.modification.startsWith("NONE_")) {
-                //    continue;
-            }
+        final boolean includeNomods = colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR;
+
+        Map<BaseModificationKey, Map<Integer, ByteArrayList>> l = includeNomods ? nomodLikelihoods : maxLikelihoods;
+        for (BaseModificationKey key : l.keySet()) {
+            Map<Integer, ByteArrayList> t = l.get(key);
             if (t.containsKey(position)) {
-                int count = this.getCount(position, key, lastThreshold, colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR);
+                int count = this.getCount(position, key, lastThreshold, includeNomods);
                 if (count > 0) {
-                    int likelihoodSum = getLikelihoodSum(position, key, lastThreshold, colorOption == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR);
-                    int averageLikelihood = (int) ((((double) likelihoodSum) / count) * .3921568);
+                    int likelihoodSum = getLikelihoodSum(position, key, lastThreshold, includeNomods);
+                    int averageLikelihood = (int) ((((double) likelihoodSum) / count) * .3921568);        //.39 => 100/255
                     String modName = BaseModificationUtils.modificationName(key.modification);
-                    buffer.append("<br>&nbsp;&nbsp;" + modName + " (" + key.base + key.strand + "): " + count + "  @ average likelihood " + averageLikelihood + "%");
+                    if(key.modification.startsWith("NONE_")) {
+                        nomodBuffer.append("<br>&nbsp;&nbsp;" + modName + ": " + count + "  @ average likelihood " + averageLikelihood + "%");
+                    } else {
+                        buffer.append("<br>&nbsp;&nbsp;" + modName + " (" + key.base + key.strand + "): " + count + "  @ average likelihood " + averageLikelihood + "%");
+                    }
                 }
             }
         }
+        buffer.append(nomodBuffer.toString());
         return buffer.toString();
     }
 }
