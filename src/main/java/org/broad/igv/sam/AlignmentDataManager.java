@@ -47,6 +47,7 @@ import org.broad.igv.util.ResourceLocator;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -419,18 +420,16 @@ public class AlignmentDataManager implements IGVEventObserver {
                 }
             }
         }
+
         // Search for simplex modifications (single strand read, e.g. C+m with no G-m)
-        Map<String, BaseModificationKey> tmp = new HashMap<>();
+        Set<String> minusStranMods = allBaseModificationKeys.stream()
+                .filter(key -> key.getStrand() == '-')
+                .map(key -> key.getModification())
+                .collect(Collectors.toSet());
         for(BaseModificationKey key : allBaseModificationKeys) {
-            if(tmp.containsKey(key.getModification())) {
-                tmp.remove(key);
-            } else {
-                tmp.put(key.getModification(), key);
-            }
-        }
-        for(Map.Entry<String, BaseModificationKey> entries : tmp.entrySet()) {
-            simplexBaseModfications.add(entries.getKey());
-            simplexBaseModfications.add("NONE_" + entries.getValue().getCanonicalBase());
+            if(key.getStrand() == '+' && !minusStranMods.contains(key.getModification()))
+            simplexBaseModfications.add(key.getModification());
+            simplexBaseModfications.add("NONE_" + key.getCanonicalBase());  // Mix of simplex & duplex keys for same base not supported.
         }
     }
 
