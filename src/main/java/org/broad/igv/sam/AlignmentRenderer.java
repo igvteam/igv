@@ -692,8 +692,15 @@ public class AlignmentRenderer {
             int blockChromEnd = block.getStart() + block.getLength();
             int blockPxStart = (int) Math.round((blockChromStart - bpStart) / locScale);
             int blockPxEnd = (int) Math.round((blockChromEnd - bpStart) / locScale);
+
+            // Check if block is in visible rectangle
+            if(blockPxEnd < 0) {
+                continue;
+            } else if(blockPxStart > rowRect.x + rowRect.width) {
+                break;
+            }
+
             boolean rightmost = blockIx + 1 == blocks.length;
-            boolean tallEnoughForArrow = h > 6;
 
             if (!rightmost) { // consider waiting to draw the block unless it is rightmost
                 if (hideSmallIndelsBP && (blocks[blockIx + 1].getStart() - blockChromEnd) < indelThresholdBP) {
@@ -716,11 +723,16 @@ public class AlignmentRenderer {
                     }
                 }
 
+                boolean drawArrow = h > 6 && (leftmost && blockPxStart > 0 || rightmost && blockPxEnd < rowRect.x + rowRect.width);
+                blockPxStart = Math.max(0, blockPxStart);
+                blockPxEnd = Math.min(rowRect.x + rowRect.width, blockPxEnd);
+
                 // Draw block as a rectangle; use a pointed hexagon in terminal block to indicate strand.
-                int[] xPoly = {blockPxStart - (leftmost && alignment.isNegativeStrand() && tallEnoughForArrow ? arrowPxWidth : 0),
+                int[] xPoly = {
+                        blockPxStart - (leftmost && alignment.isNegativeStrand() && drawArrow ? arrowPxWidth : 0),
                         blockPxStart,
                         blockPxEnd,
-                        blockPxEnd + (rightmost && !alignment.isNegativeStrand() && tallEnoughForArrow ? arrowPxWidth : 0),
+                        blockPxEnd + (rightmost && !alignment.isNegativeStrand() && drawArrow ? arrowPxWidth : 0),
                         blockPxEnd,
                         blockPxStart},
                         yPoly = {y + h / 2, y, y, y + h / 2, y + h, y + h};
