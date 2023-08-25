@@ -97,11 +97,10 @@ public class Session implements IGVEventObserver {
     private String locus;
 
     public Session(String path) {
-        reset(path);
+        init(path);
     }
 
-    public void reset(String path) {
-
+    private void init(String path) {
         this.path = path;
         this.nextAutoscaleGroup = 1;
         this.groupByAttribute = null;
@@ -111,15 +110,20 @@ public class Session implements IGVEventObserver {
         this.colorScales = new HashMap<>();
         this.hiddenAttributes = null;
         this.history = new History(100);
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
+    }
 
-        boolean resetRequired = FrameManager.getFrames().size() > 1;
+    public void reset(String path) {
+        init(path);
         setCurrentGeneList(null);
-        if (resetRequired) {
+        if (FrameManager.getFrames().size() > 1) {
             IGV.getInstance().resetFrames();
         }
-
+        for(ReferenceFrame frame : FrameManager.getFrames()) {
+            frame.setExpandedInsertion(null);
+        }
         InsertionManager.getInstance().clear();
-        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
+
     }
 
 

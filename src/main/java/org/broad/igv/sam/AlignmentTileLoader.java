@@ -298,7 +298,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
             t.finish();
 
             // TODO -- make this optional (on a preference)
-            InsertionManager.getInstance().processAlignments(chr, t.alignments, renderOptions);
+            InsertionManager.getInstance().processAlignments(chr, t.alignments);
 
 
         } catch (java.nio.BufferUnderflowException e) {

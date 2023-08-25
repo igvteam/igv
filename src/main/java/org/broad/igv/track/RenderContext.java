@@ -51,12 +51,9 @@ public class RenderContext {
     private Map<Object, Graphics2D> graphicCache;
     private ReferenceFrame referenceFrame;
     private JComponent panel;
-    private Rectangle visibleRect;
-    private boolean merged = false;
-    public transient int translateX;
-    private List<InsertionMarker> insertionMarkers;
+    public Rectangle visibleRect;
     public boolean multiframe = false;
-
+    public int expandedInsertionPosition = -1;
 
     public RenderContext(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
         this.graphics = graphics;
@@ -70,11 +67,12 @@ public class RenderContext {
     }
 
     public RenderContext(RenderContext context) {
-        this.graphics = context.graphics;
+        this.graphics = (Graphics2D) context.graphics.create();
         this.graphicCache = new HashMap<>();
         this.referenceFrame = new ReferenceFrame(context.referenceFrame);
         this.panel = context.panel;
         this.visibleRect = new Rectangle(context.visibleRect);
+        this.expandedInsertionPosition = context.expandedInsertionPosition;
         if (PreferencesManager.getPreferences().getAntiAliasing() && graphics != null) {
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
@@ -153,12 +151,4 @@ public class RenderContext {
         graphicCache.clear();
     }
 
-
-    public void setInsertionMarkers(List<InsertionMarker> insertionMarkers) {
-        this.insertionMarkers = insertionMarkers;
-    }
-
-    public List<InsertionMarker> getInsertionMarkers() {
-        return insertionMarkers;
-    }
 }

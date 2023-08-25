@@ -182,7 +182,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private static final int DS_MARGIN_0 = 2;
     private static final int DOWNAMPLED_ROW_HEIGHT = 3;
     private static final int INSERTION_ROW_HEIGHT = 9;
-    private static final int DS_MARGIN_2 = 5;
 
     public enum BisulfiteContext {
         CG("CG", new byte[]{}, new byte[]{'G'}),
@@ -277,7 +276,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private boolean removed = false;
     private boolean showGroupLine;
-    private Map<ReferenceFrame, List<InsertionInterval>> insertionIntervalsMap;
     private int expandedHeight = 14;
     private int collapsedHeight = 9;
     private final int maxSquishedHeight = 5;
@@ -344,7 +342,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             setExperimentType(ExperimentType.BISULFITE);
         }
         readNamePalette = new PaletteColorTable(ColorUtilities.getDefaultPalette());
-        insertionIntervalsMap = Collections.synchronizedMap(new HashMap<>());
 
         dataManager.setViewAsPairs(prefs.getAsBoolean(SAM_DISPLAY_PAIRED), renderOptions);
 
@@ -366,13 +363,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         if (event instanceof FrameManager.ChangeEvent) {
             // Trim insertionInterval map to current frames
-            Map<ReferenceFrame, List<InsertionInterval>> newMap = Collections.synchronizedMap(new HashMap<>());
-            for (ReferenceFrame frame : ((FrameManager.ChangeEvent) event).getFrames()) {
-                if (insertionIntervalsMap.containsKey(frame)) {
-                    newMap.put(frame, insertionIntervalsMap.get(frame));
-                }
-            }
-            insertionIntervalsMap = newMap;
+
 
         } else if (event instanceof AlignmentTrackEvent) {
             AlignmentTrackEvent e = (AlignmentTrackEvent) event;
@@ -476,10 +467,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         int nGroups = dataManager.getMaxGroupCount();
         int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN
-                + DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2);
-        //if (insertionRect != null) {   // TODO - replace with expand insertions preference
-        h += INSERTION_ROW_HEIGHT + DS_MARGIN_0;
-        //}
+                + DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT);
         return Math.max(minimumHeight, h);
     }
 
@@ -500,11 +488,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
 
-        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > dataManager.getMinVisibleScale()) {
+        double extent = frame.getEnd() - frame.getOrigin();
+        if (frame.getChrName().equals(Globals.CHR_ALL) || extent > getVisibilityWindow()) {
             return true;   // Nothing to paint
         } else {
-            List<InsertionInterval> insertionIntervals = getInsertionIntervals(frame);
-            insertionIntervals.clear();
             return dataManager.isLoaded(frame);
         }
     }
@@ -549,14 +536,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         downsampleRect = new Rectangle(rect);
         downsampleRect.height = DOWNAMPLED_ROW_HEIGHT;
         renderDownsampledIntervals(context, downsampleRect);
-
-        if (renderOptions.isShowInsertionMarkers()) {
-            insertionRect = new Rectangle(rect);
-            insertionRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0;
-            insertionRect.height = INSERTION_ROW_HEIGHT;
-            renderInsertionIntervals(context, insertionRect);
-            rect.y = insertionRect.y + insertionRect.height;
-        }
 
         alignmentsRect = new Rectangle(rect);
         alignmentsRect.y += 2;
@@ -679,7 +658,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
                 // Label the group, if there is room
                 double groupHeight = rows.size() * h;
-                if (groupHeight > GROUP_LABEL_HEIGHT + 2) {
+                if (groupHeight > GROUP_LABEL_HEIGHT + 2 && !context.multiframe) {
                     String groupName = entry.getKey();
                     Graphics2D g = context.getGraphics2D("LABEL");
                     FontMetrics fm = g.getFontMetrics();
@@ -696,77 +675,23 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         groupBorderGraphics.drawLine(inputRect.x, bottom, inputRect.width, bottom);
     }
 
-    private List<InsertionInterval> getInsertionIntervals(ReferenceFrame frame) {
-        List<InsertionInterval> insertionIntervals = insertionIntervalsMap.computeIfAbsent(frame, k -> new ArrayList<>());
-        return insertionIntervals;
-    }
-
-    private void renderInsertionIntervals(RenderContext context, Rectangle rect) {
-
-        // Might be offscreen
-        if (!context.getVisibleRect().intersects(rect)) return;
-
-        List<InsertionMarker> intervals = context.getInsertionMarkers();
-        if (intervals == null) return;
-
-        InsertionMarker selected = InsertionManager.getInstance().getSelectedInsertion(context.getChr());
-
-        int w = (int) ((1.41 * rect.height) / 2);
-
-
-        boolean hideSmallIndels = renderOptions.isHideSmallIndels();
-        int smallIndelThreshold = renderOptions.getSmallIndelThreshold();
-
-        List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
-        insertionIntervals.clear();
-        for (InsertionMarker insertionMarker : intervals) {
-            if (hideSmallIndels && insertionMarker.size < smallIndelThreshold) continue;
-
-            final double scale = context.getScale();
-            final double origin = context.getOrigin();
-            int midpoint = (int) ((insertionMarker.position - origin) / scale);
-            int x0 = midpoint - w;
-            int x1 = midpoint + w;
-
-            Rectangle iRect = new Rectangle(x0 + context.translateX, rect.y, 2 * w, rect.height);
-
-            insertionIntervals.add(new InsertionInterval(iRect, insertionMarker));
-
-            Color c = (selected != null && selected.position == insertionMarker.position) ? new Color(200, 0, 0, 80) : AlignmentRenderer.purple;
-            Graphics2D g = context.getGraphic2DForColor(c);
-
-
-            g.fillPolygon(new Polygon(new int[]{x0, x1, midpoint},
-                    new int[]{rect.y, rect.y, rect.y + rect.height}, 3));
-        }
-    }
-
+    /**
+     * Render insertions at position of marker in expanded form, showing sequence.  Much of this method is just
+     * a repeat of the loop for alignment rendering to compute the Y position of affected alignments.
+     *
+     * @param insertionMarker
+     * @param context
+     * @param inputRect
+     */
     public void renderExpandedInsertion(InsertionMarker insertionMarker, RenderContext context, Rectangle inputRect) {
 
-
         boolean leaveMargin = getDisplayMode() != DisplayMode.SQUISHED;
+        inputRect.y += DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0;
 
-        // Insertion interval
-        if (this.renderOptions.isShowInsertionMarkers()) {
-            Graphics2D g = context.getGraphic2DForColor(Color.red);
-            Rectangle iRect = new Rectangle(inputRect.x, insertionRect.y, inputRect.width, insertionRect.height);
-            g.fill(iRect);
-
-            List<InsertionInterval> insertionIntervals = getInsertionIntervals(context.getReferenceFrame());
-
-            iRect.x += context.translateX;
-            insertionIntervals.add(new InsertionInterval(iRect, insertionMarker));
-        }
-
-
-        inputRect.y += DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0 + INSERTION_ROW_HEIGHT + DS_MARGIN_2;
-
-        //log.debug("Render features");
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
         PackedAlignments groups = dataManager.getGroups(loadedInterval, renderOptions);
         if (groups == null) {
             //Assume we are still loading.
-            //This might not always be true
             return;
         }
 
@@ -790,10 +715,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             h = squishedHeight;
         }
 
-
         for (Map.Entry<String, List<Row>> entry : groups.entrySet()) {
-
-
             // Loop through the alignment rows for this group
             List<Row> rows = entry.getValue();
             for (Row row : rows) {
@@ -804,7 +726,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 assert visibleRect != null;
                 if (y + h > visibleRect.getY()) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
-                    renderer.renderExpandedInsertion(insertionMarker, row.alignments, context, rowRectangle, leaveMargin);
+                    if(row.alignments != null)  // TODO -- not sure this is needed
+                        BaseRenderer.drawExpandedInsertions(insertionMarker, row.alignments, context, rowRectangle, leaveMargin, renderOptions);
                     row.y = y;
                     row.h = h;
                 }
@@ -818,14 +741,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     }
 
-    private InsertionInterval getInsertionInterval(ReferenceFrame frame, int x, int y) {
-        List<InsertionInterval> insertionIntervals = getInsertionIntervals(frame);
-        for (InsertionInterval i : insertionIntervals) {
-            if (i.rect.contains(x, y)) return i;
-        }
-
-        return null;
-    }
 
     public void sortRows(final SortOption option, final Double location, final String tag, final boolean invertSort, final Set<String> priorityRecords) {
         final List<ReferenceFrame> frames = FrameManager.getFrames();
@@ -920,17 +835,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 return null;
             }
         } else {
-
-            InsertionInterval insertionInterval = getInsertionInterval(frame, mouseX, mouseY);
-            if (insertionInterval != null) {
-                return "Insertions (" + insertionInterval.insertionMarker.size + " bases)";
-            } else {
                 Alignment feature = getAlignmentAt(position, mouseY, frame);
                 if (feature != null) {
                     return feature.getAlignmentValueString(position, mouseX, renderOptions);
                 }
-            }
-
         }
         return null;
     }
@@ -972,6 +880,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     public boolean handleDataClick(TrackClickEvent te) {
 
         MouseEvent e = te.getMouseEvent();
+
         if (Globals.IS_MAC && e.isMetaDown() || (!Globals.IS_MAC && e.isControlDown())) {
             // Selection
             Alignment alignment = this.getAlignmentAt(te);
@@ -985,23 +894,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             return true;
         }
-
-        InsertionInterval insertionInterval = getInsertionInterval(te.getFrame(), te.getMouseEvent().getX(), te.getMouseEvent().getY());
-        if (insertionInterval != null) {
-
-            final String chrName = te.getFrame().getChrName();
-            InsertionMarker currentSelection = InsertionManager.getInstance().getSelectedInsertion(chrName);
-            if (currentSelection != null && currentSelection.position == insertionInterval.insertionMarker.position) {
-                InsertionManager.getInstance().clearSelected();
-            } else {
-                InsertionManager.getInstance().setSelected(chrName, insertionInterval.insertionMarker.position);
-            }
-
-            IGVEventBus.getInstance().post(new InsertionSelectionEvent(insertionInterval.insertionMarker));
-
-            return true;
-        }
-
 
         if (IGV.getInstance().isShowDetailsOnClick()) {
             openTooltipWindow(te);
@@ -1195,17 +1087,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    private static class InsertionInterval {
-
-        final Rectangle rect;
-        final InsertionMarker insertionMarker;
-
-        InsertionInterval(Rectangle rect, InsertionMarker insertionMarker) {
-            this.rect = rect;
-            this.insertionMarker = insertionMarker;
-        }
-    }
-
 
     AlignmentBlock getInsertion(Alignment alignment, int pixelX) {
         if (alignment != null && alignment.getInsertions() != null) {
@@ -1326,29 +1207,38 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Range groupByPos;
         private Boolean invertSorting;
         private boolean invertGroupSorting;
-        private Boolean showInsertionMarkers;
         private Boolean hideSmallIndels;
         private Integer smallIndelThreshold;
-
         private BaseModficationFilter basemodFilter;
-
         private Float basemodThreshold;
+
+        private int baseQualityMin;
+
+        private int baseQualityMax;
 
 
         BisulfiteContext bisulfiteContext = BisulfiteContext.CG;
         Map<String, PEStats> peStats;
 
-        public RenderOptions() {
-        }
-
         RenderOptions(AlignmentTrack track) {
-            //updateColorScale();
             this.track = track;
             peStats = new HashMap<>();
+
+            // Set some constants
+            this.baseQualityMin = track.getPreferences().getAsInt(SAM_BASE_QUALITY_MIN);
+            this.baseQualityMax = track.getPreferences().getAsInt(SAM_BASE_QUALITY_MAX);
         }
 
         IGVPreferences getPreferences() {
             return this.track != null ? this.track.getPreferences() : AlignmentTrack.getPreferences(ExperimentType.OTHER);
+        }
+
+        public int getBaseQualityMin() {
+            return baseQualityMin;
+        }
+
+        public int getBaseQualityMax() {
+            return baseQualityMax;
         }
 
         void setShowAllBases(boolean showAllBases) {
@@ -1441,10 +1331,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.linkedReads = linkedReads;
         }
 
-        public void setShowInsertionMarkers(boolean drawInsertionIntervals) {
-            this.showInsertionMarkers = drawInsertionIntervals;
-        }
-
         public void setHideSmallIndels(boolean hideSmallIndels) {
             this.hideSmallIndels = hideSmallIndels;
         }
@@ -1480,10 +1366,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         public boolean isShadeCenters() {
             return shadeCenters == null ? getPreferences().getAsBoolean(SAM_SHADE_CENTER) : shadeCenters;
-        }
-
-        boolean isShowInsertionMarkers() {
-            return showInsertionMarkers == null ? getPreferences().getAsBoolean(SAM_SHOW_INSERTION_MARKERS) : showInsertionMarkers;
         }
 
         public boolean isFlagZeroQualityAlignments() {
@@ -1715,13 +1597,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (smallIndelThreshold != null) {
                 element.setAttribute("smallIndelThreshold", smallIndelThreshold.toString());
             }
-            if (showInsertionMarkers != null) {
-                element.setAttribute("showInsertionMarkers", showInsertionMarkers.toString());
-            }
             if (basemodFilter != null) {
                 element.setAttribute("basemodFilter", basemodFilter.toString());
             }
-            if(basemodThreshold != null) {
+            if (basemodThreshold != null) {
                 element.setAttribute("basemodThredhold", String.valueOf(basemodThreshold));
 
             }
@@ -1755,16 +1634,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (element.hasAttribute("colorOption")) {
                 // Convert deprecated options
                 final String attributeValue = element.getAttribute("colorOption");
-                if("BASE_MODIFICATION_6MA".equals(attributeValue)) {
+                if ("BASE_MODIFICATION_6MA".equals(attributeValue)) {
                     colorOption = ColorOption.BASE_MODIFICATION;
                     basemodFilter = new BaseModficationFilter("a");
-                } else if("BASE_MODIFICATION_5MC".equals(attributeValue)) {
+                } else if ("BASE_MODIFICATION_5MC".equals(attributeValue)) {
                     colorOption = ColorOption.BASE_MODIFICATION_2COLOR;
-                   // basemodFilter = new BaseModficationFilter(null, 'C');
-                } else if("BASE_MODIFICATION_C".equals(attributeValue)) {
+                    // basemodFilter = new BaseModficationFilter(null, 'C');
+                } else if ("BASE_MODIFICATION_C".equals(attributeValue)) {
                     colorOption = ColorOption.BASE_MODIFICATION;
-                   // basemodFilter = new BaseModficationFilter(null, 'C');
-                }else {
+                    // basemodFilter = new BaseModficationFilter(null, 'C');
+                } else {
                     colorOption = ColorOption.valueOf(attributeValue);
                 }
             }
@@ -1838,7 +1717,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 smallIndelThreshold = Integer.parseInt(element.getAttribute("smallIndelThreshold"));
             }
             if (element.hasAttribute("showInsertionMarkers")) {
-                showInsertionMarkers = Boolean.parseBoolean(element.getAttribute("showInsertionMarkers"));
+                // TODO -- something with this
+               // showInsertionMarkers = Boolean.parseBoolean(element.getAttribute("showInsertionMarkers"));
             }
             if (element.hasAttribute("basemodFilter")) {
                 basemodFilter = BaseModficationFilter.fromString(element.getAttribute("basemodFilter"));

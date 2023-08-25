@@ -52,76 +52,88 @@ public class DataPanelPainter {
 
     public synchronized void paint(Collection<TrackGroup> groups,
                                    RenderContext context,
-                                   int width,
                                    Color background,
                                    Rectangle visibleRect) {
-
-
-        //
 
         Graphics2D graphics2D = context.getGraphics2D("BACKGROUND");
         graphics2D.setBackground(background);
         graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
         graphics2D.setColor(Color.BLACK);
 
-
         final ReferenceFrame referenceFrame = context.getReferenceFrame();
-        context.setInsertionMarkers(InsertionManager.getInstance().getInsertions(referenceFrame.getChrName(), referenceFrame.getOrigin(), referenceFrame.getEnd()));
-
-        InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(referenceFrame.getChrName());
-
+        InsertionMarker i = referenceFrame.getExpandedInsertion(); //insertionManager.getSelectedInsertion(referenceFrame.getChrName());
 
         if (i != null) {
+
+            Collection<AlignmentTrack> tracks = IGV.getInstance().getAlignmentTracks();
+            int maxVizWindow = tracks.size() == 0 ? 0 : tracks.stream().mapToInt(t -> t.getVisibilityWindow()).max().getAsInt();
+
             final double start = referenceFrame.getOrigin();
-            try {
-                double scale = referenceFrame.getScale();
-                int p0 = 0, w;
+            final double frameExtent = referenceFrame.getEnd() - referenceFrame.getOrigin();
+            double scale = referenceFrame.getScale();
+            int insertionPixelPosition = (int) ((i.position - start) / scale);
+            int insertionPixelWidth = (int) Math.ceil(i.size / context.getScale());
 
-                w = (int) ((i.position - start) / scale);
-                paintSection(groups, context, p0, visibleRect.y, w, visibleRect.height, 0);
 
-                i.pixelPosition = p0 + w;
-                p0 += w;
+            if (frameExtent < maxVizWindow &&
+                    insertionPixelWidth > 1 &&
+                    insertionPixelPosition < visibleRect.width &&
+                    insertionPixelPosition + insertionPixelWidth > 0) {
 
-                context.multiframe = true;
-                referenceFrame.origin = i.position;
-                w = (int) Math.ceil(i.size / context.getScale());
-                paintExpandedInsertion(i, groups, context, p0, visibleRect.y, w, visibleRect.height);
+                context.expandedInsertionPosition = i.position;
 
-                int g = (int) (i.size / scale);
-                p0 += g;
-                context.getReferenceFrame().origin = i.position;
-                w = width - p0;
-                if (w > 0) {
-                    paintSection(groups, context, p0, visibleRect.y, width - p0, visibleRect.height, g);
+                // Paint section left of insertion
+                if (insertionPixelPosition > 0) {
+                    int width = insertionPixelPosition;
+                    RenderContext leftContext = shiftRenderContext(context, context.getOrigin(), 0, width);
+                    paintFrame(groups, leftContext);
                 }
-            } finally {
-                referenceFrame.origin = start;
+
+                // Paint expanded insertion
+                RenderContext insertionContext = shiftRenderContext(context, i.position, insertionPixelPosition, insertionPixelWidth);
+                paintExpandedInsertion(i, groups, insertionContext);
+
+                // Paint section to right of insertion
+                int p0 = insertionPixelPosition + insertionPixelWidth;
+                int w = visibleRect.width - p0;
+                if (w > 0) {
+                    RenderContext rightContext = shiftRenderContext(context, i.position, p0, w);
+                    rightContext.multiframe = true;
+                    paintFrame(groups, rightContext);
+                }
+
+            } else {
+                // Insertion is out of view
+                paintFrame(groups, context);
             }
         } else {
-            paintFrame(groups, context, width, visibleRect);
+            // No expanded insertion
+            paintFrame(groups, context);
         }
 
     }
 
 
-    private void paintSection(Collection<TrackGroup> groups, RenderContext context, int px, int py, int w, int h, int delta) {
+    private RenderContext shiftRenderContext(RenderContext ctx, double position, int translateX, int pixelWidth) {
+        RenderContext newContext = new RenderContext(ctx);
+        newContext.getReferenceFrame().widthInPixels = pixelWidth;
+        newContext.getReferenceFrame().origin = position;
+        newContext.visibleRect = new Rectangle(0, ctx.visibleRect.y, pixelWidth, ctx.visibleRect.height);
 
-        context.clearGraphicsCache();
-        Graphics2D dG = context.getGraphics();
-        Rectangle dRect = new Rectangle(0, py, w, h);
-        dG.translate(delta, 0);
-        dG.setClip(dRect);
-        context.translateX = px;
+        Graphics2D dG = newContext.getGraphics();
+        Rectangle dRect = newContext.visibleRect;
+        dG.translate(translateX, 0);
+        dG.setClip(newContext.visibleRect);
 
-        paintFrame(groups, context, w, dRect);
-
+        return newContext;
     }
 
 
-    private void paintFrame(Collection<TrackGroup> groups, RenderContext dContext, int width, Rectangle dRect) {
+    private void paintFrame(Collection<TrackGroup> groups, RenderContext dContext) {
+
         int trackX = 0;
         int trackY = 0;
+        Rectangle dRect = dContext.visibleRect;
 
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
             TrackGroup group = groupIter.next();
@@ -133,14 +145,14 @@ public class DataPanelPainter {
             if (group.isVisible()) {
                 if (groups.size() > 1) {
                     final Graphics2D greyGraphics = dContext.getGraphic2DForColor(UIConstants.LIGHT_GREY);
-                    greyGraphics.fillRect(0, trackY + 1, width, UIConstants.groupGap - 1);
+                    greyGraphics.fillRect(0, trackY + 1, dRect.width, UIConstants.groupGap - 1);
                     trackY += UIConstants.groupGap;
                 }
 
                 // Draw a line just above group.
                 if (group.isDrawBorder()) {
                     Graphics2D graphics2D = dContext.getGraphic2DForColor(Color.black);
-                    graphics2D.drawLine(0, trackY - 1, width, trackY - 1);
+                    graphics2D.drawLine(0, trackY - 1, dRect.width, trackY - 1);
                 }
 
                 List<Track> trackList = group.getVisibleTracks();
@@ -161,7 +173,7 @@ public class DataPanelPainter {
 
 
                         if (track.isVisible()) {
-                            Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
+                            Rectangle rect = new Rectangle(trackX, trackY, dRect.width, trackHeight);
                             draw(track, rect, dContext);
                             trackY += trackHeight;
                         }
@@ -171,23 +183,18 @@ public class DataPanelPainter {
                 // Draw a line just below group.
                 if (group.isDrawBorder()) {
                     Graphics2D graphics2D = dContext.getGraphic2DForColor(Color.black);
-                    graphics2D.drawLine(0, trackY, width, trackY);
+                    graphics2D.drawLine(0, trackY, dRect.width, trackY);
                 }
             }
         }
     }
 
 
-    private void paintExpandedInsertion(InsertionMarker insertionMarker, Collection<TrackGroup> groups, RenderContext context, int px, int py, int w, int h) {
+    private void paintExpandedInsertion(InsertionMarker insertionMarker, Collection<TrackGroup> groups, RenderContext context) {
 
-        context.clearGraphicsCache();
-        Graphics2D dG = context.getGraphics();
-        Rectangle dRect = new Rectangle(0, py, w, h);
-        dG.translate(px, 0);
-        dG.setClip(dRect);
-        context.translateX = px;
 
         int trackY = 0;
+        Rectangle dRect = context.getVisibleRect();
 
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
             TrackGroup group = groupIter.next();
@@ -229,7 +236,6 @@ public class DataPanelPainter {
         track.render(context, rect);
 
         // Get overlays
-
         List<Track> overlayTracks = IGV.getInstance().getOverlayTracks(track);
         if (overlayTracks != null) {
             for (Track overlayTrack : overlayTracks) {
