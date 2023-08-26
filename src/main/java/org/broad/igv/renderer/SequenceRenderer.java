@@ -100,7 +100,7 @@ public class SequenceRenderer {
 
 
     public SequenceRenderer() {
-        if (nucleotideColors == null) setNucleotideColors();
+        setNucleotideColors();
         translatedSequenceDrawer = new TranslatedSequenceDrawer();
     }
 
