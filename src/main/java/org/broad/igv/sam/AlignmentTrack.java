@@ -726,7 +726,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 assert visibleRect != null;
                 if (y + h > visibleRect.getY()) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
-                    if(row.alignments != null)  // TODO -- not sure this is needed
+                    if (row.alignments != null)  // TODO -- not sure this is needed
                         BaseRenderer.drawExpandedInsertions(insertionMarker, row.alignments, context, rowRectangle, leaveMargin, renderOptions);
                     row.y = y;
                     row.h = h;
@@ -835,10 +835,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 return null;
             }
         } else {
-                Alignment feature = getAlignmentAt(position, mouseY, frame);
-                if (feature != null) {
-                    return feature.getAlignmentValueString(position, mouseX, renderOptions);
-                }
+            Alignment feature = getAlignmentAt(position, mouseY, frame);
+            if (feature != null) {
+                return feature.getAlignmentValueString(position, mouseX, renderOptions);
+            }
         }
         return null;
     }
@@ -1224,9 +1224,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.track = track;
             peStats = new HashMap<>();
 
-            // Set some constants
-            this.baseQualityMin = track.getPreferences().getAsInt(SAM_BASE_QUALITY_MIN);
-            this.baseQualityMax = track.getPreferences().getAsInt(SAM_BASE_QUALITY_MAX);
+            // Set some constants -- for efficiency
+            this.baseQualityMin = track == null ? 5 : track.getPreferences().getAsInt(SAM_BASE_QUALITY_MIN);
+            this.baseQualityMax = track == null ? 20 : track.getPreferences().getAsInt(SAM_BASE_QUALITY_MAX);
         }
 
         IGVPreferences getPreferences() {
@@ -1718,7 +1718,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if (element.hasAttribute("showInsertionMarkers")) {
                 // TODO -- something with this
-               // showInsertionMarkers = Boolean.parseBoolean(element.getAttribute("showInsertionMarkers"));
+                // showInsertionMarkers = Boolean.parseBoolean(element.getAttribute("showInsertionMarkers"));
             }
             if (element.hasAttribute("basemodFilter")) {
                 basemodFilter = BaseModficationFilter.fromString(element.getAttribute("basemodFilter"));
