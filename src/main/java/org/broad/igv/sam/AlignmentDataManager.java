@@ -230,10 +230,6 @@ public class AlignmentDataManager implements IGVEventObserver {
         return coverageTrack;
     }
 
-    public double getMinVisibleScale() {
-        return getVisibilityWindow() / 700;
-    }
-
     public double getVisibilityWindow() {
         return getPreferences().getAsFloat(SAM_MAX_VISIBLE_RANGE) * 1000;
     }
@@ -269,12 +265,13 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public AlignmentInterval getLoadedInterval(ReferenceFrame frame, boolean includeOverlaps) {
+        // Search for interval completely containining reference frame region
         for (AlignmentInterval interval : intervalCache) {
             if (interval.contains(frame.getCurrentRange())) {
                 return interval;
             }
         }
-        // No contains, look for overlap
+        // No interval contains entire region of frame, look for intervael with at least some overlap
         if (includeOverlaps) {
             for (AlignmentInterval interval : intervalCache) {
                 if (interval.overlaps(frame.getCurrentRange())) {
@@ -315,7 +312,7 @@ public class AlignmentDataManager implements IGVEventObserver {
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
 
-        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale())
+        if (frame.getChrName().equals(Globals.CHR_ALL) || (frame.getEnd() - frame.getOrigin()) > getVisibilityWindow())
             return; // should not happen
 
         if (isLoaded(frame)) {
@@ -458,10 +455,6 @@ public class AlignmentDataManager implements IGVEventObserver {
         return alignmentTrack == null ? null : alignmentTrack.getExperimentType();
     }
 
-    private void setExperimentType(AlignmentTrack.ExperimentType type) {
-        if (alignmentTrack != null) alignmentTrack.setExperimentType(type);
-    }
-
 
     public PackedAlignments getGroups(AlignmentInterval interval, AlignmentTrack.RenderOptions renderOptions) {
         //AlignmentInterval interval = getLoadedInterval(context.getReferenceFrame());
@@ -573,16 +566,8 @@ public class AlignmentDataManager implements IGVEventObserver {
         coverageTrack.setSnpThreshold(PreferencesManager.getPreferences().getAsFloat(SAM_ALLELE_THRESHOLD));
     }
 
-    public boolean isTenX() {
-        return getLoader().isTenX();
-    }
-
     public boolean isPhased() {
         return getLoader().isPhased();
-    }
-
-    public boolean isMoleculo() {
-        return getLoader().isMoleculo();
     }
 
     public Collection<AlignmentInterval> getLoadedIntervals() {
@@ -629,71 +614,5 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     }
 
-    static class IntervalCache {
-
-        private int maxSize;
-        ArrayList<AlignmentInterval> intervals;
-
-        public IntervalCache() {
-            this(1);
-        }
-
-        public IntervalCache(int ms) {
-            this.maxSize = Math.max(1, ms);
-            intervals = new ArrayList<>(maxSize);
-        }
-
-        void setMaxSize(int ms, List<ReferenceFrame> frames) {
-            this.maxSize = Math.max(1, ms);
-            if (intervals.size() > maxSize) {
-                // Reduce size.  Try to keep intervals that cover frame ranges.  This involves a linear search
-                // of potentially (intervals.size X frames.size) elements.  Don't attempt if this number is too large
-                if (frames.size() * intervals.size() < 25) {
-                    ArrayList<AlignmentInterval> tmp = new ArrayList<>(maxSize);
-                    for (AlignmentInterval interval : intervals) {
-                        if (tmp.size() == maxSize) break;
-                        for (ReferenceFrame frame : frames) {
-                            Range range = frame.getCurrentRange();
-                            if (interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
-                                tmp.add(interval);
-                                break;
-                            }
-                        }
-                    }
-                    intervals = tmp;
-                } else {
-                    intervals = new ArrayList(intervals.subList(0, maxSize));
-                    intervals.trimToSize();
-                }
-            }
-        }
-
-        public void add(AlignmentInterval interval) {
-            if (intervals.size() >= maxSize) {
-                intervals.remove(0);
-            }
-            intervals.add(interval);
-        }
-
-        public AlignmentInterval getIntervalForRange(Range range) {
-
-            for (AlignmentInterval interval : intervals) {
-                if (interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
-                    return interval;
-                }
-            }
-
-            return null;
-
-        }
-
-        public Collection<AlignmentInterval> values() {
-            return intervals;
-        }
-
-        public void clear() {
-            intervals.clear();
-        }
-    }
 }
 

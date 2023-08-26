@@ -31,6 +31,11 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.sam.AlignmentInterval;
+import org.broad.igv.sam.AlignmentRenderer;
+import org.broad.igv.sam.InsertionManager;
+import org.broad.igv.sam.InsertionMarker;
+import org.broad.igv.track.RenderContext;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
@@ -46,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author eflakes
@@ -77,6 +83,8 @@ public class RegionOfInterestPanel extends JPanel {
         // Draw regions of interest?
         drawRegionsOfInterest((Graphics2D) g, getHeight());
 
+        //drawInsertionMarkers((Graphics2D) g, getHeight());
+
         g.setColor(Color.BLACK);
         g.drawLine(0, 0, getWidth(), 0);
     }
@@ -89,7 +97,6 @@ public class RegionOfInterestPanel extends JPanel {
         if (regions == null || regions.isEmpty()) {
             return;
         }
-
 
         for (RegionOfInterest regionOfInterest : regions) {
 
@@ -112,7 +119,6 @@ public class RegionOfInterestPanel extends JPanel {
 
         }
     }
-
 
     /**
      * Return the region of interest at the screen pixel location.

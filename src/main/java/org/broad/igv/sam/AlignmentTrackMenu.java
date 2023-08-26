@@ -1184,14 +1184,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             alignmentTrack.repaint();
         }));
 
-        final JMenuItem imItem = new JCheckBoxMenuItem("Show insertion markers");
-        imItem.setSelected(renderOptions.isShowInsertionMarkers());
-        imItem.addActionListener(aEvt -> {
-            renderOptions.setShowInsertionMarkers(imItem.isSelected());
-            alignmentTrack.repaint();
-        });
-
-        add(imItem);
         add(qcItem);
         add(item);
         add(thresholdItem);
