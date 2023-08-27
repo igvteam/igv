@@ -356,6 +356,14 @@ final public class Constants {
             BASEMOD_NONE_N_COLOR
     );
 
+    static java.util.List<String> NUCLEOTIDE_COLOR_KEYS = Arrays.asList(
+            COLOR_A,
+            COLOR_C,
+            COLOR_G,
+            COLOR_N,
+            COLOR_T
+    );
+
     /**
      * List of keys that affect proxy usage
      */

@@ -67,7 +67,7 @@ public class SequenceRenderer {
         return nucleotideColors;
     }
 
-    private synchronized static void setNucleotideColors() {
+    public synchronized static void setNucleotideColors() {
 
         IGVPreferences prefs = PreferencesManager.getPreferences();
 

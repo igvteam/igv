@@ -40,6 +40,7 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.mods.BaseModificationColors;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
@@ -334,6 +335,13 @@ public class IGVPreferences {
                 if (updatedPreferenceMap.containsKey(key)) {
                     refreshSAM = true;
                     BaseModificationColors.updateColors();
+                    break;
+                }
+            }
+
+            for (String key : NUCLEOTIDE_COLOR_KEYS) {
+                if (updatedPreferenceMap.containsKey(key)) {
+                    SequenceRenderer.setNucleotideColors();
                     break;
                 }
             }
