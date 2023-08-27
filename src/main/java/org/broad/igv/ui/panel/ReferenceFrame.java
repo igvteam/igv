@@ -751,7 +751,17 @@ public class ReferenceFrame {
         }
     }
 
+    public void setExpandedInsertion(InsertionMarker im) {
+        InsertionMarker previousInsertion = this.expandedInsertion;
+        this.expandedInsertion = im;
+        if(im == null && previousInsertion != null) {
+            this.centerOnLocation(previousInsertion.position);
+        }
+    }
 
+    public InsertionMarker getExpandedInsertion() {
+        return expandedInsertion;
+    }
     public int stateHash() {
         int result;
         long temp;
@@ -771,12 +781,6 @@ public class ReferenceFrame {
     }
 
 
-    public void setExpandedInsertion(InsertionMarker im) {
-        this.expandedInsertion = im;
-    }
 
-    public InsertionMarker getExpandedInsertion() {
-        return expandedInsertion;
-    }
 }
 

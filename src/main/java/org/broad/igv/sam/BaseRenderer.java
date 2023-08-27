@@ -7,6 +7,7 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +70,7 @@ public class BaseRenderer {
         Graphics2D g = null;
         try {
             g = (Graphics2D) context.getGraphics().create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             double dX = 1 / context.getScale();
             int fontSize = (int) Math.min(dX, 12);
             if (fontSize >= 8) {
@@ -102,7 +104,7 @@ public class BaseRenderer {
                     final int size = bases.length + padding;
                     for (int p = 0; p < size; p++) {
 
-                        int pX = (int) (pixelStart + (p / locScale));
+                        double pX = (pixelStart + (p / locScale));
 
                         // Don't draw out of clipping rect
                         if (pX > rect.getMaxX()) break;
@@ -118,7 +120,12 @@ public class BaseRenderer {
                             color = BaseRenderer.getShadedColor(color, qual, renderOptions.getBaseQualityMin(), renderOptions.getBaseQualityMax());
                         }
 
-                        drawBase(g, color, c, pX, rect.y, (int) dX, rect.height - (leaveMargin ? 2 : 0), false, null);
+                        if(dX < 8) {
+                            g.setColor(color);
+                            g.fill(new Rectangle2D.Double(pX, rect.y, dX, rect.height));
+                        } else {
+                            drawBase(g, color, c,(int)  pX, rect.y, (int) dX, rect.height - (leaveMargin ? 2 : 0), false, null);
+                        }
                     }
                     insertion.setPixelRange(pixelStart, pixelEnd);
                 }
