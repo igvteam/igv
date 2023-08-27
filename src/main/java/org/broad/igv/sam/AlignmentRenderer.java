@@ -654,7 +654,8 @@ public class AlignmentRenderer {
                             y,
                             h,
                             gapPxEnd - gapPxStart - 2,
-                            null);
+                            null,
+                            context);
                 }
             }
         }
@@ -903,7 +904,8 @@ public class AlignmentRenderer {
                                 y,
                                 h,
                                 (int) pxWidthExact,
-                                aBlock);
+                                aBlock,
+                                context );
                     } else {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D ig = context.getGraphics();
@@ -912,7 +914,7 @@ public class AlignmentRenderer {
                         ig.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
                         ig.fillRect(x - pxWing, y + h - 2, 2 + 2 * pxWing, 2);
 
-                        aBlock.setPixelRange(x - pxWing, x + 2 + pxWing);
+                        aBlock.setPixelRange(context.translateX + x - pxWing, context.translateX + x + 2 + pxWing);
                     }
                 }
             }
@@ -1016,7 +1018,7 @@ public class AlignmentRenderer {
     }
 
     private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter,
-                                     int pxTop, int pxH, int pxWmax, AlignmentBlock insertionBlock) {
+                                     int pxTop, int pxH, int pxWmax, AlignmentBlock insertionBlock, RenderContext context) {
 
         final int pxPad = 2;   // text padding in the label
         final int pxWing = (pxH > 10 ? 2 : 1);  // width of the cursor "wing"
@@ -1051,7 +1053,7 @@ public class AlignmentRenderer {
         } // draw the text if it fits
 
         if (insertionBlock != null) {
-            insertionBlock.setPixelRange(pxLeft, pxRight);
+            insertionBlock.setPixelRange(context.translateX + pxLeft, context.translateX + pxRight);
         }
     }
 

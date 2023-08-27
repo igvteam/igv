@@ -55,6 +55,12 @@ public class RenderContext {
     public boolean multiframe = false;
     public int expandedInsertionPosition = -1;
 
+    /**
+     * X trasnlation for this context relative to its parent.  This is used in expanded insertion "multi-frame* view
+     * to convert screen coordinates to parent reference system when recording the pixel location of drawn objects
+     */
+    public int translateX = 0;
+
     public RenderContext(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
         this.graphics = graphics;
         this.panel = panel;

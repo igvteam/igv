@@ -119,9 +119,9 @@ public class DataPanelPainter {
         newContext.getReferenceFrame().widthInPixels = pixelWidth;
         newContext.getReferenceFrame().origin = position;
         newContext.visibleRect = new Rectangle(0, ctx.visibleRect.y, pixelWidth, ctx.visibleRect.height);
+        newContext.translateX = translateX;
 
         Graphics2D dG = newContext.getGraphics();
-        Rectangle dRect = newContext.visibleRect;
         dG.translate(translateX, 0);
         dG.setClip(newContext.visibleRect);
 

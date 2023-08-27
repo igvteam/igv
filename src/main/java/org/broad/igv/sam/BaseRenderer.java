@@ -91,7 +91,7 @@ public class BaseRenderer {
 
                     // Compute the start and end of the expanded insertion in pixels
                     int pixelStart = (int) ((insertion.getStart() - origin) / locScale);
-                    int pixelEnd = (int) ((insertion.getEnd() - origin) / locScale) + 1;
+                    int pixelEnd = (int) (pixelStart +  insertion.getLength() / locScale);
 
                     // Skip if insertion is out of clipping rectangle -- this probably shouldn't happen
                     if (pixelEnd < rect.x || pixelStart > rect.getMaxX()) {
@@ -127,7 +127,7 @@ public class BaseRenderer {
                             drawBase(g, color, c,(int)  pX, rect.y, (int) dX, rect.height - (leaveMargin ? 2 : 0), false, null);
                         }
                     }
-                    insertion.setPixelRange(pixelStart, pixelEnd);
+                    insertion.setPixelRange(context.translateX + pixelStart, context.translateX + pixelEnd);
                 }
             }
         } finally {
