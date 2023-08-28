@@ -83,28 +83,35 @@ CN_FREQ.AMP_THRESHOLD	CN freq amplification threshold	float	0.1
 CN_FREQ.DEL_THRESHOLD	CN freq deletion threshold	float	-0.1
 
 #Alignments
-info	Default settings for alignment tracks.  A subset of these properties are overriden for RNA and 3rd generation data.
-info	See the RNA or Third Gen tabs for those track types.
+info	Default settings for alignment tracks.  A subset of these properties can be overriden for RNA and 3rd generation data.
+info	See also the RNA and Third Gen tabs.
 
 ##Track Display
 SAM.SHOW_ALIGNMENT_TRACK	Show alignment track	boolean	TRUE
 SAM.SHOW_COV_TRACK	Show coverage track	boolean	TRUE
 SAM.SHOW_JUNCTION_TRACK	Show junction track	boolean	FALSE
+SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
+SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visibile
 
 ##Downsampling
 SAM.DOWNSAMPLE_READS	Downsample reads	boolean	TRUE
 SAM.SAMPLING_WINDOW	Sampling window size (bases)	integer	50
 SAM.MAX_LEVELS	Number of reads per window	integer	100
 
+##Coverage Track Options
+SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2
+SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
+
 ##Alignment Track Options
+
 SAM.COLOR_BY	Color alignments by	select NONE|READ_STRAND|FIRST_OF_PAIR_STRAND|PAIR_ORIENTATION|UNEXPECTED_PAIR|INSERT_SIZE|SAMPLE|READ_GROUP|LIBRARY|MOVIE|ZMW|BISULFITE|NOMESEQ|TAG|MAPPED_SIZE|LINK_STRAND|YC_TAG	UNEXPECTED_PAIR
 SAM.COLOR_BY_TAG	Color by TAG	string
 SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE|MAPPING_QUALITY
 SAM.GROUP_BY_TAG	Group by TAG	string
 SAM.GROUP_ALL	Syncrohize alignment track grouping	boolean	FALSE
-SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visibile
+
 SAM.QUALITY_THRESHOLD	Mapping quality threshold	int	0	Hide alignments with MQ lower than this value
-SAM.ALIGNMENT_SCORE_THRESHOLD	Alignment score threshold	int	0
+SAM.ALIGNMENT_SCORE_THRESHOLD	Alignment score threshold (AS tag)	int	0
 SAM.DISPLAY_MODE	Alignment display mode	string	EXPANDED
 SAM.DISPLAY_PAIRED	Display reads as paired by default	boolean	FALSE
 ---
@@ -138,20 +145,17 @@ SAM.CLIPPING_THRESHOLD	Flag clipping threshold (bases)	integer	0
 SAM.SHOW_CONNECTED_CHR_NAME	Show connected chromosome name	boolean	TRUE
 ---
 SAM.QUICK_CONSENSUS_MODE	Quick consensus mode	boolean	FALSE
-SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
+
 ---
 SAM.HIDDEN_TAGS	Hide tags in popup text (comma delimited list)	string	SA,MD,XA,RG
 ---
 SAM.LINK_BY_TAGS	Tags to be used for linking alignments (comma delimited list)	string	 
 ---
-SAM.MAX_SOFT_CLIP	Soft clip reference extension (reference sequence is extended by this amount to show soft  clips)	integer	1000
+SAM.MAX_SOFT_CLIP	Soft clip reference extension maximum	integer	1000	Reference sequence is extended up to this amount to show soft clips overhanging reference edge.
 ---
 SAM.FILTER_ALIGNMENTS	Filter alignments by read group	boolean	FALSE
 SAM.FILTER_URL	URL or path to read group filter file	string	null
 
-##Coverage Track Options
-SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2
-SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
 
 ##Insert Size Options
 SAM.COMPUTE_ISIZES	Compute insert size thresholds	boolean	TRUE
@@ -167,7 +171,7 @@ info Settings below override defaults for RNA alignments.
 SAM.SHOW_ALIGNMENT_TRACK	Show alignment track	boolean	TRUE
 SAM.SHOW_COV_TRACK	Show coverage track	boolean	TRUE
 SAM.SHOW_JUNCTION_TRACK	Show junction track	boolean	TRUE
-
+SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	300	Range at which alignments become visibile
 
 ##Splice Junction Track
@@ -185,23 +189,28 @@ SAM.INSERT_SIZE_THRESHOLD	Default maximum (bp)	float	100000
 
 #Third Gen	THIRD_GEN
 info Settings below override defaults for 3rd-gen (PacBio, Oxford Nanopore, ...) alignments.
+
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	1000	Range at which alignments become visibile
+SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	TRUE
+SAM.QUICK_CONSENSUS_MODE	Quick consensus mode	boolean	TRUE
 
 ##Downsampling
 SAM.DOWNSAMPLE_READS	Downsample reads	boolean	FALSE
+SAM.SAMPLING_WINDOW	Sampling window size (bases)	integer	50
+SAM.MAX_LEVELS	Number of reads per window	integer	100
 
+##Indels
 SAM.FLAG_LARGE_INDELS	Label indels > label threshold	boolean	TRUE
 SAM.LARGE_INSERTIONS_THRESOLD	Label threshold (bases)	integer	1
 ---
 SAM.HIDE_SMALL_INDEL	Hide indels < show indel threshold	boolean	TRUE
 SAM.SMALL_INDEL_BP_THRESHOLD	Show indel threshold (bases)	integer	2
----
+
+##Clipping
 SAM.FLAG_CLIPPING	Flag clipping > flag clipping threshold	boolean	TRUE
 SAM.CLIPPING_THRESHOLD	Flag clipping threshold (bases)	integer	20
----
-SAM.QUICK_CONSENSUS_MODE	Quick consensus mode	boolean	TRUE
-SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	TRUE
----
+
+##Linking
 SAM.LINK_READS	Link alignments by tag	boolean	FALSE
 SAM.LINK_TAG	Linking tag	string	READNAME
 
