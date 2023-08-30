@@ -162,10 +162,11 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             addInsertionItems(insertion);
         }
 
-        // Sashimi plot, probably should be depdenent on experimentType (RNA)
+        // Sashimi plot
         addSeparator();
         JMenuItem sashimi = new JMenuItem("Sashimi Plot");
         sashimi.addActionListener(e1 -> SashimiPlot.openSashimiPlot());
+        sashimi.setEnabled(alignmentTrack.getExperimentType() == AlignmentTrack.ExperimentType.RNA);
         add(sashimi);
 
         // Show alignments, coverage, splice junctions

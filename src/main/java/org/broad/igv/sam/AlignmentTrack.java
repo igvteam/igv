@@ -423,7 +423,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    ExperimentType getExperimentType() {
+    public ExperimentType getExperimentType() {
         return experimentType;
     }
 

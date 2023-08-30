@@ -33,6 +33,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -93,6 +94,11 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
 
     public SpliceJunctionTrack() {
         this.renderer = new SpliceJunctionRenderer();
+    }
+
+    @Override
+    public void setRenderer(Renderer renderer) {
+        this.renderer = renderer;
     }
 
     @Override
