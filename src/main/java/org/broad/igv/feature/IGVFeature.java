@@ -35,7 +35,7 @@ import java.util.Map;
  * Interface for features in IGV annotation tracks  (FeatureTrack and derived classes).
  */
 
-public interface IGVFeature extends LocusScore, NamedFeature {
+public interface IGVFeature extends LocusScore, NamedFeature, Cloneable {
 
     default String getIdentifier() {
         return null;
@@ -90,7 +90,7 @@ public interface IGVFeature extends LocusScore, NamedFeature {
         return null;
     }
 
-    public Color getColor();
+     Color getColor();
 
     default String getURL() {
         return null;

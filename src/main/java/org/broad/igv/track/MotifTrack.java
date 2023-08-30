@@ -1,6 +1,5 @@
 package org.broad.igv.track;
 
-import org.broad.igv.feature.CachingFeatureSource;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.tools.motiffinder.MotifFinderSource;
@@ -26,10 +25,7 @@ public class MotifTrack extends FeatureTrack {
     }
 
     private void init() {
-
-        MotifFinderSource src = new MotifFinderSource(pattern, strand, GenomeManager.getInstance().getCurrentGenome());
-        CachingFeatureSource source = new CachingFeatureSource(src);
-        super.init(null, source);
+        super.init(null, new MotifFinderSource(pattern, strand, GenomeManager.getInstance().getCurrentGenome()));
         setSortable(false);
     }
 

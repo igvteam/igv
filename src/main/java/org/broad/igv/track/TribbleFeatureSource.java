@@ -118,6 +118,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             }
         }
 
+        indexExists = false;
         String path = locator.getPath();
         if (FileUtils.isRemote(path)) {
             path = HttpUtils.createURL(path).toExternalForm();
@@ -186,7 +187,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         return featureClass;
     }
 
-    public int getFeatureWindowSize() {
+    public int estimateFeatureWindowSize() {
         if (featureWindowSize == null) {
             this.featureWindowSize = estimateFeatureWindowSize(this.wrappedReader);
         }
@@ -231,6 +232,17 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
             return reader.query(seqName, start, end);
         }
+
+        public List<Feature> getAllFeatures() throws IOException {
+
+            List<Feature> allFeatures = new ArrayList<>();
+            Iterator<Feature> iter = reader.iterator();
+            while(iter.hasNext()) {
+                allFeatures.add(iter.next());
+            }
+            return allFeatures;
+        }
+
 
         /**
          * Return coverage values overlapping the query interval.   At this time Tribble sources do not provide
@@ -387,11 +399,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         @Override
         public boolean isIndexed() {
             return false;
-        }
-
-        @Override
-        public boolean isLoaded(ReferenceFrame frame) {
-            return true;
         }
 
         @Override
