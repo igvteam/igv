@@ -29,7 +29,6 @@
  */
 package org.broad.igv.sam;
 
-import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.Globals;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
@@ -40,8 +39,7 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
-import org.broad.igv.sam.mods.BaseModificationColors;
-import org.broad.igv.sam.mods.BaseModificationCounts;
+import org.broad.igv.sam.mods.BaseModficationFilter;
 import org.broad.igv.sam.mods.BaseModificationCoverageRenderer;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
@@ -174,7 +172,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > dataManager.getMinVisibleScale()) {
+        double extent = frame.getEnd() - frame.getOrigin();
+        if (frame.getChrName().equals(Globals.CHR_ALL) || extent > dataManager.getVisibilityWindow()) {
             return true;   // Nothing to paint
         } else {
             return dataManager.isLoaded(frame);
@@ -214,10 +213,15 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         setVisible(false);
     }
 
+    @Override
+    public int getVisibilityWindow() {
+        return (int) dataManager.getVisibilityWindow();
+    }
+
     public void render(RenderContext context, Rectangle rect) {
 
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
-        if (viewWindowSize > dataManager.getVisibilityWindow() && dataSource == null) {
+        if (viewWindowSize > getVisibilityWindow() && dataSource == null) {
             Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             GraphicUtils.drawCenteredText("Zoom in to see coverage.", visibleRect, g);
@@ -372,7 +376,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                     buf.append(counts.getValueStringAt((int) position));
                     final AlignmentTrack.ColorOption colorOption = alignmentTrack.getRenderOptions().getColorOption();
                     if (colorOption.isBaseMod() && counts.getModifiedBaseCounts() != null) {
-                        buf.append("<hr>");
+                        buf.append("<br>");
                         buf.append(counts.getModifiedBaseCounts().getValueString((int) position, colorOption));
                     }
                 }
@@ -503,6 +507,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             }
 
             // Second pass -- potentially overlay mismatches
+            Set<String> simplexModifications = dataManager.getSimplexBaseModifications();
             for (int idx = 0; idx < nPoints; idx++) {
 
                 int pos = isSparse ? ((SparseAlignmentCounts) alignmentCounts).getPosition(idx) : start + idx * step;
@@ -529,7 +534,10 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
                             drawBarBisulfite(context, pX, bottomY, dX, barHeight, totalCount, bc);
                         }
                     } else if (colorOption.isBaseMod()) {
-                        BaseModificationCoverageRenderer.drawModifications(context, pX, bottomY, dX, barHeight, pos, alignmentCounts, colorOption);
+                        BaseModficationFilter basemodFilter = alignmentTrack != null ? alignmentTrack.getRenderOptions().getBasemodFilter() : null;
+                        float threshold = alignmentTrack.getRenderOptions().getBasemodThreshold();
+                        BaseModificationCoverageRenderer.drawModifications(context, pX, bottomY, dX, barHeight, pos, alignmentCounts, colorOption, basemodFilter, threshold, simplexModifications);
+
                     } else {
                         if (refBases != null) {
                             int refIdx = pos - intervalStart;

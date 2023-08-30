@@ -46,14 +46,18 @@ import java.util.*;
 public class MergedAlignmentReader implements AlignmentReader {
 
     private static Logger log = LogManager.getLogger(MergedAlignmentReader.class);
+    private final Genome genome;
 
     List<AlignmentReader> readers;
     List<String> sequenceNames;
-    Map<String, Integer> chrNameIndex;
+
+    Map<AlignmentReader, Map<String, String>> readerChrNameMaps;
+
     SAMFileHeader header;
 
     public MergedAlignmentReader(List<AlignmentReader> readers) throws IOException {
         this.readers = readers;
+        this.genome = GenomeManager.getInstance().getCurrentGenome();
         loadSequenceNames();
     }
 
@@ -79,53 +83,62 @@ public class MergedAlignmentReader implements AlignmentReader {
         Set<String> platforms = new HashSet<String>();
         for (AlignmentReader reader : readers) {
             Set<String> plf = reader.getPlatforms();
-            if(plf != null){
+            if (plf != null) {
                 platforms.addAll(plf);
             }
         }
         return platforms;
     }
 
-    public SAMFileHeader getFileHeader(){
-        if(this.header == null){
+    public SAMFileHeader getFileHeader() {
+        if (this.header == null) {
             this.header = loadHeaders();
         }
         return this.header;
     }
 
     /**
-     * Return the merged list of all sequence names, maintaining order.
+     * Return the merged list of all sequence names, maintaining order.  As sequence name conventions might
+     * vary between bam files ("1" vs "chr1", etc), the loaded genome canonical name is used for the sequence
+     * names of the merged bams.  Consequentally we need to keep a seq name map per bam file (reader) to substitute
+     * back when querying.* * *
      *
      * @return
      */
     public void loadSequenceNames() throws IOException {
-        // Use a set for quick comparison
+
+        readerChrNameMaps = new HashMap<>();
+
         LinkedHashSet<String> names = new LinkedHashSet<String>(50);
         for (AlignmentReader reader : readers) {
-            names.addAll(reader.getSequenceNames());
-        }
-        sequenceNames = new ArrayList<String>(names);
 
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        chrNameIndex = new HashMap<String, Integer>(sequenceNames.size());
-        for (int i = 0; i < sequenceNames.size(); i++) {
-            final String seqName = sequenceNames.get(i);
-            String chr = genome == null ? seqName : genome.getCanonicalChrName(seqName);
-            chrNameIndex.put(chr, i);
+            Map<String, String> chrNameMap = new HashMap<>();
+
+            List<String> readerSequenceNames = reader.getSequenceNames();
+            for (String seq : readerSequenceNames) {
+                String chr = genome.getCanonicalChrName(seq);
+                names.add(chr);
+
+                chrNameMap.put(chr, seq);
+            }
+            readerChrNameMaps.put(reader, chrNameMap);
         }
+        sequenceNames = new ArrayList<>(names);
+
+
     }
 
-    private SAMFileHeader loadHeaders(){
+    private SAMFileHeader loadHeaders() {
         List<SAMFileHeader> headersList = new ArrayList<SAMFileHeader>();
         SAMFileHeader.SortOrder sortOrder = null;
-        for(AlignmentReader reader: readers){
+        for (AlignmentReader reader : readers) {
             SAMFileHeader curHeader = reader.getFileHeader();
-            if(curHeader != null) {
+            if (curHeader != null) {
                 headersList.add(curHeader);
                 sortOrder = curHeader.getSortOrder();
             }
         }
-        if(sortOrder != null){
+        if (sortOrder != null) {
             SamFileHeaderMerger headerMerger = new SamFileHeaderMerger(sortOrder, headersList, true);
             return headerMerger.getMergedHeader();
         }
@@ -163,7 +176,8 @@ public class MergedAlignmentReader implements AlignmentReader {
                 if (iterate) {
                     iter = reader.iterator();
                 } else {
-                    iter = reader.query(chr, start, end, contained);
+                    String seq = readerChrNameMaps.containsKey(reader) ? readerChrNameMaps.get(reader).get(chr) : chr;
+                    iter = reader.query(seq, start, end, contained);
                 }
                 allIterators.add(iter);
                 if (iter.hasNext()) {
@@ -231,15 +245,9 @@ public class MergedAlignmentReader implements AlignmentReader {
             public int compare(RecordIterWrapper wrapper1, RecordIterWrapper wrapper2) {
                 Alignment a1 = wrapper1.nextRecord;
                 Alignment a2 = wrapper2.nextRecord;
-
-                Integer idx1 = chrNameIndex.get(a1.getChr());
-                Integer idx2 = chrNameIndex.get(a2.getChr());
-                if(idx1==null) idx1 = Integer.MAX_VALUE;
-                if(idx2== null) idx2 = Integer.MAX_VALUE;  // Put these records at the end.
-                if (idx1 > idx2) {
-                    return 1;
-                } else if (idx1 < idx2) {
-                    return -1;
+                int chrCompare = genome.getCanonicalChrName(a1.getChr()).compareTo(genome.getCanonicalChrName(a2.getChr()));
+                if (chrCompare != 0) {
+                    return chrCompare;
                 } else {
                     return a1.getAlignmentStart() - a2.getAlignmentStart();
                 }

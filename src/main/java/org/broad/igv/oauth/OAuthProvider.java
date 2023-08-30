@@ -12,6 +12,7 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
+import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.JWTParser;
 import software.amazon.awssdk.services.sts.model.Credentials;
@@ -37,7 +38,7 @@ public class OAuthProvider {
 
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
 
-    private String state = UUID.randomUUID().toString(); // "RFC6749: An opaque value used by the client to maintain state"
+    private String state; // "RFC6749: An opaque value used by the client to maintain state"
     private String portNumber = PreferencesManager.getPreferences().getPortNumber();
     private String redirectURI = "http%3A%2F%2Flocalhost%3A" + portNumber + "%2FoauthCallback";
     private String clientId;
@@ -59,6 +60,8 @@ public class OAuthProvider {
     public OAuthProvider(JsonObject obj) throws IOException {
 
         config = obj;
+
+        state = UUID.randomUUID().toString(); // "RFC6749: An opaque value used by the client to maintain state"
 
         // For backward compatibility
         if (obj.has("installed") && !obj.has("client_id")) {
@@ -111,7 +114,7 @@ public class OAuthProvider {
         }
 
         // Special Google properties
-        if (authEndpoint.contains("google")) {
+        if (isGoogle()) {
             if (scope == null) {
                 String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
                 String emailScope = "https://www.googleapis.com/auth/userinfo.email";
@@ -122,6 +125,18 @@ public class OAuthProvider {
                 authProvider = "Google";
             }
         }
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public String[] getHosts() {
+        return hosts;
+    }
+
+    public void setHosts(String[] hosts) {
+        this.hosts = hosts;
     }
 
     /**
@@ -186,7 +201,7 @@ public class OAuthProvider {
         if (clientSecret != null) {
             params.put("client_secret", clientSecret);
         }
-        params.put("redirect_uri", new URLDecoder().decode(redirectURI, "utf-8"));
+        params.put("redirect_uri", URLDecoder.decode(redirectURI, "utf-8"));
         params.put("grant_type", "authorization_code");
 
         //  set the resource if it necessary for the auth provider dwm08
@@ -205,12 +220,13 @@ public class OAuthProvider {
             refreshToken = response.get("refresh_token").getAsString();
             expirationTime = System.currentTimeMillis() + (response.get("expires_in").getAsInt() * 1000);
 
-            JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
-
             // Populate this class with user profile attributes
-            fetchUserProfile(payload);
+            if (response.has("id_token")) {
+                JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
+                fetchUserProfile(payload);
+            }
 
-            if (authProvider.equals("Amazon")) {
+            if (authProvider != null && "Amazon".equals(authProvider)) {
                 // Get AWS credentials after getting relevant tokens
                 Credentials aws_credentials;
                 aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
@@ -231,7 +247,6 @@ public class OAuthProvider {
         }
     }
 
-    // Called from port listener upon receiving the oauth request with a "token" parameter
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
@@ -286,13 +301,12 @@ public class OAuthProvider {
     }
 
     /**
-     * Check if the username is in the claim information. If so, extract it.
-     * Otherwise call out to the server to get the current user name.
+     * Extract user information from the claim information
      * dwm08
      *
      * @throws IOException
      */
-    public JsonObject fetchUserProfile(JsonObject jwt_payload) throws IOException {
+    public JsonObject fetchUserProfile(JsonObject jwt_payload) {
         try {
             currentUserName = jwt_payload.has("name") ? jwt_payload.get("name").getAsString() : null;
             if (currentUserName == null && jwt_payload.has("cognito:username")) {
@@ -334,10 +348,6 @@ public class OAuthProvider {
         return expiration;
     }
 
-    public JsonObject getConfig() {
-        return config;
-    }
-
     public class AuthStateEvent {
         boolean authenticated;
         String authProvider;
@@ -369,12 +379,13 @@ public class OAuthProvider {
     }
 
     public boolean isLoggedIn() {
-        return getAccessToken() != null;
+        return accessToken != null;
     }
 
     public String getCurrentUserName() {
-        return currentUserName;
+        return currentUserName != null ? currentUserName : (currentUserEmail != null ? currentUserEmail : currentUserID);
     }
+
 
     public void logout() {
         accessToken = null;
@@ -389,18 +400,6 @@ public class OAuthProvider {
             Preferences.userRoot().remove(REFRESH_TOKEN_KEY);
         } catch (Exception e) {
             log.error("Error removing oauth refresh token", e);
-        }
-    }
-
-    public void updateSaveOption(boolean aBoolean) {
-        if (aBoolean) {
-            if (refreshToken != null) {
-                // SECURITY: this is definitely a bad practice, we should NOT persist (refresh) tokens locally, ever.
-                //saveRefreshToken();
-            }
-        } else {
-            removeRefreshToken();
-
         }
     }
 
@@ -447,7 +446,15 @@ public class OAuthProvider {
                 }
             }
         }
+
+        if (this.isGoogle()) {
+            return GoogleUtils.isGoogleURL(url.toExternalForm());
+        }
         return false;
+    }
+
+    public boolean isGoogle() {
+        return this.authEndpoint.contains("accounts.google.com");
     }
 
     public JsonObject getResponse() {

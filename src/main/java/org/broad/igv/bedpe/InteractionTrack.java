@@ -379,7 +379,9 @@ public class InteractionTrack extends AbstractTrack {
     @Override
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
-        List<BedPE> candidates = getFeaturesOverlapping(frame.getChrName(), (int) position, (int) position + 1);
+        // Expand range a little bit -- this should be done in pixels
+        double tolerance = frame.getScale() * 3;
+        List<BedPE> candidates = getFeaturesOverlapping(frame.getChrName(), (int) position - tolerance, (int) position + 1 + tolerance);
 
         // Sort candidate features smallest to largest
         Comparator<BedPE> sorter = graphType == GraphType.PROPORTIONAL_ARC ?
@@ -402,7 +404,7 @@ public class InteractionTrack extends AbstractTrack {
 
         for (BedPE f : candidates) {
             BedPEShape s = f.getShape();
-            if (s != null && s.contains(mouseX, mouseY)) {
+            if (s == null || s.contains(mouseX, mouseY)) {
                 return f.getValueString();
             }
         }

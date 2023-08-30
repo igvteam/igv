@@ -78,7 +78,7 @@ public class EmblFeatureTableParser implements FeatureParser {
                 track.setName(locator.getTrackName());
                 track.setMinimumHeight(35);
                 track.setHeight(45);
-                track.setRendererClass(GeneTrackRenderer.class);
+                track.setRenderer(new GeneTrackRenderer());
 
                 List<FeatureTrack> newTracks = new ArrayList();
 

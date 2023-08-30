@@ -34,6 +34,10 @@ final public class Constants {
     public static final String SHOW_GENOME_SERVER_WARNING = "SHOW_GENOME_SERVER_WARNING";
     public static final String CN_FREQ_AMP_THRESHOLD = "CN_FREQ.AMP_THRESHOLD";
     public static final String CN_FREQ_DEL_THRESHOLD = "CN_FREQ.DEL_THRESHOLD";
+    public static final String AUTOSAVE_ON_EXIT = "AUTOSAVE_ON_EXIT";
+    public static final String AUTOLOAD_LAST_AUTOSAVE = "AUTOLOAD_LAST_AUTOSAVE";
+    public static final String AUTOSAVE_FREQUENCY = "AUTOSAVE_FREQUENCY";
+    public static final String AUTOSAVES_TO_KEEP = "AUTOSAVES_TO_KEEP";
 
     //
     public static final String RECENT_SESSIONS = "IGV.Session.recent.sessions";
@@ -43,7 +47,6 @@ final public class Constants {
     public static final String LAST_GENOME_IMPORT_DIRECTORY = "LAST_GENOME_IMPORT_DIRECTORY";
     public static final String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
     public static final String DEFAULT_GENOME = "DEFAULT_GENOME_KEY";
-    public static final String AUTO_UPDATE_GENOMES = "AUTO_UPDATE_GENOMES";
     public static final String FRAME_BOUNDS_KEY = "IGV.Bounds";
 
 
@@ -108,7 +111,6 @@ final public class Constants {
     public static final String SAM_SHADE_QUALITY_HIGH = "SAM.SHADE_QUALITY_HIGH";
     public static final String SAM_SHADE_ALIGNMENT_BY = "SAM.SHADE_ALIGNMENT_BY";
     public static final String SAM_ALIGNMENT_SCORE_THRESHOLD = "SAM.ALIGNMENT_SCORE_THRESHOLD";
-    public static final String SAM_BASEMOD_THRESHOLD = "SAM.BASEMOD_THRESHOLD";
     public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
     public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
@@ -139,6 +141,8 @@ final public class Constants {
     public static final String SAM_SORT_OPTION = "SAM.SORT_OPTION";
     public static final String SAM_INVERT_SORT = "SAM.INVERT_SORT";
     public static final String SAM_GROUP_OPTION = "SAM.GROUP_OPTION";
+
+    public static final String SAM_GROUP_ALL = "SAM.GROUP_ALL";
     public static final String SAM_SHOW_ALL_BASES = "SAM.SHOW_ALL_BASES";
     public static final String SAM_SHOW_MISMATCHES = "SAM.SHOW_MISMATCHES";
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
@@ -161,6 +165,8 @@ final public class Constants {
     public static final String SAM_LARGE_INDELS_THRESHOLD = "SAM.LARGE_INSERTIONS_THRESOLD";
     public static final String SAM_FLAG_CLIPPING = "SAM.FLAG_CLIPPING";
     public static final String SAM_CLIPPING_THRESHOLD = "SAM.CLIPPING_THRESHOLD";
+
+    public static final String SAM_SHOW_CONNECTED_CHR_NAME = "SAM.SHOW_CONNECTED_CHR_NAME";
     public static final String SAM_SHOW_GROUP_SEPARATOR = "SAM.SHOW_GROUP_SEPARATOR";
     public static final String SAM_REDUCED_MEMORY_MODE = "SAM.REDUCED_MEMORY_MODE";
     public static final String SAM_HIDE_SMALL_INDEL = "SAM.HIDE_SMALL_INDEL";
@@ -174,6 +180,29 @@ final public class Constants {
     public static final String SAM_DISPLAY_MODE = "SAM.DISPLAY_MODE";
     public static final String SAM_DISPLAY_PAIRED = "SAM.DISPLAY_PAIRED";
     public static final String KNOWN_SNPS = "KNOWN_SNPS_FILE";
+
+
+    // Base modification settings
+    public static final String BASEMOD_THRESHOLD = "BASEMOD.THRESHOLD";
+    public static final String BASEMOD_M_COLOR = "BASEMOD.M_COLOR";
+    public static final String BASEMOD_H_COLOR = "BASEMOD.H_COLOR";
+    public static final String BASEMOD_F_COLOR = "BASEMOD.F_COLOR";
+    public static final String BASEMOD_C_COLOR = "BASEMOD.C_COLOR";
+    public static final String BASEMOD_G_COLOR = "BASEMOD.G_COLOR";
+    public static final String BASEMOD_E_COLOR = "BASEMOD.E_COLOR";
+    public static final String BASEMOD_B_COLOR = "BASEMOD.B_COLOR";
+    public static final String BASEMOD_A_COLOR = "BASEMOD.A_COLOR";
+    public static final String BASEMOD_O_COLOR = "BASEMOD.O_COLOR";
+    public static final String BASEMOD_OTHER_COLOR = "BASEMOD.OTHER_COLOR";
+
+    public static final String BASEMOD_NONE_A_COLOR = "BASEMOD.NONE_A_COLOR";
+    public static final String BASEMOD_NONE_C_COLOR = "BASEMOD.NONE_C_COLOR";
+    public static final String BASEMOD_NONE_T_COLOR = "BASEMOD.NONE_T_COLOR";
+    public static final String BASEMOD_NONE_G_COLOR = "BASEMOD.NONE_G_COLOR";
+    public static final String BASEMOD_NONE_N_COLOR = "BASEMOD.NONE_N_COLOR";
+    public static final String BASEMOD_GROUP_BY_STRAND = "BASEMOD.GROUP_BY_STRAND";
+    public static final String BASEMOD_SKIPPED_BASES = "BASEMOD.SKIPPED_BASES";
+    public static final String SMRT_KINETICS_SHOW_OPTIONS = "SMRT_KINETICS.SHOW_OPTIONS";
 
     // Sequence track settings
     public static final String SEQUENCE_TRANSLATION_STRAND = "SEQUENCE_TRANSLATION_STRAND";
@@ -213,6 +242,8 @@ final public class Constants {
     public static final String OVERLAY_MUTATIONS_WHOLE_GENOME = "OVERLAY_MUTATIONS_WHOLE_GENOME";
     public static final String COLOR_MUTATIONS = "COVER_OVERLAY_KEY";
 
+    public static final String MUT_COORDS = "MUT_COORDS";
+
     // GWAS track options
     public static final String GWAS_TRACK_HEIGHT = "GWAS_TRACK_HEIGHT";
     public static final String GWAS_DESCRIPTION_CACHE_SIZE = "GWAS_DESCRIPTION_CACHE_SIZE";
@@ -230,24 +261,9 @@ final public class Constants {
     public static final String PROBE_MAPPING_FILE = "PROBE_MAPPING_FILE";
     public static final String USE_PROBE_MAPPING_FILE = "USE_PROBE_MAPPING_FILE";
 
-    // Genome space
-    public static final String GENOME_SPACE_ENABLE = "GENOME_SPACE_ENABLE";
-    public static final String GENOME_SPACE_DM_SERVER = "GENOME_SPACE_DM_SERVER";
-    public static final String GENOME_SPACE_ATM_SERVER = "GENOME_SPACE_ATM_SERVER";
-    public static final String GENOME_SPACE_IDENTITY_SERVER = "GENOME_SPACE_IDENTITY_SERVER";
-
-    // Google
-    public static final String GOOGLE_API_KEY = "GOOGLE_API_KEY";
     public static final String GOOGLE_PROJECT = "GOOGLE_PROJECT";
     public static final String ENABLE_GOOGLE_MENU = "ENABLE_GOOGLE_MENU";
     public static final String SAVE_GOOGLE_CREDENTIALS = "SAVE_GOOGLE_CREDENTIALS";
-
-    // CBIO connections
-    public static final String CBIO_MUTATION_THRESHOLD = "CBIO_MUTATION_THRESHOLD";
-    public static final String CBIO_AMPLIFICATION_THRESHOLD = "CBIO_AMPLIFICATION_THRESHOLD";
-    public static final String CBIO_DELETION_THRESHOLD = "CBIO_DELETION_THRESHOLD";
-    public static final String CBIO_EXPRESSION_UP_THRESHOLD = "CBIO_EXPRESSION_UP_THRESHOLD";
-    public static final String CBIO_EXPRESSION_DOWN_THRESHOLD = "CBIO_EXPRESSION_DOWN_THRESHOLD";
 
     // Proxy settings
     public static final String USE_PROXY = "PROXY.USE";
@@ -277,8 +293,6 @@ final public class Constants {
     public static final String CIRC_VIEW_PORT = "CIRC_VIEW_PORT";
     public static final String CIRC_VIEW_HOST = "CIRC_VIEW_HOST";
 
-    // Experimental
-    public static final String SCORE_VARIANTS = "SCORE_VARIANTS";
 
 
     /**
@@ -301,7 +315,7 @@ final public class Constants {
             SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS,
             SAM_JUNCTION_MIN_FLANKING_WIDTH,
             SAM_JUNCTION_MIN_COVERAGE,
-            SAM_BASEMOD_THRESHOLD
+            BASEMOD_SKIPPED_BASES
     );
 
     /**
@@ -318,7 +332,36 @@ final public class Constants {
             SAM_GROUP_BY_TAG,
             SAM_SHADE_QUALITY_LOW,
             SAM_SHADE_QUALITY_HIGH,
-            SAM_SHADE_ALIGNMENT_BY
+            SAM_SHADE_ALIGNMENT_BY,
+            BASEMOD_THRESHOLD,
+            SMRT_KINETICS_SHOW_OPTIONS
+    );
+
+    static java.util.List<String> BASEMOD_COLOR_KEYS = Arrays.asList(
+
+            BASEMOD_M_COLOR,
+            BASEMOD_H_COLOR,
+            BASEMOD_F_COLOR,
+            BASEMOD_C_COLOR,
+            BASEMOD_G_COLOR,
+            BASEMOD_E_COLOR,
+            BASEMOD_B_COLOR,
+            BASEMOD_A_COLOR,
+            BASEMOD_O_COLOR,
+            BASEMOD_OTHER_COLOR,
+            BASEMOD_NONE_A_COLOR,
+            BASEMOD_NONE_C_COLOR,
+            BASEMOD_NONE_T_COLOR,
+            BASEMOD_NONE_G_COLOR,
+            BASEMOD_NONE_N_COLOR
+    );
+
+    static java.util.List<String> NUCLEOTIDE_COLOR_KEYS = Arrays.asList(
+            COLOR_A,
+            COLOR_C,
+            COLOR_G,
+            COLOR_N,
+            COLOR_T
     );
 
     /**

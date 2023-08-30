@@ -38,6 +38,10 @@ public interface AlignmentCounts extends Feature {
 
     int getTotalCount(int pos);
 
+    public int getTotalPositiveCount(int pos);
+
+    public int getTotalNegativeCount(int pos);
+
     int getTotalQuality(int pos);
 
     int getCount(int pos, byte b);

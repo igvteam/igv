@@ -181,6 +181,11 @@ public class LoadFromURLDialog extends org.broad.igv.ui.IGVDialog  {
         contentPane.add(dialogPane, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(getOwner());
+
+        // Make "enter" trigger the ok button
+        fileField.addActionListener(e -> okButtonActionPerformed(e));
+        indexField.addActionListener(e -> okButtonActionPerformed(e));
+        this.rootPane.setDefaultButton(okButton);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 

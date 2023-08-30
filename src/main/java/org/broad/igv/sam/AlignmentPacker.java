@@ -29,6 +29,7 @@
  */
 package org.broad.igv.sam;
 
+import htsjdk.samtools.SAMTag;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
@@ -81,19 +82,13 @@ public class AlignmentPacker {
         } else {
 
             // Separate alignments into groups.
-            Map<Object, List<Alignment>> groupedAlignments = new HashMap<Object, List<Alignment>>();
-            Iterator<Alignment> iter = alList.iterator();
-            while (iter.hasNext()) {
-                Alignment alignment = iter.next();
+            Map<Object, List<Alignment>> groupedAlignments = new HashMap<>();
+            for (final Alignment alignment : alList) {
                 Object groupKey = getGroupValue(alignment, renderOptions);
                 if (groupKey == null) {
                     groupKey = NULL_GROUP_VALUE;
                 }
-                List<Alignment> groupList = groupedAlignments.get(groupKey);
-                if (groupList == null) {
-                    groupList = new ArrayList<>(1000);
-                    groupedAlignments.put(groupKey, groupList);
-                }
+                List<Alignment> groupList = groupedAlignments.computeIfAbsent(groupKey, k -> new ArrayList<>(1000));
                 groupList.add(alignment);
             }
 
@@ -104,7 +99,7 @@ public class AlignmentPacker {
             if(renderOptions.isInvertGroupSorting()){
                 groupComparator = groupComparator.reversed();
             }
-            Collections.sort(keys, groupComparator);
+            keys.sort(groupComparator);
 
             for (Object key : keys) {
                 List<Row> alignmentRows = new ArrayList<>(10000);
@@ -125,7 +120,6 @@ public class AlignmentPacker {
         Map<String, PairedAlignment> pairs = null;
 
         boolean isPairedAlignments = renderOptions.isViewPairs();
-        String linkByTag = renderOptions.getLinkByTag();
 
         if (isPairedAlignments) {
             pairs = new HashMap<>(1000);
@@ -293,7 +287,7 @@ public class AlignmentPacker {
             }
         }
 
-        // Now copy list, de-linking orhpaned alignments (alignments with no linked mates)
+        // Now copy list, de-linking orphaned alignments (alignments with no linked mates)
         List<Alignment> delinkedList = new ArrayList<>(alList.size());
         for (Alignment a : bcList) {
             if (a instanceof LinkedAlignment) {
@@ -436,6 +430,8 @@ public class AlignmentPacker {
                 } else {
                     return mate.getChr();
                 }
+            case CHIMERIC:
+                return al.getAttribute(SAMTag.SA.name()) != null ?  "CHIMERIC" : "";
             case SUPPLEMENTARY:
                 return al.isSupplementary() ? "SUPPLEMENTARY" : "";
             case REFERENCE_CONCORDANCE:
@@ -670,7 +666,7 @@ public class AlignmentPacker {
         }
     }
 
-    private class PairOrientationComparator implements Comparator<Object> {
+    private static class PairOrientationComparator implements Comparator<Object> {
         private final List<AlignmentTrack.OrientationType> orientationTypes;
         //private final Set<String> orientationNames = new HashSet<String>(AlignmentTrack.OrientationType.values().length);
 

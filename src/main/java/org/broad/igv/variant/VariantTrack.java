@@ -223,7 +223,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         setDisplayMode(DisplayMode.EXPANDED);
 
-        int sampleCount = allSamples.size();
+        int sampleCount = sampleCount();
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
         squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
@@ -236,8 +236,17 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         boolean bypassFileAutoDiscovery = prefMgr.getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY);
         if (vcfToBamMapping == null && path != null && !bypassFileAutoDiscovery) {
-            if (ParsingUtils.fileExists(path + ".mapping")) {
-                vcfToBamMapping = path + ".mapping";
+	    String mappingFile = "";
+            int queryStart = path.indexOf("?");
+            if (queryStart > -1)
+            {
+                String query =  path.substring(queryStart);
+                path = path.substring(0,queryStart);
+                mappingFile = path + ".mapping" + query;
+            }
+
+            if (ParsingUtils.fileExists(mappingFile)) {
+                vcfToBamMapping = mappingFile;
             }
         }
 
@@ -253,7 +262,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             if (defVisibilityWindow > 0) {
                 setVisibilityWindow(defVisibilityWindow * 1000);
             } else {
-                int vw = Math.max(10000, (100000 - 100 * (allSamples.size() - 1)));
+                int vw = Math.max(10000, (100000 - 100 * (sampleCount() - 1)));
                 setVisibilityWindow(vw);
             }
         }
@@ -263,7 +272,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     private boolean defaultShowGenotypes() {
-        return allSamples.size() > 0;
+        return sampleCount() > 0;
     }
 
     private void loadAlignmentMappings(String bamListPath) {
@@ -340,16 +349,18 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             return;
         }
 
-        for (String sample : allSamples) {
+        if(allSamples != null) {
+            for (String sample : allSamples) {
 
-            String sampleGroup = manager.getAttribute(sample, newGroupByAttribute);
+                String sampleGroup = manager.getAttribute(sample, newGroupByAttribute);
 
-            List<String> sampleList = samplesByGroups.get(sampleGroup);
-            if (sampleList == null) {
-                sampleList = new ArrayList<String>();
-                samplesByGroups.put(sampleGroup, sampleList);
+                List<String> sampleList = samplesByGroups.get(sampleGroup);
+                if (sampleList == null) {
+                    sampleList = new ArrayList<String>();
+                    samplesByGroups.put(sampleGroup, sampleList);
+                }
+                sampleList.add(sample);
             }
-            sampleList.add(sample);
         }
 
         grouped = samplesByGroups.size() > 1;
@@ -362,9 +373,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @param comparator the comparator to sort by
      */
     public void sortSamples(Comparator<String> comparator) {
-        Collections.sort(allSamples, comparator);
-        for (List<String> samples : samplesByGroups.values()) {
-            Collections.sort(samples, comparator);
+        if(allSamples != null) {
+            Collections.sort(allSamples, comparator);
+            for (List<String> samples : samplesByGroups.values()) {
+                Collections.sort(samples, comparator);
+            }
         }
     }
 
@@ -397,7 +410,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @return
      */
     public int getHeight() {
-        int sampleCount = allSamples.size();
+        int sampleCount = sampleCount();
         int h;
         if (getDisplayMode() == DisplayMode.COLLAPSED || sampleCount == 0 || showGenotypes == false) {
             h = getVariantsHeight();
@@ -414,6 +427,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             return ((TribbleFeatureSource) source).getHeader();
         }
         return null;
+    }
+
+    public int sampleCount() {
+        return allSamples == null ? 0 : allSamples.size();
     }
 
     /**
@@ -442,7 +459,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         // If height is < expanded height try "squishing" track, otherwise expand it
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
-        int sampleCount = showGenotypes == false ? 0 : allSamples.size();
+        int sampleCount = showGenotypes == false ? 0 : sampleCount();
         final int expandedHeight = getVariantBandHeight() + margins + (sampleCount * getGenotypeBandHeight());
         if (height < expandedHeight) {
             setDisplayMode(DisplayMode.SQUISHED);
@@ -575,7 +592,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     private void drawVariantBandBorder(Graphics2D g2D, Rectangle visibleRectangle, int variantBandY, int left, int right) {
-        if (allSamples.size() > 0 && showGenotypes) {
+        if (sampleCount() > 0 && showGenotypes) {
             drawLineIfVisible(g2D, visibleRectangle, Color.lightGray, variantBandY, left, right);
         }
     }
@@ -626,7 +643,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         drawLineIfVisible(g2D, visibleRectangle, borderGray, bottomY, left, right);
 
         // Variant / Genotype border
-        if (allSamples.size() > 0 && showGenotypes) {
+        if (sampleCount() > 0 && showGenotypes) {
             int variantGenotypeBorderY = trackRectangle.y + getVariantsHeight();
             drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
 

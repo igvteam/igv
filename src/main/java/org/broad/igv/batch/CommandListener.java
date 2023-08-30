@@ -30,11 +30,14 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.StringUtils;
 
 import java.awt.*;
@@ -178,7 +181,7 @@ public class CommandListener implements Runnable {
             while (!halt && (inputLine = in.readLine()) != null) {
 
                 String cmd = inputLine;
-                if(!cmd.contains("/oauthCallback")) {
+                if (!cmd.contains("/oauthCallback")) {
                     log.info(cmd);
                 }
 
@@ -218,15 +221,26 @@ public class CommandListener implements Runnable {
 
                             if (command != null) {
 
-                                // Detect google oauth callback
+                                // Detect  oauth callback
                                 if (command.equals("/oauthCallback")) {
-                                    if (params.containsKey("code")) {
-                                        OAuthUtils.getInstance().setAuthorizationCode(params);
+
+                                    OAuthProvider provider = OAuthUtils.getInstance().getProviderForState(params.get("state"));
+                                    if (params.containsKey("error")) {
+                                        sendTextResponse(out, "Error authorizing IGV: " + params.get("error"));
+                                    } else if (params.containsKey("code")) {
+                                        provider.setAuthorizationCode(params.get("code"));
+                                        sendTextResponse(out, "Authorization successful.  You may close this tab.");
                                     } else if (params.containsKey("token")) {
-                                        OAuthUtils.getInstance().setAccessToken(params);
+                                        // Very doubtful this is ever called -- its not a normal OAuth flow
+                                        log.info("Oauth token received");
+                                        provider.setAccessToken(params.get("token"));
+                                        sendTextResponse(out, "Authorization successful.  You may close this tab.");
+                                    } else {
+                                        sendTextResponse(out, "Unsuccessful authorization response: " + inputLine);
                                     }
-                                    sendTextResponse(out, "SUCCESS");
-                                    if(PreferencesManager.getPreferences().getAsBoolean(Constants.PORT_ENABLED) == false) {
+
+
+                                    if (PreferencesManager.getPreferences().getAsBoolean(Constants.PORT_ENABLED) == false) {
                                         // Turn off port
                                         halt();
                                     }
@@ -272,7 +286,6 @@ public class CommandListener implements Runnable {
         }
     }
 
-
     private void closeSockets() {
         if (clientSocket != null) {
             try {
@@ -299,7 +312,8 @@ public class CommandListener implements Runnable {
     private static final String CONNECTION_CLOSE = "Connection: close";
     private static final String NO_CACHE = "Cache-Control: no-cache, no-store";
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin: *";
-
+    private static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers: access-control-allow-origin";
+    
     private void sendTextResponse(PrintWriter out, String result) {
         sendHTTPResponse(out, result, "text/html", "GET");
     }
@@ -325,6 +339,8 @@ public class CommandListener implements Runnable {
                 out.print(result);
                 out.print(CRLF);
             }
+        } else {
+            out.print(CRLF);
         }
         out.close();
     }
@@ -334,6 +350,8 @@ public class CommandListener implements Runnable {
         out.print(HTTP_NO_RESPONSE);
         out.print(CRLF);
         out.print(ACCESS_CONTROL_ALLOW_ORIGIN);
+        out.print(CRLF);
+        out.print(ACCESS_CONTROL_ALLOW_HEADERS);
         out.print(CRLF);
         out.println("Access-Control-Allow-Methods: HEAD, GET, OPTIONS");
         out.print(CRLF);
@@ -382,8 +400,11 @@ public class CommandListener implements Runnable {
                 // Default for merge is "false" for session files,  "true" otherwise
                 boolean merge;
                 if (mergeValue != null) {
-                    // Explicit setting
-                    merge = mergeValue.equalsIgnoreCase("true");
+                    if ("ask".equals(mergeValue)) {
+                        merge = !MessageUtils.confirm("Unload current session before loading new tracks?");
+                    } else {
+                        merge = mergeValue.equalsIgnoreCase("true");
+                    }
                 } else if (file.endsWith(".xml") || file.endsWith(".php") || file.endsWith(".php3")) {
                     // Session file
                     merge = false;
@@ -416,8 +437,6 @@ public class CommandListener implements Runnable {
 
         return result;
     }
-
-
 
 
     /**

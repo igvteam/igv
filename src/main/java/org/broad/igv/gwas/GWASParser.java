@@ -25,6 +25,7 @@
 
 package org.broad.igv.gwas;
 
+import org.broad.igv.Globals;
 import org.broad.igv.logging.*;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
@@ -52,6 +53,12 @@ public class GWASParser {
     Genome genome;
     private GWASColumns columns;
 
+    public Pattern delimiter;
+
+    private int warningCount;
+
+    private static int MAX_WARNING = 20;
+
     public static boolean isGWASFile(String typeString) {
         return typeString.endsWith("logistic") || typeString.endsWith("linear") || typeString.endsWith("assoc") ||
                 typeString.endsWith("qassoc") || typeString.endsWith("gwas");
@@ -61,6 +68,7 @@ public class GWASParser {
         this.locator = locator;
         this.genome = genome;
         this.columns = new GWASColumns();
+        this.warningCount = 0;
     }
 
 
@@ -69,42 +77,34 @@ public class GWASParser {
     }
 
 
-    public Map<String, List<GWASFeature>> parse() throws IOException {
+    public GWASData parse() throws IOException {
 
         BufferedReader reader = null;
         String nextLine = null;
         int rowCounter = 0;
-        Map<String, List<GWASFeature>> features = new HashMap<>();
+        GWASData data = new GWASData();
 
         try {
             reader = ParsingUtils.openBufferedReader(locator);
 
             String headerLine = reader.readLine();
 
-            if (!this.columns.parseHeader(headerLine))
+            // Try to determine delimiter pattern -- default is tab, but some older files might use whitespace
+            this.delimiter = headerLine.indexOf('\t') > 0 ? Globals.tabPattern : Globals.whitespacePattern;
+
+            if (!this.columns.parseHeader(headerLine, this.delimiter))
                 throw new ParserException("Error while parsing header line.", 0, nextLine);
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
                 nextLine = nextLine.trim();
                 rowCounter++;
-                GWASFeature f = null;
-                f = parseLine(nextLine, rowCounter);
-                if(f != null) {
-                    List<GWASFeature> featureList = features.get(f.chr);
-                    if (featureList == null) {
-                        featureList = new ArrayList<>();
-                        features.put(f.chr, featureList);
-                    }
-                    featureList.add(f);
+                GWASFeature f = parseLine(nextLine, rowCounter);
+                if (f != null) {
+                    data.addFeature(f);
                 }
             }
-
-            // Sort features by position
-            for (List<GWASFeature> featureList : features.values()) {
-                featureList.sort(Comparator.comparingInt(o -> o.position));
-            }
-
-            return features;
+            data.finish();
+            return data;
 
         } catch (Exception e) {
             if (nextLine != null && rowCounter != 0) {
@@ -127,9 +127,22 @@ public class GWASParser {
      */
     private GWASFeature parseLine(String nextLine, long lineNumber) {
 
-        String[] tokens = nextLine.split("\\t|( +)");
+        String[] tokens = this.delimiter.split(nextLine);
 
         if (tokens.length >= 3) {
+
+
+            final String posString = tokens[this.columns.locationCol].trim();
+            if (posString.indexOf(";") > 0 || posString.length() == 0 || posString.indexOf('x') > 0) {
+                if (warningCount < MAX_WARNING) {
+                    log.warn(locator.getFileName() + " line number: " + lineNumber + ".  expected numeric position at column " + this.columns.locationCol + " Found " + tokens[this.columns.locationCol]);
+                } else if (warningCount == MAX_WARNING) {
+                    log.warn("Max warning count excedeed for " + locator.getPath());
+                }
+                warningCount++;
+                return null;
+            }
+
             String chr = tokens[this.columns.chrCol].trim();
             if (genome != null) {
                 chr = genome.getCanonicalChrName(chr);
@@ -137,21 +150,39 @@ public class GWASParser {
 
             int position;
             try {
-                position = Integer.parseInt(tokens[this.columns.locationCol].trim());
+                position = Integer.parseInt(posString);
             } catch (NumberFormatException e) {
-                throw new ParserException("Column " + this.columns.locationCol + " must be a numeric value.", lineNumber, nextLine);
+                if (warningCount < MAX_WARNING) {
+                    log.warn(locator.getFileName() + " line number: " + lineNumber + ".  expected numeric position at column " + this.columns.locationCol + " Found " + tokens[this.columns.locationCol]);
+                } else if (warningCount == MAX_WARNING) {
+                    log.warn("Max warning count excedeed for " + locator.getPath());
+                }
+                warningCount++;
+                return null;
             }
 
             // Check if the p-value is NA
             if (!tokens[this.columns.pCol].trim().equalsIgnoreCase("NA")) {
-                double p;
+                double p = 0;
                 try {
-                    p = Double.parseDouble(tokens[this.columns.pCol]);
-                    if (p <= 0) {
-                        throw new NumberFormatException();
+                    // Check for extreme low values
+                    String pvalString = tokens[this.columns.pCol];
+                    int idx = pvalString.indexOf("E");
+                    if (idx > 0) {
+                        int exp = Integer.parseInt(pvalString.substring(idx + 1));
+                        if (exp < log10(Double.MIN_VALUE)) {
+                            p = -1 * exp;
+                        }
                     }
-                    // Transform to -log10
-                    p = -log10(p);
+
+                    if (p == 0) {
+                        p = Double.parseDouble(tokens[this.columns.pCol]);
+                        if (p <= 0) {
+                            throw new NumberFormatException();
+                        }
+                        // Transform to -log10
+                        p = -log10(p);
+                    }
                 } catch (NumberFormatException e) {
                     log.warn("Error parsing line number " + lineNumber + ". Column " + this.columns.pCol + " must be a positive numeric value. Found " + tokens[this.columns.pCol]);
                     return null;
@@ -182,12 +213,12 @@ public class GWASParser {
          * @param headerString
          * @return
          */
-        public boolean parseHeader(String headerString) {
+        public boolean parseHeader(String headerString, Pattern delimiter) {
 
-            Pattern whitespacePattern = Pattern.compile("\\s+");
+
             try {
                 headerString = headerString.trim();
-                String[] headers = headerString.split("\\t|( +)");
+                String[] headers = delimiter.split(headerString);
                 this.columnHeaders = headers;
                 int headersSize = headers.length;
 
@@ -198,11 +229,11 @@ public class GWASParser {
                     header = header.toLowerCase();
 
                     // Chromosome column
-                    if (header.equals("chr") || header.equals("chromosome"))
+                    if (header.equals("chr") || header.equals("chromosome") || header.equals("chr_id"))
                         this.chrCol = colCounter;
 
                     // Nucleotide position column
-                    if (header.equals("bp") || header.equals("pos") || header.equals("position"))
+                    if (header.equals("bp") || header.equals("pos") || header.equals("position") || header.equals("chr_pos"))
                         this.locationCol = colCounter;
 
                     // p-value column
@@ -210,7 +241,7 @@ public class GWASParser {
                         this.pCol = colCounter;
 
                     // SNP identifier column
-                    if (header.equals("snp") || header.equals("rs") || header.equals("rsid") || header.equals("rsnum") || header.equals("id") || header.equals("marker") || header.equals("markername"))
+                    if (header.equals("snp") || header.equals("snps") || header.equals("rs") || header.equals("rsid") || header.equals("rsnum") || header.equals("id") || header.equals("marker") || header.equals("markername"))
                         this.SNPCol = colCounter;
                 }
             } catch (Exception e) {
@@ -221,14 +252,4 @@ public class GWASParser {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        GWASParser parser = new GWASParser(new ResourceLocator("test/data/gwas/smallp.gwas"), null);
-        Map<String, List<GWASFeature>> data = parser.parse();
-        for (List<GWASFeature> features : data.values()) {
-            for (GWASFeature f : features) {
-                double val = f.value;
-                System.out.println(val);
-            }
-        }
-    }
 }

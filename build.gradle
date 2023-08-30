@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2007-2019 Broad Institute
+// Copyright (c) 2007-2019 Broad Institut≈e
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -111,7 +111,7 @@ dependencies {
             [group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.7.3'],
             [group: 'org.apache.commons', name: 'commons-jexl', version: '2.1.1'],
             [group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'],
-            [group: 'com.github.samtools', name: 'htsjdk', version: '3.0.0'],
+            [group: 'com.github.samtools', name: 'htsjdk', version: '3.0.5'],
             [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
             //[group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],  // no longer in Maven Central
             [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],
@@ -123,7 +123,8 @@ dependencies {
             // Amazon deps
             [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: '2.16.7'],
             [group: 'software.amazon.awssdk', name: 'sts', version: '2.16.7'],
-            [group: 'software.amazon.awssdk', name: 's3', version: '2.16.7']
+            [group: 'software.amazon.awssdk', name: 's3', version: '2.16.7'],
+            [group: 'software.amazon.awssdk', name: 'sso', version: '2.16.7']
     )
 
     testImplementation(

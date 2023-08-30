@@ -170,20 +170,12 @@ public class ReducedMemoryAlignment implements Alignment {
         return insertions;
     }
 
-    public String getCigarString() {
-        return "*";
-    }
-
     public int getInferredInsertSize() {
         return 0;
     }
 
     public int getMappingQuality() {
         return 255;
-    }
-
-    public ReadMate getMate() {
-        return null;
     }
 
     public boolean isProperPair() {
@@ -281,22 +273,6 @@ public class ReducedMemoryAlignment implements Alignment {
         return 0;
     }
 
-    public String getSample() {
-        return null;
-    }
-
-    public String getReadGroup() {
-        return null;
-    }
-
-    public String getLibrary() {
-        return null;
-    }
-
-    public Object getAttribute(String key) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     @Override
     public List<Gap> getGaps() {
         return gaps;
@@ -321,10 +297,6 @@ public class ReducedMemoryAlignment implements Alignment {
 
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
-    }
-
-    @Override
-    public void finish() {
     }
 
     @Override
@@ -496,8 +468,17 @@ public class ReducedMemoryAlignment implements Alignment {
                 return 0;
             } else {
                 return (int) Math.round(total[offset]);
-
             }
+        }
+
+        @Override
+        public int getTotalPositiveCount(int pos) {
+            throw new RuntimeException(" Method getTotalPositiveCount not implemented");
+        }
+
+        @Override
+        public int getTotalNegativeCount(int pos) {
+            throw new RuntimeException(" Method getTotalNegativeCount not implemented");
         }
 
         @Override

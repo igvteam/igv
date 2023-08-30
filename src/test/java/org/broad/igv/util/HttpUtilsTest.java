@@ -34,10 +34,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static spark.Spark.get;
 
 
@@ -47,10 +47,18 @@ import static spark.Spark.get;
 public class HttpUtilsTest extends AbstractHeadlessTest {
 
 
-    static String broadURLString = "http://data.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
-    static String genericURLString = "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/chromosomes/chr1.fa.gz";
+    static String broadURLString = "https://igv-genepattern-org.s3.amazonaws.com/test/fasta/chr22.fa";
 
-    static String noRangeHeaderSupportString = "http://www.ncbi.nlm.nih.gov/geo/download/?acc=GSM714693&format=file&file=GSM714693%5Fhg19%5FwgEncodeGisDnaPetK562F1kAln%2Ebam";
+    @Test
+    public void testSignedURLMatch() throws Exception {
+        String aws = "https://amazonaws.com?X-Amz-Signature=foo";  //X-Amz-Signature"
+        assertTrue(HttpUtils.isSignedURL(aws));
+        String google = "https://google.com?X-Goog-Signature=bar";
+        assertTrue(HttpUtils.isSignedURL(google));
+        String noMatch = "https://www.google.com";
+        assertFalse(HttpUtils.isSignedURL(noMatch));
+    }
+
 
     @Test
     public void testGetContentLength() throws IOException {
@@ -59,7 +67,7 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
         try {
             conn = (HttpURLConnection) (HttpUtils.createURL(broadURLString)).openConnection();
             String contentLength = conn.getHeaderField("Content-length");
-            assertEquals("249250621", contentLength);
+            assertEquals("52330665", contentLength);
 
         } finally {
 
@@ -101,6 +109,36 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
         HttpUtils.CacheControl cc = HttpUtils.CacheControl.valueOf(headerValue);
         assertTrue(cc.isNoCache());
         assertEquals(100, cc.getMaxAge());
+    }
+
+    @Test
+    public void testAccessTokenCache() throws MalformedURLException {
+
+        try {
+            // Exact match
+            HttpUtils.getInstance().setAccessToken("foo", "bar.foo.com");
+            String token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
+            assertEquals("foo", token);
+            HttpUtils.getInstance().clearAccessTokens();
+
+            // Wildcard match
+            HttpUtils.getInstance().setAccessToken("foo", "*.foo.com");
+            token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
+            assertEquals("foo", token);
+
+            // Clear token
+            HttpUtils.getInstance().clearAccessTokens();
+            token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
+            assertNull(token);
+            HttpUtils.getInstance().clearAccessTokens();
+
+            // Match all hosts
+            HttpUtils.getInstance().setAccessToken("foo", "");
+            token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://igv.org/path"));
+            assertEquals("foo", token);
+        } finally {
+            HttpUtils.getInstance().clearAccessTokens();
+        }
     }
 
     public class RunnableSparkHttp implements Runnable {

@@ -134,7 +134,30 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             return 0;
         } else {
             return posTotal[offset] + negTotal[offset];
+        }
+    }
 
+    public int getTotalPositiveCount(int pos) {
+        int offset = pos - start;
+        if (offset < 0 || offset >= posA.length) {
+            if (log.isDebugEnabled()) {
+                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
+            }
+            return 0;
+        } else {
+            return posTotal[offset];
+        }
+    }
+
+    public int getTotalNegativeCount(int pos) {
+        int offset = pos - start;
+        if (offset < 0 || offset >= posA.length) {
+            if (log.isDebugEnabled()) {
+                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
+            }
+            return 0;
+        } else {
+            return negTotal[offset];
         }
     }
 

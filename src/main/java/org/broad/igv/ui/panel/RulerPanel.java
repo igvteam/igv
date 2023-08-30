@@ -40,10 +40,11 @@ import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
@@ -54,33 +55,30 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
-import static org.broad.igv.prefs.Constants.DEFAULT_GENOME;
-import static org.broad.igv.prefs.Constants.ENABLE_ANTIALISING;
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * @author jrobinso
  */
 public class RulerPanel extends JPanel {
 
+    public static final Color INSERTION_MARKER_ZOOMEDOUT = new Color(64, 64, 64, 50);
     private static Logger log = LogManager.getLogger(RulerPanel.class);
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 
-    private static Color grey1 = new Color(120, 120, 120);
-    private static Color grey2 = new Color(200, 200, 200);
-    private static Color gene1 = new Color(0, 0, 150, 150);
-    private static Color gene2 = new Color(0, 150, 0, 150);
+    private static final int INSERTION_ROW_HEIGHT = 9;
 
     // TODO -- get from preferences
     boolean drawSpan = true;
     private Font tickFont = FontManager.getFont(Font.BOLD, 9);
     private Font spanFont = FontManager.getFont(Font.BOLD, 12);
 
-    private List<ClickLink> chromosomeRects = new ArrayList();
-    private List<MouseRect> mouseRects = new ArrayList<MouseRect>();
-
+    private List<ClickLink> clickLinks = new ArrayList();
 
     private static Color dragColor = new Color(.5f, .5f, 1f, .3f);
     private static Color zoomBoundColor = new Color(0.5f, 0.5f, 0.5f);
@@ -131,23 +129,27 @@ public class RulerPanel extends JPanel {
     }
 
     private void render(Graphics g) {
-        g.setColor(Color.black);
 
+        clickLinks.clear();
+        g.setColor(Color.black);
         if (isWholeGenomeView()) {
             drawChromosomeTicks(g);
         } else {
-
-            InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(frame.getChrName());
-
-            drawTicks(g, i);
-
+            drawTicks(g);
             if (drawSpan) {
-                drawSpan(g, i);
+                drawSpan(g);
+            }
+
+            //  If zoomed in, use the 3rd gen visibility window
+            Collection<AlignmentTrack> tracks = IGV.getInstance().getAlignmentTracks();
+            int maxVizWindow = tracks.size() == 0 ? 0 : tracks.stream().mapToInt(t -> t.getVisibilityWindow()).max().getAsInt();
+            if (!frame.getChrName().equals(Globals.CHR_ALL) && (frame.getEnd() - frame.getOrigin()) <= maxVizWindow) {
+                drawInsertionMarkers(g);
             }
         }
     }
 
-    private void drawSpan(Graphics g, InsertionMarker i) {
+    private void drawSpan(Graphics g) {
 
         //TODO -- hack
         int w = getWidth();
@@ -180,7 +182,7 @@ public class RulerPanel extends JPanel {
 
     }
 
-    private void drawTicks(Graphics g, InsertionMarker i) {
+    private void drawTicks(Graphics g) {
 
         int w = getWidth();
         if (w < 200) {
@@ -197,7 +199,7 @@ public class RulerPanel extends JPanel {
         double spacing = ts.getMajorTick();
 
         // Find starting point closest to the current origin
-        int nTick = (int) (frame.getOrigin() / spacing) - 1;
+        int nTick = (int) (frame.getExpansionAdjustedOrigin() / spacing) - 1;
         int l = (int) (nTick * spacing);
         int x = frame.getScreenPosition(l - 1 + 0.5);    // 0 vs 1 based coordinates, then center over base
         //int strEnd = Integer.MIN_VALUE;
@@ -213,7 +215,7 @@ public class RulerPanel extends JPanel {
             if (nTick % 2 == 0 && strPosition > 0) {
                 g.drawString(chrPosition, strPosition, height - 15);
             }
-            if(x > 0) {
+            if (x > 0) {
                 g.drawLine(x, height - 10, x, height - 2);
             }
 
@@ -221,13 +223,16 @@ public class RulerPanel extends JPanel {
         }
     }
 
+    /**
+     * Draw whole genome view, one "tick" per chromosome. *
+     * @param g
+     */
     private void drawChromosomeTicks(Graphics g) {
 
         Font chrFont = FontManager.getFont(10);
-        //this.removeAll();
         this.setLayout(null);
 
-        // TODO -- remove hardcoded value
+        // Whole genome view uses kb units
         int locationUnit = 1000;
 
         g.setFont(chrFont);
@@ -240,8 +245,6 @@ public class RulerPanel extends JPanel {
         }
 
         boolean even = true;
-        long offset = 0;
-        chromosomeRects.clear();
         List<String> chrNames = genome.getLongChromosomeNames();
         if (chrNames == null) {
             log.info("No chromosomes found for genome: " + PreferencesManager.getPreferences().getDefaultGenome());
@@ -252,7 +255,7 @@ public class RulerPanel extends JPanel {
         }
 
         final FontMetrics fontMetrics = g.getFontMetrics();
-        for (String chrName : chrNames) {
+        for (final String chrName : chrNames) {
             Chromosome c = genome.getChromosome(chrName);
             if (c == null) {
                 log.info("Chromosome '" + chrName + "' not found");
@@ -265,7 +268,7 @@ public class RulerPanel extends JPanel {
             int x = (int) (gStart / scale);
             int dw = (int) (chrLength / (locationUnit * scale));
 
-            if(x > 0) {
+            if (x > 0) {
                 g.drawLine(x, getHeight() - 10, x, getHeight() - 2);
             }
 
@@ -285,18 +288,84 @@ public class RulerPanel extends JPanel {
 
                 int y = (even ? getHeight() - 35 : getHeight() - 25);
                 g.drawString(displayName, strPosition, y);
-                int sw = (int) fontMetrics.getStringBounds(displayName, g).getWidth();
-                Rectangle clickRect = new Rectangle(strPosition, y - 15, sw, 15);
-                String tooltipText = "Jump to chromosome: " + chrName;
-                chromosomeRects.add(new ClickLink(clickRect, chrName, tooltipText));
+
+                // Create clickable link if not dragging
+                if (!dragging) {
+                    int sw = (int) fontMetrics.getStringBounds(displayName, g).getWidth();
+                    Rectangle clickRect = new Rectangle(strPosition, y - 15, sw, 15);
+                    String tooltipText = "Jump to chromosome: " + chrName;
+                    clickLinks.add(new ClickLink(clickRect, chrName, tooltipText, ch -> {
+                        frame.changeChromosome((String) ch, true);
+                    }));
+                }
 
                 even = !even;
 
             }
-
-            offset += chrLength;
         }
     }
+
+    private void drawInsertionMarkers(Graphics g) {
+
+        List<InsertionMarker> insertionMarkers = InsertionManager.getInstance().getInsertions(frame.getChrName(), frame.getOrigin(), frame.getEnd() + 1);
+
+        if (insertionMarkers == null) return;
+
+        InsertionMarker expanded = frame.getExpandedInsertion();
+
+        int w = (int) ((1.41 * INSERTION_ROW_HEIGHT) / 2);
+        int y = getHeight() - INSERTION_ROW_HEIGHT - 1;
+
+        for (InsertionMarker insertionMarker : insertionMarkers) {
+
+            int x0;
+            int x1;
+            Polygon p;
+            Color c;
+            if (expanded != null && insertionMarker.position == expanded.position) {
+                x0 = frame.getScreenPosition(insertionMarker.position);
+                x1 = (int) ((insertionMarker.position + insertionMarker.size - frame.origin) / frame.getScale());
+                p = new Polygon(
+                        new int[]{x0 - w, x1 + w, x1, x0},
+                        new int[]{y, y, y + INSERTION_ROW_HEIGHT, y + INSERTION_ROW_HEIGHT}, 4);
+                c = Color.BLUE;
+
+                String tooltipText = "Click to collapse insertion";
+                clickLinks.add(new ClickLink(p, null, tooltipText, obj -> {
+                    frame.setExpandedInsertion((InsertionMarker) obj);
+                    IGV.getInstance().repaint();
+                }));
+
+            } else {
+                x0 = frame.getScreenPosition(insertionMarker.position);
+                x1 = x0;
+                p = new Polygon(new int[]{x0 - w, x1 + w, x0},
+                        new int[]{y, y, y + INSERTION_ROW_HEIGHT}, 3);
+
+                double expandedInsertionWidth = insertionMarker.size  / frame.getScale();
+
+                if(expandedInsertionWidth > 5) {
+                    c = Color.BLACK ;
+                    String tooltipText = "Click to expand insertion (" + (insertionMarker.size + "bases)");
+                    Rectangle clickArea = p.getBounds();
+                    clickArea.y -= 2;
+                    clickArea.height += 2;
+                    clickLinks.add(new ClickLink(clickArea, insertionMarker, tooltipText, obj -> {
+                        frame.setExpandedInsertion((InsertionMarker) obj);
+                        IGV.getInstance().repaint();
+                    }));
+                } else {
+                    c = INSERTION_MARKER_ZOOMEDOUT;
+                }
+            }
+
+            if (x1 + w >= 0 && x0 - w <= getWidth()) {
+                g.setColor(c);
+                g.fillPolygon(p);
+            }
+        }
+    }
+
 
     public static String formatNumber(double position) {
 
@@ -353,27 +422,16 @@ public class RulerPanel extends JPanel {
 
             @Override
             public void mouseMoved(MouseEvent e) {
-                if (isWholeGenomeView()) {
-                    for (ClickLink link : chromosomeRects) {
-                        if (link.region.contains(e.getPoint())) {
-                            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                            setToolTipText(link.tooltipText);
-                            return;
-                        }
+                for (ClickLink link : clickLinks) {
+                    if (link.region.contains(e.getPoint())) {
+                        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                        setToolTipText(link.tooltipText);
+                        return;
                     }
-                    setCursor(Cursor.getDefaultCursor());
-                    setToolTipText(WHOLE_GENOME_TOOLTIP);
-
-                } else {
-                    for (MouseRect mr : mouseRects) {
-                        if (mr.containsPoint(e.getPoint())) {
-                            RulerPanel.this.setToolTipText(mr.getText());
-                            return;
-                        }
-                    }
-                    RulerPanel.this.setToolTipText(CHROM_TOOLTIP);
-
                 }
+                setCursor(Cursor.getDefaultCursor());
+                setToolTipText(isWholeGenomeView() ? WHOLE_GENOME_TOOLTIP : CHROM_TOOLTIP);
+
             }
 
             @Override
@@ -442,18 +500,18 @@ public class RulerPanel extends JPanel {
                 setCursor(Cursor.getDefaultCursor());
                 WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                 try {
-
-                    if (!isWholeGenomeView()) {
-                        double newLocation = frame.getChromosomePosition(e.getX());
-                        frame.centerOnLocation(newLocation);
-                    } else {
-                        for (final ClickLink link : chromosomeRects) {
-                            if (link.region.contains(e.getPoint())) {
-                                final String chrName = link.value;
-                                frame.changeChromosome(chrName, true);
-                            }
+                    boolean clickHandled = false;
+                    for (final ClickLink link : clickLinks) {
+                        if (link.region.contains(e.getPoint())) {
+                            link.action.accept(link.value);
+                            clickHandled = true;
                         }
                     }
+                    if (!clickHandled && !isWholeGenomeView()) {
+                        double newLocation = frame.getChromosomePosition(e);
+                        frame.centerOnLocation(newLocation);
+                    }
+
                 } finally {
                     WaitCursorManager.removeWaitCursor(token);
                 }
@@ -564,38 +622,19 @@ public class RulerPanel extends JPanel {
 
     class ClickLink {
 
-        Rectangle region;
-        String value;
+        Shape region;
+        Object value;
         String tooltipText;
 
-        ClickLink(Rectangle region, String value, String tooltipText) {
+        Consumer action;
+
+        ClickLink(Shape region, Object value, String tooltipText, Consumer action) {
             this.region = region;
             this.value = value;
             this.tooltipText = tooltipText;
-        }
-    }
-
-
-    static class MouseRect {
-        Rectangle bounds;
-        String text;
-
-        MouseRect(Rectangle bounds, String text) {
-            this.bounds = bounds;
-            this.text = text;
+            this.action = action;
         }
 
-        boolean containsPoint(Point p) {
-            return bounds.contains(p);
-        }
-
-        String getText() {
-            return text;
-        }
-
-        public int width() {
-            return bounds.width;
-        }
     }
 
 

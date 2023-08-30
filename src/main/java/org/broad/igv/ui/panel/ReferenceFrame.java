@@ -46,6 +46,8 @@ import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
+import java.awt.event.MouseEvent;
+
 
 /**
  * @author jrobinso
@@ -120,6 +122,7 @@ public class ReferenceFrame {
     protected volatile double scale;
 
     protected Locus initialLocus = null;
+    private InsertionMarker expandedInsertion;
 
 
     public ReferenceFrame(String name) {
@@ -378,7 +381,7 @@ public class ReferenceFrame {
     public void shiftOriginPixels(int delta) {
 
         double shiftBP = delta * getScale();
-        setOrigin(origin + shiftBP);
+        setOrigin(shiftBP + origin);
         eventBus.post(ViewChange.Result());
     }
 
@@ -452,12 +455,24 @@ public class ReferenceFrame {
         return origin;
     }
 
+    /**
+     * Return the origin in reference genome coordinates.  When an insertion is expanded "origin" is in expansion modified
+     * coordinates, we need to adjust for the expansion to convert to reference genome coordinates* *
+     * @return
+     */
+    public double getExpansionAdjustedOrigin() {
+        InsertionMarker im = getExpandedInsertion();
+        return (im == null || origin < im.position) ?
+                origin  :
+                origin - im.size;
+    }
+
     public double getCenter() {
         return origin + getScale() * widthInPixels / 2;
     }
 
     public double getEnd() {
-        return origin + getScale() * widthInPixels;
+        return getChromosomePosition(widthInPixels);
     }
 
     public int getZoom() {
@@ -496,7 +511,7 @@ public class ReferenceFrame {
 
     protected void calculateMaxZoom() {
         this.maxZoom = Globals.CHR_ALL.equals(this.chrName) ? 0 :
-                (int) Math.ceil(Math.log(getChromosomeLength() / minBP) / Globals.log2);
+                (int) Math.ceil(Globals.log2(getChromosomeLength() / minBP));
     }
 
     public String getChrName() {
@@ -510,60 +525,58 @@ public class ReferenceFrame {
         return widthInPixels;
     }
 
+    public double getChromosomePosition(final MouseEvent e) {
+        return getChromosomePosition(e.getX());
+    }
+
     /**
-     * Return the chromosome position corresponding to the pixel index.  The
-     * pixel index is the pixel "position" translated by -origin.
+     * Return the chromosome position corresponding to the screen (pixel) position.
      *
      * @param screenPosition
      * @return
      */
     public double getChromosomePosition(int screenPosition) {
-
-        InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(getChrName());
-
-        if (i != null && i.position > origin) {
-            // if (IGV.getInstance().getSession().expandInsertions && insertionMarkers != null && insertionMarkers.size() > 0) {
-            double start = getOrigin();
-            double scale = getScale();
-            double iEnd = 0,
-                    iStart = 0;
-
-
-            iStart = iEnd + (i.position - start) / scale; // Screen position of insertionMarker start
-            if (screenPosition < iStart) {
-                return start + scale * (screenPosition - iEnd);
+        InsertionMarker i = expandedInsertion;
+        if (i != null) {
+            int insertionPixelPosition = (int) ((i.position - origin) / scale);
+            int insertionPixelWidth = (int) Math.ceil(i.size / scale);
+            if (insertionPixelPosition < 0) {
+                // Only a portion of the insertion is occupying screen
+                insertionPixelWidth += insertionPixelPosition;
+                insertionPixelPosition = 0;
             }
-
-            iEnd = iStart + i.size / scale;  // Screen position of insertionMarker end
-            if (screenPosition < iEnd) {
-                return i.position;   // In the gap
+            if (insertionPixelWidth > 0) {
+                if (screenPosition < insertionPixelPosition) {
+                    // Nothing to do -- expanded insertion is to the right of screen position
+                } else if (screenPosition < insertionPixelPosition + insertionPixelWidth) {
+                    // Over expanded insertion, chromosome position is position of insertion
+                    screenPosition = insertionPixelPosition;
+                } else {
+                    // To the right of the expanded insertion
+                    screenPosition -= insertionPixelWidth;
+                }
             }
-
-            start = i.position + 1;
-            //    }
-            return start + scale * (screenPosition - iEnd);
-
-        } else {
-            return origin + getScale() * screenPosition;
         }
-
+        return origin + getScale() * screenPosition;
     }
 
 
     /**
-     * Return the screen position corresponding to the chromosomal position.
+     * Return the screen position corresponding to the chromosomal position, accounting for the possibility of
+     * an expanded insertion in view.  For the special case when chromosomePosition (i.e. genomic coordinate)
+     * is at the expanded insertion there is no unique screen position.  By convention we return the screen position
+     * at the left boundary of the expansion
      *
-     * @param chromosomePosition
-     * @return
+     * @param chromosomePosition The genomic position in base pairs
+     * @return screen position (pixels)
      */
     public int getScreenPosition(double chromosomePosition) {
 
-        InsertionMarker i = InsertionManager.getInstance().getSelectedInsertion(chrName);
-
-        if (i == null || i.position < origin || i.position > chromosomePosition) {
-            return (int) ((chromosomePosition - origin) / getScale());
+        // If there is an expanded insertion in view we need to account for the empty screen space
+        if (expandedInsertion != null && chromosomePosition > expandedInsertion.position) {
+            return (int) ((chromosomePosition + expandedInsertion.size - origin) / getScale());
         } else {
-            return (int) ((chromosomePosition + i.size - origin) / getScale());
+            return (int) ((chromosomePosition - origin) / getScale());
         }
     }
 
@@ -708,8 +721,9 @@ public class ReferenceFrame {
      * @param end
      * @return
      */
-    private int calculateZoom(double start, double end) {
-        return (int) Math.round((Math.log((getChromosomeLength() / (end - start)) * (((double) widthInPixels) / binsPerTile)) / Globals.log2));
+    public int calculateZoom(double start, double end) {
+        final double windowLength = Math.min(end - start, getChromosomeLength());
+        return (int) Math.round(Globals.log2((getChromosomeLength() / windowLength) * (((double) widthInPixels) / binsPerTile)));
     }
 
 
@@ -737,7 +751,17 @@ public class ReferenceFrame {
         }
     }
 
+    public void setExpandedInsertion(InsertionMarker im) {
+        InsertionMarker previousInsertion = this.expandedInsertion;
+        this.expandedInsertion = im;
+        if(im == null && previousInsertion != null) {
+            this.centerOnLocation(previousInsertion.position);
+        }
+    }
 
+    public InsertionMarker getExpandedInsertion() {
+        return expandedInsertion;
+    }
     public int stateHash() {
         int result;
         long temp;
@@ -755,6 +779,7 @@ public class ReferenceFrame {
     private static Genome getGenome() {
         return GenomeManager.getInstance().getCurrentGenome();
     }
+
 
 
 }

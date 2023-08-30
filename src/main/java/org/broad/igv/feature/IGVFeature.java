@@ -37,6 +37,10 @@ import java.util.Map;
 
 public interface IGVFeature extends LocusScore, NamedFeature, Cloneable {
 
+    default String getIdentifier() {
+        return null;
+    }
+
     default Strand getStrand() {
         return Strand.NONE;
     }

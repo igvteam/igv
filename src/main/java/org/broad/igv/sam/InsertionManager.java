@@ -28,9 +28,12 @@ package org.broad.igv.sam;
 
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.broad.igv.prefs.Constants.SAM_HIDE_SMALL_INDEL;
 import static org.broad.igv.prefs.Constants.SAM_SMALL_INDEL_BP_THRESHOLD;
@@ -45,8 +48,9 @@ public class InsertionManager {
     private static InsertionManager theInstance = new InsertionManager();
 
     private Map<String, Map<Integer, InsertionMarker>> insertionMaps;
-    private Map<String, List<Integer>> positionsMap;
     private Map<String, Integer> selectedInsertions;
+
+    InsertionMarker selectedInsertion;
 
     public static InsertionManager getInstance() {
         return theInstance;
@@ -54,52 +58,35 @@ public class InsertionManager {
 
     private InsertionManager() {
         this.insertionMaps = Collections.synchronizedMap(new HashMap<>(100));
-        this.positionsMap = Collections.synchronizedMap(new HashMap<>(100));
         this.selectedInsertions = Collections.synchronizedMap(new HashMap<>(100));
     }
 
     public void clear() {
         this.insertionMaps.clear();
-        this.positionsMap.clear();
         this.selectedInsertions.clear();;
+        this.selectedInsertion = null;
     }
 
     public List<InsertionMarker> getInsertions(String chrName, double start, double end) {
 
 
         Map<Integer, InsertionMarker> insertionMap = insertionMaps.get(chrName);
-        List<Integer> positions = positionsMap.get(chrName);
-        if(insertionMap == null || positions == null) return null;
+        if(insertionMap == null ) return null;
 
-        List<InsertionMarker> insertionMarkers = new ArrayList<>();
-        for (int i = 0; i < positions.size(); i++) {
-            final Integer key = positions.get(i);
-            if (key > end) break;
-            if (key >= start) {
-                final InsertionMarker insertionMarker = insertionMap.get(key);
-                insertionMarkers.add(insertionMarker);
-            }
-        }
-        return insertionMarkers;
+        return insertionMap.values().stream().filter(im -> im.position + im.size >= start && im.position <= end).collect(Collectors.toList());
 
     }
 
-    public void setSelected(String chrName, int position) {
-        this.selectedInsertions.put(chrName, position);
-    }
-
-    public void clearSelected() {
-        this.selectedInsertions.clear();
+    public void setSelected(InsertionMarker insertionMarker) {
+        this.selectedInsertion = insertionMarker;
     }
 
     public InsertionMarker getSelectedInsertion(String chrName) {
-        Integer selectedInsertion = selectedInsertions.get(chrName);
-        Map<Integer, InsertionMarker> insertionMap = insertionMaps.get(chrName);
-        return (selectedInsertion == null  || insertionMap == null) ? null : insertionMap.get(selectedInsertion);
+        return this.selectedInsertion;
     }
 
-    
-    public synchronized void processAlignments(String chr, List<Alignment> alignments, AlignmentTrack.RenderOptions renderOptions) {
+
+    public synchronized void processAlignments(String chr, List<Alignment> alignments) {
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         chr = genome == null ? chr : genome.getCanonicalChrName(chr);
@@ -109,15 +96,11 @@ public class InsertionManager {
             insertionMap =  Collections.synchronizedMap(new HashMap<>());
             insertionMaps.put(chr, insertionMap);
         }
-        List<Integer> positions = positionsMap.get(chr);
-        if(positions == null) {
-            positions = new ArrayList<>();
-            positionsMap.put(chr, positions);
-        }
 
         int minLength = 0;
-        if (renderOptions != null && renderOptions.isHideSmallIndels()) {
-            minLength = renderOptions.getSmallIndelThreshold();
+        final IGVPreferences preferences = PreferencesManager.getPreferences(Constants.THIRD_GEN);
+        if(preferences.getAsBoolean(SAM_HIDE_SMALL_INDEL)) {
+            minLength = preferences.getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
         }
 
         for (Alignment a : alignments) {
@@ -130,17 +113,12 @@ public class InsertionManager {
                     if (insertionMarker == null) {
                         insertionMarker = new InsertionMarker(block.getStart(), block.getLength());
                         insertionMap.put(key, insertionMarker);
-                        positions.add(block.getStart());
                     } else {
                         insertionMarker.size = Math.max(insertionMarker.size, block.getLength());
                     }
                 }
             }
         }
-
-        positions.addAll(insertionMap.keySet());
-        positions.sort((o1, o2) -> o1 - o2);
     }
-
 
 }

@@ -206,7 +206,6 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         int delCount = getDelCount(pos);
         int insCount = getInsCount(pos);
         if (delCount > 0 || insCount > 0) {
-            buf.append("<br>---------------");
             buf.append("<br>DEL: " + delCount);
             buf.append("<br>INS: " + insCount);
         }

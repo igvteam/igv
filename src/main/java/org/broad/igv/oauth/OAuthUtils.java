@@ -25,19 +25,25 @@
 
 package org.broad.igv.oauth;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.AmazonUtils;
+import org.broad.igv.util.GoogleUtils;
+import org.broad.igv.util.HttpUtils;
 
 
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -51,12 +57,11 @@ public class OAuthUtils {
 
     private static OAuthUtils theInstance;
 
-    /**
-     * Map of key name -> oauth provider.  This is currently only used to distinguish Amazon from Google providers.
-     */
-    static Map<String, OAuthProvider> providers;
+    static OAuthProvider awsProvider;
 
     static OAuthProvider defaultProvider;
+
+    static Map<String, OAuthProvider> providerCache;
 
     public static synchronized OAuthUtils getInstance() {
         if (theInstance == null) {
@@ -66,31 +71,25 @@ public class OAuthUtils {
     }
 
     private OAuthUtils() {
-        providers = new HashMap<>();
         try {
+            providerCache = new LinkedHashMap<>();   // Ordered (linked) map is important
             fetchOauthProperties();
         } catch (Exception e) {
             log.error("Error fetching oAuth properties", e);
         }
     }
-    public static void checkLogin() {
-        if (!getInstance().getProvider().isLoggedIn()) {
-            getInstance().getProvider().checkLogin();
+
+    /**
+     * Called by AWS code only
+     */
+    public OAuthProvider getAWSProvider() {
+        if (awsProvider == null) {
+            throw new RuntimeException("AWS Oauth is not configured");
         }
+        return awsProvider;
     }
 
-
-    public OAuthProvider getProvider(String providerName) {
-        if (providerName != null) {
-            if (!providers.containsKey(providerName)) {
-                throw new RuntimeException("Unknwon oAuth provider name: " + providerName);
-            }
-            return providers.get(providerName);
-        }
-        return defaultProvider;
-    }
-
-    public OAuthProvider getProvider() {
+    public OAuthProvider getDefaultProvider() {
         return defaultProvider;
     }
 
@@ -101,46 +100,52 @@ public class OAuthUtils {
         log.debug("The provisioning URL from prefs.properties is: " + provisioningURL);
         if (provisioningURL != null && provisioningURL.length() > 0) {
             String json = loadAsString(provisioningURL);
-            parseProviderJson(json, provisioningURL);
+            parseProviderJson(json);
         }
 
         // Local config takes precendence, overriding URL provisioned and Broad's default
         String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
-        if(!(new File(oauthConfig)).exists()) {
+        if (!(new File(oauthConfig)).exists()) {
             oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config-custom.json";
         }
         if ((new File(oauthConfig)).exists()) {
             try {
                 log.debug("Loading Oauth properties from: " + oauthConfig);
                 String json = loadAsString(oauthConfig);
-                parseProviderJson(json, oauthConfig);
+                parseProviderJson(json);
             } catch (IOException e) {
                 log.error(e);
             }
         }
 
+        // Default (Google) provider
         if (defaultProvider == null) {
-            // IGV default
-            log.debug("$HOME/igv/oauth-config.json not found, reading Java .properties instead from Broad's IGV properties endpoint: " + PROPERTIES_URL);
             String propString = loadAsString(PROPERTIES_URL);
-            JsonParser parser = new JsonParser();
-            JsonObject obj = parser.parse(propString).getAsJsonObject();
-            defaultProvider = new OAuthProvider(obj);
+            defaultProvider = parseProviderJson(propString);
+            if (defaultProvider.getAuthProvider() == null || defaultProvider.getAuthProvider().isEmpty()) {
+                defaultProvider.setAuthProvider("Google");
+            }
         }
     }
 
+    /**
+     * Called from preferences editor
+     *
+     * @param provisioningURL
+     * @throws IOException
+     */
     public void updateOauthProvider(String provisioningURL) throws IOException {
-        if (provisioningURL == null || provisioningURL.trim().length() == 0) {
-            defaultProvider = null;
-            // TODO -- reset (load google default)?
-        } else {
+        if(provisioningURL != null && provisioningURL.trim().length() > 0) {
             String json = loadAsString(provisioningURL);
-            parseProviderJson(json, provisioningURL);
+            parseProviderJson(json);
         }
     }
 
 
     private String loadAsString(String urlOrPath) throws IOException {
+        if(HttpUtils.isRemoteURL(urlOrPath)) {
+            urlOrPath = HttpUtils.mapURL(urlOrPath);
+        }
         InputStream is = null;
         try {
             is = openInputStream(urlOrPath);
@@ -161,54 +166,51 @@ public class OAuthUtils {
      * TODO -- refactor to remove side effects.
      *
      * @param json
-     * @param path
      * @throws IOException
      */
-    private void parseProviderJson(String json, String path) throws IOException {
+    private OAuthProvider parseProviderJson(String json) throws IOException {
         JsonParser parser = new JsonParser();
         JsonObject obj = parser.parse(json).getAsJsonObject();
         OAuthProvider p = new OAuthProvider(obj);
-
-        // Hack - a move towards multiple providers
+        providerCache.put(p.getState(), p);
         if (obj.has("auth_provider") && obj.get("auth_provider").getAsString().equals("Amazon")) {
-            providers.put("Amazon", p);
+            awsProvider = p;
             AmazonUtils.setCognitoConfig(obj);
-        } else {
-            if (defaultProvider != null) {
-                log.info("Overriding default oAuth provider with " + path);
-            }
+        }
+        if (p.isGoogle()) {
             defaultProvider = p;
         }
+        return p;
     }
 
-    // Set the authorization code from the callback (redirect URI).  We are sharing a single redirect URI between
-    // all providers.  At the moment his is hacked specifically for Google and Amazon, if its not Google we assume
-    // its Amazon.  In the future we'll most likely have to use distinct redirect URIs, which means opening more ports.
-    public void setAuthorizationCode(Map<String, String> params) throws IOException {
-        OAuthProvider provider = null;
-        if (params.containsKey("scope") && params.get("scope").contains("googleapis")) {
-            provider = defaultProvider;
-        } else if (providers.containsKey("Amazon")) {
-            provider = providers.get("Amazon");
+    public OAuthProvider getProviderForState(String state) throws IOException {
+        if (providerCache.containsKey(state)) {
+            return providerCache.get(state);
+        } else {
+            // This should never happen, perhaps an error should be thrown.
+            log.warn("No oAuth provider found for callback");
+            return defaultProvider;
         }
-        if (provider == null) {
-            provider = defaultProvider;
-        }
-        provider.setAuthorizationCode(params.get("code"));
     }
 
+    public OAuthProvider getProviderForURL(URL url) {
+        for (OAuthProvider provider : providerCache.values()) {
+            if (provider.appliesToUrl(url)) {
+                return provider;
+            }
+        }
 
-    // Used by batch commands (CommandExecutor).  No argument provided to select provider
-    public void setAccessToken(Map<String, String> params) {
-        OAuthProvider provider = defaultProvider;
-        provider.setAccessToken("token");
+        // With a properly configured IGV we should never get here
+        if (GoogleUtils.isGoogleURL(url.toExternalForm()) && defaultProvider.isGoogle()) {
+            return defaultProvider;
+        } else {
+            return null;
+        }
     }
 
     /**
      * Open an input stream for reading a local or remote file.
-     * <p>
-     * NOTE:  This method does not use HttpUtils by design.  This class must be independent of HttpUtils.
-     *
+
      * @param urlOrPath -- either an http URL or path to a local file.  Can be gzipped
      * @return
      * @throws IOException
@@ -218,9 +220,8 @@ public class OAuthUtils {
         InputStream inputStream = null;
         if (urlOrPath.startsWith("http://") || urlOrPath.startsWith("https://")) {
             URL url = new URL(urlOrPath);
-            URLConnection conn = url.openConnection();
+            URLConnection conn = HttpUtils.getInstance().openProxiedConnection(url);
             inputStream = conn.getInputStream();
-            urlOrPath = url.getPath();
         } else {
             if (urlOrPath.startsWith("file://")) {
                 urlOrPath = urlOrPath.substring(7);

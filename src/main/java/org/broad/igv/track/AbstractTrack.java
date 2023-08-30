@@ -82,7 +82,7 @@ public abstract class AbstractTrack implements Track {
     private float viewLimitMin = Float.NaN;     // From UCSC track line
     private float viewLimitMax = Float.NaN;  // From UCSC track line
 
-    protected int fontSize = PreferencesManager.getPreferences().getAsInt(DEFAULT_FONT_SIZE);
+    protected int fontSize;
     private boolean showDataRange = true;
     protected String sampleId;
 
@@ -140,6 +140,14 @@ public abstract class AbstractTrack implements Track {
     }
 
     private void init() {
+
+        try {
+            fontSize = PreferencesManager.getPreferences().getAsInt(DEFAULT_FONT_SIZE);
+        }
+        catch(Exception e) {
+            log.error("Error initializing font size. ", e);
+        }
+
         showDataRange = PreferencesManager.getPreferences().getAsBoolean(CHART_SHOW_DATA_RANGE);
         if (PreferencesManager.getPreferences().getAsBoolean(EXPAND_FEAUTRE_TRACKS)) {
             displayMode = DisplayMode.EXPANDED;
@@ -806,7 +814,7 @@ public abstract class AbstractTrack implements Track {
             double centerValue = (getTrackType() == TrackType.ALLELE_SPECIFIC_COPY_NUMBER)
                     ? 1.0 : 2.0;
 
-            return (float) (Math.log(Math.max(Float.MIN_VALUE, dataY) / centerValue) / Globals.log2);
+            return (float) (Globals.log2(Math.max(Float.MIN_VALUE, dataY) / centerValue));
         } else {
             return dataY;
         }
@@ -934,7 +942,7 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    protected void setRenderer(Renderer renderer) {
+    public void setRenderer(Renderer renderer) {
         //Here as setter for corresponding getter, subclasses should override
     }
 
@@ -949,6 +957,22 @@ public abstract class AbstractTrack implements Track {
     }
     // End of Roche-Tessella modification
 
+
+    public void setShowFeatureNames(boolean b) {
+        this.showFeatureNames = b;
+    }
+
+    @Override
+    public boolean isShowFeatureNames() {
+        return showFeatureNames;
+    }
+
+    /**
+     * Restore track from XML serialization -- work in progress
+     * //        <renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+     *
+     * @param element
+     */
 
     @Override
     public void marshalXML(Document document, Element element) {
@@ -1008,22 +1032,6 @@ public abstract class AbstractTrack implements Track {
 
     }
 
-
-    public void setShowFeatureNames(boolean b) {
-        this.showFeatureNames = b;
-    }
-
-    @Override
-    public boolean isShowFeatureNames() {
-        return showFeatureNames;
-    }
-
-    /**
-     * Restore track from XML serialization -- work in progress
-     * //        <renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
-     *
-     * @param element
-     */
 
     @Override
     public void unmarshalXML(Element element, Integer version) {

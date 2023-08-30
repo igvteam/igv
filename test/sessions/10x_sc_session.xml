@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg38_1kg" locus="chr3:38368124-38457202" version="8">
+    <Resources>
+        <Resource index="https://cf.10xgenomics.com/samples/cell-exp/7.0.1/SC3pv3_GEX_Human_PBMC/SC3pv3_GEX_Human_PBMC_possorted_genome_bam.bam.bai" path="https://cf.10xgenomics.com/samples/cell-exp/7.0.1/SC3pv3_GEX_Human_PBMC/SC3pv3_GEX_Human_PBMC_possorted_genome_bam.bam" type="bam"/>
+    </Resources>
+    <Panel height="3212" name="Panel1689308075397" width="1422">
+        <Track attributeKey="SC3pv3_GEX_Human_PBMC_possorted_genome_bam.bam Coverage" autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" fontSize="12" id="https://cf.10xgenomics.com/samples/cell-exp/7.0.1/SC3pv3_GEX_Human_PBMC/SC3pv3_GEX_Human_PBMC_possorted_genome_bam.bam_coverage" name="SC3pv3_GEX_Human_PBMC_possorted_genome_bam.bam Coverage" snpThreshold="0.2" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="17.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SC3pv3_GEX_Human_PBMC_possorted_genome_bam.bam Junctions" autoScale="false" clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="12" groupByStrand="false" height="60" id="https://cf.10xgenomics.com/samples/cell-exp/7.0.1/SC3pv3_GEX_Human_PBMC/SC3pv3_GEX_Human_PBMC_possorted_genome_bam.bam_junctions" maxdepth="50" name="SC3pv3_GEX_Human_PBMC_possorted_genome_bam.bam Junctions" visible="true"/>
+        <Track attributeKey="SC3pv3_GEX_Human_PBMC_possorted_genome_bam.bam" clazz="org.broad.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="RNA" fontSize="12" id="https://cf.10xgenomics.com/samples/cell-exp/7.0.1/SC3pv3_GEX_Human_PBMC/SC3pv3_GEX_Human_PBMC_possorted_genome_bam.bam" name="SC3pv3_GEX_Human_PBMC_possorted_genome_bam.bam" visible="true">
+            <RenderOptions/>
+        </Track>
+    </Panel>
+    <Panel height="165" name="FeaturePanel" width="1422">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="12" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="Refseq Genes" clazz="org.broad.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;836.0;255,255,255;0,0,178" fontSize="12" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz" name="Refseq Genes" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.010550996483001172,0.8007033997655334"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>

@@ -98,10 +98,6 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
             f = getPslRecord(tokens, genome);
             if (f == null) return null;
 
-            if(keepText) {
-                f.setText(line);
-            }
-
         } catch (NumberFormatException e) {
             return null;
         }
@@ -167,9 +163,6 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
             for (int i = 0; i < startsBuffer.length; i++) {
                 int exonSize = Integer.parseInt(exonSizes[i]);
                 int exonStart = Integer.parseInt(startsBuffer[i]);
-                if (gNeg) {
-                    exonStart = tSize - exonStart - exonSize;
-                }
                 int exonEnd = exonStart + exonSize;
                 Exon exon = new Exon(chr, exonStart, exonEnd, strand);
                 f.addExon(exon);
@@ -188,6 +181,8 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
         int tGapCount = Integer.parseInt(tokens[6]);
         int tGapBases = Integer.parseInt(tokens[7]);
         int qSize = Integer.parseInt(tokens[10]);
+        int qStart = Integer.parseInt(tokens[11]);
+        int qEnd = Integer.parseInt(tokens[12]);
 
         float score = (1000.0f * (match + repMatch - misMatch - qGapCount - tGapCount)) / qSize;
 
@@ -200,6 +195,9 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
         f.setTGapCount(tGapCount);
         f.setTGapBases(tGapBases);
         f.setQSize(qSize);
+        f.setqStart(qStart);
+        f.setqEnd(qEnd);
+        f.setBlockQueryStarts(tokens[19]);
 
         f.setScore(score);
 

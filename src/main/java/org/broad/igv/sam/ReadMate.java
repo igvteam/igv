@@ -30,9 +30,10 @@
 package org.broad.igv.sam;
 
 
+import htsjdk.samtools.util.Locatable;
 import org.broad.igv.feature.Strand;
 
-public class ReadMate {
+public class ReadMate implements Locatable {
 
     private String chr;
     int start;
@@ -55,8 +56,18 @@ public class ReadMate {
         return chr + ":" + start + " (" + (isNegativeStrand() ? "-" : "+") + ")";
     }
 
+    @Override
+    public String getContig() {
+        return chr;
+    }
+
     public int getStart() {
         return start;
+    }
+
+    @Override
+    public int getEnd() {
+        throw new UnsupportedOperationException("ReadMate has an unknown end.");
     }
 
     public boolean isNegativeStrand() {
@@ -68,6 +79,6 @@ public class ReadMate {
     }
 
     public String getChr() {
-        return chr;
+        return getContig();
     }
 }

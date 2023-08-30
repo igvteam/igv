@@ -1,5 +1,6 @@
 package org.broad.igv.jbrowse;
 
+import htsjdk.samtools.SAMTag;
 import htsjdk.tribble.Feature;
 import org.broad.igv.bedpe.BedPE;
 import org.broad.igv.feature.Chromosome;
@@ -45,7 +46,7 @@ public class CircularViewUtilities {
             if (a.isPaired() && a.getMate().isMapped()) {
                 chords.add(Chord.fromPEAlignment(a));
             }
-            if (a.getAttribute("SA") != null) {
+            if (a.getAttribute(SAMTag.SA.name()) != null) {
                 chords.addAll(Chord.fromSAString(a));
             }
         }

@@ -151,7 +151,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
             computeMousableRegions(groups, trackWidth);
 
-            painter.paint(groups, context, trackWidth, getBackground(), damageRect);
+            painter.paint(groups, context, getBackground(), damageRect);
 
             // If there is a partial ROI in progress draw it first
             if (currentTool instanceof RegionOfInterestTool) {
@@ -251,7 +251,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                     rect.width - (insets.left + insets.right),
                     rect.height - (insets.top + insets.bottom));
             context.getGraphics().setClip(contentRect);
-            painter.paint(groups, context, contentRect.width, getBackground(), contentRect);
+            painter.paint(groups, context, getBackground(), contentRect);
             drawAllRegions(g);
 
             borderGraphics.drawRect(0, rect.y, rect.width, rect.height-1);
@@ -571,7 +571,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         public void mouseMoved(MouseEvent e) {
             String position = null;
             if (!frame.getChrName().equals(Globals.CHR_ALL)) {
-                int location = (int) frame.getChromosomePosition(e.getX()) + 1;
+                int location = (int) frame.getChromosomePosition(e) + 1;
                 position = frame.getChrName() + ":" + locationFormatter.format(location);
                 IGV.getInstance().setStatusBarMessag2(position);
             }
@@ -723,11 +723,11 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                 final Track track = ((DataPanel) e.getSource()).getTrack(e.getX(), e.getY());
 
                 if (e.isShiftDown()) {
-                    final double locationClicked = frame.getChromosomePosition(e.getX());
+                    final double locationClicked = frame.getChromosomePosition(e);
                     frame.doIncrementZoom(3, locationClicked);
                     e.consume();
                 } else if (e.isAltDown()) {
-                    final double locationClicked = frame.getChromosomePosition(e.getX());
+                    final double locationClicked = frame.getChromosomePosition(e);
                     frame.doIncrementZoom(-1, locationClicked);
                     e.consume();
                 } else if ((e.isMetaDown() || e.isControlDown()) && track != null) {
@@ -744,7 +744,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
                     if (clickTime - lastClickTime < UIConstants.getDoubleClickInterval()) {
                         clickScheduler.cancelClickTask();
-                        final double locationClicked = frame.getChromosomePosition(e.getX());
+                        final double locationClicked = frame.getChromosomePosition(e);
                         frame.doIncrementZoom(1, locationClicked);
 
                     } else {
@@ -797,7 +797,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     }
 
     /**
-     * A utility class for sceduling single-click actions "in the future",
+     * A utility class for schedueling single-click actions "in the future",
      *
      * @author jrobinso
      * @date Dec 17, 2010

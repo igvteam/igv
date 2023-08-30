@@ -26,6 +26,7 @@
 package org.broad.igv.sam;
 
 import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMTag;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
@@ -60,7 +61,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
 
     static DecimalFormat df = new DecimalFormat("###,###,###");
 
-    private static Set<WeakReference<AlignmentTileLoader>> activeLoaders = Collections.synchronizedSet(new HashSet());
+    private static Set<WeakReference<AlignmentTileLoader>> activeLoaders = Collections.synchronizedSet(new HashSet<>());
 
     /**
      * Flag to mark a corrupt index.  Without this attempted reads will continue in an infinite loop
@@ -297,7 +298,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
             t.finish();
 
             // TODO -- make this optional (on a preference)
-            InsertionManager.getInstance().processAlignments(chr, t.alignments, renderOptions);
+            InsertionManager.getInstance().processAlignments(chr, t.alignments);
 
 
         } catch (java.nio.BufferUnderflowException e) {

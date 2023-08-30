@@ -33,13 +33,20 @@
  */
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.track.Track;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
+
+import java.util.List;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * @author jrobinso
@@ -47,6 +54,7 @@ import java.awt.event.MouseEvent;
 public class ZoomSliderPanel extends JPanel {
 
     private static final Color TRANSPARENT_GRAY = new Color(200, 200, 200, 150);
+    private static final Color TRANSPARENT_BLUE = new Color(27, 96, 246, 25);
     static Color TICK_GRAY = new Color(90, 90, 90);
     static Color TICK_BLUE = new Color(25, 50, 200);
 
@@ -103,7 +111,6 @@ public class ZoomSliderPanel extends JPanel {
             numZoomLevels = tmp;
             zoomLevelRects = new Rectangle[numZoomLevels];
         }
-
     }
 
 
@@ -193,7 +200,31 @@ public class ZoomSliderPanel extends JPanel {
                 //g.drawImage(slider, x + 1, y, null);
             }
         }
+
+        paintVisibilityThresholds(transGraphics);
         transGraphics.dispose();
+    }
+
+    //Adds an indicator of which zoom level will display reads/features
+    private void paintVisibilityThresholds(final Graphics2D transGraphics) {
+        if(numZoomLevels > 1) {
+            List<Integer> visibilityThresholds = IGV.getInstance().getAllTracks().stream()
+                    .map(Track::getVisibilityWindow)
+                    .filter(i -> i > 0)
+                    .sorted()
+                    .distinct()
+                    .map(threshold -> this.getReferenceFrame().calculateZoom(0, threshold))
+                    .collect(Collectors.toList());
+
+            transGraphics.setColor(TRANSPARENT_BLUE);
+            Rectangle maxZoom = zoomLevelRects[zoomLevelRects.length - 1];
+            for (Integer window : visibilityThresholds) {
+                final Rectangle currentLevel = zoomLevelRects[window];
+                Rectangle windowBox = new Rectangle(currentLevel.x, currentLevel.y,
+                        maxZoom.x + maxZoom.width - currentLevel.x, currentLevel.height);
+                transGraphics.fill(windowBox);
+            }
+        }
     }
 
     void setZoom(MouseEvent e) {

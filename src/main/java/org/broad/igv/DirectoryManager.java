@@ -54,6 +54,7 @@ public class DirectoryManager {
     private static File USER_HOME;
     private static File USER_DIRECTORY;    // FileSystemView.getFileSystemView().getDefaultDirectory();
     private static File IGV_DIRECTORY;     // The IGV application directory
+    private static File AUTOSAVE_DIRECTORY;
     private static File GENOME_CACHE_DIRECTORY;
     private static File GENE_LIST_DIRECTORY;
     private static File BAM_CACHE_DIRECTORY;
@@ -179,6 +180,21 @@ public class DirectoryManager {
         return override;
     }
 
+    public static File getAutosaveDirectory() {
+        if (AUTOSAVE_DIRECTORY == null) {
+
+            AUTOSAVE_DIRECTORY = new File(getIgvDirectory(), "autosave");
+            if (!AUTOSAVE_DIRECTORY.exists()) {
+                AUTOSAVE_DIRECTORY.mkdir();
+            }
+            if (!AUTOSAVE_DIRECTORY.canRead()) {
+                throw new DataLoadException("Cannot read from user directory", AUTOSAVE_DIRECTORY.getAbsolutePath());
+            } else if (!AUTOSAVE_DIRECTORY.canWrite()) {
+                throw new DataLoadException("Cannot write to user directory", AUTOSAVE_DIRECTORY.getAbsolutePath());
+            }
+        }
+        return AUTOSAVE_DIRECTORY;
+    }
 
     public static File getGenomeCacheDirectory() {
         if (GENOME_CACHE_DIRECTORY == null) {
@@ -348,6 +364,7 @@ public class DirectoryManager {
 
         }
 
+        AUTOSAVE_DIRECTORY = null;
         GENOME_CACHE_DIRECTORY = null;
         GENE_LIST_DIRECTORY = null;
         BAM_CACHE_DIRECTORY = null;

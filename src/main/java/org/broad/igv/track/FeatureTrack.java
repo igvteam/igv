@@ -300,7 +300,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     public int getNumberOfFeatureLevels() {
         if (packedFeaturesMap.size() > 0) {
-            int n = 0;
+            int n = 1;
             for (PackedFeatures pf : packedFeaturesMap.values()) {
                 //dhmay adding null check.  To my mind this shouldn't be necessary, but we're encountering
                 //it intermittently.  Food for future thought
@@ -365,7 +365,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     public Renderer getRenderer() {
         if (renderer == null) {
-            setRendererClass(IGVFeatureRenderer.class);
+            setRenderer(new IGVFeatureRenderer());
         }
         return renderer;
     }
@@ -441,14 +441,23 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
+    /**
+     * Return an info URL for a specific feature, constructed as follows
+     *
+     * @param igvFeature
+     * @return
+     */
     private String getFeatureURL(IGVFeature igvFeature) {
-        String url = igvFeature.getURL();
+        String url = igvFeature.getURL();    // Explicity URL setting
         if (url == null) {
-            String trackURL = getFeatureInfoURL();
-            if (trackURL != null && igvFeature.getName() != null) {
-                String name = labelField != null ? igvFeature.getDisplayName(labelField) : igvFeature.getName();
-                String encodedID = StringUtils.encodeURL(name);
-                url = trackURL.replaceAll("\\$\\$", encodedID);
+            String trackURL = getFeatureInfoURL();   // Template
+            if (trackURL != null) {
+                String idOrName = igvFeature.getIdentifier() != null ?
+                        igvFeature.getIdentifier() :
+                        labelField != null ?
+                                igvFeature.getDisplayName(labelField) :
+                                igvFeature.getName();
+                    url = trackURL.replaceAll("\\$\\$", StringUtils.encodeURL(idOrName));
             }
         }
         return url;
@@ -626,7 +635,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         MouseEvent e = te.getMouseEvent();
         final ReferenceFrame referenceFrame = te.getFrame();
         if (referenceFrame != null) {
-            double location = referenceFrame.getChromosomePosition(e.getX());
+            double location = referenceFrame.getChromosomePosition(e);
             List<Feature> features = getAllFeatureAt(location, e.getY(), referenceFrame);
             return (features != null && features.size() > 0) ? features.get(0) : null;
         } else {

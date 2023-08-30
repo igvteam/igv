@@ -153,7 +153,7 @@ public class DRangerParser {
 
         FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));
         track.setName(locator.getTrackName());
-        track.setRendererClass(DRangerRenderer.class);
+        track.setRenderer(new DRangerRenderer());
         tracks.add(track);
 
         return tracks;

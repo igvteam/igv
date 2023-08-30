@@ -58,6 +58,7 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
+import org.broad.igv.gwas.GWASData;
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.gwas.GWASFeature;
 import org.broad.igv.gwas.GWASParser;
@@ -329,7 +330,7 @@ public class TrackLoader {
         List<Feature> features = SMAPParser.parseFeatures(locator, genome);
         FeatureCollectionSource src = new FeatureCollectionSource(features, genome);
         FeatureTrack track = new FeatureTrack(locator, locator.getName(), src);
-        track.setRendererClass(SMAPRenderer.class);
+        track.setRenderer(new SMAPRenderer());
         track.setDisplayMode(Track.DisplayMode.EXPANDED);
         newTracks.add(track);
     }
@@ -526,7 +527,7 @@ public class TrackLoader {
             t.setTrackLine(tp.getTrackLine());
         }
 
-        t.setRendererClass(DSIRenderer.class);
+        t.setRenderer(new DSIRenderer());
 
         newTracks.add(t);
     }
@@ -544,9 +545,8 @@ public class TrackLoader {
     private void loadGWASFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         GWASParser gwasParser = new GWASParser(locator, genome);
-        Map<String, List<GWASFeature>> gwasData = gwasParser.parse();
-
-        GWASTrack gwasTrack = new GWASTrack(locator, locator.getPath(), locator.getFileName(), gwasData, gwasParser.getColumnHeaders(), genome);
+        GWASData gwasData = gwasParser.parse();
+        GWASTrack gwasTrack = new GWASTrack(locator, locator.getPath(), locator.getFileName(), gwasData, gwasParser.getColumnHeaders(), gwasParser.delimiter, genome);
         newTracks.add(gwasTrack);
 
     }
@@ -590,8 +590,8 @@ public class TrackLoader {
             for (String trackName : ds.getTrackNames()) {
                 DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
                 String trackId = path + "_" + trackName;
-                Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-                track.setRendererClass(HeatmapRenderer.class);
+                DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+                track.setRenderer(new HeatmapRenderer());
                 track.setProperties(trackProperties);
                 newTracks.add(track);
             }
@@ -644,7 +644,7 @@ public class TrackLoader {
             track.setProperties(trackProperties);
 
             if (type == TrackType.ALLELE_FREQUENCY) {
-                track.setRendererClass(PointsRenderer.class);
+                track.setRenderer(new PointsRenderer());
                 track.setHeight(40);
             }
             newTracks.add(track);
@@ -938,7 +938,7 @@ public class TrackLoader {
                 String path = locator.getPath();
                 boolean bypassFileAutoDiscovery =
                         PreferencesManager.getPreferences().getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY) ||
-                                GoogleUtils.isGoogleCloud(locator.getPath()) ||
+                                GoogleUtils.isGoogleURL(locator.getPath()) ||
                                 path.contains("dropbox.com") ||
                                 path.contains("dataformat=.bam") ||
                                 path.contains("/query.cgi?");
@@ -1019,7 +1019,7 @@ public class TrackLoader {
         List<FeatureTrack> mutationTracks = loader.loadMutationTracks(locator, genome);
         for (FeatureTrack track : mutationTracks) {
             track.setTrackType(TrackType.MUTATION);
-            track.setRendererClass(MutationRenderer.class);
+            track.setRenderer(new MutationRenderer());
             newTracks.add(track);
         }
     }
@@ -1077,7 +1077,7 @@ public class TrackLoader {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-            track.setRendererClass(HeatmapRenderer.class);
+            track.setRenderer(new HeatmapRenderer());
             track.setTrackType(ds.getType());
 
             if (props != null) {

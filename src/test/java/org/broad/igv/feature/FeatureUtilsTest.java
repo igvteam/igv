@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -94,6 +95,29 @@ public class FeatureUtilsTest {
         VCFVariant a_6321740 = (VCFVariant) FeatureUtils.getFeatureClosest(6321740.4, features);
         assertEquals("variant closest to 6321739.4 must be found with position=6321739", 6321739, a_6321739.getStart());
         assertEquals("variant closest to 6321740.4 must be found with position=6321740", 6321740, a_6321740.getStart());
+    }
+
+    @Test
+    public void testGetFeatureClosestWithIndels(){
+        Feature snp = new BasicFeature("", 10, 11);
+        Feature snp2 = new BasicFeature("", 15, 16);
+        Feature indel = new BasicFeature("", 5, 13);
+        Feature indel2 = new BasicFeature( "", 25, 31);
+        List<Feature> features = List.of(indel, indel2, snp, snp2); // this order is important to make sure tiebreakers are woorking
+        assertEquals(FeatureUtils.getFeatureClosest(1, features), indel);
+        assertEquals(FeatureUtils.getFeatureClosest(4, features), indel);
+        assertEquals(FeatureUtils.getFeatureClosest(5, features), indel);
+        assertEquals(FeatureUtils.getFeatureClosest(9, features), indel);
+        assertEquals("since indel and snp overlap at this point it should pick the snp", FeatureUtils.getFeatureClosest( 10, features), snp);
+        assertEquals(FeatureUtils.getFeatureClosest(11, features), indel);
+        assertEquals(FeatureUtils.getFeatureClosest(12, features), indel);
+        assertEquals(FeatureUtils.getFeatureClosest(13, features), indel);
+        assertEquals(FeatureUtils.getFeatureClosest(14, features), snp2);
+        assertEquals(FeatureUtils.getFeatureClosest(15, features), snp2);
+        assertEquals(FeatureUtils.getFeatureClosest(16, features), snp2);
+        assertEquals(FeatureUtils.getFeatureClosest(20, features), snp2);
+        assertEquals(FeatureUtils.getFeatureClosest(21, features), indel2);
+        assertEquals(FeatureUtils.getFeatureClosest(100, features), indel2);
     }
 
     /**

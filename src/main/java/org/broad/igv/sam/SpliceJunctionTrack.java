@@ -26,11 +26,14 @@
 
 package org.broad.igv.sam;
 
+import org.apache.commons.math3.stat.Frequency;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -43,8 +46,6 @@ import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,7 +55,7 @@ import java.util.List;
  * @author dhmay
  * Finds splice junctions in real time and renders them as Features
  */
-public class SpliceJunctionTrack extends FeatureTrack {
+public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
 
     private static Logger log = LogManager.getLogger(SpliceJunctionTrack.class);
 
@@ -62,11 +63,6 @@ public class SpliceJunctionTrack extends FeatureTrack {
 
     // Strand option is shared by all tracks
     private static StrandOption strandOption;
-
-    private AlignmentTrack alignmentTrack;
-    private AlignmentDataManager dataManager;
-    private boolean removed = false;
-
     public static void setStrandOption(StrandOption so) {
         strandOption = so;
     }
@@ -75,6 +71,9 @@ public class SpliceJunctionTrack extends FeatureTrack {
         return strandOption;
     }
 
+    private AlignmentTrack alignmentTrack;
+    private AlignmentDataManager dataManager;
+    private boolean removed = false;
 
     public SpliceJunctionTrack(ResourceLocator locator, String name,
                                AlignmentDataManager dataManager,
@@ -83,7 +82,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
         super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));
-        setRendererClass(SpliceJunctionRenderer.class);
+        this.renderer = new SpliceJunctionRenderer();
         if (dataManager != null) {
             dataManager.unsubscribe(this);
         }
@@ -94,6 +93,12 @@ public class SpliceJunctionTrack extends FeatureTrack {
     }
 
     public SpliceJunctionTrack() {
+        this.renderer = new SpliceJunctionRenderer();
+    }
+
+    @Override
+    public void setRenderer(Renderer renderer) {
+        this.renderer = renderer;
     }
 
     @Override
@@ -108,6 +113,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
         return frame.getCurrentRange().getLength() <= dataManager.getVisibilityWindow();
     }
 
+
     @Override
     public void render(RenderContext context, Rectangle rect) {
         if (!isShowFeatures(context.getReferenceFrame())) {
@@ -118,6 +124,52 @@ public class SpliceJunctionTrack extends FeatureTrack {
         } else {
             super.render(context, rect);
         }
+    }
+
+
+    /**
+     * The ScalableTrack interface.  Return a Range object reflecting min/max of the data (splice junction counts
+     * in this case.  Used for autoscaling.
+     *
+     * @param referenceFrame
+     * @return
+     */
+    @Override
+    public Range getInViewRange(ReferenceFrame referenceFrame) {
+
+        PackedFeatures packedFeatures = packedFeaturesMap.get(referenceFrame.getName());
+        if(packedFeatures == null) {
+            return new Range(0, ((SpliceJunctionRenderer) renderer).getMaxDepth());
+        } else {
+
+            Frequency f = new Frequency();
+            List<Integer> scores = new ArrayList<Integer>();
+
+            List<IGVFeature> featureList = packedFeatures.getFeatures();
+            for (IGVFeature feature : featureList) {
+                SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
+                if(feature.getEnd() >= referenceFrame.getOrigin() && feature.getStart() <= referenceFrame.getEnd()) {
+                    f.addValue(junctionFeature.getScore());
+                    scores.add((int) junctionFeature.getScore());
+                }
+            }
+
+            Collections.sort(scores);
+            Collections.reverse(scores);
+            int max = 0;
+            for (int s: scores)	{
+                if (f.getCumPct(s) < 0.99)	{
+                    max = s;
+                    break;
+                }
+            }
+            return new Range(0, max);
+        }
+    }
+
+    @Override
+    public void setDataRange(DataRange axisDefinition) {
+        ((SpliceJunctionRenderer) renderer).setMaxDepth((int) axisDefinition.getMaximum());
     }
 
     public boolean isRemoved() {
@@ -146,6 +198,71 @@ public class SpliceJunctionTrack extends FeatureTrack {
         }
     }
 
+    public boolean isLogNormalized() {
+        return false;
+    }
+
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
+        return 0;
+    }
+
+    @Override
+    protected String getZoomInMessage(String chr) {
+        return "Zoom in to see junctions.";
+    }
+
+    @Override
+    protected void renderFeatures(RenderContext context, Rectangle inputRect) {
+
+        // Intercept renderFeatures call and create splice junctions from alignments, if needed.
+        ReferenceFrame frame = context.getReferenceFrame();
+        if (!packedFeaturesMap.containsKey(frame.getName())) {
+
+            AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
+            if (loadedInterval != null) {
+                SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
+                List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption);
+                if (features == null) {
+                    features = Collections.emptyList();
+                }
+                int intervalStart = loadedInterval.getStart();
+                int intervalEnd = loadedInterval.getEnd();
+                PackedFeatures pf = new PackedFeaturesSpliceJunctions(frame.getChrName(), intervalStart, intervalEnd, features.iterator(), getDisplayMode());
+                packedFeaturesMap.put(frame.getName(), pf);
+            }
+        }
+
+        super.renderFeatures(context, inputRect);
+    }
+
+    public void load(ReferenceFrame frame) {
+        dataManager.load(frame, alignmentTrack.getRenderOptions(), true);
+
+    }
+
+    @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        double extent = frame.getEnd() - frame.getOrigin();
+        if (frame.getChrName().equals(Globals.CHR_ALL) || extent > dataManager.getVisibilityWindow()) {
+            return true;   // Nothing to paint
+        } else {
+
+            if (!dataManager.isLoaded(frame)) {
+                packedFeaturesMap.clear();
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
+
+    @Override
+    public String getExportTrackLine() {
+        return "track graphType=junctions";
+    }
+
+
     /**
      * Override to return a specialized popup menu
      *
@@ -170,8 +287,33 @@ public class SpliceJunctionTrack extends FeatureTrack {
         TrackMenuUtils.addStandardItems(menu, tmp, te);
 
         menu.addSeparator();
-        menu.add(getChangeAutoScale());
 
+        final JMenuItem setScaleItem = new JMenuItem("Set Maximum Depth");
+        final JCheckBoxMenuItem autoscaleItem = new JCheckBoxMenuItem("Autoscale");
+
+        setScaleItem.addActionListener(evt -> {
+            Integer newDepth = TrackMenuUtils.getIntegerInput("Maximum Depth", ((SpliceJunctionRenderer) renderer).getMaxDepth());
+            if(newDepth != null && newDepth > 0) {
+                ((SpliceJunctionRenderer) renderer).setMaxDepth(newDepth);
+                setAutoScale(false);
+                autoscaleItem.setSelected(false);
+                this.repaint();
+            }
+        });
+        menu.add(setScaleItem);
+
+        autoscaleItem.setSelected(getAutoScale());
+        autoscaleItem.addActionListener(evt -> {
+            if (getAutoScale()) {
+                setAutoScale(false);
+                autoscaleItem.setSelected(false);
+            } else {
+                setAutoScale(true);
+                autoscaleItem.setSelected(true);
+            }
+            this.repaint();
+        });
+        menu.add(autoscaleItem);
 
         menu.addSeparator();
         JMenuItem sashimi = new JMenuItem("Sashimi Plot");
@@ -204,7 +346,7 @@ public class SpliceJunctionTrack extends FeatureTrack {
             });
             menu.add(junctionItem);
             // Disable if this is the only visible track
-            if (!((coverageTrack != null && coverageTrack.isVisible()) ||  alignmentTrack.isVisible())) {
+            if (!((coverageTrack != null && coverageTrack.isVisible()) || alignmentTrack.isVisible())) {
                 junctionItem.setEnabled(false);
             }
 
@@ -221,97 +363,6 @@ public class SpliceJunctionTrack extends FeatureTrack {
         return menu;
     }
 
-    public boolean isLogNormalized() {
-        return false;
-    }
-
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
-        return 0;
-    }
-
-    @Override
-    protected String getZoomInMessage(String chr) {
-        return "Zoom in to see junctions.";
-    }
-
-    @Override
-    protected void renderFeatures(RenderContext context, Rectangle inputRect) {
-
-        // Intercept renderFeatures call and create splice junctions from alignments, if needed.
-        ReferenceFrame frame = context.getReferenceFrame();
-        if (!packedFeaturesMap.containsKey(frame.getName())) {
-
-            AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
-            if (loadedInterval != null) {
-                SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
-                List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption);
-                if (features == null) {
-                    features = Collections.emptyList();
-                }
-                int intervalStart = loadedInterval.getStart();
-                int intervalEnd = loadedInterval.getEnd();
-                PackedFeatures pf = new PackedFeaturesSpliceJunctions(frame.getChrName(), intervalStart, intervalEnd,features.iterator(), getDisplayMode());
-                packedFeaturesMap.put(frame.getName(), pf);
-            }
-        }
-
-        super.renderFeatures(context, inputRect);
-    }
-
-    public void load(ReferenceFrame frame) {
-        dataManager.load(frame, alignmentTrack.getRenderOptions(), true);
-
-    }
-
-    @Override
-    public boolean isReadyToPaint(ReferenceFrame frame) {
-        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > dataManager.getMinVisibleScale()) {
-            return true;   // Nothing to paint
-        } else {
-
-            if (!dataManager.isLoaded(frame)) {
-                packedFeaturesMap.clear();
-                return false;
-            } else {
-                return true;
-            }
-        }
-    }
-
-
-    @Override
-    public String getExportTrackLine() {
-        return "track graphType=junctions";
-    }
-
-
-    // Start of Roche-Tessella modification
-    private JMenuItem getChangeAutoScale() {
-
-        final JCheckBoxMenuItem autoscaleItem = new JCheckBoxMenuItem("Autoscale");
-
-        boolean autoScale = getAutoScale();
-        autoscaleItem.setSelected(autoScale);
-
-
-        autoscaleItem.addActionListener(evt -> {
-            boolean autoScale1 = getAutoScale();
-            TrackProperties tp = new TrackProperties();
-            if (autoScale1) {
-                tp.setAutoScale(false);
-                autoscaleItem.setSelected(false);
-            } else {
-                tp.setAutoScale(true);
-                autoscaleItem.setSelected(true);
-            }
-            tp.setRendererClass(SpliceJunctionRenderer.class);
-            setProperties(tp);
-
-        });
-
-        return autoscaleItem;
-    }
-    // End of Roche-Tessella modification
 
 
     @Override
@@ -323,6 +374,11 @@ public class SpliceJunctionTrack extends FeatureTrack {
             element.setAttribute("removed", String.valueOf(removed));
         }
 
+        // Autoscale is set here, but restored in AbstractTrack
+        element.setAttribute("autoScale", String.valueOf(autoScale));
+
+        element.setAttribute("maxdepth", String.valueOf(((SpliceJunctionRenderer) renderer).getMaxDepth()));
+
 
     }
 
@@ -332,7 +388,13 @@ public class SpliceJunctionTrack extends FeatureTrack {
         super.unmarshalXML(element, version);
 
         if (element.hasAttribute("removed")) {
-            this.removed = Boolean.parseBoolean("removed");
+            this.removed = Boolean.parseBoolean(element.getAttribute("removed"));
+        }
+
+        if(element.hasAttribute("maxdepth")) {
+            if(renderer != null && renderer instanceof SpliceJunctionRenderer) {
+                ((SpliceJunctionRenderer) renderer).setMaxDepth((int) Float.parseFloat(element.getAttribute("maxdepth")));
+            }
         }
 
     }

@@ -246,12 +246,6 @@ public class LinkedAlignment implements Alignment {
         return insertions;
     }
 
-
-    @Override
-    public String getCigarString() {
-        return null;
-    }
-
     @Override
     public List<Gap> getGaps() {
         return null;
@@ -260,11 +254,6 @@ public class LinkedAlignment implements Alignment {
     @Override
     public int getInferredInsertSize() {
         return 0;
-    }
-
-    @Override
-    public ReadMate getMate() {
-        return null;
     }
 
     @Override
@@ -375,17 +364,6 @@ public class LinkedAlignment implements Alignment {
     }
 
     @Override
-    public String getReadGroup() {
-
-        return null;
-    }
-
-    @Override
-    public String getLibrary() {
-        return null;
-    }
-
-    @Override
     public String getClipboardString(double location, int mouseX) {
         return null;
     }
@@ -411,4 +389,19 @@ public class LinkedAlignment implements Alignment {
         }
     };
 
+    /**
+     * This chooses the smallest overlapping alignment (i.e. if a group of linked alignments overlap take the smallest one).
+     */
+    @Override
+    public Alignment getSpecificAlignment(final double location) {
+        Alignment sa = null;
+        for (Alignment a : alignments) {
+            if (a.contains(location)) {
+                if (sa == null || (a.getLengthOnReference() < sa.getLengthOnReference())) {
+                    sa = a;
+                }
+            }
+        }
+        return sa;
+    }
 }

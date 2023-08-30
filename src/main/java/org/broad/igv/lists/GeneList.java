@@ -168,6 +168,6 @@ public class GeneList {
 //    }
 
     public void sort(Comparator<String> comparator) {
-        Collections.sort(this.loci, comparator);
+        this.loci.sort(comparator);
     }
 }

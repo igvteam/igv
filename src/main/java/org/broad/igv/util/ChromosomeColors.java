@@ -55,7 +55,7 @@ public class ChromosomeColors {
 
 
     private static void initColorMap() {
-        colorMap = new HashMap();
+        colorMap = new HashMap<>();
         colorMap.put("chrX", new Color(204, 153, 0));
         colorMap.put("chrY", new Color(153, 204, 0));
         colorMap.put("chrUn", Color.DARK_GRAY);

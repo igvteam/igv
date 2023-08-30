@@ -97,6 +97,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenu toolsMenu;
     private JMenu googleMenu;
     private JMenu AWSMenu;
+    private AutosaveMenu autosaveMenu;
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
     private IGV igv;
@@ -322,6 +323,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         reloadSessionItem.setEnabled(false);
         menuItems.add(reloadSessionItem);
 
+        autosaveMenu = new AutosaveMenu();
+        menuItems.add(autosaveMenu);
+
         menuItems.add(new JSeparator());
 
         // ***** Snapshots
@@ -375,7 +379,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             String[] sessions = recentSessions.split(";");
             for (String sessionPath : sessions) {
                 if (!sessionPath.equals("null") &&
-                        !igv.getRecentSessionList().contains(sessionPath)) {
+                        !igv.getRecentSessionList().contains(sessionPath) &&
+                        (new File(sessionPath)).exists()) {
                     igv.getRecentSessionList().add(sessionPath);
                 }
 
@@ -623,7 +628,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction =
                 new MenuAction("Select Attributes to Show...", null, KeyEvent.VK_S) {
                     @Override
-                    public void actionPerformed(ActionEvent e) {igv.doSelectDisplayableAttribute();
+                    public void actionPerformed(ActionEvent e) {
+                        igv.doSelectDisplayableAttribute();
                     }
                 };
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
@@ -907,7 +913,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenuItem updateCS = new JMenuItem("Update chrom sizes");
         updateCS.addActionListener(e -> {
             try {
-                GenomeUtils.main(new String [] {});
+                GenomeUtils.main(new String[]{});
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
@@ -928,7 +934,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         final JMenuItem login = new JMenuItem("Login");
         login.addActionListener(e -> {
             try {
-                OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
+                OAuthProvider oauth = OAuthUtils.getInstance().getAWSProvider();
                 oauth.openAuthorizationPage();
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
@@ -942,7 +948,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // Logout
         final JMenuItem logout = new JMenuItem("Logout");
         logout.addActionListener(e -> {
-            OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
+            OAuthProvider oauth = OAuthUtils.getInstance().getAWSProvider();
             oauth.logout();
         });
         logout.setEnabled(false);
@@ -970,9 +976,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             public void menuSelected(MenuEvent e) {
                 if (AmazonUtils.GetCognitoConfig() != null) {
                     Runnable runnable = () -> {
-                        OAuthProvider oauth = OAuthUtils.getInstance().getProvider("Amazon");
-                        boolean loggedIn = false;
-                        loggedIn = oauth.isLoggedIn();
+                        OAuthProvider oauth = OAuthUtils.getInstance().getAWSProvider();
+                        boolean loggedIn = oauth.isLoggedIn();
                         log.debug("MenuBar is user loggedIn?: " + loggedIn);
 
                         if (loggedIn) {
@@ -1006,13 +1011,13 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenu createGoogleMenu() throws IOException {
 
         // Dynamically name menu - dwm08
-        final OAuthProvider oauth = OAuthUtils.getInstance().getProvider();
+        final OAuthProvider oauth = OAuthUtils.getInstance().getDefaultProvider();
 
-        if (oauth != null) {  // TODO -- how do we know this is a google provider?
-            if(oauth.getAuthProvider() == null || oauth.getAuthProvider().isEmpty()){
-                oauth.setAuthProvider("Google");
-            }
-            JMenu menu = new JMenu(oauth.getAuthProvider());
+        if (oauth != null) {
+
+            JMenu menu = new JMenu("Google");
+
+            boolean isLoggedIn = oauth.isLoggedIn();
 
             final JMenuItem login = new JMenuItem("Login ... ");
             login.addActionListener(e -> {
@@ -1024,7 +1029,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 }
 
             });
-            //login.setEnabled(false);
+            login.setEnabled(!isLoggedIn);
             menu.add(login);
 
 
@@ -1033,7 +1038,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 oauth.logout();
                 GoogleUtils.setProjectID(null);
             });
-            logout.setEnabled(false);
+            logout.setEnabled(isLoggedIn);
             menu.add(logout);
 
             final JMenuItem projectID = new JMenuItem("Enter Project ID ...");
@@ -1043,19 +1048,15 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             menu.addMenuListener(new MenuListener() {
                 @Override
                 public void menuSelected(MenuEvent e) {
-                    Runnable runnable = () -> {
-                        boolean loggedIn = OAuthUtils.getInstance().getProvider().isLoggedIn();
-
-                        if (loggedIn) {
-                            login.setText(oauth.getCurrentUserName());
-                        } else {
-                            login.setText("Login ...");
-                        }
-                        login.setEnabled(!loggedIn);
-                        logout.setEnabled(loggedIn);
-                    };
-
-                    LongRunningTask.submit(runnable);
+                    OAuthProvider oAuthProvider = OAuthUtils.getInstance().getDefaultProvider();
+                    boolean loggedIn = oAuthProvider.isLoggedIn();
+                    if (loggedIn && oAuthProvider.getCurrentUserName() != null) {
+                        login.setText(oAuthProvider.getCurrentUserName());
+                    } else {
+                        login.setText("Login ...");
+                    }
+                    login.setEnabled(!loggedIn);
+                    logout.setEnabled(loggedIn);
                 }
 
                 @Override
@@ -1171,7 +1172,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
             String blatSequence = MessageUtils.showInputDialog("Enter sequence to blat:");
             if (blatSequence != null) {
-                if(blatSequence.length() < 20 || blatSequence.length() > 8000) {
+                if (blatSequence.length() < 20 || blatSequence.length() > 8000) {
                     MessageUtils.showMessage("BLAT sequences must be between 20 and 8000 bases in length.");
                 } else {
                     BlatClient.doBlatQuery(blatSequence, "BLAT");
