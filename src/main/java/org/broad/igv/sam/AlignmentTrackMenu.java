@@ -962,7 +962,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             String rcSeq = getClippedSequence(
                     alignment.getReadSequence(),
                     alignment.getReadStrand(),
-                    seqLength - clipping.getRightHard(),
+                    seqLength - clipping.getRightSoft(),
                     seqLength);
 
             final JMenuItem rccItem = new JMenuItem("Copy right-clipped sequence");
@@ -1076,8 +1076,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
      */
     void addLinkedReadItems() {
         addSeparator();
-        add(linkedReadViewItem("BX"));
-        add(linkedReadViewItem("MI"));
 
         addSeparator();
         final JCheckBoxMenuItem supplementalItem = new JCheckBoxMenuItem("Link supplementary alignments");
@@ -1130,7 +1128,11 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         item.setSelected(!alignmentTrack.isLinkedReadView() && alignmentTrack.isLinkedReads() && tag.equals(renderOptions.getLinkByTag()));
         item.addActionListener(aEvt -> {
             boolean linkedReads = item.isSelected();
-            setLinkByTag(linkedReads, tag);
+            if("BX".equals(tag) || "MI".equals(tag)) {
+                alignmentTrack.setLinkedReadView(linkedReads, tag);
+            } else {
+                setLinkByTag(linkedReads, tag);
+            }
         });
         return item;
     }
@@ -1355,7 +1357,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         }
         renderOptions.setLinkedReads(linkReads);
         dataManager.packAlignments(renderOptions);
-        repaint();
+        alignmentTrack.repaint();
     }
 
 
