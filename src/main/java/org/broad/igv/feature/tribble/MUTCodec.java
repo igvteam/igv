@@ -204,13 +204,6 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
                 }
             }
 
-            // MAF files use the 1-based inclusive convention for coordinates.  The convention is not
-            // specified for MUT files, and it appears both conventions have been used.  We can detect
-            // the convention used for single base mutations by testing start == end.
-            if (isMAF || (start == end) || coords == TrackProperties.BaseCoord.ONE) {
-                start--;
-            }
-
             String sampleId = "Unknown";
             if(sampleColumn >= 0) {
                 sampleId = tokens[sampleColumn].trim();
