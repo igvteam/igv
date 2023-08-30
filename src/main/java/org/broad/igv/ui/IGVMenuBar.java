@@ -595,11 +595,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 if (newValue != null) {
                     try {
                         Integer w = Integer.parseInt(newValue);
-                        if (w <= 0 || w == 1000) throw new NumberFormatException();
+                        if (w <= 0) throw new NumberFormatException();
                         PreferencesManager.getPreferences().put(NAME_PANEL_WIDTH, newValue);
                         mainPanel.setNamePanelWidth(w);
                     } catch (NumberFormatException ex) {
-                        MessageUtils.showErrorMessage("Error: value must be a positive integer < 1000.", ex);
+                        MessageUtils.showErrorMessage("Error: value must be a positive integer.", ex);
                     }
                 }
             }
