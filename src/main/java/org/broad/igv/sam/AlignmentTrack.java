@@ -155,6 +155,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         CHIMERIC("chimeric"),
         SUPPLEMENTARY("supplementary flag"),
         BASE_AT_POS("base at position"),
+        INSERTION_AT_POS("insertion at position", true),
         MOVIE("movie"),
         ZMW("ZMW"),
         HAPLOTYPE("haplotype"),
@@ -165,9 +166,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         MAPPING_QUALITY("mapping quality");
 
         public final String label;
+        public final boolean reverse;
 
         GroupOption(String label) {
             this.label = label;
+            this.reverse = false;
+        }
+
+        GroupOption(String label, boolean reverse) {
+            this.label = label;
+            this.reverse = reverse;
         }
 
     }
@@ -780,7 +788,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (option == GroupOption.TAG && tag != null) {
             renderOptions.setGroupByTag(tag);
         }
-        if (option == GroupOption.BASE_AT_POS && pos != null) {
+        if ((option == GroupOption.BASE_AT_POS || option == GroupOption.INSERTION_AT_POS) && pos != null) {
             renderOptions.setGroupByPos(pos);
         }
         renderOptions.setGroupByOption(option);

@@ -1110,7 +1110,7 @@ public class CommandExecutor {
     private String group(String groupArg, String tagArg) {
         final AlignmentTrack.GroupOption groupOption = getAlignmentGroupOption(groupArg);
         Range r = null;
-        if (groupOption == AlignmentTrack.GroupOption.BASE_AT_POS) {
+        if (groupOption == AlignmentTrack.GroupOption.BASE_AT_POS || groupOption == AlignmentTrack.GroupOption.INSERTION_AT_POS) {
             if (tagArg == null) {
                 return "Error: position is required";
             } else {
@@ -1261,7 +1261,11 @@ public class CommandExecutor {
             return AlignmentTrack.GroupOption.LIBRARY;
         } else if (str.equalsIgnoreCase("readGroup") || str.equalsIgnoreCase("read_group")) {
             return AlignmentTrack.GroupOption.READ_GROUP;
-        } else {
+        } else if (str.equalsIgnoreCase("base")) {
+            return AlignmentTrack.GroupOption.BASE_AT_POS;
+        }else if (str.equalsIgnoreCase("insertion")) {
+            return AlignmentTrack.GroupOption.INSERTION_AT_POS;
+        }else {
             try {
                 return AlignmentTrack.GroupOption.valueOf(str.toUpperCase());
             } catch (IllegalArgumentException e) {

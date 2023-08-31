@@ -70,6 +70,7 @@ public class AlignmentPacker {
         LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
 
         List<Alignment> alList = interval.getAlignments();
+
         // TODO -- means to undo this
         if (renderOptions.isLinkedReads()) {
             alList = linkByTag(alList, renderOptions.getLinkByTag());
@@ -93,9 +94,15 @@ public class AlignmentPacker {
             }
 
 
-            // Now alphabetize (sort) and pack the groups
+            // Now sort the groups by their name and pack each group individually
             List<Object> keys = new ArrayList<Object>(groupedAlignments.keySet());
             Comparator<Object> groupComparator = getGroupComparator(renderOptions.getGroupByOption());
+
+            // Certain group options sort descending by default, as indicated by the "reverse" property
+            if(renderOptions.getGroupByOption().reverse) {
+                groupComparator = groupComparator.reversed();
+            }
+
             if(renderOptions.isInvertGroupSorting()){
                 groupComparator = groupComparator.reversed();
             }
@@ -459,6 +466,30 @@ public class AlignmentPacker {
                 } else { // does not overlap position
                     return "3:";
                 }
+            case INSERTION_AT_POS:
+                // Use a string prefix to enforce grouping rules:
+                //    1: alignments with a base at the position
+                //    2: alignments with a gap at the position
+                //    3: alignment that do not overlap the position (or are on a different chromosome)
+                if (pos != null &&
+                        al.getChr().equals(pos.getChr()) &&
+                        al.getAlignmentStart() <= pos.getStart() &&
+                        al.getAlignmentEnd() > pos.getStart()) {
+                    int insertionBaseCount = 0;
+                    AlignmentBlock leftInsertion = al.getInsertionAt(pos.getStart() + 1);
+                    if(leftInsertion != null) {
+                        insertionBaseCount += leftInsertion.getLength();
+                    }
+                    AlignmentBlock rightInsertion = al.getInsertionAt(pos.getStart());
+                    if(rightInsertion != null) {
+                        insertionBaseCount += rightInsertion.getLength();
+                    }
+                    return insertionBaseCount;
+
+                } else {
+                    return 0;
+                }
+
             case MOVIE: // group PacBio reads by movie
                 readNameParts = al.getReadName().split("/");
                 if (readNameParts.length < 3) {

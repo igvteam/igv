@@ -400,10 +400,14 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         ButtonGroup group = new ButtonGroup();
 
         AlignmentTrack.GroupOption[] groupOptions = {
-                AlignmentTrack.GroupOption.NONE, AlignmentTrack.GroupOption.STRAND, AlignmentTrack.GroupOption.FIRST_OF_PAIR_STRAND, AlignmentTrack.GroupOption.SAMPLE,
-                AlignmentTrack.GroupOption.LIBRARY, AlignmentTrack.GroupOption.READ_GROUP, AlignmentTrack.GroupOption.MATE_CHROMOSOME,
-                AlignmentTrack.GroupOption.PAIR_ORIENTATION, AlignmentTrack.GroupOption.CHIMERIC, AlignmentTrack.GroupOption.SUPPLEMENTARY, AlignmentTrack.GroupOption.REFERENCE_CONCORDANCE,
-                AlignmentTrack.GroupOption.MOVIE, AlignmentTrack.GroupOption.ZMW, AlignmentTrack.GroupOption.READ_ORDER, AlignmentTrack.GroupOption.LINKED, AlignmentTrack.GroupOption.PHASE,
+                AlignmentTrack.GroupOption.NONE, AlignmentTrack.GroupOption.STRAND,
+                AlignmentTrack.GroupOption.FIRST_OF_PAIR_STRAND, AlignmentTrack.GroupOption.SAMPLE,
+                AlignmentTrack.GroupOption.LIBRARY, AlignmentTrack.GroupOption.READ_GROUP,
+                AlignmentTrack.GroupOption.MATE_CHROMOSOME,
+                AlignmentTrack.GroupOption.PAIR_ORIENTATION, AlignmentTrack.GroupOption.CHIMERIC,
+                AlignmentTrack.GroupOption.SUPPLEMENTARY, AlignmentTrack.GroupOption.REFERENCE_CONCORDANCE,
+                AlignmentTrack.GroupOption.MOVIE, AlignmentTrack.GroupOption.ZMW, AlignmentTrack.GroupOption.READ_ORDER,
+                AlignmentTrack.GroupOption.LINKED, AlignmentTrack.GroupOption.PHASE,
                 AlignmentTrack.GroupOption.MAPPING_QUALITY
         };
 
@@ -433,16 +437,16 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         groupMenu.add(tagOption);
         group.add(tagOption);
 
-        Range oldGroupByPos = renderOptions.getGroupByPos();
-        if (oldGroupByPos != null && renderOptions.getGroupByOption() == AlignmentTrack.GroupOption.BASE_AT_POS) { // already sorted by the base at a position
-            JCheckBoxMenuItem oldGroupByPosOption = new JCheckBoxMenuItem("base at " + oldGroupByPos.getChr() +
-                    ":" + Globals.DECIMAL_FORMAT.format(1 + oldGroupByPos.getStart()));
-            groupMenu.add(oldGroupByPosOption);
-            oldGroupByPosOption.setSelected(true);
-        }
-
-        if (renderOptions.getGroupByOption() != AlignmentTrack.GroupOption.BASE_AT_POS || oldGroupByPos == null ||
-                !oldGroupByPos.getChr().equals(chrom) || oldGroupByPos.getStart() != chromStart) { // not already sorted by this position
+//        Range oldGroupByPos = renderOptions.getGroupByPos();
+//        if (oldGroupByPos != null && renderOptions.getGroupByOption() == AlignmentTrack.GroupOption.BASE_AT_POS) { // already sorted by the base at a position
+//            JCheckBoxMenuItem oldGroupByPosOption = new JCheckBoxMenuItem("base at " + oldGroupByPos.getChr() +
+//                    ":" + Globals.DECIMAL_FORMAT.format(1 + oldGroupByPos.getStart()));
+//            groupMenu.add(oldGroupByPosOption);
+//            oldGroupByPosOption.setSelected(true);
+//        }
+//
+//        if (renderOptions.getGroupByOption() != AlignmentTrack.GroupOption.BASE_AT_POS || oldGroupByPos == null ||
+//                !oldGroupByPos.getChr().equals(chrom) || oldGroupByPos.getStart() != chromStart) { // not already sorted by this position
             JCheckBoxMenuItem newGroupByPosOption = new JCheckBoxMenuItem("base at " + chrom +
                     ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
             newGroupByPosOption.addActionListener(aEvt -> {
@@ -451,7 +455,17 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             });
             groupMenu.add(newGroupByPosOption);
             group.add(newGroupByPosOption);
-        }
+       // }
+
+        JCheckBoxMenuItem newGroupByInsOption = new JCheckBoxMenuItem("insertion at " + chrom +
+                ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
+        newGroupByInsOption.addActionListener(aEvt -> {
+            Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
+            groupAlignments(AlignmentTrack.GroupOption.INSERTION_AT_POS, null, groupByPos);
+        });
+        groupMenu.add(newGroupByInsOption);
+        group.add(newGroupByInsOption);
+
 
         groupMenu.add(new Separator());
         JCheckBoxMenuItem invertGroupNameSortingOption = new JCheckBoxMenuItem("Reverse group order");
