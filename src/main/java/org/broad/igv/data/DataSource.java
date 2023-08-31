@@ -60,12 +60,15 @@ public interface DataSource {
 
     boolean isLogNormalized();
 
-    WindowFunction getWindowFunction();
+    public WindowFunction getWindowFunction();
 
-    default Collection<WindowFunction> getAvailableWindowFunctions() {
+    public default Collection<WindowFunction> getAvailableWindowFunctions() {
         return Collections.EMPTY_LIST;
     }
 
+    default boolean isIndexable() {
+        return true;
+    }
 
     /**
      * Release any resources (file handles, etc)

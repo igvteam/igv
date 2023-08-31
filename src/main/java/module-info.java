@@ -5,9 +5,7 @@ module org.igv {
     exports org.broad.igv.jbrowse;
     exports org.broad.igv.logging;
     exports org.broad.igv.util.liftover;
-    exports org.broad.igv.feature;
     exports org.broad.igv.sam.smrt;
-
 
     requires com.google.common;
     requires commons.math3;

@@ -111,7 +111,7 @@ public class BBDataSource extends AbstractDataSource implements FeatureSource {
     }
 
     @Override
-    public int estimateFeatureWindowSize() {
+    public int getFeatureWindowSize() {
         return featureVisiblityWindow;
     }
 

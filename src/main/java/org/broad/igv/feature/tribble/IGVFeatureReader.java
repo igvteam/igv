@@ -26,6 +26,8 @@
 package org.broad.igv.feature.tribble;
 
 
+
+
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.index.Index;
 
@@ -36,21 +38,21 @@ import java.util.List;
 /**
  * Interface to replace the Tribble equivalent.  Returns plain "Iterator" rather than "CloseableIterator".  A wrapper
  * implementation is provided that handles closing the tribble resource.
- * <p>
+ *
  * NOTE:  IGV classes should use this interface, rather than the Tribble FeatureReader.
  *
  * @author jrobinso
- * Date: 5/8/13
- * Time: 10:55 AM
+ *         Date: 5/8/13
+ *         Time: 10:55 AM
  */
 public interface IGVFeatureReader {
 
-    Iterator<Feature> query(final String chr, final int start, final int end) throws IOException;
+    public Iterator<Feature> query(final String chr, final int start, final int end) throws IOException;
 
-    Iterator<Feature> iterator() throws IOException;
+    public Iterator<Feature> iterator() throws IOException;
 
-    List<String> getSequenceNames();
+    public List<String> getSequenceNames();
 
-    Object getHeader();
+    public Object getHeader();
 
 }

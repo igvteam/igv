@@ -92,7 +92,7 @@ public class HtsgetVariantSource implements FeatureSource {
     }
 
     @Override
-    public int estimateFeatureWindowSize() {
+    public int getFeatureWindowSize() {
         return featureWindowSize;
     }
 

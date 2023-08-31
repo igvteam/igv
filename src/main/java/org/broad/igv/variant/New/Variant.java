@@ -28,15 +28,12 @@ package org.broad.igv.variant.New;
 
 import htsjdk.tribble.Feature;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.IGVFeature;
-
-import java.awt.*;
 
 /**
  * Parser for VCF files.
  */
 
-public class Variant implements IGVFeature {
+public class Variant implements Feature {
 
     String chr;
     int pos;
@@ -115,18 +112,4 @@ public class Variant implements IGVFeature {
     }
 
 
-    @Override
-    public Color getColor() {
-        return null;
-    }
-
-    @Override
-    public float getScore() {
-        return 0;
-    }
-
-    @Override
-    public String getName() {
-        return null;
-    }
 }

@@ -27,6 +27,7 @@ package org.broad.igv.track;
 
 import htsjdk.tribble.Feature;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -40,6 +41,10 @@ import java.util.List;
  */
 public interface FeatureSource<T extends Feature> {
 
+    default boolean isLoaded(ReferenceFrame frame) {
+        return false;
+    }
+
     /**
      * Return an iterator over all features that overlap the interval.  The coordinates are in the "UCSC" convention,
      * that is first base is zero and the interval is not inclusive of the end position,  i.e. an interval
@@ -51,18 +56,6 @@ public interface FeatureSource<T extends Feature> {
      * @return
      */
     Iterator<T> getFeatures(String chr, int start, int end) throws IOException;
-
-
-    /**
-     * Return all features for the entire genome as a list.  Not supported by all feature sources.
-     *
-     * @return
-     * @throws IOException
-     */
-    default List<T> getAllFeatures() throws IOException {
-        return null;
-    }
-
 
 
     /**
@@ -83,9 +76,12 @@ public interface FeatureSource<T extends Feature> {
      * rendering features.   When zoomed out beyond this interval coverage is shown, if available, or a message to
      * zoom in.
      *
+     * TODO:  It seems slightly odd to have this property here, but on the other hand FeatureSource objects have
+     * TODO:  access to the information required to estimate this value.  Still, consider removing this from the interface.
+     *
      * @return the feature window threshold in base-pairs
      */
-    default int estimateFeatureWindowSize() {
+    default int getFeatureWindowSize() {
         return -1;
     }
 

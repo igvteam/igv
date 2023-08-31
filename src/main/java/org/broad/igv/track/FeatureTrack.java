@@ -25,11 +25,8 @@
 
 package org.broad.igv.track;
 
-import htsjdk.samtools.util.Locatable;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.TribbleException;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.DataLoadedEvent;
@@ -37,6 +34,8 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -119,7 +118,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     private boolean groupByStrand = false;
     private String labelField;
-    private ArrayList<Feature> wgFeatures;
 
     public FeatureTrack() {
 
@@ -197,7 +195,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         if (vizWindow != null) {
             visibilityWindow = vizWindow;
         } else {
-            int sourceFeatureWindowSize = source.estimateFeatureWindowSize();
+            int sourceFeatureWindowSize = source.getFeatureWindowSize();
             int defVisibilityWindow = PreferencesManager.getPreferences().getAsInt(Constants.DEFAULT_VISIBILITY_WINDOW);
             if (sourceFeatureWindowSize > 0 && defVisibilityWindow > 0) {  // Only apply a default if the feature source supports visibility window.
                 visibilityWindow = defVisibilityWindow * 1000;
@@ -681,58 +679,69 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    /**
-     * Loads and segregates features for the reference frame into rows such that they do not overlap.
-     */
     public void load(ReferenceFrame frame) {
+        loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame.getName());
+    }
+
+    /**
+     * Loads and segregates features into rows such that they do not overlap.
+     *
+     * @param chr
+     * @param start
+     * @param end
+     */
+    protected void loadFeatures(final String chr, final int start, final int end, final String frame) {
 
         if (source == null) {
             return;
         }
 
-        final String chr = frame.getChrName();
-        final int start = (int) frame.getOrigin();
-        final int end = (int) frame.getEnd();
-
         try {
 
-            Iterator<Feature> iter;
             int expandedStart;
             int expandedEnd;
-
-            if(Globals.CHR_ALL.equals(chr)) {
-             iter = sampleGenomeFeatures().iterator();
-             expandedStart = 0;
-             expandedEnd = Integer.MAX_VALUE;
-            } else {
-                int vw = getVisibilityWindow();
-                if (vw > 0) {
-                    int delta = (end - start) / 2;
-                    expandedStart = start < 0 ? start : start - delta;
-                    expandedEnd = end + delta;
-                    if (expandedEnd < 0) {
-                        expandedEnd = Integer.MAX_VALUE;  // assumed integer overflow
-                    }
-                } else {
-                    expandedStart = 0;
-                    expandedEnd = Integer.MAX_VALUE;
+            int vw = getVisibilityWindow();
+            if (vw > 0) {
+                int delta = (end - start) / 2;
+                expandedStart = start - delta;
+                expandedEnd = end + delta;
+                if (expandedEnd < 0) {
+                    expandedEnd = Integer.MAX_VALUE;  // overflow
                 }
-                iter = source.getFeatures(chr, expandedStart, expandedEnd);
+            } else {
+                expandedStart = 0;
+                expandedEnd = Integer.MAX_VALUE;
             }
+
+
+            //Make sure we are only querying within the chromosome we allow for somewhat pathological cases of start
+            //being negative and end being outside, but only if directly queried. Our expansion should not
+            //set start < 0 or end > chromosomeLength
+            if (start >= 0) {
+                expandedStart = Math.max(0, expandedStart);
+            }
+
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            if (genome != null) {
+                Chromosome c = genome.getChromosome(chr);
+                if (c != null && end < c.getLength()) expandedEnd = Math.min(c.getLength(), expandedEnd);
+            }
+
+            Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
 
             if (iter == null) {
                 PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
-                packedFeaturesMap.put(frame.getName(), pf);
+                packedFeaturesMap.put(frame, pf);
             } else {
                 PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, this.getDisplayMode(), groupByStrand);
-                packedFeaturesMap.put(frame.getName(), pf);
+                packedFeaturesMap.put(frame, pf);
                 //log.warn("Loaded " + chr + " " + expandedStart + "-" + expandedEnd);
             }
 
         } catch (Exception e) {
             // Mark the interval with an empty feature list to prevent an endless loop of load attempts.
             PackedFeatures pf = new PackedFeatures(chr, start, end);
-            packedFeaturesMap.put(frame.getName(), pf);
+            packedFeaturesMap.put(frame, pf);
             String msg = "Error loading features for interval: " + chr + ":" + start + "-" + end + " <br>" + e.toString();
             MessageUtils.showMessage(msg);
             log.error(msg, e);
@@ -745,6 +754,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         Rectangle renderRect = new Rectangle(rect);
         renderRect.y = renderRect.y + margin;
         renderRect.height -= margin;
+
 
         showFeatures = isShowFeatures(context.getReferenceFrame());
         if (showFeatures) {
@@ -775,13 +785,13 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     protected boolean isShowFeatures(ReferenceFrame frame) {
 
-//        if (frame.getChrName().equals(Globals.CHR_ALL) && coverageRenderer != null) {
-//            return false;
-//        } else {
-        double windowSize = frame.getEnd() - frame.getOrigin();
-        int vw = getVisibilityWindow();
-        return (vw <= 0 || windowSize <= vw);
-//        }
+        if (frame.getChrName().equals(Globals.CHR_ALL)) {
+            return false;
+        } else {
+            double windowSize = frame.getEnd() - frame.getOrigin();
+            int vw = getVisibilityWindow();
+            return (vw <= 0 || windowSize <= vw);
+        }
     }
 
     protected void renderCoverage(RenderContext context, Rectangle inputRect) {
@@ -1014,40 +1024,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    private List<Feature> sampleGenomeFeatures() throws IOException {
-
-        if (wgFeatures == null) {
-
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
-            List<Feature> allFeatures = this.source.getAllFeatures();
-            if (allFeatures == null) return Collections.EMPTY_LIST;
-
-            wgFeatures = new ArrayList(allFeatures.size());
-
-            wgFeatures.sort(Comparator.comparingInt(Locatable::getStart));
-
-            Set<String> chrNames = new HashSet<>(genome.getLongChromosomeNames());
-
-            for (Feature feature : allFeatures) {
-
-                String chr = genome.getCanonicalChrName(feature.getChr());
-                if (!chrNames.contains(chr)) continue;
-
-                long offset = genome.getCumulativeOffset(chr);
-
-                if (feature instanceof IGVFeature) {
-                    IGVFeature f = (IGVFeature) feature;
-                    int genStart = (int) ((offset + f.getStart()) / 1000);
-                    int genEnd = (int) ((offset + f.getEnd()) / 1000);
-
-                    WGFeature f2 = new WGFeature(f, genStart, genEnd);
-
-                    wgFeatures.add(f2);
-                }
-            }
-        }
-        return wgFeatures;
-    }
 
     public void setTrackLine(String trackLine) {
         this.trackLine = trackLine;

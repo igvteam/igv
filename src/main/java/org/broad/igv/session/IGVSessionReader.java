@@ -252,11 +252,9 @@ public class IGVSessionReader implements SessionReader {
                 try {
                     GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
                     if (item != null) {
-                        // Genome specified by know ID (e.g. hg19)
                         genomePath = item.getPath();
                         GenomeManager.getInstance().loadGenome(item.getPath(), null);
                     } else {
-                        // Not a recognized ID, possible a local path or URL
                         genomePath = genomeId;
                         if (!ParsingUtils.fileExists(genomePath)) {
                             genomePath = getAbsolutePath(genomeId, rootPath);

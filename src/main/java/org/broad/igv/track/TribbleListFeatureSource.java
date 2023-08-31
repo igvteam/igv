@@ -138,7 +138,7 @@ public class TribbleListFeatureSource implements FeatureSource {
     }
 
     @Override
-    public int estimateFeatureWindowSize() {
+    public int getFeatureWindowSize() {
         return windowSize;
     }
 

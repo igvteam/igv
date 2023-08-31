@@ -71,9 +71,6 @@ public class MotifFinderSource implements FeatureSource<Feature>, Persistable {
 
     private Strand strand;
 
-    /**
-     * Empty constructor for unmarshalling session
-     */
     public MotifFinderSource() {
         this.genome = GenomeManager.getInstance().getCurrentGenome();
     }
@@ -170,7 +167,7 @@ public class MotifFinderSource implements FeatureSource<Feature>, Persistable {
     }
 
     @Override
-    public int estimateFeatureWindowSize() {
+    public int getFeatureWindowSize() {
         return this.featureWindowSize;
     }
 
