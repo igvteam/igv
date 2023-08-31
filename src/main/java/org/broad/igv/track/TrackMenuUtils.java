@@ -1205,55 +1205,6 @@ public class TrackMenuUtils {
 
     }
 
-    public static void exportTrackNames(final Collection<Track> selectedTracks) {
-
-        if (selectedTracks.isEmpty()) {
-            return;
-        }
-
-        File file = FileDialogUtils.chooseFile("Export track names",
-                PreferencesManager.getPreferences().getLastTrackDirectory(),
-                new File("trackNames.tab"),
-                FileDialogUtils.SAVE);
-
-        if (file == null) {
-            return;
-        }
-
-        PrintWriter pw = null;
-        try {
-            pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
-
-            List<String> attributes = AttributeManager.getInstance().getVisibleAttributes();
-
-            pw.print("Name");
-            for (String att : attributes) {
-                pw.print("\t" + att);
-            }
-            pw.println();
-
-            for (Track track : selectedTracks) {
-                //We preserve the alpha value. This is motivated by MergedTracks
-                pw.print(track.getName());
-
-                for (String att : attributes) {
-                    String val = track.getAttributeValue(att);
-                    pw.print("\t" + (val == null ? "" : val));
-                }
-                pw.println();
-            }
-
-
-        } catch (IOException e) {
-            MessageUtils.showErrorMessage("Error writing to file", e);
-            log.error(e);
-        } finally {
-            if (pw != null) pw.close();
-        }
-
-    }
-
-
     public static JMenuItem getCopyDetailsItem(final Feature f, final TrackClickEvent evt) {
         JMenuItem item = new JMenuItem("Copy Details to Clipboard");
         item.addActionListener(new ActionListener() {

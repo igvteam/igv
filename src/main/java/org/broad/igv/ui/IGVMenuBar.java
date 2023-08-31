@@ -36,6 +36,8 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeUtils;
+import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.Track;
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.oauth.OAuthUtils;
@@ -69,10 +71,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -512,6 +514,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.OVERLAY_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+        JMenuItem exportNames = new JMenuItem("Export Track Names...");
+        exportNames.addActionListener(e12 -> exportTrackNames(IGV.getInstance().getAllTracks()));
+        menuItems.add(exportNames);
 
         menuItems.add(new JSeparator());
 
@@ -1182,4 +1187,53 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         return menuItem;
     }
+
+     private void exportTrackNames(final Collection<Track> selectedTracks) {
+
+        if (selectedTracks.isEmpty()) {
+            return;
+        }
+
+        File file = FileDialogUtils.chooseFile("Export track names",
+                PreferencesManager.getPreferences().getLastTrackDirectory(),
+                new File("trackNames.txt"),
+                FileDialogUtils.SAVE);
+
+        if (file == null) {
+            return;
+        }
+
+        PrintWriter pw = null;
+        try {
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+
+            List<String> attributes = AttributeManager.getInstance().getVisibleAttributes();
+
+            pw.print("Name");
+            for (String att : attributes) {
+                pw.print("\t" + att);
+            }
+            pw.println();
+
+            for (Track track : selectedTracks) {
+                //We preserve the alpha value. This is motivated by MergedTracks
+                pw.print(track.getName());
+
+                for (String att : attributes) {
+                    String val = track.getAttributeValue(att);
+                    pw.print("\t" + (val == null ? "" : val));
+                }
+                pw.println();
+            }
+
+
+        } catch (IOException e) {
+            MessageUtils.showErrorMessage("Error writing to file", e);
+            log.error(e);
+        } finally {
+            if (pw != null) pw.close();
+        }
+
+    }
+
 }
