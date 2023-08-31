@@ -514,8 +514,15 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.OVERLAY_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        JMenuItem exportNames = new JMenuItem("Export Track Names...");
-        exportNames.addActionListener(e12 -> exportTrackNames(IGV.getInstance().getAllTracks()));
+        // Export track names and attributes -- if > 1 i sselected export those, otherwise export all
+        JMenuItem exportNames = new JMenuItem("Export Track Names and Attributes...");
+        exportNames.addActionListener(e12 -> {
+            Collection<Track> exportTracks = IGV.getInstance().getSelectedTracks();
+            if (exportTracks.size() <= 1) {
+                exportTracks = IGV.getInstance().getAllTracks();
+            }
+            exportTrackNames(exportTracks);
+        });
         menuItems.add(exportNames);
 
         menuItems.add(new JSeparator());
@@ -1188,7 +1195,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return menuItem;
     }
 
-     private void exportTrackNames(final Collection<Track> selectedTracks) {
+    private void exportTrackNames(final Collection<Track> selectedTracks) {
 
         if (selectedTracks.isEmpty()) {
             return;

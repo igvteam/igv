@@ -101,8 +101,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 //            addHaplotype(e);
 //        }
 
-        // Linked read items
-        addLinkedReadItems();
 
         // Group, sort, color, shade, and pack
         addSeparator();
@@ -121,6 +119,24 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         misMatchesItem.addActionListener(new Deselector(misMatchesItem, showAllItem));
         showAllItem.addActionListener(new Deselector(showAllItem, misMatchesItem));
 
+
+        // Hide small indels
+        JMenuItem smallIndelsItem = new JCheckBoxMenuItem("Hide small indels");
+        smallIndelsItem.setSelected(renderOptions.isHideSmallIndels());
+        smallIndelsItem.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
+            if(smallIndelsItem.isSelected()) {
+                String sith = MessageUtils.showInputDialog("Small indel threshold: ", String.valueOf(renderOptions.getSmallIndelThreshold()));
+                try {
+                    renderOptions.setSmallIndelThreshold(Integer.parseInt(sith));
+                } catch (NumberFormatException exc) {
+                    log.error("Error setting small indel threshold - not an integer", exc);
+                }
+            }
+            renderOptions.setHideSmallIndels(smallIndelsItem.isSelected());
+            alignmentTrack.repaint();
+        }));
+        add(smallIndelsItem);
+
         // Paired end items
         if(dataManager.isPairedEnd()) {
             addSeparator();
@@ -133,6 +149,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         }
 
         // Third gen (primarily) items
+        addSeparator();
         addThirdGenItems(clickedAlignment, e);
 
         // Display mode items
@@ -1081,7 +1098,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
      */
     void addLinkedReadItems() {
 
-        addSeparator();
         final JCheckBoxMenuItem supplementalItem = new JCheckBoxMenuItem("Link supplementary alignments");
         supplementalItem.setSelected(alignmentTrack.isLinkedReads() && "READNAME".equals(renderOptions.getLinkByTag()));
         supplementalItem.addActionListener(aEvt -> {
@@ -1160,37 +1176,13 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
     void addThirdGenItems(Alignment clickedAlignment, final TrackClickEvent tce) {
 
-        //Supplementary/chimeric items, only if the read has an SA tag
+        // Linked read items -- mostly for 3rd gen but might also be relevant to 10X and other linked read assays
+        addLinkedReadItems();
+
+        //Supplementary/chimeric items, only if the read has an SA tag;
         addShowChimericRegions(alignmentTrack, tce, clickedAlignment);
         addShowDiagram(tce, clickedAlignment);
 
-//        final JMenuItem qcItem = new JCheckBoxMenuItem("Quick consensus mode");
-//        qcItem.setSelected(renderOptions.isQuickConsensusMode());
-//        qcItem.addActionListener(aEvt -> {
-//            renderOptions.setQuickConsensusMode(qcItem.isSelected());
-//            alignmentTrack.repaint();
-//        });
-
-
-        final JMenuItem item = new JCheckBoxMenuItem("Hide small indels");
-        item.setSelected(renderOptions.isHideSmallIndels());
-        item.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
-
-            if(item.isSelected()) {
-                String sith = MessageUtils.showInputDialog("Small indel threshold: ", String.valueOf(renderOptions.getSmallIndelThreshold()));
-                try {
-                    renderOptions.setSmallIndelThreshold(Integer.parseInt(sith));
-                } catch (NumberFormatException e) {
-                    log.error("Error setting small indel threshold - not an integer", e);
-                }
-            }
-
-            renderOptions.setHideSmallIndels(item.isSelected());
-            alignmentTrack.repaint();
-        }));
-
-        //add(qcItem);
-        add(item);
     }
 
     /**
