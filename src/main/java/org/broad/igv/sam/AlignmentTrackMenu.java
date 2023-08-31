@@ -89,9 +89,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         Collection<Track> tracks = List.of(alignmentTrack);
         addSeparator();
         add(TrackMenuUtils.getTrackRenameItem(tracks));
-        addCopyToClipboardItem(e, clickedAlignment);
 
-        addSeparator();
         JMenuItem item = new JMenuItem("Change Track Color...");
         item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(tracks));
         add(item);
@@ -99,9 +97,9 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         // Experiment type  (RNA, THIRD GEN, OTHER)
         addSeparator();
         addExperimentTypeMenuItem();
-        if (alignmentTrack.getExperimentType() == AlignmentTrack.ExperimentType.THIRD_GEN) {
-            addHaplotype(e);
-        }
+//        if (alignmentTrack.getExperimentType() == AlignmentTrack.ExperimentType.THIRD_GEN) {
+//            addHaplotype(e);
+//        }
 
         // Linked read items
         addLinkedReadItems();
@@ -124,16 +122,17 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         showAllItem.addActionListener(new Deselector(showAllItem, misMatchesItem));
 
         // Paired end items
-        addSeparator();
-        addViewAsPairsMenuItem();
-        if (clickedAlignment != null) {
-            addGoToMate(e, clickedAlignment);
-            showMateRegion(e, clickedAlignment);
+        if(dataManager.isPairedEnd()) {
+            addSeparator();
+            addViewAsPairsMenuItem();
+            if (clickedAlignment != null) {
+                addGoToMate(e, clickedAlignment);
+                showMateRegion(e, clickedAlignment);
+            }
+            addInsertSizeMenuItem();
         }
-        addInsertSizeMenuItem();
 
         // Third gen (primarily) items
-        addSeparator();
         addThirdGenItems(clickedAlignment, e);
 
         // Display mode items
@@ -147,6 +146,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
         // Copy items
         addSeparator();
+        addCopyToClipboardItem(e, clickedAlignment);
         addCopySequenceItems(e);
         addConsensusSequence(e);
 
@@ -163,11 +163,13 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         }
 
         // Sashimi plot
-        addSeparator();
-        JMenuItem sashimi = new JMenuItem("Sashimi Plot");
-        sashimi.addActionListener(e1 -> SashimiPlot.openSashimiPlot());
-        sashimi.setEnabled(alignmentTrack.getExperimentType() == AlignmentTrack.ExperimentType.RNA);
-        add(sashimi);
+        if(alignmentTrack.getExperimentType() == AlignmentTrack.ExperimentType.RNA) {
+            addSeparator();
+            JMenuItem sashimi = new JMenuItem("Sashimi Plot");
+            sashimi.addActionListener(e1 -> SashimiPlot.openSashimiPlot());
+            sashimi.setEnabled(alignmentTrack.getExperimentType() == AlignmentTrack.ExperimentType.RNA);
+            add(sashimi);
+        }
 
         // Show alignments, coverage, splice junctions
         addSeparator();
@@ -744,7 +746,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     void addCopyToClipboardItem(final TrackClickEvent te, Alignment alignment) {
 
         final MouseEvent me = te.getMouseEvent();
-        JMenuItem item = new JMenuItem("Copy read details to clipboard");
+        JMenuItem item = new JMenuItem("Copy read details");
         final ReferenceFrame frame = te.getFrame();
         if (frame == null) {
             item.setEnabled(false);
@@ -823,17 +825,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         });
         add(item);
         return item;
-    }
-
-    void addQuickConsensusModeItem() {
-        // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Quick consensus mode");
-        item.setSelected(renderOptions.isQuickConsensusMode());
-        item.addActionListener(aEvt -> {
-            renderOptions.setQuickConsensusMode(item.isSelected());
-            alignmentTrack.repaint();
-        });
-        add(item);
     }
 
     JMenuItem addShowMismatchesMenuItem() {
@@ -1075,7 +1066,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
      * and linking by arbitrary tag.
      */
     void addLinkedReadItems() {
-        addSeparator();
 
         addSeparator();
         final JCheckBoxMenuItem supplementalItem = new JCheckBoxMenuItem("Link supplementary alignments");
@@ -1160,36 +1150,33 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         addShowChimericRegions(alignmentTrack, tce, clickedAlignment);
         addShowDiagram(tce, clickedAlignment);
 
-        final JMenuItem qcItem = new JCheckBoxMenuItem("Quick consensus mode");
-        qcItem.setSelected(renderOptions.isQuickConsensusMode());
-        qcItem.addActionListener(aEvt -> {
-            renderOptions.setQuickConsensusMode(qcItem.isSelected());
-            alignmentTrack.repaint();
-        });
+//        final JMenuItem qcItem = new JCheckBoxMenuItem("Quick consensus mode");
+//        qcItem.setSelected(renderOptions.isQuickConsensusMode());
+//        qcItem.addActionListener(aEvt -> {
+//            renderOptions.setQuickConsensusMode(qcItem.isSelected());
+//            alignmentTrack.repaint();
+//        });
 
-        final JMenuItem thresholdItem = new JMenuItem("Small indel threshold...");
-        thresholdItem.addActionListener(evt -> UIUtilities.invokeOnEventThread(() -> {
-            String sith = MessageUtils.showInputDialog("Small indel threshold: ", String.valueOf(renderOptions.getSmallIndelThreshold()));
-            try {
-                renderOptions.setSmallIndelThreshold(Integer.parseInt(sith));
-                alignmentTrack.repaint();
-            } catch (NumberFormatException e) {
-                log.error("Error setting small indel threshold - not an integer", e);
-            }
-        }));
-        thresholdItem.setEnabled(renderOptions.isHideSmallIndels());
 
         final JMenuItem item = new JCheckBoxMenuItem("Hide small indels");
         item.setSelected(renderOptions.isHideSmallIndels());
         item.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
+
+            if(item.isSelected()) {
+                String sith = MessageUtils.showInputDialog("Small indel threshold: ", String.valueOf(renderOptions.getSmallIndelThreshold()));
+                try {
+                    renderOptions.setSmallIndelThreshold(Integer.parseInt(sith));
+                } catch (NumberFormatException e) {
+                    log.error("Error setting small indel threshold - not an integer", e);
+                }
+            }
+
             renderOptions.setHideSmallIndels(item.isSelected());
-            thresholdItem.setEnabled(item.isSelected());
             alignmentTrack.repaint();
         }));
 
-        add(qcItem);
+        //add(qcItem);
         add(item);
-        add(thresholdItem);
     }
 
     /**
@@ -1383,3 +1370,4 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     }
 
 }
+
