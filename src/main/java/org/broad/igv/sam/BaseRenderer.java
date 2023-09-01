@@ -2,6 +2,9 @@ package org.broad.igv.sam;
 
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
+import org.broad.igv.sam.mods.BaseModficationFilter;
+import org.broad.igv.sam.mods.BaseModificationRenderer;
+import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -77,6 +80,7 @@ public class BaseRenderer {
                 Font f = FontManager.getFont(Font.BOLD, fontSize);
                 g.setFont(f);
             }
+            AlignmentTrack.ColorOption colorOption = renderOptions.getColorOption();
 
             for (Alignment alignment : alignments) {
 
@@ -111,23 +115,43 @@ public class BaseRenderer {
                         else if (pX + dX < rect.getX()) continue;
 
                         char c = p < padding ? '-' : (char) bases.getByte(p - padding);
-                        Color color = SequenceRenderer.nucleotideColors.get(c);
+
+
+                        Color color = null;
+                        // TODO -- support bisulfite mode?  Probably not possible as that depends on the reference
+                        //if (bisulfiteMode) {
+                        //     color = bisinfo.getDisplayColor(idx);
+                        // } else
+                        if (colorOption.isBaseMod() ||
+                                colorOption.isSMRTKinetics()) {
+                            color = Color.GRAY;
+                        } else {
+                            //color = nucleotideColors.get(c);
+                            color = SequenceRenderer.nucleotideColors.get(c);
+                        }
                         if (color == null) {
                             color = Color.black;
                         }
+
                         if (renderOptions.getShadeBasesOption() && p >= padding) {
                             byte qual = p < padding ? (byte) 126 : insertion.getQuality(p - padding);
                             color = BaseRenderer.getShadedColor(color, qual, renderOptions.getBaseQualityMin(), renderOptions.getBaseQualityMax());
                         }
 
-                        if(dX < 8) {
+                        if (dX < 8) {
                             g.setColor(color);
                             g.fill(new Rectangle2D.Double(pX, rect.y, dX, rect.height));
                         } else {
-                            drawBase(g, color, c,(int)  pX, rect.y, (int) dX, rect.height - (leaveMargin ? 2 : 0), false, null);
+                            drawBase(g, color, c, (int) pX, rect.y, (int) dX, rect.height - (leaveMargin ? 2 : 0), false, null);
                         }
                     }
                     insertion.setPixelRange(context.translateX + pixelStart, context.translateX + pixelEnd);
+
+
+                    if (colorOption.isBaseMod()) {
+                        List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
+                        BaseModificationRenderer.drawBlock(origin, locScale, rect, g, renderOptions, baseModificationSets, insertion);
+                    }
                 }
             }
         } finally {
