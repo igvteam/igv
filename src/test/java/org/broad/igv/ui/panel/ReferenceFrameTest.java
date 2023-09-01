@@ -142,7 +142,7 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
         int paneSize = 300;
 
         List<String> loci = Arrays.asList("chr1:10001-20000", "chr2:30001-40000");
-        GeneList geneList = new GeneList("", loci, false);
+        GeneList geneList = new GeneList("", loci);
         FrameManager.resetFrames(geneList);
         List<ReferenceFrame> frameList = FrameManager.getFrames();
 

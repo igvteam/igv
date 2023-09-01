@@ -145,6 +145,7 @@ public class CytobandPanel extends JPanel {
 
         MouseInputAdapter mouseAdapter = new IGVMouseInputAdapter() {
 
+            private final ReferenceFrame referenceFrame = getReferenceFrame();
             int lastMousePressX;
             double viewOrigin;
             double viewEnd;
@@ -159,13 +160,13 @@ public class CytobandPanel extends JPanel {
 
                     double newLocation = cytobandScale * mouseX;
                     if (clickCount > 1) {
-                        final int newZoom = getReferenceFrame().getZoom() + 1;
-                        getReferenceFrame().doSetZoomCenter(newZoom, newLocation);
+                        final int newZoom = referenceFrame.getZoom() + 1;
+                        referenceFrame.doSetZoomCenter(newZoom, newLocation);
                     } else {
-                        getReferenceFrame().centerOnLocation(newLocation);
+                        referenceFrame.centerOnLocation(newLocation);
                     }
 
-                    ViewChange result = ViewChange.Result();
+                    ViewChange result = ViewChange.LocusChangeResult(referenceFrame.chrName, referenceFrame.origin, referenceFrame.getEnd());
                     result.setRecordHistory(true);
                     IGVEventBus.getInstance().post(result);
 
@@ -190,12 +191,12 @@ public class CytobandPanel extends JPanel {
                 if (isDragging) {
                     WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                     try {
-                        getReferenceFrame().setOrigin(viewOrigin);
-                        getReferenceFrame().recordHistory();
+                        referenceFrame.setOrigin(viewOrigin);
+                        referenceFrame.recordHistory();
                     } finally {
                         WaitCursorManager.removeWaitCursor(token);
                     }
-                    ViewChange result = ViewChange.Result();
+                    ViewChange result = ViewChange.LocusChangeResult(referenceFrame.chrName, referenceFrame.origin, referenceFrame.getEnd());
                     result.setRecordHistory(true);
                     IGVEventBus.getInstance().post(result);
                 }

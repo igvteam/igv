@@ -167,7 +167,7 @@ public class ReferenceFrame {
 
     public void dragStopped() {
         setOrigin(Math.round(origin));   // Snap to gride
-        eventBus.post(ViewChange.Result());
+        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd()));
     }
 
     public void changeGenome(Genome genome) {
@@ -186,7 +186,7 @@ public class ReferenceFrame {
 
     public void changeZoom(int newZoom) {
         doSetZoom(newZoom);
-        ViewChange result = ViewChange.Result();
+        ViewChange result = ViewChange.LocusChangeResult(chrName, origin, getEnd());
         result.setRecordHistory(false);
         eventBus.post(result);
     }
@@ -382,7 +382,7 @@ public class ReferenceFrame {
 
         double shiftBP = delta * getScale();
         setOrigin(shiftBP + origin);
-        eventBus.post(ViewChange.Result());
+        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd()));
     }
 
     public void centerOnLocation(String chr, double chrLocation) {

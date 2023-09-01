@@ -107,7 +107,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         chromosomeComboBox.setSelectedItem(currentChr);
         roiToggleButton.setEnabled(!isWholeGenome);
-        zoomControl.setEnabled(!isWholeGenome);
+        zoomControl.setEnabled(!isWholeGenome && !FrameManager.isGeneListMode());
 
         detailsBehaviorButton.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -145,14 +145,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
     public void setGeneListMode(boolean geneListMode) {
 
-//        locationPanel.setEnabled(!geneListMode);
         chromosomeComboBox.setEnabled(!geneListMode);
-        if(geneListMode) searchTextField.setText("");
-//        searchTextField.setEnabled(!geneListMode);
-//        goButton.setEnabled(!geneListMode);
+        if (geneListMode) searchTextField.setText("");
         zoomControl.setEnabled(!geneListMode);
-//        homeButton.setEnabled(true);
-//        roiToggleButton.setEnabled(!geneListMode);
     }
 
 
@@ -184,7 +179,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
     public void updateCurrentCoordinates() {
 
-        if(IGV.hasInstance()) {
+        if (IGV.hasInstance()) {
             String p = "";
             ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
             final String chrName = defaultFrame.getChrName();
@@ -200,7 +195,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                     forwardButton.setEnabled(history.canGoForward());
                     backButton.setEnabled(history.canGoBack());
                     roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
-                    zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
+                    zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName) && !FrameManager.isGeneListMode());
                 }
             });
         }
@@ -266,7 +261,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {
 
         IGVEventBus.getInstance().post(new org.broad.igv.event.RefreshEvent());
-        (new ReloadTracksMenuAction("",-1, IGV.getInstance())).actionPerformed(evt);
+        (new ReloadTracksMenuAction("", -1, IGV.getInstance())).actionPerformed(evt);
 
     }
 
@@ -292,7 +287,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             if (event.type == ViewChange.Type.ChromosomeChange || event.type == ViewChange.Type.LocusChange) {
                 String chrName = FrameManager.getDefaultFrame().getChrName();
                 roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
-                zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
+                zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName) && !FrameManager.isGeneListMode());
                 if (!chrName.equals(chromosomeComboBox.getSelectedItem())) {
                     chromosomeComboBox.setSelectedItem(chrName);
                 }
@@ -306,7 +301,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             refreshGenomeListComboBox();
             chromosomeComboBox.updateChromosFromGenome(genome);
             String chrName = FrameManager.getDefaultFrame().getChrName();
-            zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
+            zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName) && !FrameManager.isGeneListMode());
         } else if (e instanceof GenomeResetEvent) {
             refreshGenomeListComboBox();
         } else {

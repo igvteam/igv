@@ -124,7 +124,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         JMenuItem smallIndelsItem = new JCheckBoxMenuItem("Hide small indels");
         smallIndelsItem.setSelected(renderOptions.isHideSmallIndels());
         smallIndelsItem.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
-            if(smallIndelsItem.isSelected()) {
+            if (smallIndelsItem.isSelected()) {
                 String sith = MessageUtils.showInputDialog("Small indel threshold: ", String.valueOf(renderOptions.getSmallIndelThreshold()));
                 try {
                     renderOptions.setSmallIndelThreshold(Integer.parseInt(sith));
@@ -138,7 +138,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         add(smallIndelsItem);
 
         // Paired end items
-        if(dataManager.isPairedEnd()) {
+        if (dataManager.isPairedEnd()) {
             addSeparator();
             addViewAsPairsMenuItem();
             if (clickedAlignment != null) {
@@ -180,7 +180,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         }
 
         // Sashimi plot
-        if(alignmentTrack.getExperimentType() == AlignmentTrack.ExperimentType.RNA) {
+        if (alignmentTrack.getExperimentType() == AlignmentTrack.ExperimentType.RNA) {
             addSeparator();
             JMenuItem sashimi = new JMenuItem("Sashimi Plot");
             sashimi.addActionListener(e1 -> SashimiPlot.openSashimiPlot());
@@ -464,15 +464,15 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 //
 //        if (renderOptions.getGroupByOption() != AlignmentTrack.GroupOption.BASE_AT_POS || oldGroupByPos == null ||
 //                !oldGroupByPos.getChr().equals(chrom) || oldGroupByPos.getStart() != chromStart) { // not already sorted by this position
-            JCheckBoxMenuItem newGroupByPosOption = new JCheckBoxMenuItem("base at " + chrom +
-                    ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
-            newGroupByPosOption.addActionListener(aEvt -> {
-                Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
-                groupAlignments(AlignmentTrack.GroupOption.BASE_AT_POS, null, groupByPos);
-            });
-            groupMenu.add(newGroupByPosOption);
-            group.add(newGroupByPosOption);
-       // }
+        JCheckBoxMenuItem newGroupByPosOption = new JCheckBoxMenuItem("base at " + chrom +
+                ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
+        newGroupByPosOption.addActionListener(aEvt -> {
+            Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
+            groupAlignments(AlignmentTrack.GroupOption.BASE_AT_POS, null, groupByPos);
+        });
+        groupMenu.add(newGroupByPosOption);
+        group.add(newGroupByPosOption);
+        // }
 
         JCheckBoxMenuItem newGroupByInsOption = new JCheckBoxMenuItem("insertion at " + chrom +
                 ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
@@ -1148,7 +1148,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         item.setSelected(!alignmentTrack.isLinkedReadView() && alignmentTrack.isLinkedReads() && tag.equals(renderOptions.getLinkByTag()));
         item.addActionListener(aEvt -> {
             boolean linkedReads = item.isSelected();
-            if("BX".equals(tag) || "MI".equals(tag)) {
+            if ("BX".equals(tag) || "MI".equals(tag)) {
                 alignmentTrack.setLinkedReadView(linkedReads, tag);
             } else {
                 setLinkByTag(linkedReads, tag);
@@ -1260,7 +1260,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         List<String> loci = createLociList(frame, newLoci);
         String listName = String.join("   ", loci); // TODO check the trailing "   " was unnecessary
         //Need to sort the frames by position
-        GeneList geneList = new GeneList(listName, loci, false);
+        GeneList geneList = new GeneList(listName, loci);
         geneList.sort(Comparator.comparing(Locus::fromString, SortOption.POSITION_COMPARATOR));
         IGV.getInstance().getSession().setCurrentGeneList(geneList);
         IGV.getInstance().resetFrames();
@@ -1307,7 +1307,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         int length = range.getLength();
         int start = Math.max(0, adjustedMateStart - length / 2);
         int end = start + length;
-        return alignment.getContig() + ":" + start + "-" + end;
+        return Locus.getFormattedLocusString(alignment.getContig(), start, end);
     }
 
 
