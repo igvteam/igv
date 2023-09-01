@@ -35,6 +35,9 @@
 package org.broad.igv.ui.panel;
 
 
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
@@ -58,7 +61,7 @@ import java.util.ArrayList;
  *
  * @author jrobinso
  */
-public class HeaderPanel extends JPanel implements Transferable, Paintable {
+public class HeaderPanel extends JPanel implements Transferable, Paintable, IGVEventObserver {
 
     ReferenceFrame frame;
     private JLabel label;
@@ -72,6 +75,7 @@ public class HeaderPanel extends JPanel implements Transferable, Paintable {
 
     public HeaderPanel(ReferenceFrame frame) {
         this.frame = frame;
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
         init();
     }
 
@@ -308,6 +312,16 @@ public class HeaderPanel extends JPanel implements Transferable, Paintable {
         return getHeight();
     }
 
+    @Override
+    public void receiveEvent(Object event) {
+        if(label != null && frame != null) label.setText(frame.getFormattedLocusString());
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        IGVEventBus.getInstance().unsubscribe(this);
+    }
 
     //private static final Cursor droppableCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
     //private static final Cursor notDroppableCursor = Cursor.getDefaultCursor();

@@ -1050,7 +1050,7 @@ public class IGV implements IGVEventObserver {
             String message = "Error loading session session: " + e.getMessage();
             MessageUtils.showMessage(message);
             recentSessionList.remove(sessionPath);
-            log.error(message);
+            log.error(e);
             return false;
         } finally {
             if (inputStream != null) {

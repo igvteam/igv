@@ -350,7 +350,7 @@ public class FrameManager implements IGVEventObserver {
         }
 
         //Need to sort the frames by position
-        GeneList geneList = new GeneList("Current frames", loci, false);
+        GeneList geneList = new GeneList("Current frames", loci);
         geneList.sort(FRAME_COMPARATOR);
         IGV.getInstance().getSession().setCurrentGeneList(geneList);
         IGV.getInstance().resetFrames();

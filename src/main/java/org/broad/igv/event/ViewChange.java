@@ -39,7 +39,7 @@ package org.broad.igv.event;
  */
 public class ViewChange {
 
-    public enum Type {Change, ChromosomeChange, LocusChange}
+    public enum Type {ChromosomeChange, LocusChange}
 
     boolean recordHistory = false;
     public Type type;
@@ -69,11 +69,6 @@ public class ViewChange {
 
     public void setRecordHistory(boolean recordHistory) {
         this.recordHistory = recordHistory;
-    }
-
-
-    public static ViewChange Result() {
-        return new ViewChange(Type.Change);
     }
 
     public static ViewChange ChromosomeChangeResult(String chrName) {
