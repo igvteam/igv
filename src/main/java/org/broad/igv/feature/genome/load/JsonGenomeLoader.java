@@ -15,6 +15,8 @@ import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.FileUtils;
@@ -110,27 +112,56 @@ public class JsonGenomeLoader extends GenomeLoader {
                         res.setFormat(format.getAsString().toLowerCase());
                     }
 
-                    JsonElement color = obj.get("color");
-                    if (color != null) {
-                        try {
-                            res.setColor(ColorUtilities.stringToColor(color.toString()));
-                        } catch (Exception e) {
-                            log.error("Error parsing color string: " + color.toString(), e);
-                        }
-                    }
-
-                    JsonElement vizwindow = obj.get("visibilityWindow");
-                    if (vizwindow != null) {
-                        res.setVisibilityWindow(obj.get("visibilityWindow").getAsInt());
-                    } else {
-                        // If not explicitly set, assume whole chromosome viz window for annotations
-                        res.setVisibilityWindow(-1);
-                    }
+//                    JsonElement colorBy = obj.get("colorBy");
+//                    if (altColor != null) {
+//                        try {
+//                            properties.colorBy(ColorUtilities.stringToColor(colorBy.toString()));
+//                        } catch (Exception e) {
+//                            log.error("Error parsing color string: " + altColor.toString(), e);
+//                        }
+//                    }
 
                     JsonElement infoURL = obj.get("infoURL");
                     if (infoURL != null) {
                         res.setFeatureInfoURL(infoURL.getAsString());
                     }
+
+
+                    // Track properties
+                    TrackProperties properties = new TrackProperties();
+                    JsonElement color = obj.get("color");
+                    if (color != null) {
+                        try {
+                            properties.setColor(ColorUtilities.stringToColor(color.toString()));
+                        } catch (Exception e) {
+                            log.error("Error parsing color string: " + color, e);
+                        }
+                    }
+                    JsonElement altColor = obj.get("altColor");
+                    if (altColor != null) {
+                        try {
+                            properties.setAltColor(ColorUtilities.stringToColor(altColor.toString()));
+                        } catch (Exception e) {
+                            log.error("Error parsing color string: " + altColor, e);
+                        }
+                    }
+                    JsonElement displayMode = obj.get("displayMode");
+                    if (displayMode != null) {
+                        try {
+                            Track.DisplayMode dp = Track.DisplayMode.valueOf(stripQuotes(displayMode.toString()));
+                            properties.setDisplayMode(dp);
+                        } catch (Exception e) {
+                            log.error("Error parsing displayMode " + displayMode, e);
+                        }
+                    }
+                    JsonElement vizwindow = obj.get("visibilityWindow");
+                    if (vizwindow != null) {
+                        properties.setFeatureVisibilityWindow(obj.get("visibilityWindow").getAsInt());
+                    } else {
+                        // If not explicitly set, assume whole chromosome viz window for annotations
+                        properties.setFeatureVisibilityWindow(-1);
+                    }
+                    res.setTrackProperties(properties);
 
                     JsonElement indexedElement = obj.get("indexed");
                     JsonElement hiddenElement = obj.get("hidden");
@@ -139,7 +170,6 @@ public class JsonGenomeLoader extends GenomeLoader {
                     if (indexedElement != null) {
                         res.setIndexed(indexed);
                     }
-
                     if (hidden) {
                         if (indexed || trackIndex != null) {
                             log.warn("Hidden tracks cannot be indexed.  Ignoring " + trackPath);
@@ -149,6 +179,7 @@ public class JsonGenomeLoader extends GenomeLoader {
                     } else {
                         tracks.add(res);
                     }
+
                 });
             }
 
@@ -264,6 +295,15 @@ public class JsonGenomeLoader extends GenomeLoader {
             } catch (IOException e) {
                 log.error("Error loading " + locator.getPath());
             }
+        }
+    }
+
+    private String stripQuotes(String str) {
+        if(str.startsWith("\"")) {
+            return str.substring(1, str.length() - 1);  // Assume also ends with
+        }
+        else {
+            return str;
         }
     }
 

@@ -1310,6 +1310,11 @@ public class IGV implements IGVEventObserver {
                 track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
                 track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
                 track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+
+                TrackProperties properties = locator.getTrackProperties();
+                if(properties != null) {
+                    track.setProperties(properties);
+                }
             }
         }
         //revalidateTrackPanels();
