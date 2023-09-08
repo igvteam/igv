@@ -86,6 +86,7 @@ public class CodecFactory {
             case "vcf4":
                 return new VCFWrapperCodec(new VCFCodec(), genome);
             case "vcf":
+            case "gvcf":
                 return new VCFWrapperCodec(getVCFCodec(locator), genome);
             case "bcf":
                 return new BCF2WrapperCodec(new BCF2Codec(), genome);

@@ -96,7 +96,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         return (format.equals("vcf3") ||
                 format.equals("vcf4") ||
                 format.equals("vcf") ||
-                format.equals("bcf"));
+                format.equals("bcf") ||
+                format.equals("gvcf"));
     }
 
 
@@ -236,12 +237,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         boolean bypassFileAutoDiscovery = prefMgr.getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY);
         if (vcfToBamMapping == null && path != null && !bypassFileAutoDiscovery) {
-	    String mappingFile = "";
+            String mappingFile = "";
             int queryStart = path.indexOf("?");
-            if (queryStart > -1)
-            {
-                String query =  path.substring(queryStart);
-                path = path.substring(0,queryStart);
+            if (queryStart > -1) {
+                String query = path.substring(queryStart);
+                path = path.substring(0, queryStart);
                 mappingFile = path + ".mapping" + query;
             }
 
@@ -349,7 +349,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             return;
         }
 
-        if(allSamples != null) {
+        if (allSamples != null) {
             for (String sample : allSamples) {
 
                 String sampleGroup = manager.getAttribute(sample, newGroupByAttribute);
@@ -373,7 +373,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @param comparator the comparator to sort by
      */
     public void sortSamples(Comparator<String> comparator) {
-        if(allSamples != null) {
+        if (allSamples != null) {
             Collections.sort(allSamples, comparator);
             for (List<String> samples : samplesByGroups.values()) {
                 Collections.sort(samples, comparator);
@@ -544,12 +544,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                         x--;
                     }
 
-                    //Make sure we have some whitespace between this
-                    //feature and the previous one, but only if they don't
-                    //actually overlap and the current size is reasonably large
-                    int spacing = x - lastEndX;
-                    if (spacing > 0 && spacing < minSpacing && w > 2 * minSpacing) {
-                        x += minSpacing - spacing;
+                    // if pixel width > 5 pixels create gap between variants
+                    if (w > 5) {
+                        x++;
+                        w -= 2;
                     }
 
                     tmpRect.y = curRowTop;
@@ -1045,13 +1043,16 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         String id = variant.getID();
 
         StringBuffer toolTip = new StringBuffer();
+        if(id.length() > 0) {
+            toolTip.append("ID: " + id + "<br>");
+        }
         toolTip.append("Chr: " + variant.getChr());
         toolTip.append("<br>Position: " + variant.getPositionString());
-        toolTip.append("<br>ID: " + id);
         toolTip.append("<br>Reference: " + variant.getReference());
         List<Allele> alternates = variant.getAlternateAlleles();
         String alternateString = null;
         if (alternates.size() > 0) {
+            String tmp = alternates.get(0).toString();
             alternateString = StringUtils.join(alternates, ",");
             toolTip.append("<br>Alternate: " + alternateString);
         }
@@ -1088,12 +1089,21 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             }
 
             double[] af = variant.getAlleleFreqs();
-            String afString = af.length > 1 ? "<br>Allele Fequencies: " : "<br>Allele Frequency: ";
-            for (int i = 0; i < af.length; i++) {
-                afString += Double.toString(af[i]);
-                if (i < af.length - 1) afString += ", ";
+
+            int nonNegativeCounts=0;
+            for(int i=0; i<af.length;i++) {
+                if(af[i] >= 0) nonNegativeCounts++;
             }
-            toolTip.append(afString);
+            if(nonNegativeCounts > 0) {
+                String afString = nonNegativeCounts > 1 ? "<br>Allele Fequencies: " : "<br>Allele Frequency: ";
+                for (int i = 0; i < af.length; i++) {
+                    if(af[i] >= 0) {
+                        afString += Double.toString(af[i]);
+                        if (i < af.length - 1) afString += ", ";
+                    }
+                }
+                toolTip.append(afString);
+            }
         }
         if (variant.getAttributes().size() > 0) {
             toolTip.append(getVariantInfo(variant));

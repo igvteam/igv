@@ -161,8 +161,14 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 double virtualPixelStart = (feature.getStart() - origin) / locScale;
                 double virtualPixelEnd = (effectiveEnd - origin) / locScale;
 
+                // if pixel width > 5 pixels create gap between variants
                 int pixelStart = (int) Math.round(Math.max(trackRectangleX, virtualPixelStart));
                 int pixelEnd = (int) Math.round(Math.min(trackRectangleMaxX, virtualPixelEnd));
+                if (pixelEnd - pixelStart > 5) {
+                    pixelStart++;
+                    pixelEnd--;
+                }
+
 
                 final int pixelWidth = pixelEnd - pixelStart;
                 if (isGenotypeRenderer) {
