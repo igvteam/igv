@@ -35,6 +35,7 @@ import org.broad.igv.variant.VariantTrack;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -44,6 +45,8 @@ import java.util.*;
 public class VCFVariant implements Variant {
 
     private static Logger log = LogManager.getLogger(Variant.class);
+
+    static final DecimalFormat numFormat = new DecimalFormat("###,###,###");
 
     VariantContext variantContext;
     List<Allele> alternateAlleles;
@@ -59,6 +62,8 @@ public class VCFVariant implements Variant {
 
     private int start = -1;
     private int totalAlleleCount = 0;
+
+    private boolean nonRef;
 
     public VCFVariant(VariantContext variantContext, String chr) {
         this.variantContext = variantContext;
@@ -115,8 +120,18 @@ public class VCFVariant implements Variant {
             }
         }
 
+        // The variant is considered "NON_REF" if all of the alternate alleles are non-ref
+        for(htsjdk.variant.variantcontext.Allele a : variantContext.getAlternateAlleles()){
+            if(a.isNonRefAllele()) {
+                nonRef = true;
+            } else {
+                nonRef = false;
+                break;
+            }
+        }
 
     }
+
 
     /**
      * Allele frequency is a comma separated list of doubles
@@ -190,7 +205,7 @@ public class VCFVariant implements Variant {
             List<htsjdk.variant.variantcontext.Allele> tmp = variantContext.getAlternateAlleles();
             alternateAlleles = new ArrayList<Allele>(tmp.size());
             for (htsjdk.variant.variantcontext.Allele a : tmp) {
-                alternateAlleles.add(new VCFAllele(a.getBases()));
+                alternateAlleles.add(new VCFAllele(a));
             }
         }
         return alternateAlleles;
@@ -209,6 +224,10 @@ public class VCFVariant implements Variant {
         return variantContext.getType().toString();
     }
 
+
+    public boolean isNonRef() {
+        return nonRef;
+    }
 
     /**
      * Return the allele frequency as annotated with an AF or GMAF attribute.  A value of -1 indicates
@@ -331,14 +350,16 @@ public class VCFVariant implements Variant {
     @Override
     public String getPositionString() {
         if (variantContext.getStart() == variantContext.getEnd()) {
-            return String.valueOf(variantContext.getStart());
+            return numFormat.format(variantContext.getStart());
         } else {
             String chr2 = variantContext.getAttributeAsString("CHR2", null);
             if(chr2 == null || chr2.equals(getChr())) {
-                return String.format("%d-%d", variantContext.getStart(), variantContext.getEnd());
+             return   numFormat.format( variantContext.getStart()) + "-" + numFormat.format(variantContext.getEnd());
             }
             else {
-                return String.format("%s:%d-%s:%d", getChr(), variantContext.getStart(), chr2, variantContext.getEnd());
+                // TODO -- I'm not sure this is correct
+                return getChr() + ":" + numFormat.format(variantContext.getStart()) + " " +
+                        chr2 + ":"  + numFormat.format(variantContext.getEnd());
             }
         }
 
@@ -352,21 +373,6 @@ public class VCFVariant implements Variant {
     public VariantContext getVariantContext() {
         return variantContext;
     }
-
-    public static VariantContext getVariantContext(Variant variant) {
-        if (variant instanceof VCFVariant) {
-            return ((VCFVariant) variant).getVariantContext();
-        } else {
-            List<htsjdk.variant.variantcontext.Allele> alleleList = new ArrayList<htsjdk.variant.variantcontext.Allele>(variant.getAlternateAlleles().size() + 1);
-            alleleList.add(htsjdk.variant.variantcontext.Allele.create(variant.getReference(), true));
-            for (Allele all : variant.getAlternateAlleles()) {
-                alleleList.add(htsjdk.variant.variantcontext.Allele.create(all.getBases(), false));
-            }
-            VariantContextBuilder vcb = new VariantContextBuilder(variant.getID(), variant.getChr(), variant.getStart(), variant.getEnd(), alleleList);
-            return vcb.make();
-        }
-    }
-
 
     /**
      * VCFs specify padding bases at the beginning of indels so they can be positioned properly.

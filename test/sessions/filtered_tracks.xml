@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg18" locus="All" nextAutoscaleGroup="3" version="8">
+    <Resources>
+        <Resource name="Segmented Copy Number (Broad Affy 6.0)" path="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz" type="seg"/>
+        <Resource name="Sample Information" path="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/sampleTable.txt.gz" type="txt"/>
+    </Resources>
+    <Panel height="844" name="DataPanel" width="1442">
+        <Track altColor="0,0,255" ampThreshold="0.1" attributeKey="CNV Summary" clazz="org.broad.igv.track.CNFreqTrack" color="255,0,0" delThreshold="-0.1" fontSize="10" height="50" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz" name="CNV Summary" visible="false"/>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E11_155884" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E11_155884" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E11_155884" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D05_223156" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D05_223156" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D05_223156" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H05_155794" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H05_155794" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H05_155794" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_G06_190672" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_G06_190672" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_G06_190672" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D10_238444" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D10_238444" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D10_238444" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C03_238406" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C03_238406" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C03_238406" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E03_155756" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E03_155756" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E03_155756" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C03_223122" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C03_223122" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C03_223122" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A05_155780" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A05_155780" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A05_155780" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F03_223128" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F03_223128" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F03_223128" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A12_228866" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A12_228866" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A12_228866" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B12_238400" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B12_238400" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B12_238400" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_C12_190588" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_C12_190588" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_C12_190588" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E07_228794" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E07_228794" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E07_228794" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H07_155826" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H07_155826" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H07_155826" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_F03_190642" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_F03_190642" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_F03_190642" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_C08_190580" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_C08_190580" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_C08_190580" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E01_238450" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E01_238450" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E01_238450" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C05_223154" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C05_223154" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C05_223154" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_D02_190592" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_D02_190592" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_D02_190592" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D09_223220" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D09_223220" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D09_223220" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B07_223184" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B07_223184" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B07_223184" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B03_155750_2" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B03_155750_2" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B03_155750_2" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H06_228784" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H06_228784" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H06_228784" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B01_223088" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B01_223088" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B01_223088" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C01_155720" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C01_155720" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C01_155720" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E01_223094" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E01_223094" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E01_223094" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B09_155846" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B09_155846" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B09_155846" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A09_155844" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A09_155844" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A09_155844" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_A10_160230" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_A10_160230" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_A10_160230" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A09_238178" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A09_238178" name="PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A09_238178" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G10_228846" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G10_228846" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G10_228846" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A05_223150" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A05_223150" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A05_223150" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B07_155814" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B07_155814" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B07_155814" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A02_223102" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A02_223102" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A02_223102" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A07_155812" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A07_155812" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A07_155812" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C03_155752" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C03_155752" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C03_155752" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D04_223140" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D04_223140" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D04_223140" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_A12_190540" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_A12_190540" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_A12_190540" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B04_228740" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B04_228740" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B04_228740" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H03_155762" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H03_155762" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H03_155762" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_A08_190532" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_A08_190532" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_A08_190532" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_E12_190636" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_E12_190636" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_E12_190636" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E03_223126" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E03_223126" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E03_223126" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D11_155882" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D11_155882" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D11_155882" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F01_223096" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F01_223096" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F01_223096" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B10_228836" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B10_228836" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B10_228836" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_F05_190646" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_F05_190646" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_F05_190646" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A03_228722" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A03_228722" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A03_228722" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E07_155820" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E07_155820" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E07_155820" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D03_238430" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D03_238430" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D03_238430" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D11_223252" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D11_223252" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D11_223252" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_D08_160204" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_D08_160204" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_D08_160204" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C08_223202" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C08_223202" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C08_223202" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E06_238460" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E06_238460" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E06_238460" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D12_223268" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D12_223268" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D12_223268" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B08_223200" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B08_223200" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B08_223200" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D01_238426" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D01_238426" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D01_238426" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B09_223216" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B09_223216" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B09_223216" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F04_223144" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F04_223144" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F04_223144" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_G02_190664" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_G02_190664" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_G02_190664" renderer="HEATMAP" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B05_228756" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B05_228756" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B05_228756" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C01_223090" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C01_223090" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C01_223090" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C05_155784" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C05_155784" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C05_155784" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_D06_228776" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_D06_228776" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_D06_228776" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C10_223234" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C10_223234" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C10_223234" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A08_228802" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A08_228802" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A08_228802" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G01_228702" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G01_228702" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G01_228702" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C07_223186" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C07_223186" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C07_223186" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G05_155792" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G05_155792" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G05_155792" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E08_223206" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E08_223206" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E08_223206" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D10_223236" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D10_223236" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D10_223236" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E02_223110" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E02_223110" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E02_223110" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A06_223166" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A06_223166" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A06_223166" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_B08_160200" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_B08_160200" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_B08_160200" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F09_228828" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F09_228828" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F09_228828" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A06_238172" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A06_238172" name="PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A06_238172" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_B11_190562" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_B11_190562" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_B11_190562" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D03_155754" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D03_155754" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D03_155754" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B07_228788" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B07_228788" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B07_228788" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_E08_160206" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_E08_160206" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_E08_160206" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B02_223104" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B02_223104" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B02_223104" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G04_228750" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G04_228750" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G04_228750" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E04_228746" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E04_228746" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E04_228746" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_H05_190694" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_H05_190694" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_H05_190694" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A11_223246" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A11_223246" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A11_223246" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B05_155782" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B05_155782" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B05_155782" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_A10_190536" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_A10_190536" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_A10_190536" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_C03_228726" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_C03_228726" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_C03_228726" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B03_238382" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B03_238382" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B03_238382" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D03_223124" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D03_223124" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D03_223124" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B02_228708" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B02_228708" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B02_228708" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A04_223134" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A04_223134" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A04_223134" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E04_223142" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E04_223142" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E04_223142" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A11_155876" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A11_155876" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A11_155876" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_F12_238304" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_F12_238304" name="PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_F12_238304" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E09_223222" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E09_223222" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E09_223222" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C06_223170" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C06_223170" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C06_223170" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F02_223112" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F02_223112" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_F02_223112" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A08_223198" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A08_223198" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A08_223198" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D06_223172" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D06_223172" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D06_223172" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_C06_190576" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_C06_190576" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_C06_190576" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_G01_238498" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_G01_238498" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_G01_238498" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_D11_160252" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_D11_160252" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_D11_160252" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_D09_190606" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_D09_190606" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_D09_190606" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C09_155848" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C09_155848" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C09_155848" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_B03_190546" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_B03_190546" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_B03_190546" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G03_155760" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G03_155760" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G03_155760" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C02_160106" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C02_160106" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C02_160106" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_C05_228758" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_C05_228758" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_C05_228758" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_E02_190616" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_E02_190616" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_E02_190616" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H01_155730" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H01_155730" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H01_155730" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F11_155886" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F11_155886" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F11_155886" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H08_228816" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H08_228816" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H08_228816" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_E04_160142" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_E04_160142" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_E04_160142" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D05_238434" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D05_238434" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D05_238434" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F06_228780" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F06_228780" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F06_228780" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C02_223106" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C02_223106" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C02_223106" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C10_238420" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C10_238420" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C10_238420" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_D04_160140" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_D04_160140" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_D04_160140" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E05_228762" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E05_228762" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E05_228762" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F04_228748" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F04_228748" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F04_228748" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B07_238390" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B07_238390" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B07_238390" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B10_238396" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B10_238396" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B10_238396" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D02_223108" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D02_223108" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D02_223108" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A10_228834" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A10_228834" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A10_228834" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_B05_160152" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_B05_160152" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_B05_160152" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B03_223120" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B03_223120" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B03_223120" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C11_223250" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C11_223250" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C11_223250" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C11_155880" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C11_155880" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_C11_155880" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H10_228848" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H10_228848" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H10_228848" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_E10_190632" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_E10_190632" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_E10_190632" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H02_228720" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H02_228720" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H02_228720" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_H02_190688" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_H02_190688" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_H02_190688" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C01_238402" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C01_238402" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C01_238402" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A06_228770" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A06_228770" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_A06_228770" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F07_155822" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F07_155822" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F07_155822" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D05_155786" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D05_155786" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D05_155786" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A05_238170" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A05_238170" name="PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A05_238170" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B11_155878" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B11_155878" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_B11_155878" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_A05_160150" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_A05_160150" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_A05_160150" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F02_228716" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F02_228716" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F02_228716" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_F12_190660" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_F12_190660" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_F12_190660" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G01_155728" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G01_155728" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G01_155728" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D09_155850" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D09_155850" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D09_155850" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B12_228868" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B12_228868" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_B12_228868" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E03_238454" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E03_238454" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E03_238454" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E01_155724" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E01_155724" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_E01_155724" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C07_238414" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C07_238414" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_C07_238414" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E06_223174" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E06_223174" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E06_223174" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G06_228782" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G06_228782" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G06_228782" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D08_238440" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D08_238440" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_D08_238440" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_H09_190702" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_H09_190702" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_H09_190702" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B05_238386" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B05_238386" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_B05_238386" renderer="HEATMAP" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G08_228814" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G08_228814" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_G08_228814" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C06_160170" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C06_160170" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C06_160170" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F11_228860" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F11_228860" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_F11_228860" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B05_223152" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B05_223152" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B05_223152" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C09_223218" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C09_223218" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C09_223218" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D07_155818" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D07_155818" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_D07_155818" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A01_155716" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A01_155716" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A01_155716" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A08_238176" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A08_238176" name="PUNAS_p_Kinome_misc_AFFX_n_GenomeWideSNP_6_A08_238176" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H03_228736" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H03_228736" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_H03_228736" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G07_155824" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G07_155824" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_G07_155824" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C12_160266" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C12_160266" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C12_160266" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B12_223264" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B12_223264" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B12_223264" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E10_228842" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E10_228842" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E10_228842" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A09_223214" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A09_223214" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A09_223214" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C12_223266" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C12_223266" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C12_223266" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_D07_190602" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_D07_190602" name="FALLS_p_TCGAaffxB4_1_GenomeWideSNP_6_D07_190602" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H09_155858" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H09_155858" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_H09_155858" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F01_155726" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F01_155726" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F01_155726" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_F12_238496" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_F12_238496" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_F12_238496" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D01_223092" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D01_223092" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D01_223092" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C04_223138" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C04_223138" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_C04_223138" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B04_223136" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B04_223136" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B04_223136" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_A12_160262" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_A12_160262" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_A12_160262" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B06_223168" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B06_223168" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_B06_223168" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D07_223188" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D07_223188" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_D07_223188" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C10_160234" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C10_160234" name="GHATS_p_TCGAaffx_B3_GBM_GenomeWideSNP_6_C10_160234" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E08_238464" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E08_238464" name="STAIR_p_TCGA_Batch7_Affx_N_GenomeWideSNP_6_E08_238464" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F09_155854" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F09_155854" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F09_155854" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A03_155748" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A03_155748" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_A03_155748" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A12_223262" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A12_223262" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A12_223262" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E12_228874" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E12_228874" name="SHUNT_p_TCGA_sigwga_Affx_Sty_GenomeWideSNP_6_E12_228874" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E05_223158" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E05_223158" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_E05_223158" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A07_223182" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A07_223182" name="TRIGS_p_TCGAaffxB5_sty_GenomeWideSNP_6_A07_223182" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F05_155790" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F05_155790" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F05_155790" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F03_155758" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz_TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F03_155758" name="TRIBE_p_TCGAaffx_B1_2_GBM_Nsp_GenomeWideSNP_6_F03_155758" renderer="HEATMAP" visible="false">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="9.919" minimum="-7.8853" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="108" name="FeaturePanel" width="1442">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="Refseq Genes" clazz="org.broad.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;390.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.genomes/hg18/refGene.txt.gz" name="Refseq Genes" visible="false"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.8821689259645464"/>
+    <Filter match="any" name="" showTracks="false">
+        <FilterElement booleanOperator="AND" item="VITALSTATUS" operator="is equal to" value="ALIVE"/>
+        <FilterElement booleanOperator="AND" item="Subtype" operator="is equal to" value="PRONEURAL"/>
+    </Filter>
+    <HiddenAttributes>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>

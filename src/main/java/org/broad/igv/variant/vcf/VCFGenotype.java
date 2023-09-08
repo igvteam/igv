@@ -125,7 +125,7 @@ public class VCFGenotype implements org.broad.igv.variant.Genotype {
             List<htsjdk.variant.variantcontext.Allele> tmp = vcfGenotype.getAlleles();
             if (tmp != null) {
                 for (Allele a : tmp) {
-                    alleles.add(new VCFAllele(a.getBases()));
+                    alleles.add(new VCFAllele(a));
                 }
             }
         }

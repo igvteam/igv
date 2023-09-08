@@ -85,6 +85,8 @@ public class VariantRenderer { //extends FeatureRenderer {
     private Color colorNoCall;
     private Color colorNoCallAlpha;
 
+    private Color nonRefColor = new Color(200, 200, 215);
+
     public VariantRenderer(VariantTrack track) {
         this.track = track;
         updateColors();
@@ -148,7 +150,9 @@ public class VariantRenderer { //extends FeatureRenderer {
         final Color refColor;
         double percent;
 
-        Color colorAlleleRef = track.getColor();
+        Color colorAlleleRef = variant.isNonRef() ? nonRefColor :   track.getColor();
+        //colorAlleleRef = new Color(((int)(Math.random()*255)),((int)(Math.random()*255)),((int)(Math.random()*255)));
+
         Color colorAlleleRefAlpha = useAlpha ? ColorUtilities.getCompositeColor(colorAlleleRef, alphaValue) : colorAlleleRef;
 
         if(track.getSiteColorMode() == VariantTrack.ColorMode.NONE) {

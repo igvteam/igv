@@ -55,6 +55,11 @@ public class MateVariant implements Variant {
     }
 
     @Override
+    public boolean isNonRef() {
+        return mate.isNonRef();
+    }
+
+    @Override
     public boolean isFiltered() {
         return mate.isFiltered();
     }

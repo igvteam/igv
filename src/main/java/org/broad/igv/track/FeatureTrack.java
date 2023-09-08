@@ -73,7 +73,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     private static Logger log = LogManager.getLogger(FeatureTrack.class);
 
 
-    public static final int MINIMUM_FEATURE_SPACING = 5;
+    public static final int MINIMUM_FEATURE_SPACING = 0;
     public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
     protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(100, 100, 100, 30);

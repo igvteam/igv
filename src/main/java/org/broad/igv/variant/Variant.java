@@ -53,6 +53,12 @@ public interface Variant extends Feature {
      */
     String getType();
 
+    /**
+     * @return true if all alleles are NON_REF.  This is common with gvcf files
+     * @return
+     */
+    boolean isNonRef();
+
 
     /**
      * @return return true if the variant has been marked as filtered
