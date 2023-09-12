@@ -142,23 +142,11 @@ public class LoadFromURLMenuAction extends MenuAction {
         for (String url : urls) {
             if (url.startsWith("s3://")) {
                 checkAWSAccessbility(url);
-            } else if (GoogleUtils.isGoogleURL(url)) {
-                enableGoogleMenu();
             } else if (url.startsWith("ftp://")) {
                 MessageUtils.showMessage("FTP protocol is not supported");
             }
         }
     }
-
-
-    private void enableGoogleMenu() {
-
-        if (!PreferencesManager.getPreferences().getAsBoolean(Constants.ENABLE_GOOGLE_MENU)) {
-            PreferencesManager.getPreferences().put(Constants.ENABLE_GOOGLE_MENU, true);
-            IGVMenuBar.getInstance().enableGoogleMenu(true);
-        }
-    }
-
 
     private void checkAWSAccessbility(String url) {
         try {

@@ -10,6 +10,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.GoogleUtils;
@@ -19,10 +20,7 @@ import software.amazon.awssdk.services.sts.model.Credentials;
 
 import java.awt.*;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
+import java.net.*;
 import java.time.Duration;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -32,15 +30,12 @@ public class OAuthProvider {
     private static Logger log = LogManager.getLogger(OAuthProvider.class);
 
     private String authProvider = "";
-    private String appIdURI = null;
+    private String appIdURI;
     public static String findString = null;
     public static String replaceString = null;
-
     private static final String REFRESH_TOKEN_KEY = "oauth_refresh_token";
-
     private String state; // "RFC6749: An opaque value used by the client to maintain state"
-    private String portNumber = PreferencesManager.getPreferences().getPortNumber();
-    private String redirectURI = "http%3A%2F%2Flocalhost%3A" + portNumber + "%2FoauthCallback";
+    private String redirectURI;
     private String clientId;
     private String clientSecret;
     private String authEndpoint;
@@ -54,12 +49,9 @@ public class OAuthProvider {
     private String currentUserID;
     private String currentUserEmail;
     private JsonObject response;
-    private JsonObject config;
 
 
     public OAuthProvider(JsonObject obj) throws IOException {
-
-        config = obj;
 
         state = UUID.randomUUID().toString(); // "RFC6749: An opaque value used by the client to maintain state"
 
@@ -83,6 +75,9 @@ public class OAuthProvider {
             throw new IOException("oauthConfig is missing crucial attributes such as: client_id, " +
                     "authorization_endpoint/auth_uri or token_endpoint/token_uri");
         }
+
+        String portNumber = PreferencesManager.getPreferences().getPortNumber();
+        redirectURI = "http://localhost:" + portNumber + "/oauthCallback";;
 
         // Optional or custom attributes, fail on runtime, depending on identity provider configuration
         clientSecret = obj.has("client_secret") ? obj.get("client_secret").getAsString() : null;
@@ -119,24 +114,12 @@ public class OAuthProvider {
                 String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
                 String emailScope = "https://www.googleapis.com/auth/userinfo.email";
                 scope = gsScope + "%20" + emailScope;
-
-            }
-            if (authProvider == null) {
-                authProvider = "Google";
             }
         }
     }
 
     public String getState() {
         return state;
-    }
-
-    public String[] getHosts() {
-        return hosts;
-    }
-
-    public void setHosts(String[] hosts) {
-        this.hosts = hosts;
     }
 
     /**
@@ -168,7 +151,7 @@ public class OAuthProvider {
         } else {
 
             url = authEndpoint + "?state=" + state +
-                    "&redirect_uri=" + redirectURI +
+                    "&redirect_uri=" + URLEncoder.encode(redirectURI, "utf-8") +
                     "&client_id=" + clientId +
                     "&response_type=code";
 
@@ -185,7 +168,7 @@ public class OAuthProvider {
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
                 desktop.browse(new URI(url));
             } else {
-                MessageUtils.showMessage("Copy this authorization URL into your web browser: " + url);
+                OAuthURLForm.open(IGV.getInstance().getMainFrame(), url);
             }
         }
     }
@@ -201,7 +184,7 @@ public class OAuthProvider {
         if (clientSecret != null) {
             params.put("client_secret", clientSecret);
         }
-        params.put("redirect_uri", URLDecoder.decode(redirectURI, "utf-8"));
+        params.put("redirect_uri", redirectURI);
         params.put("grant_type", "authorization_code");
 
         //  set the resource if it necessary for the auth provider dwm08
@@ -446,7 +429,6 @@ public class OAuthProvider {
                 }
             }
         }
-
         if (this.isGoogle()) {
             return GoogleUtils.isGoogleURL(url.toExternalForm());
         }
@@ -463,10 +445,6 @@ public class OAuthProvider {
 
     public void setResponse(JsonObject res) {
         response = res;
-    }
-
-    public String getAuthProvider() {
-        return authProvider;
     }
 
     public void setAuthProvider(String authProvider) {
