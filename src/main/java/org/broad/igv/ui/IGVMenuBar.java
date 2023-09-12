@@ -180,14 +180,19 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         //extrasMenu.setVisible(false);
         menus.add(extrasMenu);
 
-        try {
-            googleMenu = createGoogleMenu();
-            if (googleMenu != null) {
-                googleMenu.setVisible(PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU));
-                menus.add(googleMenu);
+        // Create a placehold Google menu.  If not explicitly enabled it will remain invisible until triggered
+        // by loading a protected Google resource
+        googleMenu = new JMenu("Google");
+        menus.add(googleMenu);
+        boolean enabled = PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU);
+        googleMenu.setVisible(enabled);
+
+        if (enabled) {
+            try {
+                enableGoogleMenu(enabled);
+            } catch (IOException e) {
+                log.error("Error creating google menu: " + e.getMessage());
             }
-        } catch (IOException e) {
-            log.error("Error creating google menu: " + e.getMessage());
         }
 
         try {
@@ -1020,14 +1025,28 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return menu;
     }
 
-    private JMenu createGoogleMenu() throws IOException {
+    /**
+     * The Google menu is enabled dynamically to defer loading of oAuth properties until needed.
+     * *
+     * @return
+     * @throws IOException
+     */
+    public void enableGoogleMenu(boolean enable) throws IOException {
 
-        // Dynamically name menu - dwm08
-        final OAuthProvider oauth = OAuthUtils.getInstance().getDefaultProvider();
+        if(!enable) {
+            googleMenu.setVisible(false);
+            return;
+        } else if (googleMenu.isVisible()) {
+            // Already visible.
+            return;
+        }
+
+
+
+        googleMenu.setVisible(true);
+        final OAuthProvider oauth = OAuthUtils.getInstance().getGooleProvider();
 
         if (oauth != null) {
-
-            JMenu menu = new JMenu("Google");
 
             boolean isLoggedIn = oauth.isLoggedIn();
 
@@ -1042,7 +1061,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
             });
             login.setEnabled(!isLoggedIn);
-            menu.add(login);
+            googleMenu.add(login);
 
 
             final JMenuItem logout = new JMenuItem("Logout ");
@@ -1051,19 +1070,18 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 GoogleUtils.setProjectID(null);
             });
             logout.setEnabled(isLoggedIn);
-            menu.add(logout);
+            googleMenu.add(logout);
 
             final JMenuItem projectID = new JMenuItem("Enter Project ID ...");
             projectID.addActionListener(e -> GoogleUtils.enterGoogleProjectID());
-            menu.add(projectID);
+            googleMenu.add(projectID);
 
-            menu.addMenuListener(new MenuListener() {
+            googleMenu.addMenuListener(new MenuListener() {
                 @Override
                 public void menuSelected(MenuEvent e) {
-                    OAuthProvider oAuthProvider = OAuthUtils.getInstance().getDefaultProvider();
-                    boolean loggedIn = oAuthProvider.isLoggedIn();
-                    if (loggedIn && oAuthProvider.getCurrentUserName() != null) {
-                        login.setText(oAuthProvider.getCurrentUserName());
+                    boolean loggedIn = oauth.isLoggedIn();
+                    if (loggedIn && oauth.getCurrentUserName() != null) {
+                        login.setText(oauth.getCurrentUserName());
                     } else {
                         login.setText("Login ...");
                     }
@@ -1082,9 +1100,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 }
 
             });
-            return menu;
-        } else {
-            return null;
         }
     }
 
@@ -1156,11 +1171,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         instance = null;
     }
 
-    public void enableGoogleMenu(boolean aBoolean) {
-        if (googleMenu != null) {
-            googleMenu.setVisible(aBoolean);
-        }
-    }
 
     @Override
     public void receiveEvent(final Object event) {

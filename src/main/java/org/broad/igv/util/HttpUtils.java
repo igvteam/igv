@@ -57,7 +57,6 @@ import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import static org.broad.igv.prefs.Constants.*;
 import static org.broad.igv.util.stream.SeekableServiceStream.WEBSERVICE_URL;
@@ -854,6 +853,9 @@ public class HttpUtils {
                     throw new FileNotFoundException(message);
                 } else if (code == 401) {
                     OAuthProvider provider = OAuthUtils.getInstance().getProviderForURL(url);
+                    if(provider == null && GoogleUtils.isGoogleURL(url.toExternalForm())) {
+                        provider = OAuthUtils.getInstance().getGooleProvider();
+                    }
                     if (provider != null && retries == 0) {
                         if (!provider.isLoggedIn()) {
                             provider.checkLogin();

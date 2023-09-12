@@ -44,6 +44,7 @@ import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.mods.BaseModificationColors;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
@@ -51,6 +52,7 @@ import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
@@ -306,15 +308,24 @@ public class IGVPreferences {
         checkForCommandListenerChanges(updatedPrefs);
         checkForAttributePanelChanges(updatedPrefs);
         checkForCircViewChanges(updatedPrefs);
+        checkForGoogleMenuChange(updatedPrefs);
         IGVEventBus.getInstance().post(new PreferencesChangeEvent());
+    }
 
+    private void checkForGoogleMenuChange(Map<String, String> updatedPreferenceMap) {
+
+        if(updatedPreferenceMap.containsKey(ENABLE_GOOGLE_MENU) && IGV.hasInstance()) {
+            try {
+                IGVMenuBar.getInstance().enableGoogleMenu(getAsBoolean(ENABLE_GOOGLE_MENU));
+            } catch (IOException e) {
+                log.error("Error enabling/disabling Google menu", e);
+            }
+        }
     }
 
     private void checkForAlignmentChanges(Map<String, String> updatedPreferenceMap) {
 
         if (IGV.hasInstance()) {
-
-            final IGV igv = IGV.getInstance();
 
             boolean reloadSAM = false;
             for (String key : SAM_RELOAD_KEYS) {

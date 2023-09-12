@@ -1161,20 +1161,12 @@ public class IGV implements IGVEventObserver {
         contentPane.getMainPanel().removeDataPanel(name);
     }
 
-    public void layoutMainPanel() {
-        contentPane.getMainPanel().doLayout();
-    }
-
     public MainPanel getMainPanel() {
         return contentPane.getMainPanel();
     }
 
     public LinkedList<String> getRecentSessionList() {
         return recentSessionList;
-    }
-
-    public void setRecentSessionList(LinkedList<String> recentSessionList) {
-        this.recentSessionList = recentSessionList;
     }
 
     public IGVContentPane getContentPane() {
