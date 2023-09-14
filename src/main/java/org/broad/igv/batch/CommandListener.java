@@ -37,7 +37,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.StringUtils;
 
 import java.awt.*;
@@ -228,7 +227,7 @@ public class CommandListener implements Runnable {
                                     if (params.containsKey("error")) {
                                         sendTextResponse(out, "Error authorizing IGV: " + params.get("error"));
                                     } else if (params.containsKey("code")) {
-                                        provider.setAuthorizationCode(params.get("code"));
+                                        provider.fetchAccessToken(params.get("code"));
                                         sendTextResponse(out, "Authorization successful.  You may close this tab.");
                                     } else if (params.containsKey("token")) {
                                         // Very doubtful this is ever called -- its not a normal OAuth flow

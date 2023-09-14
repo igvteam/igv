@@ -32,14 +32,15 @@ import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGVMenuBar;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
-import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.util.HttpUtils;
 
 
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -88,11 +89,17 @@ public class OAuthUtils {
         return awsProvider;
     }
 
-    public OAuthProvider getGooleProvider() throws IOException {
+    public OAuthProvider getGoogleProvider()  {
         if (googleProvider == null) {
-            loadDefaultOauthProperties();
-            if (IGVMenuBar.getInstance() != null) {
-                IGVMenuBar.getInstance().enableGoogleMenu(true);
+            try {
+                log.info("Loading Google oAuth properties");
+                googleProvider = loadDefaultOauthProperties();
+                if (IGVMenuBar.getInstance() != null) {
+                    IGVMenuBar.getInstance().enableGoogleMenu(true);
+                }
+            } catch (IOException e) {
+                log.error("Error loading Google oAuth properties", e);
+                MessageUtils.showErrorMessage("Error loading Google oAuth properties", e);
             }
         }
         return googleProvider;
@@ -129,13 +136,11 @@ public class OAuthUtils {
      *
      * @throws IOException
      */
-    public void loadDefaultOauthProperties() throws IOException {
-        if (googleProvider == null) {
-            String json = loadAsString(PROPERTIES_URL);
-            JsonParser parser = new JsonParser();
-            JsonObject obj = parser.parse(json).getAsJsonObject();
-            googleProvider = parseProviderObject(obj);
-        }
+    public OAuthProvider loadDefaultOauthProperties() throws IOException {
+        String json = loadAsString(PROPERTIES_URL);
+        JsonParser parser = new JsonParser();
+        JsonObject obj = parser.parse(json).getAsJsonObject();
+        return parseProviderObject(obj);
     }
 
     /**
@@ -208,6 +213,7 @@ public class OAuthUtils {
 
     /**
      * Called during authorization flow from CommandListener
+     *
      * @param state
      * @return
      * @throws IOException
@@ -225,13 +231,17 @@ public class OAuthUtils {
     public OAuthProvider getProviderForURL(URL url) throws IOException {
         for (OAuthProvider provider : providerCache.values()) {
             if (provider.appliesToUrl(url)) {
-                if(provider.isGoogle()) {
+                if (provider.isGoogle()) {
                     IGVMenuBar.getInstance().enableGoogleMenu(true);
                 }
                 return provider;
             }
         }
         return null;
+    }
+
+    public Collection<OAuthProvider> getAllProviders() {
+        return providerCache.values();
     }
 
     /**

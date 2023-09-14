@@ -320,7 +320,10 @@ public class HttpUtils {
         conn.getOutputStream().write(postDataBytes);
 
         StringBuilder response = new StringBuilder();
+        System.out.println(conn.getResponseMessage());
         Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+
+
         for (int c; (c = in.read()) >= 0; ) {
             response.append((char) c);
         }
@@ -854,7 +857,7 @@ public class HttpUtils {
                 } else if (code == 401) {
                     OAuthProvider provider = OAuthUtils.getInstance().getProviderForURL(url);
                     if(provider == null && GoogleUtils.isGoogleURL(url.toExternalForm())) {
-                        provider = OAuthUtils.getInstance().getGooleProvider();
+                        provider = OAuthUtils.getInstance().getGoogleProvider();
                     }
                     if (provider != null && retries == 0) {
                         if (!provider.isLoggedIn()) {
