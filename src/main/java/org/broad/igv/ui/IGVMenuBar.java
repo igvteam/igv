@@ -36,6 +36,7 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeUtils;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.GoogleUtils;
@@ -182,24 +183,19 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         // Create a placehold Google menu.  If not explicitly enabled it will remain invisible until triggered
         // by loading a protected Google resource
-        googleMenu = new JMenu("Google");
-        menus.add(googleMenu);
-        boolean enabled = PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU);
-        googleMenu.setVisible(enabled);
-
-        if (enabled) {
-            try {
-                enableGoogleMenu(enabled);
-            } catch (IOException e) {
-                log.error("Error creating google menu: " + e.getMessage());
-            }
+        try {
+            googleMenu = createGoogleMenu();
+            boolean enabled = PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU);
+            enableGoogleMenu(enabled);
+            menus.add(googleMenu);
+        } catch (IOException e) {
+            log.error("Error creating google menu: " + e.getMessage());
         }
 
         try {
             AWSMenu = createAWSMenu();
             AWSMenu.setVisible(AmazonUtils.isAwsProviderPresent());
             menus.add(AWSMenu);
-
         } catch (IOException e) {
             log.error("Error creating the Amazon AWS menu: " + e.getMessage());
             AWSMenu.setVisible(false);
@@ -1025,82 +1021,72 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return menu;
     }
 
+    private JMenu createGoogleMenu() {
+
+        googleMenu = new JMenu("Google");
+
+        final JMenuItem login = new JMenuItem("Login ... ");
+        login.addActionListener(e -> {
+            try {
+                OAuthUtils.getInstance().getGoogleProvider().openAuthorizationPage();
+            } catch (Exception ex) {
+                MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
+                log.error("Error fetching oAuth tokens", ex);
+            }
+
+        });
+        googleMenu.add(login);
+
+        final JMenuItem logout = new JMenuItem("Logout ");
+        logout.addActionListener(e -> {
+            OAuthUtils.getInstance().getGoogleProvider().logout();
+            GoogleUtils.setProjectID(null);
+        });
+        googleMenu.add(logout);
+
+        final JMenuItem projectID = new JMenuItem("Enter Project ID ...");
+        projectID.addActionListener(e -> GoogleUtils.enterGoogleProjectID());
+        googleMenu.add(projectID);
+
+        googleMenu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                OAuthProvider oauth = OAuthUtils.getInstance().getGoogleProvider();
+                boolean loggedIn = oauth.isLoggedIn();
+                if (loggedIn && oauth.getCurrentUserName() != null) {
+                    login.setText(oauth.getCurrentUserName());
+                } else {
+                    login.setText("Login ...");
+                }
+                login.setEnabled(!loggedIn);
+                logout.setEnabled(loggedIn);
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+
+            }
+
+        });
+
+        return googleMenu;
+    }
+
+
     /**
      * The Google menu is enabled dynamically to defer loading of oAuth properties until needed.
      * *
+     *
      * @return
      * @throws IOException
      */
     public void enableGoogleMenu(boolean enable) throws IOException {
-
-        if(!enable) {
-            googleMenu.setVisible(false);
-            return;
-        } else if (googleMenu.isVisible()) {
-            // Already visible.
-            return;
-        }
-
-
-
-        googleMenu.setVisible(true);
-        final OAuthProvider oauth = OAuthUtils.getInstance().getGooleProvider();
-
-        if (oauth != null) {
-
-            boolean isLoggedIn = oauth.isLoggedIn();
-
-            final JMenuItem login = new JMenuItem("Login ... ");
-            login.addActionListener(e -> {
-                try {
-                    oauth.openAuthorizationPage();
-                } catch (Exception ex) {
-                    MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
-                    log.error("Error fetching oAuth tokens", ex);
-                }
-
-            });
-            login.setEnabled(!isLoggedIn);
-            googleMenu.add(login);
-
-
-            final JMenuItem logout = new JMenuItem("Logout ");
-            logout.addActionListener(e -> {
-                oauth.logout();
-                GoogleUtils.setProjectID(null);
-            });
-            logout.setEnabled(isLoggedIn);
-            googleMenu.add(logout);
-
-            final JMenuItem projectID = new JMenuItem("Enter Project ID ...");
-            projectID.addActionListener(e -> GoogleUtils.enterGoogleProjectID());
-            googleMenu.add(projectID);
-
-            googleMenu.addMenuListener(new MenuListener() {
-                @Override
-                public void menuSelected(MenuEvent e) {
-                    boolean loggedIn = oauth.isLoggedIn();
-                    if (loggedIn && oauth.getCurrentUserName() != null) {
-                        login.setText(oauth.getCurrentUserName());
-                    } else {
-                        login.setText("Login ...");
-                    }
-                    login.setEnabled(!loggedIn);
-                    logout.setEnabled(loggedIn);
-                }
-
-                @Override
-                public void menuDeselected(MenuEvent e) {
-
-                }
-
-                @Override
-                public void menuCanceled(MenuEvent e) {
-
-                }
-
-            });
-        }
+        googleMenu.setVisible(enable);
     }
 
 //    public void enableRemoveGenomes() {
