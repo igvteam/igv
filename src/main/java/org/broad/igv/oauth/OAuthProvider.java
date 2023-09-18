@@ -29,6 +29,8 @@ public class OAuthProvider {
 
     private static Logger log = LogManager.getLogger(OAuthProvider.class);
 
+    private static int TOKEN_EXPIRE_GRACE_TIME = 1000 * 60; // 1 minute
+
     private String authProvider = "";
     private String appIdURI;
     public static String findString = null;
@@ -65,8 +67,7 @@ public class OAuthProvider {
         // Mandatory attributes, fail hard if not present
         if (!(obj.has("client_id") &&
                 (obj.has("auth_uri") || obj.has("authorization_endpoint")) &&
-                (obj.has("token_uri") || obj.has("token_endpoint")) &&
-                obj.has("client_secret"))) {
+                (obj.has("token_uri") || obj.has("token_endpoint")))) {
             throw new RuntimeException("oauthConfig is missing crucial attributes such as: client_id, client_secret,  " +
                     "authorization_endpoint/auth_uri, or token_endpoint/token_uri.");
         }
@@ -110,8 +111,26 @@ public class OAuthProvider {
             }
         }
 
-        String portNumber = PreferencesManager.getPreferences().getPortNumber();
-        redirectURI = "http://localhost:" + portNumber + "/oauthCallback";
+        if (obj.has("redirect_uris")) {
+            JsonArray urisArray = obj.get("redirect_uris").getAsJsonArray();
+            redirectURI = urisArray.get(0).getAsString();
+        } else if (obj.has("redirect_uri")) {
+            redirectURI = obj.get("redirect_uri").getAsString();
+        } else {
+            String portNumber = PreferencesManager.getPreferences().getPortNumber();
+            redirectURI = "http://localhost:" + portNumber + "/oauthCallback";
+        }
+
+        // Generate PKCE challenge and verifier
+        codeVerifier = PKCEUtils.generateCodeVerifier();
+        try {
+            codeChallenge = PKCEUtils.generateCodeChallange(codeVerifier);
+            codeChallengeMethod = "S256";
+        } catch (Exception e) {
+            codeChallenge = codeVerifier;
+            codeChallengeMethod = "plain";
+            log.error("Error encoding PKCE challenge", e);
+        }
 
         // Deprecated properties -- for backward compatibility
         findString = obj.has("find_string") ? obj.get("find_string").getAsString() : null;
@@ -148,16 +167,6 @@ public class OAuthProvider {
                 setAccessToken(ac);
             }
         } else {
-            // Generate PKCE challenge and verifier
-            codeVerifier = PKCEUtils.generateCodeVerifier();
-            try {
-                codeChallenge = PKCEUtils.generateCodeChallange(codeVerifier);
-                codeChallengeMethod = "S256";
-            } catch (NoSuchAlgorithmException e) {
-                codeChallenge = codeVerifier;
-                codeChallengeMethod = "plain";
-                log.error("Error encoding PKCE challenge", e);
-            }
 
             String url = authEndpoint +
                     "?state=" + state +
@@ -200,7 +209,6 @@ public class OAuthProvider {
         params.put("redirect_uri", redirectURI);
         params.put("grant_type", "authorization_code");
         params.put("code_verifier", codeVerifier);
-
 
         //  set the resource if necessary for the auth provider
         if (appIdURI != null) {
@@ -324,7 +332,7 @@ public class OAuthProvider {
     public String getAccessToken() {
 
         // Check expiration time, with 1 minute cushion
-        if (accessToken == null || (System.currentTimeMillis() > (expirationTime - Globals.TOKEN_EXPIRE_GRACE_TIME))) {
+        if (accessToken == null || (System.currentTimeMillis() > (expirationTime - TOKEN_EXPIRE_GRACE_TIME))) {
             log.debug("Refreshing access token!");
             if (refreshToken != null) {
                 try {

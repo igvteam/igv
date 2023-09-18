@@ -53,6 +53,9 @@ public class AmazonUtils {
 
     private static Credentials cognitoAWSCredentials = null;
 
+    private static int TOKEN_EXPIRE_GRACE_TIME = 1000 * 60; // 1 minute
+
+
 
     /**
      * Maps s3:// URLs to presigned URLs
@@ -576,7 +579,7 @@ public class AmazonUtils {
 
         try {
             long presignedTime = signedURLValidity(url);
-            isValidSignedUrl = presignedTime - System.currentTimeMillis() - Globals.TOKEN_EXPIRE_GRACE_TIME > 0; // Duration in milliseconds
+            isValidSignedUrl = presignedTime - System.currentTimeMillis() - TOKEN_EXPIRE_GRACE_TIME > 0; // Duration in milliseconds
         } catch (ParseException e) {
             log.error("The AWS signed URL date parameter X-Amz-Date has incorrect formatting");
             isValidSignedUrl = false;

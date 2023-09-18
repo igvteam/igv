@@ -50,11 +50,6 @@ public class OAuthURLForm extends JDialog {
 
     }
 
-
-    public static void main(String[] args) {
-
-       open(null, "https://docs.oracle.com/javase/tutorial/displayCode.html?code=https://docs.oracle.com/javase/tutorial/uiswing/examples/layout/BoxLayoutDemoProject/src/layout/BoxLayoutDemo.java");
-    }
 }
 
 

@@ -222,7 +222,6 @@ public class CommandListener implements Runnable {
 
                                 // Detect  oauth callback
                                 if (command.equals("/oauthCallback")) {
-
                                     OAuthProvider provider = OAuthUtils.getInstance().getProviderForState(params.get("state"));
                                     if (params.containsKey("error")) {
                                         sendTextResponse(out, "Error authorizing IGV: " + params.get("error"));
@@ -237,12 +236,11 @@ public class CommandListener implements Runnable {
                                     } else {
                                         sendTextResponse(out, "Unsuccessful authorization response: " + inputLine);
                                     }
-
-
                                     if (PreferencesManager.getPreferences().getAsBoolean(Constants.PORT_ENABLED) == false) {
                                         // Turn off port
                                         halt();
                                     }
+
                                 } else {
                                     // Process the request.
                                     result = processGet(command, params, cmdExe); // Send no response if result is "OK".
@@ -312,7 +310,7 @@ public class CommandListener implements Runnable {
     private static final String NO_CACHE = "Cache-Control: no-cache, no-store";
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin: *";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers: access-control-allow-origin";
-    
+
     private void sendTextResponse(PrintWriter out, String result) {
         sendHTTPResponse(out, result, "text/html", "GET");
     }

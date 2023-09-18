@@ -73,9 +73,39 @@ public class OAuthUtils {
     private OAuthUtils() {
         try {
             providerCache = new LinkedHashMap<>();   // Ordered (linked) map is important
-            fetchOauthProperties();
+            fetchOauthConfigs();
         } catch (Exception e) {
             log.error("Error fetching oAuth properties", e);
+        }
+    }
+
+    /**
+     * Fetch user-configured oAuth configurations, if any*
+     * @throws IOException
+     */
+    private void fetchOauthConfigs() throws IOException {
+
+        // Load a provider config specified in preferences
+        String provisioningURL = PreferencesManager.getPreferences().getProvisioningURL();
+        log.debug("The provisioning URL from prefs.properties is: " + provisioningURL);
+        if (provisioningURL != null && provisioningURL.length() > 0) {
+            String json = loadAsString(provisioningURL);
+            parseProviderJson(json);
+        }
+
+        // Local config takes precendence, overriding URL provisioned and Broad's default
+        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
+        if (!(new File(oauthConfig)).exists()) {
+            oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config-custom.json";
+        }
+        if ((new File(oauthConfig)).exists()) {
+            try {
+                log.debug("Loading Oauth properties from: " + oauthConfig);
+                String json = loadAsString(oauthConfig);
+                parseProviderJson(json);
+            } catch (IOException e) {
+                log.error(e);
+            }
         }
     }
 
@@ -105,38 +135,13 @@ public class OAuthUtils {
         return googleProvider;
     }
 
-    private void fetchOauthProperties() throws IOException {
-
-        // Load a provider config specified in preferences
-        String provisioningURL = PreferencesManager.getPreferences().getProvisioningURL();
-        log.debug("The provisioning URL from prefs.properties is: " + provisioningURL);
-        if (provisioningURL != null && provisioningURL.length() > 0) {
-            String json = loadAsString(provisioningURL);
-            parseProviderJson(json);
-        }
-
-        // Local config takes precendence, overriding URL provisioned and Broad's default
-        String oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config.json";
-        if (!(new File(oauthConfig)).exists()) {
-            oauthConfig = DirectoryManager.getIgvDirectory() + "/oauth-config-custom.json";
-        }
-        if ((new File(oauthConfig)).exists()) {
-            try {
-                log.debug("Loading Oauth properties from: " + oauthConfig);
-                String json = loadAsString(oauthConfig);
-                parseProviderJson(json);
-            } catch (IOException e) {
-                log.error(e);
-            }
-        }
-    }
 
     /**
      * Load the default (Google) oAuth properties
      *
      * @throws IOException
      */
-    public OAuthProvider loadDefaultOauthProperties() throws IOException {
+    private OAuthProvider loadDefaultOauthProperties() throws IOException {
         String json = loadAsString(PROPERTIES_URL);
         JsonParser parser = new JsonParser();
         JsonObject obj = parser.parse(json).getAsJsonObject();
