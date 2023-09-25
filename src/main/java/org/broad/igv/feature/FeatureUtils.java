@@ -159,7 +159,7 @@ public class FeatureUtils {
         }
 
         int idx = getIndexCenterAfter(position, features);
-        if (idx < 0 || idx > features.size()-1) {
+        if (idx < 0 || idx > features.size() - 1) {
             return null;
         } else {
             return features.get(idx);
@@ -214,10 +214,10 @@ public class FeatureUtils {
     private static int getDistance(final int position, final Feature f) {
         final int end = f.getEnd();
         final int start = f.getStart();
-        if(position >= start && position < end){ //within the feature
+        if (position >= start && position < end) { //within the feature
             return 0;
-        } else if(position >= end){
-            return position - end +1; //after the feature
+        } else if (position >= end) {
+            return position - end + 1; //after the feature
         } else {
             return start - position; //before the feature
         }
@@ -265,7 +265,7 @@ public class FeatureUtils {
      * @param features
      * @return
      */
-     private static int getIndexCenterAfter(double position, List<? extends Feature> features) {
+    private static int getIndexCenterAfter(double position, List<? extends Feature> features) {
 
         Feature first = features.get(0);
         Feature last = features.get(features.size() - 1);
@@ -387,18 +387,22 @@ public class FeatureUtils {
         for (int idx = startIdx; idx < features.size(); idx++) {
             Feature feature = features.get(idx);
             double start = feature.getStart() - (minWidth / 2);
-
             if (start > position) {
                 break;
             }
-
             double end = feature.getEnd() + (minWidth / 2);
-
             if (position >= start && position <= end) {
                 if (returnList == null) returnList = new ArrayList();
                 returnList.add(feature);
             }
         }
+
+        // Sort features by distance from position (features closest to position listed first)
+        returnList.sort((o1, o2) -> {
+            double dist1 = Math.abs((o1.getStart() + (o1.getEnd() - o1.getStart()) / 2) - position);
+            double dist2 = Math.abs((o2.getStart() + (o2.getEnd() - o2.getStart()) / 2) - position);
+            return dist1 == dist2 ? 0 : dist1 > dist2 ? 1 : -1;
+        });
 
         return returnList;
     }

@@ -378,7 +378,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
-
         if (showFeatures) {
 
             List<Feature> allFeatures = getAllFeatureAt(position, mouseY, frame);
@@ -388,7 +387,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
             StringBuffer buf = new StringBuffer();
             boolean firstFeature = true;
-            int maxNumber = 100;
+            int maxNumber = IGV.getInstance().isShowDetailsOnClick() ? 100 : 10;
             int n = 1;
             for (Feature feature : allFeatures) {
                 if (feature != null && feature instanceof IGVFeature) {
@@ -406,17 +405,14 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                             buf.append("<br/><a href=\"" + url + "\">" + url + "</a>");
                         }
                     }
-
                     firstFeature = false;
-
                     if (n > maxNumber) {
-                        buf.append("...");
+                        buf.append("<hr><br<b>>+ " + (allFeatures.size() - maxNumber) +  " more ...</b>");
                         break;
                     }
                 }
                 n++;
             }
-
             return buf.toString();
         } else {
             int zoom = Math.max(0, frame.getZoom());
@@ -562,7 +558,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         if (possFeatures != null) {
             // give a minum 2 pixel or 1/2 bp window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
-            double minWidth = Math.max(0.5, MINIMUM_FEATURE_SPACING * bpPerPixel);
+            double minWidth = Math.max(2, 3 * bpPerPixel);
             int maxFeatureLength = packedFeatures.getMaxFeatureLength();
             featureList = FeatureUtils.getAllFeaturesAt(position, maxFeatureLength, minWidth, possFeatures);
         }
