@@ -30,6 +30,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.StringUtils;
 import htsjdk.tribble.Feature;
 
@@ -45,7 +46,7 @@ import java.util.regex.Pattern;
  * Date: Dec 20, 2009
  * Time: 10:15:49 PM
  */
-public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
+public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
 
     private static final Logger log = LogManager.getLogger(IGVBEDCodec.class);
 
@@ -55,6 +56,8 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
 
     private Genome genome;
     private Pattern delimiter = null;
+
+    private int maxColumnCount = Integer.MAX_VALUE;
 
     public IGVBEDCodec() {
         this(null);
@@ -75,7 +78,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
 
         // The first 3 columns are non optional for BED.  We will relax this
         // and only require 2.
-        int tokenCount = tokens.length;
+        int tokenCount = Math.min(tokens.length, maxColumnCount);
 
         if (tokenCount < 2) {
             return null;
@@ -180,7 +183,6 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
             }
         }
 
-
         // Color
         if (tokenCount > 8 && featureType != FeatureType.GAPPED_PEAK) {
             String colorString = tokens[8];
@@ -189,47 +191,70 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
             }
         }
 
-        // Exons
-        if (tokenCount > 11) {
-            createExons(start, tokens, feature, chr, feature.getStrand());
-            //todo: some refactoring that allows this hack to be removed
-            if (featureType == FeatureType.SPLICE_JUNCTION) {
-                SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
-
-                List<Exon> exons = feature.getExons();
-
-                junctionFeature.setJunctionStart(start + exons.get(0).getLength());
-                junctionFeature.setJunctionEnd(end - exons.get(1).getLength());
-
-            }
-        }
-
-        if (tokenCount > 14 && featureType == FeatureType.GAPPED_PEAK) {
+        if (featureType == FeatureType.BED_METHYL && tokenCount > 9) {
+            // Description from https://www.encodeproject.org/data-standards/wgbs/
+            // 10.  Coverage, or number of reads
+            // 11.  Percentage of reads that show methylation at this position in the genome
             Map<String, String> attributes = new LinkedHashMap<>();
-            attributes.put("Signal Value", tokens[12]);
-            attributes.put("pValue (-log10)", tokens[13]);
-            attributes.put("qValue (-log10)", tokens[14]);
+            if (tokenCount > 9) {
+                attributes.put("Coverage", tokens[9]);
+            }
+            if (tokenCount > 10) {
+                attributes.put("% of methylated reads", tokens[10]);
+            }
             feature.setAttributes(attributes);
-        } else if (tokenCount > 13 && featureType == FeatureType.SPLICE_JUNCTION) {
+        } else {
+            // Exons
             try {
-                String[] startFlanking = tokens[12].split(",");
-                int[] startFlankingDeptyArray = new int[startFlanking.length];
-                for (int i = 0; i < startFlanking.length; i++) {
-                    startFlankingDeptyArray[i] = Integer.parseInt(startFlanking[i]);
+                if (tokenCount > 11) {
+                    createExons(start, tokens, feature, chr, feature.getStrand());
+                    //todo: some refactoring that allows this hack to be removed
+                    if (featureType == FeatureType.SPLICE_JUNCTION) {
+                        SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
+
+                        List<Exon> exons = feature.getExons();
+
+                        junctionFeature.setJunctionStart(start + exons.get(0).getLength());
+                        junctionFeature.setJunctionEnd(end - exons.get(1).getLength());
+
+                    }
                 }
-                String[] endFlanking = tokens[13].split(",");
-                int[] endFlankingDeptyArray = new int[endFlanking.length];
-                for (int i = 0; i < endFlanking.length; i++) {
-                    endFlankingDeptyArray[i] = Integer.parseInt(endFlanking[i]);
-                }
-                ((SpliceJunctionFeature) feature).setStartFlankingRegionDepthArray(startFlankingDeptyArray);
-                ((SpliceJunctionFeature) feature).setEndFlankingRegionDepthArray(endFlankingDeptyArray);
             } catch (NumberFormatException e) {
-                log.error("Error parsing flanking array", e);
+                final String message = "Unexpected data in columns 10-12, expected exon count, exon starts, and exon sizes.  Found: " +
+                        tokens[9] + "  " + tokens[10] + "  " + tokens[11] + "<br>Columns > 9 will be ignored";
+                this.maxColumnCount = 9;
+                MessageUtils.showMessage(message);
+                log.warn(message, e);
+                return feature;
+            }
+
+            if (tokenCount > 14 && featureType == FeatureType.GAPPED_PEAK) {
+                Map<String, String> attributes = new LinkedHashMap<>();
+                attributes.put("Signal Value", tokens[12]);
+                attributes.put("pValue (-log10)", tokens[13]);
+                attributes.put("qValue (-log10)", tokens[14]);
+                feature.setAttributes(attributes);
+            } else if (tokenCount > 13 && featureType == FeatureType.SPLICE_JUNCTION) {
+                try {
+                    String[] startFlanking = tokens[12].split(",");
+                    int[] startFlankingDeptyArray = new int[startFlanking.length];
+                    for (int i = 0; i < startFlanking.length; i++) {
+                        startFlankingDeptyArray[i] = Integer.parseInt(startFlanking[i]);
+                    }
+                    String[] endFlanking = tokens[13].split(",");
+                    int[] endFlankingDeptyArray = new int[endFlanking.length];
+                    for (int i = 0; i < endFlanking.length; i++) {
+                        endFlankingDeptyArray[i] = Integer.parseInt(endFlanking[i]);
+                    }
+                    ((SpliceJunctionFeature) feature).setStartFlankingRegionDepthArray(startFlankingDeptyArray);
+                    ((SpliceJunctionFeature) feature).setEndFlankingRegionDepthArray(endFlankingDeptyArray);
+                } catch (NumberFormatException e) {
+                    log.error("Error parsing flanking array", e);
+                }
             }
         }
 
-        if(isCoding(feature)) {
+        if (isCoding(feature)) {
             FeatureUtils.computeReadingFrames(feature);
         }
 
@@ -239,9 +264,9 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
     /**
      * Approximate test for a coding feature (transcript).  BED format does not specify this explicitly.
      * Rules applied are
-     *
+     * <p>
      * (1) feature has exons
-     * (2) feature has possible UTRs at both ends 
+     * (2) feature has possible UTRs at both ends
      * (3) feature has strand
      *
      * @param feature
@@ -267,8 +292,8 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
         }
 
         // Bed files can be tab or whitespace delimited
-        if(delimiter == null) {
-            delimiter = trimLine.contains("\t") ?  Globals.multiTabPattern : Globals.whitespacePattern;
+        if (delimiter == null) {
+            delimiter = trimLine.contains("\t") ? Globals.multiTabPattern : Globals.whitespacePattern;
         }
 
         tokens = delimiter.split(trimLine);
@@ -298,7 +323,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
 
 
     public static void createExons(int start, String[] tokens, BasicFeature gene, String chr,
-                             Strand strand) throws NumberFormatException {
+                                   Strand strand) throws NumberFormatException {
 
         int cdStart = Integer.parseInt(tokens[6]);
         int cdEnd = Integer.parseInt(tokens[7]);
@@ -327,8 +352,6 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature>  {
             }
         }
     }
-
-
 
 
     /**

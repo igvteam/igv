@@ -649,5 +649,5 @@ public class ResourceLocator {
     }
 
     static Set<String> knownFormats = new HashSet<>(Arrays.asList("gff", "bed", "gtf", "gff3",
-            "seg", "bb", "bigbed", "bigwig", "bam", "cram", "vcf"));
+            "seg", "bb", "bigbed", "bigwig", "bam", "cram", "vcf", "bedmethyl"));
 }

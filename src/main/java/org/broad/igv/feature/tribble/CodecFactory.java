@@ -138,6 +138,9 @@ public class CodecFactory {
                 return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
             case "genepredext":
                 return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED_EXT, genome);
+            case "bedmethyl":
+                return new IGVBEDCodec(genome, FeatureType.BED_METHYL);
+
             default:
                 if (MUTCodec.isMutationAnnotationFile(locator)) {
                     return new MUTCodec(path, genome);
