@@ -191,17 +191,18 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
             }
         }
 
-        if (featureType == FeatureType.BED_METHYL && tokenCount > 9) {
+        if (featureType == FeatureType.BED_METHYL && tokenCount > 10) {
             // Description from https://www.encodeproject.org/data-standards/wgbs/
             // 10.  Coverage, or number of reads
             // 11.  Percentage of reads that show methylation at this position in the genome
             Map<String, String> attributes = new LinkedHashMap<>();
-            if (tokenCount > 9) {
                 attributes.put("Coverage", tokens[9]);
-            }
-            if (tokenCount > 10) {
-                attributes.put("% of methylated reads", tokens[10]);
-            }
+
+                // Columns after 10 are sometimes space delimited
+                int idx = tokens[10].indexOf(' ');
+                String value = idx > 0 ? tokens[10].substring(0, idx) : tokens[10];
+                attributes.put("Percentage of reads that show methylation", value);
+
             feature.setAttributes(attributes);
         } else {
             // Exons
@@ -332,22 +333,23 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
         String[] exonSizes = Globals.commaPattern.split(tokens[10]);
         String[] startsBuffer = Globals.commaPattern.split(tokens[11]);
 
-        int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
+        if(exonCount == exonSizes.length && exonCount == startsBuffer.length) {
+            int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
+            if (startsBuffer.length == exonSizes.length) {
+                for (int i = 0; i < startsBuffer.length; i++) {
+                    int exonStart = start + Integer.parseInt(startsBuffer[i]);
+                    int exonEnd = exonStart + Integer.parseInt(exonSizes[i]);
+                    Exon exon = new Exon(chr, exonStart, exonEnd, strand);
+                    exon.setCodingStart(cdStart);
+                    exon.setCodingEnd(cdEnd);
+                    gene.addExon(exon);
 
-        if (startsBuffer.length == exonSizes.length) {
-            for (int i = 0; i < startsBuffer.length; i++) {
-                int exonStart = start + Integer.parseInt(startsBuffer[i]);
-                int exonEnd = exonStart + Integer.parseInt(exonSizes[i]);
-                Exon exon = new Exon(chr, exonStart, exonEnd, strand);
-                exon.setCodingStart(cdStart);
-                exon.setCodingEnd(cdEnd);
-                gene.addExon(exon);
-
-                exon.setNumber(exonNumber);
-                if (strand == Strand.NEGATIVE) {
-                    exonNumber--;
-                } else {
-                    exonNumber++;
+                    exon.setNumber(exonNumber);
+                    if (strand == Strand.NEGATIVE) {
+                        exonNumber--;
+                    } else {
+                        exonNumber++;
+                    }
                 }
             }
         }
