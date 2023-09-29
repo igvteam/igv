@@ -27,19 +27,12 @@ apply plugin: 'application'
 
 import org.apache.tools.ant.filters.ReplaceTokens
 
-//import proguard.gradle.ProGuardTask
-
 mainClassName = 'org.broad.igv.ui.Main'
 ext.moduleName = 'org.igv'
 
-// Build sourceset for ProGuard
 buildscript {
     repositories {
         mavenCentral()
-    }
-    dependencies {
-        [group: 'net.sf.proguard', name: 'proguard-gradle', version: '6.1.1']
-        classpath 'net.sf.proguard:proguard-gradle:6.1.1'
     }
 }
 
@@ -458,17 +451,4 @@ task fullJar(type: Jar, dependsOn: jar) {
 
 //if (!makensisCommand == "" && !signcodeCommand == "") {
 //    dependsOn signWinExeDist
-//}
-
-// XXX: META-INF versions support (Java11) seem to clash with proguard at this point in time:
-// https://sourceforge.net/p/proguard/bugs/665/
-// https://sourceforge.net/p/proguard/discussion/182456/thread/8c56b22dc2/?limit=25
-//task myproguard(type: ProGuardTask) {
-////    configuration 'proguard.txt'
-//
-//    injars "${buildDir}/IGV-dist/lib"
-//    outjars "${buildDir}/libs/igv-proguard.jar"
-//
-//    //libraryjars "${buildDir}/IGV-dist/lib", jarfilter:"lib/**.jar(!META-INF/**)"
-//    //libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
 //}
