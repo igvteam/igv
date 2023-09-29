@@ -129,10 +129,8 @@ public class FeatureUtilsTest {
     public void testGetAllFeaturesAt() {
 
         int position = 56078756;
-        int maxLength = 100000;
-
-
-        List<Feature> result = FeatureUtils.getAllFeaturesAt(position, maxLength, 0, featureList);
+        double flanking = 0;
+        List<Feature> result = FeatureUtils.getAllFeaturesAt(position, flanking, featureList);
         assertEquals(21, result.size());
         for (Feature f : result) {
             assertTrue(position >= f.getStart() && position <= f.getEnd());

@@ -57,15 +57,15 @@ public class FeatureUtils {
      * Return a feature from the supplied list whose extent, expanded by "buffer", contains the given position.
      *
      * @param position 0-based genomic position to which to search for feature
-     * @param buffer   search region. The first feature which contains the start position, (expanded by buffer, inclusive)
-     *                 will be accepted.
+     * @param bpPerPixel  current resolution in base pairs per pixel.
      * @param features
      * @return
      */
-    public static <T extends Feature> T getFeatureAt(double position, int buffer, List<? extends T> features) {
+    public static <T extends Feature> T getFeatureAt(double position, double bpPerPixel, List<? extends T> features) {
 
         int startIdx = 0;
         int endIdx = features.size();
+        int buffer = (int) (2 * bpPerPixel);
 
         while (startIdx != endIdx) {
             int idx = (startIdx + endIdx) / 2;
@@ -367,33 +367,32 @@ public class FeatureUtils {
 
 
     /**
-     * Return all features from the supplied list who's extent, expanded to "minWidth" if needed,  contains the given position
+     * Return all features from the supplied list who's extent, expanded by "flanking", intersect the position
      *
      * @param position
-     * @param maxLength -- the distance back from position at which to start search (the maximum feature length)
-     * @param minWidth  -- the minimum effective width of the feature
+     * @param flanking  -- the minimum effective width of the feature
      * @param features
      * @return
      */
     public static List<Feature> getAllFeaturesAt(double position,
-                                                 double maxLength,
-                                                 double minWidth,
+                                                 double flanking,
                                                  List<? extends htsjdk.tribble.Feature> features) {
 
         List<Feature> returnList = null;
 
-        double adjustedPosition = Math.max(0, position - maxLength);
-        int startIdx = Math.max(0, getIndexBefore(adjustedPosition, features));
+
+        int startIdx = Math.max(0, getIndexBefore(position - flanking, features));
+        double start = position - (flanking / 2);
+        double end = position + (flanking / 2);
         for (int idx = startIdx; idx < features.size(); idx++) {
             Feature feature = features.get(idx);
-            double start = feature.getStart() - (minWidth / 2);
-            if (start > position) {
-                break;
-            }
-            double end = feature.getEnd() + (minWidth / 2);
-            if (position >= start && position <= end) {
+            if(feature.getEnd() >= start && feature.getStart() <= end)  {
                 if (returnList == null) returnList = new ArrayList();
                 returnList.add(feature);
+            }
+
+            if (feature.getStart() > end) {
+                break;
             }
         }
 
