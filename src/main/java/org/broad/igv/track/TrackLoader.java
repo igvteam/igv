@@ -124,6 +124,7 @@ public class TrackLoader {
 
         log.info("Loading resource:  " + (locator.isDataURL() ? "<data url>" : path));
         try {
+
             String format = locator.getFormat();
 
             if (format.equals("tbi")) {
@@ -134,9 +135,23 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
+
+            // Determine track type, if possible, and add new tracks
             if (locator.isHtsget()) {
-                tryHtsget(locator, newTracks, genome);
-            } else if (format.equals("gmt")) {
+                HtsgetUtils.Metadata htsgetMeta = HtsgetUtils.getMetadata(locator.getPath());
+                locator.setFormat(htsgetMeta.getFormat().toLowerCase());
+                if (htsgetMeta.getFormat().equals("VCF")) {
+                    locator.setHtsget(true);
+                    HtsgetVariantSource source = new HtsgetVariantSource(htsgetMeta, genome);
+                    loadVCFWithSource(locator, source, newTracks);
+                } else if (htsgetMeta.getFormat().equals("BAM") || htsgetMeta.getFormat().equals("CRAM")) {
+                    locator.setHtsget(true);
+                    loadAlignmentsTrack(locator, newTracks, genome);
+                } else {
+                    throw new RuntimeException("Format: '" + htsgetMeta.getFormat() + "' is not supported for htsget servers.");
+                }
+
+            }  else if (format.equals("gmt")) {
                 loadGMT(locator);
             } else if (format.equals("vcf.list")) {
                 loadVCFListFile(locator, newTracks, genome);
@@ -208,33 +223,29 @@ public class TrackLoader {
                 loadMutFile(locator, newTracks, genome); // Must be tried before ".maf" test below
             } else if (format.equals("maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-            } else {
-                //if a url, try htsget
-                boolean isHtsget = tryHtsget(locator, newTracks, genome);
-                if (!isHtsget) {
-
-                    // If the file is too large, give up
-                    // TODO -- ftp test
-                    final int tenMB = 10000000;
-                    long fileLength = ParsingUtils.getContentLength(locator.getPath());
-                    if (fileLength > tenMB) {
-                        MessageUtils.confirm("<html>Cannot determine file type of: " + locator.getPath());
-                    }
-
-                    // Read file contents and try to sort it out
-                    String contents = FileUtils.getContents(locator.getPath());
-                    BufferedReader reader = new BufferedReader(new StringReader(contents));
-
-                    if (CytoBandFileParser.isValid(reader, locator.getPath())) {
-                        Track track = new CytobandTrack(locator, new BufferedReader(new StringReader(contents)), genome);
-                        newTracks.add(track);
-                    } else if (AttributeManager.isSampleInfoFile(reader)) {
-                        // This might be a sample information file.
-                        AttributeManager.getInstance().loadSampleInfo(locator);
-                    } else {
-                        MessageUtils.showMessage("<html>Unknown file type: " + path + "<br>Check file extension");
-                    }
+            } else  {
+                // If the file is too large, give up
+                // TODO -- ftp test
+                final int tenMB = 10000000;
+                long fileLength = ParsingUtils.getContentLength(locator.getPath());
+                if (fileLength > tenMB) {
+                    MessageUtils.confirm("<html>Cannot determine file type of: " + locator.getPath());
                 }
+
+                // Read file contents and try to sort it out
+                String contents = FileUtils.getContents(locator.getPath());
+                BufferedReader reader = new BufferedReader(new StringReader(contents));
+
+                if (CytoBandFileParser.isValid(reader, locator.getPath())) {
+                    Track track = new CytobandTrack(locator, new BufferedReader(new StringReader(contents)), genome);
+                    newTracks.add(track);
+                } else if (AttributeManager.isSampleInfoFile(reader)) {
+                    // This might be a sample information file.
+                    AttributeManager.getInstance().loadSampleInfo(locator);
+                } else {
+                    MessageUtils.showMessage("<html>Unknown file type: " + path + "<br>Check file extension");
+                }
+
             }
 
             // Track line
@@ -273,46 +284,6 @@ public class TrackLoader {
             throw new DataLoadException(e.getMessage());
         }
 
-    }
-
-    /**
-     * Try to load as an htsget resource.  As most (all?) htsget endpoints use an https:// scheme URL, there is
-     * no way to detect other than try.
-     *
-     * @param locator
-     * @param newTracks
-     * @param genome
-     * @return
-     */
-    private boolean tryHtsget(ResourceLocator locator, List<Track> newTracks, Genome genome) {
-        boolean isHtsget = false;
-        if (locator.getPath().startsWith("https://") ||
-                locator.getPath().startsWith("http://") ||
-                locator.getPath().startsWith("htsget://")) {
-            try {
-                HtsgetUtils.Metadata htsgetMeta = HtsgetUtils.getMetadata(locator.getPath());
-                if (htsgetMeta != null) {
-                    isHtsget = true;
-                    locator.setFormat(htsgetMeta.getFormat().toLowerCase());
-                    if (htsgetMeta.getFormat().equals("VCF")) {
-                        locator.setHtsget(true);
-                        HtsgetVariantSource source = new HtsgetVariantSource(htsgetMeta, genome);
-                        loadVCFWithSource(locator, source, newTracks);
-                    } else if (htsgetMeta.getFormat().equals("BAM") || htsgetMeta.getFormat().equals("CRAM")) {
-                        locator.setHtsget(true);
-                        loadAlignmentsTrack(locator, newTracks, genome);
-                    } else {
-                        throw new RuntimeException("Format: '" + htsgetMeta.getFormat() + "' is not supported for htsget servers.");
-                    }
-                }
-            } catch (IOException e) {
-                // Not neccessarily an error, might just indicate its not an htsget server.  Not sure
-                // if this should be logged or not, it will be a common and expected occurence when loading
-                // sample information, which is checked after htsget
-                return false;
-            }
-        }
-        return isHtsget;
     }
 
     public static boolean isAlignmentTrack(String typeString) {
