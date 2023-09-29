@@ -439,12 +439,7 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
     }
 
     private int getIndex(int pos) {
-        Integer index = indexMap.get(pos);
-        if (index == null) {
-            index = new Integer(indexMap.size());
-            indexMap.put(pos, index);
-        }
-        return index.intValue();
+        return indexMap.computeIfAbsent(pos, k -> indexMap.size());
     }
 
 

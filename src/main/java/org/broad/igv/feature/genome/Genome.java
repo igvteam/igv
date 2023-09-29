@@ -334,10 +334,10 @@ public class Genome {
                 }
                 offset += getChromosome(c).getLength();
             }
-            cumOffset = new Long(offset);
+            cumOffset = offset;
             cumulativeOffsets.put(chr, cumOffset);
         }
-        return cumOffset.longValue();
+        return cumOffset;
     }
 
     /**
