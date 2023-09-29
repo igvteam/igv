@@ -210,10 +210,11 @@ task createDist(type: Copy, dependsOn: jar) {
     }
     // Copies all Maven-fetched dependency jars
     with copySpec {
-        from configurations.default {
+        from configurations.runtimeClasspath {
             exclude '**/*log4j*.jar' 
         }
         into "lib"
+        duplicatesStrategy DuplicatesStrategy.EXCLUDE
     }
     with copySpec { from("genomes/sizes") {} into "lib/genomes" }
 
@@ -243,7 +244,7 @@ task createLinuxDistZip(type: Zip, dependsOn: createDist) {
 
 task createLinuxWithJavaDistZip(type: Zip, dependsOn: createDist) {
     archiveFileName = "IGV_Linux_${archiveVersion}_WithJava.zip"
-    with copySpec { from jdkBundleLinux into "jdk-11" }
+    with copySpec { from jdkBundleLinux into "jdk-17" }
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*.command"
@@ -272,7 +273,7 @@ task createMacDistZip(type: Zip, dependsOn: createDist) {
 
 task createMacWithJavaDistZip(type: Zip, dependsOn: createDist) {
     archiveFileName = "IGV_Mac_${archiveVersion}_WithJava.zip"
-    with copySpec { from jdkBundleMac into "jdk-11" }
+    with copySpec { from jdkBundleMac into "jdk-17" }
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*_hidpi*"
@@ -331,7 +332,7 @@ task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
 
 task createMacAppWithJavaDistZip(type: Zip, dependsOn: createMacAppDist) {
     archiveFileName = "IGV_MacApp_${archiveVersion}_WithJava.zip"
-    with copySpec { from jdkBundleMac into "IGV_${archiveVersion}.app/Contents/jdk-11" }
+    with copySpec { from jdkBundleMac into "IGV_${archiveVersion}.app/Contents/jdk-17" }
     from("${buildDir}/IGV-MacApp-dist")
 
     doLast {
@@ -365,7 +366,7 @@ task createWinDist(type: Copy, dependsOn: createDist) {
 }
 
 task createWinWithJavaDist(type: Copy, dependsOn: createWinDist) {
-    with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-11" }
+    with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-17" }
     with copySpec {
         from("${buildDir}/IGV-WinExe-dist/IGV_${version}") { exclude 'installer.nsi' }
         into "IGV_${version}"
