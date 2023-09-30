@@ -222,6 +222,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     }
                 } else {
 
+                    // If there is room create a gap between this feature and the next
                     drawFeatureBlock(pixelStart, pixelEnd, pixelThickStart, pixelThickEnd, pixelYCenter, g2D);
 
                     if (displayMode != Track.DisplayMode.SQUISHED) {
@@ -289,11 +290,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     int yStart = pixelYCenter - blockHeight / 2 - 1;
                     Graphics2D highlightGraphics = context.getGraphic2DForColor(Color.cyan);
                     highlightGraphics.drawRect(pixelStart - 1, yStart, (pixelWidth + 2), blockHeight + 2);
-
-
                 }
-
-
             }
 
             if (drawBoundary) {
@@ -333,8 +330,12 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     Math.max(1, pixelEnd - pixelThickEnd), (thinBlockHeight));
         }
 
+        int width = Math.max(1, pixelThickEnd - pixelThickStart);
+        // If there is room create a small visual gap in case of adjacent features
+        if (width > 5) width--;
+        if (width > 10) pixelThickStart++;
         g2D.fillRect(pixelThickStart, yOffset - (blockHeight - 4) / 2,
-                Math.max(1, pixelThickEnd - pixelThickStart), (blockHeight - 4));
+                width, (blockHeight - 4));
 
         g2D.dispose();
     }
@@ -400,13 +401,13 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         int lastExonEndX = Integer.MIN_VALUE;
         int lastY = Integer.MIN_VALUE;
         int maxLineEndX = Integer.MIN_VALUE;
-        IExon lastExon = null;
 
         int exonCount = gene.getExons().size();
 
         for (int idx = 0; idx < exonCount; idx++) {
 
             Exon exon = gene.getExons().get(idx);
+            boolean lastExon = idx == exonCount - 1;
 
             // Parse expression from tags, if available
             //Credit Michael Poidinger and Solomonraj Wilson, Singapore Immunology Network.
@@ -444,6 +445,16 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             int pStart = getPixelFromChromosomeLocation(exon.getChr(), exon.getStart(), theOrigin, locationScale);
             int pEnd = getPixelFromChromosomeLocation(exon.getChr(), exon.getEnd(), theOrigin, locationScale);
 
+            if(lastExon) {
+                // draw a small gap if there is room
+                if(pEnd - pStart > 5) {
+                    pEnd--;
+                }
+                if(pEnd - pStart > 10) {
+                    pStart++;
+                }
+            }
+
 
             //We draw connecting lines/arrows from previous exon to this one.
             //Exons may not be strictly sorted, we avoid double-drawing using maxLineEndX
@@ -471,14 +482,27 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                     int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                     int pClippedWidth = pClippedEnd - pClippedStart;
-                    drawExonRect(blockGraphics, exon, pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                    drawExonRect(
+                            blockGraphics,
+                            exon,
+                            pClippedStart,
+                            curYOffset - NON_CODING_HEIGHT / 2,
+                            pClippedWidth,
+                            NON_CODING_HEIGHT);
 
-                } else {// Exon contains 5' UTR -- draw non-coding part
+                } else {
+                    // Exon contains 5' UTR -- draw non-coding part
                     if (pCdStart > pStart) {
                         int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pCdStart, trackRectangle.getMaxX());
                         int pClippedWidth = pClippedEnd - pClippedStart;
-                        drawExonRect(blockGraphics, exon, pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                        drawExonRect(
+                                blockGraphics,
+                                exon,
+                                pClippedStart,
+                                curYOffset - NON_CODING_HEIGHT / 2,
+                                pClippedWidth,
+                                NON_CODING_HEIGHT);
                         pStart = pCdStart;
                     }
                     //  Exon contains 3' UTR  -- draw non-coding part
@@ -486,10 +510,14 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int pClippedStart = (int) Math.max(pCdEnd, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                         int pClippedWidth = pClippedEnd - pClippedStart;
-                        drawExonRect(blockGraphics, exon, pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                        drawExonRect(
+                                blockGraphics,
+                                exon,
+                                pClippedStart,
+                                curYOffset - NON_CODING_HEIGHT / 2,
+                                pClippedWidth, NON_CODING_HEIGHT);
                         pEnd = pCdEnd;
                     }
-
                     // At least part of this exon is coding.  Draw the coding part.
                     if ((exon.getCdStart() < exon.getEnd()) && (exon.getCdEnd() > exon.getStart())) {
                         int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());

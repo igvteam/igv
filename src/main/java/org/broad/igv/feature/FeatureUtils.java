@@ -370,40 +370,37 @@ public class FeatureUtils {
      * Return all features from the supplied list who's extent, expanded to "minWidth" if needed,  contains the given position
      *
      * @param position
-     * @param maxLength -- the distance back from position at which to start search (the maximum feature length)
-     * @param minWidth  -- the minimum effective width of the feature
+     * @param flanking - flanking distance in BP for hit test,  a hit occurs over the feature region +/- flanking
      * @param features
      * @return
      */
     public static List<Feature> getAllFeaturesAt(double position,
-                                                 double maxLength,
-                                                 double minWidth,
+                                                 double flanking,
                                                  List<? extends htsjdk.tribble.Feature> features) {
 
         List<Feature> returnList = null;
 
-        double adjustedPosition = Math.max(0, position - maxLength);
-        int startIdx = Math.max(0, getIndexBefore(adjustedPosition, features));
+        int startIdx = Math.max(0, getIndexBefore(position, features));
         for (int idx = startIdx; idx < features.size(); idx++) {
             Feature feature = features.get(idx);
-            double start = feature.getStart() - (minWidth / 2);
-            if (start > position) {
+            if (feature.getStart() > position + flanking) {
                 break;
             }
-            double end = feature.getEnd() + (minWidth / 2);
-            if (position >= start && position <= end) {
-                if (returnList == null) returnList = new ArrayList();
-                returnList.add(feature);
+            if (feature.getEnd() < position - flanking) {
+                continue;
             }
+            if (returnList == null) returnList = new ArrayList();
+            returnList.add(feature);
         }
 
         // Sort features by distance from position (features closest to position listed first)
-        returnList.sort((o1, o2) -> {
-            double dist1 = Math.abs((o1.getStart() + (o1.getEnd() - o1.getStart()) / 2) - position);
-            double dist2 = Math.abs((o2.getStart() + (o2.getEnd() - o2.getStart()) / 2) - position);
-            return dist1 == dist2 ? 0 : dist1 > dist2 ? 1 : -1;
-        });
-
+        if (returnList != null) {
+            returnList.sort((o1, o2) -> {
+                double dist1 = Math.abs((o1.getStart() + (o1.getEnd() - o1.getStart()) / 2) - position);
+                double dist2 = Math.abs((o2.getStart() + (o2.getEnd() - o2.getStart()) / 2) - position);
+                return dist1 == dist2 ? 0 : dist1 > dist2 ? 1 : -1;
+            });
+        }
         return returnList;
     }
 

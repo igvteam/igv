@@ -558,9 +558,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         if (possFeatures != null) {
             // give a minum 2 pixel or 1/2 bp window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
-            double minWidth = Math.max(2, 3 * bpPerPixel);
-            int maxFeatureLength = packedFeatures.getMaxFeatureLength();
-            featureList = FeatureUtils.getAllFeaturesAt(position, maxFeatureLength, minWidth, possFeatures);
+            double flanking = 4 * bpPerPixel;
+            featureList = FeatureUtils.getAllFeaturesAt(position, flanking, possFeatures);
         }
         return featureList;
     }
