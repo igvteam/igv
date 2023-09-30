@@ -67,7 +67,7 @@ public class TutorialUtils {
 
             for (Region r : regions) {
 
-                byte[] sequence = inFasta.getSequence(r.chr, r.start, r.end, true);
+                byte[] sequence = inFasta.getSequence(r.chr, r.start, r.end);
 
                 outFasta.println(">" + r.name);
                 outFasta.println(new String(sequence));

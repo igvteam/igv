@@ -455,15 +455,7 @@ public class Genome {
         if (end <= start) {
             return null;
         }
-        return sequence.getSequence(chr, start, end, useCache);
-    }
-
-    public boolean sequenceIsRemote() {
-        return sequence.isRemote();
-    }
-
-    public boolean sequenceIsFasta() {
-        return sequence.isFasta();
+        return sequence.getSequence(chr, start, end);
     }
 
     public String getDisplayName() {
@@ -631,11 +623,6 @@ public class Genome {
         ucsdIDMap.put("1kg_ref", "hg18");
         ucsdIDMap.put("1kg_v37", "hg19");
         ucsdIDMap.put("b37", "hg19");
-    }
-
-
-    public boolean sequenceIsLoaded(ReferenceFrame frame) {
-        return sequence.isLoaded(frame);
     }
 
     public void setAnnotationResources(List<ResourceLocator> annotationResources) {

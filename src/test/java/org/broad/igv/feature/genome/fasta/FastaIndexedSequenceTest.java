@@ -25,11 +25,7 @@
 
 package org.broad.igv.feature.genome.fasta;
 
-import org.broad.igv.feature.genome.IGVSequence;
-import org.broad.igv.feature.genome.Sequence;
 import org.broad.igv.feature.genome.SequenceWrapper;
-import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
-import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -66,7 +62,7 @@ public class FastaIndexedSequenceTest {
         int chrLen = 8059593;
         int start = chrLen - 10;
         int end = chrLen + 10;
-        byte[] bytes = fastaSequence.getSequence(chr, start, end, true);
+        byte[] bytes = fastaSequence.getSequence(chr, start, end);
         assertEquals(10, bytes.length);
 
         byte[] expectedSequence = "TTTTTCCCAG".getBytes();
@@ -87,7 +83,7 @@ public class FastaIndexedSequenceTest {
         int end = 300;
         FastaIndexedSequence sequence = new FastaIndexedSequence(fasta);
 
-        byte[] bytes = sequence.getSequence(chr, start, end, true);
+        byte[] bytes = sequence.getSequence(chr, start, end);
 
         assertEquals(expectedSequence, new String(bytes));
 
@@ -105,7 +101,7 @@ public class FastaIndexedSequenceTest {
         FastaIndexedSequence sequence = new FastaIndexedSequence(fasta);
 
 
-        byte[] bytes = sequence.getSequence(chr, start, end, true);
+        byte[] bytes = sequence.getSequence(chr, start, end);
 
         for (int i = 60; i < 100; i++) {
 
@@ -113,7 +109,7 @@ public class FastaIndexedSequenceTest {
 
         FastaIndexedSequence s = new FastaIndexedSequence(fasta);
         SequenceWrapper sequenceHelper = new SequenceWrapper(s);
-        bytes = sequenceHelper.getSequence(chr, start, end, true);
+        bytes = sequenceHelper.getSequence(chr, start, end);
         for (int i = 60; i < 100; i++) {
             // ?????? Not sure what to test here
         }

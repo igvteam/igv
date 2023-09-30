@@ -167,7 +167,7 @@ public class GenomeTest extends AbstractHeadlessTest {
         }
 
         @Override
-        public byte[] getSequence(String chr, int start, int end, boolean useCache) {
+        public byte[] getSequence(String chr, int start, int end) {
             return new byte[0];
         }
 

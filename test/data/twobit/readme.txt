@@ -1,1 +1,0 @@
-Test data from the GMOD twobit-js project: https://github.com/GMOD/twobit-js

@@ -37,7 +37,7 @@ import java.util.List;
  */
 public interface Sequence {
 
-    byte[] getSequence(String chr, int start, int end, boolean useCache);
+    byte[] getSequence(String chr, int start, int end);
 
     byte getBase(String chr, int position);
 
@@ -45,11 +45,4 @@ public interface Sequence {
 
     int getChromosomeLength(String chrname);
 
-    default boolean isLoaded(ReferenceFrame frame) {
-        return false;
-    }
-
-    boolean isRemote();
-
-    default boolean isFasta() {return false;}
 }

@@ -46,7 +46,7 @@ public class InMemorySequence implements Sequence {
         sequenceMap.put(chr, seq);
     }
 
-    public byte[] getSequence(String chr, int qstart, int qend, boolean useCache) {
+    public byte[] getSequence(String chr, int qstart, int qend) {
         byte[] allBytes = sequenceMap.get(chr);
         if (allBytes == null) {
             return null;
@@ -86,8 +86,4 @@ public class InMemorySequence implements Sequence {
         return bytes == null ? 0 : bytes.length;
     }
 
-    @Override
-    public boolean isRemote() {
-        return false;
-    }
 }

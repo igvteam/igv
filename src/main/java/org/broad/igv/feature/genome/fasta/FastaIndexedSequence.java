@@ -29,7 +29,6 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Sequence;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.ByteArrayOutputStream;
@@ -86,11 +85,10 @@ public class FastaIndexedSequence implements Sequence {
      * @param chr
      * @param qstart
      * @param qend
-     * @param useCache
      * @return
      */
 
-    public byte[] getSequence(String chr, int qstart, int qend, boolean useCache) {
+    public byte[] getSequence(String chr, int qstart, int qend) {
 
         FastaIndex.FastaSequenceIndexEntry idxEntry = index.getIndexEntry(chr);
 
@@ -193,16 +191,5 @@ public class FastaIndexedSequence implements Sequence {
     public int getChromosomeLength(String chrname) {
         return index.getSequenceSize(chrname);
     }
-
-    @Override
-    public boolean isRemote() {
-        return FileUtils.isRemote(path);
-    }
-
-    @Override
-    public boolean isFasta() {
-        return true;
-    }
-
 
 }
