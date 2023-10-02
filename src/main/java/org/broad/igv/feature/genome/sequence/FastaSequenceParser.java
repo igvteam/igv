@@ -23,14 +23,13 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome.fasta;
+package org.broad.igv.feature.genome.sequence;
 
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 

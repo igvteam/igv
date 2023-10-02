@@ -1,4 +1,4 @@
-package org.broad.igv.feature.genome;
+package org.broad.igv.feature.genome.sequence;
 
 /**
  * Reader for UCSC ".2bit" sequence files. Reference: https://genome.ucsc.edu/FAQ/FAQformat.html#format7

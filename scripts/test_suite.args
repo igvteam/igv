@@ -20,7 +20,7 @@
 --add-exports org.igv/org.broad.igv.feature.dranger=junit
 --add-exports org.igv/org.broad.igv.feature.dsi=junit
 --add-exports org.igv/org.broad.igv.feature.genome=junit
---add-exports org.igv/org.broad.igv.feature.genome.fasta=junit
+--add-exports org.igv/org.broad.igv.feature.genome.sequence=junit
 --add-exports org.igv/org.broad.igv.feature.tribble=junit
 --add-exports org.igv/org.broad.igv.feature.tribble.reader=junit
 --add-exports org.igv/org.broad.igv.oauth=junit

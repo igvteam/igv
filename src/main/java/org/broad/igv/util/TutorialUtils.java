@@ -30,7 +30,9 @@ import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
-import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
+import org.broad.igv.feature.genome.sequence.FastaIndexedSequence;
+import org.broad.igv.feature.genome.sequence.Sequence;
+import org.broad.igv.feature.genome.sequence.SequenceFactory;
 import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -56,7 +58,7 @@ public class TutorialUtils {
 
     static void extractFasta(String inputFasta, String outputFasta, String regionsFile) throws IOException {
 
-        FastaIndexedSequence inFasta = new FastaIndexedSequence(inputFasta);
+        Sequence inFasta = SequenceFactory.getSequence(inputFasta);
 
         List<Region> regions = parseRegions(new File(regionsFile));
 

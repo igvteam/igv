@@ -27,10 +27,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.broad.igv.feature.genome;
+package org.broad.igv.feature.genome.sequence;
 
 import org.broad.igv.logging.*;
-import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ObjectCache;
 
 import java.util.Hashtable;

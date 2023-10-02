@@ -23,10 +23,9 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome.fasta;
+package org.broad.igv.feature.genome.sequence;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;

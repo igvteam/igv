@@ -23,14 +23,12 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome.fasta;
+package org.broad.igv.feature.genome.sequence;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.genome.fasta.FastaIndex;
-import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.Ignore;
 import org.junit.Test;

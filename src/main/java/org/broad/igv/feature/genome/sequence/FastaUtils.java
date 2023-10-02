@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome.fasta;
+package org.broad.igv.feature.genome.sequence;
 
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;

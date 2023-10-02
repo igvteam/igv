@@ -3,8 +3,8 @@ package org.broad.igv.feature.genome.load;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.InMemorySequence;
-import org.broad.igv.feature.genome.Sequence;
+import org.broad.igv.feature.genome.sequence.InMemorySequence;
+import org.broad.igv.feature.genome.sequence.Sequence;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
 

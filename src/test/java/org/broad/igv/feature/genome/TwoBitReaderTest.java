@@ -1,5 +1,6 @@
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.feature.genome.sequence.TwoBitReader;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 

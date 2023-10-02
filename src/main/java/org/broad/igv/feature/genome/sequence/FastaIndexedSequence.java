@@ -23,12 +23,10 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome.fasta;
+package org.broad.igv.feature.genome.sequence;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.logging.*;
-import org.broad.igv.feature.genome.Sequence;
-import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.ByteArrayOutputStream;
@@ -51,11 +49,12 @@ public class FastaIndexedSequence implements Sequence {
 
     private final ArrayList<String> chromoNamesList;
 
-    public FastaIndexedSequence(String path) throws IOException {
+     FastaIndexedSequence(String path) throws IOException {
         this(path, null);
     }
 
-    public FastaIndexedSequence(String path, String indexPath) throws IOException {
+
+     FastaIndexedSequence(String path, String indexPath) throws IOException {
 
         this.path = path;
 

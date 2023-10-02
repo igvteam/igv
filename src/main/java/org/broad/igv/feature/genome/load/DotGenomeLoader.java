@@ -1,12 +1,13 @@
 package org.broad.igv.feature.genome.load;
 
 import htsjdk.tribble.Feature;
+import org.broad.igv.feature.genome.sequence.SequenceFactory;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.Sequence;
-import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
-import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
+import org.broad.igv.feature.genome.sequence.Sequence;
+import org.broad.igv.feature.genome.sequence.FastaBlockCompressedSequence;
+import org.broad.igv.feature.genome.sequence.FastaIndexedSequence;
 import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
@@ -97,11 +98,7 @@ public class DotGenomeLoader extends GenomeLoader {
         if (sequencePath == null) {
             sequence = null;
         } else {
-            if (sequencePath.endsWith(".gz")) {
-                sequence = new FastaBlockCompressedSequence(sequencePath);
-            } else {
-                sequence = new FastaIndexedSequence(sequencePath);
-            }
+            sequence = SequenceFactory.getSequence(sequencePath);
             chromosOrdered = true;
         }
 

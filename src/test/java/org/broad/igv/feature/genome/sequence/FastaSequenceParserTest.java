@@ -23,9 +23,8 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome.fasta;
+package org.broad.igv.feature.genome.sequence;
 
-import org.broad.igv.feature.genome.InMemorySequence;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

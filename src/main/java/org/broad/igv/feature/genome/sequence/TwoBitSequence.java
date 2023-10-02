@@ -1,4 +1,4 @@
-package org.broad.igv.feature.genome;
+package org.broad.igv.feature.genome.sequence;
 
 import java.io.IOException;
 import java.util.List;
@@ -7,7 +7,7 @@ public class TwoBitSequence implements Sequence{
 
     private TwoBitReader reader;
 
-    public TwoBitSequence(String path) throws IOException {
+    protected TwoBitSequence(String path) throws IOException {
         this.reader = new TwoBitReader(path);
     }
 

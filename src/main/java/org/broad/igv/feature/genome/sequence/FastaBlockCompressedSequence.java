@@ -1,4 +1,4 @@
-package org.broad.igv.feature.genome.fasta;
+package org.broad.igv.feature.genome.sequence;
 
 import htsjdk.samtools.seekablestream.SeekableBufferedStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
@@ -20,12 +20,12 @@ public class FastaBlockCompressedSequence extends FastaIndexedSequence {
     Mapping[] gziMappings;
     Mapping zeroMapping = new Mapping(0, 0);
 
-    public FastaBlockCompressedSequence(String path) throws IOException {
+    FastaBlockCompressedSequence(String path) throws IOException {
 
         this(path, null, null);
     }
 
-    public FastaBlockCompressedSequence(String path, String gziIndexPath, String indexPath) throws IOException {
+    FastaBlockCompressedSequence(String path, String gziIndexPath, String indexPath) throws IOException {
 
         super(path, indexPath);
 

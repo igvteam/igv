@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome;
+package org.broad.igv.feature.genome.sequence;
 
 import org.broad.igv.ui.panel.ReferenceFrame;
 

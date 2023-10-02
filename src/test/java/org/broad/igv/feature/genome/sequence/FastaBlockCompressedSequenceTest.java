@@ -1,6 +1,5 @@
-package org.broad.igv.feature.genome.fasta;
+package org.broad.igv.feature.genome.sequence;
 
-import org.broad.igv.feature.genome.Sequence;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

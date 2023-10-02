@@ -31,7 +31,7 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.genome.fasta.FastaUtils;
+import org.broad.igv.feature.genome.sequence.FastaUtils;
 import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;

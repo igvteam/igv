@@ -38,11 +38,13 @@ import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
+import org.broad.igv.feature.genome.sequence.InMemorySequence;
+import org.broad.igv.feature.genome.sequence.Sequence;
+import org.broad.igv.feature.genome.sequence.SequenceWrapper;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
 

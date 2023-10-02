@@ -25,6 +25,8 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.feature.genome.sequence.Sequence;
+
 /**
  * Created with IntelliJ IDEA.
  * User: jrobinso
