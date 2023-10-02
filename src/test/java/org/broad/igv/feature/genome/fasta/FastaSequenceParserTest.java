@@ -57,7 +57,7 @@ public class FastaSequenceParserTest {
         int start = 31084127;
         int end = 31084167;
 
-        String expectedSequence = "GCCACCATGCCTGGCTAGTTTTTTGTATTTTTAGTAGAGA";
+        String expectedSequence = "gccaccatgcctggctagttttttgtatttttagtagaga";
 
 
         byte[] seq = fastaSequence.getSequence(chr, start, end);
