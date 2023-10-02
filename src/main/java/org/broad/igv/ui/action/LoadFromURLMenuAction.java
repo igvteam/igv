@@ -59,8 +59,7 @@ public class LoadFromURLMenuAction extends MenuAction {
     static Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
     public static final String LOAD_FROM_URL = "Load from URL...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
-
-    public static final String LOAD_FROM_HTSGET = "Load from htsget server...";
+    public static final String LOAD_FROM_HTSGET = "Load from htsget Server...";
     private IGV igv;
 
     public LoadFromURLMenuAction(String label, int mnemonic, IGV igv) {
@@ -76,7 +75,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         boolean isHtsGet = e.getActionCommand().equalsIgnoreCase(LOAD_FROM_HTSGET);
         if (e.getActionCommand().equalsIgnoreCase(LOAD_FROM_URL) || isHtsGet) {
 
-            LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame());
+            LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame(), isHtsGet);
             dlg.setVisible(true);
 
             if (!dlg.isCanceled()) {

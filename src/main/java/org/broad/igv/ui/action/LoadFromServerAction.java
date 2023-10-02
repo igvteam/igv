@@ -113,7 +113,8 @@ public class LoadFromServerAction extends MenuAction {
             nodeURLs = getResourceUrls(bufferedReader);
         } catch (IOException e) {
             //This is pretty common, if there is no data registry file for the genome the file won't exist
-            log.error("Error loading genome registry file", e);
+            //log.error("Error loading genome registry file", e);
+            log.warn("No data found for current genome.");
         } finally {
             if (is != null) {
                 try {
