@@ -31,8 +31,4 @@ public class TwoBitSequence implements Sequence{
         throw new RuntimeException("getBase is not implementd for TwoBitSequence");
     }
 
-    @Override
-    public boolean isRemote() {
-        return false;
-    }
 }

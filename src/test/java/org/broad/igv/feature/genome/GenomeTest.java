@@ -186,10 +186,6 @@ public class GenomeTest extends AbstractHeadlessTest {
             return index.getSequenceSize(chrname);
         }
 
-        @Override
-        public boolean isRemote() {
-            return false;
-        }
     }
 
     public static void generateJunkIndex() throws Exception {

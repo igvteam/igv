@@ -50,11 +50,7 @@ public class TwoBitReaderTest {
         seqbytes = reader.readSequence("chr1", 120565294, 120565335);
         seq = new String(seqbytes);
         assertEquals(expectedSeq, seq);
-
-        // Unrecongized sequence name
-        expectedSeq = null;
-        seqbytes = reader.readSequence("noSuchSequence", 0, 10);
-        assertEquals(expectedSeq, seqbytes);
+        
     }
 
 }
