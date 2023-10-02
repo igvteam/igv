@@ -26,7 +26,6 @@
 package org.broad.igv.feature.genome.fasta;
 
 import org.broad.igv.feature.genome.InMemorySequence;
-import org.broad.igv.feature.genome.fasta.FastaSequenceParser;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -60,8 +59,10 @@ public class FastaSequenceParserTest {
 
         String expectedSequence = "GCCACCATGCCTGGCTAGTTTTTTGTATTTTTAGTAGAGA";
 
-        byte[] seq = fastaSequence.getSequence(chr, start, end, true);
-        String seqString = new String(seq).toUpperCase();
+
+        byte[] seq = fastaSequence.getSequence(chr, start, end);
+        String seqString = new String(seq);
+
 
         assertEquals(expectedSequence, seqString);
     }
@@ -73,7 +74,7 @@ public class FastaSequenceParserTest {
         int chrLen = 51304566;
         int start = chrLen - 10;
         int end = chrLen + 10;
-        byte[] bytes = fastaSequence.getSequence(chr, start, end, true);
+        byte[] bytes = fastaSequence.getSequence(chr, start, end);
         assertEquals(10, bytes.length);
 
         byte[] expectedSequence = "NNNNNNNNNN".getBytes();

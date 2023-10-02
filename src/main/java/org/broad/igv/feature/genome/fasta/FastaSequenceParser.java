@@ -42,7 +42,6 @@ import java.util.Map;
  */
 public class FastaSequenceParser {
 
-
     /**
      * Read an entire fasta file, which might be local or remote and might be gzipped.
      *

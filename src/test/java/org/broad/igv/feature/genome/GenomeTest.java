@@ -167,7 +167,7 @@ public class GenomeTest extends AbstractHeadlessTest {
         }
 
         @Override
-        public byte[] getSequence(String chr, int start, int end, boolean useCache) {
+        public byte[] getSequence(String chr, int start, int end) {
             return new byte[0];
         }
 
@@ -186,10 +186,6 @@ public class GenomeTest extends AbstractHeadlessTest {
             return index.getSequenceSize(chrname);
         }
 
-        @Override
-        public boolean isRemote() {
-            return false;
-        }
     }
 
     public static void generateJunkIndex() throws Exception {
