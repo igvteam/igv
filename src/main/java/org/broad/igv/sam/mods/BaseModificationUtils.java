@@ -2,6 +2,8 @@ package org.broad.igv.sam.mods;
 
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.AlignmentTrack;
@@ -34,14 +36,14 @@ public class BaseModificationUtils {
         codeValues.put("A", "Unknown A");
         codeValues.put("G", "Unknown G");
         codeValues.put("N", "Unknown");
-
+        codeValues.put("NONE_C", "Unmodified C");
+        codeValues.put("NONE_T", "Unmodified T");
+        codeValues.put("NONE_G", "Unmodified G");
+        codeValues.put("NONE_A", "Unmodified A");
     }
 
-
-    public static String valueString(String modification, byte likelihood) {
-        int l = (int) (100.0 * Byte.toUnsignedInt(likelihood) / 255);
-        return "Base modification: " +
-                ((codeValues.containsKey(modification)) ? codeValues.get(modification) : "Uknown") + " (" + l + "%)";
+    public static String modificationName(String modification) {
+        return ((codeValues.containsKey(modification)) ? codeValues.get(modification) : modification);
     }
 
 
@@ -58,7 +60,6 @@ public class BaseModificationUtils {
      */
     public static List<BaseModificationSet> getBaseModificationSets(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand) {
 
-        byte[] origSequence = sequence;
         if (isNegativeStrand) {
             sequence = AlignmentUtils.reverseComplementCopy(sequence);
         }
@@ -74,7 +75,15 @@ public class BaseModificationUtils {
             String[] tokens = mmi.split(","); //Globals.commaPattern.split(mm);
             char base = tokens[0].charAt(0);
             char strand = tokens[0].charAt(1);
-            boolean skippedBasesCalled = tokens[0].endsWith(".");    // False by default.
+            boolean skippedBasesCalled;
+            if (tokens[0].endsWith(".")) {
+                skippedBasesCalled = true;
+            } else if (tokens[0].endsWith("?")) {
+                skippedBasesCalled = false;
+            } else {
+                skippedBasesCalled = PreferencesManager.getPreferences().getAsBoolean(Constants.BASEMOD_SKIPPED_BASES);
+            }
+
 
             if (tokens.length == 1) {
                 // Legal but not handled yet, indicates modification is not present.  Perhaps not relevant for visualization
@@ -108,8 +117,6 @@ public class BaseModificationUtils {
                     likelihoodMap.put(m, new HashMap<>());
                 }
 
-
-                int nPositions = tokens.length - 1;
                 int idx = 1;  // position array index,  positions start at index 1
                 int skip = Integer.parseInt(tokens[idx++]);
 
@@ -120,7 +127,7 @@ public class BaseModificationUtils {
 
                     if (base == 'N' || sequence[p] == base) {
                         int position = isNegativeStrand ? sequence.length - 1 - p : p;
-                        if (matchCount == skip) {
+                        if (matchCount == skip) { // && idx < tokens.length) {
                             for (String modification : modifications) {
                                 byte likelihood = ml == null ? (byte) 255 : ml[mlIdx++];
                                 likelihoodMap.get(modification).put(position, likelihood);
@@ -129,12 +136,17 @@ public class BaseModificationUtils {
                                 skip = Integer.parseInt(tokens[idx++]);
                                 matchCount = 0;
                             } else {
-                                break;
+                                if (skippedBasesCalled) {
+                                    // MM tag is exhausted, but continue scanning for skipped bases
+                                    skip = -1;
+                                } else {
+                                    // If skipped bases are not called unmodified we are done.
+                                    break;
+                                }
                             }
                         } else {
                             if (skippedBasesCalled) {
-                                // Skipped bases are assumed be called "modification present with 0% probability",
-                                // i.e modification has been called to be not present (as opposed to unknown)
+                                // Skipped bases =>  "modification present with 0% probability"
                                 for (String modification : modifications) {
                                     byte likelihood = 0;
                                     likelihoodMap.get(modification).put(position, likelihood);

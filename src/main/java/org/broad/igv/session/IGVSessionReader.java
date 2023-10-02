@@ -91,6 +91,11 @@ public class IGVSessionReader implements SessionReader {
     private int version;
     private String genomePath;
 
+    /**
+     * There is a single TrackFilter object per session, usually null
+     */
+    TrackFilter filter;
+
     private IGV igv;
 
     /**
@@ -143,7 +148,6 @@ public class IGVSessionReader implements SessionReader {
     Map<String, String> fullToRelPathMap = new HashMap<String, String>();
 
     private Track geneTrack = null;
-    private Track seqTrack = null;
     private boolean hasTrackElments;
 
     static {
@@ -161,7 +165,7 @@ public class IGVSessionReader implements SessionReader {
     /**
      * @param inputStream
      * @param session
-     * @param sessionPath @return
+     * @param sessionPath -- path to the session file.  This can be null
      * @throws RuntimeException
      */
 
@@ -178,9 +182,6 @@ public class IGVSessionReader implements SessionReader {
         NodeList trackElements = document.getElementsByTagName("Track");
         hasTrackElments = trackElements.getLength() > 0;
 
-        HashMap additionalInformation = new HashMap();
-        additionalInformation.put(INPUT_FILE_KEY, sessionPath);
-
         //  Find the root node, either "session" or "global
         NodeList nodes = document.getElementsByTagName(SessionElement.SESSION);
         if (nodes == null || nodes.getLength() == 0) {
@@ -189,7 +190,7 @@ public class IGVSessionReader implements SessionReader {
         Node rootNode = nodes.item(0);
 
         // Recursively process all nodes, starting with the root
-        processRootNode(session, rootNode, additionalInformation, sessionPath);
+        processRootNode(session, rootNode, sessionPath);
 
         processCombinedDataSourceTracks();
 
@@ -214,11 +215,10 @@ public class IGVSessionReader implements SessionReader {
      *
      * @param session
      * @param node
-     * @param additionalInformation
-     * @param rootPath
+     * @param sessionPath
      */
 
-    private void processRootNode(Session session, Node node, HashMap additionalInformation, String rootPath) {
+    private void processRootNode(Session session, Node node, String sessionPath) {
 
         if ((node == null) || (session == null)) {
             MessageUtils.showMessage("Invalid session file: root node not found");
@@ -232,7 +232,7 @@ public class IGVSessionReader implements SessionReader {
         }
 
         Element element = (Element) node;
-        process(session, node, additionalInformation, rootPath);
+        process(session, node, sessionPath);
 
         String versionString = getAttribute(element, SessionAttribute.VERSION);
         try {
@@ -246,7 +246,7 @@ public class IGVSessionReader implements SessionReader {
 
         if (genomeId != null && genomeId.length() > 0) {
             if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
-                igv.resetSession(rootPath);
+                igv.resetSession(sessionPath);
                 GenomeManager.getInstance().restoreGenomeTracks(GenomeManager.getInstance().getCurrentGenome());
             } else {
                 try {
@@ -257,7 +257,7 @@ public class IGVSessionReader implements SessionReader {
                     } else {
                         genomePath = genomeId;
                         if (!ParsingUtils.fileExists(genomePath)) {
-                            genomePath = getAbsolutePath(genomeId, rootPath);
+                            genomePath = getAbsolutePath(genomeId, sessionPath);
                         }
                         GenomeManager.getInstance().loadGenome(genomePath, null);
                     }
@@ -292,7 +292,7 @@ public class IGVSessionReader implements SessionReader {
 
         session.setVersion(version);
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, sessionPath);
 
         // ReferenceFrame.getInstance().invalidateLocationScale();
     }
@@ -306,9 +306,7 @@ public class IGVSessionReader implements SessionReader {
 
             //For resetting track panels later
             List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = null;
-            if (IGV.hasInstance()) {
-                trackPanelAttrs = IGV.getInstance().getTrackPanelAttrs();
-            }
+            trackPanelAttrs = igv.getTrackPanelAttrs();
 
             for (List<Track> tracks : tmp) {
                 for (Track track : tracks) {
@@ -317,7 +315,7 @@ public class IGVSessionReader implements SessionReader {
                     } else if (track.getResourceLocator() != null) {
                         TrackPanel panel = trackPanelCache.get(track.getResourceLocator().getPath());
                         if (panel == null) {
-                            panel = IGV.getInstance().getPanelFor(track);
+                            panel = igv.getPanelFor(track);
                             trackPanelCache.put(track.getResourceLocator().getPath(), panel);
                         }
                         panel.addTrack(track);
@@ -325,9 +323,7 @@ public class IGVSessionReader implements SessionReader {
                 }
             }
 
-            if (IGV.hasInstance()) {
-                IGV.getInstance().resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
-            }
+            igv.resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
         }
     }
 
@@ -338,7 +334,7 @@ public class IGVSessionReader implements SessionReader {
      * @param session
      * @param element
      */
-    private void process(Session session, Node element, HashMap additionalInformation, String rootPath) {
+    private void process(Session session, Node element, String sessionPath) {
 
         if ((element == null) || (session == null)) {
             return;
@@ -347,47 +343,47 @@ public class IGVSessionReader implements SessionReader {
         String nodeName = element.getNodeName();
         if (nodeName.equalsIgnoreCase(SessionElement.RESOURCES) ||
                 nodeName.equalsIgnoreCase(SessionElement.FILES)) {
-            processResources(session, (Element) element, additionalInformation, rootPath);
+            processResources(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.RESOURCE) ||
                 nodeName.equalsIgnoreCase(SessionElement.DATA_FILE)) {
-            processResource(session, (Element) element, additionalInformation, rootPath);
+            processResource(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.REGIONS)) {
-            processRegions(session, (Element) element, additionalInformation, rootPath);
+            processRegions(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.REGION)) {
-            processRegion(session, (Element) element, additionalInformation, rootPath);
+            processRegion(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.GENE_LIST)) {
-            processGeneList(session, (Element) element, additionalInformation);
+            processGeneList(session, (Element) element);
         } else if (nodeName.equalsIgnoreCase(SessionElement.FILTER)) {
-            processFilter(session, (Element) element, additionalInformation, rootPath);
+            processFilter(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.FILTER_ELEMENT)) {
-            processFilterElement(session, (Element) element, additionalInformation, rootPath);
+            processFilterElement(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.COLOR_SCALES)) {
-            processColorScales(session, (Element) element, additionalInformation, rootPath);
+            processColorScales(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.COLOR_SCALE)) {
-            processColorScale(session, (Element) element, additionalInformation, rootPath);
+            processColorScale(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.PREFERENCES)) {
-            processPreferences(session, (Element) element, additionalInformation);
+            processPreferences(session, (Element) element);
         } else if (nodeName.equalsIgnoreCase(SessionElement.DATA_TRACKS) ||
                 nodeName.equalsIgnoreCase(SessionElement.FEATURE_TRACKS) ||
                 nodeName.equalsIgnoreCase(SessionElement.PANEL)) {
-            processPanel(session, (Element) element, additionalInformation, rootPath);
+            processPanel(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.PANEL_LAYOUT)) {
-            processPanelLayout(session, (Element) element, additionalInformation);
+            processPanelLayout(session, (Element) element);
         } else if (nodeName.equalsIgnoreCase(SessionElement.HIDDEN_ATTRIBUTES)) {
-            processHiddenAttributes(session, (Element) element, additionalInformation);
+            processHiddenAttributes(session, (Element) element);
         } else if (nodeName.equalsIgnoreCase(SessionElement.VISIBLE_ATTRIBUTES)) {
-            processVisibleAttributes(session, (Element) element, additionalInformation);
+            processVisibleAttributes(session, (Element) element);
         }
 
     }
 
-    private void processResources(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processResources(Session session, Element element, String sessionPath) {
 
         dataFiles = new ArrayList();
         missingDataFiles = new ArrayList();
         NodeList elements = element.getChildNodes();
 
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, sessionPath);
 
         if (missingDataFiles.size() > 0) {
             StringBuffer message = new StringBuffer();
@@ -521,9 +517,8 @@ public class IGVSessionReader implements SessionReader {
      *
      * @param session
      * @param element
-     * @param additionalInformation
      */
-    void processResource(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    void processResource(Session session, Element element, String sessionPath) {
 
         String nodeName = element.getNodeName();
         boolean oldSession = nodeName.equals(SessionElement.DATA_FILE);
@@ -539,12 +534,12 @@ public class IGVSessionReader implements SessionReader {
         String colorString = getAttribute(element, SessionAttribute.COLOR);
         String index = getAttribute(element, SessionAttribute.INDEX);
 
-        // URL to a database or webservice
+        // URL to a database or webservice -- this is not common
         String serverURL = getAttribute(element, SessionAttribute.SERVER_URL);
 
-        // Older sessions used the "name" attribute for the path.
         String path = getAttribute(element, SessionAttribute.PATH);
 
+        // Older sessions used the "name" attribute for the path.
         if (oldSession && name != null) {
             path = name;
             int idx = name.lastIndexOf("/");
@@ -553,9 +548,9 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        String absolutePath = (rootPath == null || "ga4gh".equals(type) || ParsingUtils.isDataURL(path)) ?
+        String absolutePath = (sessionPath == null || ParsingUtils.isDataURL(path)) ?
                 path :
-                getAbsolutePath(path, rootPath);
+                getAbsolutePath(path, sessionPath);
 
         fullToRelPathMap.put(absolutePath, path);
 
@@ -564,12 +559,12 @@ public class IGVSessionReader implements SessionReader {
         if (index != null) resourceLocator.setIndexPath(index);
 
         if (coverage != null) {
-            String absoluteCoveragePath = coverage.equals(".") ? coverage : getAbsolutePath(coverage, rootPath);
+            String absoluteCoveragePath = coverage.equals(".") ? coverage : getAbsolutePath(coverage, sessionPath);
             resourceLocator.setCoverage(absoluteCoveragePath);
         }
 
         if (mapping != null) {
-            String absoluteMappingPath = mapping.equals(".") ? mapping : getAbsolutePath(mapping, rootPath);
+            String absoluteMappingPath = mapping.equals(".") ? mapping : getAbsolutePath(mapping, sessionPath);
             resourceLocator.setMappingPath(absoluteMappingPath);
         }
 
@@ -617,32 +612,32 @@ public class IGVSessionReader implements SessionReader {
 
         NodeList elements = element.getChildNodes();
 
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, sessionPath);
 
     }
 
-    private void processRegions(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processRegions(Session session, Element element, String sessionPath) {
 
         session.clearRegionsOfInterest();
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, sessionPath);
     }
 
-    private void processRegion(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processRegion(Session session, Element element, String sessionPath) {
 
         String chromosome = getAttribute(element, SessionAttribute.CHROMOSOME);
         String start = getAttribute(element, SessionAttribute.START_INDEX);
         String end = getAttribute(element, SessionAttribute.END_INDEX);
         String description = getAttribute(element, SessionAttribute.DESCRIPTION);
 
-        RegionOfInterest region = new RegionOfInterest(chromosome, new Integer(start), new Integer(end), description);
-        IGV.getInstance().addRegionOfInterest(region);
+        RegionOfInterest region = new RegionOfInterest(chromosome, Integer.parseInt(start), Integer.parseInt(end), description);
+        igv.addRegionOfInterest(region);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, sessionPath);
     }
 
-    private void processHiddenAttributes(Session session, Element element, HashMap additionalInformation) {
+    private void processHiddenAttributes(Session session, Element element) {
         NodeList elements = element.getChildNodes();
         Set<String> attributes = new HashSet();
         for (int i = 0; i < elements.getLength(); i++) {
@@ -660,9 +655,8 @@ public class IGVSessionReader implements SessionReader {
      *
      * @param session
      * @param element
-     * @param additionalInformation
      */
-    private void processVisibleAttributes(Session session, Element element, HashMap additionalInformation) {
+    private void processVisibleAttributes(Session session, Element element) {
 
         NodeList elements = element.getChildNodes();
         if (elements.getLength() > 0) {
@@ -682,7 +676,7 @@ public class IGVSessionReader implements SessionReader {
         }
     }
 
-    private void processGeneList(Session session, Element element, HashMap additionalInformation) {
+    private void processGeneList(Session session, Element element) {
 
         String name = getAttribute(element, SessionAttribute.NAME);
 
@@ -734,42 +728,50 @@ public class IGVSessionReader implements SessionReader {
                 FrameManager.setFrames(reorderedFrames);
             }
         }
-        IGV.getInstance().resetFrames();
+        igv.resetFrames();
     }
 
-    private void processFilter(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    /**
+     * Example <Filter match="all" name="" showTracks="false">
+     *
+     * @param session
+     * @param element
+     * @param sessionPath
+     */
+    private void processFilter(Session session, Element element, String sessionPath) {
 
         String match = getAttribute(element, SessionAttribute.FILTER_MATCH);
         String showAllTracks = getAttribute(element, SessionAttribute.FILTER_SHOW_ALL_TRACKS);
 
         String filterName = getAttribute(element, SessionAttribute.NAME);
-        TrackFilter filter = new TrackFilter(filterName, null);
-        additionalInformation.put(SessionElement.FILTER, filter);
+        filter = new TrackFilter(filterName, null);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, sessionPath);
 
         // Save the filter
         session.setFilter(filter);
 
-        // Set filter properties
+        // Update UI elements -- the matchAll and showAll state is kept in the UI, not the Filter object.  This seems wrong.  TODO
         if ("all".equalsIgnoreCase(match)) {
-            IGV.getInstance().setFilterMatchAll(true);
+            igv.setFilterMatchAll(true);
         } else if ("any".equalsIgnoreCase(match)) {
-            IGV.getInstance().setFilterMatchAll(false);
+            igv.setFilterMatchAll(false);
         }
-
         if ("true".equalsIgnoreCase(showAllTracks)) {
-            IGV.getInstance().setFilterShowAllTracks(true);
+            igv.setFilterShowAllTracks(true);
         } else {
-            IGV.getInstance().setFilterShowAllTracks(false);
+            igv.setFilterShowAllTracks(false);
         }
     }
 
     private void processFilterElement(Session session, Element element,
-                                      HashMap additionalInformation, String rootPath) {
+                                      String sessionPath) {
 
-        TrackFilter filter = (TrackFilter) additionalInformation.get(SessionElement.FILTER);
+        if (filter == null) {
+            throw new RuntimeException("Filter elements defined before filter");
+        }
+
         String item = getAttribute(element, SessionAttribute.ITEM);
         String operator = getAttribute(element, SessionAttribute.OPERATOR);
         String value = getAttribute(element, SessionAttribute.VALUE);
@@ -782,7 +784,7 @@ public class IGVSessionReader implements SessionReader {
         filter.add(trackFilterElement);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, sessionPath);
     }
 
     /**
@@ -800,7 +802,7 @@ public class IGVSessionReader implements SessionReader {
                         node.getNodeName().equalsIgnoreCase(SessionElement.TRACK));
     }
 
-    private void processPanel(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processPanel(Session session, Element element, String sessionPath) {
 
         if (panelElementPresent == false) {
             // First panel to be processed, do this only once.
@@ -829,12 +831,12 @@ public class IGVSessionReader implements SessionReader {
         for (int i = 0; i < elements.getLength(); i++) {
             Node childNode = elements.item(i);
             if (nodeIsTrack(childNode)) {
-                List<Track> tracks = processTrack(session, (Element) childNode, additionalInformation, rootPath);
+                List<Track> tracks = processTrack(session, (Element) childNode, sessionPath);
                 if (tracks != null) {
                     panelTracks.addAll(tracks);
                 }
             } else {
-                process(session, childNode, additionalInformation, rootPath);
+                process(session, childNode, sessionPath);
             }
         }
 
@@ -850,11 +852,11 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        TrackPanel panel = IGV.getInstance().getTrackPanel(panelName);
+        TrackPanel panel = igv.getTrackPanel(panelName);
         panel.addTracks(panelTracks);
     }
 
-    private void processPanelLayout(Session session, Element element, HashMap additionalInformation) {
+    private void processPanelLayout(Session session, Element element) {
 
         String nodeName = element.getNodeName();
 
@@ -885,11 +887,10 @@ public class IGVSessionReader implements SessionReader {
      *
      * @param session
      * @param element
-     * @param additionalInformation
      * @return
      */
 
-    private List<Track> processTrack(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private List<Track> processTrack(Session session, Element element, String sessionPath) {
 
         String id = getAttribute(element, SessionAttribute.ID);
 
@@ -900,7 +901,7 @@ public class IGVSessionReader implements SessionReader {
         if (matchedTracks == null) {
             //Try creating an absolute path for the id
             if (id != null) {
-                matchedTracks = allTracks.get(getAbsolutePath(id, rootPath));
+                matchedTracks = allTracks.get(getAbsolutePath(id, sessionPath));
             }
         }
 
@@ -915,7 +916,7 @@ public class IGVSessionReader implements SessionReader {
             // reference sequence, combined,  and merged tracks.
 
             // Check for errors during load
-//            String absPath = getAbsolutePath(id, rootPath);
+//            String absPath = getAbsolutePath(id, sessionPath);
 //            if (erroredResources.contains(id) || erroredResources.contains(absPath)) {
 //                return Collections.emptyList();
 //            }
@@ -941,7 +942,7 @@ public class IGVSessionReader implements SessionReader {
                     }
 
                     if (className.contains("MergedTracks")) {
-                        List<DataTrack> memberTracks = processChildTracks(session, element, additionalInformation, rootPath);
+                        List<DataTrack> memberTracks = processChildTracks(session, element, sessionPath);
                         ((MergedTracks) track).setMemberTracks(memberTracks);
 
                         NodeList nodeList = element.getElementsByTagName("DataRange");
@@ -966,7 +967,7 @@ public class IGVSessionReader implements SessionReader {
         //}
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, sessionPath);
 
         return matchedTracks;
     }
@@ -977,18 +978,17 @@ public class IGVSessionReader implements SessionReader {
      *
      * @param session
      * @param element
-     * @param additionalInformation
-     * @param rootPath
+     * @param sessionPath
      * @return List of processed tracks.
      */
-    private List<DataTrack> processChildTracks(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private List<DataTrack> processChildTracks(Session session, Element element, String sessionPath) {
 
         NodeList memberTrackNodes = element.getChildNodes();
         List<DataTrack> memberTracks = new ArrayList<>(memberTrackNodes.getLength());
         for (int index = 0; index < memberTrackNodes.getLength(); index++) {
             Node memberNode = memberTrackNodes.item(index);
             if (nodeIsTrack(memberNode)) {
-                List<Track> addedTracks = processTrack(session, (Element) memberNode, additionalInformation, rootPath);
+                List<Track> addedTracks = processTrack(session, (Element) memberNode, sessionPath);
                 if (addedTracks != null) {
                     for (Track t : addedTracks) {
                         if (t instanceof DataTrack) {
@@ -1045,13 +1045,13 @@ public class IGVSessionReader implements SessionReader {
 
     }
 
-    private void processColorScales(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processColorScales(Session session, Element element, String sessionPath) {
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, sessionPath);
     }
 
-    private void processColorScale(Session session, Element element, HashMap additionalInformation, String rootPath) {
+    private void processColorScale(Session session, Element element, String sessionPath) {
 
         String trackType = getAttribute(element, SessionAttribute.TYPE);
         String value = getAttribute(element, SessionAttribute.VALUE);
@@ -1059,10 +1059,10 @@ public class IGVSessionReader implements SessionReader {
         setColorScaleSet(session, trackType, value);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation, rootPath);
+        process(session, elements, sessionPath);
     }
 
-    private void processPreferences(Session session, Element element, HashMap additionalInformation) {
+    private void processPreferences(Session session, Element element) {
 
         NodeList elements = element.getChildNodes();
         for (int i = 0; i < elements.getLength(); i++) {
@@ -1083,10 +1083,10 @@ public class IGVSessionReader implements SessionReader {
      * @param session
      * @param elements
      */
-    private void process(Session session, NodeList elements, HashMap additionalInformation, String rootPath) {
+    private void process(Session session, NodeList elements, String sessionPath) {
         for (int i = 0; i < elements.getLength(); i++) {
             Node childNode = elements.item(i);
-            process(session, childNode, additionalInformation, rootPath);
+            process(session, childNode, sessionPath);
         }
     }
 
@@ -1227,10 +1227,10 @@ public class IGVSessionReader implements SessionReader {
         }
     }
 
-    private String getAbsolutePath(String path, String rootPath) {
-        String absolute = FileUtils.getAbsolutePath(path, rootPath);
+    private String getAbsolutePath(String path, String sessionPath) {
+        String absolute = FileUtils.getAbsolutePath(path, sessionPath);
         if (!(new File(absolute)).exists() && path.startsWith("~")) {
-            String tmp = FileUtils.getAbsolutePath(path.replaceFirst("~", System.getProperty("user.home")), rootPath);
+            String tmp = FileUtils.getAbsolutePath(path.replaceFirst("~", System.getProperty("user.home")), sessionPath);
             if ((new File(tmp)).exists()) {
                 absolute = tmp;
             }

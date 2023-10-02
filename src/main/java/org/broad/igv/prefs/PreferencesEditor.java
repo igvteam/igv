@@ -235,6 +235,7 @@ public class PreferencesEditor {
                                 }
                                 updatedPrefs.put(pref.getKey(), text);
                             } else {
+                                MessageUtils.showMessage("Field " + pref.getLabel() + " must be a " + pref.getType());
                                 field.get().setText(preferences.get(pref.getKey()));
                             }
                         });
@@ -250,6 +251,7 @@ public class PreferencesEditor {
                                     }
                                     updatedPrefs.put(pref.getKey(), text);
                                 } else {
+                                    MessageUtils.showMessage("Field " + pref.getLabel() + " must be a " + pref.getType());
                                     field.get().setText(preferences.get(pref.getKey()));
                                 }
                             }

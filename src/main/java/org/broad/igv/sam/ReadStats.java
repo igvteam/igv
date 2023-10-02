@@ -134,8 +134,8 @@ public class ReadStats {
 
     public AlignmentTrack.ExperimentType inferType() {
         compute();
-        if (readCount < 100) return null; // Not enough reads
-        if ((readLengthStdDev > 100 || medianReadLength > 1000) && averageCigarLength > 100) {
+        if (readCount < 20) return AlignmentTrack.ExperimentType.UNKOWN; // Not enough reads
+        if ((readLengthStdDev > 100 || medianReadLength > 1000) && averageCigarLength > 10) { // Cigar length to filter consensus reads
             return AlignmentTrack.ExperimentType.THIRD_GEN;
         } else if (medianRefToReadRatio > 5 || fracReadsWithNs > 0.01) {
             return AlignmentTrack.ExperimentType.RNA;

@@ -29,6 +29,7 @@ import com.google.gson.JsonObject;
 import htsjdk.tribble.Tribble;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.track.TrackProperties;
 
 import java.awt.*;
 import java.io.File;
@@ -104,11 +105,12 @@ public class ResourceLocator {
      */
     public String format;
 
-
     /**
      * A UCSC style track line.  Overrides value in file, if any.
      */
     String trackLine;  //
+
+    TrackProperties trackProperties;
 
     /**
      * Color for features or data.  Somewhat redundant with trackLine.
@@ -399,6 +401,13 @@ public class ResourceLocator {
         }
     }
 
+    public TrackProperties getTrackProperties() {
+        return trackProperties;
+    }
+
+    public void setTrackProperties(TrackProperties trackProperties) {
+        this.trackProperties = trackProperties;
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -640,5 +649,5 @@ public class ResourceLocator {
     }
 
     static Set<String> knownFormats = new HashSet<>(Arrays.asList("gff", "bed", "gtf", "gff3",
-            "seg", "bb", "bigbed", "bigwig", "bam", "cram", "vcf"));
+            "seg", "bb", "bigbed", "bigwig", "bam", "cram", "vcf", "bedmethyl"));
 }

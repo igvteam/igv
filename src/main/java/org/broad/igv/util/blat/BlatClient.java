@@ -43,9 +43,7 @@ import org.broad.igv.util.*;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Port of perl script blatPlot.pl   http://genomewiki.cse.ucsc.edu/index.php/Blat_Scripts
@@ -63,18 +61,19 @@ public class BlatClient {
     public static List<PSLRecord> blat(String db, String userSeq) throws IOException {
 
         String serverType = PreferencesManager.getPreferences().get(Constants.BLAT_SERVER_TYPE, "");
-        String urlpref = PreferencesManager.getPreferences().get(
-                Constants.BLAT_URL,
-                "https://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=$SEQUENCE&type=DNA&db=$DB&output=json")
-                .trim();
+        String urlpref = PreferencesManager.getPreferences().get(Constants.BLAT_URL);
+        if (urlpref == null || urlpref.trim().length() == 0) {
+            MessageUtils.showMessage("BLAT url is not configured");
+            return Collections.EMPTY_LIST;
+        }
+        urlpref = urlpref.trim();
 
-        if (serverType.equalsIgnoreCase("web_blat") || !urlpref.contains("$SEQUENCE")) {
+        if (serverType.equalsIgnoreCase("web_blat")) {
             return LegacyBlatClient.blat(userSeq);
 
         } else {
 
             String dbEncoded = URLEncoder.encode(db, "UTF-8");
-            urlpref = urlpref.replace("$SEQUENCE", userSeq).replace("$DB", dbEncoded);
 
             //Strip leading "file://" protocol, if any
             if (urlpref.startsWith("file://")) {
@@ -84,12 +83,24 @@ public class BlatClient {
             String jsonString = null;
 
             try {
-
                 // If urlpref is not a URL, assume it is a command line program.  An example might be
                 // blat.sh $SEQUENCE $DB
 
                 if (URLUtils.isURL(urlpref)) {
-                    jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(urlpref));
+                    if (urlpref.contains("$SEQUENCE")) {
+                        // Old "GET" style url
+                        urlpref = urlpref.replace("$SEQUENCE", userSeq).replace("$DB", dbEncoded);
+                        jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(urlpref));
+                    } else {
+                        // New "POST" style url -- can handle large sequences
+                        Map params = new HashMap();
+                        params.put("userSeq", userSeq);
+                        params.put("db", dbEncoded);
+                        params.put("type", "DNA");
+                        params.put("output", "json");
+                        jsonString = HttpUtils.getInstance().doPost(new URL(urlpref), params);
+                    }
+
                 } else {
                     jsonString = RuntimeUtils.exec(urlpref);
                 }
@@ -140,8 +151,16 @@ public class BlatClient {
     public static void doBlatQuery(final String userSeq, final String trackLabel) {
 
         try {
-            Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
-            String db = genome == null ? "hg19" : genome.getBlatDB();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            String db = genome.getBlatDB();
+            if (db == null) {
+                // If this is a known UCSC genome, or a custom blat server is configured, use the genome ID
+                if (knownUCSCGenomes.contains(genome.getId()) ||
+                        !PreferencesManager.getPreferences().get(Constants.BLAT_URL).equals(PreferencesManager.getDefault(Constants.BLAT_URL))) {
+                    db = genome.getId();
+                }
+            }
+
             List<PSLRecord> features = blat(db, userSeq);
             if (features.isEmpty()) {
                 MessageUtils.showMessage("No features found");
@@ -177,22 +196,28 @@ public class BlatClient {
         doBlatQuery(userSeq, "BLAT");
     }
 
-    private static String htmlToString (String str) {
+    private static String htmlToString(String str) {
 
         // Remove script tags
         int idx1;
         int count = 0;
-        while((idx1 = str.indexOf("<script")) >= 0 && count < 10) {
+        while ((idx1 = str.indexOf("<script")) >= 0 && count < 10) {
             int idx2 = str.indexOf("</script>", idx1);
-            if(idx1 > 0 && idx2 > idx1) {
+            if (idx1 > 0 && idx2 > idx1) {
                 str = str.substring(0, idx1) + str.substring(idx2 + 9);
             }
             count++;
         }
-        str = str.replaceAll("\\<.*?>","").replace('\n', ' ');
+        str = str.replaceAll("\\<.*?>", "").replace('\n', ' ');
         return str;
 
     }
+
+    static Set knownUCSCGenomes = new HashSet<>(Arrays.asList("hg18", "hg19", "hg38", "ce10", "ce11", "galGal4",
+            "galGal5", "galGal6", "panTro3", "panTro4", "panTro5", "panTro6", "felCat6", "bosTau7", "bosTau8",
+            "bosTau9", "dm3", "dm6", "canFam3", "canFam5", "mm8", "mm9", "mm10", "mm39", "rn5", "rn6", "rn7",
+            "rheMac3", "rheMac8", "rheMac10", "sacCer3", "susScr3", "xenTro9", "danRer10", "danRer11",
+            "gorGor4", "gorGor6", "panPan2", "susScr11", "strPur2"));
 
 }
 

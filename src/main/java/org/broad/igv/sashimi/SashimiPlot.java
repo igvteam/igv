@@ -49,6 +49,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Window for displaying sashimi style junction plot
@@ -81,6 +82,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     private static final List<Color> plotColors;
 
+    private Map<Object, SashimiJunctionRenderer> junctionRendererMap;
+
     static {
         ColorPalette palette = ColorUtilities.getDefaultPalette();
         plotColors = Arrays.asList(palette.getColors());
@@ -110,7 +113,10 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         sashimiPanel.add(generateControlPanel(this.referenceFrame));
 
         spliceJunctionTracks = new ArrayList<>(alignmentTracks.size());
+
         int colorInd = 0;
+
+        junctionRendererMap = new HashMap<>();
 
         eventBus.subscribe(ViewChange.class, this);
 
@@ -125,7 +131,9 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             // Override expand/collpase setting -- expanded sashimi plots make no sense
             spliceJunctionTrack.setDisplayMode(Track.DisplayMode.COLLAPSED);
 
-            spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
+            SashimiJunctionRenderer renderer = new SashimiJunctionRenderer();
+            spliceJunctionTrack.setRenderer(renderer);
+            junctionRendererMap.put(spliceJunctionTrack, renderer);
 
             Color color = plotColors.get(colorInd);
             colorInd = (colorInd + 1) % plotColors.size();
@@ -234,7 +242,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
     }
 
     private SashimiJunctionRenderer getRenderer(SpliceJunctionTrack spliceJunctionTrack) {
-        return (SashimiJunctionRenderer) spliceJunctionTrack.getRenderer();
+        return junctionRendererMap.get(spliceJunctionTrack);
     }
 
     @Override
@@ -649,13 +657,11 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             geneTrack = dlg.getSelectedTrack();
         }
 
-        Collection<AlignmentTrack> alignmentTracks = new ArrayList<AlignmentTrack>();
-        for (Track track : IGV.getInstance().getAllTracks()) {
-            if (track instanceof AlignmentTrack) {
-                alignmentTracks.add((AlignmentTrack) track);
-            }
-        }
 
+
+        Collection<AlignmentTrack> alignmentTracks =IGV.getInstance().getAlignmentTracks().stream()
+                .filter(t -> t.getExperimentType() == AlignmentTrack.ExperimentType.RNA).collect(Collectors.toList());
+;
         if (alignmentTracks.size() > 1) {
             TrackSelectionDialog<AlignmentTrack> alDlg =
                     new TrackSelectionDialog<AlignmentTrack>(IGV.getInstance().getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, alignmentTracks);

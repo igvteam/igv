@@ -8,6 +8,18 @@
 
 <h2>IGV desktop links</h2>
 <p>
+    <a href="http://localhost:60151/load?file=https://s3.amazonaws.com/igv.org.test/data/gm12878_loops.bedpe.gz&merge=false&locus=myc">
+        Load merge=false</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://s3.amazonaws.com/igv.org.test/data/gm12878_loops.bedpe.gz&merge=true&locus=myc">
+        Load merge=true</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://s3.amazonaws.com/igv.org.test/data/gm12878_loops.bedpe.gz&merge=ask&locus=myc">
+        Load merge=ask</a>
+</p>
+<p>
     <a href="http://localhost:60151/load?file=https://s3.amazonaws.com/igv.org.test/data/gm12878_loops.bedpe.gz&locus=chr1&name=GM12878+loops">
         Load with name</a>
 </p>
@@ -22,6 +34,10 @@
 <p>
     <a href="http://localhost:60151/load?file=https://s3.amazonaws.com/igv.org.test/data/gm12878_loops.bedpe.gz&locus=chr1&name=GM12878+loops;&merge=false">
         Load with name into new session</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://s3.amazonaws.com/igv.org.test/data/gm12878_loops.bedpe.gz&locus=chr1&name=GM12878+loops;&merge=true">
+        Load with name into current session</a>
 </p>
 <p>
     <a href="http://localhost:60151/load?file=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz&index=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz.tbi&amp;locus=chr1&amp;name=SNPs">
@@ -44,6 +60,10 @@
         Load session</a>
 </p>
 <p>
+    <a href="http://localhost:60151/load?file=https://s3.amazonaws.com/igv.org.demo/sessions/arcs_session.xml&merge=true">
+        Load session</a>
+</p>
+<p>
     <a href="http://localhost:60151/load?file=https://s3.amazonaws.com/igv.org.demo/sessions/arcs_session.xml&locus=chr22">
         Load session with initial locus (chr22)</a>
 </p>
@@ -61,6 +81,16 @@
 <p>
     <a href="http://localhost:60151/goto?locus=MYC">
         Goto locus 'MYC'</a>
+</p>
+
+<h3>Issue 1261</h3>
+<p>
+    <a href="http://localhost:60151/load?file=https://1000genomes.s3.amazonaws.com/phase3/data/HG01880/alignment/HG01880.mapped.ILLUMINA.bwa.ACB.low_coverage.20120522.bam&merge=ask&locus=chr10%3A89617063">
+        Load HG01880 BAM, merge=ask</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/alignment/HG01879.mapped.ILLUMINA.bwa.ACB.low_coverage.20120522.bam&merge=ask&locus=chr9%3A5443964">
+        Load HG01879 BAM, merge=ask</a>
 </p>
 
 <h2>IGV web app links</h2>

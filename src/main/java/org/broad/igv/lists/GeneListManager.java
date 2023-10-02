@@ -45,8 +45,7 @@ public class GeneListManager {
 
     private static Logger log = LogManager.getLogger(GeneListManager.class);
 
-    public static final List<String> DEFAULT_GENE_LISTS = Arrays.asList(
-            /*"biocarta_cancer_cp.gmt",*/  "examples.gmt", "reactome_cp.gmt", "kegg_cancer_cp.gmt");
+    public static final List<String> DEFAULT_GENE_LISTS = Arrays.asList("examples.gmt");
 
     public static final String USER_GROUP = "My lists";
 

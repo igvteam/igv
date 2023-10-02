@@ -144,6 +144,32 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
         }
     }
 
+    @Override
+    public int getTotalPositiveCount(int pos) {
+        if (!indexMap.containsKey(pos)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
+            }
+            return 0;
+        } else {
+            int idx = getIndex(pos);
+            return getCountFromList(posTotal, idx);
+        }
+    }
+
+    @Override
+    public int getTotalNegativeCount(int pos) {
+        if (!indexMap.containsKey(pos)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
+            }
+            return 0;
+        } else {
+            int idx = getIndex(pos);
+            return getCountFromList(negTotal, idx);
+
+        }
+    }
 
     public int getTotalQuality(int pos) {
         if (!indexMap.containsKey(pos)) {
@@ -413,12 +439,7 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
     }
 
     private int getIndex(int pos) {
-        Integer index = indexMap.get(pos);
-        if (index == null) {
-            index = new Integer(indexMap.size());
-            indexMap.put(pos, index);
-        }
-        return index.intValue();
+        return indexMap.computeIfAbsent(pos, k -> indexMap.size());
     }
 
 

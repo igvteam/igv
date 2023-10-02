@@ -1,3 +1,4 @@
+
 /*
  * The MIT License (MIT)
  *
@@ -40,8 +41,11 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.renderer.SequenceRenderer;
+import org.broad.igv.sam.mods.BaseModificationColors;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
@@ -49,6 +53,7 @@ import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
@@ -69,9 +74,9 @@ public class IGVPreferences {
     Set<String> overrideKeys = new HashSet<>();
 
     // Cached non-string preference values
-    private Map<String, Boolean> booleanCache = new Hashtable();
-    private Map<String, Object> objectCache = new Hashtable();
-    private Map<TrackType, ContinuousColorScale> colorScaleCache = new Hashtable();
+    private Map<String, Boolean> booleanCache = new Hashtable<>();
+    private Map<String, Object> objectCache = new Hashtable<>();
+    private Map<TrackType, ContinuousColorScale> colorScaleCache = new Hashtable<>();
     private PaletteColorTable mutationColorScheme = null;
 
     public IGVPreferences() {
@@ -137,7 +142,7 @@ public class IGVPreferences {
             boolValue = Boolean.valueOf(get(key, value));
             booleanCache.put(key, boolValue);
         }
-        return boolValue.booleanValue();
+        return boolValue;
     }
 
     /**
@@ -155,7 +160,7 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return 0;
             }
-            value = new Integer(get(key, defValue));
+            value = Integer.valueOf(get(key, defValue));
             objectCache.put(key, value);
         }
         return value.intValue();
@@ -197,7 +202,7 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return 0;
             }
-            value = new Float(get(key, defValue));
+            value = Float.valueOf(get(key, defValue));
             objectCache.put(key, value);
         }
         return value.floatValue();
@@ -231,7 +236,7 @@ public class IGVPreferences {
 
     public boolean getAntiAliasing() {
 
-        if (userPreferences.containsKey(Constants.ENABLE_ANTIALISING) || Globals.IS_LINUX == false) {
+        if (userPreferences.containsKey(Constants.ENABLE_ANTIALISING) || !Globals.IS_LINUX) {
             return getAsBoolean(Constants.ENABLE_ANTIALISING);
         } else {
             // Linux with no explicit setting
@@ -248,9 +253,9 @@ public class IGVPreferences {
     private void updateCaches(String key, String value) {
         key = key.trim();
         if (booleanCache.containsKey(key)) {
-            booleanCache.put(key, new Boolean(value));
+            booleanCache.put(key, Boolean.valueOf(value));
         }
-        colorScaleCache.remove(key);
+        colorScaleCache.remove(key); //TODO color scale cache doesn't use key strings so something here is wrong.
         objectCache.remove(key);
         mutationColorScheme = null;
     }
@@ -262,19 +267,27 @@ public class IGVPreferences {
         mutationColorScheme = null;
     }
 
+    /**
+     * Update preference.  This command is ignored if in batch mode *
+     * @param key
+     * @param value
+     */
     public void put(String key, String value) {
-        key = key.trim();
 
-        // Explicitly setting removes override
-        overrideKeys.remove(key);
+        if (!Globals.isBatch()) {
+            key = key.trim();
 
-        if (value == null || value.trim().length() == 0) {
-            userPreferences.remove(key);
-        } else {
-            userPreferences.put(key, value);
+            // Explicitly setting removes override
+            overrideKeys.remove(key);
+
+            if (value == null || value.trim().length() == 0) {
+                userPreferences.remove(key);
+            } else {
+                userPreferences.put(key, value);
+            }
+            updateCaches(key, value);
+            IGVEventBus.getInstance().post(new PreferencesChangeEvent());
         }
-        updateCaches(key, value);
-        IGVEventBus.getInstance().post(new PreferencesChangeEvent());
     }
 
     public void put(String key, boolean b) {
@@ -296,15 +309,24 @@ public class IGVPreferences {
         checkForCommandListenerChanges(updatedPrefs);
         checkForAttributePanelChanges(updatedPrefs);
         checkForCircViewChanges(updatedPrefs);
+        checkForGoogleMenuChange(updatedPrefs);
         IGVEventBus.getInstance().post(new PreferencesChangeEvent());
+    }
 
+    private void checkForGoogleMenuChange(Map<String, String> updatedPreferenceMap) {
+
+        if(updatedPreferenceMap.containsKey(ENABLE_GOOGLE_MENU) && IGV.hasInstance()) {
+            try {
+                IGVMenuBar.getInstance().enableGoogleMenu(getAsBoolean(ENABLE_GOOGLE_MENU));
+            } catch (IOException e) {
+                log.error("Error enabling/disabling Google menu", e);
+            }
+        }
     }
 
     private void checkForAlignmentChanges(Map<String, String> updatedPreferenceMap) {
 
         if (IGV.hasInstance()) {
-
-            final IGV igv = IGV.getInstance();
 
             boolean reloadSAM = false;
             for (String key : SAM_RELOAD_KEYS) {
@@ -318,6 +340,20 @@ public class IGVPreferences {
             for (String key : SAM_REFRESH_KEYS) {
                 if (updatedPreferenceMap.containsKey(key)) {
                     refreshSAM = true;
+                    break;
+                }
+            }
+            for (String key : BASEMOD_COLOR_KEYS) {
+                if (updatedPreferenceMap.containsKey(key)) {
+                    refreshSAM = true;
+                    BaseModificationColors.updateColors();
+                    break;
+                }
+            }
+
+            for (String key : NUCLEOTIDE_COLOR_KEYS) {
+                if (updatedPreferenceMap.containsKey(key)) {
+                    SequenceRenderer.setNucleotideColors();
                     break;
                 }
             }
@@ -358,9 +394,9 @@ public class IGVPreferences {
 
     private void checkForAttributePanelChanges(Map<String, String> updatedPreferenceMap) {
         if (updatedPreferenceMap.containsKey(SHOW_ATTRIBUTE_VIEWS_KEY) || updatedPreferenceMap.containsKey(SHOW_DEFAULT_TRACK_ATTRIBUTES)) {
-           if(IGV.hasInstance()) {
-               IGV.getInstance().revalidateTrackPanels();
-           }
+            if (IGV.hasInstance()) {
+                IGV.getInstance().revalidateTrackPanels();
+            }
         }
     }
 
@@ -382,7 +418,7 @@ public class IGVPreferences {
         userPreferences.remove(key);
         booleanCache.remove(key);
         objectCache.remove(key);
-        colorScaleCache.remove(key);
+        colorScaleCache.remove(key); //TODO same issue of cache not using String keys
         IGVEventBus.getInstance().post(new PreferencesChangeEvent());
 
     }

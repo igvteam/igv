@@ -25,6 +25,7 @@
 
 package org.broad.igv.tools.sort;
 
+import org.broad.igv.Globals;
 import org.broad.igv.logging.*;
 import org.broad.igv.gwas.GWASParser;
 import htsjdk.tribble.readers.AsciiLineReader;
@@ -32,6 +33,7 @@ import htsjdk.tribble.readers.AsciiLineReader;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * @author Jim Robinson
@@ -59,7 +61,8 @@ public class GWASSorter extends AsciiSorter {
             while ((nextLine = br.readLine()) != null) {
                 headerLines.add(nextLine);
                 if (!nextLine.startsWith("#")) {
-                    this.columns.parseHeader(nextLine);
+                    Pattern delimiter = nextLine.indexOf('\t') > 0 ? Globals.tabPattern : Globals.whitespacePattern;
+                    this.columns.parseHeader(nextLine, delimiter);
                     break;
                 }
             }

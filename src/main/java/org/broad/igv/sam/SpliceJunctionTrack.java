@@ -33,6 +33,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -81,7 +82,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));
-        setRendererClass(SpliceJunctionRenderer.class);
+        this.renderer = new SpliceJunctionRenderer();
         if (dataManager != null) {
             dataManager.unsubscribe(this);
         }
@@ -92,6 +93,12 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     }
 
     public SpliceJunctionTrack() {
+        this.renderer = new SpliceJunctionRenderer();
+    }
+
+    @Override
+    public void setRenderer(Renderer renderer) {
+        this.renderer = renderer;
     }
 
     @Override
@@ -235,7 +242,8 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > dataManager.getMinVisibleScale()) {
+        double extent = frame.getEnd() - frame.getOrigin();
+        if (frame.getChrName().equals(Globals.CHR_ALL) || extent > dataManager.getVisibilityWindow()) {
             return true;   // Nothing to paint
         } else {
 
@@ -384,7 +392,9 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         }
 
         if(element.hasAttribute("maxdepth")) {
-            ((SpliceJunctionRenderer) renderer).setMaxDepth((int) Float.parseFloat(element.getAttribute("maxdepth")));
+            if(renderer != null && renderer instanceof SpliceJunctionRenderer) {
+                ((SpliceJunctionRenderer) renderer).setMaxDepth((int) Float.parseFloat(element.getAttribute("maxdepth")));
+            }
         }
 
     }

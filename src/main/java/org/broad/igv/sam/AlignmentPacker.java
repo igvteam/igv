@@ -29,6 +29,7 @@
  */
 package org.broad.igv.sam;
 
+import htsjdk.samtools.SAMTag;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
@@ -69,6 +70,7 @@ public class AlignmentPacker {
         LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
 
         List<Alignment> alList = interval.getAlignments();
+
         // TODO -- means to undo this
         if (renderOptions.isLinkedReads()) {
             alList = linkByTag(alList, renderOptions.getLinkByTag());
@@ -81,30 +83,30 @@ public class AlignmentPacker {
         } else {
 
             // Separate alignments into groups.
-            Map<Object, List<Alignment>> groupedAlignments = new HashMap<Object, List<Alignment>>();
-            Iterator<Alignment> iter = alList.iterator();
-            while (iter.hasNext()) {
-                Alignment alignment = iter.next();
+            Map<Object, List<Alignment>> groupedAlignments = new HashMap<>();
+            for (final Alignment alignment : alList) {
                 Object groupKey = getGroupValue(alignment, renderOptions);
                 if (groupKey == null) {
                     groupKey = NULL_GROUP_VALUE;
                 }
-                List<Alignment> groupList = groupedAlignments.get(groupKey);
-                if (groupList == null) {
-                    groupList = new ArrayList<>(1000);
-                    groupedAlignments.put(groupKey, groupList);
-                }
+                List<Alignment> groupList = groupedAlignments.computeIfAbsent(groupKey, k -> new ArrayList<>(1000));
                 groupList.add(alignment);
             }
 
 
-            // Now alphabetize (sort) and pack the groups
+            // Now sort the groups by their name and pack each group individually
             List<Object> keys = new ArrayList<Object>(groupedAlignments.keySet());
             Comparator<Object> groupComparator = getGroupComparator(renderOptions.getGroupByOption());
+
+            // Certain group options sort descending by default, as indicated by the "reverse" property
+            if(renderOptions.getGroupByOption().reverse) {
+                groupComparator = groupComparator.reversed();
+            }
+
             if(renderOptions.isInvertGroupSorting()){
                 groupComparator = groupComparator.reversed();
             }
-            Collections.sort(keys, groupComparator);
+            keys.sort(groupComparator);
 
             for (Object key : keys) {
                 List<Row> alignmentRows = new ArrayList<>(10000);
@@ -125,7 +127,6 @@ public class AlignmentPacker {
         Map<String, PairedAlignment> pairs = null;
 
         boolean isPairedAlignments = renderOptions.isViewPairs();
-        String linkByTag = renderOptions.getLinkByTag();
 
         if (isPairedAlignments) {
             pairs = new HashMap<>(1000);
@@ -293,7 +294,7 @@ public class AlignmentPacker {
             }
         }
 
-        // Now copy list, de-linking orhpaned alignments (alignments with no linked mates)
+        // Now copy list, de-linking orphaned alignments (alignments with no linked mates)
         List<Alignment> delinkedList = new ArrayList<>(alList.size());
         for (Alignment a : bcList) {
             if (a instanceof LinkedAlignment) {
@@ -436,6 +437,8 @@ public class AlignmentPacker {
                 } else {
                     return mate.getChr();
                 }
+            case CHIMERIC:
+                return al.getAttribute(SAMTag.SA.name()) != null ?  "CHIMERIC" : "";
             case SUPPLEMENTARY:
                 return al.isSupplementary() ? "SUPPLEMENTARY" : "";
             case REFERENCE_CONCORDANCE:
@@ -463,6 +466,30 @@ public class AlignmentPacker {
                 } else { // does not overlap position
                     return "3:";
                 }
+            case INSERTION_AT_POS:
+                // Use a string prefix to enforce grouping rules:
+                //    1: alignments with a base at the position
+                //    2: alignments with a gap at the position
+                //    3: alignment that do not overlap the position (or are on a different chromosome)
+                if (pos != null &&
+                        al.getChr().equals(pos.getChr()) &&
+                        al.getAlignmentStart() <= pos.getStart() &&
+                        al.getAlignmentEnd() > pos.getStart()) {
+                    int insertionBaseCount = 0;
+                    AlignmentBlock leftInsertion = al.getInsertionAt(pos.getStart() + 1);
+                    if(leftInsertion != null) {
+                        insertionBaseCount += leftInsertion.getLength();
+                    }
+                    AlignmentBlock rightInsertion = al.getInsertionAt(pos.getStart());
+                    if(rightInsertion != null) {
+                        insertionBaseCount += rightInsertion.getLength();
+                    }
+                    return insertionBaseCount;
+
+                } else {
+                    return 0;
+                }
+
             case MOVIE: // group PacBio reads by movie
                 readNameParts = al.getReadName().split("/");
                 if (readNameParts.length < 3) {
@@ -670,7 +697,7 @@ public class AlignmentPacker {
         }
     }
 
-    private class PairOrientationComparator implements Comparator<Object> {
+    private static class PairOrientationComparator implements Comparator<Object> {
         private final List<AlignmentTrack.OrientationType> orientationTypes;
         //private final Set<String> orientationNames = new HashSet<String>(AlignmentTrack.OrientationType.values().length);
 

@@ -151,7 +151,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
             computeMousableRegions(groups, trackWidth);
 
-            painter.paint(groups, context, trackWidth, getBackground(), damageRect);
+            painter.paint(groups, context, getBackground(), damageRect);
 
             // If there is a partial ROI in progress draw it first
             if (currentTool instanceof RegionOfInterestTool) {
@@ -251,7 +251,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                     rect.width - (insets.left + insets.right),
                     rect.height - (insets.top + insets.bottom));
             context.getGraphics().setClip(contentRect);
-            painter.paint(groups, context, contentRect.width, getBackground(), contentRect);
+            painter.paint(groups, context, getBackground(), contentRect);
             drawAllRegions(g);
 
             borderGraphics.drawRect(0, rect.y, rect.width, rect.height-1);
@@ -797,7 +797,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     }
 
     /**
-     * A utility class for sceduling single-click actions "in the future",
+     * A utility class for schedueling single-click actions "in the future",
      *
      * @author jrobinso
      * @date Dec 17, 2010

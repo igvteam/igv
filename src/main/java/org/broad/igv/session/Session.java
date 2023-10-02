@@ -97,11 +97,10 @@ public class Session implements IGVEventObserver {
     private String locus;
 
     public Session(String path) {
-        reset(path);
+        init(path);
     }
 
-    public void reset(String path) {
-
+    private void init(String path) {
         this.path = path;
         this.nextAutoscaleGroup = 1;
         this.groupByAttribute = null;
@@ -111,15 +110,20 @@ public class Session implements IGVEventObserver {
         this.colorScales = new HashMap<>();
         this.hiddenAttributes = null;
         this.history = new History(100);
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
+    }
 
-        boolean resetRequired = FrameManager.getFrames().size() > 1;
+    public void reset(String path) {
+        init(path);
         setCurrentGeneList(null);
-        if (resetRequired) {
+        if (FrameManager.getFrames().size() > 1) {
             IGV.getInstance().resetFrames();
         }
-
+        for(ReferenceFrame frame : FrameManager.getFrames()) {
+            frame.setExpandedInsertion(null);
+        }
         InsertionManager.getInstance().clear();
-        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
+
     }
 
 
@@ -415,11 +419,6 @@ public class Session implements IGVEventObserver {
         }
     }
 
-    public void sortGeneList(Comparator<String> comparator) {
-        getCurrentGeneList().sort(comparator);
-        this.setCurrentGeneList(getCurrentGeneList());
-    }
-
     public int getVersion() {
         return version;
     }
@@ -486,7 +485,7 @@ public class Session implements IGVEventObserver {
      * position string.  UCSC conventions  are followed for coordinates,
      * specifically the internal representation is "zero" based (first base is
      * numbered 0) but the display representation is "one" based (first base is
-     * numbered 1).   Consequently 1 is substracted from the parsed positions
+     * numbered 1).   Consequently, 1 is subtracted from the parsed positions
      */
     private static int[] getStartEnd(String posString) {
         try {

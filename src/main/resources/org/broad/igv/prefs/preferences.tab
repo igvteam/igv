@@ -1,12 +1,18 @@
 #General
-SESSION.RELATIVE_PATH	Use relative paths in session files	boolean	TRUE
+SESSION.RELATIVE_PATH	Use relative paths in session files	boolean	FALSE
 IGV.single.track.pane	Display all tracks in a single panel	boolean	FALSE
 IGV.track.show.attribute.views	Show attribute panel	boolean	FALSE
 SHOW_DEFAULT_TRACK_ATTRIBUTES	Show default track attributes	boolean	FALSE
 SHOW_REGION_BARS	Show region-of-interest boundaries	boolean	FALSE
 ENABLE_GOOGLE_MENU	Enable Google access	boolean	FALSE	Enable loading from Google apis.
 FLANKING_REGION	"Search for feature" padding region in bp, < 0 is interpreted as a percentage.	integer	2000	
-DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases), < 0 disables visibility window.	float	-1	
+DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases), < 0 disables visibility window.	float	-1
+
+## Session Autosave
+AUTOSAVE_ON_EXIT	Automatically save session on exit	boolean	TRUE
+AUTOLOAD_LAST_AUTOSAVE	Load last autosaved session on startup	boolean	FALSE
+AUTOSAVE_FREQUENCY	How often, in minutes, to autosave the current session	integer	10
+AUTOSAVES_TO_KEEP	How many timed autosave session files to keep (0 disables timed autosave)	integer	0
 
 ##Jump To Next Feature Options (f/b Keys)
 NEXT_FIT_TO_WINDOW	Fit feature to window (with optional padding).	boolean	FALSE
@@ -15,9 +21,16 @@ NEXT_FLANKING_REGION	Padding region in bp, < 0 is interpreted as a percentage.	i
 ##Appearance
 BACKGROUND_COLOR	Background color	color	250,250,250
 DEFAULT_FONT_FAMILY	Default font family	string	Arial
-DEFAULT_FONT_SIZE	Default font size	float	10
+DEFAULT_FONT_SIZE	Default font size	integer	10
 SCALE_FONTS	Scale fonts	boolean	FALSE	Scale fonts for high resolution screens. Requires restart.
 ENABLE_ANTIALIASING	Enable anti-aliasing	boolean	TRUE
+
+##Nucleotide Colors
+COLOR.A	A	color	0,150,0
+COLOR.C	C	color	0,0,255
+COLOR.T	T	color	255,0,0
+COLOR.G	G	color	209,113,5
+COLOR.N	n	color	128,128,128
 
 #Tracks
 IGV.chart.track.height	Default numeric track height (pixels)	integer	40
@@ -36,8 +49,8 @@ HOMREF.COLOR	Homozygous reference	color	235,235,235
 HOMVAR.COLOR	Homozygous variant	color	0,245,255
 HETVAR.COLOR	Heterozygous variant	color	0,0,255
 NOCALL.COLOR	No call	color	255,255,255
-AF_REF.COLOR	Allele freq - reference	color	0,0,220
-AF_VAR.COLOR	Allel freq - variant	color	255,0,0
+AF_REF.COLOR	Allele frequency - reference	color	0,0,220
+AF_VAR.COLOR	Allele frequency - variant	color	255,0,0
 VARIANT_COLOR_BY_ALLELE_FREQ	Color by allele frequency (uncheck to color by allele fraction)	boolean	TRUE
 
 #Mutations
@@ -55,6 +68,8 @@ MUTATION_Non-coding_Transcript_COLOR	Non-coding Transcript	color	0,0,150
 MUTATION_Other_AA_changing_COLOR	Other AA Changing	color	0,150,150
 MUTATION_Other_likely_neutral_COLOR	Other Likely Neutral	color	225,180,225
 MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
+##Coordinate System
+MUT_COORDS	Mut file coordinate convention. 0 = zero based half-open, 1 = one based fully closed.	select 0|1	0
 
 #Charts
 CHART.DRAW_TOP_BORDER	Draw top border	boolean	FALSE
@@ -68,17 +83,24 @@ CN_FREQ.AMP_THRESHOLD	CN freq amplification threshold	float	0.1
 CN_FREQ.DEL_THRESHOLD	CN freq deletion threshold	float	-0.1
 
 #Alignments
-info	Settings for alignment tracks.  See the RNA or Third Gen tabs to override for specific types.
+info	Default settings for alignment tracks.  A subset of these properties can be overriden for RNA and 3rd generation data.
+info	See also the RNA and Third Gen tabs.
 
 ##Track Display
 SAM.SHOW_ALIGNMENT_TRACK	Show alignment track	boolean	TRUE
 SAM.SHOW_COV_TRACK	Show coverage track	boolean	TRUE
 SAM.SHOW_JUNCTION_TRACK	Show junction track	boolean	FALSE
+SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
+SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visibile
 
 ##Downsampling
 SAM.DOWNSAMPLE_READS	Downsample reads	boolean	TRUE
 SAM.SAMPLING_WINDOW	Sampling window size (bases)	integer	50
 SAM.MAX_LEVELS	Number of reads per window	integer	100
+
+##Coverage Track Options
+SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2
+SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
 
 ##Alignment Track Options
 
@@ -86,9 +108,10 @@ SAM.COLOR_BY	Color alignments by	select NONE|READ_STRAND|FIRST_OF_PAIR_STRAND|PA
 SAM.COLOR_BY_TAG	Color by TAG	string
 SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE|MAPPING_QUALITY
 SAM.GROUP_BY_TAG	Group by TAG	string
-SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visibile
+SAM.GROUP_ALL	Syncrohize alignment track grouping	boolean	FALSE
+
 SAM.QUALITY_THRESHOLD	Mapping quality threshold	int	0	Hide alignments with MQ lower than this value
-SAM.ALIGNMENT_SCORE_THRESHOLD	Alignment score threshold	int	0
+SAM.ALIGNMENT_SCORE_THRESHOLD	Alignment score threshold (AS tag)	int	0
 SAM.DISPLAY_MODE	Alignment display mode	string	EXPANDED
 SAM.DISPLAY_PAIRED	Display reads as paired by default	boolean	FALSE
 ---
@@ -107,7 +130,7 @@ SAM.FLAG_UNMAPPED_PAIR	Flag unmapped pairs	boolean	FALSE
 SAM.SHOW_CENTER_LINE	Show center line	boolean	FALSE
 SAM.SHOW_SOFT_CLIPPED	Show soft-clipped bases	boolean	FALSE
 ---
-SAM.SHADE_BASE_QUALITY	Shade mismatched bases by quality.	boolean	FALSE
+SAM.SHADE_BASE_QUALITY	Shade mismatched bases by quality.	boolean	TRUE
 SAM.BASE_QUALITY_MIN	Maximum transparency at base quality:	integer	5
 SAM.BASE_QUALITY_MAX	No transparency above base quality:	integer	20
 ---
@@ -119,23 +142,20 @@ SAM.SMALL_INDEL_BP_THRESHOLD	Indel size threshold (bases)	integer	0
 ---
 SAM.FLAG_CLIPPING	Flag clipping > threshold	boolean	FALSE
 SAM.CLIPPING_THRESHOLD	Flag clipping threshold (bases)	integer	0
+SAM.SHOW_CONNECTED_CHR_NAME	Show connected chromosome name	boolean	TRUE
 ---
 SAM.QUICK_CONSENSUS_MODE	Quick consensus mode	boolean	FALSE
-SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
+
 ---
 SAM.HIDDEN_TAGS	Hide tags in popup text (comma delimited list)	string	SA,MD,XA,RG
 ---
 SAM.LINK_BY_TAGS	Tags to be used for linking alignments (comma delimited list)	string	 
 ---
-SAM.MAX_SOFT_CLIP	Soft clip reference extension (reference sequence is extended by this amount to show soft  clips)	integer	1000
+SAM.MAX_SOFT_CLIP	Soft clip reference extension maximum	integer	1000	Reference sequence is extended up to this amount to show soft clips overhanging reference edge.
 ---
 SAM.FILTER_ALIGNMENTS	Filter alignments by read group	boolean	FALSE
 SAM.FILTER_URL	URL or path to read group filter file	string	null
 
-##Coverage Track Options
-SAM.ALLELE_THRESHOLD	Coverage allele-fraction threshold	float	0.2
-SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
-SAM.BASEMOD_THRESHOLD	Base modification average probability threshold (0-1)	float	0
 
 ##Insert Size Options
 SAM.COMPUTE_ISIZES	Compute insert size thresholds	boolean	TRUE
@@ -151,7 +171,7 @@ info Settings below override defaults for RNA alignments.
 SAM.SHOW_ALIGNMENT_TRACK	Show alignment track	boolean	TRUE
 SAM.SHOW_COV_TRACK	Show coverage track	boolean	TRUE
 SAM.SHOW_JUNCTION_TRACK	Show junction track	boolean	TRUE
-
+SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	300	Range at which alignments become visibile
 
 ##Splice Junction Track
@@ -169,25 +189,60 @@ SAM.INSERT_SIZE_THRESHOLD	Default maximum (bp)	float	100000
 
 #Third Gen	THIRD_GEN
 info Settings below override defaults for 3rd-gen (PacBio, Oxford Nanopore, ...) alignments.
+
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	1000	Range at which alignments become visibile
+SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	TRUE
+SAM.QUICK_CONSENSUS_MODE	Quick consensus mode	boolean	TRUE
 
 ##Downsampling
 SAM.DOWNSAMPLE_READS	Downsample reads	boolean	FALSE
+SAM.SAMPLING_WINDOW	Sampling window size (bases)	integer	50
+SAM.MAX_LEVELS	Number of reads per window	integer	100
 
+##Indels
 SAM.FLAG_LARGE_INDELS	Label indels > label threshold	boolean	TRUE
 SAM.LARGE_INSERTIONS_THRESOLD	Label threshold (bases)	integer	1
 ---
 SAM.HIDE_SMALL_INDEL	Hide indels < show indel threshold	boolean	TRUE
 SAM.SMALL_INDEL_BP_THRESHOLD	Show indel threshold (bases)	integer	2
----
+
+##Clipping
 SAM.FLAG_CLIPPING	Flag clipping > flag clipping threshold	boolean	TRUE
 SAM.CLIPPING_THRESHOLD	Flag clipping threshold (bases)	integer	20
----
-SAM.QUICK_CONSENSUS_MODE	Quick consensus mode	boolean	TRUE
-SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	TRUE
----
+
+##Linking
 SAM.LINK_READS	Link alignments by tag	boolean	FALSE
 SAM.LINK_TAG	Linking tag	string	READNAME
+
+
+#Base Mods
+
+BASEMOD.THRESHOLD	Base modification likelihood threshold (0-1)	float	0
+BASEMOD.GROUP_BY_STRAND	Group alignments by strand	boolean	TRUE
+BASEMOD.SKIPPED_BASES	Assume skipped bases have low probability of modification.	boolean	FALSE
+
+## Modified base colors
+BASEMOD.M_COLOR	5mC	color	255,0,0
+BASEMOD.H_COLOR	5hmC	color	255,0,255
+BASEMOD.F_COLOR	5fC	color	246,200,95
+BASEMOD.C_COLOR	5caC	color	157,216,102
+BASEMOD.G_COLOR	5hmU	color	255,160,86
+BASEMOD.E_COLOR	5fU	color	141,221,208
+BASEMOD.B_COLOR	5caU	color	0,100,47
+BASEMOD.A_COLOR	6mA	color	51,0,111
+BASEMOD.O_COLOR	8oxoG	color	111,78,129
+BASEMOD.OTHER_COLOR	Other	color	132,178,158
+
+## Unomdified base colors (2-color option)
+BASEMOD.NONE_A_COLOR	A	color	0,0,255
+BASEMOD.NONE_C_COLOR	C	color	0,0,255
+BASEMOD.NONE_T_COLOR	T	color	0,0,255
+BASEMOD.NONE_G_COLOR	G	color	0,0,255
+BASEMOD.NONE_N_COLOR	G	color	0,0,255
+
+##SMRT Kinetics
+SMRT_KINETICS.SHOW_OPTIONS	Show visibility options for SMRT kinetics data	boolean	FALSE
+
 
 #Proxy
 PROXY.DISABLE_CHECK	Disable check for system proxy	boolean	FALSE
@@ -212,7 +267,7 @@ MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://data.broadinstitute.or
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
 
-BLAT_URL	BLAT URL	String	http://genome.ucsc.edu/cgi-bin/hgBlat?userSeq=$SEQUENCE&type=DNA&db=$DB&output=json
+BLAT_URL	BLAT URL	String	http://genome.ucsc.edu/cgi-bin/hgBlat
 ---
 
 ## Tooltip
@@ -235,7 +290,7 @@ CIRC_VIEW_PORT	CircView port	integer	60152
 SAM.SHOW_JUNCTION_FLANKINGREGIONS	FALSE
 SAM.JUNCTION_MIN_FLANKING_WIDTH	0
 SAM.JUNCTION_MIN_COVERAGE	1
-
+SMRT_KINETICS.SHOW_OPTIONS	FALSE
 
 SCORE_VARIANTS	FALSE
 
@@ -247,7 +302,6 @@ SAM.BISULFITE_CONTEXT	CG
 SAM.NOMESEQ_ENABLED	FALSE
 SAM.COUNT_DELETED_BASES_COVERED	FALSE
 SAM.SORT_OPTION	NUCLEOTIDE
-SAM.GROUP_OPTION	NONE
 SAM.COLOR_BY	UNEXPECTED_PAIR
 SAM.SHOW_GROUP_SEPARATOR	TRUE
 SAM.REDUCED_MEMORY_MODE	FALSE
@@ -256,6 +310,8 @@ SAM.COLOR.C	0,0,255
 SAM.COLOR.G	209,113,5
 SAM.COLOR.N	182,182,182
 SAM.COLOR.T	255,0,0
+SAM.GROUP_ALL	FALSE
+SAM.INVERT_SORT	FALSE
 
 
 SEARCH_ZOOM	TRUE
@@ -313,11 +369,6 @@ CBIO_EXPRESSION_DOWN_THRESHOLD	1
 DETAILS_BEHAVIOR	CLICK
 SHOW_SIZE_WARNING	TRUE
 SKIP_VERSION
-COLOR.A	0,150,0
-COLOR.C	0,0,255
-COLOR.T	255,0,0
-COLOR.G	209,113,5
-COLOR.N	128,128,128
 
 SASHIMI.SHOW_COVERAGE	TRUE
 GENE_LIST_BED_FORMAT	FALSE

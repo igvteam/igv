@@ -159,7 +159,7 @@ public class FeatureUtils {
         }
 
         int idx = getIndexCenterAfter(position, features);
-        if (idx < 0 || idx > features.size()-1) {
+        if (idx < 0 || idx > features.size() - 1) {
             return null;
         } else {
             return features.get(idx);
@@ -199,40 +199,27 @@ public class FeatureUtils {
         return null;
     }
 
-    public static Feature getFeatureClosest(double position, List<? extends htsjdk.tribble.Feature> features) {
-        // look for exact match at position:
-        htsjdk.tribble.Feature f0 = getFeatureAt(position, features);
-        if (f0 != null) {
-            return f0;
-        }
-        // otherwise look for features on either side and return the closest:
-        htsjdk.tribble.Feature f1 = getFeatureEndsBefore(position, features);
-        htsjdk.tribble.Feature f2 = getFeatureStartsAfter(position, features);
-
-        double d1 = f1 == null ? Double.MAX_VALUE : Math.abs(position - f1.getEnd());
-        double d2 = f2 == null ? Double.MAX_VALUE : Math.abs(f2.getStart() - position);
-
-        return (d1 < d2 ? f1 : f2);
-
+    /**
+     * Get the feature which is closest to the given position.
+     * If multiple features are equidistant it breaks ties by the one that has the closest
+     * starting position, followed by the shortest feature.
+     */
+    public static Feature getFeatureClosest(double position, List<? extends Feature> features) {
+        final Comparator<Feature> closestComparator = Comparator.comparing((Feature f) -> getDistance((int) position, f)) //overlaps or not
+                .thenComparing(f -> Math.abs(position - f.getStart()))
+                .thenComparing(Feature::getLengthOnReference);
+        return Collections.min(features, closestComparator);
     }
 
-    /**
-     * Return a feature that encompasses the supplied position.
-     *
-     * @param position Query position.
-     * @param features List of features.
-     * @return The feature whose start overlaps with position, or null.
-     */
-    private static Feature getFeatureAt(double position, List<? extends Feature> features) {
-        int strt = (int) position;
-        Feature key = new BasicFeature("", strt, strt + 1);
-
-        int r = Collections.binarySearch(features, key, FEATURE_START_COMPARATOR);
-
-        if (r >= 0) {
-            return features.get(r);
+    private static int getDistance(final int position, final Feature f) {
+        final int end = f.getEnd();
+        final int start = f.getStart();
+        if (position >= start && position < end) { //within the feature
+            return 0;
+        } else if (position >= end) {
+            return position - end + 1; //after the feature
         } else {
-            return null;
+            return start - position; //before the feature
         }
     }
 
@@ -278,7 +265,7 @@ public class FeatureUtils {
      * @param features
      * @return
      */
-     private static int getIndexCenterAfter(double position, List<? extends Feature> features) {
+    private static int getIndexCenterAfter(double position, List<? extends Feature> features) {
 
         Feature first = features.get(0);
         Feature last = features.get(features.size() - 1);
@@ -400,18 +387,22 @@ public class FeatureUtils {
         for (int idx = startIdx; idx < features.size(); idx++) {
             Feature feature = features.get(idx);
             double start = feature.getStart() - (minWidth / 2);
-
             if (start > position) {
                 break;
             }
-
             double end = feature.getEnd() + (minWidth / 2);
-
             if (position >= start && position <= end) {
                 if (returnList == null) returnList = new ArrayList();
                 returnList.add(feature);
             }
         }
+
+        // Sort features by distance from position (features closest to position listed first)
+        returnList.sort((o1, o2) -> {
+            double dist1 = Math.abs((o1.getStart() + (o1.getEnd() - o1.getStart()) / 2) - position);
+            double dist2 = Math.abs((o2.getStart() + (o2.getEnd() - o2.getStart()) / 2) - position);
+            return dist1 == dist2 ? 0 : dist1 > dist2 ? 1 : -1;
+        });
 
         return returnList;
     }

@@ -100,7 +100,7 @@ public class CombinedDataSourceDialog extends org.broad.igv.ui.IGVDialog  {
         CombinedDataTrack newTrack = new CombinedDataTrack(dataSource, id, name);
 
 
-        TrackMenuUtils.changeRenderer(Arrays.asList(newTrack), track0.getRenderer().getClass());
+        TrackMenuUtils.changeRendererClass(Arrays.asList(newTrack), track0.getRenderer().getClass());
         newTrack.setDataRange(track0.getDataRange());
         newTrack.setColorScale(track0.getColorScale());
         IGV.getInstance().addTracks(Arrays.asList(newTrack), PanelName.DATA_PANEL);

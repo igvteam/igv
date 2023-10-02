@@ -69,6 +69,13 @@ public class HeaderPanelContainer extends JPanel implements Paintable {
 
     public void createHeaderPanels() {
 
+        // Notify child HeaderPanel objects of removal -- its harmless if this gets called twice on a HeaderPanel
+       for(Component child:  getComponents()) {
+           if(child instanceof HeaderPanel) {
+               child.removeNotify();
+           }
+       }
+
         removeAll();
         Collection<ReferenceFrame> frames = FrameManager.getFrames();
         contentPanel = new JPanel();
@@ -91,18 +98,6 @@ public class HeaderPanelContainer extends JPanel implements Paintable {
             }
         }
         add(contentPanel, BorderLayout.CENTER);
-
-        // Label for the gene list itself.
-        if (FrameManager.isGeneListMode()) {
-            GeneList gl = IGV.getInstance().getSession().getCurrentGeneList();
-            String name = gl.getDisplayName();
-            if(name != null && name.length() > 0) {
-                JLabel label = new JLabel(name, JLabel.CENTER);
-                Border border = BorderFactory.createLineBorder(Color.lightGray);
-                label.setBorder(border);
-                add(label, BorderLayout.NORTH);
-            }
-        }
 
         invalidate();
     }

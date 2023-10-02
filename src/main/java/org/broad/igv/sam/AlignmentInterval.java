@@ -45,6 +45,7 @@ public class AlignmentInterval extends Locus {
     private List<Alignment> alignments;
     private SpliceJunctionHelper spliceJunctionHelper;
     private List<DownsampledInterval> downsampledIntervals;
+
     private PackedAlignments packedAlignments;
 
     public AlignmentInterval(String chr, int start, int end,
@@ -99,10 +100,11 @@ public class AlignmentInterval extends Locus {
 
     /**
      * Sort rows group by group
-     *  @param option
+     *
+     * @param option
      * @param location
      */
-    public void sortRows(SortOption option, double location, String tag, boolean invertSort) {
+    public void sortRows(SortOption option, double location, String tag, boolean invertSort, Set<String> priorityRecords) {
 
         PackedAlignments packedAlignments = getPackedAlignments();
         if (packedAlignments == null) {
@@ -111,7 +113,14 @@ public class AlignmentInterval extends Locus {
 
         final int center = (int) location;
         byte referenceBase = this.getReference(center);
-        final Comparator<Row> rowComparator =  option.getComparator(center, referenceBase, tag, invertSort);
+        Comparator<Row> rowComparator = option.getComparator(center, referenceBase, tag, invertSort);
+
+        if (priorityRecords != null && !priorityRecords.isEmpty()) {
+            rowComparator = Comparator.comparing((Row row) -> row.getAlignments().stream()
+                            .anyMatch(aln -> priorityRecords.contains(aln.getReadName())))
+                    .reversed()
+                    .thenComparing(rowComparator);
+        }
 
         for (List<Row> alignmentRows : packedAlignments.values()) {
             alignmentRows.sort(rowComparator);
@@ -176,6 +185,7 @@ public class AlignmentInterval extends Locus {
         return downsampledIntervals;
     }
 
+
     public SpliceJunctionHelper getSpliceJunctionHelper() {
         return this.spliceJunctionHelper;
     }
@@ -200,65 +210,4 @@ public class AlignmentInterval extends Locus {
     }
 
 
-    /**
-     * An alignment iterator that iterates over packed rows.  Used for
-     * repacking.   Using the iterator avoids the need to copy alignments
-     * from the rows
-     */
-    static class AlignmentIterator implements Iterator<Alignment> {
-
-        PriorityQueue<Row> rows;
-        Alignment nextAlignment;
-
-        AlignmentIterator(Map<String, List<Row>> groupedAlignmentRows) {
-            rows = new PriorityQueue(5, new Comparator<Row>() {
-
-                public int compare(Row o1, Row o2) {
-                    return o1.getNextStartPos() - o2.getNextStartPos();
-                }
-            });
-
-            for (List<Row> alignmentRows : groupedAlignmentRows.values()) {
-                for (Row r : alignmentRows) {
-                    r.resetIdx();
-                    rows.add(r);
-                }
-            }
-
-            advance();
-        }
-
-        public boolean hasNext() {
-            return nextAlignment != null;
-        }
-
-        public Alignment next() {
-            Alignment tmp = nextAlignment;
-            if (tmp != null) {
-                advance();
-            }
-            return tmp;
-        }
-
-        private void advance() {
-
-            nextAlignment = null;
-            Row nextRow = null;
-            while (nextAlignment == null && !rows.isEmpty()) {
-                while ((nextRow = rows.poll()) != null) {
-                    if (nextRow.hasNext()) {
-                        nextAlignment = nextRow.nextAlignment();
-                        break;
-                    }
-                }
-            }
-            if (nextRow != null && nextAlignment != null) {
-                rows.add(nextRow);
-            }
-        }
-
-        public void remove() {
-            // ignore
-        }
-    }
 }

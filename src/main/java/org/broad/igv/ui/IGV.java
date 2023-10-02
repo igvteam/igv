@@ -51,6 +51,7 @@ import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
@@ -58,6 +59,8 @@ import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.InsertionSelectionEvent;
 import org.broad.igv.sam.SortOption;
 import org.broad.igv.session.*;
+import org.broad.igv.session.autosave.AutosaveTimerTask;
+import org.broad.igv.session.autosave.SessionAutosaveManager;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.WaitCursorManager.CursorToken;
 import org.broad.igv.ui.commandbar.GenomeListManager;
@@ -81,6 +84,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
+import java.util.Timer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -125,6 +129,11 @@ public class IGV implements IGVEventObserver {
      * from a "session" file.
      */
     private Session session;
+
+    /**
+     * Timer for triggering periodic autosave of current session
+     */
+    private Timer sessionAutosaveTimer = new Timer();
 
     // Misc state
     private Map<String, List<Track>> overlayTracksMap = new HashMap();
@@ -249,6 +258,12 @@ public class IGV implements IGVEventObserver {
         mainFrame.setBounds(applicationBounds);
 
         subscribeToEvents();
+
+        // Start running periodic autosaves (unless the user has specified not to retain timed autosaves)
+        if(PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP) > 0) {
+            int timerDelay = PreferencesManager.getPreferences().getAsInt(AUTOSAVE_FREQUENCY) * 60000; // Convert timer delay to ms
+            sessionAutosaveTimer.scheduleAtFixedRate(new AutosaveTimerTask(this), timerDelay, timerDelay);
+        }
     }
 
     public JRootPane getRootPane() {
@@ -561,6 +576,21 @@ public class IGV implements IGVEventObserver {
             PreferencesManager.getPreferences().remove(RECENT_SESSIONS);
             PreferencesManager.getPreferences().setRecentSessions(recentSessions);
         }
+
+        // Stop the timer that is triggering the timed autosave
+        this.stopTimedAutosave();
+
+        // Autosave current session if configured to do so
+        if(PreferencesManager.getPreferences().getAsBoolean(AUTOSAVE_ON_EXIT)) {
+            try {
+                SessionAutosaveManager.saveExitSessionAutosaveFile(session);
+            }
+            catch(Exception e) {
+                log.error("Error autosaving session", e);
+            }
+        }
+
+
     }
 
     final public void doShowAttributeDisplay(boolean enableAttributeView) {
@@ -909,13 +939,33 @@ public class IGV implements IGVEventObserver {
     }
 
 
+    /**
+     * Scroll panel(s) containing track with specified name to the top.  Supports batch command "scrolltotrack" *
+     *
+     * @param trackName
+     * @return
+     */
     public boolean scrollToTrack(String trackName) {
+        boolean found = false;
         for (TrackPanel tp : getTrackPanels()) {
             if (tp.getScrollPane().getNamePanel().scrollTo(trackName)) {
-                return true;
+                found = true;
             }
+            }
+        return found;
         }
-        return false;
+
+
+    /**
+     * Scroll all panels to the top (position 0).  Supports batch command "scrolltotop"
+     *
+     * @return
+     */
+    public void scrollToTop() {
+        for (TrackPanel tp : getTrackPanels()) {
+            tp.getScrollPane().getNamePanel().scrollToPosition(0);
+
+        }
     }
 
 
@@ -1000,7 +1050,7 @@ public class IGV implements IGVEventObserver {
             String message = "Error loading session session: " + e.getMessage();
             MessageUtils.showMessage(message);
             recentSessionList.remove(sessionPath);
-            log.error(message);
+            log.error(e);
             return false;
         } finally {
             if (inputStream != null) {
@@ -1111,20 +1161,12 @@ public class IGV implements IGVEventObserver {
         contentPane.getMainPanel().removeDataPanel(name);
     }
 
-    public void layoutMainPanel() {
-        contentPane.getMainPanel().doLayout();
-    }
-
     public MainPanel getMainPanel() {
         return contentPane.getMainPanel();
     }
 
     public LinkedList<String> getRecentSessionList() {
         return recentSessionList;
-    }
-
-    public void setRecentSessionList(LinkedList<String> recentSessionList) {
-        this.recentSessionList = recentSessionList;
     }
 
     public IGVContentPane getContentPane() {
@@ -1260,6 +1302,11 @@ public class IGV implements IGVEventObserver {
                 track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
                 track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
                 track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+
+                TrackProperties properties = locator.getTrackProperties();
+                if(properties != null) {
+                    track.setProperties(properties);
+                }
             }
         }
         //revalidateTrackPanels();
@@ -1378,14 +1425,14 @@ public class IGV implements IGVEventObserver {
 
 
     public void sortAlignmentTracks(SortOption option, String tag, final boolean invertSort) {
-        sortAlignmentTracks(option, null, tag, invertSort);
+        sortAlignmentTracks(option, null, tag, invertSort, null);
     }
 
-    public void sortAlignmentTracks(SortOption option, Double location, String tag, boolean invertSort) {
+    public void sortAlignmentTracks(SortOption option, Double location, String tag, boolean invertSort, Set<String> priorityRecords) {
         List<AlignmentTrack> alignmentTracks = getAllTracks().stream()
                 .filter(track -> track instanceof AlignmentTrack)
                 .map(track -> (AlignmentTrack)track)
-                .peek(track -> track.sortRows(option, location, tag, invertSort))
+                .peek(track -> track.sortRows(option, location, tag, invertSort, priorityRecords))
                 .collect(Collectors.toList());
         this.repaint(alignmentTracks);
     }
@@ -1539,15 +1586,15 @@ public class IGV implements IGVEventObserver {
     }
 
     public List<FeatureTrack> getFeatureTracks() {
-        Iterable<FeatureTrack> featureTracksIter = Iterables.filter(getAllTracks(), FeatureTrack.class);
-        List<FeatureTrack> featureTracks = Lists.newArrayList(featureTracksIter);
-        return featureTracks;
+        return Lists.newArrayList(Iterables.filter(getAllTracks(), FeatureTrack.class));
     }
 
     public List<DataTrack> getDataTracks() {
-        Iterable<DataTrack> dataTracksIter = Iterables.filter(getAllTracks(), DataTrack.class);
-        List<DataTrack> dataTracks = Lists.newArrayList(dataTracksIter);
-        return dataTracks;
+        return Lists.newArrayList(Iterables.filter(getAllTracks(), DataTrack.class));
+    }
+
+    public List<AlignmentTrack> getAlignmentTracks() {
+        return Lists.newArrayList(Iterables.filter(getAllTracks(), AlignmentTrack.class));
     }
 
     public void clearSelections() {
@@ -1920,8 +1967,17 @@ public class IGV implements IGVEventObserver {
                 }
 
             } else {
-                boolean genomeLoaded = false;
+                // Check whether autosave is set to load and exists
+                boolean autosavePresent = false;
+                try {
+                    autosavePresent = SessionAutosaveManager.getMostRecentAutosaveFile().isPresent();
+                }
+                catch(Exception e) {
+                    log.error("Failure trying to get most recent autosave file", e);
+                }
+                boolean loadAutosave = autosavePresent && PreferencesManager.getPreferences().getAsBoolean(AUTOLOAD_LAST_AUTOSAVE);
 
+                boolean genomeLoaded = false;
                 if (igvArgs.getGenomeId() != null) {
                     String genomeId = igvArgs.getGenomeId();
                     try {
@@ -1932,8 +1988,8 @@ public class IGV implements IGVEventObserver {
                         log.error("Error loading genome: " + genomeId, e);
                     }
                 }
-
-                if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
+                // If we're not loading a session file, attempt to load a default genome file
+                if(igvArgs.getSessionFile() == null && !loadAutosave && !genomeLoaded) {
                     String genomeId = preferences.getDefaultGenome();
                     try {
                         GenomeManager.getInstance().loadGenomeById(genomeId);
@@ -1942,19 +1998,19 @@ public class IGV implements IGVEventObserver {
                         MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
                         log.error("Error loading genome: " + genomeId, e);
                     }
-                }
 
-                if (genomeLoaded == false && igvArgs.getSessionFile() == null) {
-                    String genomeId = GenomeListManager.DEFAULT_GENOME.getId();
-                    try {
-                        GenomeManager.getInstance().loadGenomeById(genomeId);
-                    } catch (IOException e) {
-                        MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                        log.error("Error loading genome: " + genomeId, e);
+                    if (!genomeLoaded) {
+                        genomeId = GenomeListManager.DEFAULT_GENOME.getId();
+                        try {
+                            GenomeManager.getInstance().loadGenomeById(genomeId);
+                        } catch (IOException e) {
+                            MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                            log.error("Error loading genome: " + genomeId, e);
+                        }
                     }
                 }
 
-                if (igvArgs.getSessionFile() != null || igvArgs.getDataFileStrings() != null) {
+                if (igvArgs.getSessionFile() != null || igvArgs.getDataFileStrings() != null || loadAutosave) {
 
                     if (log.isDebugEnabled()) {
                         log.debug("Loading session data");
@@ -1984,7 +2040,6 @@ public class IGV implements IGVEventObserver {
                         if (!success) {
                             String genomeId = preferences.getDefaultGenome();
                             contentPane.getCommandBar().selectGenome(genomeId);
-
                         }
                     } else if (igvArgs.getDataFileStrings() != null) {
 
@@ -2051,6 +2106,22 @@ public class IGV implements IGVEventObserver {
                             locators.add(rl);
                         }
                         loadTracks(locators);
+                    } else if (loadAutosave) {
+                        boolean success = false;
+                        try {
+                            // Get the last autosave and attempt to load
+                            File sessionAutosave = SessionAutosaveManager.getMostRecentAutosaveFile().get();
+                            success = loadSession(sessionAutosave.getAbsolutePath(), null);
+                        }
+                        catch(Exception e) {
+                            log.error("Failure trying to load most recent autosave file", e);
+                        }
+
+                        // Load the default genome if unsuccessful
+                        if (!success) {
+                            String genomeId = preferences.getDefaultGenome();
+                            contentPane.getCommandBar().selectGenome(genomeId);
+                        }
                     }
 
 
@@ -2234,7 +2305,7 @@ public class IGV implements IGVEventObserver {
                 try {
                     for (ReferenceFrame frame : FrameManager.getFrames()) {
                         for (Track track : trackList) {
-                            if (track.isReadyToPaint(frame) == false) {
+                            if (!track.isReadyToPaint(frame)) {
                                 track.load(frame);
                             }
                         }
@@ -2259,11 +2330,11 @@ public class IGV implements IGVEventObserver {
                 return;
             }
 
-            List<CompletableFuture> futures = new ArrayList();
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
 
             for (ReferenceFrame frame : FrameManager.getFrames()) {
                 for (Track track : trackList) {
-                    if (track.isReadyToPaint(frame) == false) {
+                    if (!track.isReadyToPaint(frame)) {
                         futures.add(CompletableFuture.runAsync(() -> track.load(frame), threadExecutor));
                     }
                 }
@@ -2276,9 +2347,9 @@ public class IGV implements IGVEventObserver {
                     component.repaint();
                 });
             } else {
-                // One ore more tracks require loading before repaint.   Load all needed tracks, autscale if needed, then
-                // repaint.  The autoscale step is key, since tracks can be grouped for autoscaling it is neccessary that
-                // all data is loaded before any track is repainted.  Otherwise tracks be loaded an painted independently.
+                // One or more tracks require loading before repaint.   Load all needed tracks, autoscale if needed, then
+                // repaint.  The autoscale step is key, since tracks can be grouped for autoscaling it is necessary that
+                // all data is loaded before any track is repainted.  Otherwise tracks be loaded and painted independently.
 
                 final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
                 WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
@@ -2299,6 +2370,7 @@ public class IGV implements IGVEventObserver {
                     });
                     return null;
                 }).exceptionally(ex -> {
+                    WaitCursorManager.removeWaitCursor(token);
                     log.error("Error loading track data", ex);
                     isLoading = false;
                     pending = null;
@@ -2322,6 +2394,13 @@ public class IGV implements IGVEventObserver {
                 filter(TrackGroup::isVisible).
                 flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
                 collect(Collectors.toList());
+    }
+
+    /**
+     * Stops the scheduled autosave task
+     */
+    public void stopTimedAutosave() {
+        sessionAutosaveTimer.cancel();
     }
 
     // Thread pool for loading data

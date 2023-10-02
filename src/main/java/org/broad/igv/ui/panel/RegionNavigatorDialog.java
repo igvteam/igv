@@ -766,7 +766,7 @@ public class RegionNavigatorDialog extends org.broad.igv.ui.IGVDialog  implement
                     }
                     loci.add(new RegionOfInterest(roi.getChr(), start, end, roi.getDescription()).getLocusString());
                 }
-                GeneList geneList = new GeneList("Regions of Interest", loci, false);
+                GeneList geneList = new GeneList("Regions of Interest", loci);
                 IGV.getInstance().setGeneList(geneList);
                 IGV.getInstance().resetFrames();
 

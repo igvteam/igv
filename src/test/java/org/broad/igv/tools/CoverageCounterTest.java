@@ -228,26 +228,6 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
 
     }
 
-    @Test
-    public void testIncludeDuplicatesFlag() throws IOException {
-        String bamURL = "http://data.broadinstitute.org/igvdata/BodyMap/hg18/Merged/HBM.adipose.bam.sorted.bam";
-        int options = CoverageCounter.INCLUDE_DUPS;
-        String queryString = "chr1:153425249-153425249";
-        int windowSize = 1;
-        File wigFile = null;
-        Genome genome = null;
-
-        TestDataConsumer dc = new TestDataConsumer();
-
-        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, wigFile, genome, queryString, 0, options);
-
-        cc.parse();
-
-        String totalCount = dc.attributes.get("totalCount");
-
-        assertEquals("22", totalCount);
-
-    }
 
 
     static class TestDataConsumer implements DataConsumer {

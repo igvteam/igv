@@ -120,13 +120,16 @@ abstract public class TrackPanelComponent extends JPanel {
         if (t != null) {
             IGV.getInstance().clearSelections();
             t.setSelected(true);
-            if (trackPanel.getScrollPane().getVerticalScrollBar().isShowing()) {
-                trackPanel.getScrollPane().getVerticalScrollBar().setValue(t.getY());
-            }
+            scrollToPosition(t.getY());
             return true;
         }
-
         return false;
+    }
+
+    public void scrollToPosition(int y) {
+        if (trackPanel.getScrollPane().getVerticalScrollBar().isShowing()) {
+            trackPanel.getScrollPane().getVerticalScrollBar().setValue(y);
+        }
     }
 
     int searchIdx = 0;
@@ -226,10 +229,6 @@ abstract public class TrackPanelComponent extends JPanel {
             ReferenceFrame frame = FrameManager.getDefaultFrame();
             JMenuItem exportFeats = TrackMenuUtils.getExportFeatures(selectedTracks, frame);
             if (exportFeats != null) menu.add(exportFeats);
-
-            JMenuItem exportNames = new JMenuItem("Export track names...");
-            exportNames.addActionListener(e12 -> TrackMenuUtils.exportTrackNames(selectedTracks));
-            menu.add(exportNames);
 
             menu.addSeparator();
             menu.add(TrackMenuUtils.getRemoveMenuItem(selectedTracks));

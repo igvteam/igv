@@ -44,7 +44,7 @@ public class GWASParserTest extends AbstractHeadlessTest {
     @Test
     public void testParse_underflows() throws Exception {
         GWASParser parser = new GWASParser(new ResourceLocator(TestUtils.DATA_DIR + "gwas/smallp.gwas"), genome);
-        Map<String, List<GWASFeature>> data = parser.parse();
+        GWASData data = parser.parse();
         for (List<GWASFeature> features : data.values()) {
             for (GWASFeature f : features) {
                 double val = f.value;
@@ -58,7 +58,7 @@ public class GWASParserTest extends AbstractHeadlessTest {
     @Test
     public void testParseStarts() throws Exception {
         GWASParser parser = new GWASParser(new ResourceLocator(TestUtils.DATA_DIR + "gwas/smallp.gwas"), genome);
-        Map<String, List<GWASFeature>> data = parser.parse();
+        GWASData data = parser.parse();
         List<GWASFeature> features = data.get("chr6");
 
         int[] expStarts = {29622220, 29623739, 29623739};
@@ -79,7 +79,7 @@ public class GWASParserTest extends AbstractHeadlessTest {
         GWASParser parser = new GWASParser(new ResourceLocator(TestUtils.DATA_DIR + "gwas/" + finame), genome);
         boolean excepted = false;
 
-        Map<String, List<GWASFeature>> data = parser.parse();
+        GWASData data = parser.parse();
 
         assertTrue(data.isEmpty());
 

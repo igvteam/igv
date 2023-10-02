@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * @author jacob
@@ -49,7 +50,7 @@ import static junit.framework.Assert.assertEquals;
  */
 public class MergedAlignmentReaderTest extends AbstractHeadlessTest {
 
-    public static String[] generateRepLargebamsList(File listFile) throws IOException{
+    public static String[] generateRepLargebamsList(File listFile) throws IOException {
         listFile.delete();
         listFile.deleteOnExit();
         String listPath = listFile.getPath();
@@ -57,7 +58,8 @@ public class MergedAlignmentReaderTest extends AbstractHeadlessTest {
         return IGVToolsTest.generateRepLargebamsList(listPath, "HG00171.hg18.bam", 2);
     }
 
-    @Test @Ignore("Requires largedata bundle")
+    @Test
+    @Ignore("Requires largedata bundle")
     public void testSimpleRead() throws Exception {
 
         File listFile = new File(TestUtils.LARGE_DATA_DIR, "2largebams.bam.list");
@@ -107,6 +109,30 @@ public class MergedAlignmentReaderTest extends AbstractHeadlessTest {
         for (Float score : singCounts.keySet()) {
             assertEquals(2 * singCounts.get(score), (int) combinedCounts.get(score));
         }
+    }
+
+
+    @Test
+    public void testSortOrder() throws Exception {
+        String listPath = TestUtils.DATA_DIR + "bam/test.unindexed.bam.list";
+
+        AlignmentReader mergedReader = AlignmentReaderFactory.getBamListReader(listPath, false);
+        CloseableIterator<Alignment> iter = mergedReader.iterator();
+
+        int lastPosition = 0;
+        String lastChr = "";
+        while (iter.hasNext()) {
+            Alignment a = iter.next();
+            String chr = a.getChr();
+            int pos = a.getAlignmentStart();
+            assertTrue(chr.compareTo(lastChr) >= 0);
+            if(lastChr.equals(chr)) {
+                assertTrue(pos >= lastPosition);
+            }
+            lastChr = chr;
+            lastPosition = pos;
+        }
+        iter.close();
     }
 
 }

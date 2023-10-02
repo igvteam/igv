@@ -251,7 +251,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     }
 
     @Override
-    protected void setRenderer(Renderer renderer) {
+    public void setRenderer(Renderer renderer) {
         this.renderer = (DataRenderer) renderer;
     }
 

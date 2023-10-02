@@ -57,7 +57,6 @@ import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import static org.broad.igv.prefs.Constants.*;
 import static org.broad.igv.util.stream.SeekableServiceStream.WEBSERVICE_URL;
@@ -197,13 +196,18 @@ public class HttpUtils {
      */
     public static String mapURL(String urlString) throws MalformedURLException {
 
+        // Check explicit mappings first
+        if (urlMappings.containsKey(urlString)) {
+            return urlMappings.get(urlString);
+        }
+
         if (urlString.startsWith("htsget://")) {
             urlString = urlString.replace("htsget://", "https://");
         } else if (urlString.startsWith("gs://")) {
             urlString = GoogleUtils.translateGoogleCloudURL(urlString);
         }
 
-        if (GoogleUtils.isGoogleCloud(urlString)) {
+        if (GoogleUtils.isGoogleURL(urlString)) {
             if (urlString.indexOf("alt=media") < 0) {
                 urlString = URLUtils.addParameter(urlString, "alt=media");
             }
@@ -221,6 +225,8 @@ public class HttpUtils {
             urlString = urlString.replace("//www.dropbox.com", "//dl.dropboxusercontent.com");
         } else if (host.equals("drive.google.com")) {
             urlString = GoogleUtils.driveDownloadURL(urlString);
+        } else if (host.equals("igv.genepattern.org")) {
+            urlString = urlString.replace("//igv.genepattern.org", "//igv-genepattern-org.s3.amazonaws.com");
         }
 
         // data.broadinstitute.org requires https
@@ -314,7 +320,10 @@ public class HttpUtils {
         conn.getOutputStream().write(postDataBytes);
 
         StringBuilder response = new StringBuilder();
+        System.out.println(conn.getResponseMessage());
         Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+
+
         for (int c; (c = in.read()) >= 0; ) {
             response.append((char) c);
         }
@@ -637,6 +646,7 @@ public class HttpUtils {
         return openConnection(url, Collections.<String, String>emptyMap(), "DELETE");
     }
 
+    // Called by IGVSeekableHTTPStream.openInputStreamForRange
     public HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
         return openConnection(url, requestProperties, "GET");
     }
@@ -679,12 +689,14 @@ public class HttpUtils {
 
             // If the URL is protected via an oAuth provider fetch token, and optionally map url with find/replace string.
             OAuthProvider oauthProvider = OAuthUtils.getInstance().getProviderForURL(url);
+
             if (oauthProvider != null) {
                 //Google is skipped here as we don't yet know if the url is protected or not.  Login is invoked after 401 error
-                if(!oauthProvider.isGoogle()) {
+                if (!oauthProvider.isGoogle()) {
                     oauthProvider.checkLogin();
                 }
                 token = oauthProvider.getAccessToken();
+
                 if (oauthProvider.findString != null) {
                     // A hack, supported for backward compatibility but not reccomended
                     url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
@@ -720,6 +732,7 @@ public class HttpUtils {
                 GoogleUtils.getProjectID() != null &&
                 GoogleUtils.getProjectID().length() > 0 &&
                 !hasQueryParameter(url, "userProject")) {
+
             url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
         }
 
@@ -843,6 +856,9 @@ public class HttpUtils {
                     throw new FileNotFoundException(message);
                 } else if (code == 401) {
                     OAuthProvider provider = OAuthUtils.getInstance().getProviderForURL(url);
+                    if(provider == null && GoogleUtils.isGoogleURL(url.toExternalForm())) {
+                        provider = OAuthUtils.getInstance().getGoogleProvider();
+                    }
                     if (provider != null && retries == 0) {
                         if (!provider.isLoggedIn()) {
                             provider.checkLogin();
@@ -860,7 +876,7 @@ public class HttpUtils {
                     message = conn.getResponseMessage();
                     String details = readErrorStream(conn);
 
-                    if (url.getHost().equals("www.googleapis.com") && details.contains("requester pays bucket")) {
+                    if (GoogleUtils.isGoogleURL(url.toExternalForm()) && details.contains("requester pays bucket")) {
                         MessageUtils.showMessage("<html>" + details + "<br>Use Google menu to set project.");
                     }
 
@@ -1145,6 +1161,19 @@ public class HttpUtils {
         }
     }
 
+    /**
+     * Return true if URL has a known "Signed" signature.  There is no expecation this is comprehensive, but it
+     * does match Amazon and Google patterns and possibly others*
+     *
+     * @param url
+     * @return
+     */
+    public static boolean isSignedURL(String url) {
+        Pattern pattern = Pattern.compile("X-.*-Signature");
+        Matcher matcher = pattern.matcher(url);
+        return matcher.find();
+    }
+
     public class UnsatisfiableRangeException extends RuntimeException {
 
         String message;
@@ -1186,4 +1215,18 @@ public class HttpUtils {
             return maxAge;
         }
     }
+
+    private static Map<String, String> urlMappings;
+
+    static {
+        // mutable map
+        urlMappings = new HashMap<>();
+        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta", "https://igv.genepattern.org/genomes/seq/hg19/hg19.fasta");
+        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta.fai", "https://igv.genepattern.org/genomes/seq/hg19/hg19.fasta.fai");
+        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/cytoBand.txt", "https://igv.genepattern.org/genomes/seq/hg19/cytoBand.txt");
+        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa", "https://igv.genepattern.org/genomes/seq/hg38/hg38.fa");
+        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.fai", "https://igv.genepattern.org/genomes/seq/hg38/hg38.fa.fai");
+    }
+
+
 }

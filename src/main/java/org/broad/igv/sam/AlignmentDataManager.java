@@ -25,6 +25,7 @@
 
 package org.broad.igv.sam;
 
+import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
@@ -35,6 +36,8 @@ import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.mods.BaseModificationKey;
+import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.Track;
@@ -44,6 +47,7 @@ import org.broad.igv.util.ResourceLocator;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -57,17 +61,20 @@ public class AlignmentDataManager implements IGVEventObserver {
     private static Logger log = LogManager.getLogger(AlignmentDataManager.class);
     private final AlignmentReader reader;
 
-
     private AlignmentTrack alignmentTrack;
     private CoverageTrack coverageTrack;
     private Set<Track> subscribedTracks;
-
     private List<AlignmentInterval> intervalCache;
     private ResourceLocator locator;
     private HashMap<String, String> chrMappings = new HashMap();
     private AlignmentTileLoader loader;
     private Map<String, PEStats> peStats;
     private SpliceJunctionHelper.LoadOptions loadOptions;
+
+    private Set<BaseModificationKey> allBaseModificationKeys = new HashSet<>();
+
+    private Set<String> simplexBaseModfications = new HashSet<>();
+
     private Range currentlyLoading;
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
@@ -192,6 +199,13 @@ public class AlignmentDataManager implements IGVEventObserver {
         return peStats;
     }
 
+    /**
+     * Return all base modfications seen in loaded alignments
+     */
+    public Set<BaseModificationKey> getAllBaseModificationKeys() {
+        return allBaseModificationKeys;
+    }
+
     public boolean isPairedEnd() {
         return getLoader().isPairedEnd();
     }
@@ -214,10 +228,6 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public CoverageTrack getCoverageTrack() {
         return coverageTrack;
-    }
-
-    public double getMinVisibleScale() {
-        return getVisibilityWindow() / 700;
     }
 
     public double getVisibilityWindow() {
@@ -255,12 +265,13 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public AlignmentInterval getLoadedInterval(ReferenceFrame frame, boolean includeOverlaps) {
+        // Search for interval completely containining reference frame region
         for (AlignmentInterval interval : intervalCache) {
             if (interval.contains(frame.getCurrentRange())) {
                 return interval;
             }
         }
-        // No contains, look for overlap
+        // No interval contains entire region of frame, look for intervael with at least some overlap
         if (includeOverlaps) {
             for (AlignmentInterval interval : intervalCache) {
                 if (interval.overlaps(frame.getCurrentRange())) {
@@ -301,7 +312,7 @@ public class AlignmentDataManager implements IGVEventObserver {
                      AlignmentTrack.RenderOptions renderOptions,
                      boolean expandEnds) {
 
-        if (frame.getChrName().equals(Globals.CHR_ALL) || frame.getScale() > getMinVisibleScale())
+        if (frame.getChrName().equals(Globals.CHR_ALL) || (frame.getEnd() - frame.getOrigin()) > getVisibilityWindow())
             return; // should not happen
 
         if (isLoaded(frame)) {
@@ -341,13 +352,13 @@ public class AlignmentDataManager implements IGVEventObserver {
 
             intervalCache.add(loadedInterval);
 
-            packAlignments(renderOptions);
+            loadedInterval.packAlignments(renderOptions);
 
         } finally {
             currentlyLoading = null;
         }
 
-        //  IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
+        IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
 
     }
 
@@ -379,7 +390,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
 
-        String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
+        String sequence = chrMappings.getOrDefault(chr, chr);
 
         DownsampleOptions downsampleOptions = new DownsampleOptions();
 
@@ -390,9 +401,33 @@ public class AlignmentDataManager implements IGVEventObserver {
 
         AlignmentTileLoader.AlignmentTile t = getLoader().loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, peStats, bisulfiteContext, renderOptions);
-      List<Alignment> alignments = t.getAlignments();
+        List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
+        this.updateBaseModfications(alignments);
         return new AlignmentInterval(chr, start, end, alignments, t.getCounts(), spliceJunctionHelper, downsampledIntervals);
+    }
+
+    private void updateBaseModfications(List<Alignment> alignments) {
+
+        for(Alignment a : alignments) {
+            List<BaseModificationSet> bmSets = a.getBaseModificationSets();
+            if(bmSets != null) {
+                for(BaseModificationSet bms : bmSets) {
+                    allBaseModificationKeys.add(BaseModificationKey.getKey(bms.getBase(), bms.getStrand(), bms.getModification()));
+                }
+            }
+        }
+
+        // Search for simplex modifications (single strand read, e.g. C+m with no G-m)
+        Set<String> minusStranMods = allBaseModificationKeys.stream()
+                .filter(key -> key.getStrand() == '-')
+                .map(key -> key.getModification())
+                .collect(Collectors.toSet());
+        for(BaseModificationKey key : allBaseModificationKeys) {
+            if(key.getStrand() == '+' && !minusStranMods.contains(key.getModification()))
+            simplexBaseModfications.add(key.getModification());
+            simplexBaseModfications.add("NONE_" + key.getCanonicalBase());  // Mix of simplex & duplex keys for same base not supported.
+        }
     }
 
     public AlignmentTrack.ExperimentType inferType() {
@@ -418,10 +453,6 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     private AlignmentTrack.ExperimentType getExperimentType() {
         return alignmentTrack == null ? null : alignmentTrack.getExperimentType();
-    }
-
-    private void setExperimentType(AlignmentTrack.ExperimentType type) {
-        if (alignmentTrack != null) alignmentTrack.setExperimentType(type);
     }
 
 
@@ -535,20 +566,16 @@ public class AlignmentDataManager implements IGVEventObserver {
         coverageTrack.setSnpThreshold(PreferencesManager.getPreferences().getAsFloat(SAM_ALLELE_THRESHOLD));
     }
 
-    public boolean isTenX() {
-        return getLoader().isTenX();
-    }
-
     public boolean isPhased() {
         return getLoader().isPhased();
     }
 
-    public boolean isMoleculo() {
-        return getLoader().isMoleculo();
-    }
-
     public Collection<AlignmentInterval> getLoadedIntervals() {
         return intervalCache;
+    }
+
+    public Set<String> getSimplexBaseModifications() {
+        return simplexBaseModfications;
     }
 
     public static class DownsampleOptions {
@@ -587,71 +614,5 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     }
 
-    static class IntervalCache {
-
-        private int maxSize;
-        ArrayList<AlignmentInterval> intervals;
-
-        public IntervalCache() {
-            this(1);
-        }
-
-        public IntervalCache(int ms) {
-            this.maxSize = Math.max(1, ms);
-            intervals = new ArrayList<>(maxSize);
-        }
-
-        void setMaxSize(int ms, List<ReferenceFrame> frames) {
-            this.maxSize = Math.max(1, ms);
-            if (intervals.size() > maxSize) {
-                // Reduce size.  Try to keep intervals that cover frame ranges.  This involves a linear search
-                // of potentially (intervals.size X frames.size) elements.  Don't attempt if this number is too large
-                if (frames.size() * intervals.size() < 25) {
-                    ArrayList<AlignmentInterval> tmp = new ArrayList<>(maxSize);
-                    for (AlignmentInterval interval : intervals) {
-                        if (tmp.size() == maxSize) break;
-                        for (ReferenceFrame frame : frames) {
-                            Range range = frame.getCurrentRange();
-                            if (interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
-                                tmp.add(interval);
-                                break;
-                            }
-                        }
-                    }
-                    intervals = tmp;
-                } else {
-                    intervals = new ArrayList(intervals.subList(0, maxSize));
-                    intervals.trimToSize();
-                }
-            }
-        }
-
-        public void add(AlignmentInterval interval) {
-            if (intervals.size() >= maxSize) {
-                intervals.remove(0);
-            }
-            intervals.add(interval);
-        }
-
-        public AlignmentInterval getIntervalForRange(Range range) {
-
-            for (AlignmentInterval interval : intervals) {
-                if (interval.contains(range.getChr(), range.getStart(), range.getEnd())) {
-                    return interval;
-                }
-            }
-
-            return null;
-
-        }
-
-        public Collection<AlignmentInterval> values() {
-            return intervals;
-        }
-
-        public void clear() {
-            intervals.clear();
-        }
-    }
 }
 

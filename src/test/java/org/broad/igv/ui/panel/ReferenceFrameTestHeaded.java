@@ -52,7 +52,7 @@ public class ReferenceFrameTestHeaded extends AbstractHeadedTest{
     @Test
     public void testGeneListView(){
         List<String> loci = Arrays.asList("chr1:10000-20000", "chr2:30000-40000");
-        GeneList geneList = new GeneList("", loci, false);
+        GeneList geneList = new GeneList("", loci);
 
         IGV.getInstance().getSession().setCurrentGeneList(geneList);
         IGV.getInstance().resetFrames();

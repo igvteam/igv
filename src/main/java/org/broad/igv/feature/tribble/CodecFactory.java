@@ -86,6 +86,7 @@ public class CodecFactory {
             case "vcf4":
                 return new VCFWrapperCodec(new VCFCodec(), genome);
             case "vcf":
+            case "gvcf":
                 return new VCFWrapperCodec(getVCFCodec(locator), genome);
             case "bcf":
                 return new BCF2WrapperCodec(new BCF2Codec(), genome);
@@ -137,6 +138,9 @@ public class CodecFactory {
                 return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
             case "genepredext":
                 return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED_EXT, genome);
+            case "bedmethyl":
+                return new IGVBEDCodec(genome, FeatureType.BED_METHYL);
+
             default:
                 if (MUTCodec.isMutationAnnotationFile(locator)) {
                     return new MUTCodec(path, genome);

@@ -258,7 +258,7 @@ public class TrackMenuUtils {
                 }
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        changeRenderer(tracks, rendererClass);
+                        changeRendererClass(tracks, rendererClass);
                     }
                 });
                 menu.add(item);
@@ -384,27 +384,6 @@ public class TrackMenuUtils {
         }
 
 
-    }
-
-    private static void addCombinedDataTrack(List<DataTrack> dataTracks, CombinedDataSource.Operation op) {
-        String text = "";
-        switch (op) {
-            case ADD:
-                text = "Sum";
-                break;
-            case SUBTRACT:
-                text = "Difference";
-                break;
-        }
-        DataTrack track0 = dataTracks.get(0);
-        DataTrack track1 = dataTracks.get(1);
-        CombinedDataSource source = new CombinedDataSource(track0, track1, op);
-
-        DataSourceTrack newTrack = new DataSourceTrack(null, track0.getId() + track1.getId() + text, text, source);
-        changeRenderer(Arrays.<Track>asList(newTrack), track0.getRenderer().getClass());
-        newTrack.setDataRange(track0.getDataRange());
-        newTrack.setColorScale(track0.getColorScale());
-        IGV.getInstance().addTracks(Arrays.<Track>asList(newTrack), PanelName.DATA_PANEL);
     }
 
     /**
@@ -1019,7 +998,7 @@ public class TrackMenuUtils {
     }
 
 
-    public static void changeRenderer(final Collection<Track> selectedTracks, Class rendererClass) {
+    public static void changeRendererClass(final Collection<Track> selectedTracks, Class rendererClass) {
         for (Track track : selectedTracks) {
             track.setRendererClass(rendererClass);
         }
@@ -1225,55 +1204,6 @@ public class TrackMenuUtils {
         IGV.getInstance().repaint(tracks);
 
     }
-
-    public static void exportTrackNames(final Collection<Track> selectedTracks) {
-
-        if (selectedTracks.isEmpty()) {
-            return;
-        }
-
-        File file = FileDialogUtils.chooseFile("Export track names",
-                PreferencesManager.getPreferences().getLastTrackDirectory(),
-                new File("trackNames.tab"),
-                FileDialogUtils.SAVE);
-
-        if (file == null) {
-            return;
-        }
-
-        PrintWriter pw = null;
-        try {
-            pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
-
-            List<String> attributes = AttributeManager.getInstance().getVisibleAttributes();
-
-            pw.print("Name");
-            for (String att : attributes) {
-                pw.print("\t" + att);
-            }
-            pw.println();
-
-            for (Track track : selectedTracks) {
-                //We preserve the alpha value. This is motivated by MergedTracks
-                pw.print(track.getName());
-
-                for (String att : attributes) {
-                    String val = track.getAttributeValue(att);
-                    pw.print("\t" + (val == null ? "" : val));
-                }
-                pw.println();
-            }
-
-
-        } catch (IOException e) {
-            MessageUtils.showErrorMessage("Error writing to file", e);
-            log.error(e);
-        } finally {
-            if (pw != null) pw.close();
-        }
-
-    }
-
 
     public static JMenuItem getCopyDetailsItem(final Feature f, final TrackClickEvent evt) {
         JMenuItem item = new JMenuItem("Copy Details to Clipboard");

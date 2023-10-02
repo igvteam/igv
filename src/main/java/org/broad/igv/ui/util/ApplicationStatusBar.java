@@ -27,15 +27,20 @@
 package org.broad.igv.ui.util;
 
 import com.jidesoft.swing.JideBoxLayout;
+import org.broad.igv.event.StopEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.oauth.OAuthProvider;
+import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.ui.IGV;
 //import org.broad.igv.event.StopEvent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.TimerTask;
 
@@ -78,6 +83,7 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
 
         stopButton = new JButton();
         stopButton.setBorder(BorderFactory.createLineBorder(Color.black));
+        stopButton.addActionListener(e -> IGVEventBus.getInstance().post(new StopEvent()));
         stopButton.setIcon(new javax.swing.ImageIcon(
                 getClass().getResource("/toolbarButtonGraphics/general/Stop16.gif")));
         stopButton.setMaximumSize(new java.awt.Dimension(16, 16));
@@ -152,16 +158,23 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
 
     @Override
     public void receiveEvent(Object event) {
-        if(event instanceof OAuthProvider.AuthStateEvent) {
-            boolean isAuthed = ((OAuthProvider.AuthStateEvent) event).isAuthenticated();
-            String authProvider = ((OAuthProvider.AuthStateEvent) event).getAuthProvider();
-            String userName = ((OAuthProvider.AuthStateEvent) event).getUserName();
-            String email = ((OAuthProvider.AuthStateEvent) event).getEmail();
+        if (event instanceof OAuthProvider.AuthStateEvent) {
 
-            if (isAuthed) {
-                setMessage3("Logged in as: " + email + " via " + authProvider);
-            } else {
-                setMessage3("");
+            String msg = "";
+            for (OAuthProvider provider : OAuthUtils.getInstance().getAllProviders()) {
+                if (provider.isLoggedIn()) {
+                    if(msg.length() == 0) {
+                        msg += "Logged in as: ";
+                    } else {
+                        msg += ";  ";
+                    }
+                    String user = provider.getCurrentUserEmail();
+                    if(user == null || user.length() == 0) {
+                        user = provider.getCurrentUserName();
+                    }
+                    msg += user + " via " + provider.getAuthProvider();
+                }
+                setMessage3(msg);
             }
         }
     }

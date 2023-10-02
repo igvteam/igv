@@ -50,7 +50,7 @@ public class MenuAction extends AbstractAction {
     public MenuAction(String name, Icon icon, int mnemonic) {
         super(name, icon);
         if(mnemonic >= 0) {
-            putValue(MNEMONIC_KEY, new Integer(mnemonic));
+            putValue(MNEMONIC_KEY, mnemonic);
         }
     }
 

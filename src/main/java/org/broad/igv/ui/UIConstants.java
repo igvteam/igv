@@ -91,7 +91,7 @@ public class UIConstants {
     final public static String OVERWRITE_SESSION_MESSAGE =
             "<html>Opening a session will unload all current data. " + "<br>Are you sure you wish to continue?";
     final public static String CANNOT_ACCESS_SERVER_GENOME_LIST = "The Genome server is currently inaccessible.";
-    final public static int NUMBER_OF_RECENT_SESSIONS_TO_LIST = 3;
+    final public static int NUMBER_OF_RECENT_SESSIONS_TO_LIST = 10;
     final public static String DEFAULT_SESSION_FILE = "igv_session" + Globals.SESSION_FILE_EXTENSION;
     static final public String SERVER_BASE_URL = "http://www.broadinstitute.org/";
     static final public Color LIGHT_YELLOW = new Color(255, 244, 201);

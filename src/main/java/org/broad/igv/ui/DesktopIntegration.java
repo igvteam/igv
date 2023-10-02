@@ -58,14 +58,10 @@ public class DesktopIntegration {
     public static void setAboutHandler(IGVMenuBar igvMenuBar) {
         Desktop.getDesktop().setAboutHandler(e -> igvMenuBar.showAboutDialog());
     }
-    
+
     public static void setQuitHandler() {
         Desktop.getDesktop().setQuitHandler((e, response) -> {
-            try {
-                ShutdownThread.runS();
-            } finally {
-                response.performQuit();
-            }
+            response.performQuit();
         });
     }
 }

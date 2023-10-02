@@ -33,22 +33,31 @@ import org.broad.igv.variant.Allele;
  */
 public class VCFAllele implements Allele {
 
-    byte[] bases;
+    htsjdk.variant.variantcontext.Allele htsjdkAllele;
 
-    public VCFAllele(byte[] bases) {
-        this.bases = bases;
+
+    public VCFAllele(htsjdk.variant.variantcontext.Allele htsjdkAllele) {
+        this.htsjdkAllele = htsjdkAllele;
     }
 
     public byte[] getBases() {
-        return bases;
+        return htsjdkAllele.getBases();
+    }
+
+    public boolean isNonRefAllele() {
+        return htsjdkAllele.isNonRefAllele();
     }
 
     @Override
     public String getDisplayString() {
-        return new String(bases);
+        return toString();
     }
 
     public String toString() {
-        return new String(bases);
+        if (htsjdkAllele.isNonRefAllele()) {
+            return "NON_REF";
+        } else
+            return htsjdkAllele.getDisplayString();
     }
+
 }

@@ -43,12 +43,12 @@ public class TDFReaderTest {
 
     @Test
     public void testReader() throws Exception {
-        String url = "http://data.broadinstitute.org/igvdata/encode/hg18/broadHistone/SignalK562H3k4me3.tdf";
+        String url = "http://data.broadinstitute.org/igvdata/tutorials/hg18/wgEncodeBroadChipSeqSignalK562H3k4me3.wig.gz.tdf";
 
         TDFReader reader =  new TDFReader(new ResourceLocator(url));
 
         int version = reader.getVersion();
-        assertEquals(3, version);
+        assertEquals(4, version);
         assertTrue(reader.compressed);
 
         String [] trackNames = reader.getTrackNames();
@@ -56,7 +56,7 @@ public class TDFReaderTest {
         assertEquals(1, nTracks);
 
         String trackName = trackNames[0];
-        assertEquals(trackName, "SignalK562H3k4me3.wig.gz");
+        assertEquals(trackName, "wgEncodeBroadChipSeqSignalK562H3k4me3.wig.gz");
 
         Set<String> chrNames = reader.getChromosomeNames();
         int nChromosomes = chrNames.size();

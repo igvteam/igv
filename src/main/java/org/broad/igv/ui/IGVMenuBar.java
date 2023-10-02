@@ -36,6 +36,9 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeUtils;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.Track;
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.oauth.OAuthUtils;
@@ -69,10 +72,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -97,6 +100,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenu toolsMenu;
     private JMenu googleMenu;
     private JMenu AWSMenu;
+    private AutosaveMenu autosaveMenu;
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
     private IGV igv;
@@ -177,12 +181,13 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         //extrasMenu.setVisible(false);
         menus.add(extrasMenu);
 
+        // Create a placehold Google menu.  If not explicitly enabled it will remain invisible until triggered
+        // by loading a protected Google resource
         try {
             googleMenu = createGoogleMenu();
-            if (googleMenu != null) {
-                googleMenu.setVisible(PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU));
-                menus.add(googleMenu);
-            }
+            boolean enabled = PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU);
+            enableGoogleMenu(enabled);
+            menus.add(googleMenu);
         } catch (IOException e) {
             log.error("Error creating google menu: " + e.getMessage());
         }
@@ -191,7 +196,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             AWSMenu = createAWSMenu();
             AWSMenu.setVisible(AmazonUtils.isAwsProviderPresent());
             menus.add(AWSMenu);
-
         } catch (IOException e) {
             log.error("Error creating the Amazon AWS menu: " + e.getMessage());
             AWSMenu.setVisible(false);
@@ -322,6 +326,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         reloadSessionItem.setEnabled(false);
         menuItems.add(reloadSessionItem);
 
+        autosaveMenu = new AutosaveMenu();
+        menuItems.add(autosaveMenu);
+
         menuItems.add(new JSeparator());
 
         // ***** Snapshots
@@ -375,7 +382,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             String[] sessions = recentSessions.split(";");
             for (String sessionPath : sessions) {
                 if (!sessionPath.equals("null") &&
-                        !igv.getRecentSessionList().contains(sessionPath)) {
+                        !igv.getRecentSessionList().contains(sessionPath) &&
+                        (new File(sessionPath)).exists()) {
                     igv.getRecentSessionList().add(sessionPath);
                 }
 
@@ -507,6 +515,16 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.OVERLAY_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+        // Export track names and attributes -- if > 1 i sselected export those, otherwise export all
+        JMenuItem exportNames = new JMenuItem("Export Track Names and Attributes...");
+        exportNames.addActionListener(e12 -> {
+            Collection<Track> exportTracks = IGV.getInstance().getSelectedTracks();
+            if (exportTracks.size() <= 1) {
+                exportTracks = IGV.getInstance().getAllTracks();
+            }
+            exportTrackNames(exportTracks);
+        });
+        menuItems.add(exportNames);
 
         menuItems.add(new JSeparator());
 
@@ -590,11 +608,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 if (newValue != null) {
                     try {
                         Integer w = Integer.parseInt(newValue);
-                        if (w <= 0 || w == 1000) throw new NumberFormatException();
+                        if (w <= 0) throw new NumberFormatException();
                         PreferencesManager.getPreferences().put(NAME_PANEL_WIDTH, newValue);
                         mainPanel.setNamePanelWidth(w);
                     } catch (NumberFormatException ex) {
-                        MessageUtils.showErrorMessage("Error: value must be a positive integer < 1000.", ex);
+                        MessageUtils.showErrorMessage("Error: value must be a positive integer.", ex);
                     }
                 }
             }
@@ -1003,72 +1021,72 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return menu;
     }
 
-    private JMenu createGoogleMenu() throws IOException {
+    private JMenu createGoogleMenu() {
 
-        // Dynamically name menu - dwm08
-        final OAuthProvider oauth = OAuthUtils.getInstance().getDefaultProvider();
+        googleMenu = new JMenu("Google");
 
-        if (oauth != null) {
+        final JMenuItem login = new JMenuItem("Login ... ");
+        login.addActionListener(e -> {
+            try {
+                OAuthUtils.getInstance().getGoogleProvider().openAuthorizationPage();
+            } catch (Exception ex) {
+                MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
+                log.error("Error fetching oAuth tokens", ex);
+            }
 
-            JMenu menu = new JMenu("Google");
+        });
+        googleMenu.add(login);
 
-            boolean isLoggedIn = oauth.isLoggedIn();
+        final JMenuItem logout = new JMenuItem("Logout ");
+        logout.addActionListener(e -> {
+            OAuthUtils.getInstance().getGoogleProvider().logout();
+            GoogleUtils.setProjectID(null);
+        });
+        googleMenu.add(logout);
 
-            final JMenuItem login = new JMenuItem("Login ... ");
-            login.addActionListener(e -> {
-                try {
-                    oauth.openAuthorizationPage();
-                } catch (Exception ex) {
-                    MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
-                    log.error("Error fetching oAuth tokens", ex);
+        final JMenuItem projectID = new JMenuItem("Enter Project ID ...");
+        projectID.addActionListener(e -> GoogleUtils.enterGoogleProjectID());
+        googleMenu.add(projectID);
+
+        googleMenu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                OAuthProvider oauth = OAuthUtils.getInstance().getGoogleProvider();
+                boolean loggedIn = oauth.isLoggedIn();
+                if (loggedIn && oauth.getCurrentUserName() != null) {
+                    login.setText(oauth.getCurrentUserName());
+                } else {
+                    login.setText("Login ...");
                 }
+                login.setEnabled(!loggedIn);
+                logout.setEnabled(loggedIn);
+            }
 
-            });
-            login.setEnabled(!isLoggedIn);
-            menu.add(login);
+            @Override
+            public void menuDeselected(MenuEvent e) {
+
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+
+            }
+
+        });
+
+        return googleMenu;
+    }
 
 
-            final JMenuItem logout = new JMenuItem("Logout ");
-            logout.addActionListener(e -> {
-                oauth.logout();
-                GoogleUtils.setProjectID(null);
-            });
-            logout.setEnabled(isLoggedIn);
-            menu.add(logout);
-
-            final JMenuItem projectID = new JMenuItem("Enter Project ID ...");
-            projectID.addActionListener(e -> GoogleUtils.enterGoogleProjectID());
-            menu.add(projectID);
-
-            menu.addMenuListener(new MenuListener() {
-                @Override
-                public void menuSelected(MenuEvent e) {
-                    OAuthProvider oAuthProvider = OAuthUtils.getInstance().getDefaultProvider();
-                    boolean loggedIn = oAuthProvider.isLoggedIn();
-                    if (loggedIn && oAuthProvider.getCurrentUserName() != null) {
-                        login.setText(oAuthProvider.getCurrentUserName());
-                    } else {
-                        login.setText("Login ...");
-                    }
-                    login.setEnabled(!loggedIn);
-                    logout.setEnabled(loggedIn);
-                }
-
-                @Override
-                public void menuDeselected(MenuEvent e) {
-
-                }
-
-                @Override
-                public void menuCanceled(MenuEvent e) {
-
-                }
-
-            });
-            return menu;
-        } else {
-            return null;
-        }
+    /**
+     * The Google menu is enabled dynamically to defer loading of oAuth properties until needed.
+     * *
+     *
+     * @return
+     * @throws IOException
+     */
+    public void enableGoogleMenu(boolean enable) throws IOException {
+        googleMenu.setVisible(enable);
     }
 
 //    public void enableRemoveGenomes() {
@@ -1139,11 +1157,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         instance = null;
     }
 
-    public void enableGoogleMenu(boolean aBoolean) {
-        if (googleMenu != null) {
-            googleMenu.setVisible(aBoolean);
-        }
-    }
 
     @Override
     public void receiveEvent(final Object event) {
@@ -1177,4 +1190,53 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         return menuItem;
     }
+
+    private void exportTrackNames(final Collection<Track> selectedTracks) {
+
+        if (selectedTracks.isEmpty()) {
+            return;
+        }
+
+        File file = FileDialogUtils.chooseFile("Export track names",
+                PreferencesManager.getPreferences().getLastTrackDirectory(),
+                new File("trackNames.txt"),
+                FileDialogUtils.SAVE);
+
+        if (file == null) {
+            return;
+        }
+
+        PrintWriter pw = null;
+        try {
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+
+            List<String> attributes = AttributeManager.getInstance().getVisibleAttributes();
+
+            pw.print("Name");
+            for (String att : attributes) {
+                pw.print("\t" + att);
+            }
+            pw.println();
+
+            for (Track track : selectedTracks) {
+                //We preserve the alpha value. This is motivated by MergedTracks
+                pw.print(track.getName());
+
+                for (String att : attributes) {
+                    String val = track.getAttributeValue(att);
+                    pw.print("\t" + (val == null ? "" : val));
+                }
+                pw.println();
+            }
+
+
+        } catch (IOException e) {
+            MessageUtils.showErrorMessage("Error writing to file", e);
+            log.error(e);
+        } finally {
+            if (pw != null) pw.close();
+        }
+
+    }
+
 }

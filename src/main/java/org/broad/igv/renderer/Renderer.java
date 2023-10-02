@@ -41,6 +41,6 @@ import java.awt.*;
  */
 public interface Renderer<T extends Feature> {
 
-    public abstract void render(java.util.List<T> features, RenderContext context, Rectangle rect, Track track);
+    void render(java.util.List<T> features, RenderContext context, Rectangle rect, Track track);
 
 }

@@ -334,10 +334,10 @@ public class Genome {
                 }
                 offset += getChromosome(c).getLength();
             }
-            cumOffset = new Long(offset);
+            cumOffset = offset;
             cumulativeOffsets.put(chr, cumOffset);
         }
-        return cumOffset.longValue();
+        return cumOffset;
     }
 
     /**
@@ -383,7 +383,7 @@ public class Genome {
     }
 
     public String getBlatDB() {
-        return blatDB != null ? blatDB : id;
+        return blatDB;
     }
 
     public void setBlatDB(String blatDB) {

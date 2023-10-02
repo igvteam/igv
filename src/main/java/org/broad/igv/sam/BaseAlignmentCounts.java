@@ -206,7 +206,6 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         int delCount = getDelCount(pos);
         int insCount = getInsCount(pos);
         if (delCount > 0 || insCount > 0) {
-            buf.append("<br>---------------");
             buf.append("<br>DEL: " + delCount);
             buf.append("<br>INS: " + insCount);
         }
@@ -281,27 +280,19 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
             return;
         }
 
-        knownSnps = new HashMap();
-        AsciiLineReader reader = null;
-        try {
-            reader = ParsingUtils.openAsciiReader(new ResourceLocator(snpFile));
+        knownSnps = new HashMap<>();
+        try (AsciiLineReader reader = ParsingUtils.openAsciiReader(new ResourceLocator(snpFile))) {
             String nextLine = "";
             while ((nextLine = reader.readLine()) != null) {
                 String[] tokens = nextLine.split("\t");
                 String chr = tokens[0];
-                Set<Integer> snps = knownSnps.get(chr);
-                if (snps == null) {
-                    snps = new HashSet(10000);
-                    knownSnps.put(chr, snps);
-                }
-                snps.add(new Integer(tokens[1]));
+                Set<Integer> snps = knownSnps.computeIfAbsent(chr, k -> new HashSet<>(10000));
+                snps.add(Integer.valueOf(tokens[1]));
             }
         } catch (Exception e) {
             knownSnps = null;
             log.error("", e);
             MessageUtils.showMessage("Error loading snps file: " + snpFile + " (" + e.toString() + ")");
-        } finally {
-            reader.close();
         }
 
 

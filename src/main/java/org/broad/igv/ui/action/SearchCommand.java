@@ -267,7 +267,7 @@ public class SearchCommand {
                     showMessage = true;
                 }
             }
-            GeneList geneList = new GeneList("", loci, false);
+            GeneList geneList = new GeneList("", loci);
             IGV.getInstance().getSession().setCurrentGeneList(geneList);
         }
         if (resetFrames) {

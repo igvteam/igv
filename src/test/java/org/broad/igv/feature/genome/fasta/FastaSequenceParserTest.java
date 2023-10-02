@@ -44,7 +44,7 @@ public class FastaSequenceParserTest {
 
     @BeforeClass
     public static void setup() throws IOException {
-        String path = "http://data.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
+        String path = "https://igv.genepattern.org/test/fasta/chr22.fa";
         Map<String, byte[]> sequenceMap = FastaSequenceParser.parseFasta(path);
         fastaSequence = new InMemorySequence(sequenceMap);
     }
@@ -53,14 +53,16 @@ public class FastaSequenceParserTest {
     public void testReadSequence() throws Exception {
 
 
-        String chr = "chr02q";
-        int start = 3531385;
-        int end = 3531425;
+        String chr = "chr22";
+        int start = 31084127;
+        int end = 31084167;
 
-        String expectedSequence = "TAATTTTTACGTCTTATTTAAACACATATAATGAATAGGT";
+        String expectedSequence = "GCCACCATGCCTGGCTAGTTTTTTGTATTTTTAGTAGAGA";
+
 
         byte[] seq = fastaSequence.getSequence(chr, start, end);
         String seqString = new String(seq);
+
 
         assertEquals(expectedSequence, seqString);
     }
@@ -68,14 +70,14 @@ public class FastaSequenceParserTest {
     @Test
     public void testReadEnd() throws Exception {
 
-        String chr = "chr02q";
-        int chrLen = 8059593;
+        String chr = "chr22";
+        int chrLen = 51304566;
         int start = chrLen - 10;
         int end = chrLen + 10;
         byte[] bytes = fastaSequence.getSequence(chr, start, end);
         assertEquals(10, bytes.length);
 
-        byte[] expectedSequence = "TTTTTCCCAG".getBytes();
+        byte[] expectedSequence = "NNNNNNNNNN".getBytes();
 
         for (int i = 0; i < 10; i++) {
             assertEquals(expectedSequence[i], bytes[i]);

@@ -178,12 +178,7 @@ public class TrackGroup {
     }
 
     public boolean isVisible() {
-        for (Track t : tracks) {
-            if ((t != null) && t.isVisible()) {
-                return true;
-            }
-        }
-        return false;
+       return tracks.stream().anyMatch(t -> t != null && t.isVisible());
     }
 
     public int getHeight() {

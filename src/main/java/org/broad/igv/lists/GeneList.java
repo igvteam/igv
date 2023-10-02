@@ -41,7 +41,6 @@ public class GeneList {
     private String name;
     private String description;
     private List<String> loci;
-    private boolean showName = true;
 
     public GeneList(String name, String description, String group, List<String> loci) {
         init(name, description, group, loci);
@@ -49,11 +48,6 @@ public class GeneList {
 
     public GeneList(String name, List<String> loci) {
         this(name, null, GeneListManager.USER_GROUP, loci);
-    }
-
-    public GeneList(String name, List<String> loci, boolean showName) {
-        this(name, null, GeneListManager.USER_GROUP, loci);
-        this.showName = showName;
     }
 
     public GeneList() {
@@ -70,10 +64,6 @@ public class GeneList {
 
     public String getName() {
         return name;
-    }
-
-    public String getDisplayName() {
-        return showName ? name : "";
     }
 
     public List<String> getLoci() {
@@ -168,6 +158,6 @@ public class GeneList {
 //    }
 
     public void sort(Comparator<String> comparator) {
-        Collections.sort(this.loci, comparator);
+        this.loci.sort(comparator);
     }
 }
