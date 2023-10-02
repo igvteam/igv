@@ -59,6 +59,7 @@ public class LoadFromURLMenuAction extends MenuAction {
     static Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
     public static final String LOAD_FROM_URL = "Load from URL...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
+    public static final String LOAD_FROM_HTSGET = "Load from htsget Server...";
     private IGV igv;
 
     public LoadFromURLMenuAction(String label, int mnemonic, IGV igv) {
@@ -71,9 +72,10 @@ public class LoadFromURLMenuAction extends MenuAction {
 
         JPanel ta = new JPanel();
         ta.setPreferredSize(new Dimension(600, 20));
-        if (e.getActionCommand().equalsIgnoreCase(LOAD_FROM_URL)) {
+        boolean isHtsGet = e.getActionCommand().equalsIgnoreCase(LOAD_FROM_HTSGET);
+        if (e.getActionCommand().equalsIgnoreCase(LOAD_FROM_URL) || isHtsGet) {
 
-            LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame());
+            LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame(), isHtsGet);
             dlg.setVisible(true);
 
             if (!dlg.isCanceled()) {
@@ -113,6 +115,9 @@ public class LoadFromURLMenuAction extends MenuAction {
                             if (indexes != null) {
                                 String indexUrl = indexes[i];
                                 rl.setIndexPath(indexUrl);
+                            }
+                            if(isHtsGet) {
+                                rl.setHtsget(true);
                             }
                             locators.add(rl);
                         }

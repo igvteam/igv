@@ -41,6 +41,9 @@ public class HtsgetUtils {
             return null;
         } else {
             String format = json.get("htsget").getAsJsonObject().get("format").getAsString();
+//            if(!(format.toUpperCase().equals("BAM")) || format.toUpperCase().equals("VCF")) {
+//                throw new RuntimeException(("Format"))
+//            }
             return new Metadata(url, format);
         }
     }
