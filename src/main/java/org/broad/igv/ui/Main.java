@@ -210,6 +210,7 @@ public class Main {
         log.info("IGV Directory: " + DirectoryManager.getIgvDirectory().getAbsolutePath());
 
         System.setProperty("http.agent", Globals.applicationString());
+        System.setProperty("samjdk.optimistic_vcf_4_4", "true");
 
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
 

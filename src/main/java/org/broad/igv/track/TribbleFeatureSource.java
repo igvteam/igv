@@ -349,7 +349,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                         featureMap.put(igvChr, featureList);
                     }
                     featureList.add(f);
-                    if (f instanceof NamedFeature) FeatureDB.addFeature((NamedFeature) f, genome);
+                    if (f instanceof org.broad.igv.feature.NamedFeature) FeatureDB.addFeature((org.broad.igv.feature.NamedFeature) f, genome);
 
                     if (this.isVCF && f instanceof Variant) {
                         Variant v = (Variant) f;
