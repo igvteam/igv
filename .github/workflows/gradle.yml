@@ -33,7 +33,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        run: ./gradlew -PjdkBundleMac=igv-jdk/build/macos/jdk-11.0.13.jdk/Contents/Home -PjdkBundleMacM1=igv-jdk/build/macos-arm/zulu11.56.19-ca-jdk11.0.15-macosx_aarch64 -PjdkBundleLinux=$JAVA_HOME -PjdkBundleWindows=igv-jdk/build/win/jdk-11.0.13 clean createMacAppWithJavaDistZip createMacM1AppWithJavaDistZip createLinuxWithJavaDistZip createWinWithJavaDist createLinuxDistZip createMacAppDistZip createWinDist
+        run: ./gradlew -PjdkBundleMac=igv-jdk/build/macos/jdk-11.0.19.jdk/Contents/Home -PjdkBundleMacM1=igv-jdk/build/macos-arm/jdk-11.0.19.jdk/Contents/Home -PjdkBundleLinux=$JAVA_HOME -PjdkBundleWindows=igv-jdk/build/win/jdk-11.0.19 clean createMacAppWithJavaDistZip createMacM1AppWithJavaDistZip createLinuxWithJavaDistZip createWinWithJavaDist createLinuxDistZip createMacAppDistZip createWinDist
       - name: Zip Win Version
         run: cd build/IGV-WinExe-dist;zip -r ../distributions/IGV_Win_UG.zip *;cd ../..
       - name: Zip Win WithJava Version
