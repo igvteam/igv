@@ -26,7 +26,7 @@
 package org.broad.igv.feature;
 
 
-public class Cytoband implements NamedFeature {
+public class Cytoband implements IGVNamedFeature {
     String chromosome;
     String name;
     String longName;
