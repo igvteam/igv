@@ -29,6 +29,7 @@ package org.broad.igv.sam;
 import org.broad.igv.Globals;
 import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.FeatureUtils;
@@ -367,7 +368,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
 
     @Override
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
 
         if (event instanceof FrameManager.ChangeEvent) {
             // Trim insertionInterval map to current frames

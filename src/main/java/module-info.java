@@ -2,6 +2,7 @@ module org.igv {
     exports org.broad.igv;
     exports org.broad.igv.tools;
     exports org.broad.igv.ui;
+    exports org.broad.igv.event;
     exports org.broad.igv.jbrowse;
     exports org.broad.igv.logging;
     exports org.broad.igv.util.liftover;

@@ -280,10 +280,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
     //</editor-fold>
 
-    public void receiveEvent(Object e) {
+    public void receiveEvent(IGVEvent e) {
 
-        if (e instanceof ViewChange) {
-            ViewChange event = (ViewChange) e;
+        if (e instanceof ViewChange event) {
             if (event.type == ViewChange.Type.ChromosomeChange || event.type == ViewChange.Type.LocusChange) {
                 String chrName = FrameManager.getDefaultFrame().getChrName();
                 roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
@@ -294,10 +293,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             }
 
             updateCurrentCoordinates();
-            repaint(); // TODO Is this neccessary?
-        } else if (e instanceof GenomeChangeEvent) {
-            GenomeChangeEvent event = (GenomeChangeEvent) e;
-            Genome genome = event.genome;
+            repaint(); // TODO Is this necessary?
+        } else if (e instanceof GenomeChangeEvent event) {
+            Genome genome = event.genome();
             refreshGenomeListComboBox();
             chromosomeComboBox.updateChromosFromGenome(genome);
             String chrName = FrameManager.getDefaultFrame().getChrName();

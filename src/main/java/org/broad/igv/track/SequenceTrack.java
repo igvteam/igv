@@ -28,6 +28,7 @@ package org.broad.igv.track;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
@@ -132,7 +133,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         return new String(complement);
     }
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
 
         if (event instanceof FrameManager.ChangeEvent) {
             // Remove cache for discarded frames.  This seems a rather round-about way to do it.

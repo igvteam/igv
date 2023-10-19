@@ -37,7 +37,7 @@ package org.broad.igv.event;
  * User: jacob
  * Date: 2013-Jan-30
  */
-public final class ViewChange {
+public final class ViewChange implements IGVEvent{
 
     public enum Type {ChromosomeChange, LocusChange}
 

@@ -67,7 +67,7 @@ public class IGVEventBus {
         }
     }
 
-    public void post(Object event) {
+    public void post(IGVEvent event) {
         Set<IGVEventObserver> observerSet = observerMap.get(event.getClass());
         if (observerSet != null) {
             // Make a copy in case original is modified during loop

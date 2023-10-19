@@ -26,6 +26,7 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
@@ -94,7 +95,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         IGVEventBus.getInstance().subscribe(RefreshEvent.class, this);
     }
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if (event instanceof FrameManager.ChangeEvent) {
             trimCache();
         } else if (event instanceof RefreshEvent) {

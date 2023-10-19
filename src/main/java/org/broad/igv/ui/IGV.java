@@ -2152,12 +2152,12 @@ public class IGV implements IGVEventObserver {
      *
      * @param event
      */
-    public void postEvent(Object event) {
+    public void postEvent(IGVEvent event) {
         IGVEventBus.getInstance().post(event);
     }
 
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
             repaint();
         } else if (event instanceof GenomeChangeEvent) {

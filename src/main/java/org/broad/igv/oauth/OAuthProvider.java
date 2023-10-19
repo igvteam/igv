@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.IGVEventBus;
@@ -440,7 +441,7 @@ public class OAuthProvider {
     }
 
     // Assuming that if this event is called, we are indeed autz/authn'd
-    public record AuthStateEvent(boolean authenticated, String authProvider, String userName) {}
+    public record AuthStateEvent(boolean authenticated, String authProvider, String userName) implements IGVEvent {}
 }
 
 

@@ -33,6 +33,7 @@
  */
 package org.broad.igv.track;
 
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
@@ -84,7 +85,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     public DataTrack() {
     }
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
 
         if (event instanceof FrameManager.ChangeEvent) {
 

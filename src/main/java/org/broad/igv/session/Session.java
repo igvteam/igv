@@ -26,6 +26,7 @@
 package org.broad.igv.session;
 
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.ViewChange;
@@ -127,7 +128,7 @@ public class Session implements IGVEventObserver {
     }
 
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if (event instanceof ViewChange) {
             ViewChange e = (ViewChange) event;
             if (e.recordHistory()) {
