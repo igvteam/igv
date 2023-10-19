@@ -37,46 +37,34 @@ package org.broad.igv.event;
  * User: jacob
  * Date: 2013-Jan-30
  */
-public class ViewChange {
+public final class ViewChange {
 
     public enum Type {ChromosomeChange, LocusChange}
 
-    boolean recordHistory = false;
-    public Type type;
-    public String chrName;
-    public double start;
-    public double end;
+    final boolean recordHistory;
+    final public Type type;
+    final public String chrName;
+    final public double start;
+    final public double end;
 
-    private ViewChange(Type type) {
-        this.type = type;
-    }
-
-    private ViewChange(Type type, String chrName) {
-        this.type = type;
-        this.chrName = chrName;
-    }
-
-    private ViewChange(Type type, String chrName, double start, double end) {
+    private ViewChange(Type type, String chrName, double start, double end, boolean recordHistory) {
         this.type = type;
         this.chrName = chrName;
         this.start = start;
         this.end = end;
+        this.recordHistory = recordHistory;
     }
 
     public boolean recordHistory() {
         return this.recordHistory;
     }
 
-    public void setRecordHistory(boolean recordHistory) {
-        this.recordHistory = recordHistory;
+    public static ViewChange ChromosomeChangeResult(String chrName, boolean recordHistory) {
+        return new ViewChange(Type.ChromosomeChange, chrName, 0.0, 0.0, recordHistory);
     }
 
-    public static ViewChange ChromosomeChangeResult(String chrName) {
-        return new ViewChange(Type.ChromosomeChange, chrName);
-    }
-
-    public static ViewChange LocusChangeResult(String chrName, double start, double end) {
-        return new ViewChange(Type.LocusChange, chrName, start, end);
+    public static ViewChange LocusChangeResult(String chrName, double start, double end, boolean recordHistory) {
+        return new ViewChange(Type.LocusChange, chrName, start, end, recordHistory);
     }
 
 }
