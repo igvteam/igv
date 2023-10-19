@@ -30,12 +30,4 @@ package org.broad.igv.event;
  * @date 10/28/11
  */
 public class TrackGroupEvent  {
-
-    Object source;
-
-    public TrackGroupEvent(Object source) {
-        this.source = source;
-    }
-
-
 }

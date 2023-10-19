@@ -1802,7 +1802,7 @@ public class IGV implements IGVEventObserver {
         session.setGroupByAttribute(attributeName);
         resetGroups();
         // Some tracks need to respond to changes in grouping, fire notification event
-        IGVEventBus.getInstance().post(new TrackGroupEvent(this));
+        IGVEventBus.getInstance().post(new TrackGroupEvent());
     }
 
 

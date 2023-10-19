@@ -136,7 +136,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
         if (event instanceof FrameManager.ChangeEvent) {
             // Remove cache for discarded frames.  This seems a rather round-about way to do it.
-            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).getFrames();
+            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).frames();
             Map<String, LoadedDataInterval<SeqCache>> newCache = Collections.synchronizedMap(new HashMap<>());
             for (ReferenceFrame f : frames) {
                 newCache.put(f.getName(), loadedIntervalCache.get(f.getName()));

@@ -88,7 +88,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
         if (event instanceof FrameManager.ChangeEvent) {
 
-            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).getFrames();
+            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).frames();
             Map<String, LoadedDataInterval<List<LocusScore>>> newCache = Collections.synchronizedMap(new HashMap<>());
             for (ReferenceFrame f : frames) {
                 newCache.put(f.getName(), loadedIntervalCache.get(f.getName()));

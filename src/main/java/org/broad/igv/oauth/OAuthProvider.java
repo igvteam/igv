@@ -6,7 +6,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.broad.igv.logging.*;
-import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.prefs.PreferencesManager;
@@ -21,7 +20,6 @@ import software.amazon.awssdk.services.sts.model.Credentials;
 import java.awt.*;
 import java.io.IOException;
 import java.net.*;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.*;
 
@@ -441,30 +439,8 @@ public class OAuthProvider {
         return authProvider;
     }
 
-    public static class AuthStateEvent {
-        boolean authenticated;
-        String authProvider;
-        String userName;
-
-        // Assuming that if this event is called, we are indeed autz/authn'd
-        public AuthStateEvent(boolean authenticated, String authProvider, String userName) {
-            this.authenticated = authenticated;
-            this.authProvider = authProvider;
-            this.userName = userName;
-        }
-
-        public boolean isAuthenticated() {
-            return authenticated;
-        }
-
-        public String getAuthProvider() {
-            return authProvider;
-        }
-
-        public String getUserName() {
-            return userName;
-        }
-    }
+    // Assuming that if this event is called, we are indeed autz/authn'd
+    public record AuthStateEvent(boolean authenticated, String authProvider, String userName) {}
 }
 
 
