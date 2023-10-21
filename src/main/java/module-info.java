@@ -20,7 +20,6 @@ module org.igv {
     requires java.xml;
     requires jdk.xml.dom;
     requires swing.layout;
-    requires jide.common;
     requires org.apache.commons.io;
     requires org.apache.commons.lang3;
     requires batik.codec;

@@ -113,7 +113,7 @@ dependencies {
             [group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'],
             [group: 'com.github.samtools', name: 'htsjdk', version: '3.0.5'],
             [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
-            //[group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],  // no longer in Maven Central
+            [group: 'com.formdev', name: 'jide-oss', version: '3.7.12'],
             [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],
             [group: 'org.apache.xmlgraphics', name: 'batik-dom', version: '1.11'],
             [group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: '1.11'],
