@@ -42,6 +42,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     private int pixelEnd;
     private int padding = 0;
     private char cigarOperator;
+    private int indexOnRead;
 
     public AlignmentBlockImpl(int start, byte[] bases, byte[] qualities) {
         this(start, bases, qualities, 0, bases.length, (char) 0);
@@ -57,6 +58,8 @@ public class AlignmentBlockImpl implements AlignmentBlock {
         // qualities are optional in a SAMRecord, we might get null or an array of zero
         this.qualities = qualities == null || qualities.length == 0 ? EMPTY_ARRAY :  new ByteSubarray(qualities, offset, nBases, (byte) 126);
         this.cigarOperator = cigarOperator;
+
+        this.indexOnRead = offset;
     }
 
     @Override
@@ -176,5 +179,9 @@ public class AlignmentBlockImpl implements AlignmentBlock {
 
     public void setPadding(int padding) {
         this.padding = padding;
+    }
+
+    public int getIndexOnRead() {
+        return this.indexOnRead;
     }
 }

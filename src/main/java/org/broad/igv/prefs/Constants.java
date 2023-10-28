@@ -113,6 +113,7 @@ final public class Constants {
     public static final String SAM_ALIGNMENT_SCORE_THRESHOLD = "SAM.ALIGNMENT_SCORE_THRESHOLD";
     public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
     public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
+    public static final String SAM_INSERT_QUAL_COLORING = "SAM.INSERT_QUAL_COLORING";
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
     public static final String SAM_MAX_INSERT_SIZE_PERCENTILE = "SAM.ISIZE_MAX_PERCENTILE";
     public static final String SAM_MIN_INSERT_SIZE_PERCENTILE = "SAM.MIN_ISIZE_MIN_PERCENTILE";

@@ -163,6 +163,7 @@ SAM.MIN_ISIZE_MIN_PERCENTILE	Minimum (percentile)	float	0.5
 SAM.ISIZE_MAX_PERCENTILE	Maximum (percentile)	float	99.5
 SAM.MIN_INSERT_SIZE_THRESHOLD	Default minimum (bp)	float	50
 SAM.INSERT_SIZE_THRESHOLD	Default maximum (bp)	float	1000
+SAM.INSERT_QUAL_COLORING	INDEL coloring (ultima)	boolean	TRUE
 
 #RNA	RNA
 info Settings below override defaults for RNA alignments.

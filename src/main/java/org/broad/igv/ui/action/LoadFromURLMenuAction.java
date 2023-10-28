@@ -30,6 +30,8 @@
 package org.broad.igv.ui.action;
 
 import org.broad.igv.Globals;
+import org.broad.igv.ext.ExtensionManager;
+import org.broad.igv.ext.load.ILoadTracksFromUrlExtension;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.GoogleUtils;
@@ -47,6 +49,7 @@ import org.broad.igv.util.ResourceLocator;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
@@ -91,10 +94,17 @@ public class LoadFromURLMenuAction extends MenuAction {
                         if (url.startsWith("s3://")) {
                             checkAWSAccessbility(url);
                         }
-                        try {
-                            LongRunningTask.submit(() -> this.igv.loadSession(url, null));
-                        } catch (Exception ex) {
-                            MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
+                        // extension code
+                        ILoadTracksFromUrlExtension ext = (ILoadTracksFromUrlExtension) ExtensionManager.getExtentionFor(ILoadTracksFromUrlExtension.class, url);
+                        if ( ext != null ) {
+                            igv.loadTracks(ext.locatorsForUrl(url, dlg.getIndexURL()));
+                        } else if (SessionReader.isSessionFile(url)) {
+
+                            try {
+                                LongRunningTask.submit(() -> this.igv.loadSession(url, null));
+                            } catch (Exception ex) {
+                                MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
+                            }
                         }
                     } else {
                         // Files, possibly indexed
@@ -152,6 +162,27 @@ public class LoadFromURLMenuAction extends MenuAction {
             }
         }
     }
+    public static String mapURL(String url) {
+
+        url = url.trim();
+        if (GoogleUtils.isGoogleDrive(url) || GoogleUtils.isGoogleDrive(url)) {
+            enableGoogleMenu();
+        }
+
+        return url;
+    }
+
+    public static void enableGoogleMenu() {
+
+        if (!PreferencesManager.getPreferences().getAsBoolean(Constants.ENABLE_GOOGLE_MENU)) {
+            PreferencesManager.getPreferences().put(Constants.ENABLE_GOOGLE_MENU, true);
+            try {
+                IGVMenuBar.getInstance().enableGoogleMenu(true);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     private void checkAWSAccessbility(String url) {
         try {
@@ -162,7 +193,6 @@ public class LoadFromURLMenuAction extends MenuAction {
                 AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucket, key);
                 if (!res.isObjectAvailable()) {
                     MessageUtils.showErrorMessage(res.getErrorReason(), null);
-                    return;
                 }
             }
         } catch (NullPointerException npe) {
