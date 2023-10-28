@@ -112,6 +112,11 @@ public class JsonGenomeLoader extends GenomeLoader {
                         res.setFormat(format.getAsString().toLowerCase());
                     }
 
+                    JsonElement vw = obj.get("visibilityWindow");
+                    if (vw != null) {
+                        res.setVisibilityWindow(vw.getAsInt());
+                    }
+
 //                    JsonElement colorBy = obj.get("colorBy");
 //                    if (altColor != null) {
 //                        try {
