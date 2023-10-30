@@ -1,4 +1,4 @@
-package org.broad.igv.feature.genome;
+package org.broad.igv.ucsc;
 
 /**
  * Reader for UCSC ".2bit" sequence files. Reference: https://genome.ucsc.edu/FAQ/FAQformat.html#format7
@@ -8,6 +8,7 @@ package org.broad.igv.feature.genome;
 
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.util.UnsignedByteBuffer;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
@@ -23,49 +24,44 @@ public class TwoBitReader {
     // the number 0x1A412743 in the architecture of the machine that created the file
     static int SIGNATURE = 0x1a412743;
 
-
-    private LinkedHashMap<String, Integer> sequenceDataOffsets;
     private HashMap<String, SequenceRecord> sequenceRecordMap;
     SeekableStream is;
     ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;  // Until proven otherwise
+    private int seqCount;
+    
+    BPIndex index;
 
     public TwoBitReader(String path) throws IOException {
-        this.is = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
-        init();
+        init(path);
+        index = new TwoBitIndex(is, this.byteOrder, this.seqCount);
     }
 
-    ByteBuffer loadBinaryBuffer(long start, int size) throws IOException {
+    public TwoBitReader(String path, String indexPath) throws IOException {
+        init(path);
+        index = new BPTree(indexPath, 0);
+    }
+
+    UnsignedByteBuffer loadBinaryBuffer(long start, int size) throws IOException {
         ByteBuffer bb = ByteBuffer.allocate(size);
         bb.order(this.byteOrder);
         byte[] bytes = bb.array();
         this.is.seek(start);
         this.is.readFully(bytes);
-        return bb;
+        return new UnsignedByteBuffer(bb);
     }
 
-    private void init() throws IOException {
-        readIndex();
-    }
+    private void init(String path) throws IOException {
 
-
-    /**
-     * signature - the number 0x1A412743 in the architecture of the machine that created the file
-     * version - zero for now. Readers should abort if they see a version number higher than 0
-     * sequenceCount - the number of sequences in the file
-     * reserved - always zero for now
-     *
-     * @throws IOException
-     */
-    private void readIndex() throws IOException {
+        this.sequenceRecordMap = new HashMap<>();
+        this.is = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
 
         long filePosition = 0;
-        ByteBuffer buffer = loadBinaryBuffer(filePosition, 64);
+        UnsignedByteBuffer buffer = loadBinaryBuffer(filePosition, 64);
 
         int signature = buffer.getInt();
         if (SIGNATURE != signature) {
             this.byteOrder = ByteOrder.BIG_ENDIAN;
-            buffer = ByteBuffer.allocate(64);
-            buffer = loadBinaryBuffer(0, 64);
+            buffer.position(0);
             signature = buffer.getInt();
             if (SIGNATURE != signature) {
                 throw new RuntimeException("Unexpected magic number");
@@ -73,41 +69,9 @@ public class TwoBitReader {
         }
 
         final int version = buffer.getInt();   // Should be zero
-        final int seqCount = buffer.getInt();
+        this.seqCount = buffer.getInt();
         final int reserved = buffer.getInt();    // Should be zero
 
-        // Loop through sequences loading name and file offset.  We don't know the precise size in bytes in advance
-        // so we need to check for bytes available and reload as needed.
-        final int estNameLength = 20;
-        sequenceRecordMap = new HashMap<>();
-        sequenceDataOffsets = new LinkedHashMap<>();
-        for (int i = 0; i < seqCount; i++) {
-
-            if (buffer.remaining() < 1) {
-                filePosition += buffer.position();
-                final int estSize = (seqCount - i) * estNameLength + 100;
-                buffer = loadBinaryBuffer(filePosition, estSize);
-            }
-
-            final byte nameSize = buffer.get();
-
-            if (buffer.remaining() < nameSize * 5) {
-                filePosition += buffer.position();
-                final int estSize = (seqCount - i) * estNameLength + 100;
-                buffer = loadBinaryBuffer(filePosition, estSize);
-            }
-
-            byte[] seqNameBytes = new byte[nameSize];
-            buffer.get(seqNameBytes);
-            String seqName = new String(seqNameBytes);
-
-            int offset = buffer.getInt();
-            sequenceDataOffsets.put(seqName, offset);
-        }
-    }
-
-    public List<String> getSequenceNames() {
-        return new ArrayList<>(sequenceDataOffsets.keySet());
     }
 
     /**
@@ -121,15 +85,11 @@ public class TwoBitReader {
     public byte[] readSequence(String seqName, int regionStart, int regionEnd) {
 
         try {
-            if (sequenceDataOffsets == null) {
-                readIndex();
-            }
 
             SequenceRecord record = getSequenceRecord(seqName);
             if (record == null) {
                 return null;
             }
-
 
             if (regionStart < 0) {
                 throw new RuntimeException("regionStart cannot be less than 0");
@@ -142,8 +102,7 @@ public class TwoBitReader {
             long start = record.packedPos + baseBytesOffset;
             int size = regionEnd / 4 - baseBytesOffset + 1;
 
-
-            ByteBuffer buffer = loadBinaryBuffer(start, size);
+            UnsignedByteBuffer buffer = loadBinaryBuffer(start, size);
             byte[] baseBytes = buffer.array();
 
             //new byte[size];
@@ -189,17 +148,18 @@ public class TwoBitReader {
 
     SequenceRecord getSequenceRecord(String seqName) throws IOException {
 
-        SequenceRecord record = sequenceRecordMap.get(seqName);
+        SequenceRecord record = this.sequenceRecordMap.get(seqName);
 
         if (record == null) {
-            Integer offset = sequenceDataOffsets.get(seqName);
-            if (offset == null) {
+            long [] offset_length = this.index.search(seqName);
+            if (offset_length == null) {
                 throw new RuntimeException("Unknown sequence: " + seqName);
             }
+            long offset = offset_length[0];
 
             // Read size of dna data & # of "N" blocks
             int size = 8;
-            ByteBuffer buffer = loadBinaryBuffer(offset, size);
+            UnsignedByteBuffer buffer = loadBinaryBuffer(offset, size);
             int dnaSize = buffer.getInt();
             int nBlockCount = buffer.getInt();
             offset += size;

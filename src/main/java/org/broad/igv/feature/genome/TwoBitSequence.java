@@ -1,5 +1,7 @@
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.ucsc.TwoBitReader;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -9,6 +11,10 @@ public class TwoBitSequence implements Sequence{
 
     public TwoBitSequence(String path) throws IOException {
         this.reader = new TwoBitReader(path);
+    }
+
+    public TwoBitSequence(String path, String indexPath) throws IOException {
+        this.reader = new TwoBitReader(path, indexPath);
     }
 
     @Override
@@ -23,12 +29,12 @@ public class TwoBitSequence implements Sequence{
 
     @Override
     public List<String> getChromosomeNames() {
-         return this.reader.getSequenceNames();
+        throw new RuntimeException("getChromosomeNames is not implementd for TwoBitSequence");
     }
 
     @Override
     public int getChromosomeLength(String chrname) {
-        throw new RuntimeException("getBase is not implementd for TwoBitSequence");
+        throw new RuntimeException("getChromosomeLength is not implementd for TwoBitSequence");
     }
 
 }

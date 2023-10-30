@@ -1,4 +1,4 @@
-package org.broad.igv.feature.genome;
+package org.broad.igv.ucsc;
 
 /**
  * A UCSC (Jim Kent) B+ Tree.
@@ -43,6 +43,7 @@ package org.broad.igv.feature.genome;
 
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.util.UnsignedByteBuffer;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ import java.util.*;
 /**
  * Created by jrobinso on 6/13/17.
  */
-public class BPTree {
+public class BPTree implements BPIndex{
 
     // the number 0x78CA8C91 in the architecture of the machine that created the file
     static int SIGNATURE = 0x78CA8C91;
@@ -110,7 +111,7 @@ public class BPTree {
         this.nodeOffset = this.fileOffset + 32;
     }
 
-    long[] search(String term) throws IOException {
+    public long[] search(String term) throws IOException {
 
         int keySize = this.keySize;
         int valSize = this.valSize;

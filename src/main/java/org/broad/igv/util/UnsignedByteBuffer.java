@@ -1,13 +1,26 @@
-package org.broad.igv.feature.genome;
+package org.broad.igv.util;
+
+import htsjdk.samtools.seekablestream.SeekableStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class UnsignedByteBuffer {
 
     ByteBuffer wrappedBuffer;
+
+    public static UnsignedByteBuffer loadBinaryBuffer(SeekableStream is, ByteOrder byteOrder, long start, int size) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(size);
+        bb.order(byteOrder);
+        byte[] bytes = bb.array();
+        is.seek(start);
+        is.readFully(bytes);
+        return new UnsignedByteBuffer(bb);
+    }
+
 
     public UnsignedByteBuffer(ByteBuffer wrappedBuffer) {
         this.wrappedBuffer = wrappedBuffer;
@@ -57,5 +70,13 @@ public class UnsignedByteBuffer {
         }
         return new String(bytes);
 
+    }
+
+    public void position(int i) {
+        wrappedBuffer.position(i);
+    }
+
+    public byte[] array() {
+        return wrappedBuffer.array();
     }
 }
