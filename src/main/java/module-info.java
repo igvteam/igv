@@ -9,7 +9,7 @@ module org.igv {
 
     requires com.google.common;
     requires commons.math3;
-    requires gson;
+    requires com.google.gson;
     requires htsjdk;
     requires java.datatransfer;
     requires java.desktop;
