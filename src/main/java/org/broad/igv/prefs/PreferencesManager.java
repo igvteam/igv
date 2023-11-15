@@ -2,6 +2,7 @@ package org.broad.igv.prefs;
 
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.logging.LogManager;
@@ -368,7 +369,7 @@ public class PreferencesManager implements IGVEventObserver {
     }
 
     @Override
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if (event instanceof PreferencesChangeEvent) {
             storePreferences();
         }

@@ -29,6 +29,7 @@ package org.broad.igv.sam;
 import org.broad.igv.Globals;
 import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.FeatureUtils;
@@ -367,30 +368,22 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
 
     @Override
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
 
         if (event instanceof FrameManager.ChangeEvent) {
             // Trim insertionInterval map to current frames
 
-
-        } else if (event instanceof AlignmentTrackEvent) {
-            AlignmentTrackEvent e = (AlignmentTrackEvent) event;
-            AlignmentTrackEvent.Type eventType = e.getType();
-            switch (eventType) {
-                case ALLELE_THRESHOLD:
-                    dataManager.alleleThresholdChanged();
-                    break;
-                case RELOAD:
+        } else if (event instanceof AlignmentTrackEvent e) {
+            switch (e.type()) {
+                case ALLELE_THRESHOLD -> dataManager.alleleThresholdChanged();
+                case RELOAD -> {
                     clearCaches();
                     repaint();
-                case REFRESH:
-                    repaint();
-                    break;
+                }
+                case REFRESH -> repaint();
             }
-
-        } else if (event instanceof DataLoadedEvent) {
-            final DataLoadedEvent dataLoaded = (DataLoadedEvent) event;
-            actionToPerformOnFrameLoad.computeIfPresent(dataLoaded.getReferenceFrame(), (k, v) -> {
+        } else if (event instanceof final DataLoadedEvent dataLoaded) {
+            actionToPerformOnFrameLoad.computeIfPresent(dataLoaded.referenceFrame(), (k, v) -> {
                 v.accept(k);
                 return null;
             });

@@ -29,20 +29,6 @@ package org.broad.igv.event;
  * @author Jim Robinson
  * @date 12/2/11
  */
-public class AlignmentTrackEvent {
-
+public record AlignmentTrackEvent(Type type) implements IGVEvent{
     public enum Type {ALLELE_THRESHOLD, RELOAD, REFRESH}
-
-    private Object source;
-    private Type type;
-    private boolean booleanValue;
-
-    public AlignmentTrackEvent(Object source, Type type) {
-        this.source = source;
-        this.type = type;
-    }
-
-    public Type getType() {
-        return type;
-    }
 }

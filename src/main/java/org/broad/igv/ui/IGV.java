@@ -1802,7 +1802,7 @@ public class IGV implements IGVEventObserver {
         session.setGroupByAttribute(attributeName);
         resetGroups();
         // Some tracks need to respond to changes in grouping, fire notification event
-        IGVEventBus.getInstance().post(new TrackGroupEvent(this));
+        IGVEventBus.getInstance().post(new TrackGroupEvent());
     }
 
 
@@ -2152,12 +2152,12 @@ public class IGV implements IGVEventObserver {
      *
      * @param event
      */
-    public void postEvent(Object event) {
+    public void postEvent(IGVEvent event) {
         IGVEventBus.getInstance().post(event);
     }
 
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
             repaint();
         } else if (event instanceof GenomeChangeEvent) {

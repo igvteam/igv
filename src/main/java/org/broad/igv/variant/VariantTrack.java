@@ -31,6 +31,7 @@ package org.broad.igv.variant;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.variantcontext.GenotypeType;
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.TrackGroupEvent;
@@ -1190,7 +1191,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     @Override
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if (event instanceof TrackGroupEvent) {
             setupGroupsFromAttributes();
         }

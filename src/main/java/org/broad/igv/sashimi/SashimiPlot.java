@@ -25,6 +25,7 @@
 
 package org.broad.igv.sashimi;
 
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.ViewChange;
@@ -246,7 +247,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
     }
 
     @Override
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         repaint();
     }
 

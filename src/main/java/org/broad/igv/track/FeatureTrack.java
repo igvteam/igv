@@ -27,6 +27,7 @@ package org.broad.igv.track;
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.TribbleException;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.DataLoadedEvent;
@@ -222,7 +223,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     /**
      * Called after features are finished loading, which can be asynchronous
      */
-    public void receiveEvent(Object e) {
+    public void receiveEvent(IGVEvent e) {
         if (e instanceof DataLoadedEvent) {
 //            DataLoadedEvent event = (DataLoadedEvent) e;
 //            if (IGV.hasInstance()) {

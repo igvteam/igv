@@ -25,8 +25,8 @@
 
 package org.broad.igv.ui.panel;
 
-import com.jidesoft.utils.SortedList;
 import org.broad.igv.event.GenomeChangeEvent;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.Locus;
@@ -358,26 +358,16 @@ public class FrameManager implements IGVEventObserver {
 
 
     @Override
-    public void receiveEvent(Object event) {
-        if (event instanceof GenomeChangeEvent) {
-            Genome newGenome = ((GenomeChangeEvent) event).genome;
+    public void receiveEvent(IGVEvent event) {
+        if (event instanceof final GenomeChangeEvent e) {
+            Genome newGenome = e.genome();
             boolean force = true;
             getDefaultFrame().setChromosomeName(newGenome.getHomeChromosome(), force);
         }
     }
 
 
-    public static class ChangeEvent {
-        List<ReferenceFrame> frames;
-
-        public ChangeEvent(List<ReferenceFrame> frames) {
-            this.frames = frames;
-        }
-
-        public List<ReferenceFrame> getFrames() {
-            return frames;
-        }
-    }
+    public record ChangeEvent(List<ReferenceFrame> frames) implements IGVEvent {}
 
 }
 

@@ -33,6 +33,7 @@
  */
 package org.broad.igv.track;
 
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
@@ -84,11 +85,11 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     public DataTrack() {
     }
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
 
         if (event instanceof FrameManager.ChangeEvent) {
 
-            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).getFrames();
+            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).frames();
             Map<String, LoadedDataInterval<List<LocusScore>>> newCache = Collections.synchronizedMap(new HashMap<>());
             for (ReferenceFrame f : frames) {
                 newCache.put(f.getName(), loadedIntervalCache.get(f.getName()));

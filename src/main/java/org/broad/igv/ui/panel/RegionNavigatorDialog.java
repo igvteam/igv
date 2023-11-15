@@ -26,6 +26,7 @@
 
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
@@ -133,7 +134,7 @@ public class RegionNavigatorDialog extends org.broad.igv.ui.IGVDialog  implement
         synchRegions();
     }
 
-    public void receiveEvent(Object e) {
+    public void receiveEvent(IGVEvent e) {
             synchRegions();
     }
 

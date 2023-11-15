@@ -31,6 +31,6 @@ package org.broad.igv.event;
  */
 public interface IGVEventObserver {
 
-    void receiveEvent(Object event);
+    void receiveEvent(IGVEvent event);
 
 }
