@@ -49,7 +49,6 @@ import org.broad.igv.util.liftover.Liftover;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -336,7 +335,7 @@ public class SearchCommand {
      */
     private SearchResult parseToken(String token) {
 
-        List<NamedFeature> features;
+        List<IGVNamedFeature> features;
 
         //Guess at token type via regex.
         //We don't assume success
@@ -392,7 +391,7 @@ public class SearchCommand {
             }
         } else if (types.contains(ResultType.FEATURE)) {
             //Check if we have an exact name for the feature name
-            NamedFeature feat = searchFeatureDBs(token);
+            IGVNamedFeature feat = searchFeatureDBs(token);
             if (feat != null) {
                 return new SearchResult(feat);
             }
@@ -400,8 +399,8 @@ public class SearchCommand {
         return null;
     }
 
-    private NamedFeature searchFeatureDBs(String str) {
-        NamedFeature feat = FeatureDB.getFeature(str.toUpperCase().trim());
+    private IGVNamedFeature searchFeatureDBs(String str) {
+        IGVNamedFeature feat = FeatureDB.getFeature(str.toUpperCase().trim());
         if (feat != null) {
             return feat;
         } else {
@@ -575,7 +574,7 @@ public class SearchCommand {
 
         private String locus;
         private String message;
-        private NamedFeature feature;
+        private IGVNamedFeature feature;
 
         public SearchResult() {
             this(ResultType.ERROR, null, -1, -1);
@@ -589,7 +588,7 @@ public class SearchCommand {
             this.locus = Locus.getFormattedLocusString(chr, start, end);
         }
 
-        public SearchResult(NamedFeature feature) {
+        public SearchResult(IGVNamedFeature feature) {
             this(ResultType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd());
             this.feature = feature;
             this.locus = Locus.getFormattedLocusString(chr, start, end);
@@ -655,21 +654,21 @@ public class SearchCommand {
 
         //May be null
         @ForTesting
-        public NamedFeature getFeature() {
+        public IGVNamedFeature getFeature() {
             return feature;
         }
     }
 
     /**
      * Get a list of search results from the provided objects,
-     * which must be NamedFeature objects.
+     * which must be IGVNamedFeature objects.
      *
      * @param objects
      * @return
      */
-    public static List<SearchResult> getResults(List<NamedFeature> objects) {
+    public static List<SearchResult> getResults(List<IGVNamedFeature> objects) {
         List<SearchResult> results = new ArrayList<SearchResult>(objects.size());
-        for (NamedFeature f : objects) {
+        for (IGVNamedFeature f : objects) {
             results.add(new SearchCommand.SearchResult(f));
         }
         return results;

@@ -25,13 +25,11 @@
 
 package org.broad.igv.feature;
 
-import htsjdk.tribble.Feature;
-
 /**
  * @author jrobinso
  * @date Sep 16, 2010
  */
-public interface  NamedFeature extends Feature {
+public interface IGVNamedFeature extends htsjdk.tribble.NamedFeature {
 
     String getName();
 

@@ -2,20 +2,14 @@ package org.broad.igv.ui.commandbar;
 
 import com.jidesoft.hints.ListDataIntelliHints;
 import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.feature.IGVNamedFeature;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.ui.GlobalKeyDispatcher;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.FrameManager;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.List;
 
 /**
@@ -63,8 +57,8 @@ public class SearchTextField extends JTextField {
                 return false;
             } else {
                 //TODO Uncomment to use comprehensive feature search, note that it should support partial matches
-                //List<NamedFeature> features = SearchCommand.comprehensiveFeatureSearch(text);
-                List<NamedFeature> features = FeatureDB.getFeaturesList(text, SearchCommand.SEARCH_LIMIT);
+                //List<IGVNamedFeature> features = SearchCommand.comprehensiveFeatureSearch(text);
+                List<IGVNamedFeature> features = FeatureDB.getFeaturesList(text, SearchCommand.SEARCH_LIMIT);
                 final List<SearchCommand.SearchResult> results = SearchCommand.getResults(features);
                 Object[] list = SearchCommand.getSelectionList(results, false);
                 if (list.length >= 1) {

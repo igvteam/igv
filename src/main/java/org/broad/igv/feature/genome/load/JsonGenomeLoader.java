@@ -7,11 +7,11 @@ import com.google.gson.JsonParser;
 import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureReader;
+import org.broad.igv.feature.IGVNamedFeature;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
@@ -26,8 +26,6 @@ import org.broad.igv.util.liftover.Liftover;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.*;
 
 public class JsonGenomeLoader extends GenomeLoader {
@@ -288,8 +286,8 @@ public class JsonGenomeLoader extends GenomeLoader {
                 CloseableTribbleIterator<Feature> iter = featureReader.iterator();
                 while (iter.hasNext()) {
                     Feature f = iter.next();
-                    if (f instanceof NamedFeature) {
-                        FeatureDB.addFeature((NamedFeature) f, genome);
+                    if (f instanceof IGVNamedFeature) {
+                        FeatureDB.addFeature((IGVNamedFeature) f, genome);
                     }
                 }
             } catch (IOException e) {
