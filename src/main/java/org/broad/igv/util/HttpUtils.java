@@ -96,8 +96,11 @@ public class HttpUtils {
     private final int DEFAULT_REDIRECT_EXPIRATION_MIN = 15;
     private Map<URL, CachedRedirect> redirectCache = new HashMap<URL, CachedRedirect>();
 
-    // oauth tokens set from command line script
-    private Map<Pattern, String> accessTokens = new HashMap<>();
+    // oauth tokens set from command line script,
+    // keeps URL-token pairs
+    private Map<String, String> accessTokens = new HashMap<>();
+    // keeps URL-RegEx Pattern pairs (patterns are stored as precompiled to speed up request processing)
+    private Map<String, Pattern> accessPatterns = new HashMap<>();
 
     /**
      * @return the single instance
@@ -135,9 +138,10 @@ public class HttpUtils {
         } else {
             host = host.replace("*", ".*");
         }
-        this.accessTokens.put(Pattern.compile(host, Pattern.CASE_INSENSITIVE), token);
-    }
 
+        this.accessTokens.put(host, token);
+        this.accessPatterns.put(host, Pattern.compile(host, Pattern.CASE_INSENSITIVE));
+    }
 
     /**
      * Return an access token, if any, from the access token cache.
@@ -147,11 +151,11 @@ public class HttpUtils {
      */
     String getAccessTokenFor(URL url) {
 
-        for (Map.Entry<Pattern, String> entry : this.accessTokens.entrySet()) {
-            final Pattern pattern = entry.getKey();
+        for (Map.Entry<String, Pattern> entry : this.accessPatterns.entrySet()) {
+            final Pattern pattern = entry.getValue();
             Matcher matcher = pattern.matcher(url.getHost());
             if (matcher.find()) {
-                return entry.getValue();
+                return this.accessTokens.get(entry.getKey());
             }
         }
         return null;
@@ -162,6 +166,7 @@ public class HttpUtils {
 
     public void clearAccessTokens() {
         this.accessTokens.clear();
+        this.accessPatterns.clear();
     }
 
     /**
