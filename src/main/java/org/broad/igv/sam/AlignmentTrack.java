@@ -54,6 +54,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
@@ -82,6 +83,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     // Alignment colors
     static final Color DEFAULT_ALIGNMENT_COLOR = new Color(185, 185, 185); //200, 200, 200);
+
+    public static void sortSelectedReadsToTheTop(final Set<String> selectedReadNames) {
+        //copy this in case it changes out from under us
+        Set<String> selectedReadNameCopy = new HashSet<>(selectedReadNames);
+        //Run this on the event thread to make sure it happens after loading begins
+        UIUtilities.invokeOnEventThread(() ->
+                IGV.getInstance().sortAlignmentTracks(SortOption.NONE, null, null, false, selectedReadNameCopy));
+    }
 
     public enum ColorOption {
         INSERT_SIZE,
@@ -189,7 +198,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private static final int GROUP_MARGIN = 5;
     private static final int TOP_MARGIN = 20;
     private static final int DS_MARGIN_0 = 2;
-    private static final int DOWNAMPLED_ROW_HEIGHT = 3;
+    private static final int DOWNSAMPLED_ROW_HEIGHT = 3;
     private static final int INSERTION_ROW_HEIGHT = 9;
 
     public enum BisulfiteContext {
@@ -382,11 +391,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 }
                 case REFRESH -> repaint();
             }
-        } else if (event instanceof final DataLoadedEvent dataLoaded) {
-            actionToPerformOnFrameLoad.computeIfPresent(dataLoaded.referenceFrame(), (k, v) -> {
-                v.accept(k);
-                return null;
-            });
+        } else if (event instanceof DataLoadedEvent dataLoaded) {
+            if (dataManager.isLoaded(dataLoaded.referenceFrame())) {
+                actionToPerformOnFrameLoad.computeIfPresent(dataLoaded.referenceFrame(), (k, v) -> {
+                    v.accept(k);
+                    return null; //remove this action from the map
+                });
+            }
         }
     }
 
@@ -468,7 +479,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         int nGroups = dataManager.getMaxGroupCount();
         int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN
-                + DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT);
+                + DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT);
         return Math.max(minimumHeight, h);
     }
 
@@ -535,7 +546,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         rect.y += DS_MARGIN_0;
 
         downsampleRect = new Rectangle(rect);
-        downsampleRect.height = DOWNAMPLED_ROW_HEIGHT;
+        downsampleRect.height = DOWNSAMPLED_ROW_HEIGHT;
         renderDownsampledIntervals(context, downsampleRect);
 
         alignmentsRect = new Rectangle(rect);
@@ -687,7 +698,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     public void renderExpandedInsertion(InsertionMarker insertionMarker, RenderContext context, Rectangle inputRect) {
 
         boolean leaveMargin = getDisplayMode() != DisplayMode.SQUISHED;
-        inputRect.y += DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_0;
+        inputRect.y += DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT + DS_MARGIN_0;
 
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
         PackedAlignments groups = dataManager.getGroups(loadedInterval, renderOptions);
@@ -904,7 +915,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return false;
     }
 
-    void setSelectedAlignment(Alignment alignment) {
+    public void setSelectedAlignment(Alignment alignment) {
         Color c = readNamePalette.get(alignment.getReadName());
         selectedReadNames.put(alignment.getReadName(), c);
     }

@@ -266,7 +266,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public AlignmentInterval getLoadedInterval(ReferenceFrame frame, boolean includeOverlaps) {
-        // Search for interval completely containining reference frame region
+        // Search for interval completely containing reference frame region
         for (AlignmentInterval interval : intervalCache) {
             if (interval.contains(frame.getCurrentRange())) {
                 return interval;
@@ -359,7 +359,9 @@ public class AlignmentDataManager implements IGVEventObserver {
             currentlyLoading = null;
         }
 
+
         IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
+
 
     }
 

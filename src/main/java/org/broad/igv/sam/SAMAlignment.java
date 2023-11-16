@@ -974,7 +974,7 @@ public class SAMAlignment implements Alignment {
 
     private String getSupplAlignmentString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("SupplementaryAlignments");
+        sb.append("Supplementary Alignments");
         final List<SupplementaryAlignment> supplementaryAlignments = getSupplementaryAlignments();
         final int insertionIndex = SupplementaryAlignment.getInsertionIndex(this, supplementaryAlignments);
         int i = 0;
@@ -996,13 +996,12 @@ public class SAMAlignment implements Alignment {
     }
 
     private String getThisReadDescriptionForSAList() {
-        return "<br>" +
-                "<b>"
+        return "<br>"
+                + "<b>"
                 + chr + ":" + Globals.DECIMAL_FORMAT.format(getAlignmentStart() + 1) + "-" + Globals.DECIMAL_FORMAT.format(getAlignmentEnd())
-                + " (" + getReadStrand().toShortString() + ")" +
-                "</b>";
+                + " (" + this.getReadStrand().toShortString() + ") = " + Globals.DECIMAL_FORMAT.format(getLengthOnReference()) + "bp  @MAPQ " + this.getMappingQuality() + " NM" + getAttribute(SAMTag.NM)
+                + "</b>";
     }
-
 
     public float getScore() {
         return getMappingQuality();

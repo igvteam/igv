@@ -484,7 +484,7 @@ public class IGV implements IGVEventObserver {
         try {
             PreferencesEditor.open(this.mainFrame);
         } catch (Exception e) {
-            log.error("Error openining preference dialog", e);
+            log.error("Error opening preference dialog", e);
         }
     }
 
