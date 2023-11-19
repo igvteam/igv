@@ -8,7 +8,6 @@ package org.broad.igv.ucsc;
 
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.broad.igv.util.UnsignedByteBuffer;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
@@ -24,8 +23,8 @@ public class TwoBitReader {
     // the number 0x1A412743 in the architecture of the machine that created the file
     static int SIGNATURE = 0x1a412743;
 
+    String path;
     private HashMap<String, SequenceRecord> sequenceRecordMap;
-    SeekableStream is;
     ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;  // Until proven otherwise
     private int seqCount;
     
@@ -33,7 +32,7 @@ public class TwoBitReader {
 
     public TwoBitReader(String path) throws IOException {
         init(path);
-        index = new TwoBitIndex(is, this.byteOrder, this.seqCount);
+        index = new TwoBitIndex(path, this.byteOrder, this.seqCount);
     }
 
     public TwoBitReader(String path, String indexPath) throws IOException {
@@ -42,21 +41,16 @@ public class TwoBitReader {
     }
 
     UnsignedByteBuffer loadBinaryBuffer(long start, int size) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(size);
-        bb.order(this.byteOrder);
-        byte[] bytes = bb.array();
-        this.is.seek(start);
-        this.is.readFully(bytes);
-        return new UnsignedByteBuffer(bb);
+        return UnsignedByteBuffer.loadBinaryBuffer(path, byteOrder, start, size);
     }
 
-    private void init(String path) throws IOException {
+    private void init( String path) throws IOException {
 
+        this.path = path;
         this.sequenceRecordMap = new HashMap<>();
-        this.is = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
 
         long filePosition = 0;
-        UnsignedByteBuffer buffer = loadBinaryBuffer(filePosition, 64);
+        UnsignedByteBuffer buffer = UnsignedByteBuffer.loadBinaryBuffer(path, byteOrder, filePosition, 64);
 
         int signature = buffer.getInt();
         if (SIGNATURE != signature) {

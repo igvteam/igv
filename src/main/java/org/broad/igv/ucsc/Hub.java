@@ -21,7 +21,6 @@ public class Hub {
     static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly", "gap", "gapOverlap", "allGaps",
             "cpgIslandExtUnmasked", "windowMasker"));
 
-
     public static Hub loadHub(String url) throws IOException {
 
         int idx = url.lastIndexOf("/");
@@ -64,7 +63,6 @@ public class Hub {
 
         return new Hub(baseURL, stanzas, groups);
     }
-
 
     private Hub(String baseURL, List<Stanza> stanzas, List<Stanza> groupStanzas) {
 
@@ -109,7 +107,6 @@ public class Hub {
             }
         }
     }
-
 
     private static List<Hub.Stanza> loadStanzas(String url) throws IOException {
         List<Stanza> nodes = new ArrayList<>();
@@ -255,6 +252,36 @@ public class Hub {
         return config;
     }
 
+    List<TrackConfigGroup> getGroupedTrackConfigurations() {
+
+        // Organize track configs by group
+        LinkedHashMap<String, List<TrackConfig>> trackConfigMap = new LinkedHashMap<>();
+        for (TrackConfig c : this.getTracksConfigs(null)) {
+            String groupName = c.group != null ? c.group : "other";
+            if (!trackConfigMap.containsKey(groupName)) {
+                trackConfigMap.put(groupName, new ArrayList<>());
+            }
+            trackConfigMap.get(groupName).add(c);
+        }
+
+        // Extract map of group names
+        Map<String, String> groupNamesMap = new HashMap<>();
+        if (this.groupStanzas != null) {
+            for (Stanza groupStanza : this.groupStanzas) {
+                groupNamesMap.put(groupStanza.getProperty("name"), groupStanza.getProperty("label"));
+            }
+        }
+
+        // Use linked has map to maintain order
+        List<TrackConfigGroup> groupedTrackConfigurations = new ArrayList<>();
+        for (Map.Entry<String, List<TrackConfig>> entry : trackConfigMap.entrySet()) {
+            String group = entry.getKey();
+            String label = groupNamesMap.containsKey(group) ? groupNamesMap.get(group) : group;
+            groupedTrackConfigurations.add(new TrackConfigGroup(label, entry.getValue()));
+
+        }
+        return groupedTrackConfigurations;
+    }
 
     /**
      * Return an array of igv track config objects that satisfy the filter

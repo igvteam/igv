@@ -1,6 +1,7 @@
 package org.broad.igv.ucsc;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -11,13 +12,13 @@ import java.util.Map;
 
 public class TwoBitIndex implements BPIndex{
 
-    SeekableStream is;
+    String path;
     ByteOrder byteOrder;
 
     Map<String, Long> sequenceDataOffsets;
 
-    public TwoBitIndex(SeekableStream is, ByteOrder byteOrder, int seqCount) throws IOException {
-        this.is = is;
+    public TwoBitIndex(String path, ByteOrder byteOrder, int seqCount) throws IOException {
+        this.path = path;
         this.byteOrder = byteOrder;
         this.sequenceDataOffsets = new HashMap<>();
         readIndex(seqCount);
@@ -69,11 +70,13 @@ public class TwoBitIndex implements BPIndex{
     }
 
     ByteBuffer loadBinaryBuffer(long start, int size) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(size);
-        bb.order(this.byteOrder);
-        byte[] bytes = bb.array();
-        this.is.seek(start);
-        this.is.readFully(bytes);
-        return bb;
+        try (SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(path)) {
+            ByteBuffer bb = ByteBuffer.allocate(size);
+            bb.order(this.byteOrder);
+            byte[] bytes = bb.array();
+            is.seek(start);
+            is.readFully(bytes);
+            return bb;
+        }
     }
 }

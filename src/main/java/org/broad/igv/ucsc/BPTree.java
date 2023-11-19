@@ -43,7 +43,6 @@ package org.broad.igv.ucsc;
 
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.broad.igv.util.UnsignedByteBuffer;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
@@ -59,7 +58,7 @@ public class BPTree implements BPIndex{
     // the number 0x78CA8C91 in the architecture of the machine that created the file
     static int SIGNATURE = 0x78CA8C91;
 
-    SeekableStream is;
+    String path;
     private long fileOffset;
     ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;  // Until proven otherwise
 
@@ -74,19 +73,14 @@ public class BPTree implements BPIndex{
     long nodeOffset;
 
     public BPTree(String path, long fileOffset) throws IOException {
-        this.is = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
+        this.path = path;
         this.fileOffset = fileOffset;
         this.nodeCache = new HashMap<>();
         init();
     }
 
     UnsignedByteBuffer loadBinaryBuffer(long start, int size) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(size);
-        bb.order(this.byteOrder);
-        byte[] bytes = bb.array();
-        this.is.seek(start);
-        this.is.readFully(bytes);
-        return new UnsignedByteBuffer(bb);
+        return UnsignedByteBuffer.loadBinaryBuffer(this.path, this.byteOrder, start, size);
     }
 
     private void init() throws IOException {

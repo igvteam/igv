@@ -131,7 +131,6 @@ public class BBFileReader {
         // read in file header
         fileOffset = BBFILE_HEADER_OFFSET;
         fileHeader = new BBFileHeader(path, fis, fileOffset);
-        //fileHeader.print();
 
         if (!fileHeader.isHeaderOK()) {
             log.error("BBFile header is unrecognized type, header magic = " + fileHeader.getMagic());

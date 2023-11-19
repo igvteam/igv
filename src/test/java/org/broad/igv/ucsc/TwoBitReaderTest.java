@@ -77,8 +77,7 @@ public class TwoBitReaderTest {
 
         String url = TestUtils.DATA_DIR + "twobit/GCF_000002655.1.2bit";
 
-        SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(url);
-        TwoBitIndex index = new TwoBitIndex(is, ByteOrder.LITTLE_ENDIAN, 8);
+        TwoBitIndex index = new TwoBitIndex(url, ByteOrder.LITTLE_ENDIAN, 8);
         long[] offset = index.search("NC_007197.1");
 
         assertNotNull(offset);

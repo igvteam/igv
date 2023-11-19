@@ -1,9 +1,9 @@
-package org.broad.igv.util;
+package org.broad.igv.ucsc;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -12,17 +12,26 @@ public class UnsignedByteBuffer {
 
     ByteBuffer wrappedBuffer;
 
-    public static UnsignedByteBuffer loadBinaryBuffer(SeekableStream is, ByteOrder byteOrder, long start, int size) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(size);
+
+    public static UnsignedByteBuffer loadBinaryBuffer(String path, ByteOrder byteOrder, long start, int size) throws IOException {
+        try(SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(path)) {
+            ByteBuffer bb = ByteBuffer.allocate(size);
+            bb.order(byteOrder);
+            byte[] bytes = bb.array();
+            is.seek(start);
+            is.readFully(bytes);
+            return new UnsignedByteBuffer(bb);
+        }
+    }
+
+    public static UnsignedByteBuffer wrap(byte[] bytes, ByteOrder byteOrder) {
+        ByteBuffer bb = ByteBuffer.wrap(bytes);
         bb.order(byteOrder);
-        byte[] bytes = bb.array();
-        is.seek(start);
-        is.readFully(bytes);
         return new UnsignedByteBuffer(bb);
     }
 
 
-    public UnsignedByteBuffer(ByteBuffer wrappedBuffer) {
+    private UnsignedByteBuffer(ByteBuffer wrappedBuffer) {
         this.wrappedBuffer = wrappedBuffer;
     }
 
@@ -50,19 +59,23 @@ public class UnsignedByteBuffer {
         return wrappedBuffer.getLong();
     }
 
-    public String getString() throws IOException {
+    public double getDouble() {
+        return wrappedBuffer.getDouble();
+    }
+
+    public String getString()  {
         ByteArrayOutputStream bis = new ByteArrayOutputStream(1000);
         int b;
         while ((b = wrappedBuffer.get()) != 0) {
             if(b < 0) {
-                throw new EOFException();
+                return new String(bis.toByteArray());
             }
             bis.write((byte) b);
         }
         return new String(bis.toByteArray());
     }
 
-    public String getFixedLengthString(int length) throws IOException {
+    public String getFixedLengthString(int length)  {
 
         byte [] bytes = new byte[length];
         for(int i=0; i<length; i++) {
@@ -71,7 +84,9 @@ public class UnsignedByteBuffer {
         return new String(bytes);
 
     }
-
+    public long position() {
+        return wrappedBuffer.position();
+    }
     public void position(int i) {
         wrappedBuffer.position(i);
     }
@@ -79,4 +94,10 @@ public class UnsignedByteBuffer {
     public byte[] array() {
         return wrappedBuffer.array();
     }
+
+    public long remaining() {
+        return wrappedBuffer.remaining();
+    }
+
+
 }

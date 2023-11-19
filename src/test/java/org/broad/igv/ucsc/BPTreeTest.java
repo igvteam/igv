@@ -1,6 +1,5 @@
 package org.broad.igv.ucsc;
 
-import org.broad.igv.ucsc.BPTree;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 

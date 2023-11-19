@@ -4,13 +4,14 @@ import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class HubTest {
 
     @Test
-    public void getGenomeConfig() throws IOException {
+    public void testGetGenomeConfig() throws IOException {
 
         String hubFile = TestUtils.DATA_DIR + "hubs/hub.txt";
         Hub hub =  Hub.loadHub(hubFile);
@@ -28,7 +29,14 @@ public class HubTest {
         assertNotNull(genomeConfig.twoBitURL);
         assertNotNull(genomeConfig.chromAliasBbURL);
         assertNotNull(genomeConfig.cytobandBbURL);
-        //assertNotNull(genomeConfig.trackConfigurations.length > 0)
-
     }
+
+    @Test
+    public void testGetGroupedTrackConfigurations() throws IOException {
+        String hubFile = TestUtils.DATA_DIR + "hubs/hub.txt";
+        Hub hub =  Hub.loadHub(hubFile);
+        List<TrackConfigGroup> groupedTrackConfigurations  = hub.getGroupedTrackConfigurations();
+        assertEquals(5, groupedTrackConfigurations.size());
+    }
+
 }
