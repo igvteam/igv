@@ -21,14 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-apply plugin: 'java'
-apply plugin: 'maven-publish'
-apply plugin: 'application'
-
 import org.apache.tools.ant.filters.ReplaceTokens
-
-mainClassName = 'org.broad.igv.ui.Main'
-ext.moduleName = 'org.igv'
 
 buildscript {
     repositories {
@@ -36,10 +29,20 @@ buildscript {
     }
 }
 
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'application'
+}
+
 repositories {
     mavenCentral()
     mavenLocal()
 }
+
+
+mainClassName = 'org.broad.igv.ui.Main'
+ext.moduleName = 'org.igv'
 
 java {
     toolchain {
