@@ -1,5 +1,6 @@
 package org.broad.igv.ext.render;
 
+import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -13,6 +14,12 @@ public class FlowIndelRendering implements IIndelRenderingExtension {
     public static final String TAG_T0 = "t0";
     private static ColorMap indelColorMap = ColorMap.getJet(42);
     private static final double MIN_PROB_DEFAULT = 0.01;
+
+    private static String ATTR_TP = "tp";
+    private static String ATTR_TI = "ti";
+    private static String RG_ATTR_PL = "PL";
+    private static String RG_ATTR_MC = "mc";
+    private static String RG_ATTR_PL_ULTIMA = "ULTIMA";
 
     public boolean extendsContext(final Object context) {
 
@@ -222,12 +229,39 @@ public class FlowIndelRendering implements IIndelRenderingExtension {
 
     static private UltimaFileFormat getUltimaFileVersion(Alignment alignment)
     {
-        if ( alignment.getAttribute("ti") != null )
+        // check for preconditions for a flow file.  note that we extend only SAMAlignment instances
+        if ( !(alignment instanceof SAMAlignment) ) {
+            return UltimaFileFormat.NON_FLOW;
+        }
+        final SAMAlignment samAlignment = (SAMAlignment)alignment;
+        if ( !isUltimaFlowReadGroup(samAlignment.getRecord().getReadGroup()) ) {
+            return UltimaFileFormat.NON_FLOW;
+        }
+
+        if ( alignment.getAttribute(ATTR_TI) != null )
             return UltimaFileFormat.BASE_TI;
-        else if ( alignment.getAttribute("tp") != null )
+        else if ( alignment.getAttribute(ATTR_TP) != null )
             return UltimaFileFormat.BASE_TP;
         else
             return UltimaFileFormat.NON_FLOW;
+    }
+
+    private static boolean isUltimaFlowReadGroup(SAMReadGroupRecord readGroup) {
+
+        // must have a read group to begin with
+        if ( readGroup == null )
+            return false;
+
+        // modern files have an ultima platform
+        if ( RG_ATTR_PL_ULTIMA.equals(readGroup.getAttribute(RG_ATTR_PL)) )
+            return true;
+
+        // fall back on the presence of an mc (max-class)
+        if ( readGroup.getAttribute(RG_ATTR_MC) != null )
+            return true;
+
+        // if here, probably not an ultima flow read group
+        return false;
     }
 
     static private double qualsAsProb(ByteSubarray quals) {
@@ -312,7 +346,7 @@ public class FlowIndelRendering implements IIndelRenderingExtension {
 
         // short-circuit a simple and common case: insert of 1 with tp=-1 -> quality is already here!
         if ( fragLength == 1 ) {
-            byte[]      tp = record.getByteArrayAttribute("tp");
+            byte[]      tp = record.getByteArrayAttribute(ATTR_TP);
             if ( tp[start] == -1 ) {
                 byte      q = block.getQuality(0);
                 return Math.pow(10.0, -q / 10.0);
@@ -342,7 +376,7 @@ public class FlowIndelRendering implements IIndelRenderingExtension {
     private double findQualByTPValue(SAMRecord record, HMer hmer, int tpValue) {
 
         // get quals and tp
-        byte[]      tp = record.getByteArrayAttribute("tp");
+        byte[]      tp = record.getByteArrayAttribute(ATTR_TP);
 
         // scan for tpValue, extract qual
         for ( int ofs = hmer.start ; ofs <= hmer.end ; ofs++ )
