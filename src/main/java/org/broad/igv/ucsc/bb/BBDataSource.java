@@ -25,133 +25,65 @@
 
 package org.broad.igv.ucsc.bb;
 
-import htsjdk.tribble.Feature;
-import org.apache.commons.math3.stat.StatUtils;
-import org.broad.igv.ucsc.bb.codecs.BBCodec;
-import org.broad.igv.ucsc.bb.codecs.BBCodecFactory;
+import org.broad.igv.Globals;
+import org.broad.igv.data.AbstractDataSource;
+import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataSource;
-import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.data.DataTile;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ucsc.UnsignedByteBuffer;
 
 import java.io.IOException;
 import java.util.*;
 
-/**
- * A hybrid source, implements both DataSource and FeatureSource.
- *
- * @author jrobinso
- * @date Jun 19, 2011
- */
-public class BBDataSource implements FeatureSource, DataSource {
 
-    final int screenWidth = 1000; // TODO use actual screen width
+public class BBDataSource extends AbstractDataSource implements DataSource {
 
-
+    private final Genome genome;
     Collection<WindowFunction> availableWindowFunctions =
             Arrays.asList(WindowFunction.min, WindowFunction.mean, WindowFunction.max, WindowFunction.none);
 
     BBFile reader;
 
-    // Feature visibility window (for bigBed)
-    private int featureVisiblityWindow = -1;
-
     private Map<WindowFunction, List<LocusScore>> wholeGenomeScores;
 
-    // Lookup table to support chromosome aliasing.
-    private Map<String, String> chrNameMap = new HashMap();
     private double dataMin = 0;
     private double dataMax = 100;
 
-    BBCodec bedCodec;
+    List<LocusScore> wgScores = null;
 
     public BBDataSource(BBFile reader, Genome genome) throws IOException {
-        super();
-
+        super(genome);
         this.reader = reader;
-
+        this.genome = genome;
         this.wholeGenomeScores = new HashMap<>();
-
-        if (reader.type == BBFile.Type.BIGWIG) initMinMax();
-
-        if (reader.type == BBFile.Type.BIGBED) {
-            String autosql = reader.autosql;
-            int definedFieldCount = reader.header.definedFieldCount;
-            bedCodec = BBCodecFactory.getCodec(autosql, definedFieldCount);
-        }
-
-
-        // Assume 1000 pixel screen, pick visibility level to be @ highest resolution zoom.
-        // NOTE: this is only used by feature tracks (bigbed sources)
-        // TODO -- something smarter, like scaling by actual density
-        //if (levels != null && levels.getZoomHeaderCount() > 0) {
-        //    BBZoomLevelHeader firstLevel = levels.getZoomLevelHeaders().get(0); // Highest res
-        featureVisiblityWindow = 0;
-        //}
-
-//        if (genome != null) {
-//            Collection<String> chrNames = reader.getChromosomeNames();
-//            for (String chr : chrNames) {
-//                String igvChr = genome.getCanonicalChrName(chr);
-//                if (igvChr != null && !igvChr.equals(chr)) {
-//                    chrNameMap.put(igvChr, chr);
-//                }
-//            }
-//        }
-
-    }
-
-    @Override
-    public int getFeatureWindowSize() {
-        return featureVisiblityWindow;
+        initMinMax();
     }
 
     /**
-     * Set the "min" and "max" from 1MB resolutiond data.  Read a maximum of 10,000 points for this
+     * Set the "min" and "max" from total summary data.
      */
     private void initMinMax() {
 
-        final int oneMB = 1000000;
-        //     final BBZoomLevelHeader zoomLevelHeader = getZoomLevelForScale(oneMB);
-
-        int nValues = 0;
-        double[] values = new double[10000];
-
-//        if (zoomLevelHeader == null) {
-//            List<String> chrNames = reader.getChromosomeNames();
-//            for (String chr : chrNames) {
-//                BigWigIterator iter = reader.getBigWigIterator(chr, 0, chr, Integer.MAX_VALUE, false);
-//                while (iter.hasNext()) {
-//                    WigItem item = iter.next();
-//                    values[nValues++] = item.getWigValue();
-//                    if (nValues >= 10000) break;
-//                }
-//            }
-//        } else {
-//
-//            int z = zoomLevelHeader.getZoomLevel();
-//            ZoomLevelIterator zlIter = reader.getZoomLevelIterator(z);
-//            if (zlIter.hasNext()) {
-//                while (zlIter.hasNext()) {
-//                    ZoomDataRecord rec = zlIter.next();
-//                    values[nValues++] = (rec.getMeanVal());
-//                    if (nValues >= 10000) {
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-
-        if (nValues > 0) {
-            dataMin = StatUtils.percentile(values, 0, nValues, 10);
-            dataMax = StatUtils.percentile(values, 0, nValues, 90);
-        } else {
+        BBTotalSummary totalSummary = reader.totalSummary;
+        if (totalSummary == null) {
             dataMin = 0;
             dataMax = 100;
+        } else {
+            dataMin = totalSummary.minVal;
+            if (totalSummary.basesCovered < 100) {
+                dataMin = Math.min(0, totalSummary.minVal);
+                dataMax = totalSummary.maxVal;
+            } else if (totalSummary.minVal < 0) {
+                dataMax = Math.min(totalSummary.maxVal, 3 * totalSummary.stddev);
+                dataMin = Math.max(totalSummary.minVal, -dataMax);
+            } else {
+                dataMin = 0;
+                dataMax = Math.min(totalSummary.maxVal, totalSummary.mean + 2 * totalSummary.stddev);
+            }
         }
     }
 
@@ -164,26 +96,96 @@ public class BBDataSource implements FeatureSource, DataSource {
     }
 
     @Override
-    public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
-        return null;
+    protected DataTile getRawData(String chr, int start, int end) {
+
+        try {
+            long rTreeOffset = reader.header.fullIndexOffset;
+            List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
+
+            Integer chrIdx = reader.getIdForChr(chr);
+
+            List<LocusScore> features = new ArrayList<>();
+            for (byte[] c : chunks) {
+                reader.decodeWigData(c, chrIdx, start, end, features);
+            }
+
+            final int size = features.size();
+            int[] starts = new int[size];
+            int[] ends = new int[size];
+            float[] values = new float[size];
+            for (int i = 0; i < size; i++) {
+                final LocusScore locusScore = features.get(i);
+                starts[i] = locusScore.getStart();
+                ends[i] = locusScore.getEnd();
+                values[i] = locusScore.getScore();
+            }
+            return new DataTile(starts, ends, values, null);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
+
+
+    /**
+     * Return bigwig "zoom data" if available for the resolution encoded by "zoom"
+     *
+     * @param chr
+     * @param start
+     * @param end
+     * @param zoom
+     * @return
+     */
+    @Override
+    protected List<LocusScore> getPrecomputedSummaryScores(String chr, int start, int end, int zoom) {
+        // Translate IGV zoom number to bpperpixel.
+        try {
+            if (Globals.CHR_ALL.equals(chr)) {
+                if (genome.getHomeChromosome().equals(Globals.CHR_ALL) && windowFunction != WindowFunction.none) {
+                    return this.getWholeGenomeScores();
+                } else {
+                    return null;
+                }
+            }
+
+
+            Chromosome chromosome = genome.getChromosome(chr);
+            if(chromosome == null) {
+                throw new RuntimeException("Unexpected chromosome name: " + chr);
+            }
+
+
+            double nBins = Math.pow(2, zoom);
+            double scale = chromosome.getLength() / (nBins * 700);
+            BBZoomHeader zlHeader = reader.zoomLevelForScale(scale);
+
+            if (zlHeader == null) {
+                return null;
+            } else {
+                long rTreeOffset = zlHeader.indexOffset;
+                List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
+
+                List<LocusScore> features = new ArrayList<>();
+                for (byte[] c : chunks) {
+                    reader.decodeZoomData(c, windowFunction, features);
+                }
+                return features;
+            }
+        } catch (IOException e) {
+            // Wrap the IOException for now, to avoid refactoring of hierarchy
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int getLongestFeature(String chr) {
+        return 0;
+    }
+
 
     public TrackType getTrackType() {
         return TrackType.OTHER;
-    }
-
-    @Override
-    public void setWindowFunction(WindowFunction statType) {
-
-    }
-
-    public boolean isLogNormalized() {
-        return false;
-    }
-
-    @Override
-    public WindowFunction getWindowFunction() {
-        return null;
     }
 
 
@@ -196,84 +198,56 @@ public class BBDataSource implements FeatureSource, DataSource {
 
     }
 
-    @Override
-    public void close() {
-        // super.dispose();
-        if (reader != null) {
-            //     reader.close();
-        }
-    }
 
-    // Feature interface follows ------------------------------------------------------------------------
+    private List<LocusScore> getWholeGenomeScores() {
 
-    public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
+        try {
+            if (genome.getHomeChromosome().equals(Globals.CHR_ALL) && windowFunction != WindowFunction.none) {
 
-        List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, 0);
+                if (!wholeGenomeScores.containsKey(windowFunction)) {
 
-        List features = new ArrayList<>();
-        for (byte[] c : chunks) {
-            UnsignedByteBuffer bb = UnsignedByteBuffer.wrap(c, reader.byteOrder);
-            while (bb.remaining() > 0) {
+                    int screenWidth = 1000;  // nominal
+                    double scale = genome.getNominalLength() / screenWidth;
 
-                int chromId = bb.getInt();
-                int chromStart = bb.getInt();
-                int chromEnd = bb.getInt();
-                String restOfFields = bb.getString();
-                //String chr = reader.getChrForId(chromId);  // Might differ due to aliasing
+                    int maxChromId = reader.getChromosomeNames().size() - 1;
+                    String firstChr = reader.getChrForId(0);
+                    String lastChr = reader.getChrForId(maxChromId);
 
-                final BedData bedData = new BedData(chr, chromStart, chromEnd, restOfFields);
-                final BasicFeature feature = bedCodec.decode(bedData);
-                features.add(feature);
-            }
-        }
+                    ArrayList<LocusScore> scores = new ArrayList<LocusScore>();
+                    wholeGenomeScores.put(windowFunction, scores);
 
-        return new FeatureIterator(features, start, end);
-    }
+                    BBZoomHeader lowestResHeader = reader.zoomLevelForScale(scale);
+                    if (lowestResHeader == null) return null;
 
-    public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-        return null;
-    }
+                    Set<String> wgChrNames = new HashSet<>(genome.getLongChromosomeNames());
 
-    static class FeatureIterator implements Iterator<Feature> {
+                    long rTreeOffset = lowestResHeader.indexOffset;
+                    List<byte[]> chunks = this.reader.getLeafChunks(firstChr, 0, lastChr, Integer.MAX_VALUE, rTreeOffset);
 
-        List<Feature> features;
-        int idx;
-        int start;
-        int end;
+                    List<LocusScore> features = new ArrayList<>();
+                    for (byte[] c : chunks) {
+                        reader.decodeZoomData(c, windowFunction, features);
+                    }
 
-        Feature next;
+                    for (LocusScore s : features) {
+                        WigDatum rec = (WigDatum) s;   // Unfortunate, but this is java
+                        String chr = genome.getCanonicalChrName(rec.getChr());
+                        if (wgChrNames.contains(chr)) {
+                            int genomeStart = genome.getGenomeCoordinate(chr, rec.getStart());
+                            int genomeEnd = genome.getGenomeCoordinate(chr, rec.getEnd());
+                            scores.add(new BasicScore(genomeStart, genomeEnd, rec.getScore()));
+                        }
+                    }
+                    scores.sort((o1, o2) -> o1.getStart() - o2.getStart());
 
-        public FeatureIterator(List<Feature> features, int start, int end) {
-            this.features = features;
-            this.start = start;
-            this.end = end;
-            advance();
-        }
-
-        private void advance() {
-            while(idx < features.size()) {
-                next = features.get(idx++);
-                if(next.getStart() > end) {
-                    next = null;
-                    break;   // Done
-                } else if(next.getEnd() >= start) {
-                    break;
                 }
+                return wholeGenomeScores.get(windowFunction);
+            } else {
+                return null;
             }
-        }
-
-        @Override
-        public boolean hasNext() {
-            return next != null;
-        }
-
-        @Override
-        public Feature next() {
-            Feature retValue = next;
-            advance();
-            return retValue;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
-
 
 }

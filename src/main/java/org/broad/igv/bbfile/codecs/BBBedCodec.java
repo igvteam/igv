@@ -1,10 +1,9 @@
 package org.broad.igv.bbfile.codecs;
 
 import org.broad.igv.Globals;
-import org.broad.igv.bbfile.BBUtils;
+import org.broad.igv.ucsc.bb.BBUtils;
 import org.broad.igv.bbfile.BedData;
 import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 
 import java.util.LinkedHashMap;

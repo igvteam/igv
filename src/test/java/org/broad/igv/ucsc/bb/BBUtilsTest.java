@@ -23,14 +23,13 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.bbfile;
+package org.broad.igv.ucsc.bb;
 
 import org.junit.Test;
 
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author jrobinso

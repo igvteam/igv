@@ -31,6 +31,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.genome.ChromAliasManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.*;
 import org.broad.igv.feature.tribble.reader.IGVComponentMethods;
@@ -61,9 +62,11 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     Genome genome;
 
     /**
-     * Map of IGV chromosome name -> source name
+     * Sequence names used in this file, which might differ from reference sequence names.
      */
-    Map<String, String> chrNameMap = new HashMap<String, String>();
+    Set<String> sequenceNames;
+
+    ChromAliasManager chromAliasManager;
     private Integer featureWindowSize;
     Object header;
     Class featureClass;
@@ -174,6 +177,8 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         this.header = reader.getHeader();
         this.reader = new TribbleReaderWrapper(reader);
         this.wrappedReader = reader;
+        this.sequenceNames = new HashSet(reader.getSequenceNames());
+        this.chromAliasManager = new ChromAliasManager(sequenceNames, genome);
     }
 
     protected abstract int estimateFeatureWindowSize(FeatureReader reader);
@@ -203,18 +208,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         private IndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator,
                                      Genome genome, boolean useCache, boolean useIndex) throws IOException {
             super(basicReader, codec, genome);
-
-            if (genome != null) {
-                Collection<String> seqNames = reader.getSequenceNames();
-                if (seqNames != null) {
-                    for (String seqName : seqNames) {
-                        String igvChr = genome.getCanonicalChrName(seqName);
-                        if (igvChr != null && !igvChr.equals(seqName)) {
-                            chrNameMap.put(igvChr, seqName);
-                        }
-                    }
-                }
-            }
         }
 
 
@@ -226,7 +219,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         @Override
         public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
 
-            String seqName = chrNameMap.get(chr);
+            String seqName =  sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
             if (seqName == null) seqName = chr;
 
             return reader.query(seqName, start, end);

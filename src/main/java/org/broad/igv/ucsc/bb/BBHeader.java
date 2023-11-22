@@ -14,6 +14,7 @@ public class BBHeader {
     public long totalSummaryOffset;  // 8 byte offset to file summary data block
     public int uncompressBuffSize;  // 4 byte maximum size for decompressed buffer
     public long extensionOffset;
-    public int extraIndexCount;
+    public int extraIndexCount = 0;
     public long[] extraIndexOffsets;
+    public int dataCount;
 }

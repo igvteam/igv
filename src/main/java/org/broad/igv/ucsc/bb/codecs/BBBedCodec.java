@@ -1,7 +1,7 @@
 package org.broad.igv.ucsc.bb.codecs;
 
 import org.broad.igv.Globals;
-import org.broad.igv.bbfile.BBUtils;
+import org.broad.igv.ucsc.bb.BBUtils;
 import org.broad.igv.ucsc.bb.BedData;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;

@@ -13,7 +13,7 @@ public class BPTreeTest {
     public void testSearch() throws IOException {
         String testFile = TestUtils.DATA_DIR + "twobit/GCA_004363605.1.2bit.bpt";
 
-        BPTree tree = new BPTree(testFile, 0);
+        BPTree tree =  BPTree.loadBPTree(testFile, 0);
 
         assertNotNull(tree);
         assertEquals(256, tree.blockSize);

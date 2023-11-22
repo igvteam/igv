@@ -1,4 +1,4 @@
-package org.broad.igv.bbfile;
+package org.broad.igv.ucsc.bb;
 
 import org.broad.igv.Globals;
 

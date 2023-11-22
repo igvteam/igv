@@ -7,6 +7,9 @@ import com.google.gson.JsonParser;
 import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureReader;
+import org.broad.igv.feature.genome.ChromAliasBB;
+import org.broad.igv.feature.genome.ChromAliasDefaults;
+import org.broad.igv.feature.genome.ChromAliasFile;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.CytoBandFileParser;
@@ -26,8 +29,6 @@ import org.broad.igv.util.liftover.Liftover;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.*;
 
 public class JsonGenomeLoader extends GenomeLoader {
@@ -214,16 +215,22 @@ public class JsonGenomeLoader extends GenomeLoader {
             JsonElement ucscIDElement = json.get("ucscID");
             if (ucscIDElement != null) {
                 newGenome.setUcscID(ucscIDElement.getAsString());
-                if(blatDB == null) {
+                if (blatDB == null) {
                     newGenome.setBlatDB(ucscIDElement.getAsString());
                 }
             }
 
-            JsonElement aliasURL = json.get("aliasURL");
-            if (aliasURL != null) {
-                String aliasPath = FileUtils.getAbsolutePath(aliasURL.getAsString(), genomePath);
-                newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
+            if (json.get("aliasURL") != null) {
+                String aliasPath = FileUtils.getAbsolutePath(json.get("aliasURL").getAsString(), genomePath);
+                newGenome.setChromAliasSource(new ChromAliasFile(aliasPath, newGenome));
+            } else if (json.get("chromAliasBbURL") != null) {
+                String aliasPath = FileUtils.getAbsolutePath(json.get("chromAliasBbURL").getAsString(), genomePath);
+                newGenome.setChromAliasSource(new ChromAliasBB(aliasPath, newGenome));
+            } else {
+                newGenome.setChromAliasSource(new ChromAliasDefaults(newGenome.getId(), newGenome.getAllChromosomeNames()));
             }
+
+
             if (hiddenTracks.size() > 0) {
                 addToFeatureDB(hiddenTracks, newGenome);
             }
@@ -304,10 +311,9 @@ public class JsonGenomeLoader extends GenomeLoader {
     }
 
     private String stripQuotes(String str) {
-        if(str.startsWith("\"")) {
+        if (str.startsWith("\"")) {
             return str.substring(1, str.length() - 1);  // Assume also ends with
-        }
-        else {
+        } else {
             return str;
         }
     }

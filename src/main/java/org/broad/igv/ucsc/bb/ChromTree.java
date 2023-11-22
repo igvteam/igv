@@ -4,9 +4,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ucsc.UnsignedByteBuffer;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.LongConsumer;
 
 /**
  * Represents the ChromTree of a UCSC bigbed/bigwig file.  The entire tree is walked to produce 2 maps,
@@ -22,9 +19,11 @@ import java.util.function.LongConsumer;
 
 public class ChromTree {
 
-    Header header;
-    public HashMap<String, Integer> nameToId;
-    public String[] idToName;
+    private Header header;
+    private HashMap<String, Integer> nameToId;
+    private String[] idToName;
+
+    public long sumLengths = 0;
 
     public static ChromTree parseTree(UnsignedByteBuffer binaryParser, int startOffset, Genome genome) {
 
@@ -33,6 +32,22 @@ public class ChromTree {
 
     private ChromTree() {
 
+    }
+
+    public Integer getIdForName(String chr) {
+        return nameToId.get(chr);
+    }
+
+    public String getNameForId(int id) {
+        if (id < 0 || id >= idToName.length) {
+            return null;
+        } else {
+            return idToName[id];
+        }
+    }
+
+    public String[] names() {
+        return idToName;
     }
 
     public ChromTree parse(UnsignedByteBuffer binaryParser, int startOffset, Genome genome) {
@@ -78,6 +93,7 @@ public class ChromTree {
                 }
                 nameToId.put(key, value);
                 idToName[value] = key;
+                sumLengths += chromSize;
             }
         } else {
             // non-leaf

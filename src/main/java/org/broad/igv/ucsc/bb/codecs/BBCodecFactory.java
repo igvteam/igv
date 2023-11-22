@@ -1,6 +1,6 @@
 package org.broad.igv.ucsc.bb.codecs;
 
-import org.broad.igv.bbfile.BBUtils;
+import org.broad.igv.ucsc.bb.BBUtils;
 
 public class BBCodecFactory {
 

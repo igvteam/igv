@@ -27,18 +27,15 @@ package org.broad.igv.ui.action;
 
 import junit.framework.AssertionFailedError;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.NamedFeature;
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.ChromAlias;
+import org.broad.igv.feature.genome.ChromAliasSource;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -50,7 +47,7 @@ import static org.junit.Assert.*;
 public class SearchCommandTest extends AbstractHeadlessTest {
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         super.setUp();
     }
 
@@ -75,30 +72,46 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     @Test
     public void testChromoWithColon() throws Exception {
 
-        List<String> chrNames = Arrays.asList("chr10", "chr1", "chr20");
-        List<List<String>> aliases = Arrays.asList(
-                Arrays.asList("abc:123", "abc:456", "abc:789"),
-                Arrays.asList("xy:12"),
-                Arrays.asList("aaa:bbb"));
+
+        ChromAliasSource mockChromAlias = new ChromAliasSource() {
+            @Override
+            public String getChromosomeName(String alias) {
+                switch (alias) {
+                    case "abc:123":
+                    case "abc:456":
+                    case "abc:789":
+                        return "chr10";
+                    case "xy:12":
+                        return "chr1";
+                    case "aaa:bbb":
+                        return "chr20";
+                    default:
+                        return alias;
+                }
+            }
+
+            @Override
+            public String getChromosomeAlias(String chr, String nameSet) {
+                return null;
+            }
 
 
-        Collection<Collection<String>> synonymsList = new ArrayList<Collection<String>>();
-        for (int i = 0; i < chrNames.size(); i++) {
-            List<String> synonyms = new ArrayList<String>();
-            synonyms.addAll(aliases.get(i));
-            synonyms.add(chrNames.get(i));
-            synonymsList.add(synonyms);
-        }
+            public ChromAlias search(String alias) throws IOException {
+                return null;
+            }
+        };
 
-        if (genome instanceof Genome) {
-            ((Genome) genome).addChrAliases(synonymsList);
-        }
+        String [] chrNames = {"chr10", "chr1", "chr20"};
+        String [][] aliases = {{"abc:123", "abc:456", "abc:789"}, {"xy:12"}, {"aaa:bbb"}};
+
+
+        genome.setChromAliasSource(mockChromAlias);
 
         SearchCommand cmd;
-        for (int i = 0; i < chrNames.size(); i++) {
+        for (int i = 0; i < chrNames.length; i++) {
 
-            String chr = chrNames.get(i);
-            List<String> synonyms = aliases.get(i);
+            String chr = chrNames[i];
+            String [] synonyms = aliases[i];
 
             for (String searchStr : synonyms) {
                 cmd = new SearchCommand(null, searchStr, genome);
@@ -127,7 +140,8 @@ public class SearchCommandTest extends AbstractHeadlessTest {
      *
      * @throws Exception
      */
-    @Test @Ignore("Fails unless tests are run in separate JVMs")
+    @Test
+    @Ignore("Fails unless tests are run in separate JVMs")
     public void testFeatureMuts() throws Exception {
         String[] features = {"EGFR:M1I", "EGFR:G5R", "egfr:g5r", "egfr:r2*"};
         tstFeatureTypes(features, SearchCommand.ResultType.LOCUS);
@@ -267,6 +281,6 @@ public class SearchCommandTest extends AbstractHeadlessTest {
             assertEquals(SearchCommand.ResultType.ERROR, cmd.checkTokenType(s));
         }
     }
-
-
 }
+
+

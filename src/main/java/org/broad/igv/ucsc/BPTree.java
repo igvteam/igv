@@ -72,11 +72,16 @@ public class BPTree implements BPIndex{
     long reserved;
     long nodeOffset;
 
-    public BPTree(String path, long fileOffset) throws IOException {
+    public static BPTree loadBPTree(String path, long fileOffset) throws IOException {
+        BPTree tree = new BPTree(path, fileOffset);
+        tree.init();
+        return tree;
+    }
+
+    private BPTree(String path, long fileOffset) throws IOException {
         this.path = path;
         this.fileOffset = fileOffset;
         this.nodeCache = new HashMap<>();
-        init();
     }
 
     UnsignedByteBuffer loadBinaryBuffer(long start, int size) throws IOException {

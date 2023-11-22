@@ -22,12 +22,14 @@ public class BBTotalSummary {
         return totalSummary;
     }
 
-    void computeStats() {
+    private void computeStats() {
 
         long n = this.basesCovered;
-        if (n > 0) {
+        if (n > 2) {
             this.mean = this.sumData / n;
             this.stddev = Math.sqrt(this.sumSquares / (n - 1));
         }
     }
+
+
 }

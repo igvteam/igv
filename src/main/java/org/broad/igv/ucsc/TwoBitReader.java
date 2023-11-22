@@ -27,7 +27,7 @@ public class TwoBitReader {
     private HashMap<String, SequenceRecord> sequenceRecordMap;
     ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;  // Until proven otherwise
     private int seqCount;
-    
+
     BPIndex index;
 
     public TwoBitReader(String path) throws IOException {
@@ -37,14 +37,14 @@ public class TwoBitReader {
 
     public TwoBitReader(String path, String indexPath) throws IOException {
         init(path);
-        index = new BPTree(indexPath, 0);
+        index = BPTree.loadBPTree(indexPath, 0);
     }
 
     UnsignedByteBuffer loadBinaryBuffer(long start, int size) throws IOException {
         return UnsignedByteBuffer.loadBinaryBuffer(path, byteOrder, start, size);
     }
 
-    private void init( String path) throws IOException {
+    private void init(String path) throws IOException {
 
         this.path = path;
         this.sequenceRecordMap = new HashMap<>();
@@ -145,7 +145,7 @@ public class TwoBitReader {
         SequenceRecord record = this.sequenceRecordMap.get(seqName);
 
         if (record == null) {
-            long [] offset_length = this.index.search(seqName);
+            long[] offset_length = this.index.search(seqName);
             if (offset_length == null) {
                 throw new RuntimeException("Unknown sequence: " + seqName);
             }

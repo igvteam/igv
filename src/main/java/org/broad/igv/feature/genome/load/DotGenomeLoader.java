@@ -1,6 +1,8 @@
 package org.broad.igv.feature.genome.load;
 
 import htsjdk.tribble.Feature;
+import org.broad.igv.feature.genome.ChromAliasDefaults;
+import org.broad.igv.feature.genome.ChromAliasFile;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
@@ -37,7 +39,7 @@ public class DotGenomeLoader extends GenomeLoader {
      * @param geneTrackName
      */
     private static FeatureTrack createGeneTrack(Genome genome, BufferedReader reader, String geneFileName, String geneTrackName,
-                                               String annotationURL) {
+                                                String annotationURL) {
 
         FeatureDB.clearFeatures();
         FeatureTrack geneFeatureTrack = null;
@@ -125,12 +127,11 @@ public class DotGenomeLoader extends GenomeLoader {
         InputStream aliasStream = null;
         try {
             aliasStream = genomeDescriptor.getChrAliasStream();
-            if (aliasStream != null) {
+            if (aliasStream == null) {
+                newGenome.setChromAliasSource(new ChromAliasDefaults(newGenome.getId(), newGenome.getAllChromosomeNames()));
+            } else {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(aliasStream));
-                Collection<Collection<String>> aliases = loadChrAliases(reader);
-                if (aliases != null) {
-                    newGenome.addChrAliases(aliases);
-                }
+                newGenome.setChromAliasSource(new ChromAliasFile(reader, newGenome));
             }
         } catch (IOException e) {
             // We don't want to bomb if the alias load fails.  Just log it and proceed.

@@ -1,9 +1,6 @@
 package org.broad.igv.bbfile.codecs;
 
-import org.broad.igv.bbfile.BBUtils;
-
-import java.util.Collections;
-import java.util.List;
+import org.broad.igv.ucsc.bb.BBUtils;
 
 public class BBCodecFactory {
 

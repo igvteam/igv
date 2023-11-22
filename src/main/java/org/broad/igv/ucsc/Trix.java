@@ -34,7 +34,7 @@ public class Trix {
         this.ixFile = ixFile;
     }
 
-    Map<String, String[]> search(String searchString) throws IOException {
+    public Map<String, String[]> search(String searchString) throws IOException {
 
         String[] searchWords = Globals.whitespacePattern.split(searchString);
 

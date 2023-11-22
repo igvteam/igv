@@ -14,7 +14,7 @@ public class UnsignedByteBuffer {
 
 
     public static UnsignedByteBuffer loadBinaryBuffer(String path, ByteOrder byteOrder, long start, int size) throws IOException {
-        try(SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(path)) {
+        try (SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(path)) {
             ByteBuffer bb = ByteBuffer.allocate(size);
             bb.order(byteOrder);
             byte[] bytes = bb.array();
@@ -59,15 +59,19 @@ public class UnsignedByteBuffer {
         return wrappedBuffer.getLong();
     }
 
+    public float getFloat() {
+        return wrappedBuffer.getFloat();
+    }
+
     public double getDouble() {
         return wrappedBuffer.getDouble();
     }
 
-    public String getString()  {
+    public String getString() {
         ByteArrayOutputStream bis = new ByteArrayOutputStream(1000);
         int b;
         while ((b = wrappedBuffer.get()) != 0) {
-            if(b < 0) {
+            if (b < 0) {
                 return new String(bis.toByteArray());
             }
             bis.write((byte) b);
@@ -75,18 +79,21 @@ public class UnsignedByteBuffer {
         return new String(bis.toByteArray());
     }
 
-    public String getFixedLengthString(int length)  {
-
-        byte [] bytes = new byte[length];
-        for(int i=0; i<length; i++) {
-            bytes[i] = wrappedBuffer.get();
+    public String getFixedLengthString(int length) {
+        byte[] bytes = new byte[length];
+        int nonPaddedLength = 0;
+        for (int i = 0; i < length; i++) {
+            byte b = wrappedBuffer.get();
+            bytes[i] = b;
+            if (b != 0) nonPaddedLength++;
         }
-        return new String(bytes);
-
+        return new String(bytes, 0, nonPaddedLength);
     }
+
     public long position() {
         return wrappedBuffer.position();
     }
+
     public void position(int i) {
         wrappedBuffer.position(i);
     }
@@ -98,6 +105,5 @@ public class UnsignedByteBuffer {
     public long remaining() {
         return wrappedBuffer.remaining();
     }
-
 
 }

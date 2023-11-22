@@ -77,7 +77,7 @@ CHART.DRAW_BOTTOM_BORDER	Draw bottom border	boolean	FALSE
 CHART.COLOR_BORDERS	Color borders	boolean	TRUE
 CHART.DRAW_TRACK_NAME	Draw track label	boolean	FALSE
 CHART.DRAW_AXIS	Label Y axis	boolean	FALSE
-CHART.AUTOSCALE	Continuous autoscale	boolean	FALSE
+CHART.AUTOSCALE	Continuous autoscale	boolean	TRUE
 CHART.SHOW_DATA_RANGE	Show data range	boolean	TRUE
 CN_FREQ.AMP_THRESHOLD	CN freq amplification threshold	float	0.1
 CN_FREQ.DEL_THRESHOLD	CN freq deletion threshold	float	-0.1

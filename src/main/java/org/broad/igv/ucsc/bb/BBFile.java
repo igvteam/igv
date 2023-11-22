@@ -1,17 +1,24 @@
 package org.broad.igv.ucsc.bb;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.Globals;
+import org.broad.igv.data.BasicScore;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.ChromAlias;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.track.WindowFunction;
+import org.broad.igv.ucsc.BPTree;
+import org.broad.igv.ucsc.Trix;
 import org.broad.igv.ucsc.UnsignedByteBuffer;
+import org.broad.igv.ucsc.bb.codecs.BBCodec;
+import org.broad.igv.ucsc.bb.codecs.BBCodecFactory;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /* bigWig/bigBed file structure:
  *     fixedWidthHeader
@@ -76,15 +83,36 @@ import java.util.List;
 public class BBFile {
 
     static public final int BBFILE_HEADER_SIZE = 64;
-    static public final long BIGWIG_MAGIC = 2291137574l; // BigWig Magic Low to High
-    static public final long BIGWIG_MAGIC_HTL = 654085990l; // BigWig Magic High to Low
-    static public final long BIGBED_MAGIC = 2273964779l; // BigBed Magic Low to High
-    static public final long BIGBED_MAGIC_HTL = 3958540679l; // BigBed Magic High to Low
+    static public final long BIGWIG_MAGIC = 2291137574l; // BigWig Magic
+    static public final long BIGBED_MAGIC = 2273964779l; // BigBed Magic
     static public final int BBFILE_EXTENDED_HEADER_HEADER_SIZE = 64;
+    private Trix trix;
     String autosql;
-    private BBTotalSummary totalSummary;
     private ChromTree chromTree;
     private HashSet<String> chrNames;
+    double featureDensity;
+
+    Map<String, String> chrAliasTable;
+    public BBTotalSummary totalSummary;
+    private BPTree[] _searchTrees;
+    BBCodec bedCodec;
+
+    public boolean isBigWigFile() {
+        return type == Type.BIGWIG;
+    }
+
+    public boolean isBigBedFile() {
+        return type == Type.BIGBED;
+    }
+
+    public String getAutoSql() {
+        return autosql;
+    }
+
+    public Set<String> getChromosomeNames() {
+      return  chrNames;
+    }
+
 
     enum Type {BIGWIG, BIGBED}
 
@@ -96,14 +124,16 @@ public class BBFile {
     ByteOrder byteOrder;
     Genome genome;
 
-    public static BBFile openFile(String path) throws IOException {
-        BBFile bbf = new BBFile(path);
-        bbf.init();
-        return bbf;
+    public BBFile(String path, Genome genome) throws IOException {
+        this.path = path;
+        this.genome = genome;
+        this.chrAliasTable = new HashMap<>();
+        init();
     }
 
-    private BBFile(String path) throws IOException {
-        this.path = path;
+    public BBFile(String path, Genome genome, String trixPath) throws IOException {
+        this(path, genome);
+        this.trix = new Trix(trixPath + "x", trixPath);
     }
 
     void init() throws IOException {
@@ -148,19 +178,20 @@ public class BBFile {
         header.extensionOffset = buffer.getLong();
 
         // Read rest of fields up to full data offset
-        buffer = UnsignedByteBuffer.loadBinaryBuffer(this.path, order, BBFILE_HEADER_SIZE, (int) (header.fullDataOffset - BBFILE_HEADER_SIZE));
+        buffer = UnsignedByteBuffer.loadBinaryBuffer(this.path, order, BBFILE_HEADER_SIZE, (int) (header.fullDataOffset - BBFILE_HEADER_SIZE + 4));
 
         // Zoom headers
         this.zoomHeaders = new BBZoomHeader[header.nZoomLevels];
-        for (int i = 1; i <= header.nZoomLevels; i++) {
-            int zoomNumber = header.nZoomLevels - i;
+        for (int i = 0; i < header.nZoomLevels; ++i) {
             BBZoomHeader zlh = new BBZoomHeader();
             zlh.reductionLevel = buffer.getInt();
             zlh.reserved = buffer.getInt();
             zlh.dataOffset = buffer.getLong();
             zlh.indexOffset = buffer.getLong();
-            this.zoomHeaders[zoomNumber] = zlh;
+            this.zoomHeaders[i] = zlh;
         }
+        // Sort in order of decreasing reduction level (increasing resolution
+        Arrays.sort(zoomHeaders, (o1, o2) -> o2.reductionLevel - o1.reductionLevel);
 
         // Autosql
         final int startOffset = BBFILE_HEADER_SIZE;
@@ -170,19 +201,20 @@ public class BBFile {
         }
 
         // Total summary -- present in versions >= 2
-        if (header.totalSummaryOffset > 0) {
+        if (header.version > 1 && header.totalSummaryOffset > 0) {
             buffer.position((int) (header.totalSummaryOffset - startOffset));
             this.totalSummary = BBTotalSummary.parseSummary(buffer);
         }
 
         // Chromosome tree
+        // TODO replace with BPTree
         buffer.position((int) (header.chromTreeOffset - startOffset));
         this.chromTree = ChromTree.parseTree(buffer, startOffset, this.genome);
-        this.chrNames = new HashSet<>(Arrays.asList(this.chromTree.idToName));
+        this.chrNames = new HashSet<>(Arrays.asList(this.chromTree.names()));
 
-        //Finally total data count
-        //buffer.position((int)(header.fullDataOffset - startOffset));
-        //header.dataCount = buffer.getInt();
+        //Total data count -- for bigbed this is the number of features, for bigwig it is number of sections
+        buffer.position((int) (header.fullDataOffset - BBFILE_HEADER_SIZE));
+        header.dataCount = buffer.getInt();
 
         this.header = header;
 
@@ -191,7 +223,18 @@ public class BBFile {
             this.loadExtendedHeader(header.extensionOffset);
         }
 
-        //this.setDefaultVisibilityWindow(header);
+        // total summary stats
+        if (header.version > 1) {
+            buffer = UnsignedByteBuffer.loadBinaryBuffer(this.path, order, header.totalSummaryOffset, 40);
+            this.totalSummary = BBTotalSummary.parseSummary(buffer);
+        }
+
+        this.featureDensity = ((double) header.dataCount) / chromTree.sumLengths;
+
+        if (type == Type.BIGBED) {
+            bedCodec = BBCodecFactory.getCodec(autosql, header.definedFieldCount);
+        }
+
 
         return header;
 
@@ -240,33 +283,18 @@ public class BBFile {
         this.header.extraIndexOffsets = indexOffset;
     }
 
-    List<byte[]> getLeafChunks(String chr1, int bpStart, String chr2, int bpEnd, double bpPerPixel) throws IOException {
+    List<byte[]> getLeafChunks(String chr1, int bpStart, String chr2, int bpEnd, long treeOffset) throws IOException {
 
         if (this.header == null) {
             this.header = this.readHeader();
         }
 
-        int chrIdx1 = this.getIdForChr(chr1);
-        int chrIdx2 = this.getIdForChr(chr2);
+        Integer chrIdx1 = this.getIdForChr(chr1);
+        Integer chrIdx2 = this.getIdForChr(chr2);
 
-//        if (chrIdx1 === undefined || chrIdx2 === undefined) {
-//            return []
-//        }
-//
-        long treeOffset;
-        if (this.type == Type.BIGWIG) {
-            // Select a biwig "zoom level" appropriate for the current resolution.
-            BBZoomHeader zoomLevelHeader = zoomLevelForScale(bpPerPixel);
-            if (zoomLevelHeader != null) {
-                treeOffset = zoomLevelHeader.indexOffset;
-            } else {
-                treeOffset = this.header.fullIndexOffset;
-            }
-        } else {
-            // bigbed, zoom data is not currently used in igv for bed type features
-            treeOffset = this.header.fullIndexOffset;
+        if (chrIdx1 == null || chrIdx2 == null) {
+            return Collections.EMPTY_LIST;
         }
-
 
         // Load the R Tree and fine leaf items
         RPTree rpTree = RPTree.loadTree(this.path, treeOffset);
@@ -293,92 +321,279 @@ public class BBFile {
                     int offset = (int) (item.dataOffset - start);
                     int end_ = (int) (offset + item.dataSize);
                     byte[] itemBuffer = leafItems.size() == 1 ? buffer : Arrays.copyOfRange(buffer, offset, end_);
-                    if (uncompressBufSize > 0) {
-                        byte[] uncompressed = (new CompressionUtils()).decompress(itemBuffer, uncompressBufSize);
-                        leafChunks.add(uncompressed);
-                    } else {
-                        leafChunks.add(itemBuffer);    // use uncompressed read buffer directly
-                    }
+                    leafChunks.add(itemBuffer);
                 }
             }
         }
 
         return leafChunks;
 
-
-//
-//            // Parse data and return features
-//            const features = []
-//            for (let item of leafItems) {
-//                const uint8Array = new Uint8Array(arrayBuffer, item.dataOffset - start, item.dataSize)
-//                let plain
-//                const isCompressed = this.header.uncompressBuffSize > 0
-//                if (isCompressed) {
-//                    plain = BGZip.inflate(uint8Array)
-//                } else {
-//                    plain = uint8Array
-//                }
-//                decodeFunction.call(this, new DataView(plain.buffer), chrIdx1, bpStart, chrIdx2, bpEnd, features, this.chromTree.idToName, windowFunction)
-//            }
-//
-//            features.sort(function (a, b) {
-//                return a.start - b.start
-//            })
-//
-//            return features
-//        }
     }
 
 
     /**
      * Return the ID for the given chromosome name.  If there is no direct match, search for a chromosome alias.
      *
-     * @param chr
-     * @returns {Promise<*>}
+     * @param chr -- the canonical chromsome name for the current reference
      */
-    int getIdForChr(String chr) {
+    Integer getIdForChr(String chr) throws IOException {
 
-//        if (this.chrAliasTable.has(chr)) {
-//            chr = this.chrAliasTable.get(chr)
-//            if (chr === undefined) {
-//                return undefined
-//            }
-//        }
+        if (chrAliasTable.get(chr) != null) {
+            chr = chrAliasTable.get(chr);
+        }
 
-        int chrIdx = this.chromTree.nameToId.get(chr);
+        Integer chrIdx = chromTree.getIdForName(chr);
 
 //        // Try alias
-//        if (chrIdx === undefined) {
-//            const aliasRecord = await this.genome.getAliasRecord(chr)
-//            let alias
-//            if (aliasRecord) {
-//                const aliases = Object.keys(aliasRecord)
-//                        .filter(k => k !== "start" && k !== "end")
-//                    .map(k => aliasRecord[k])
-//                    .filter(a => this.chromTree.nameToId.has(a))
-//                if (aliases.length > 0) {
-//                    alias = aliases[0]
-//                    chrIdx = this.chromTree.nameToId.get(aliases[0])
-//                }
-//            }
-//            this.chrAliasTable.set(chr, alias)  // alias may be undefined => no alias exists. Setting prevents repeated attempts
-//        }
+        if (chrIdx == null && genome != null) {
+            String alias = null;
+            ChromAlias aliasRecord = genome.getAliasRecord(chr);
+            if (aliasRecord != null) {
+                for (String v : aliasRecord.values()) {
+                    chrIdx = chromTree.getIdForName(v);
+                    if (chrIdx != null) {
+                        alias = v;
+                        break;
+                    }
+                }
+            }
+            this.chrAliasTable.put(chr, alias);  // alias may be undefined => no alias exists. Setting prevents repeated attempts
+        }
+
         return chrIdx;
     }
 
     String getChrForId(int chrIdx) {
-        return chromTree.idToName[chrIdx];
+        return chromTree.getNameForId(chrIdx);
     }
 
+    /**
+     * Return the zoom header that most closely matches the given resolution.  Resolution is in BP / Pixel.
+     *
+     * @param bpPerPixel -- the resolution in bp per pixel.
+     * @return A zoom header, or null if no appropriate zoom data is available for the resolution.
+     */
     BBZoomHeader zoomLevelForScale(double bpPerPixel) {
         BBZoomHeader level = null;
         for (BBZoomHeader zl : this.zoomHeaders) {
             if (zl.reductionLevel < bpPerPixel) {
-                level = zl;
-                break;
+                return zl;
             }
         }
-        return level;
+        // For the highest resolution, allow up to a factor of 2
+        BBZoomHeader lastLevel = this.zoomHeaders[this.zoomHeaders.length - 1];
+        return lastLevel.reductionLevel / 2 < bpPerPixel ? lastLevel : null;
     }
+
+
+    /**
+     * Search the extended BP tree for the search term, and return any matching features.  This only works
+     * for BB sources with an "extended" BP tree for searching.
+     * <p>
+     * Currently we don't support multiple hits for a search.  Keep the largest.
+     *
+     * @param term
+     * @returns {Promise<void>}
+     */
+    public BasicFeature search(String term) throws IOException {
+
+        if (this.header == null) {
+            this.readHeader();
+        }
+        if (this.header.extraIndexCount == 0) {
+            return null;
+        }
+
+        long[] region = this.searchForRegions(term);  // Either 1 or no (undefined) reginos returned for now
+        if (region != null) {
+            long start = region[0];
+            int size = (int) region[1];
+            try (SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(this.path)) {
+                byte[] buffer = new byte[size];
+                is.seek(start);
+                is.readFully(buffer);
+                List<BasicFeature> features = decodeFeatures(buffer);
+                BasicFeature largest = features.stream().reduce((f1, f2) -> {
+                    int l1 = f1.getEnd() - f1.getStart();
+                    int l2 = f2.getEnd() - f2.getStart();
+                    return l1 > l2 ? f1 : f2;
+                }).get();
+                return largest;
+            }
+        }
+        return null;
+    }
+
+    List<BasicFeature> decodeFeatures(byte[] buffer) {
+        List<BasicFeature> features = new ArrayList<>();
+        byte[] uncompressed;
+        if (this.header.uncompressBuffSize > 0) {
+            uncompressed = (new CompressionUtils()).decompress(buffer, this.header.uncompressBuffSize);
+        } else {
+            uncompressed = buffer;    // use uncompressed read buffer directly
+        }
+
+
+        UnsignedByteBuffer bb = UnsignedByteBuffer.wrap(uncompressed, byteOrder);
+        while (bb.remaining() > 0) {
+
+            int chromId = bb.getInt();
+            int chromStart = bb.getInt();
+            int chromEnd = bb.getInt();
+            String restOfFields = bb.getString();
+            String chr = getChrForId(chromId);
+
+            final BedData bedData = new BedData(chr, chromStart, chromEnd, restOfFields);
+            final BasicFeature feature = bedCodec.decode(bedData);
+            features.add(feature);
+        }
+        return features;
+    }
+
+    List<LocusScore> decodeZoomData(byte[] buffer, WindowFunction windowFunction, List<LocusScore> features) {
+
+        byte[] uncompressed;
+        if (header.uncompressBuffSize > 0) {
+            uncompressed = (new CompressionUtils()).decompress(buffer, header.uncompressBuffSize);
+        } else {
+            uncompressed = buffer;    // use uncompressed read buffer directly
+        }
+
+        UnsignedByteBuffer bb = UnsignedByteBuffer.wrap(uncompressed, byteOrder);
+        while (bb.remaining() > 0) {
+
+            int chromId = bb.getInt();
+            int chromStart = bb.getInt();
+            int chromEnd = bb.getInt();
+            int validCount = bb.getInt();
+            float minVal = bb.getFloat();
+            float maxVal = bb.getFloat();
+            float sumData = bb.getFloat();
+            float sumSquares = bb.getFloat();
+
+            String chr = getChrForId(chromId);
+
+            float value;
+            switch (windowFunction) {
+                case min:
+                    value = minVal;
+                    break;
+                case max:
+                    value = maxVal;
+                    break;
+                case mean:
+                    value = sumData / validCount;
+                    break;
+                default:
+                    throw new RuntimeException("Unsupported window function: " + windowFunction);
+
+            }
+
+            final LocusScore feature = new WigDatum(chr, chromStart, chromEnd, value);
+            features.add(feature);
+        }
+        return features;
+    }
+
+    List<LocusScore> decodeWigData(byte[] buffer, int chrIdx, int start, int end, List<LocusScore> features) {
+
+        byte[] uncompressed;
+        if (header.uncompressBuffSize > 0) {
+            uncompressed = (new CompressionUtils()).decompress(buffer, header.uncompressBuffSize);
+        } else {
+            uncompressed = buffer;    // use uncompressed read buffer directly
+        }
+
+        UnsignedByteBuffer binaryParser = UnsignedByteBuffer.wrap(uncompressed, byteOrder);
+        int chromId = binaryParser.getInt();
+        int blockStart = binaryParser.getInt();
+        int chromStart = blockStart;
+        int chromEnd = binaryParser.getInt();
+        int itemStep = binaryParser.getInt();
+        int itemSpan = binaryParser.getInt();
+        byte type = binaryParser.get();
+        byte reserved = binaryParser.get();
+        int itemCount = binaryParser.getUShort();
+
+        if (chromId >= chrIdx && chromId <= chrIdx) {
+
+            int idx = 0;
+            while (itemCount-- > 0) {
+                float value = Float.POSITIVE_INFINITY;
+                switch (type) {
+                    case 1:
+                        chromStart = binaryParser.getInt();
+                        chromEnd = binaryParser.getInt();
+                        value = binaryParser.getFloat();
+                        break;
+                    case 2:
+                        chromStart = binaryParser.getInt();
+                        value = binaryParser.getFloat();
+                        chromEnd = chromStart + itemSpan;
+                        break;
+                    case 3:  // Fixed step
+                        value = binaryParser.getFloat();
+                        chromStart = blockStart + idx * itemStep;
+                        chromEnd = chromStart + itemSpan;
+                        ++idx;
+                        break;
+                }
+
+                if (chromId < chrIdx || (chromId == chrIdx && chromEnd < start)) continue;
+                else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
+
+                if (Float.isFinite(value)) {
+                    //  const chr = chrDict[chromId]
+                    features.add(new BasicScore(chromStart, chromEnd, value));
+                }
+            }
+        }
+
+        return features;
+    }
+
+
+    private long[] searchForRegions(String term) throws IOException {
+
+        BPTree[] searchTrees = this.getSearchTrees();
+        if (searchTrees != null) {
+
+            // Use a trix index if we have one to map entered term to indexed value in bb file
+            if (this.trix != null) {
+                String termLower = term.toLowerCase();
+                Map<String, String[]> trixResults = this.trix.search(termLower);
+                if (trixResults != null && trixResults.containsKey(termLower)) {   // <= exact matches only for now
+                    term = trixResults.get(termLower)[0];
+                }
+            }
+
+            // For now take the first match, we don't support multiple results
+            for (BPTree bpTree : searchTrees) {
+                long[] result = bpTree.search(term);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+
+    BPTree[] getSearchTrees() throws IOException {
+
+        if (this._searchTrees == null &&
+                this.header.extraIndexOffsets != null &&
+                this.header.extraIndexOffsets.length > 0) {
+            this._searchTrees = new BPTree[this.header.extraIndexOffsets.length];
+            int idx = 0;
+            for (long offset : this.header.extraIndexOffsets) {
+                BPTree bpTree = BPTree.loadBPTree(this.path, offset);
+                this._searchTrees[idx++] = bpTree;
+            }
+        }
+        return this._searchTrees;
+
+    }
+
+
 
 }
