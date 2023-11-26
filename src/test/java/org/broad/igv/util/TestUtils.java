@@ -30,7 +30,6 @@ import com.google.common.base.Supplier;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.ChromAliasDefaults;
 import org.broad.igv.feature.IGVNamedFeature;
 import org.broad.igv.feature.genome.Genome;

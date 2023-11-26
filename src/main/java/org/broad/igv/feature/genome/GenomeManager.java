@@ -225,9 +225,9 @@ public class GenomeManager {
 
             setCurrentGenome(newGenome);
 
-            IGV.getInstance().goToLocus(newGenome.getDefaultPos());
-
+            // hasInstance() test needed for unit tests
             if (IGV.hasInstance()) {
+                IGV.getInstance().goToLocus(newGenome.getDefaultPos());
                 loadGenomeAnnotations(newGenome);
             }
 

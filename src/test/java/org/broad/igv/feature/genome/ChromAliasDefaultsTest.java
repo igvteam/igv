@@ -30,6 +30,7 @@ public class ChromAliasDefaultsTest {
         AtomicInteger idx = new AtomicInteger();
         List<Chromosome> ncbiChromosomes = ncbiNames.stream().map(name -> new Chromosome(idx.getAndIncrement(), name, 0)).collect(Collectors.toList());
         ncibMockGenome = new Genome("GRCh*", ncbiChromosomes);
+        ncibMockGenome.setChromAliasSource(new ChromAliasDefaults("GRCh*", ncbiNames));
 
         ucscNames = new ArrayList<>();
         for (int i = 1; i < 23; i++) {
@@ -41,6 +42,7 @@ public class ChromAliasDefaultsTest {
         AtomicInteger idx2 = new AtomicInteger();
         List<Chromosome> ucscChromosomes = ncbiNames.stream().map(name -> new Chromosome(idx2.getAndIncrement(), name, 0)).collect(Collectors.toList());
         ucscMockGenome = new Genome("hg*", ucscChromosomes);
+        ucscMockGenome.setChromAliasSource(new ChromAliasDefaults("hg**", ucscNames));
     }
 
     @Test

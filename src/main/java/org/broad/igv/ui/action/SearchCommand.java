@@ -29,6 +29,7 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.Feature;
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -391,7 +392,7 @@ public class SearchCommand {
             }
         } else if (types.contains(ResultType.FEATURE)) {
             //Check if we have an exact name for the feature name
-            IGVNamedFeature feat = searchFeatureDBs(token);
+            NamedFeature feat = searchFeatureDBs(token);
             if (feat != null) {
                 return new SearchResult(feat);
             }
@@ -399,8 +400,8 @@ public class SearchCommand {
         return null;
     }
 
-    private IGVNamedFeature searchFeatureDBs(String str) {
-        IGVNamedFeature feat = FeatureDB.getFeature(str.toUpperCase().trim());
+    private NamedFeature searchFeatureDBs(String str) {
+        NamedFeature feat = FeatureDB.getFeature(str.toUpperCase().trim());
         if (feat != null) {
             return feat;
         } else {
@@ -574,7 +575,7 @@ public class SearchCommand {
 
         private String locus;
         private String message;
-        private IGVNamedFeature feature;
+        private NamedFeature feature;
 
         public SearchResult() {
             this(ResultType.ERROR, null, -1, -1);
@@ -588,7 +589,7 @@ public class SearchCommand {
             this.locus = Locus.getFormattedLocusString(chr, start, end);
         }
 
-        public SearchResult(IGVNamedFeature feature) {
+        public SearchResult(NamedFeature feature) {
             this(ResultType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd());
             this.feature = feature;
             this.locus = Locus.getFormattedLocusString(chr, start, end);
@@ -654,7 +655,7 @@ public class SearchCommand {
 
         //May be null
         @ForTesting
-        public IGVNamedFeature getFeature() {
+        public NamedFeature getFeature() {
             return feature;
         }
     }
