@@ -1,6 +1,7 @@
 package org.broad.igv.sam;
 
 import htsjdk.samtools.Cigar;
+import htsjdk.samtools.CigarElement;
 import htsjdk.samtools.SAMTag;
 import htsjdk.samtools.TextCigarCodec;
 import htsjdk.samtools.util.Locatable;
@@ -15,11 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SupplementaryAlignment implements Locatable {
     private static final Logger log = LogManager.getLogger(SupplementaryAlignment.class);
@@ -27,18 +24,15 @@ public class SupplementaryAlignment implements Locatable {
     public final String chr;
     public final int start;
 
-    public Strand getStrand() {
-        return strand;
-    }
-
     private final Strand strand;
     private final Cigar cigar;
 
     public final int mapQ;
     public final int numMismatches;
 
-    //potentially expensive with very long reads, compute it lazily
-    private Integer lenOnRef = null;
+    //potentially expensive with very long reads, compute  lazily
+    private Integer lenOnRef = null;  //number of reference bases covered
+    private Integer numberOfAlignedBases = null; //number of bases in read which are aligned
 
     public SupplementaryAlignment(String chr, int start, Strand strand, Cigar cigar, int mapQ, int numMismatches){
         this.chr = chr;
@@ -47,6 +41,10 @@ public class SupplementaryAlignment implements Locatable {
         this.cigar = cigar;
         this.mapQ = mapQ;
         this.numMismatches = numMismatches;
+    }
+
+    public Strand getStrand() {
+        return strand;
     }
 
     public static int getInsertionIndex(final Alignment alignment, final List<SupplementaryAlignment> supplementaryAlignments) {
@@ -107,15 +105,15 @@ public class SupplementaryAlignment implements Locatable {
     public String printString() {
         // chr6:43,143,415-43,149,942 (-) @ MAPQ 60 NM 763
         // be sure to adjust start by + 1 because SATag is 1 based but IGV internal is 0 based
-        return chr + ":" + Globals.DECIMAL_FORMAT.format(start + 1) + "-" + Globals.DECIMAL_FORMAT.format(start + getLenOnRef())
-                + " (" + strand.toShortString() + ") = " + Globals.DECIMAL_FORMAT.format(getLenOnRef()) + "bp  @MAPQ " + mapQ + " NM" + numMismatches;
+        return chr + ":" + Globals.DECIMAL_FORMAT.format(start + 1) + "-" + Globals.DECIMAL_FORMAT.format(start + getLengthOnReference())
+                + " (" + strand.toShortString() + ") = " + Globals.DECIMAL_FORMAT.format(getLengthOnReference()) + "bp  @MAPQ " + mapQ + " NM" + numMismatches;
     }
 
     public static List<SupplementaryAlignment> parseFromSATag(String saTag){
         return Arrays.stream(Globals.semicolonPattern.split(saTag))
                 .map(SupplementaryAlignment::fromSingleSaTagRecord)
                 .sorted(LEADING_CLIP_COMPARATOR)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static SupplementaryAlignment fromSingleSaTagRecord(String saTagRecord){
@@ -142,14 +140,10 @@ public class SupplementaryAlignment implements Locatable {
     }
 
     public static int getCountOfLeadingClipping(final ClippingCounts counts, final Strand strand) {
-        switch(strand){
-            case NONE:  // if there's no strand it's not aligned, and we can assume it's in cycle order
-            case POSITIVE:
-                return counts.getLeft();
-            case NEGATIVE:
-                return counts.getRight();
-            default: throw new IllegalStateException(strand + " is not an expected value for strand");
-        }
+        return switch (strand) {  // if there's no strand it's not aligned, and we can assume it's in cycle order
+            case NONE, POSITIVE -> counts.getLeft();
+            case NEGATIVE -> counts.getRight();
+        };
     }
 
     /**
@@ -169,109 +163,48 @@ public class SupplementaryAlignment implements Locatable {
 
     @Override
     public int getEnd() {
-        return start + getLenOnRef();
+        return start + getLengthOnReference();
     }
 
-    public int getLenOnRef() {
+    @Override
+    public int getLengthOnReference() {
         if(lenOnRef == null) {
             lenOnRef = cigar.getReferenceLength();
         }
         return cigar.getReferenceLength();
     }
 
-    static class SupplementaryNeighbors {
-        final Alignment alignment;
-        final SupplementaryAlignment previous;
-        final SupplementaryAlignment next;
-        public SupplementaryNeighbors(Alignment alignment,
-                                      SupplementaryAlignment previous, SupplementaryAlignment next) {
-            this.alignment = alignment;
-            if(alignment.isNegativeStrand()){
-                this.next = previous;
-                this.previous = next;
-            } else {
-                this.next = next;
-                this.previous = previous;
+    /**
+     * get the count of non-clipped bases which are in the read
+     * this differs from {@link #getLengthOnReference()} because it includes insertions bases but not deletions
+     */
+    public int getNumberOfAlignedBases(){
+        if( numberOfAlignedBases == null) {
+            int length = 0;
+            for(CigarElement element : cigar) {
+                switch (element.getOperator()) {
+                    case M, I, EQ, X -> length += element.getLength();
+                    default -> {}
+                }
             }
+            numberOfAlignedBases = length;
         }
-        public SupplementaryAlignment previousIgnoreOrientation (){
-            return alignment.isNegativeStrand() ? next : previous;
-        }
-
-        public SupplementaryAlignment nextIgnoreOrientation (){
-            return alignment.isNegativeStrand() ? previous : next;
-        }
-
+        return numberOfAlignedBases;
     }
 
-    public static class SupplementaryGroup {
-        private final Alignment alignment;
-        private final TreeSet<SupplementaryAlignment> readOrder;
-        private final TreeSet<SupplementaryAlignment> positionOrder;
 
-        private final Adapter adapter;
-
-        public SupplementaryGroup(Alignment alignment){
-            final List<SupplementaryAlignment> supplementaryAlignments;
-            if( alignment instanceof SAMAlignment){
-                supplementaryAlignments = ((SAMAlignment) alignment).getSupplementaryAlignments();
-            } else {
-                final Object rawSATag = alignment.getAttribute(SAMTag.SA.name());
-                supplementaryAlignments = rawSATag == null ? null : new ArrayList<>(parseFromSATag(rawSATag.toString()));
+    record SupplementaryNeighbors(Alignment alignment, SupplementaryAlignment previous, SupplementaryAlignment next) {
+            SupplementaryNeighbors(Alignment alignment, SupplementaryAlignment previous, SupplementaryAlignment next) {
+                this.alignment = alignment;
+                if (alignment.isNegativeStrand()) {
+                    this.next = previous;
+                    this.previous = next;
+                } else {
+                    this.next = next;
+                    this.previous = previous;
+                }
             }
 
-            this.alignment = alignment;
-            this.adapter = new Adapter(alignment);
-            final List<SupplementaryAlignment> combined = new ArrayList<>(supplementaryAlignments);
-            combined.add(adapter);
-            readOrder = new TreeSet<>(LEADING_CLIP_COMPARATOR);
-            readOrder.addAll(combined);
-            positionOrder = new TreeSet<>(SortOption.POSITION_COMPARATOR);
-            positionOrder.addAll(combined);
         }
 
-        public SupplementaryAlignment getNextInRead(SupplementaryAlignment alignment){
-            return readOrder.higher(alignment);
-        }
-
-        public SupplementaryAlignment getPreviousInRead(SupplementaryAlignment alignment){
-            return readOrder.lower(alignment);
-        }
-        public SupplementaryAlignment getNextPosition(SupplementaryAlignment alignment){
-            return positionOrder.higher(alignment);
-        }
-
-        public SupplementaryAlignment getPreviousPosition(SupplementaryAlignment alignment){
-            return positionOrder.lower(alignment);
-        }
-
-        public Adapter getAdapter() {
-            return adapter;
-        }
-
-        public Iterator<SupplementaryAlignment> iterateInReadOrder(){
-            return readOrder.iterator();
-        }
-
-        public Iterator<SupplementaryAlignment> iterateInPositionOrder(){
-            return positionOrder.iterator();
-        }
-
-        public Stream<SupplementaryAlignment> streamInReadOrder(){
-            return readOrder.stream();
-        }
-        public Stream<SupplementaryAlignment> streamInPositionOrder(){
-            return positionOrder.stream();
-        }
-
-        public int size(){
-            return readOrder.size();
-        }
-
-        private static class Adapter extends SupplementaryAlignment{
-            public Adapter(Alignment a) {
-                super(a.getChr(), a.getStart(), a.getReadStrand(), a.getCigar(), a.getMappingQuality(), a.getAttribute(SAMTag.NM.name()) == null ? 0 : (int)a.getAttribute(SAMTag.NM.name()));
-            }
-        }
-    }
 }

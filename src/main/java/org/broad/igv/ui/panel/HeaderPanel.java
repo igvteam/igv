@@ -35,6 +35,7 @@
 package org.broad.igv.ui.panel;
 
 
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.ViewChange;
@@ -42,7 +43,6 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.IGVMouseInputAdapter;
-import org.broad.igv.ui.util.SwitchingLabelUI;
 
 import javax.swing.*;
 import java.awt.*;
@@ -313,7 +313,7 @@ public class HeaderPanel extends JPanel implements Transferable, Paintable, IGVE
     }
 
     @Override
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if(label != null && frame != null) label.setText(frame.getFormattedLocusString());
     }
 

@@ -34,6 +34,7 @@
 package org.broad.igv.ui.panel;
 
 import com.google.common.base.Objects;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.DataLoadedEvent;
@@ -62,10 +63,6 @@ import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 /**
  * The batch panel for displaying tracks and data.  A DataPanel is always associated with a ReferenceFrame.  Normally
@@ -100,9 +97,9 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     }
 
     @Override
-    public void receiveEvent(Object event) {
-        if (event instanceof DataLoadedEvent) {
-            if (((DataLoadedEvent) event).referenceFrame == frame) {
+    public void receiveEvent(IGVEvent event) {
+        if (event instanceof DataLoadedEvent e) {
+            if (e.referenceFrame() == frame) {
                 log.debug("Data loaded repaint " + frame);
                 repaint();
             }

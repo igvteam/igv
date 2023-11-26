@@ -34,18 +34,18 @@ import java.awt.Point;
 
 
 public class GhostDropEvent {
-    private Point point;
-    private Point startPoint;
+    private final Point point;
+    private final Point startPoint;
     List<Track> tracks;
     List<TrackPanel> sourcePanels;
     boolean tracksDropped = false;
 
 
-    public GhostDropEvent(Point startPoint, Point point, java.util.List<Track> tracks) {
+    public GhostDropEvent(Point startPoint, Point point, List<Track> tracks) {
         this.startPoint = startPoint;
         this.point = point;
         this.tracks = tracks;
-        sourcePanels = new ArrayList();
+        sourcePanels = new ArrayList<>();
     }
 
     public void addSourcePanel(TrackPanel panel) {

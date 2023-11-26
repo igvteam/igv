@@ -7,11 +7,11 @@ import htsjdk.tribble.FeatureReader;
 import org.broad.igv.feature.genome.ChromAliasBB;
 import org.broad.igv.feature.genome.ChromAliasDefaults;
 import org.broad.igv.feature.genome.ChromAliasFile;
+import org.broad.igv.feature.IGVNamedFeature;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
@@ -153,6 +153,32 @@ public class JsonGenomeLoader extends GenomeLoader {
             return new GenomeDescriptor(id, name, fastaPath);
         } finally {
             reader.close();
+        }
+    }
+
+    private void addToFeatureDB(List<ResourceLocator> locators, Genome genome) {
+        for (ResourceLocator locator : locators) {
+            try {
+                FeatureReader featureReader = TribbleFeatureSource.getBasicReader(locator, genome);
+                CloseableTribbleIterator<Feature> iter = featureReader.iterator();
+                while (iter.hasNext()) {
+                    Feature f = iter.next();
+                    if (f instanceof IGVNamedFeature) {
+                        FeatureDB.addFeature((IGVNamedFeature) f, genome);
+                    }
+                }
+            } catch (IOException e) {
+                log.error("Error loading " + locator.getPath());
+            }
+        }
+    }
+
+    private String stripQuotes(String str) {
+        if(str.startsWith("\"")) {
+            return str.substring(1, str.length() - 1);  // Assume also ends with
+        }
+        else {
+            return str;
         }
     }
 

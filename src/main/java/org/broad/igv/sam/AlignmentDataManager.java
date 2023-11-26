@@ -28,6 +28,7 @@ package org.broad.igv.sam;
 import org.broad.igv.event.DataLoadedEvent;
 import org.broad.igv.feature.genome.ChromAlias;
 import org.broad.igv.feature.genome.ChromAliasManager;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
@@ -102,7 +103,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         IGVEventBus.getInstance().subscribe(RefreshEvent.class, this);
     }
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if (event instanceof FrameManager.ChangeEvent) {
             trimCache();
         } else if (event instanceof RefreshEvent) {
@@ -209,7 +210,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public AlignmentInterval getLoadedInterval(ReferenceFrame frame, boolean includeOverlaps) {
-        // Search for interval completely containining reference frame region
+        // Search for interval completely containing reference frame region
         for (AlignmentInterval interval : intervalCache) {
             if (interval.contains(frame.getCurrentRange())) {
                 return interval;
@@ -302,7 +303,9 @@ public class AlignmentDataManager implements IGVEventObserver {
             currentlyLoading = null;
         }
 
+
         IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
+
 
     }
 

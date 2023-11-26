@@ -29,7 +29,6 @@
  */
 package org.broad.igv.ui.panel;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.ViewChange;
@@ -38,10 +37,11 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
@@ -54,7 +54,7 @@ import java.awt.event.MouseEvent;
  */
 public class ReferenceFrame {
 
-    private static Logger log = LogManager.getLogger(ReferenceFrame.class);
+    private static final Logger log = LogManager.getLogger(ReferenceFrame.class);
 
     IGVEventBus eventBus;
 
@@ -167,7 +167,7 @@ public class ReferenceFrame {
 
     public void dragStopped() {
         setOrigin(Math.round(origin));   // Snap to gride
-        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd()));
+        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd(), false));
     }
 
     public void changeGenome(Genome genome) {
@@ -177,8 +177,7 @@ public class ReferenceFrame {
     public void changeChromosome(String chrName, boolean recordHistory) {
         boolean changed = setChromosomeName(chrName, false);
         // if (changed) {
-        ViewChange resultEvent = ViewChange.ChromosomeChangeResult(chrName);
-        resultEvent.setRecordHistory(recordHistory);
+        ViewChange resultEvent = ViewChange.ChromosomeChangeResult(chrName, recordHistory);
         eventBus.post(resultEvent);
         changeZoom(0);
         // }
@@ -186,8 +185,7 @@ public class ReferenceFrame {
 
     public void changeZoom(int newZoom) {
         doSetZoom(newZoom);
-        ViewChange result = ViewChange.LocusChangeResult(chrName, origin, getEnd());
-        result.setRecordHistory(false);
+        ViewChange result = ViewChange.LocusChangeResult(chrName, origin, getEnd(), false);
         eventBus.post(result);
     }
 
@@ -382,7 +380,7 @@ public class ReferenceFrame {
 
         double shiftBP = delta * getScale();
         setOrigin(shiftBP + origin);
-        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd()));
+        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd(), false));
     }
 
     public void centerOnLocation(String chr, double chrLocation) {
@@ -395,7 +393,7 @@ public class ReferenceFrame {
     public void centerOnLocation(double chrLocation) {
         double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
-        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, chrLocation + windowWidth));
+        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, chrLocation + windowWidth, false));
     }
 
     public boolean windowAtEnd() {
@@ -448,7 +446,7 @@ public class ReferenceFrame {
             log.debug("Scale = " + scale);
         }
 
-        eventBus.post(ViewChange.LocusChangeResult(chrName, start, end));
+        eventBus.post(ViewChange.LocusChangeResult(chrName, start, end, false));
     }
 
     public double getOrigin() {
@@ -713,7 +711,7 @@ public class ReferenceFrame {
     }
 
     /**
-     * Calculate the zoom level given start/end in bp.
+     * Calculate the minimum zoom level which can completely contain the given start/end in bp.
      * Doesn't change anything
      *
      * @param start
@@ -722,8 +720,12 @@ public class ReferenceFrame {
      */
     public int calculateZoom(double start, double end) {
         final double windowLength = Math.min(end - start, getChromosomeLength());
-        return (int) Math.round(Globals.log2((getChromosomeLength() / windowLength) * (((double) widthInPixels) / binsPerTile)));
+        final double exactZoom = Globals.log2((getChromosomeLength() / windowLength) * (((double) widthInPixels) / binsPerTile));
+        //round up so that you get a zoom level which contains the given window
+        return (int) Math.ceil(exactZoom);
     }
+
+
 
 
     private static int getChromosomeLength(String chrName) {

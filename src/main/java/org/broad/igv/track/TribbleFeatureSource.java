@@ -25,6 +25,7 @@
 
 package org.broad.igv.track;
 
+import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.*;
 import htsjdk.tribble.index.Index;
 import org.broad.igv.Globals;
@@ -325,10 +326,8 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             super(basicReader, codec, genome);
 
             featureMap = new HashMap<>(25);
-            Iterator<Feature> iter = null;
 
-            try {
-                iter = reader.iterator();
+            try (CloseableIterator<Feature> iter = reader.iterator()) {
                 while (iter.hasNext()) {
                     Feature f = iter.next();
                     if (f == null) continue;
@@ -336,33 +335,20 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     String seqName = f.getChr();
                     String igvChr = genome == null ? seqName : genome.getCanonicalChrName(seqName);
 
-                    List<Feature> featureList = featureMap.get(igvChr);
-                    if (featureList == null) {
-                        featureList = new ArrayList();
-                        featureMap.put(igvChr, featureList);
-                    }
+                    List<Feature> featureList = featureMap.computeIfAbsent(igvChr, k -> new ArrayList<>());
                     featureList.add(f);
-                    if (f instanceof org.broad.igv.feature.NamedFeature) FeatureDB.addFeature((org.broad.igv.feature.NamedFeature) f, genome);
+                    if (f instanceof IGVNamedFeature named) FeatureDB.addFeature(named, genome);
 
-                    if (this.isVCF && f instanceof Variant) {
-                        Variant v = (Variant) f;
+                    if (this.isVCF && f instanceof Variant v) {
                         String chr2 = v.getAttributeAsString("CHR2");
                         String pos2 = v.getAttributeAsString("END");
                         if (chr2 != null && pos2 != null) {
                             String mateChr = genome == null ? chr2 : genome.getCanonicalChrName(chr2);
                             MateVariant mate = new MateVariant(mateChr, Integer.parseInt(pos2), v);
-                            featureList = featureMap.get(mateChr);
-                            if (featureList == null) {
-                                featureList = new ArrayList();
-                                featureMap.put(mateChr, featureList);
-                            }
+                            featureList = featureMap.computeIfAbsent(mateChr, k -> new ArrayList<>());
                             featureList.add(mate);
                         }
                     }
-                }
-            } finally {
-                if (iter instanceof CloseableTribbleIterator) {
-                    ((CloseableTribbleIterator) iter).close();
                 }
             }
 

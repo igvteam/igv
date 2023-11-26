@@ -2,14 +2,16 @@ module org.igv {
     exports org.broad.igv;
     exports org.broad.igv.tools;
     exports org.broad.igv.ui;
+    exports org.broad.igv.event;
     exports org.broad.igv.jbrowse;
     exports org.broad.igv.logging;
     exports org.broad.igv.util.liftover;
     exports org.broad.igv.sam.smrt;
+    exports org.broad.igv.ui.supdiagram;
 
     requires com.google.common;
     requires commons.math3;
-    requires gson;
+    requires com.google.gson;
     requires htsjdk;
     requires java.datatransfer;
     requires java.desktop;

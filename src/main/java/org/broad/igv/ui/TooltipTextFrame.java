@@ -88,8 +88,8 @@ public class TooltipTextFrame extends JFrame {
         int w = (int) (1.2 * d.width);
         int h = (int) (1.25 * d.height);
 
-        h = h > 600 ? 600 : (h < 100 ? 100 : h);
-        w = w > 800 ? 800 : (w < 100 ? 100 : w);
+        h = h > 600 ? 600 : (Math.max(h, 100));
+        w = w > 800 ? 800 : (Math.max(w, 100));
         setSize(w, h);
 
 

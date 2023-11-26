@@ -359,14 +359,14 @@ public class IGVPreferences {
             }
 
             if (reloadSAM) {
-                IGVEventBus.getInstance().post(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD));
+                IGVEventBus.getInstance().post(new AlignmentTrackEvent(AlignmentTrackEvent.Type.RELOAD));
             }
             // A reload is harsher than a refresh; only send the weaker request if the stronger one is not sent.
             if (!reloadSAM && refreshSAM) {
-                IGVEventBus.getInstance().post(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.REFRESH));
+                IGVEventBus.getInstance().post(new AlignmentTrackEvent(AlignmentTrackEvent.Type.REFRESH));
             }
             if (updatedPreferenceMap.containsKey(SAM_ALLELE_THRESHOLD)) {
-                IGVEventBus.getInstance().post(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.ALLELE_THRESHOLD));
+                IGVEventBus.getInstance().post(new AlignmentTrackEvent(AlignmentTrackEvent.Type.ALLELE_THRESHOLD));
             }
         }
 

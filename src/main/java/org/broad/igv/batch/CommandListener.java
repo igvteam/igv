@@ -181,7 +181,12 @@ public class CommandListener implements Runnable {
 
                 String cmd = inputLine;
                 if (!cmd.contains("/oauthCallback")) {
-                    log.info(cmd);
+                    if (cmd.startsWith("SetAccessToken")) {
+                        log.info(cmd.substring(0,14) + " *****");
+                    }
+                    else {
+                        log.info(cmd);
+                    }
                 }
 
                 boolean isHTTP = cmd.startsWith("OPTIONS") || cmd.startsWith("HEAD") || cmd.startsWith("GET");

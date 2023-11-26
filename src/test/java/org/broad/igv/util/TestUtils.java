@@ -32,6 +32,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.ChromAliasDefaults;
+import org.broad.igv.feature.IGVNamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.prefs.PreferencesManager;
@@ -295,7 +296,7 @@ public class TestUtils {
      * @param exp
      * @param act
      */
-    public static void assertNamedFeaturesEqual(NamedFeature exp, NamedFeature act) {
+    public static void assertNamedFeaturesEqual(IGVNamedFeature exp, IGVNamedFeature act) {
         assertFeaturesEqual(exp, act);
         assertEquals(exp.getName().toUpperCase(), act.getName().toUpperCase());
     }

@@ -32,11 +32,11 @@ import org.broad.igv.aws.S3LoadDialog;
 import org.broad.igv.batch.CommandExecutor;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.event.GenomeChangeEvent;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeUtils;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.GoogleUtils;
@@ -1163,10 +1163,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
 
     @Override
-    public void receiveEvent(final Object event) {
+    public void receiveEvent(final IGVEvent event) {
 
         if (event instanceof GenomeChangeEvent) {
-            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome.getId())));
+            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome().getId())));
         }
     }
 

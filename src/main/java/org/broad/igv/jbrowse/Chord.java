@@ -65,7 +65,7 @@ class Chord {
                 c.refName = shortName(a.getChr());
                 c.start = a.getStart();
                 c.end = a.getEnd();
-                c.mate = new Mate(shortName(sa.chr), sa.start, sa.start + sa.getLenOnRef());
+                c.mate = new Mate(shortName(sa.chr), sa.start, sa.start + sa.getLengthOnReference());
                 chords.add(c);
             }
         }

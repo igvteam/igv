@@ -28,8 +28,7 @@ package org.broad.igv.feature.aa;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.NamedFeature;
-import org.broad.igv.feature.aa.Codon;
+import org.broad.igv.feature.IGVNamedFeature;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -70,7 +69,7 @@ public class CodonTest extends AbstractHeadlessTest {
         tstGetCodon(KRAS, expected);
     }
 
-    public void tstGetCodon(NamedFeature feature, char[] expected) {
+    public void tstGetCodon(IGVNamedFeature feature, char[] expected) {
         BasicFeature bf = (BasicFeature) feature;
 
         for (int pos = 0; pos < expected.length; pos++) {
@@ -90,8 +89,8 @@ public class CodonTest extends AbstractHeadlessTest {
         //valid for these ids:
         //NM_003661, NM_145343, NM_001136540
 
-        List<NamedFeature> featuresList = FeatureDB.getFeaturesList(geneName, 50, false);
-        for (NamedFeature feat : featuresList) {
+        List<IGVNamedFeature> featuresList = FeatureDB.getFeaturesList(geneName, 50, false);
+        for (IGVNamedFeature feat : featuresList) {
             BasicFeature bf = (BasicFeature) feat;
             System.out.println(bf.getIdentifier());
             Codon c = bf.getCodon(genome, bf.getChr(),  proteinPos);

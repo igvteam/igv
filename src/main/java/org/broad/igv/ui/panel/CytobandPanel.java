@@ -167,8 +167,7 @@ public class CytobandPanel extends JPanel {
                         referenceFrame.centerOnLocation(newLocation);
                     }
 
-                    ViewChange result = ViewChange.LocusChangeResult(referenceFrame.chrName, referenceFrame.origin, referenceFrame.getEnd());
-                    result.setRecordHistory(true);
+                    ViewChange result = ViewChange.LocusChangeResult(referenceFrame.chrName, referenceFrame.origin, referenceFrame.getEnd(), true);
                     IGVEventBus.getInstance().post(result);
 
                 } finally {
@@ -197,8 +196,7 @@ public class CytobandPanel extends JPanel {
                     } finally {
                         WaitCursorManager.removeWaitCursor(token);
                     }
-                    ViewChange result = ViewChange.LocusChangeResult(referenceFrame.chrName, referenceFrame.origin, referenceFrame.getEnd());
-                    result.setRecordHistory(true);
+                    ViewChange result = ViewChange.LocusChangeResult(referenceFrame.chrName, referenceFrame.origin, referenceFrame.getEnd(), true);
                     IGVEventBus.getInstance().post(result);
                 }
                 isDragging = false;

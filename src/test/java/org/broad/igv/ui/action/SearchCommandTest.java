@@ -29,6 +29,7 @@ import junit.framework.AssertionFailedError;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.genome.ChromAlias;
 import org.broad.igv.feature.genome.ChromAliasSource;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
 import org.junit.Ignore;
