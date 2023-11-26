@@ -235,7 +235,7 @@ public class TDFDataSource implements CoverageDataSource {
 
     public int getChrLength(String chr) {
         if (chr.equals(Globals.CHR_ALL)) {
-            return (int) (genome.getNominalLength() / 1000);
+            return (int) (genome.getWGLength() / 1000);
         } else {
             Chromosome c = genome.getChromosome(chr);
             return c == null ? 0 : c.getLength();
@@ -414,7 +414,7 @@ public class TDFDataSource implements CoverageDataSource {
         // TODO -- this whole section could be computed once and stored,  it is only a function of the genome, chr, and zoom level.
         int tileWidth = 0;
         if (chr.equals(Globals.CHR_ALL)) {
-            tileWidth = (int) Math.ceil(genome.getNominalLength() / 1000.0);
+            tileWidth = (int) Math.ceil(genome.getWGLength() / 1000.0);
         } else {
             if (chromosome != null) {
                 tileWidth = chromosome.getLength() / ((int) Math.pow(2.0, zoom));

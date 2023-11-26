@@ -18,6 +18,12 @@ abstract public class ChromAliasSource {
 
     public abstract ChromAlias search(String alias) throws IOException;
 
+    /**
+     * Add a ChromAlias record directly to the cache, overriding any existing alias.  This is primarily used for
+     * user-defined overrides.
+     *
+     * @param chromAlias
+     */
     public void add(ChromAlias chromAlias) {
         aliasCache.put(chromAlias.getChr(), chromAlias);
     }

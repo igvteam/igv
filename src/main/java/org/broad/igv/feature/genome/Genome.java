@@ -72,6 +72,7 @@ import java.util.*;
  */
 public class Genome {
 
+    private static final int MAX_WHOLE_GENOME_LONG = 100;
     private static Logger log = LogManager.getLogger(Genome.class);
     private String id;
     private String displayName;
@@ -103,12 +104,20 @@ public class Genome {
         id = config.id;
         displayName = config.name;
         nameSet = config.nameSet;
-        ucscID = config.ucsdID != null ? config.ucsdID : ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
+        blatDB = config.blatDB;
+        if (config.ucsdID == null) {
+            ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
+        } else {
+            ucscID = config.ucsdID;
+        }
+        blatDB = (config.blatDB != null) ? config.blatDB : ucscID;
         defaultPos = config.defaultPos;
 
         // Load the sequence object.  Some configurations will specify both 2bit and fasta references.  The 2 bit
         // has preference
-        if (config.twoBitURL != null) {
+        if (config.sequence != null) {
+            sequence = config.sequence;
+        } else if (config.twoBitURL != null) {
             sequence = (config.twoBitBptURL != null) ?
                     new TwoBitSequence(config.twoBitURL, config.twoBitBptURL) :
                     new TwoBitSequence(config.twoBitURL);
@@ -123,9 +132,9 @@ public class Genome {
             throw new RuntimeException("Genomes require either a .2bit or fasta reference ");
         }
 
-        // Search for chromosomes.  Chromosome names arerequired to support the chromosome pulldown, names and
+        // Search for chromosomes.  Chromosome names are required to support the chromosome pulldown, names and
         // lengths are required to support whole genome view.  Both can be obtained from fasta index files, but
-        // for .2bit sequences a 'chromSizes" file is required.  If not supplied the chr pulldown and wgv view are disabled.
+        // for .2bit sequences a 'chromSizes" file is required.  If not supplied the chr pulldown and wg view are disabled.
         List<Chromosome> chromosomeList = null;
         if (config.chromSizesURL != null) {
             chromosomeList = ChromSizesParser.parse(config.chromSizesURL);
@@ -136,29 +145,38 @@ public class Genome {
             chromosomeList = index.getChromosomes();
         }
 
+        // Whole genome view is initially enabled by default if we have the chromosome information.  This might
+        // still get disabled if we can't determine a sufficiently small number of wg chromosomes.
+        showWholeGenomeView = (config.wholeGenomeView == null || config.wholeGenomeView) && chromosomeList.size() > 1;
+
         this.chromosomeMap = new LinkedHashMap<>();
         this.chromosomeNames = new ArrayList<>();
         if (chromosomeList != null) {
+
+            chromosomeList = sortChromosomeList(chromosomeList, config.chromosomeOrder);
+
             for (Chromosome c : chromosomeList) {
                 this.chromosomeMap.put(c.getName(), c);
                 this.chromosomeNames.add(c.getName());
             }
+
+            if (config.chromosomeOrder != null) {
+                this.longChromosomeNames = Arrays.asList(config.chromosomeOrder);
+            } else {
+                this.longChromosomeNames = computeLongChromosomeNames();
+                if (longChromosomeNames.size() > MAX_WHOLE_GENOME_LONG) {
+                    showWholeGenomeView = false;
+                }
+            }
         }
 
-        showWholeGenomeView = (config.wholeGenomeView == null || config.wholeGenomeView) && chromosomeList.size() > 1;
 
-
-        String[] chromosomeOrder = config.chromosomeOrder;
-        if (chromosomeOrder != null) {
-            setLongChromosomeNames(Arrays.asList(chromosomeOrder));
-        }
-
-        if(showWholeGenomeView) {
+        if (showWholeGenomeView) {
             homeChromosome = Globals.CHR_ALL;
-        } else if(config.defaultPos != null) {
+        } else if (config.defaultPos != null) {
             int idx = config.defaultPos.indexOf(":");
             homeChromosome = idx > 0 ? config.defaultPos.substring(0, idx) : config.defaultPos;
-        } else if(this.chromosomeNames != null && this.chromosomeNames.size() > 0) {
+        } else if (this.chromosomeNames != null && this.chromosomeNames.size() > 0) {
             homeChromosome = this.chromosomeNames.get(0);
         } else {
             // TODO -- no place to go
@@ -166,33 +184,56 @@ public class Genome {
 
 
         // Cytobands
-        if (config.cytobandBbURL != null) {
-            this.cytobandSource = new CytobandSourceBB(config.cytobandBbURL, this);
+        if (config.cytobands != null) {
+            cytobandSource = new CytobandMap(config.cytobands);    // Directly supplied, from .genome file
+        } else if (config.cytobandBbURL != null) {
+            cytobandSource = new CytobandSourceBB(config.cytobandBbURL, this);
         } else if (config.cytobandURL != null) {
-            this.cytobandSource = new CytobandMap(config.cytobandURL);
+            cytobandSource = new CytobandMap(config.cytobandURL);
         }
 
-
-        setBlatDB(config.blatDB);
-        String ucscIDElement = config.ucsdID;
-        if (ucscIDElement != null) {
-            setUcscID(config.ucsdID);
-            if (config.blatDB == null) {
-                setBlatDB(ucscIDElement);
-            }
-        }
-
-        String aliasURL = config.aliasURL;
-        if (aliasURL != null) {
-            String aliasPath = aliasURL;
-            setChromAliasSource(new ChromAliasFile(aliasPath, this));
+        // Chromosome aliases
+        if (config.aliasURL != null) {
+            chromAliasSource = (new ChromAliasFile(config.aliasURL, chromosomeNames));
         } else if (config.chromAliasBbURL != null) {
-            String aliasPath = config.chromAliasBbURL;
-            setChromAliasSource(new ChromAliasBB(aliasPath, this));
+            chromAliasSource = (new ChromAliasBB(config.chromAliasBbURL, this));
         } else {
-            setChromAliasSource(new ChromAliasDefaults(id, getAllChromosomeNames()));
+            chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
+        }
+        if (config.chromAliases != null) {
+            addChrAliases(config.chromAliases);
         }
 
+
+        addTracks(config);
+
+    }
+
+    private static List<Chromosome> sortChromosomeList(List<Chromosome> chromosomeList, String[] orderedNames) {
+        if (orderedNames == null) {
+            Collections.sort(chromosomeList, new ChromosomeComparator());
+            return chromosomeList;
+        } else {
+            // Order chromosomes in orderedNames, leave others in original order
+            Map<String, Chromosome> chrMap = new HashMap<>();
+            for (Chromosome c : chromosomeList) {
+                chrMap.put(c.getName(), c);
+            }
+            List<Chromosome> orderedChromosomes = new ArrayList<>(chromosomeList.size());
+            Set<String> orderedNameSet = new HashSet<>(Arrays.asList(orderedNames));
+            for (String nm : orderedNames) {
+                orderedChromosomes.add(chrMap.get(nm));
+            }
+            for (Chromosome c : chromosomeList) {
+                if (!orderedNameSet.contains(c.getName())) {
+                    orderedChromosomes.add(c);
+                }
+            }
+            return orderedChromosomes;
+        }
+    }
+
+    private void addTracks(GenomeConfig config) {
         // Tracks and hidden tracks
         ArrayList<ResourceLocator> tracks = new ArrayList<>();
         ArrayList<ResourceLocator> hiddenTracks = new ArrayList<>();
@@ -257,10 +298,10 @@ public class Genome {
                     properties.setFeatureVisibilityWindow(-1);
                 }
 
-                if(trackConfig.min != null) {
+                if (trackConfig.min != null) {
                     properties.setMinValue(trackConfig.min);
                 }
-                if(trackConfig.max != null) {
+                if (trackConfig.max != null) {
                     properties.setMaxValue(trackConfig.max);
                 }
                 res.setTrackProperties(properties);
@@ -282,45 +323,12 @@ public class Genome {
         if (hiddenTracks.size() > 0) {
             addToFeatureDB(hiddenTracks, this);
         }
-
     }
 
 
     /**
-     * Legacy constructor - primarily for .genome and .gbk files
-     *
-     * @param id
-     * @param displayName
-     * @param sequence       the reference Sequence object.  Can be null.
-     * @param chromosOrdered Whether the chromosomes are already ordered. If false, they will be sorted.
-     */
-    public Genome(String id, String displayName, Sequence sequence, boolean chromosOrdered) {
-
-        this.id = id;
-        this.displayName = displayName;
-        this.chrAliasCache = new HashMap<>();
-        this.sequence = (sequence instanceof InMemorySequence) ? sequence : new SequenceWrapper(sequence);
-        this.ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
-        this.chromosomeMap = new LinkedHashMap<>();
-
-        this.chromosomeNames = new ArrayList<>();
-        List<Chromosome> chromosomes = sequence.getChromosomes();
-
-        if (!chromosOrdered) {
-            Collections.sort(chromosomes, new ChromosomeComparator());
-        }
-
-        int idx = 0;
-        for (Chromosome chromosome : chromosomes) {
-            chromosome.setIndex(idx++);
-            chromosomeNames.add(chromosome.getName());
-            chromosomeMap.put(chromosome.getName(), chromosome);
-        }
-    }
-
-
-    /**
-     * Alternate constructor for defining a minimal genome, usually from parsing a chrom.sizes file.
+     * Alternate constructor for defining a minimal genome, usually from parsing a chrom.sizes file.  Used to
+     * create mock genomes for testing.
      *
      * @param id
      * @param chromosomes
@@ -341,6 +349,7 @@ public class Genome {
 
     /**
      * Return the canonical chromosome name for the (possibly) alias
+     *
      * @param str chromosome or alias name
      * @return the canonical chromsoome name -- i.e. chromosome name as defined by the reference sequence
      */
@@ -367,9 +376,9 @@ public class Genome {
     }
 
     public String getChromosomeDisplayName(String chr) {
-        if (this.nameSet != null  && this.chromAliasSource != null) {
+        if (this.nameSet != null && this.chromAliasSource != null) {
             String nm = this.chromAliasSource.getChromosomeAlias(chr, this.nameSet);
-            return  nm != null ? nm :  chr;
+            return nm != null ? nm : chr;
         } else {
             return chr;
         }
@@ -381,9 +390,10 @@ public class Genome {
     }
 
     /**
-     * Add user-defined chromosome aliases.  The input is a collection of chromosome synonym lists.  The
-     * directionality is determined by the "true" chromosome names, or if chromosome names are not
-     * defined by the first entry in the line.
+     * Add user-defined chromosome aliases directly to the cache.  The input is a collection of chromosome synonym lists.
+     * The directionality is determined by the "true" chromosome names, or if chromosome names are not
+     * defined by the first entry in the line.  This is a bit complex since, apparently, we allowed synonym lists
+     * that did not include the canonical genome.
      *
      * @param synonymsList
      */
@@ -392,28 +402,49 @@ public class Genome {
         if (synonymsList == null) return;
 
         // Convert names to a set for fast "contains" testing.
-        Set<String> chrNameSet = new HashSet<String>(chromosomeNames);
+        Set<String> chrNameSet = new HashSet<>(chromosomeNames);
 
         for (List<String> synonyms : synonymsList) {
 
-            // Find the chromosome name as used in this genome
-            String chr = null;
-            for (String syn : synonyms) {
-                if (chrNameSet.contains(syn)) {
-                    chr = syn;
-                    break;
+            // See if there is an existing chrom alias record
+            ChromAlias chromAlias = null;
+            if (chromAliasSource != null) {
+                for (String syn : synonyms) {
+                    try {
+                        chromAlias = chromAliasSource.search(syn);
+                    } catch (IOException e) {
+                        log.error("Error searching chromosome alias", e);
+                    }
+                    if (chromAlias != null) break;
                 }
             }
-            if (chr == null) {
-                chr = synonyms.get(0);
+
+            String chr = null;
+            if (chromAlias == null) {
+                // Find the chromosome name as used in this genome
+                for (String syn : synonyms) {
+                    if (chrNameSet.contains(syn)) {
+                        chr = syn;
+                        break;
+                    }
+                }
+                if (chr == null) {
+                    chr = synonyms.get(0);
+                }
+                chromAlias = new ChromAlias(chr);
+            } else {
+                chr = chromAlias.getChr();
             }
 
-            ChromAlias chromAlias = new ChromAlias(chr);
-            for (int i = 0; i < synonyms.size(); ++i) {
-                chromAlias.put(String.valueOf(i), synonyms.get(i));
+            // Append the new synonyms to the chromAlias
+            int idx = chromAlias.values().size() + 1;
+            for (String syn : synonyms) {
+                chrAliasCache.put(syn, chr);
+                chromAlias.put(String.valueOf(idx++), syn);
             }
-
-            chromAliasSource.add(chromAlias);
+            if (chromAliasSource != null) {
+                chromAliasSource.add(chromAlias);
+            }
         }
     }
 
@@ -431,9 +462,18 @@ public class Genome {
 
     /**
      * Return the chromosome name associated with the "home" button,  usually the whole genome chromosome.
+     *
      * @return
      */
     public String getHomeChromosome() {
+        if (homeChromosome == null) {
+            if (showWholeGenomeView == false || chromosomeNames.size() == 1 || getLongChromosomeNames().size() > MAX_WHOLE_GENOME_LONG) {
+                homeChromosome = chromosomeNames.get(0);
+            } else {
+                homeChromosome = Globals.CHR_ALL;
+            }
+
+        }
         return homeChromosome;
     }
 
@@ -444,14 +484,18 @@ public class Genome {
 
     public Chromosome getChromosome(String name) {
         String chrName = getCanonicalChrName(name);
-        if(chromosomeMap.containsKey(chrName)) {
+        if (chromosomeMap.containsKey(chrName)) {
             return chromosomeMap.get(chrName);
         } else {
             int idx = this.chromosomeMap.size();
             int length = this.sequence.getChromosomeLength(chrName);
-            Chromosome chromosome = new Chromosome(idx, chrName, length);
-            chromosomeMap.put(chrName, chromosome);
-            return chromosome;
+            if (length > 0) {
+                Chromosome chromosome = new Chromosome(idx, chrName, length);
+                chromosomeMap.put(chrName, chromosome);
+                return chromosome;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -540,9 +584,6 @@ public class Genome {
         return blatDB;
     }
 
-    public void setBlatDB(String blatDB) {
-        this.blatDB = blatDB;
-    }
 
     public void setUcscID(String ucscID) {
         this.ucscID = ucscID;
@@ -653,56 +694,10 @@ public class Genome {
      * @return
      */
     public List<String> getLongChromosomeNames() {
-
-        if (longChromosomeNames == null) {
-            longChromosomeNames = new ArrayList<>();
-            if (chromosomeMap.size() < 100) {
-                // Keep all chromosomes within 10% of the mean in length
-                double[] lengths = new double[chromosomeMap.size()];
-                int idx = 0;
-                for (Chromosome c : chromosomeMap.values()) {
-                    lengths[idx++] = c.getLength();
-                }
-                double mean = StatUtils.mean(lengths);
-                double std = Math.sqrt(StatUtils.variance(lengths));
-                double min = 0.1 * mean;
-                for (String chr : getAllChromosomeNames()) {
-                    if (chromosomeMap.get(chr).getLength() > min) {
-                        longChromosomeNames.add(chr);
-                    }
-                }
-            } else {
-                // Long list, likely many small contigs.  Search for a break between long (presumably assembled)
-                // chromosomes and small contigs.
-                List<Chromosome> allChromosomes = new ArrayList<>(chromosomeMap.values());
-                allChromosomes.sort((c1, c2) -> c2.getLength() - c1.getLength());
-
-                Chromosome lastChromosome = null;
-                Set<String> tmp = new HashSet<>();
-                for (Chromosome c : allChromosomes) {
-                    if (lastChromosome != null) {
-                        double delta = lastChromosome.getLength() - c.getLength();
-                        if (delta / lastChromosome.getLength() > 0.7) {
-                            break;
-                        }
-                    }
-                    tmp.add(c.getName());
-                    lastChromosome = c;
-                }
-
-
-                for (String chr : getAllChromosomeNames()) {
-                    if (tmp.contains(chr)) {
-                        longChromosomeNames.add(chr);
-                    }
-                }
-            }
-        }
         return longChromosomeNames;
-
     }
 
-    public long getNominalLength() {
+    public long getWGLength() {
 
         if (nominalLength < 0) {
             nominalLength = 0;
@@ -861,5 +856,53 @@ public class Genome {
                 log.error("Error loading " + locator.getPath());
             }
         }
+    }
+
+    public List<String> computeLongChromosomeNames() {
+
+        List<String> longChromosomeNames = new ArrayList<>();
+        if (chromosomeMap.size() < 100) {
+            // Keep all chromosomes > 10% of the mean in length
+            double[] lengths = new double[chromosomeMap.size()];
+            int idx = 0;
+            for (Chromosome c : chromosomeMap.values()) {
+                lengths[idx++] = c.getLength();
+            }
+            double mean = StatUtils.mean(lengths);
+            double min = 0.1 * mean;
+            for (String chr : getAllChromosomeNames()) {
+                if (chromosomeMap.get(chr).getLength() > min) {
+                    longChromosomeNames.add(chr);
+                }
+            }
+        } else {
+            // Long list, likely many small contigs.  Search for a break between long (presumably assembled)
+            // chromosomes and small contigs.
+            List<Chromosome> allChromosomes = new ArrayList<>(chromosomeMap.values());
+            allChromosomes.sort((c1, c2) -> c2.getLength() - c1.getLength());
+
+            Chromosome lastChromosome = null;
+            Set<String> tmp = new HashSet<>();
+            for (Chromosome c : allChromosomes) {
+                if (lastChromosome != null) {
+                    double delta = lastChromosome.getLength() - c.getLength();
+                    if (delta / lastChromosome.getLength() > 0.7) {
+                        break;
+                    }
+                }
+                tmp.add(c.getName());
+                lastChromosome = c;
+            }
+
+
+            for (String chr : getAllChromosomeNames()) {
+                if (tmp.contains(chr)) {
+                    longChromosomeNames.add(chr);
+                }
+            }
+        }
+
+        return longChromosomeNames;
+
     }
 }

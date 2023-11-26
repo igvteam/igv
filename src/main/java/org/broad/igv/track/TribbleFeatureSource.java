@@ -381,11 +381,16 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         @Override
         public Iterator getFeatures(String chr, int start, int end) throws IOException {
-            List<Feature> features = featureMap.get(chr);
+
+            String seqName =  sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
+            if (seqName == null) seqName = chr;
+
+
+            List<Feature> features = featureMap.get(seqName);
             if (features == null) {
                 return Collections.<Feature>emptyList().iterator();
             }
-            List<Feature> filteredFeatures = CollUtils.filter(features, FeatureUtils.getOverlapPredicate(chr, start, end));
+            List<Feature> filteredFeatures = CollUtils.filter(features, FeatureUtils.getOverlapPredicate(seqName, start, end));
             return filteredFeatures.iterator();
 
         }
@@ -411,7 +416,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         protected void sampleGenomeFeatures() {
             List<Feature> chrAllFeatures = new ArrayList(1000);
-            int sampleLength = (int) ((double) genome.getNominalLength() / (1000 * 700));
+            int sampleLength = (int) ((double) genome.getWGLength() / (1000 * 700));
             int lastFeaturePosition = -1;
             for (String chr : genome.getLongChromosomeNames()) {
                 List<Feature> features = featureMap.get(chr);
@@ -523,7 +528,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 Arrays.fill(values, 0);
 
 
-                double step = ((double) genome.getNominalLength() / 1000) / nBins;
+                double step = ((double) genome.getWGLength() / 1000) / nBins;
                 for (int i = 0; i < nBins; i++) {
                     starts[i] = (int) (i * step);
                     ends[i] = (int) ((i + 1) * step);

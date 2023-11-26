@@ -12,7 +12,7 @@ public class ChromAlias {
     public ChromAlias(String chr) {
         this.chr = chr;
         this.aliases = new HashMap<>();
-        this.aliases.put("chr", chr);
+        this.aliases.put("chr", chr);            // "chr" is the name set
     }
     
     public String getChr() {

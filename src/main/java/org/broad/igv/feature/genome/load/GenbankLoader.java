@@ -23,20 +23,23 @@ public class GenbankLoader extends GenomeLoader {
 
     @Override
     public Genome loadGenome() throws IOException {
-        Genome newGenome;
+       // Genome newGenome;
+
         GenbankParser genbankParser = new GenbankParser(genomePath);
         genbankParser.readFeatures(true);
 
         String name = genbankParser.getLocusName();
         String chr = genbankParser.getChr();
-
         if (!name.equals(chr)) {
             name = name + " (" + chr + ")";
         }
-
         byte[] seq = genbankParser.getSequence();
         Sequence sequence = new InMemorySequence(chr, seq);
-        newGenome = new Genome(chr, name, sequence, true);
+
+        GenomeConfig config = new GenomeConfig();
+        config.id = chr;
+        config.name = name;
+        config.sequence = sequence;
 
         String[] aliases = genbankParser.getAliases();
         if (aliases != null) {
@@ -45,16 +48,19 @@ public class GenbankLoader extends GenomeLoader {
             for (String a : aliases) {
                 aliasList.add(a);
             }
-            newGenome.addChrAliases(Arrays.asList(aliasList));
+            config.chromAliases = (Arrays.asList(aliasList));
         }
+
+
+        Genome genome =  new Genome(config);
 
         if (IGV.hasInstance() && !Globals.isHeadless()) {
-            FeatureTrack geneFeatureTrack = createGeneTrack(newGenome, genbankParser.getFeatures());
-            newGenome.setGeneTrack(geneFeatureTrack);
+            FeatureDB.addFeatures(genbankParser.getFeatures(), genome);
+            FeatureTrack geneFeatureTrack = createGeneTrack(genome, genbankParser.getFeatures());
+            genome.setGeneTrack(geneFeatureTrack);
         }
 
-        FeatureDB.addFeatures(genbankParser.getFeatures(), newGenome);
 
-        return newGenome;
+        return genome;
     }
 }

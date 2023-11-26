@@ -25,9 +25,7 @@
 
 package org.broad.igv.ucsc.bb;
 
-import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.Globals;
-import org.broad.igv.bbfile.*;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataSource;
@@ -255,7 +253,7 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                 if (!wholeGenomeScores.containsKey(windowFunction)) {
 
                     int screenWidth = 1000;  // nominal
-                    double scale = genome.getNominalLength() / screenWidth;
+                    double scale = genome.getWGLength() / screenWidth;
 
                     int maxChromId = reader.getChromosomeNames().size() - 1;
                     String firstChr = reader.getChrForId(0);

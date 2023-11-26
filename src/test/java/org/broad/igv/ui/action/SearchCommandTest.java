@@ -74,39 +74,14 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     public void testChromoWithColon() throws Exception {
 
 
-        ChromAliasSource mockChromAlias = new ChromAliasSource() {
-            @Override
-            public String getChromosomeName(String alias) {
-                switch (alias) {
-                    case "abc:123":
-                    case "abc:456":
-                    case "abc:789":
-                        return "chr10";
-                    case "xy:12":
-                        return "chr1";
-                    case "aaa:bbb":
-                        return "chr20";
-                    default:
-                        return alias;
-                }
-            }
-
-            @Override
-            public String getChromosomeAlias(String chr, String nameSet) {
-                return null;
-            }
-
-
-            public ChromAlias search(String alias) throws IOException {
-                return null;
-            }
-        };
-
         String [] chrNames = {"chr10", "chr1", "chr20"};
         String [][] aliases = {{"abc:123", "abc:456", "abc:789"}, {"xy:12"}, {"aaa:bbb"}};
+        List<List<String>> synonymsList = new ArrayList<>();
+        synonymsList.add(Arrays.asList("chr10", "abc:123", "abc:456", "abc:789"));
+        synonymsList.add(Arrays.asList("chr1", "xy:12"));
+        synonymsList.add(Arrays.asList("chr20", "aaa:bbb"));
+        genome.addChrAliases(synonymsList);
 
-
-        genome.setChromAliasSource(mockChromAlias);
 
         SearchCommand cmd;
         for (int i = 0; i < chrNames.length; i++) {

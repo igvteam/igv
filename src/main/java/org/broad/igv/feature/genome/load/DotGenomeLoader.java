@@ -22,6 +22,10 @@ import java.io.*;
 import java.util.Collection;
 import java.util.List;
 
+
+/**
+ * Load for the legacy ".genome" format.   This format id deprecated.
+ */
 public class DotGenomeLoader extends GenomeLoader {
 
     private static Logger log = LogManager.getLogger(DotGenomeLoader.class);
@@ -85,7 +89,7 @@ public class DotGenomeLoader extends GenomeLoader {
     @Override
     public Genome loadGenome() throws IOException {
 
-        Genome newGenome;
+        GenomeConfig config = new GenomeConfig();
 
         GenomeDescriptor genomeDescriptor = GenomeDescriptor.parseGenomeArchiveFile(archiveFile);
         final String id = genomeDescriptor.getId();
@@ -95,7 +99,6 @@ public class DotGenomeLoader extends GenomeLoader {
                 genomeDescriptor.getSequencePath();
 
         Sequence sequence;
-        boolean chromosOrdered = false;
         if (sequencePath == null) {
             sequence = null;
         } else {
@@ -104,17 +107,19 @@ public class DotGenomeLoader extends GenomeLoader {
             } else {
                 sequence = new FastaIndexedSequence(sequencePath);
             }
-            chromosOrdered = true;
         }
 
-        newGenome = new Genome(id, displayName, sequence, chromosOrdered);
+        config.id = id;
+        config.name = displayName;
+        config.sequence = sequence;
 
         if (genomeDescriptor.hasCytobands()) {
             InputStream cytobandStream = null;
             try {
                 cytobandStream = genomeDescriptor.getCytoBandStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(cytobandStream));
-                newGenome.setCytobands(CytoBandFileParser.loadData(reader));
+                config.cytobands = CytoBandFileParser.loadData(reader);
+
             } catch (IOException ex) {
                 log.error("Error loading cytoband file", ex);
                 throw new RuntimeException("Error loading cytoband file" + genomeDescriptor.cytoBandFileName);
@@ -123,15 +128,12 @@ public class DotGenomeLoader extends GenomeLoader {
             }
         }
 
-
         InputStream aliasStream = null;
         try {
             aliasStream = genomeDescriptor.getChrAliasStream();
-            if (aliasStream == null) {
-                newGenome.setChromAliasSource(new ChromAliasDefaults(newGenome.getId(), newGenome.getAllChromosomeNames()));
-            } else {
+            if (aliasStream != null) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(aliasStream));
-                newGenome.setChromAliasSource(new ChromAliasFile(reader, newGenome));
+                config.chromAliases =  ChromAliasParser.loadChrAliases  (reader);
             }
         } catch (IOException e) {
             // We don't want to bomb if the alias load fails.  Just log it and proceed.
@@ -139,6 +141,8 @@ public class DotGenomeLoader extends GenomeLoader {
         } finally {
             closeSilently(aliasStream);
         }
+
+        Genome   newGenome = new Genome(config);
 
 
         String geneFileName = genomeDescriptor.getGeneFileName();
@@ -157,7 +161,6 @@ public class DotGenomeLoader extends GenomeLoader {
                     FeatureTrack geneFeatureTrack = createGeneTrack(newGenome, reader,
                             geneFileName, genomeDescriptor.getGeneTrackName(),
                             genomeDescriptor.getUrl());
-
                     newGenome.setGeneTrack(geneFeatureTrack);
                 }
             } finally {

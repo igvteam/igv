@@ -142,7 +142,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         TestUtils.createIndex(fastaPath);
 
         Genome genome = GenomeManager.getInstance().loadGenome(fastaPath, null);
-        String[] chromos = {"chr5", "chr1"};
+        String[] chromos = {"chr1", "chr5"};
 
         assertArrayEquals(chromos, genome.getAllChromosomeNames().toArray());
     }
@@ -157,8 +157,8 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         String testFile = TestUtils.DATA_DIR + "genomes/hg19.chrom.sizes";
         Genome genome = GenomeManager.getInstance().loadGenome(testFile, null);
 
-        assertEquals(24, genome.getAllChromosomeNames().size());
-        assertEquals(3095677412l, genome.getTotalLength());
+        assertEquals(37, genome.getAllChromosomeNames().size());
+        assertEquals(3130404865l, genome.getTotalLength());
     }
 
 }

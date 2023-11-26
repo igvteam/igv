@@ -38,10 +38,12 @@ public class ChromAliasDefaults extends ChromAliasSource {
                     switch (name) {
                         case "chrX":
                             record.put("ncbi", "23");
+                            record.put("?", "X");
                             skipRest = true;
                             break;
                         case "chrY":
                             record.put("ncbi", "24");
+                            record.put("?", "Y");
                             skipRest = true;
                             break;
                     }

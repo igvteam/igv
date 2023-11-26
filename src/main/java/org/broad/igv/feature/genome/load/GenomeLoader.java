@@ -71,41 +71,6 @@ abstract public class GenomeLoader {
 
 
     /**
-     * Load user-defined chromosome aliases.
-     *
-     * @param path
-     * @return
-     */
-    public static List<List<String>> loadChrAliases(String path) {
-        BufferedReader br = null;
-        try {
-            br = ParsingUtils.openBufferedReader(path);
-            String nextLine = "";
-            List<List<String>> synonymList = new ArrayList<List<String>>();
-            while ((nextLine = br.readLine()) != null) {
-                String[] tokens = nextLine.split("\t");
-                if (tokens.length > 1) {
-                    List<String> synonyms = new ArrayList<String>();
-                    for (String t : tokens) {
-                        String syn = t.trim();
-                        if (t.length() > 0) synonyms.add(syn.trim());
-                    }
-                    synonymList.add(synonyms);
-                }
-            }
-            return synonymList;
-        } catch (IOException e) {
-            log.error("Error loading chr alias table", e);
-            MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be available<br>" +
-                    e.toString());
-            return null;
-        } finally {
-            closeSilently(br);
-        }
-    }
-
-
-    /**
      * Create an annotation track for the genome from a supplied list of features
      *
      * @param genome

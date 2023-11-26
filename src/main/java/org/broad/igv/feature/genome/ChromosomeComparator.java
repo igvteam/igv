@@ -36,7 +36,7 @@ import java.util.List;
  * For comparing chromosomes. We order by "important" vs "unimportant".
  * The idea being there are main chromosomes (chr1...chrX, chrM) and
  * sometimes many smaller contigs.
- *
+ * <p>
  * Date: 2012-Aug-16
  */
 public class ChromosomeComparator implements Comparator<Chromosome> {
@@ -61,6 +61,10 @@ public class ChromosomeComparator implements Comparator<Chromosome> {
         } else if (isMyto(o1.getName())) {
             return -1;
         } else if (isMyto(o2.getName())) {
+            return 1;
+        } else if (o1.getName().startsWith("chr") && !o2.getName().startsWith("chr")) {
+            return -1;
+        } else if (o2.getName().startsWith("chr") && !o1.getName().startsWith("chr")) {
             return 1;
         } else {
             return o2.getLength() - o1.getLength();

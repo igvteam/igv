@@ -507,7 +507,7 @@ public class TDFReader {
 
             int binCount = 700;
             int nTracks = this.getTrackNames().length; // TODO -- is there a more direct way to know this?
-            double binSize = (genome.getNominalLength() / 1000) / binCount;
+            double binSize = (genome.getWGLength() / 1000) / binCount;
             Accumulator[][] accumulators = new Accumulator[nTracks][binCount];
 
             for (String chrName : genome.getLongChromosomeNames()) {

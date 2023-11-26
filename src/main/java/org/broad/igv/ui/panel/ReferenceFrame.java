@@ -737,7 +737,7 @@ public class ReferenceFrame {
 
         if (chrName.equals("All")) {
             // Genome coordinates are in kb => divde by 1000
-            return (int) (genome.getNominalLength() / 1000);
+            return (int) (genome.getWGLength() / 1000);
         } else {
             Chromosome chromosome = genome.getChromosome(chrName);
             if (chromosome == null) {

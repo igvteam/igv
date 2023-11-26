@@ -326,7 +326,7 @@ public class BBDataSource extends AbstractDataSource implements FeatureSource {
 
             if (wholeGenomeScores.get(windowFunction) == null) {
 
-                double scale = genome.getNominalLength() / screenWidth;
+                double scale = genome.getWGLength() / screenWidth;
 
                 int maxChromId = reader.getChromosomeNames().size() - 1;
                 String firstChr = reader.getChromsomeFromId(0);

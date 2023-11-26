@@ -41,6 +41,7 @@ import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.genome.load.ChromAliasParser;
 import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.feature.genome.load.GenomeLoader;
 import org.broad.igv.feature.genome.load.JsonGenomeLoader;
@@ -203,7 +204,7 @@ public class GenomeManager {
                     aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab.txt")).getAbsolutePath();
                 }
                 if ((new File(aliasPath)).exists()) {
-                    newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
+                    newGenome.addChrAliases(ChromAliasParser.loadChrAliases(aliasPath));
                 }
             } catch (Exception e) {
                 log.error("Failed to load user defined alias", e);
