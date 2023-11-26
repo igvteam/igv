@@ -29,6 +29,7 @@
  */
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.logging.*;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ObjectCache;
@@ -85,6 +86,16 @@ public class SequenceWrapper implements Sequence  {
     @Override
     public int getChromosomeLength(String chrname) {
         return sequence.getChromosomeLength(chrname);
+    }
+
+    @Override
+    public List<Chromosome> getChromosomes() {
+        return sequence.getChromosomes();
+    }
+
+    @Override
+    public boolean hasChromosomes() {
+        return sequence.hasChromosomes();
     }
 
     /**

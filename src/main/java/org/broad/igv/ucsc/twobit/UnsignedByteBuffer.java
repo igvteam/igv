@@ -1,4 +1,4 @@
-package org.broad.igv.ucsc;
+package org.broad.igv.ucsc.twobit;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;

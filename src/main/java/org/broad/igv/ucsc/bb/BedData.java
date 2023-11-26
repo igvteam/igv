@@ -25,8 +25,6 @@
 
 package org.broad.igv.ucsc.bb;
 
-import org.broad.igv.ucsc.UnsignedByteBuffer;
-
 
 /*
  *   Container class for BigBed features.

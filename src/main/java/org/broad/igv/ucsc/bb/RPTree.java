@@ -1,7 +1,7 @@
 package org.broad.igv.ucsc.bb;
 
 
-import org.broad.igv.ucsc.UnsignedByteBuffer;
+import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 public class RPTree {
     static int RPTREE_HEADER_SIZE = 48;

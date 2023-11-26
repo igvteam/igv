@@ -42,11 +42,9 @@ package org.broad.igv.ucsc;
  */
 
 
-import htsjdk.samtools.seekablestream.SeekableStream;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
+import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 
@@ -188,7 +186,7 @@ public class BPTree implements BPIndex{
 
             // Non leaf node
 
-            // Read and discard the first key.
+            // Read and discard the first key. -- why? Not sure, that's what the "C" code does
             long childOffset = node.items.get(0).value[0];
 
             for (int i = 1; i < node.items.size(); i++) {

@@ -1,5 +1,8 @@
 package org.broad.igv.ucsc;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.broad.igv.feature.genome.load.GenomeConfig;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -20,8 +23,6 @@ public class HubTest {
         assertEquals(22, hub.trackStanzas.size());
 
         GenomeConfig genomeConfig = hub.getGenomeConfig(null);
-        //const genome = await Genome.loadGenome(genomeConfig)
-
         assertNotNull(genomeConfig);
         assertEquals("GCF_000186305.1", genomeConfig.id);
         assertEquals("Python bivittatus", genomeConfig.name);

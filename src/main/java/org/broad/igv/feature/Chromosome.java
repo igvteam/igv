@@ -71,13 +71,6 @@ public class Chromosome {
         this.index = ii;
     }
 
-    /**
-     * @return List of cytobands for this chromosome, if any.  Can be null.
-     */
-    public List<Cytoband> getCytobands() {
-        return cytobands;
-    }
-
 
     public void setCytobands(List<Cytoband> cytobands) {
         this.cytobands = cytobands;

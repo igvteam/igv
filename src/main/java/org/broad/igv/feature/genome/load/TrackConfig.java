@@ -1,4 +1,4 @@
-package org.broad.igv.ucsc;
+package org.broad.igv.feature.genome.load;
 
 /**
  * A static json-like object, emulates javascript equivalent.   Created to ease port of session code from javascript.
@@ -14,20 +14,23 @@ public class TrackConfig {
     public String format;
     public String displayMode;
     public String description;
-    public boolean autoscale;
-    public int maxHeight;
-    public int height;
-    public int minHeight;
+    public Boolean autoscale;
+    public Integer maxHeight;
+    public Integer height;
+    public Integer minHeight;
     public String color;
     public String altColor;
-    public int min;
-    public int max;
-    public boolean visible;
+    public Float min;
+    public Float max;
+    public Boolean visible;
     public String infoURL;
     public String searchIndex;
     public String searchTrix;
     public String group;
-    public int order;
+    public Integer order;
+    public Integer visibilityWindow;
+    public Boolean indexed;
+    public Boolean hidden;
 
     /**
      * The only required property of a track configuration is a URL (which can be an actual URL or a static file path)
@@ -36,4 +39,5 @@ public class TrackConfig {
     public TrackConfig(String url) {
         this.url = url;
     }
+
 }

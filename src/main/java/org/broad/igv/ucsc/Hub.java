@@ -1,6 +1,8 @@
 package org.broad.igv.ucsc;
 
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.load.GenomeConfig;
+import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -176,14 +178,18 @@ public class Hub {
         } else if (this.genomeStanza.hasProperty("description")) {
             config.name = this.genomeStanza.getProperty("description");
         }
+        if(config.name == null) {
+            config.name = config.id;
+        } else {
+            config.name += " (" + config.id + ")";
+        }
 
         config.twoBitURL = this.baseURL + this.genomeStanza.getProperty("twoBitPath");
         config.nameSet = "ucsc";
         config.wholeGenomeView = false;
 
-
         if (this.genomeStanza.hasProperty("defaultPos")) {
-            config.locus = this.genomeStanza.getProperty("defaultPos");
+            config.defaultPos = this.genomeStanza.getProperty("defaultPos");
         }
 
         config.description = config.id;
@@ -201,6 +207,7 @@ public class Hub {
         if (this.genomeStanza.hasProperty("twoBitBptUrl")) {
             config.twoBitBptURL = this.baseURL + this.genomeStanza.getProperty("twoBitBptUrl");
         }
+
         // chromSizes can take a very long time to load, and is not useful with the default WGV = off
         // if (this.genomeStanza.hasProperty("chromSizes")) {
         //     config.chromSizes = this.baseURL + this.genomeStanza.getProperty("chromSizes")
@@ -238,11 +245,11 @@ public class Hub {
         }
 
         // Tracks.  To prevent loading tracks set `includeTrackGroups`to false or "none"
-        if (includeTrackGroups != null && !"none".equals(includeTrackGroups)) {
+        if (includeTrackGroups == null || !"none".equals(includeTrackGroups)) {
             Function<Stanza, Boolean> filter = (t) -> {
                 return !Hub.filterTracks.contains(t.name) &&
                         (!"hide".equals(t.getProperty("visibility"))) &&
-                        ("all".equals(includeTrackGroups) || includeTrackGroups.equals(t.getProperty("group")));
+                        (includeTrackGroups == null || "all".equals(includeTrackGroups) || includeTrackGroups.equals(t.getProperty("group")));
             };
             config.tracks = this.getTracksConfigs(filter);
         }
@@ -302,9 +309,14 @@ public class Hub {
 
         config.id = t.getProperty("track");
         config.name = t.getProperty("shortLabel");
-        config.format = t.format();
+
+        // TODO -- work on recognizing big* formats
+        // config.format = t.format();
+
         config.url = this.baseURL + t.getProperty("bigDataUrl");
-        config.displayMode = t.displayMode();
+
+        // Expanded display mode does not work well in IGV desktop for some tracks
+        //config.displayMode = t.displayMode();
 
         if ("vcfTabix".equals(format)) {
             config.indexURL = config.url + ".tbi";
@@ -338,9 +350,9 @@ public class Hub {
         }
         if (t.hasProperty("viewLimits")) {
             String[] tokens = t.getProperty("viewLimits").split(":");
-            config.min = Integer.parseInt(tokens[0]);
+            config.min = Float.parseFloat(tokens[0]);
             if (tokens.length > 1) {
-                config.max = Integer.parseInt(tokens[1]);
+                config.max = Float.parseFloat(tokens[1]);
             }
         }
         if (t.hasProperty("itemRgb")) {

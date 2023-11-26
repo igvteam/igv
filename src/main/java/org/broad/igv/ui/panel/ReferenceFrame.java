@@ -586,7 +586,6 @@ public class ReferenceFrame {
         if (genome == null) {
             return null;
         }
-
         return genome.getChromosome(chrName);
     }
 
@@ -639,11 +638,11 @@ public class ReferenceFrame {
     public String getFormattedLocusString() {
 
         if (zoom == 0) {
-            return getChrName();
+            return getGenome().getChromosomeDisplayName(getChrName());
         } else {
-
             Range range = getCurrentRange();
-            return Locus.getFormattedLocusString(range.getChr(), range.getStart(), range.getEnd());
+            String c = getGenome().getChromosomeDisplayName(range.getChr());
+            return Locus.getFormattedLocusString(c, range.getStart(), range.getEnd());
         }
     }
 

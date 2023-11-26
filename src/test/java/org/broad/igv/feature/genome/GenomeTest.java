@@ -26,6 +26,7 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.util.TestUtils;
 import org.junit.Assume;
@@ -180,10 +181,13 @@ public class GenomeTest extends AbstractHeadlessTest {
         public List<String> getChromosomeNames() {
             return chromoNames;
         }
-
         @Override
         public int getChromosomeLength(String chrname) {
             return index.getSequenceSize(chrname);
+        }
+        @Override
+        public List<Chromosome> getChromosomes() {
+            return index.getChromosomes();
         }
 
     }

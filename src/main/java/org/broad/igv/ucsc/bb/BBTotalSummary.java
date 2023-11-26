@@ -1,6 +1,6 @@
 package org.broad.igv.ucsc.bb;
 
-import org.broad.igv.ucsc.UnsignedByteBuffer;
+import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 
 public class BBTotalSummary {
     public long basesCovered;

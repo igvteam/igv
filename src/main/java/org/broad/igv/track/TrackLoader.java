@@ -138,7 +138,6 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-
             // Determine track type, if possible, and add new tracks
             if (locator.isHtsget()) {
                 HtsgetUtils.Metadata htsgetMeta = HtsgetUtils.getMetadata(locator.getPath());
@@ -191,7 +190,7 @@ public class TrackLoader {
             } else if (format.equals("ewig.tdf")) {
                 loadEwigIBFFile(locator, newTracks, genome);
             } else if (format.equals("bw") || format.equals("bb") || format.equals("bigwig") ||
-                    format.equals("bigbed")) {
+                    format.equals("bigbed") || format.equals("biggenepred") || format.equals("bigrepmsk")) {
                 loadBWFile(locator, newTracks, genome);
             } else if (format.equals("ibf") || format.equals("tdf")) {
                 loadTDFFile(locator, newTracks, genome);

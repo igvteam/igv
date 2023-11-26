@@ -35,52 +35,53 @@ import java.util.List;
 /**
  * For comparing chromosomes. We order by "important" vs "unimportant".
  * The idea being there are main chromosomes (chr1...chrX, chrM) and
- * sometimes many smaller contigs. "important" is determined
- * by size, set in the constructor, or else by the name.
- * <p/>
- * If one chromosome is important and the other is not, it is
- * considered "less" (so it is sorted earlier), otherwise
- * they are sorted by name.
- * User: jacob
+ * sometimes many smaller contigs.
+ *
  * Date: 2012-Aug-16
  */
 public class ChromosomeComparator implements Comparator<Chromosome> {
 
-    /**
-     *
-     */
-    private final int minSizeImportant;
 
-    /**
-     * @param minSizeImportant The minimum size to be considered "important" by default.
-     *                         Note that a contig might still be considered important if it is named chrXXX
-     */
-    public ChromosomeComparator(int minSizeImportant) {
-        this.minSizeImportant = minSizeImportant;
-
+    public ChromosomeComparator() {
     }
 
     @Override
     public int compare(Chromosome o1, Chromosome o2) {
-        boolean o1import = isImportant(o1);
-        boolean o2import = isImportant(o2);
-        boolean checkNames = (o1import == o2import);
 
-        if (checkNames) {
+        // Rules based on UCSC naming convention
+        boolean o1import = isMajor(o1.getName());
+        boolean o2import = isMajor(o2.getName());
+
+        if (o1import && o2import) {
             return ChromosomeNameComparator.get().compare(o1.getName(), o2.getName());
         } else if (o1import) {
             return -1;
+        } else if (o2import) {
+            return 1;
+        } else if (isMyto(o1.getName())) {
+            return -1;
+        } else if (isMyto(o2.getName())) {
+            return 1;
         } else {
-            return +1;
+            return o2.getLength() - o1.getLength();
         }
-
     }
 
-    private boolean isImportant(Chromosome chromo) {
-        if (chromo.getLength() > minSizeImportant) return true;
-        if (chromo.getName().toLowerCase().startsWith("chr") &&
-                chromo.getName().length() <= 6) return true;
-        return false;
+    // Rule based on common UCSC & NCBI naming conventions.  Meant to separate major chromosomes from contings
+    boolean isMajor(String chr) {
+        if (chr.startsWith("chr")) chr = chr.substring(3);
+        return (chr.length() < 3 && isInteger(chr)) || chr.equals("X") || chr.equals("Y");
+    }
+
+    boolean isMyto(String chr) {
+        return chr.equals("chrM") || chr.equals("MT");
+    }
+
+    boolean isInteger(String chr) {
+        for (int i = 0; i < chr.length(); i++) {
+            if (chr.charAt(i) < '0' || chr.charAt(i) > '9') return false;
+        }
+        return true;
     }
 
 }

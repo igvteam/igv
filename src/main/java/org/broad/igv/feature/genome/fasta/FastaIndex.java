@@ -25,6 +25,7 @@
 
 package org.broad.igv.feature.genome.fasta;
 
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeImporter;
@@ -32,8 +33,7 @@ import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Representation of a fasta (.fai) index.  This is a modified version of a similar class in Picard, but extended
@@ -62,7 +62,6 @@ public class FastaIndex {
     public FastaSequenceIndexEntry getIndexEntry(String name) {
         return sequenceEntries.get(name);
     }
-
 
     public int getSequenceSize(String name) {
         FastaSequenceIndexEntry entry = sequenceEntries.get(name);
@@ -202,6 +201,20 @@ public class FastaIndex {
                     basesPerLine,
                     bytesPerLine);
         }
+    }
 
+    /**
+     * Chromosome objects {name, length} can be defined from the fasta index.
+     * @return
+     */
+    public List<Chromosome> getChromosomes() {
+        Collection<String> chromosomeNames = getSequenceNames();
+        int i = 0;
+        List<Chromosome> chromosomes = new ArrayList<>();
+        for(Map.Entry<String, FastaSequenceIndexEntry> e : sequenceEntries.entrySet()) {
+            int length = e.getValue() == null ? -1 : (int) e.getValue().getSize();
+            chromosomes.add(new Chromosome(i++, e.getKey(), length));
+        }
+        return chromosomes;
     }
 }

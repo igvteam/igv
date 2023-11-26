@@ -29,7 +29,6 @@ package org.broad.igv.feature;
 public class Cytoband implements NamedFeature {
     String chromosome;
     String name;
-    String longName;
     int end;
     int start;
     char type; // p, n, or c
@@ -41,6 +40,22 @@ public class Cytoband implements NamedFeature {
         this.name = "";
     }
 
+    public Cytoband(String chromosome, int start,int end, String name, String gieStain) {
+        this.chromosome = chromosome;
+        this.end = end;
+        this.start = start;
+        this.name = name;
+        if (gieStain.equals("acen")) {
+            setType('c');
+        } else {
+            setType(gieStain.charAt(1));
+            if (type == 'p') {
+                String stainString = gieStain.substring(4).trim();
+                short stain = stainString.length() == 0 ? 100 : Short.parseShort(stainString);
+                setStain(stain);
+            }
+        }
+    }
 
     public void trim() {
 
@@ -62,13 +77,6 @@ public class Cytoband implements NamedFeature {
 
     public String getName() {
         return name;
-    }
-
-    public String getLongName() {
-        if(longName == null) {
-            longName = chromosome.replace("chr", "") + name;
-        }
-        return longName;
     }
 
     public void setEnd(int end) {

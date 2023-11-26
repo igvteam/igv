@@ -25,18 +25,11 @@
 
 package org.broad.igv.ucsc.bb;
 
-import htsjdk.tribble.Feature;
-import org.apache.commons.math3.stat.StatUtils;
-import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.FeatureSource;
-import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ucsc.UnsignedByteBuffer;
-import org.broad.igv.ucsc.bb.codecs.BBCodec;
-import org.broad.igv.ucsc.bb.codecs.BBCodecFactory;
 
 import java.io.IOException;
 import java.util.*;

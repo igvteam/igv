@@ -1,5 +1,7 @@
 package org.broad.igv.ucsc;
 
+import org.broad.igv.feature.genome.load.TrackConfig;
+
 import java.util.List;
 
 public class TrackConfigGroup {

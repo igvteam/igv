@@ -25,6 +25,8 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.feature.Chromosome;
+
 import java.util.*;
 
 /**
@@ -82,8 +84,24 @@ public class InMemorySequence implements Sequence {
 
     @Override
     public int getChromosomeLength(String chrname) {
-        byte [] bytes = sequenceMap.get(chrname);
+        byte[] bytes = sequenceMap.get(chrname);
         return bytes == null ? 0 : bytes.length;
+    }
+
+    /**
+     * Define chromosomes from known names and lengths.
+     *
+     * @return
+     */
+    @Override
+    public List<Chromosome> getChromosomes() {
+        List<Chromosome> chromosomes = new ArrayList<>();
+        int idx = 0;
+        for (Map.Entry<String, byte[]> entry : sequenceMap.entrySet()) {
+            chromosomes.add(new Chromosome(idx++, entry.getKey(), entry.getValue().length));
+            return chromosomes;
+        }
+        return chromosomes;
     }
 
 }

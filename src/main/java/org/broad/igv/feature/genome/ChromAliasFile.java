@@ -38,39 +38,41 @@ public class ChromAliasFile extends ChromAliasSource {
         Set<String> chromosomeNameSet = chromosomeNames != null ? new HashSet<>(chromosomeNames) : Collections.EMPTY_SET;
 
         // First line
-        String line = br.readLine();
-        if (line.startsWith("#")) {
-            String[] tokens = line.substring(1).split("\t");
-            this.nameSets = new String[tokens.length];
-            for (int i = 0; i < tokens.length; i++) {
-                this.nameSets[i] = tokens[i].trim();
-            }
-        }
-
+        boolean firstLine = true;
+        String line;
         while ((line = br.readLine()) != null) {
-            String[] tokens = line.split("\t");
-            if (tokens.length > 1) {
+            if (firstLine && line.startsWith("#")) {
+                String[] tokens = line.substring(1).split("\t");
+                this.nameSets = new String[tokens.length];
+                for (int i = 0; i < tokens.length; i++) {
+                    this.nameSets[i] = tokens[i].trim();
+                }
+            } else {
+                String[] tokens = line.split("\t");
+                if (tokens.length > 1) {
 
-                // Find the canonical chromosome
-                String chr = null;
-                for (String c : tokens) {
-                    if (chromosomeNameSet.contains(c)) {
-                        chr = c;
-                        break;
+                    // Find the canonical chromosome
+                    String chr = null;
+                    for (String c : tokens) {
+                        if (chromosomeNameSet.contains(c)) {
+                            chr = c;
+                            break;
+                        }
+                    }
+                    if (chr == null) {
+                        chr = tokens[0];
+                    }
+
+                    ChromAlias aliasRecord = new ChromAlias(chr);
+                    this.aliasCache.put(chr, aliasRecord);
+                    for (int i = 0; i < tokens.length; i++) {
+                        String key = this.nameSets != null ? this.nameSets[i] : String.valueOf(i);
+                        aliasRecord.put(key, tokens[i]);
+                        this.aliasCache.put(tokens[i], aliasRecord);
                     }
                 }
-                if (chr == null) {
-                    chr = tokens[0];
-                }
-
-               ChromAlias aliasRecord = new ChromAlias(chr);
-                this.aliasCache.put(chr, aliasRecord);
-                for (int i = 0; i < tokens.length; i++) {
-                    String key = this.nameSets != null ? this.nameSets[i] : String.valueOf(i);
-                    aliasRecord.put(key, tokens[i]);
-                    this.aliasCache.put(tokens[i], aliasRecord);
-                }
             }
+            firstLine = false;
         }
 
     }

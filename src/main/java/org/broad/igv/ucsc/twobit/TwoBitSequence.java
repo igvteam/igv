@@ -1,4 +1,17 @@
-package org.broad.igv.ucsc;
+package org.broad.igv.ucsc.twobit;
+
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.genome.Sequence;
+import org.broad.igv.ucsc.BPIndex;
+import org.broad.igv.ucsc.BPTree;
+
+import java.io.IOException;
+import java.nio.ByteOrder;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
 
 /**
  * Reader for UCSC ".2bit" sequence files. Reference: https://genome.ucsc.edu/FAQ/FAQformat.html#format7
@@ -7,35 +20,23 @@ package org.broad.igv.ucsc;
  */
 
 
-import htsjdk.samtools.seekablestream.SeekableStream;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.*;
-
-/**
- * Created by jrobinso on 6/13/17.
- */
-public class TwoBitReader {
+public class TwoBitSequence implements Sequence {
 
     // the number 0x1A412743 in the architecture of the machine that created the file
     static int SIGNATURE = 0x1a412743;
-
     String path;
-    private HashMap<String, SequenceRecord> sequenceRecordMap;
+    private HashMap<String, SequenceRecord> sequenceRecordCache;
     ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;  // Until proven otherwise
     private int seqCount;
-
     BPIndex index;
 
-    public TwoBitReader(String path) throws IOException {
+
+    public TwoBitSequence(String path) throws IOException {
         init(path);
         index = new TwoBitIndex(path, this.byteOrder, this.seqCount);
     }
 
-    public TwoBitReader(String path, String indexPath) throws IOException {
+    public TwoBitSequence(String path, String indexPath) throws IOException {
         init(path);
         index = BPTree.loadBPTree(indexPath, 0);
     }
@@ -47,7 +48,7 @@ public class TwoBitReader {
     private void init(String path) throws IOException {
 
         this.path = path;
-        this.sequenceRecordMap = new HashMap<>();
+        this.sequenceRecordCache = new HashMap<>();
 
         long filePosition = 0;
         UnsignedByteBuffer buffer = UnsignedByteBuffer.loadBinaryBuffer(path, byteOrder, filePosition, 64);
@@ -66,6 +67,41 @@ public class TwoBitReader {
         this.seqCount = buffer.getInt();
         final int reserved = buffer.getInt();    // Should be zero
 
+    }
+
+    @Override
+    public byte[] getSequence(String chr, int start, int end) {
+        return readSequence(chr, start, end);
+    }
+
+    @Override
+    public byte getBase(String chr, int position) {
+        throw new RuntimeException("getBase is not implementd for TwoBitSequence");
+    }
+
+    @Override
+    public List<String> getChromosomeNames() {
+        return null;
+    }
+
+    @Override
+    public int getChromosomeLength(String chrname) {
+        try {
+            SequenceRecord sequenceRecord = getSequenceRecord(chrname);
+            return sequenceRecord.getDnaSize();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<Chromosome> getChromosomes() {
+        return null;
+    }
+
+    @Override
+    public boolean hasChromosomes() {
+        return false;
     }
 
     /**
@@ -140,9 +176,9 @@ public class TwoBitReader {
 
     }
 
-    SequenceRecord getSequenceRecord(String seqName) throws IOException {
+    public SequenceRecord getSequenceRecord(String seqName) throws IOException {
 
-        SequenceRecord record = this.sequenceRecordMap.get(seqName);
+        SequenceRecord record = this.sequenceRecordCache.get(seqName);
 
         if (record == null) {
             long[] offset_length = this.index.search(seqName);
@@ -205,7 +241,7 @@ public class TwoBitReader {
             long packedPos = offset + size;
             record = new SequenceRecord(dnaSize, nBlocks, maskBlocks, packedPos);
 
-            sequenceRecordMap.put(seqName, record);
+            sequenceRecordCache.put(seqName, record);
         }
         return record;
 
@@ -259,34 +295,6 @@ public class TwoBitReader {
 
     }
 
-    static class SequenceRecord {
-
-        final int dnaSize;
-        Block[] nBlocks;
-        Block[] maskBlocks;
-
-        final long packedPos;
-
-        SequenceRecord(int dnaSize, Block[] nBlocks, Block[] maskBlocks, long packedPos) throws IOException {
-            this.dnaSize = dnaSize;
-            this.nBlocks = nBlocks;
-            this.maskBlocks = maskBlocks;
-            this.packedPos = packedPos;
-
-        }
-    }
-
-    static class Block {
-        final long start;
-        final int size;
-        final long end;
-
-        Block(long start, int size) {
-            this.start = start;
-            this.size = size;
-            this.end = start + size;
-        }
-    }
 }
 
 /*

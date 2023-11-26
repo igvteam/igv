@@ -1,7 +1,7 @@
 package org.broad.igv.ucsc.bb;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ucsc.UnsignedByteBuffer;
+import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 
 import java.util.HashMap;
 
@@ -25,9 +25,9 @@ public class ChromTree {
 
     public long sumLengths = 0;
 
-    public static ChromTree parseTree(UnsignedByteBuffer binaryParser, int startOffset, Genome genome) {
+    public static ChromTree parseTree(UnsignedByteBuffer buffer, int startOffset, Genome genome) {
 
-        return (new ChromTree().parse(binaryParser, startOffset, genome));
+        return (new ChromTree().parse(buffer, startOffset, genome));
     }
 
     private ChromTree() {
@@ -50,15 +50,15 @@ public class ChromTree {
         return idToName;
     }
 
-    public ChromTree parse(UnsignedByteBuffer binaryParser, int startOffset, Genome genome) {
+    public ChromTree parse(UnsignedByteBuffer buffer, int startOffset, Genome genome) {
         {
             Header header = new Header();
-            header.magic = binaryParser.getInt();
-            header.blockSize = binaryParser.getInt();
-            header.keySize = binaryParser.getInt();
-            header.valSize = binaryParser.getInt();
-            header.itemCount = binaryParser.getLong();
-            header.reserved = binaryParser.getLong();
+            header.magic = buffer.getInt();
+            header.blockSize = buffer.getInt();
+            header.keySize = buffer.getInt();
+            header.valSize = buffer.getInt();
+            header.itemCount = buffer.getLong();
+            header.reserved = buffer.getLong();
             this.header = header;
 
             if (header.valSize != 8) {
@@ -69,28 +69,24 @@ public class ChromTree {
             this.idToName = new String[(int) header.itemCount];
 
             // Recursively walk tree to populate dictionary
-            readTreeNode(-1, startOffset, binaryParser, genome);
+            readTreeNode(-1, startOffset, buffer, genome);
 
             return this;
         }
     }
 
-    void readTreeNode(long offset, int startOffset, UnsignedByteBuffer binaryParser, Genome genome) {
-
-        if (offset >= 0) binaryParser.position((int) offset);
-        byte type = binaryParser.get();
-        byte reserved = binaryParser.get();
-        int count = binaryParser.getUShort();
+    void readTreeNode(long offset, final int startOffset, UnsignedByteBuffer buffer, Genome genome) {
+        if (offset >= 0) buffer.position((int) offset);
+        byte type = buffer.get();
+        byte reserved = buffer.get();
+        int count = buffer.getUShort();
 
         if (type == 1) {
             // Leaf node
             for (int i = 0; i < count; i++) {
-                String key = binaryParser.getFixedLengthString(header.keySize);
-                int value = binaryParser.getInt();
-                int chromSize = binaryParser.getInt();
-                if (genome != null) {
-                    key = genome.getCanonicalChrName(key);  // Translate to canonical chr name
-                }
+                String key = buffer.getFixedLengthString(header.keySize);
+                int value = buffer.getInt();
+                int chromSize = buffer.getInt();
                 nameToId.put(key, value);
                 idToName[value] = key;
                 sumLengths += chromSize;
@@ -98,12 +94,12 @@ public class ChromTree {
         } else {
             // non-leaf
             for (int i = 0; i < count; i++) {
-                String key = binaryParser.getFixedLengthString(header.keySize);
-                long childOffset = binaryParser.getLong();
+                String key = buffer.getFixedLengthString(header.keySize);
+                long childOffset = buffer.getLong();
                 long bufferOffset = childOffset - startOffset;
-                long currOffset = binaryParser.position();
-                readTreeNode(bufferOffset, startOffset, binaryParser, genome);
-                binaryParser.position((int) currOffset);
+                long currOffset = buffer.position();
+                readTreeNode(bufferOffset, startOffset, buffer, genome);
+                buffer.position((int) currOffset);
             }
         }
     }

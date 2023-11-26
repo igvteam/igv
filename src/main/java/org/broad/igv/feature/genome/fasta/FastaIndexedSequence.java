@@ -26,6 +26,7 @@
 package org.broad.igv.feature.genome.fasta;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Sequence;
 import org.broad.igv.util.FileUtils;
@@ -34,6 +35,7 @@ import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -192,4 +194,8 @@ public class FastaIndexedSequence implements Sequence {
         return index.getSequenceSize(chrname);
     }
 
+    @Override
+    public List<Chromosome> getChromosomes() {
+        return index.getChromosomes();
+    }
 }

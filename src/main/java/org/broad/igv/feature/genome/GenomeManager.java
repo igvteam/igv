@@ -195,7 +195,6 @@ public class GenomeManager {
             FeatureDB.clearFeatures();
 
             Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
-            setCurrentGenome(newGenome);
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             try {
@@ -225,6 +224,9 @@ public class GenomeManager {
             genomeListManager.addGenomeItem(genomeListItem, userDefined);
 
             setCurrentGenome(newGenome);
+
+            IGV.getInstance().goToLocus(newGenome.getDefaultPos());
+
             if (IGV.hasInstance()) {
                 loadGenomeAnnotations(newGenome);
             }

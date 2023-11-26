@@ -27,6 +27,8 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.TrackGroup;
@@ -34,6 +36,7 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.MessageCollection;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -42,6 +45,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -225,7 +229,20 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                     }
                 } else if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     String obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
-                    IGV.getInstance().load(new ResourceLocator(obj), panel);
+
+                    // Check for genomes, sessions, etc firs
+                    if(HubGenomeLoader.isHubURL(obj)) {
+                       LongRunningTask.submit(() -> {
+                           try {
+                               GenomeManager.getInstance().loadGenome(obj, null);
+                           } catch (IOException e) {
+                               MessageUtils.showMessage("Error loading track hub: " + e.getMessage());
+                           }
+                       });
+                    }
+                    else {
+                        IGV.getInstance().load(new ResourceLocator(obj), panel);
+                    }
                 } else {
                     messages.append("Unknown object type: " + transferable.toString());
                 }

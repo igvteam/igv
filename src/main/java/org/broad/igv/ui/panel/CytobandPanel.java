@@ -41,6 +41,7 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.CytobandRenderer;
 import org.broad.igv.ui.WaitCursorManager;
@@ -104,7 +105,7 @@ public class CytobandPanel extends JPanel {
         if (chromosome == null) {
             return;
         }
-        currentCytobands = chromosome.getCytobands();
+        currentCytobands = GenomeManager.getInstance().getCurrentGenome().getCytobands(getReferenceFrame().getChrName());
         if (currentCytobands == null) {
             return;
         }

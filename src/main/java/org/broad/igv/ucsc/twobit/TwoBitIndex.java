@@ -1,6 +1,7 @@
-package org.broad.igv.ucsc;
+package org.broad.igv.ucsc.twobit;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.ucsc.BPIndex;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class TwoBitIndex implements BPIndex{
+public class TwoBitIndex implements BPIndex {
 
     String path;
     ByteOrder byteOrder;

@@ -34,14 +34,29 @@
  */
 package org.broad.igv.feature.genome;
 
+import htsjdk.tribble.CloseableTribbleIterator;
+import htsjdk.tribble.Feature;
+import htsjdk.tribble.FeatureReader;
 import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
+import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
+import org.broad.igv.feature.genome.fasta.FastaIndex;
+import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
+import org.broad.igv.feature.genome.load.ChromSizesParser;
+import org.broad.igv.feature.genome.load.GenomeConfig;
+import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackProperties;
+import org.broad.igv.track.TribbleFeatureSource;
+import org.broad.igv.ucsc.twobit.TwoBitSequence;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
 
@@ -58,8 +73,6 @@ import java.util.*;
 public class Genome {
 
     private static Logger log = LogManager.getLogger(Genome.class);
-    public static final int MAX_WHOLE_GENOME_LONG = 100;
-
     private String id;
     private String displayName;
     private List<String> chromosomeNames;
@@ -68,8 +81,7 @@ public class Genome {
     private long totalLength = -1;
     private long nominalLength = -1;
     private Map<String, Long> cumulativeOffsets = new HashMap();
-    private Map<String, String> chrAliasTable;
-
+    private Map<String, String> chrAliasCache = new HashMap<>();
     private ChromAliasSource chromAliasSource;
     private Sequence sequence;
     private FeatureTrack geneTrack;
@@ -79,10 +91,204 @@ public class Genome {
     private List<ResourceLocator> annotationResources;
     private Map<ResourceLocator, List<Track>> annotationTracks;
     private boolean showWholeGenomeView = true;
-
     private Map<String, Liftover> liftoverMap;
+    private CytobandSource cytobandSource;
+    private String homeChromosome;
+    private String defaultPos;
+
+    private String nameSet;
+
+    public Genome(GenomeConfig config) throws IOException {
+
+        id = config.id;
+        displayName = config.name;
+        nameSet = config.nameSet;
+        ucscID = config.ucsdID != null ? config.ucsdID : ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
+        defaultPos = config.defaultPos;
+
+        // Load the sequence object.  Some configurations will specify both 2bit and fasta references.  The 2 bit
+        // has preference
+        if (config.twoBitURL != null) {
+            sequence = (config.twoBitBptURL != null) ?
+                    new TwoBitSequence(config.twoBitURL, config.twoBitBptURL) :
+                    new TwoBitSequence(config.twoBitURL);
+        } else if (config.fastaURL != null) {
+            String fastaPath = config.fastaURL;
+            String indexPath = config.indexURL;
+            String gziIndexPath = config.gziIndexURL;
+            sequence = fastaPath.endsWith(".gz") ?
+                    new FastaBlockCompressedSequence(fastaPath, gziIndexPath, indexPath) :
+                    new FastaIndexedSequence(fastaPath, indexPath);
+        } else {
+            throw new RuntimeException("Genomes require either a .2bit or fasta reference ");
+        }
+
+        // Search for chromosomes.  Chromosome names arerequired to support the chromosome pulldown, names and
+        // lengths are required to support whole genome view.  Both can be obtained from fasta index files, but
+        // for .2bit sequences a 'chromSizes" file is required.  If not supplied the chr pulldown and wgv view are disabled.
+        List<Chromosome> chromosomeList = null;
+        if (config.chromSizesURL != null) {
+            chromosomeList = ChromSizesParser.parse(config.chromSizesURL);
+        } else if (sequence.hasChromosomes()) {
+            chromosomeList = sequence.getChromosomes();
+        } else if (config.indexURL != null) {
+            FastaIndex index = new FastaIndex(config.indexURL);
+            chromosomeList = index.getChromosomes();
+        }
+
+        this.chromosomeMap = new LinkedHashMap<>();
+        this.chromosomeNames = new ArrayList<>();
+        if (chromosomeList != null) {
+            for (Chromosome c : chromosomeList) {
+                this.chromosomeMap.put(c.getName(), c);
+                this.chromosomeNames.add(c.getName());
+            }
+        }
+
+        showWholeGenomeView = (config.wholeGenomeView == null || config.wholeGenomeView) && chromosomeList.size() > 1;
+
+
+        String[] chromosomeOrder = config.chromosomeOrder;
+        if (chromosomeOrder != null) {
+            setLongChromosomeNames(Arrays.asList(chromosomeOrder));
+        }
+
+        if(showWholeGenomeView) {
+            homeChromosome = Globals.CHR_ALL;
+        } else if(config.defaultPos != null) {
+            int idx = config.defaultPos.indexOf(":");
+            homeChromosome = idx > 0 ? config.defaultPos.substring(0, idx) : config.defaultPos;
+        } else if(this.chromosomeNames != null && this.chromosomeNames.size() > 0) {
+            homeChromosome = this.chromosomeNames.get(0);
+        } else {
+            // TODO -- no place to go
+        }
+
+
+        // Cytobands
+        if (config.cytobandBbURL != null) {
+            this.cytobandSource = new CytobandSourceBB(config.cytobandBbURL, this);
+        } else if (config.cytobandURL != null) {
+            this.cytobandSource = new CytobandMap(config.cytobandURL);
+        }
+
+
+        setBlatDB(config.blatDB);
+        String ucscIDElement = config.ucsdID;
+        if (ucscIDElement != null) {
+            setUcscID(config.ucsdID);
+            if (config.blatDB == null) {
+                setBlatDB(ucscIDElement);
+            }
+        }
+
+        String aliasURL = config.aliasURL;
+        if (aliasURL != null) {
+            String aliasPath = aliasURL;
+            setChromAliasSource(new ChromAliasFile(aliasPath, this));
+        } else if (config.chromAliasBbURL != null) {
+            String aliasPath = config.chromAliasBbURL;
+            setChromAliasSource(new ChromAliasBB(aliasPath, this));
+        } else {
+            setChromAliasSource(new ChromAliasDefaults(id, getAllChromosomeNames()));
+        }
+
+        // Tracks and hidden tracks
+        ArrayList<ResourceLocator> tracks = new ArrayList<>();
+        ArrayList<ResourceLocator> hiddenTracks = new ArrayList<>();
+
+        List<TrackConfig> trackConfigs = config.tracks;
+        if (trackConfigs == null) {
+            trackConfigs = config.annotations;
+        }
+
+        if (trackConfigs != null) {
+
+            trackConfigs.forEach((TrackConfig trackConfig) -> {
+
+                String trackPath = trackConfig.url;
+                ResourceLocator res = new ResourceLocator(trackPath);
+                res.setName(trackConfig.name);
+                res.setIndexPath(trackConfig.indexURL);
+                res.setFormat(trackConfig.format);
+                Integer vw = trackConfig.visibilityWindow;
+                if (vw != null) {
+                    res.setVisibilityWindow(vw);
+                }
+
+                res.setFeatureInfoURL(trackConfig.infoURL);
+                Boolean indexed = trackConfig.indexed;
+                if (indexed != null) {
+                    res.setIndexed(indexed);
+                }
+
+                // Track properties
+                TrackProperties properties = new TrackProperties();
+                String color = trackConfig.color;
+                if (color != null) {
+                    try {
+                        properties.setColor(ColorUtilities.stringToColor(color.toString()));
+                    } catch (Exception e) {
+                        log.error("Error parsing color string: " + color, e);
+                    }
+                }
+                String altColor = trackConfig.altColor;
+                if (altColor != null) {
+                    try {
+                        properties.setAltColor(ColorUtilities.stringToColor(altColor.toString()));
+                    } catch (Exception e) {
+                        log.error("Error parsing color string: " + altColor, e);
+                    }
+                }
+                String displayMode = trackConfig.displayMode;
+                if (displayMode != null) {
+                    try {
+                        Track.DisplayMode dp = Track.DisplayMode.valueOf(stripQuotes(displayMode.toString()));
+                        properties.setDisplayMode(dp);
+                    } catch (Exception e) {
+                        log.error("Error parsing displayMode " + displayMode, e);
+                    }
+                }
+                Integer vizwindow = trackConfig.visibilityWindow;
+                if (vizwindow != null) {
+                    properties.setFeatureVisibilityWindow(vizwindow);
+                } else {
+                    // If not explicitly set, assume whole chromosome viz window for annotations
+                    properties.setFeatureVisibilityWindow(-1);
+                }
+
+                if(trackConfig.min != null) {
+                    properties.setMinValue(trackConfig.min);
+                }
+                if(trackConfig.max != null) {
+                    properties.setMaxValue(trackConfig.max);
+                }
+                res.setTrackProperties(properties);
+
+
+                Boolean hidden = trackConfig.hidden;
+
+                if (hidden != null && hidden) {
+                    hiddenTracks.add(res);
+                } else {
+                    tracks.add(res);
+                }
+
+            });
+        }
+
+        setAnnotationResources(tracks);
+
+        if (hiddenTracks.size() > 0) {
+            addToFeatureDB(hiddenTracks, this);
+        }
+
+    }
+
 
     /**
+     * Legacy constructor - primarily for .genome and .gbk files
+     *
      * @param id
      * @param displayName
      * @param sequence       the reference Sequence object.  Can be null.
@@ -92,30 +298,24 @@ public class Genome {
 
         this.id = id;
         this.displayName = displayName;
-        this.chrAliasTable = new HashMap<>();
+        this.chrAliasCache = new HashMap<>();
         this.sequence = (sequence instanceof InMemorySequence) ? sequence : new SequenceWrapper(sequence);
-        this.chromosomeNames = sequence.getChromosomeNames();
         this.ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
         this.chromosomeMap = new LinkedHashMap<>();
 
-        int maxLength = -1;
-        for (int i = 0; i < chromosomeNames.size(); i++) {
-            String chr = chromosomeNames.get(i);
-            int length = sequence.getChromosomeLength(chr);
-            maxLength = length > maxLength ? length : maxLength;
-            chromosomeMap.put(chr, new Chromosome(i, chr, length));
-        }
+        this.chromosomeNames = new ArrayList<>();
+        List<Chromosome> chromosomes = sequence.getChromosomes();
 
         if (!chromosOrdered) {
-            List<Chromosome> chromosomeList = new ArrayList<>(chromosomeMap.values());
-            Collections.sort(chromosomeList, new ChromosomeComparator(maxLength / 10));
-            for (int ii = 0; ii < chromosomeList.size(); ii++) {
-                Chromosome chrom = chromosomeList.get(ii);
-                chrom.setIndex(ii);
-                chromosomeNames.set(ii, chrom.getName());
-            }
+            Collections.sort(chromosomes, new ChromosomeComparator());
         }
 
+        int idx = 0;
+        for (Chromosome chromosome : chromosomes) {
+            chromosome.setIndex(idx++);
+            chromosomeNames.add(chromosome.getName());
+            chromosomeMap.put(chromosome.getName(), chromosome);
+        }
     }
 
 
@@ -128,33 +328,56 @@ public class Genome {
     public Genome(String id, List<Chromosome> chromosomes) {
         this.id = id;
         this.displayName = id;
-        this.chrAliasTable = new HashMap<String, String>();
+        this.chrAliasCache = new HashMap<>();
         this.sequence = null;
 
-        chromosomeNames = new ArrayList<String>(chromosomes.size());
-        chromosomeMap = new LinkedHashMap<String, Chromosome>(chromosomes.size());
+        chromosomeNames = new ArrayList<>(chromosomes.size());
+        chromosomeMap = new LinkedHashMap<>(chromosomes.size());
         for (Chromosome chromosome : chromosomes) {
             chromosomeNames.add(chromosome.getName());
             chromosomeMap.put(chromosome.getName(), chromosome);
         }
     }
 
-
+    /**
+     * Return the canonical chromosome name for the (possibly) alias
+     * @param str chromosome or alias name
+     * @return the canonical chromsoome name -- i.e. chromosome name as defined by the reference sequence
+     */
     public String getCanonicalChrName(String str) {
         if (str == null) {
             return str;
-        } else if (chrAliasTable != null && chrAliasTable.containsKey(str)) {
-            return chrAliasTable.get(str);
+        } else if (chrAliasCache.containsKey(str)) {
+            return chrAliasCache.get(str);
         } else if (chromAliasSource != null) {
-            return chromAliasSource.getChromosomeName(str);
+            try {
+                ChromAlias aliasRecord = chromAliasSource.search(str);
+                if (aliasRecord == null) {
+                    return str;
+                } else {
+                    String chr = aliasRecord.getChr();
+                    chrAliasCache.put(str, chr);
+                    return chr;
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return str;
+    }
+
+    public String getChromosomeDisplayName(String chr) {
+        if (this.nameSet != null  && this.chromAliasSource != null) {
+            String nm = this.chromAliasSource.getChromosomeAlias(chr, this.nameSet);
+            return  nm != null ? nm :  chr;
         } else {
-            return str;
+            return chr;
         }
     }
 
     @Deprecated
     public boolean isKnownChr(String str) {
-        return chrAliasTable.containsKey(str);
+        return chrAliasCache.containsKey(str);
     }
 
     /**
@@ -186,7 +409,7 @@ public class Genome {
             }
 
             ChromAlias chromAlias = new ChromAlias(chr);
-            for(int i=0; i<synonyms.size(); ++i) {
+            for (int i = 0; i < synonyms.size(); ++i) {
                 chromAlias.put(String.valueOf(i), synonyms.get(i));
             }
 
@@ -208,20 +431,28 @@ public class Genome {
 
     /**
      * Return the chromosome name associated with the "home" button,  usually the whole genome chromosome.
-     *
      * @return
      */
     public String getHomeChromosome() {
-        if (showWholeGenomeView == false || chromosomeNames.size() == 1 || getLongChromosomeNames().size() > MAX_WHOLE_GENOME_LONG) {
-            return chromosomeNames.get(0);
-        } else {
-            return Globals.CHR_ALL;
-        }
+        return homeChromosome;
+    }
+
+    public String getDefaultPos() {
+        return defaultPos == null ? homeChromosome : defaultPos;
     }
 
 
-    public Chromosome getChromosome(String chrName) {
-        return chromosomeMap.get(getCanonicalChrName(chrName));
+    public Chromosome getChromosome(String name) {
+        String chrName = getCanonicalChrName(name);
+        if(chromosomeMap.containsKey(chrName)) {
+            return chromosomeMap.get(chrName);
+        } else {
+            int idx = this.chromosomeMap.size();
+            int length = this.sequence.getChromosomeLength(chrName);
+            Chromosome chromosome = new Chromosome(idx, chrName, length);
+            chromosomeMap.put(chrName, chromosome);
+            return chromosome;
+        }
     }
 
 
@@ -398,17 +629,7 @@ public class Genome {
 
 
     public void setCytobands(LinkedHashMap<String, List<Cytoband>> chrCytoMap) {
-
-        for (Map.Entry<String, List<Cytoband>> entry : chrCytoMap.entrySet()) {
-            String chr = entry.getKey();
-            List<Cytoband> cytobands = entry.getValue();
-
-            Chromosome chromosome = chromosomeMap.get(chr);
-            if (chromosome != null) {
-                chromosome.setCytobands(cytobands);
-            }
-        }
-
+        this.cytobandSource = new CytobandMap(chrCytoMap);
     }
 
     public void setGeneTrack(FeatureTrack geneFeatureTrack) {
@@ -602,5 +823,43 @@ public class Genome {
 
     public ChromAlias getAliasRecord(String chr) throws IOException {
         return chromAliasSource == null ? null : chromAliasSource.search(chr);
+    }
+
+    public List<Cytoband> getCytobands(String chrName) {
+        if (cytobandSource != null) {
+            try {
+                return cytobandSource.getCytobands(chrName);
+            } catch (IOException e) {
+                log.error("Error fetching cytobands for chr: " + chrName, e);
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private static String stripQuotes(String str) {
+        if (str.startsWith("\"")) {
+            return str.substring(1, str.length() - 1);  // Assume also ends with
+        } else {
+            return str;
+        }
+    }
+
+    private static void addToFeatureDB(List<ResourceLocator> locators, Genome genome) {
+        for (ResourceLocator locator : locators) {
+            try {
+                FeatureReader featureReader = TribbleFeatureSource.getBasicReader(locator, genome);
+                CloseableTribbleIterator<Feature> iter = featureReader.iterator();
+                while (iter.hasNext()) {
+                    Feature f = iter.next();
+                    if (f instanceof NamedFeature) {
+                        FeatureDB.addFeature((NamedFeature) f, genome);
+                    }
+                }
+            } catch (IOException e) {
+                log.error("Error loading " + locator.getPath());
+            }
+        }
     }
 }

@@ -1,7 +1,6 @@
 package org.broad.igv.ucsc.bb;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import org.broad.igv.Globals;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.LocusScore;
@@ -10,7 +9,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ucsc.BPTree;
 import org.broad.igv.ucsc.Trix;
-import org.broad.igv.ucsc.UnsignedByteBuffer;
+import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.broad.igv.ucsc.bb.codecs.BBCodec;
 import org.broad.igv.ucsc.bb.codecs.BBCodecFactory;
 import org.broad.igv.util.CompressionUtils;
@@ -110,7 +109,7 @@ public class BBFile {
     }
 
     public Set<String> getChromosomeNames() {
-      return  chrNames;
+        return chrNames;
     }
 
 
@@ -569,9 +568,11 @@ public class BBFile {
 
             // For now take the first match, we don't support multiple results
             for (BPTree bpTree : searchTrees) {
-                long[] result = bpTree.search(term);
-                if (result != null) {
-                    return result;
+                if (bpTree != null) {
+                    long[] result = bpTree.search(term);
+                    if (result != null) {
+                        return result;
+                    }
                 }
             }
         }
@@ -579,7 +580,6 @@ public class BBFile {
     }
 
     BPTree[] getSearchTrees() throws IOException {
-
         if (this._searchTrees == null &&
                 this.header.extraIndexOffsets != null &&
                 this.header.extraIndexOffsets.length > 0) {
@@ -593,7 +593,6 @@ public class BBFile {
         return this._searchTrees;
 
     }
-
 
 
 }

@@ -1,6 +1,7 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -24,7 +25,7 @@ public class ChromAliasFileTest {
     
     @Test
     public void getChromosomeName() throws IOException {
-        String path = "test/data/genomes/GCF_000002655.1.chromAlias.txt";
+        String path = TestUtils.DATA_DIR +  "genomes/GCF_000002655.1.chromAlias.txt";
         ChromAliasFile chromAlias = new ChromAliasFile(path, mockGenome);
         assertEquals("NC_007194.1", chromAlias.getChromosomeName("CM000169.1")) ;
         assertEquals("NC_007194.1", chromAlias.getChromosomeName( "1"));
@@ -34,7 +35,7 @@ public class ChromAliasFileTest {
     @Test
     public void search() throws IOException {
 
-        String path = "test/data/genomes/GCF_000002655.1.chromAlias.txt";
+        String path = TestUtils.DATA_DIR +  "genomes/GCF_000002655.1.chromAlias.txt";
         ChromAliasFile chromAliasSource = new ChromAliasFile(path, mockGenome);
         ChromAlias chromAlias =  chromAliasSource.search("1");
         assertEquals(chromAlias.getChr(), "NC_007194.1");
