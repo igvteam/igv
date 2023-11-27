@@ -163,6 +163,10 @@ jar {
     }
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
 compileJava {
     inputs.property("moduleName", moduleName)
     doFirst {
