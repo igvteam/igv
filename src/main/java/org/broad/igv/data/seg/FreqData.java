@@ -76,7 +76,7 @@ public class FreqData {
         amp.clear();
         del.clear();
 
-        int sizeInKB = (int) (genome.getNominalLength() / 1000);
+        int sizeInKB = (int) (genome.getWGLength() / 1000);
         int wgBinSize = sizeInKB / 700;
         int wgBinCount = sizeInKB / wgBinSize + 1;
 

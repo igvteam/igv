@@ -39,34 +39,29 @@ import static junit.framework.Assert.assertEquals;
 public class ChromosomeNameComparatorTest {
 
     @Test
-    public void testCompare() throws Exception {
-        String[] set0 = {"chr1", "chr1", "chr1", "CHR1", "chr2a", "chrM", "chrUn_12_gl129", "scaf1_100_b12",
-                "scaf2_200_b80"};
-        String[] set1 = {"chr1", "chr2", "chr10", "chr1", "chr3", "taoheu", "chrXn_01", "scaf1_101_b50",
-                "scaf1_100_b12"};
-        int[] expVals = {0, -1, -1, 0, -1, +1, -1, -1, +1};
-
-        ChromosomeNameComparator comp = ChromosomeNameComparator.get();
-        for (int ii = 0; ii < set0.length; ii++) {
-            // Compare signs
-            int tmp = comp.compare(set0[ii], set1[ii]) ;
-            int sign = (tmp == 0 ? 0 : (tmp < 0 ? -1 : 1));
-            assertEquals(expVals[ii], sign);
-        }
-
-        for (int ii = 0; ii < set0.length; ii++) {
-            int tmp = comp.compare(set1[ii], set0[ii]) ;
-            int sign = (tmp == 0 ? 0 : (tmp < 0 ? -1 : 1));
-            assertEquals(-expVals[ii], sign);
+    public void testSor1() throws Exception {
+        String[] chrs = {"chr1", "chr2a", "chrM", "chrUn_12_gl129", "scaf1_100_b12", "scaf2_200_b80"};
+        String[] expectedResult = {"chr1", "chr2a", "chrM", "chrUn_12_gl129", "scaf1_100_b12", "scaf2_200_b80"};
+        Arrays.sort(chrs, ChromosomeNameComparator.get());
+        for (int i = 0; i < chrs.length; i++) {
+            Assert.assertEquals(expectedResult[i], chrs[i]);
         }
 
     }
 
-    @Test
-    public void testSort() {
 
-        String[] chrs = {"chr12", "chr10", "chr2", "chrX", "chrM", "chr1", "chrLongName", "chrLongName1"};
-        String[] expectedResult = {"chr1", "chr2", "chr10", "chr12", "chrLongName", "chrLongName1", "chrX", "chrM"};
+    @Test
+    public void foo() {
+        ChromosomeNameComparator comparator = ChromosomeNameComparator.get();
+        System.out.println(comparator.compare("chrUr", "scaffold"));
+        System.out.println(comparator.compare("MT", "scaffold"));
+    }
+
+    @Test
+    public void testSort2() {
+
+        String[] chrs = {"chr12", "chr10", "chr2b", "chr2a", "chrX", "chrM", "chr1", "chrLongName", "chrLongName1", "scaffold"};
+        String[] expectedResult = {"chr1", "chr2a", "chr2b", "chr10", "chr12", "chrX", "chrM", "chrLongName", "chrLongName1", "scaffold"};
 
         Arrays.sort(chrs, ChromosomeNameComparator.get());
         for (int i = 0; i < chrs.length; i++) {
@@ -83,5 +78,25 @@ public class ChromosomeNameComparatorTest {
 
     }
 
+    @Test
+    public void testSort3() {
+
+        String[] chrs = {"1", "10", "2b", "2a", "MT", "scaffold"};
+        String[] expectedResult = {"1", "2a", "2b", "10", "MT", "scaffold"};
+
+        Arrays.sort(chrs, ChromosomeNameComparator.get());
+        for (int i = 0; i < chrs.length; i++) {
+            Assert.assertEquals(expectedResult[i], chrs[i]);
+        }
+        System.out.println();
+
+        chrs = new String[]{"scaffold_v2_10414", "scaffold_v2_100", "scaffold_v2_101", "scaffold_v2_10415"};
+        expectedResult = new String[]{"scaffold_v2_100", "scaffold_v2_101", "scaffold_v2_10414", "scaffold_v2_10415"};
+        Arrays.sort(chrs, ChromosomeNameComparator.get());
+        for (int i = 0; i < chrs.length; i++) {
+            Assert.assertEquals(expectedResult[i], chrs[i]);
+        }
+
+    }
 
 }

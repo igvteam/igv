@@ -41,6 +41,7 @@ import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.genome.load.ChromAliasParser;
 import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.feature.genome.load.GenomeLoader;
 import org.broad.igv.feature.genome.load.JsonGenomeLoader;
@@ -195,7 +196,6 @@ public class GenomeManager {
             FeatureDB.clearFeatures();
 
             Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
-            setCurrentGenome(newGenome);
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             try {
@@ -204,7 +204,7 @@ public class GenomeManager {
                     aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab.txt")).getAbsolutePath();
                 }
                 if ((new File(aliasPath)).exists()) {
-                    newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
+                    newGenome.addChrAliases(ChromAliasParser.loadChrAliases(aliasPath));
                 }
             } catch (Exception e) {
                 log.error("Failed to load user defined alias", e);
@@ -225,7 +225,10 @@ public class GenomeManager {
             genomeListManager.addGenomeItem(genomeListItem, userDefined);
 
             setCurrentGenome(newGenome);
+
+            // hasInstance() test needed for unit tests
             if (IGV.hasInstance()) {
+                IGV.getInstance().goToLocus(newGenome.getDefaultPos());
                 loadGenomeAnnotations(newGenome);
             }
 

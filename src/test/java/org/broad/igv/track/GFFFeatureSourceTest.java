@@ -114,7 +114,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testQuery_01() throws Exception {
+    public void testAlias() throws Exception {
         genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome");
         String filepath = org.broad.igv.util.TestUtils.DATA_DIR + "gff/aliased.sorted.gff";
 

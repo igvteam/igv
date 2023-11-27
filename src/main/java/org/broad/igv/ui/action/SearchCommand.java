@@ -29,6 +29,7 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.Feature;
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -391,7 +392,7 @@ public class SearchCommand {
             }
         } else if (types.contains(ResultType.FEATURE)) {
             //Check if we have an exact name for the feature name
-            IGVNamedFeature feat = searchFeatureDBs(token);
+            NamedFeature feat = searchFeatureDBs(token);
             if (feat != null) {
                 return new SearchResult(feat);
             }
@@ -399,8 +400,8 @@ public class SearchCommand {
         return null;
     }
 
-    private IGVNamedFeature searchFeatureDBs(String str) {
-        IGVNamedFeature feat = FeatureDB.getFeature(str.toUpperCase().trim());
+    private NamedFeature searchFeatureDBs(String str) {
+        NamedFeature feat = FeatureDB.getFeature(str.toUpperCase().trim());
         if (feat != null) {
             return feat;
         } else {
@@ -574,7 +575,7 @@ public class SearchCommand {
 
         private String locus;
         private String message;
-        private IGVNamedFeature feature;
+        private NamedFeature feature;
 
         public SearchResult() {
             this(ResultType.ERROR, null, -1, -1);
@@ -588,7 +589,7 @@ public class SearchCommand {
             this.locus = Locus.getFormattedLocusString(chr, start, end);
         }
 
-        public SearchResult(IGVNamedFeature feature) {
+        public SearchResult(NamedFeature feature) {
             this(ResultType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd());
             this.feature = feature;
             this.locus = Locus.getFormattedLocusString(chr, start, end);
@@ -654,7 +655,7 @@ public class SearchCommand {
 
         //May be null
         @ForTesting
-        public IGVNamedFeature getFeature() {
+        public NamedFeature getFeature() {
             return feature;
         }
     }
@@ -672,55 +673,6 @@ public class SearchCommand {
             results.add(new SearchCommand.SearchResult(f));
         }
         return results;
-    }
-
-    /**
-     * Display a dialog asking user which search result they want
-     * to display. Number of results are limited to SEARCH_LIMIT.
-     * The user can select multiple options, in which case all
-     * are displayed.
-     *
-     * @param results
-     * @return SearchResults which the user has selected.
-     * Will be null if cancelled
-     */
-    private List<SearchResult> askUserFeature(List<SearchResult> results) {
-
-        Object[] list = getSelectionList(results, true);
-        JList ls = new JList(list);
-        ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        //ls.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-        final JOptionPane pane = new JOptionPane(ls, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-        final Dialog dialog = pane.createDialog("Features");
-        dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-
-        //On double click, show that option
-        ls.addMouseListener(new IGVMouseInputAdapter() {
-            @Override
-            public void igvMouseClicked(MouseEvent e) {
-                if (e.getClickCount() >= 2) {
-                    dialog.setVisible(false);
-                    pane.setValue(JOptionPane.OK_OPTION);
-                    dialog.dispose();
-                }
-            }
-        });
-
-        dialog.setVisible(true);
-
-        int resp = (Integer) pane.getValue();
-
-        List<SearchResult> val = null;
-        if (resp == JOptionPane.OK_OPTION) {
-            int[] selected = ls.getSelectedIndices();
-            val = new ArrayList<SearchResult>(selected.length);
-            for (int ii = 0; ii < selected.length; ii++) {
-                val.add(ii, results.get(selected[ii]));
-            }
-        }
-        return val;
-
     }
 
 }

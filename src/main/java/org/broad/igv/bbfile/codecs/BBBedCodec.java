@@ -1,10 +1,9 @@
 package org.broad.igv.bbfile.codecs;
 
 import org.broad.igv.Globals;
-import org.broad.igv.bbfile.BBUtils;
+import org.broad.igv.ucsc.bb.BBUtils;
 import org.broad.igv.bbfile.BedData;
 import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 
 import java.util.LinkedHashMap;
@@ -25,13 +24,13 @@ public class BBBedCodec implements BBCodec {
         this.igvBedCodec = new IGVBEDCodec();   // Backing "tribble" codec
     }
 
-    public BasicFeature decode(BedData feat) {
+    public BasicFeature decode(BedData bedData) {
 
-        String[] restOfFields = Globals.tabPattern.split(feat.getRestOfFields(), -1);
+        String[] restOfFields = Globals.tabPattern.split(bedData.getRestOfFields(), -1);
         String[] tokens = new String[this.standardFieldCount];
-        tokens[0] = feat.getChromosome();
-        tokens[1] = String.valueOf(feat.getStartBase());
-        tokens[2] = String.valueOf(feat.getEndBase());
+        tokens[0] = bedData.getChromosome();
+        tokens[1] = String.valueOf(bedData.getStartBase());
+        tokens[2] = String.valueOf(bedData.getEndBase());
 
         System.arraycopy(restOfFields, 0, tokens, 3, this.standardFieldCount - 3);
         BasicFeature feature = igvBedCodec.decode(tokens);

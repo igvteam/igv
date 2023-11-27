@@ -322,11 +322,11 @@ public class BBDataSource extends AbstractDataSource implements FeatureSource {
 
     private List<LocusScore> getWholeGenomeScores() {
 
-        if (genome.getHomeChromosome().equals(Globals.CHR_ALL) && windowFunction != WindowFunction.none) {
+        if (windowFunction != WindowFunction.none) {
 
             if (wholeGenomeScores.get(windowFunction) == null) {
 
-                double scale = genome.getNominalLength() / screenWidth;
+                double scale = genome.getWGLength() / screenWidth;
 
                 int maxChromId = reader.getChromosomeNames().size() - 1;
                 String firstChr = reader.getChromsomeFromId(0);

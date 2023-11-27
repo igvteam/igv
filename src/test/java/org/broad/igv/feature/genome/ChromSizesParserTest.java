@@ -46,7 +46,7 @@ public class ChromSizesParserTest {
     @Test
     public void testParse() throws Exception {
 
-        int expectedCount = 24;
+        int expectedCount = 37;
 
         List<Chromosome> chromosomes = ChromSizesParser.parse(testFile);
         assertEquals(expectedCount, chromosomes.size());

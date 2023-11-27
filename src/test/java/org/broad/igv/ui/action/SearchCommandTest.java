@@ -27,16 +27,16 @@ package org.broad.igv.ui.action;
 
 import junit.framework.AssertionFailedError;
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.genome.ChromAlias;
+import org.broad.igv.feature.genome.ChromAliasSource;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
 public class SearchCommandTest extends AbstractHeadlessTest {
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         super.setUp();
     }
 
@@ -73,30 +73,21 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     @Test
     public void testChromoWithColon() throws Exception {
 
-        List<String> chrNames = Arrays.asList("chr10", "chr1", "chr20");
-        List<List<String>> aliases = Arrays.asList(
-                Arrays.asList("abc:123", "abc:456", "abc:789"),
-                Arrays.asList("xy:12"),
-                Arrays.asList("aaa:bbb"));
 
+        String [] chrNames = {"chr10", "chr1", "chr20"};
+        String [][] aliases = {{"abc:123", "abc:456", "abc:789"}, {"xy:12"}, {"aaa:bbb"}};
+        List<List<String>> synonymsList = new ArrayList<>();
+        synonymsList.add(Arrays.asList("chr10", "abc:123", "abc:456", "abc:789"));
+        synonymsList.add(Arrays.asList("chr1", "xy:12"));
+        synonymsList.add(Arrays.asList("chr20", "aaa:bbb"));
+        genome.addChrAliases(synonymsList);
 
-        Collection<Collection<String>> synonymsList = new ArrayList<Collection<String>>();
-        for (int i = 0; i < chrNames.size(); i++) {
-            List<String> synonyms = new ArrayList<String>();
-            synonyms.addAll(aliases.get(i));
-            synonyms.add(chrNames.get(i));
-            synonymsList.add(synonyms);
-        }
-
-        if (genome instanceof Genome) {
-            ((Genome) genome).addChrAliases(synonymsList);
-        }
 
         SearchCommand cmd;
-        for (int i = 0; i < chrNames.size(); i++) {
+        for (int i = 0; i < chrNames.length; i++) {
 
-            String chr = chrNames.get(i);
-            List<String> synonyms = aliases.get(i);
+            String chr = chrNames[i];
+            String [] synonyms = aliases[i];
 
             for (String searchStr : synonyms) {
                 cmd = new SearchCommand(null, searchStr, genome);
@@ -125,7 +116,8 @@ public class SearchCommandTest extends AbstractHeadlessTest {
      *
      * @throws Exception
      */
-    @Test @Ignore("Fails unless tests are run in separate JVMs")
+    @Test
+    @Ignore("Fails unless tests are run in separate JVMs")
     public void testFeatureMuts() throws Exception {
         String[] features = {"EGFR:M1I", "EGFR:G5R", "egfr:g5r", "egfr:r2*"};
         tstFeatureTypes(features, SearchCommand.ResultType.LOCUS);
@@ -265,6 +257,6 @@ public class SearchCommandTest extends AbstractHeadlessTest {
             assertEquals(SearchCommand.ResultType.ERROR, cmd.checkTokenType(s));
         }
     }
-
-
 }
+
+

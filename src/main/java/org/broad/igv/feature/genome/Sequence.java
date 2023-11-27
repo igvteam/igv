@@ -25,6 +25,7 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.util.List;
@@ -44,5 +45,11 @@ public interface Sequence {
     List<String> getChromosomeNames();
 
     int getChromosomeLength(String chrname);
+
+    List<Chromosome> getChromosomes();
+
+    default boolean hasChromosomes() {
+        return true;
+    }
 
 }

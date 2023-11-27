@@ -584,7 +584,6 @@ public class ReferenceFrame {
         if (genome == null) {
             return null;
         }
-
         return genome.getChromosome(chrName);
     }
 
@@ -637,11 +636,11 @@ public class ReferenceFrame {
     public String getFormattedLocusString() {
 
         if (zoom == 0) {
-            return getChrName();
+            return getGenome().getChromosomeDisplayName(getChrName());
         } else {
-
             Range range = getCurrentRange();
-            return Locus.getFormattedLocusString(range.getChr(), range.getStart(), range.getEnd());
+            String c = getGenome().getChromosomeDisplayName(range.getChr());
+            return Locus.getFormattedLocusString(c, range.getStart(), range.getEnd());
         }
     }
 
@@ -738,7 +737,7 @@ public class ReferenceFrame {
 
         if (chrName.equals("All")) {
             // Genome coordinates are in kb => divde by 1000
-            return (int) (genome.getNominalLength() / 1000);
+            return (int) (genome.getWGLength() / 1000);
         } else {
             Chromosome chromosome = genome.getChromosome(chrName);
             if (chromosome == null) {

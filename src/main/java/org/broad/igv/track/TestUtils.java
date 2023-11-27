@@ -30,10 +30,16 @@
 
 package org.broad.igv.track;
 
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.genome.ChromAliasDefaults;
+import org.broad.igv.feature.genome.Genome;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author jrobinso

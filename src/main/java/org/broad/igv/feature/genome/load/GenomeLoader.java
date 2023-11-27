@@ -44,18 +44,23 @@ abstract public class GenomeLoader {
             return new ChromsizesLoader(genomePath);
         } else if (genomePath.endsWith(".json")) {
             return new JsonGenomeLoader(genomePath);
+        } else if (genomePath.endsWith(".2bit")) {
+            GenomeConfig config = new GenomeConfig();
+            config.twoBitURL = genomePath;
+            config.id = genomePath;
+            config.name = (HttpUtils.isRemoteURL(genomePath)) ?
+                    Utilities.getFileNameFromURL(genomePath) :
+                    (new File(genomePath)).getName();
+            return new GenomeObjectLoader(config);
+        } else if (genomePath.endsWith("hub.txt")) {
+            return new HubGenomeLoader(genomePath);
         } else {
-            // Assume a fasta file
+            // Assume a fasta or 2bit file file
             if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
                 String gziPath = genomePath + ".gzi";
                 String faiPath = genomePath + ".fai";
                 if (!(FileUtils.resourceExists(gziPath) && FileUtils.resourceExists(faiPath))) {
                     throw new GenomeException("IGV cannot readed gzipped fasta files.");
-                }
-            }
-            if (!FileUtils.isRemote(genomePath)) {
-                if (!(new File(genomePath)).exists()) {
-                    throw new GenomeException("Cannot locate genome: " + genomePath);
                 }
             }
             return new FastaGenomeLoader(genomePath);
@@ -64,37 +69,6 @@ abstract public class GenomeLoader {
 
     abstract public Genome loadGenome() throws IOException;
 
-    public static Collection<Collection<String>> loadChrAliases(String path) {
-        BufferedReader br = null;
-        try {
-            br = ParsingUtils.openBufferedReader(path);
-            return loadChrAliases(br);
-        } catch (IOException e) {
-            log.error("Error loading chr alias table", e);
-            MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be available<br>" +
-                    e.toString());
-            return null;
-        } finally {
-            closeSilently(br);
-        }
-    }
-
-    static Collection<Collection<String>> loadChrAliases(BufferedReader br) throws IOException {
-        String nextLine = "";
-        Collection<Collection<String>> synonymList = new ArrayList<Collection<String>>();
-        while ((nextLine = br.readLine()) != null) {
-            String[] tokens = nextLine.split("\t");
-            if (tokens.length > 1) {
-                Collection<String> synonyms = new ArrayList<String>();
-                for (String t : tokens) {
-                    String syn = t.trim();
-                    if (t.length() > 0) synonyms.add(syn.trim());
-                }
-                synonymList.add(synonyms);
-            }
-        }
-        return synonymList;
-    }
 
     /**
      * Create an annotation track for the genome from a supplied list of features

@@ -33,7 +33,6 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.collections.CollUtils;
 import htsjdk.tribble.Feature;
@@ -108,10 +107,13 @@ public class FeatureCollectionSource implements FeatureSource {
 
             featureMap = new HashMap();
             for (Feature f : allFeatures) {
-                List<Feature> fList = featureMap.get(f.getChr());
+
+                String chr = genome != null ? genome.getCanonicalChrName(f.getChr()) : f.getChr();
+
+                List<Feature> fList = featureMap.get(chr);
                 if (fList == null) {
                     fList = new ArrayList();
-                    featureMap.put(f.getChr(), fList);
+                    featureMap.put(chr, fList);
                 }
                 fList.add(f);
             }
@@ -153,7 +155,7 @@ public class FeatureCollectionSource implements FeatureSource {
         if(genome == null) return;
 
         List<Feature> chrAllFeatures = new ArrayList(1000);
-        int sampleLength = (int) ((double) genome.getNominalLength() / (1000 * 700));
+        int sampleLength = (int) ((double) genome.getWGLength() / (1000 * 700));
         int lastFeaturePosition = -1;
         for (String chr : genome.getLongChromosomeNames()) {
             List<Feature> features = getFeatures(chr);
@@ -267,7 +269,7 @@ public class FeatureCollectionSource implements FeatureSource {
             Arrays.fill(values, 0);
 
 
-            double step = ((double) genome.getNominalLength() / 1000) / nBins;
+            double step = ((double) genome.getWGLength() / 1000) / nBins;
             for (int i = 0; i < nBins; i++) {
                 starts[i] = (int) (i * step);
                 ends[i] = (int) ((i + 1) * step);

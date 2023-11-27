@@ -28,6 +28,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import com.jidesoft.utils.SortedList;
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.aa.AminoAcidManager;
@@ -54,10 +55,10 @@ public class FeatureDB {
      * Map for all features other than genes.
      */
     //private static Map<String, IGVNamedFeature> featureMap = new HashMap(10000);
-    private static Map<String, List<IGVNamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<String, List<IGVNamedFeature>>());
+    private static Map<String, List<NamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<String, List<NamedFeature>>());
     private static final int MAX_DUPLICATE_COUNT = 20;
 
-    public static void addFeature(IGVNamedFeature feature, Genome genome) {
+    public static void addFeature(NamedFeature feature, Genome genome) {
 
         final String name = feature.getName();
         if (name != null && name.length() > 0 && !name.equals(".")) {
@@ -134,7 +135,7 @@ public class FeatureDB {
      * @param genome  The genome which these features belong to. Used for checking chromosomes
      * @return true if successfully added, false if not
      */
-    static boolean put(String name, IGVNamedFeature feature, Genome genome) {
+    static boolean put(String name, NamedFeature feature, Genome genome) {
         String key = name.toUpperCase();
         if (!Globals.isHeadless()) {
             Genome currentGenome = genome != null ? genome : GenomeManager.getInstance().getCurrentGenome();
@@ -144,9 +145,9 @@ public class FeatureDB {
         }
 
         synchronized (featureMap) {
-            List<IGVNamedFeature> currentList = featureMap.get(key);
+            List<NamedFeature> currentList = featureMap.get(key);
             if (currentList == null) {
-                List<IGVNamedFeature> newList = new SortedList<IGVNamedFeature>(
+                List<NamedFeature> newList = new SortedList<NamedFeature>(
                         new ArrayList<>(), FeatureComparator.get(true));
                 boolean added = newList.add(feature);
                 if (added) {
@@ -228,9 +229,9 @@ public class FeatureDB {
     /**
      * Return a feature with the given name.
      */
-    public static IGVNamedFeature getFeature(String name) {
+    public static NamedFeature getFeature(String name) {
         String nm = name.trim().toUpperCase();
-        List<IGVNamedFeature> features = featureMap.get(nm);
+        List<NamedFeature> features = featureMap.get(nm);
 
         if (features != null) {
             return features.get(0);
@@ -328,11 +329,11 @@ public class FeatureDB {
         }
 
         Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
-        List<IGVNamedFeature> possibles = featureMap.get(nm);
+        List<NamedFeature> possibles = featureMap.get(nm);
 
         if (possibles != null) {
             synchronized (featureMap) {
-                for (IGVNamedFeature f : possibles) {
+                for (NamedFeature f : possibles) {
                     if (!(f instanceof BasicFeature)) {
                         continue;
                     }
@@ -381,13 +382,13 @@ public class FeatureDB {
         }
 
         Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
-        List<IGVNamedFeature> possibles = featureMap.get(nm);
+        List<NamedFeature> possibles = featureMap.get(nm);
         String tempNT;
         String brefNT = refNT.toUpperCase();
 
         if (possibles != null) {
             synchronized (featureMap) {
-                for (IGVNamedFeature f : possibles) {
+                for (NamedFeature f : possibles) {
                     if (!(f instanceof BasicFeature)) {
                         continue;
                     }

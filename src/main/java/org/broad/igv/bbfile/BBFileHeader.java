@@ -50,7 +50,7 @@ import java.io.IOException;
 **/
 public class BBFileHeader {
 
-    private static Logger log = LogManager.getLogger(BBFileHeader.class);
+    public static Logger log = LogManager.getLogger(BBFileHeader.class);
 
     // defines bigBed/bigwig Header Format types
     static public final int BBFILE_HEADER_SIZE = 64;
@@ -62,31 +62,31 @@ public class BBFileHeader {
     static public final int BIGBED_MAGIC_HTL = 0xEBF28987; // BigBed Magic High to Low
 
     // defines the bigBed/bigWig source file access
-    private String path;               // bigBed file/pathname
-    private SeekableStream fis;      // BBFile I/O stream handle
-    private long fileHeaderOffset;     // file offset for file header
+    public String path;               // bigBed file/pathname
+    public SeekableStream fis;      // BBFile I/O stream handle
+    public long fileHeaderOffset;     // file offset for file header
 
-    private boolean isHeaderOK;        // File header read correctly?
-    private boolean isLowToHigh;       // flag indicates values represented low to high bytes
-    private boolean isBigBed;          // flag indicates file is BigBed format
-    private boolean isBigWig;          // flag indicates file is BigWig format;
+    public boolean isHeaderOK;        // File header read correctly?
+    public boolean isLowToHigh;       // flag indicates values represented low to high bytes
+    public boolean isBigBed;          // flag indicates file is BigBed format
+    public boolean isBigWig;          // flag indicates file is BigWig format;
 
     // BBFile Header items - Table C:
     // mMagic number (4 bytes) indicates file type and byte order :
     // 0x888FFC26 for bigWig, little endian if swapped
     // 0x8789F2EB for bigBed, little endian if swapped
-    private int magic;                // 4 byte mMagic Number
-    private int version;            // 2 byte version ID; currently 3
-    private int nZoomLevels;         // 2 byte count of zoom sumary levels
-    private long chromTreeOffset;     // 8 byte offset to mChromosome B+ Tree index
-    private long fullDataOffset;      // 8 byte offset to unzoomed data dataCount
-    private long fullIndexOffset;     // 8 byte offset to R+ Tree index of items
-    private int fieldCount;         // 2 byte number of fields in bed. (0 for bigWig)
-    private int definedFieldCount;  // 2 byte number of fields that are bed fields
-    private long autoSqlOffset;       // 8 byte offset to 0 terminated string with .as spec
-    private long totalSummaryOffset;  // 8 byte offset to file summary data block
-    private int uncompressBuffSize;  // 4 byte maximum size for decompressed buffer
-    private long reserved;            // 8 bytes reserved for future expansion. Currently 0
+    public int magic;                // 4 byte mMagic Number
+    public int version;            // 2 byte version ID; currently 3
+    public int nZoomLevels;         // 2 byte count of zoom sumary levels
+    public long chromTreeOffset;     // 8 byte offset to mChromosome B+ Tree index
+    public long fullDataOffset;      // 8 byte offset to unzoomed data dataCount
+    public long fullIndexOffset;     // 8 byte offset to R+ Tree index of items
+    public int fieldCount;         // 2 byte number of fields in bed. (0 for bigWig)
+    public int definedFieldCount;  // 2 byte number of fields that are bed fields
+    public long autoSqlOffset;       // 8 byte offset to 0 terminated string with .as spec
+    public long totalSummaryOffset;  // 8 byte offset to file summary data block
+    public int uncompressBuffSize;  // 4 byte maximum size for decompressed buffer
+    public long reserved;            // 8 bytes reserved for future expansion. Currently 0
 
     // constructor reads BBFile header from an input stream
     public BBFileHeader(String path, SeekableStream fis, long fileOffset) {
@@ -208,7 +208,7 @@ public class BBFileHeader {
      *      Success status flag is true for successfully read header,
      *      or is false for a read error.
     **/
-    private boolean readBBFileHeader(long fileOffset) {
+    public boolean readBBFileHeader(long fileOffset) {
 
         BBFileHeader bbHeader = null;
         LittleEndianInputStream lbdis = null;

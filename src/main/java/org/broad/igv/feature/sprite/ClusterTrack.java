@@ -6,7 +6,6 @@ import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
@@ -139,7 +138,7 @@ public class ClusterTrack extends AbstractTrack {
 
         // Bin whole genome
         int nBins = 1000;
-        double binSize = (genome.getTotalLength() / 1000.0) / nBins;
+        double binSize = (genome.getWGLength() / 1000.0) / nBins;
         Set<String> wgChrNames = new HashSet<>(genome.getLongChromosomeNames());
 
         for (Cluster cluster : clusters) {
