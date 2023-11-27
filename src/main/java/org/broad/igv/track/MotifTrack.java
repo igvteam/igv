@@ -44,7 +44,7 @@ public class MotifTrack extends FeatureTrack {
     public void unmarshalXML(Element element, Integer version) {
         super.unmarshalXML(element, version);
         this.pattern = element.getAttribute("pattern");
-        this.strand = Strand.valueOf(element.getAttribute("strand"));
+        this.strand = Strand.fromString(element.getAttribute("strand"));
         init();
     }
 }

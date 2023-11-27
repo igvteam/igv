@@ -53,6 +53,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.PanelName;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -71,10 +72,12 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import static org.broad.igv.prefs.Constants.SHOW_SINGLE_TRACK_PANE_KEY;
+import static org.broad.igv.ui.IGV.DATA_PANEL_NAME;
+import static org.broad.igv.ui.IGV.FEATURE_PANEL_NAME;
 
 /**
  * @author jrobinso
@@ -200,7 +203,7 @@ public class GenomeManager {
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             try {
                 String aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
-                if(!(new File(aliasPath)).exists()) {
+                if (!(new File(aliasPath)).exists()) {
                     aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab.txt")).getAbsolutePath();
                 }
                 if ((new File(aliasPath)).exists()) {
@@ -244,6 +247,12 @@ public class GenomeManager {
         }
     }
 
+    /**
+     * Load and initialize the track objects from the genome's track resource locators.  Does not add the tracks
+     * to the IGV instance.
+     *
+     * @param genome
+     */
     public void loadGenomeAnnotations(Genome genome) {
         List<ResourceLocator> resources = genome.getAnnotationResources();
         if (resources != null) {
@@ -255,16 +264,31 @@ public class GenomeManager {
                 } catch (DataLoadException e) {
                     log.error("Error loading genome annotations", e);
                 }
-            }
+            }//
             genome.setAnnotationTracks(annotationTracks);
         }
         restoreGenomeTracks(genome);
         IGV.getInstance().repaint();
     }
 
+    /**
+     * Add a genomes tracks to the IGV instance.
+     *
+     * @param genome
+     */
     public void restoreGenomeTracks(Genome genome) {
+
+        IGV.getInstance().setSequenceTrack();
+
         FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Can be null
-        IGV.getInstance().setGenomeTracks(geneFeatureTrack);
+        if (geneFeatureTrack != null) {
+            PanelName panelName = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
+                    PanelName.DATA_PANEL : PanelName.FEATURE_PANEL;
+            geneFeatureTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, geneFeatureTrack.getName());
+            geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
+            geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, geneFeatureTrack.getTrackType().toString());
+            IGV.getInstance().addTracks(Arrays.asList(geneFeatureTrack), panelName);
+        }
 
         Map<ResourceLocator, List<Track>> annotationTracks = currentGenome.getAnnotationTracks();
         if (annotationTracks != null) {
