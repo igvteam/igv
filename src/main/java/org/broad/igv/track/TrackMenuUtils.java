@@ -374,16 +374,6 @@ public class TrackMenuUtils {
 
             }
         }
-
-        //menu.addSeparator();
-        //menu.add(getChangeKMPlotItem(tracks));
-
-        if (Globals.isDevelopment() && FrameManager.isGeneListMode() && tracks.size() == 1) {
-            menu.addSeparator();
-            menu.add(getShowSortFramesItem(tracks.iterator().next()));
-        }
-
-
     }
 
     /**
@@ -438,12 +428,6 @@ public class TrackMenuUtils {
                 final JMenuItem blatItem = getBlatItem(sequenceFeature);
                 featurePopupMenu.add(blatItem);
             }
-
-            if (Globals.isDevelopment() && FrameManager.isGeneListMode() && tracks.size() == 1) {
-                featurePopupMenu.addSeparator();
-                featurePopupMenu.add(getShowSortFramesItem(tracks.iterator().next()));
-            }
-
         }
 
         featurePopupMenu.addSeparator();
