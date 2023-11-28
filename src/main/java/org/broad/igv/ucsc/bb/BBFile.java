@@ -411,7 +411,7 @@ public class BBFile {
                 byte[] buffer = new byte[size];
                 is.seek(start);
                 is.readFully(buffer);
-                List<BasicFeature> features = decodeFeatures(buffer);
+                List<BasicFeature> features = decodeFeatures(buffer, -1, -1, -1);
                 BasicFeature largest = features.stream().reduce((f1, f2) -> {
                     int l1 = f1.getEnd() - f1.getStart();
                     int l2 = f2.getEnd() - f2.getStart();
@@ -423,7 +423,7 @@ public class BBFile {
         return null;
     }
 
-    List<BasicFeature> decodeFeatures(byte[] buffer) {
+    List<BasicFeature> decodeFeatures(byte[] buffer, int chrIdx, int start, int end) {
         List<BasicFeature> features = new ArrayList<>();
         byte[] uncompressed;
         if (this.header.uncompressBuffSize > 0) {
@@ -440,8 +440,13 @@ public class BBFile {
             int chromStart = bb.getInt();
             int chromEnd = bb.getInt();
             String restOfFields = bb.getString();
-            String chr = getChrForId(chromId);
 
+            if (chrIdx > 0) {
+                if (chromId < chrIdx || (chromId == chrIdx && chromEnd < start)) continue;
+                else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
+            }
+
+            String chr = getChrForId(chromId);
             final BedData bedData = new BedData(chr, chromStart, chromEnd, restOfFields);
             final BasicFeature feature = bedCodec.decode(bedData);
             features.add(feature);
@@ -449,7 +454,7 @@ public class BBFile {
         return features;
     }
 
-    List<LocusScore> decodeZoomData(byte[] buffer, WindowFunction windowFunction, List<LocusScore> features) {
+    List<LocusScore> decodeZoomData(byte[] buffer, int chrIdx, int start, int end, WindowFunction windowFunction, List<LocusScore> features) {
 
         byte[] uncompressed;
         if (header.uncompressBuffSize > 0) {
@@ -469,6 +474,11 @@ public class BBFile {
             float maxVal = bb.getFloat();
             float sumData = bb.getFloat();
             float sumSquares = bb.getFloat();
+
+            if (chrIdx > 0) {
+                if (chromId < chrIdx || (chromId == chrIdx && chromEnd < start)) continue;
+                else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
+            }
 
             String chr = getChrForId(chromId);
 

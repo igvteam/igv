@@ -131,8 +131,6 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
 //            dataMax = 100;
 //        }
 //    }
-
-
     public double getDataMax() {
         return dataMax;
     }
@@ -197,7 +195,7 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
 
 
             Chromosome chromosome = genome.getChromosome(chr);
-            if(chromosome == null) {
+            if (chromosome == null) {
                 throw new RuntimeException("Unexpected chromosome name: " + chr);
             }
 
@@ -210,11 +208,11 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                 return null;
             } else {
                 long rTreeOffset = zlHeader.indexOffset;
+                int chrIdx = reader.getIdForChr(chr);
                 List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
-
                 List<LocusScore> features = new ArrayList<>();
                 for (byte[] c : chunks) {
-                    reader.decodeZoomData(c, windowFunction, features);
+                    reader.decodeZoomData(c, chrIdx, start, end, windowFunction, features);
                 }
                 return features;
             }
@@ -272,7 +270,7 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
 
                     List<LocusScore> features = new ArrayList<>();
                     for (byte[] c : chunks) {
-                        reader.decodeZoomData(c, windowFunction, features);
+                        reader.decodeZoomData(c, -1, -1, -1, windowFunction, features);
                     }
 
                     for (LocusScore s : features) {

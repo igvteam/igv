@@ -95,10 +95,11 @@ public class BBFeatureSource implements FeatureSource {
     public Iterator<BasicFeature> getFeatures(String chr, int start, int end) throws IOException {
 
         long rTreeOffset = reader.header.fullIndexOffset;
+        int chrIdx = reader.getIdForChr(chr);
         List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
         List features = new ArrayList<>();
         for (byte[] c : chunks) {
-            features.addAll(reader.decodeFeatures(c));
+            features.addAll(reader.decodeFeatures(c, chrIdx, start, end));
         }
         return new FeatureIterator(features, start, end);
     }
