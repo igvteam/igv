@@ -222,7 +222,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         int start = (int) referenceFrame.getOrigin();
 
         Chromosome chromosome = currentGenome.getChromosome(chr);
-        if(chromosome == null) {
+        if (chromosome == null) {
             return;
         }
 
@@ -445,8 +445,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         public SeqCache(int start, byte[] seq) {
             this.start = start;
             this.seq = seq;
-            this.posAA = posAA;
-            this.negAA = negAA;
         }
 
         /**
@@ -455,10 +453,9 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
          * @param codonTable
          */
         public void refreshAminoAcids(CodonTable codonTable) {
-            int mod = start % 3;
-            int n1 = normalize3(3 - mod);
-            int n2 = normalize3(n1 + 1);
-            int n3 = normalize3(n2 + 1);
+            int n1 = start % 3;
+            int n2 = (start + 1) % 3;
+            int n3 = (start + 2) % 3;
 
             String sequence = new String(seq);
             AminoAcidSequence[] posAA = {
