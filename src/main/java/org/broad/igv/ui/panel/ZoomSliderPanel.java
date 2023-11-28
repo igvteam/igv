@@ -214,6 +214,7 @@ public class ZoomSliderPanel extends JPanel {
                     .sorted()
                     .distinct()
                     .map(threshold -> this.getReferenceFrame().calculateZoom(0, threshold))
+                    .filter(z -> z > 1)
                     .toList();
 
             transGraphics.setColor(TRANSPARENT_BLUE);
