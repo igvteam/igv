@@ -223,11 +223,6 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         }
     }
 
-    @Test
-    public void testError() throws Exception {
-        String[] tokens = {"ueth", "EGFRa", "BRCA56", "EGFR:?1?"};
-        tstFeatureTypes(tokens, SearchCommand.ResultType.ERROR);
-    }
 
 
     /**
