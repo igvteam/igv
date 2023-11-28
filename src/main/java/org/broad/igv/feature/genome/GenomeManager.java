@@ -56,6 +56,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.PanelName;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressBar;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -72,6 +73,7 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.sql.Ref;
 import java.util.*;
 import java.util.List;
 
@@ -231,8 +233,9 @@ public class GenomeManager {
 
             // hasInstance() test needed for unit tests
             if (IGV.hasInstance()) {
-                IGV.getInstance().goToLocus(newGenome.getDefaultPos());
+                IGV.getInstance().goToLocus(newGenome.getHomeChromosome()); //  newGenome.getDefaultPos());
                 loadGenomeAnnotations(newGenome);
+                IGV.getInstance().resetFrames();
             }
 
             if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {

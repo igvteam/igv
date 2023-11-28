@@ -70,36 +70,10 @@ public class SearchCommand implements Runnable {
     Genome genome;
 
 
-    private static HashMap<ResultType, String> tokenMatchers;
+    private static HashMap<String, ResultType> tokenMatchers;
 
-    static {
-
-        //Regexp for a number with commas in it (no periods)
-        String num_withcommas = "(((\\d)+,?)+)";
-
-        //chromosome can include anything except whitespace
-        String chromo_string = "(\\S)+";
-
-        String chromo = chromo_string;
-        //This will match chr1:1-100, chr1:1, chr1  1, chr1 1   100
-        String chromo_range = chromo_string + "(:|(\\s)+)" + num_withcommas + "(-|(\\s)+)?" + num_withcommas + "?(\\s)*";
-
-        //Simple feature
-        String feature = chromo_string;
-        //Amino acid mutation notation. e.g. KRAS:G12C. * is stop codon
-        String featureMutAA = chromo_string + ":[A-Z,a-z,*]" + num_withcommas + "[A-Z,a-z,*]";
-
-        //Nucleotide mutation notation. e.g. KRAS:123A>T
-        String nts = "[A,C,G,T,a,c,g,t]";
-        String featureMutNT = chromo_string + ":" + num_withcommas + nts + "\\>" + nts;
-
-        tokenMatchers = new HashMap<ResultType, String>();
-        tokenMatchers.put(ResultType.CHROMOSOME, chromo);
-        tokenMatchers.put(ResultType.FEATURE, feature);
-        tokenMatchers.put(ResultType.LOCUS, chromo_range);
-        tokenMatchers.put(ResultType.FEATURE_MUT_AA, featureMutAA);
-        tokenMatchers.put(ResultType.FEATURE_MUT_NT, featureMutNT);
-    }
+    static String featureMutAA = "(\\S)+" + ":[A-Z,a-z,*]" + "(((\\d)+,?)+)" + "[A-Z,a-z,*]";
+    static String featureMutNT = "(\\S)+" + ":" + "(\\S)+" + "[A,C,G,T,a,c,g,t]" + "\\>" + "[A,C,G,T,a,c,g,t]";
 
 
     public SearchCommand(ReferenceFrame referenceFrame, String searchString) {
@@ -166,10 +140,10 @@ public class SearchCommand implements Runnable {
             }
             if (mightBeLocus) {
                 Chromosome c1 = genome.getChromosome(tokens[0]);
-                if(c1 != null) {
+                if (c1 != null) {
                     Chromosome c2 = genome.getChromosome(tokens[1]);
-                    if(c2 == null) {
-                        results.add (calcChromoLocus(searchString));
+                    if (c2 == null) {
+                        results.add(calcChromoLocus(searchString));
                         return results;
                     }
                 }
@@ -182,8 +156,6 @@ public class SearchCommand implements Runnable {
                 results.add(result);
             }
         }
-
-
 
 
         // If this is a liftover search map the results
@@ -232,22 +204,22 @@ public class SearchCommand implements Runnable {
                     showFlankedRegion(result.chr, result.start, result.end);
                     break;
                 case LOCUS:
-
-                    Chromosome chromosome = GenomeManager.getInstance().getCurrentGenome().getChromosome(result.chr);
-                    if (chromosome == null) {
-                        message = "Unknow chromosome: " + result.chr;
-                        success = false;
-                        showMessage = true;
-                    } else if (result.start > chromosome.getLength()) {
-                        message = "Range " + result.locus + " is beyond the end of the chromosome";
-                        success = false;
-                        showMessage = true;
+                    if (result.chr.equalsIgnoreCase(Globals.CHR_ALL)) {
+                        referenceFrame.changeChromosome(Globals.CHR_ALL, false);
                     } else {
-                        referenceFrame.jumpTo(result.chr, result.start, result.end);
+                        Chromosome chromosome = GenomeManager.getInstance().getCurrentGenome().getChromosome(result.chr);
+                        if (chromosome == null) {
+                            message = "Unknow chromosome: " + result.chr;
+                            success = false;
+                            showMessage = true;
+                        } else if (result.start > chromosome.getLength()) {
+                            message = "Range " + result.locus + " is beyond the end of the chromosome";
+                            success = false;
+                            showMessage = true;
+                        } else {
+                            referenceFrame.jumpTo(result.chr, result.start, result.end);
+                        }
                     }
-                    break;
-                case CHROMOSOME:
-                    referenceFrame.changeChromosome(result.chr, true);
                     break;
                 case ERROR:
                 default: {
@@ -321,9 +293,9 @@ public class SearchCommand implements Runnable {
     Set<ResultType> checkTokenType(String token) {
         token = token.trim();
         Set<ResultType> possibles = new HashSet<>();
-        for (ResultType type : tokenMatchers.keySet()) {
-            if (token.matches(tokenMatchers.get(type))) { //note: entire string must match
-                possibles.add(type);
+        for (String key : tokenMatchers.keySet()) {
+            if (token.matches(key)) {
+                possibles.add(tokenMatchers.get(key));
             }
         }
         return possibles;
@@ -343,32 +315,26 @@ public class SearchCommand implements Runnable {
             return new SearchResult(feat);
         }
 
-        //Guess at token type via regex.
-        //We don't assume success
-        Set<ResultType> types = checkTokenType(token);
 
-        if (types.contains(ResultType.LOCUS) || types.contains(ResultType.CHROMOSOME)) {
-            //Check if a full or partial locus string
-            SearchResult result = calcChromoLocus(token);
-            if (result != null) {
-                return result;
-            }
+        //Check if a full or partial locus string
+        SearchResult result = calcChromoLocus(token);
+        if (result != null) {
+            return result;
         }
 
-
-        if (types.contains(ResultType.FEATURE)) {
-            //Check if we have an exact match for the feature name
-            List<Track> searchableTracks = IGV.getInstance().getAllTracks().stream().filter(Track::isSearchable).toList();
-            for (Track t : searchableTracks) {
-                NamedFeature match = t.search(token);
-                if (match != null) {
-                    return new SearchResult(match);
-                }
+        //Check if we have an exact match for the feature name
+        List<Track> searchableTracks = IGV.getInstance().getAllTracks().stream().filter(Track::isSearchable).toList();
+        for (Track t : searchableTracks) {
+            NamedFeature match = t.search(token);
+            if (match != null) {
+                return new SearchResult(match);
             }
         }
 
         //2 possible mutation notations, either amino acid (A123B) or nucleotide (123G>C)
-        if (types.contains(ResultType.FEATURE_MUT_AA) || types.contains(ResultType.FEATURE_MUT_NT)) {
+        boolean mutAA = token.matches(featureMutAA);
+        boolean mutNT = token.matches(featureMutNT);
+        if (mutAA || mutNT) {
             //We know it has the right form, but may
             //not be valid feature name or mutation
             //which exists.
@@ -380,7 +346,7 @@ public class SearchCommand implements Runnable {
             Map<Integer, BasicFeature> genomePosList;
 
             //Should never match both mutation notations
-            if (types.contains(ResultType.FEATURE_MUT_AA)) {
+            if (mutAA) {
                 String refSymbol = coords.substring(0, 1);
                 String mutSymbol = coords.substring(coordLength - 1);
 
@@ -388,7 +354,7 @@ public class SearchCommand implements Runnable {
                 int location = Integer.parseInt(strLoc) - 1;
 
                 genomePosList = FeatureDB.getMutationAA(name, location + 1, refSymbol, mutSymbol, genome);
-            } else if (types.contains(ResultType.FEATURE_MUT_NT)) {
+            } else if (mutNT) {
                 //Exclude the "A>T" at end
                 String strLoc = coords.substring(0, coordLength - 3);
                 String refSymbol = coords.substring(coordLength - 3, coordLength - 2);
@@ -470,18 +436,24 @@ public class SearchCommand implements Runnable {
             int colonIdx = searchString.lastIndexOf(":");
             if (colonIdx > 0) {
                 chr = searchString.substring(0, colonIdx);
-                String posString = searchString.substring(colonIdx).replace(":", "");
-                startEnd = getStartEnd(posString);
-                //This MAY for case of chromoname having semicolon in it
-                if (startEnd == null) {
-                    chr = searchString;
+                Chromosome chromosome = genome.getChromosome(chr);
+                if (chromosome == null) {
+                    // try entire search string, chr name may have embedded colon
+                    if (genome.getChromosome(searchString) != null) {
+                        chr = searchString;
+                        startEnd = null;
+                    }
+                } else {
+                    String posString = searchString.substring(colonIdx).replace(":", "");
+                    startEnd = getStartEnd(posString);
+
                 }
             }
         }
 
         // Show the "All chromosomes" view if the search string is "*"
         if (chr.equals("*") || chr.toLowerCase().equals("all")) {
-            return new SearchResult(ResultType.CHROMOSOME, Globals.CHR_ALL, 0, 1);
+            return new SearchResult(ResultType.LOCUS, Globals.CHR_ALL, 0, Integer.MAX_VALUE);
         }
 
         //startEnd will have coordinates if found.
@@ -498,12 +470,14 @@ public class SearchCommand implements Runnable {
         }
 
         if (chromosome != null && !searchString.equals(Globals.CHR_ALL)) {
-            if (startEnd != null) {
+            chr = chromosome.getName();
+            if (startEnd == null) {
+                return new SearchResult(ResultType.LOCUS, chr, 0, chromosome.getLength());
+            } else {
                 int start = Math.min(startEnd[0], startEnd[1]);
                 int end = Math.max(startEnd[0], startEnd[1]);
                 return new SearchResult(ResultType.LOCUS, chr, start, end);
             }
-            return new SearchResult(ResultType.CHROMOSOME, chr, 0, chromosome.getLength() - 1);
         }
         return null;
     }
@@ -562,10 +536,7 @@ public class SearchCommand implements Runnable {
 
     public enum ResultType {
         FEATURE,
-        FEATURE_MUT_AA,
-        FEATURE_MUT_NT,
         LOCUS,
-        CHROMOSOME,
         ERROR,
         LIFTOVER
     }
