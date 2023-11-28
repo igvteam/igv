@@ -255,7 +255,6 @@ public class IGVPreferences {
         if (booleanCache.containsKey(key)) {
             booleanCache.put(key, Boolean.valueOf(value));
         }
-        colorScaleCache.remove(key); //TODO color scale cache doesn't use key strings so something here is wrong.
         objectCache.remove(key);
         mutationColorScheme = null;
     }
