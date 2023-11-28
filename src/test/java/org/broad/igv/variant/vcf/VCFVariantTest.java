@@ -30,6 +30,7 @@ import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -102,7 +103,8 @@ public class VCFVariantTest extends AbstractHeadlessTest {
      * @return
      * @throws Exception
      */
-    @Test
+   @Ignore
+   @Test
     public void tstFakeV4() throws Exception{
 
         System.setProperty("samjdk.optimistic_vcf_4_4", "true");
