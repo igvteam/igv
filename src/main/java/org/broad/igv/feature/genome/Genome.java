@@ -257,6 +257,10 @@ public class Genome {
                     res.setVisibilityWindow(vw);
                 }
 
+                if(trackConfig.searchTrix != null) {
+                    res.setTrixURL(trackConfig.searchTrix);
+                }
+
                 res.setFeatureInfoURL(trackConfig.infoURL);
                 Boolean indexed = trackConfig.indexed;
                 if (indexed != null) {

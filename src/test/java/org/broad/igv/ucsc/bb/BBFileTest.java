@@ -31,13 +31,36 @@ public class BBFileTest {
 
         // There are 5 extra indexes, 1 for each alias
         String ncbiName = "3";
-        BasicFeature f1 = (BasicFeature) bbReader.search(ncbiName);
+        BasicFeature f1 = bbReader.search(ncbiName);
         assertNotNull(f1);
         assertEquals(ncbiName, f1.getAttribute("ncbi"));
 
         String ucscName = "chr2";
-        BasicFeature f2 = (BasicFeature) bbReader.search(ucscName);
+        BasicFeature f2 =  bbReader.search(ucscName);
         assertEquals(ucscName, f2.getAttribute("ucsc"));
+
+        assertNull(bbReader.search("zzzz"));
+    }
+
+    @Test
+    public void testExtraIndexTrixSearch() throws IOException {
+
+        String path = TestUtils.DATA_DIR + "bb/GCF_000009045.1_ASM904v1.ncbiGene.bb";
+        String trixPath = TestUtils.DATA_DIR + "bb/ixIxx/GCF_000009045.1_ASM904v1.ncbiGene.ix";
+        BBFile bbReader = new BBFile(path, null, trixPath);
+
+        // Search by name, which is the index parameter, does not require trix
+        String name = "NP_389226.1";
+        BasicFeature f =  bbReader.search(name);
+        assertEquals(name, f.getName());
+
+
+        // Search by alternate name,  does require trix
+        String name2 = "ykoX";
+        BasicFeature f2 =  bbReader.search(name2);
+        assertEquals(name, f2.getName());
+
+        assertNull(bbReader.search("zzzz"));
     }
 
 

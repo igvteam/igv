@@ -111,7 +111,8 @@ public class Trix {
         int end = 65536;
         List<IndexEntry> indexes = this.getIndex();
         for (IndexEntry entry : indexes) {
-            String trimmedKey = entry.key.substring(0, searchWord.length());
+            int trimEnd = Math.min(entry.key.length(), searchWord.length());
+            String trimmedKey = entry.key.substring(0, trimEnd);
             if (trimmedKey.compareTo(searchWord) < 0) {
                 start = entry.value;
                 end = entry.value + 65536;

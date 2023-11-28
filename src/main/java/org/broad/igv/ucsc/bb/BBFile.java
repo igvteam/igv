@@ -112,6 +112,9 @@ public class BBFile {
         return chrNames;
     }
 
+    public void setTrix(Trix trix) {
+    }
+
 
     enum Type {BIGWIG, BIGBED}
 
@@ -384,6 +387,9 @@ public class BBFile {
         return lastLevel.reductionLevel / 2 < bpPerPixel ? lastLevel : null;
     }
 
+    public boolean isSearchable() {
+        return header.extraIndexCount > 0;
+    }
 
     /**
      * Search the extended BP tree for the search term, and return any matching features.  This only works
@@ -403,6 +409,16 @@ public class BBFile {
             return null;
         }
 
+        if (this.trix != null) {
+            String termLower = term.toLowerCase();
+            Map<String, String[]> results = trix.search(termLower);
+            if (results != null) {
+                String[] exactMatches = results.get(termLower);
+                if (exactMatches.length > 0) term = exactMatches[0];
+            }
+        }
+
+
         long[] region = this.searchForRegions(term);  // Either 1 or no (undefined) reginos returned for now
         if (region != null) {
             long start = region[0];
@@ -412,11 +428,18 @@ public class BBFile {
                 is.seek(start);
                 is.readFully(buffer);
                 List<BasicFeature> features = decodeFeatures(buffer, -1, -1, -1);
-                BasicFeature largest = features.stream().reduce((f1, f2) -> {
+
+                // Filter features to those matching term
+                final String searchTerm = term;
+
+                BasicFeature largest = features.stream().filter(f -> {
+                    return f.getName().equalsIgnoreCase(searchTerm) || f.getAttributes().values().stream().anyMatch(v -> v.equalsIgnoreCase(searchTerm));
+                }).reduce((f1, f2) -> {
                     int l1 = f1.getEnd() - f1.getStart();
                     int l2 = f2.getEnd() - f2.getStart();
                     return l1 > l2 ? f1 : f2;
                 }).get();
+
                 return largest;
             }
         }

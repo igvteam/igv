@@ -28,8 +28,11 @@ package org.broad.igv.ucsc.bb;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.ucsc.Trix;
 
 import java.io.IOException;
 import java.util.*;
@@ -42,9 +45,8 @@ import java.util.*;
  */
 public class BBFeatureSource implements FeatureSource {
 
-    final int screenWidth = 1000; // TODO use actual screen width
+    private static Logger log = LogManager.getLogger(BBFeatureSource.class);
     private final Genome genome;
-
 
     Collection<WindowFunction> availableWindowFunctions =
             Arrays.asList(WindowFunction.min, WindowFunction.mean, WindowFunction.max, WindowFunction.none);
@@ -55,9 +57,6 @@ public class BBFeatureSource implements FeatureSource {
     private int featureVisiblityWindow = -1;
 
     private Map<WindowFunction, List<LocusScore>> wholeGenomeScores;
-
-    // Lookup table to support chromosome aliasing.
-    private Map<String, String> chrNameMap = new HashMap();
 
     public BBFeatureSource(BBFile reader, Genome genome) throws IOException {
 
@@ -108,6 +107,19 @@ public class BBFeatureSource implements FeatureSource {
         return null;
     }
 
+    public boolean isSearchable() {
+        return reader.isSearchable();
+    }
+
+    BasicFeature search(String term) {
+        try {
+            return reader.search(term);
+        } catch (IOException e) {
+            log.error("Error searching for: " + term, e);
+            return null;
+        }
+    }
+
     static class FeatureIterator implements Iterator<BasicFeature> {
 
         List<BasicFeature> features;
@@ -125,10 +137,9 @@ public class BBFeatureSource implements FeatureSource {
         }
 
         private void advance() {
-            if(idx == features.size()) {
+            if (idx == features.size()) {
                 next = null;
-            }
-            else {
+            } else {
                 while (idx < features.size()) {
                     next = features.get(idx++);
                     if (next.getStart() > end) {

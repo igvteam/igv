@@ -17,5 +17,9 @@ public class TrixTest {
         Map<String, String[]> results = trix.search("ykoX");
         String[] exactMatches = results.get("ykox");
         assertEquals("NP_389226.1", exactMatches[0]);
+
+        String notfound = "zzzzzz";
+        results = trix.search(notfound);
+
     }
 }
