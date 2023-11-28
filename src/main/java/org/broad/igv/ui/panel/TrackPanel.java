@@ -175,17 +175,6 @@ public class TrackPanel extends IGVPanel {
 
     public void clearTracks() {
 
-        final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        Set<Track> genomeAnnotationTracks = new HashSet<>();
-        if (currentGenome != null) {
-            if (currentGenome.getGeneTrack() != null) genomeAnnotationTracks.add(currentGenome.getGeneTrack());
-            if (currentGenome.getAnnotationTracks() != null) {
-                for (List<Track> t : currentGenome.getAnnotationTracks().values()) {
-                    genomeAnnotationTracks.addAll(t);
-                }
-            }
-        }
-
         for (Track t : getTracks()) {
             t.unload();
         }

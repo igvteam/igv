@@ -43,7 +43,6 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.*;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
@@ -1641,26 +1640,21 @@ public class IGV implements IGVEventObserver {
     /**
      * Add gene and sequence tracks.  This is called upon switching genomes.
      *
-     * @param newGeneTrack
      * @param
      */
-    public void setGenomeTracks(Track newGeneTrack) {
+    public void setSequenceTrack() {
 
         TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
                 getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
         SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
         panel.addTrack(newSeqTrack);
 
-        if (newGeneTrack != null) {
-            newGeneTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, newGeneTrack.getName());
-            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
-            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, newGeneTrack.getTrackType().toString());
-            panel.addTrack(newGeneTrack);
-        }
-    }
-
-    public boolean hasSequenceTrack() {
-        return getSequenceTrack() != null;
+//        if (newGeneTrack != null) {
+//            newGeneTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, newGeneTrack.getName());
+//            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
+//            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, newGeneTrack.getTrackType().toString());
+//            panel.addTrack(newGeneTrack);
+//        }
     }
 
     /**
