@@ -76,6 +76,7 @@ import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.reader.IndexNotFoundException;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
+import org.broad.igv.ucsc.Trix;
 import org.broad.igv.ucsc.bb.BBDataSource;
 import org.broad.igv.ucsc.bb.BBFeatureSource;
 import org.broad.igv.ucsc.bb.BBFile;
@@ -792,9 +793,9 @@ public class TrackLoader {
         String trackId = locator.getPath();
 
         String path = locator.getPath();
-        BBFile reader = new BBFile(path, genome);
-        Track track = null;
-
+        String trixURL = locator.getTrixURL();
+        BBFile reader = trixURL == null ? new BBFile(path, genome) : new BBFile(path, genome, trixURL);
+        Track track;
         if (reader.isBigWigFile()) {
             BBDataSource bigwigSource = new BBDataSource(reader, genome);
             track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);

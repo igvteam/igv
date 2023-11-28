@@ -259,7 +259,7 @@ public class IGV implements IGVEventObserver {
         subscribeToEvents();
 
         // Start running periodic autosaves (unless the user has specified not to retain timed autosaves)
-        if(PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP) > 0) {
+        if (PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP) > 0) {
             int timerDelay = PreferencesManager.getPreferences().getAsInt(AUTOSAVE_FREQUENCY) * 60000; // Convert timer delay to ms
             sessionAutosaveTimer.scheduleAtFixedRate(new AutosaveTimerTask(this), timerDelay, timerDelay);
         }
@@ -515,11 +515,10 @@ public class IGV implements IGVEventObserver {
         this.stopTimedAutosave();
 
         // Autosave current session if configured to do so
-        if(PreferencesManager.getPreferences().getAsBoolean(AUTOSAVE_ON_EXIT)) {
+        if (PreferencesManager.getPreferences().getAsBoolean(AUTOSAVE_ON_EXIT)) {
             try {
                 SessionAutosaveManager.saveExitSessionAutosaveFile(session);
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 log.error("Error autosaving session", e);
             }
         }
@@ -885,9 +884,9 @@ public class IGV implements IGVEventObserver {
             if (tp.getScrollPane().getNamePanel().scrollTo(trackName)) {
                 found = true;
             }
-            }
-        return found;
         }
+        return found;
+    }
 
 
     /**
@@ -1238,7 +1237,7 @@ public class IGV implements IGVEventObserver {
                 track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
 
                 TrackProperties properties = locator.getTrackProperties();
-                if(properties != null) {
+                if (properties != null) {
                     track.setProperties(properties);
                 }
             }
@@ -1287,7 +1286,7 @@ public class IGV implements IGVEventObserver {
             }
         }
 
-        if(track.getClass() == FeatureTrack.class && !PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY))
+        if (track.getClass() == FeatureTrack.class && !PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY))
             return getTrackPanel(FEATURE_PANEL_NAME);
         else {
             return getTrackPanel(DATA_PANEL_NAME);
@@ -1365,7 +1364,7 @@ public class IGV implements IGVEventObserver {
     public void sortAlignmentTracks(SortOption option, Double location, String tag, boolean invertSort, Set<String> priorityRecords) {
         List<AlignmentTrack> alignmentTracks = getAllTracks().stream()
                 .filter(track -> track instanceof AlignmentTrack)
-                .map(track -> (AlignmentTrack)track)
+                .map(track -> (AlignmentTrack) track)
                 .peek(track -> track.sortRows(option, location, tag, invertSort, priorityRecords))
                 .collect(Collectors.toList());
         this.repaint(alignmentTracks);
@@ -1900,8 +1899,7 @@ public class IGV implements IGVEventObserver {
                 boolean autosavePresent = false;
                 try {
                     autosavePresent = SessionAutosaveManager.getMostRecentAutosaveFile().isPresent();
-                }
-                catch(Exception e) {
+                } catch (Exception e) {
                     log.error("Failure trying to get most recent autosave file", e);
                 }
                 boolean loadAutosave = autosavePresent && PreferencesManager.getPreferences().getAsBoolean(AUTOLOAD_LAST_AUTOSAVE);
@@ -1918,7 +1916,7 @@ public class IGV implements IGVEventObserver {
                     }
                 }
                 // If we're not loading a session file, attempt to load a default genome file
-                if(igvArgs.getSessionFile() == null && !loadAutosave && !genomeLoaded) {
+                if (igvArgs.getSessionFile() == null && !loadAutosave && !genomeLoaded) {
                     String genomeId = preferences.getDefaultGenome();
                     try {
                         GenomeManager.getInstance().loadGenomeById(genomeId);
@@ -2041,8 +2039,7 @@ public class IGV implements IGVEventObserver {
                             // Get the last autosave and attempt to load
                             File sessionAutosave = SessionAutosaveManager.getMostRecentAutosaveFile().get();
                             success = loadSession(sessionAutosave.getAbsolutePath(), null);
-                        }
-                        catch(Exception e) {
+                        } catch (Exception e) {
                             log.error("Failure trying to load most recent autosave file", e);
                         }
 

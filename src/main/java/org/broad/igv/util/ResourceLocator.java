@@ -129,6 +129,7 @@ public class ResourceLocator {
     private boolean htsget;
 
     private Integer visibilityWindow;
+    private String trixURL;
 
     public static List<ResourceLocator> getLocators(Collection<File> files) {
 
@@ -606,6 +607,14 @@ public class ResourceLocator {
         } catch (MalformedURLException e) {
             return false;
         }
+    }
+
+    public void setTrixURL(String trixURL) {
+        this.trixURL = trixURL;
+    }
+
+    public String getTrixURL() {
+        return trixURL;
     }
 
     /**

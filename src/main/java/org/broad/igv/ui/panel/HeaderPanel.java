@@ -94,7 +94,7 @@ public class HeaderPanel extends JPanel implements Transferable, Paintable, IGVE
             geneListPanel.setPreferredSize(new java.awt.Dimension(0, 0));
             geneListPanel.setLayout(new java.awt.BorderLayout());
 
-            label = new JLabel(frame.getName());
+            label = new JLabel(frame.getFormattedLocusString());
             label.setForeground(Color.blue);
             label.setToolTipText("Go to " + frame.getName());
             label.addMouseListener(new MouseAdapter() {

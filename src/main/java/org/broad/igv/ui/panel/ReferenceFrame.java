@@ -635,13 +635,13 @@ public class ReferenceFrame {
      */
     public String getFormattedLocusString() {
 
-        if (zoom == 0) {
-            return getGenome().getChromosomeDisplayName(getChrName());
-        } else {
+//        if (zoom == 0) {
+//            return getGenome().getChromosomeDisplayName(getChrName());
+//        } else {
             Range range = getCurrentRange();
             String c = getGenome().getChromosomeDisplayName(range.getChr());
             return Locus.getFormattedLocusString(c, range.getStart(), range.getEnd());
-        }
+       // }
     }
 
     public Range getCurrentRange() {

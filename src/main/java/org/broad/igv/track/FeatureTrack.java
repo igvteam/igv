@@ -26,6 +26,7 @@
 package org.broad.igv.track;
 
 import htsjdk.tribble.Feature;
+import htsjdk.tribble.NamedFeature;
 import htsjdk.tribble.TribbleException;
 import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
@@ -1054,6 +1055,16 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
         super.marshalXML(document, element);
 
+    }
+
+    @Override
+    public boolean isSearchable() {
+        return source.isSearchable();
+    }
+
+    @Override
+    public NamedFeature search(String token) {
+        return source.search(token);
     }
 
     @Override

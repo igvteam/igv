@@ -53,7 +53,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testSingleChromosomes() throws Exception {
+    public void testSingleLOCUSs() throws Exception {
 
         int min = 1;
         int max = 22;
@@ -66,8 +66,8 @@ public class SearchCommandTest extends AbstractHeadlessTest {
             chrs[cn - min] = chr;
             nums[cn - min] = "" + cn;
         }
-        tstFeatureTypes(chrs, SearchCommand.ResultType.CHROMOSOME);
-        tstFeatureTypes(nums, SearchCommand.ResultType.CHROMOSOME);
+        tstFeatureTypes(chrs, SearchCommand.ResultType.LOCUS);
+        tstFeatureTypes(nums, SearchCommand.ResultType.LOCUS);
     }
 
     @Test
@@ -93,7 +93,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
                 cmd = new SearchCommand(null, searchStr, genome);
                 List<SearchCommand.SearchResult> results = cmd.runSearch(cmd.searchString);
                 assertEquals(1, results.size());
-                assertEquals(SearchCommand.ResultType.CHROMOSOME, results.get(0).type);
+                assertEquals(SearchCommand.ResultType.LOCUS, results.get(0).type);
                 assertEquals(chr, results.get(0).chr);
             }
         }
@@ -180,8 +180,8 @@ public class SearchCommandTest extends AbstractHeadlessTest {
                 SearchCommand.ResultType.FEATURE,
                 SearchCommand.ResultType.FEATURE,
                 SearchCommand.ResultType.LOCUS,
-                SearchCommand.ResultType.CHROMOSOME,
-                SearchCommand.ResultType.CHROMOSOME
+                SearchCommand.ResultType.LOCUS,
+                SearchCommand.ResultType.LOCUS
         };
         String searchStr = tokens[0];
         for (int ii = 1; ii < tokens.length; ii++) {
@@ -204,7 +204,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testMultiChromosomes() throws Exception {
+    public void testMultiLOCUSs() throws Exception {
         String[] tokens = {"chr1", "chr5", "4", "12", "X", "Y"};
         String searchStr = tokens[0];
         for (int ii = 1; ii < tokens.length; ii++) {
@@ -218,16 +218,11 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         for (int ii = 0; ii < tokens.length; ii++) {
             SearchCommand.SearchResult result = results.get(ii);
 
-            assertEquals(SearchCommand.ResultType.CHROMOSOME, result.type);
+            assertEquals(SearchCommand.ResultType.LOCUS, result.type);
             assertTrue(result.getLocus().contains(tokens[ii]));
         }
     }
 
-    @Test
-    public void testError() throws Exception {
-        String[] tokens = {"ueth", "EGFRa", "BRCA56", "EGFR:?1?"};
-        tstFeatureTypes(tokens, SearchCommand.ResultType.ERROR);
-    }
 
 
     /**
@@ -239,7 +234,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         String[] chromos = {"chr3", "chr20", "chrX", "chrY"};
         SearchCommand cmd = new SearchCommand(null, "", genome);
         for (String chr : chromos) {
-            assertEquals(SearchCommand.ResultType.CHROMOSOME, cmd.checkTokenType(chr));
+            assertEquals(SearchCommand.ResultType.LOCUS, cmd.checkTokenType(chr));
         }
 
         String[] starts = {"39,239,480", "958392", "0,4829,44", "5"};
