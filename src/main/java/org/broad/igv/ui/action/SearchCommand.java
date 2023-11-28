@@ -39,20 +39,17 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.liftover.Liftover;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
+
 
 /**
  * A class for performing search actions.  The class takes a view context and
@@ -62,7 +59,7 @@ import java.util.*;
  *
  * @author jrobinso
  */
-public class SearchCommand {
+public class SearchCommand implements Runnable {
 
     private static Logger log = LogManager.getLogger(SearchCommand.class);
     public static int SEARCH_LIMIT = 10000;
@@ -121,7 +118,7 @@ public class SearchCommand {
     }
 
 
-    public void execute() {
+    public void run() {
         List<SearchResult> results = runSearch(searchString);
         showSearchResult(results);
     }
@@ -146,60 +143,64 @@ public class SearchCommand {
 
         // Check for special "liftover" syntax.  This allows searching based on coordinates from another genome
         // (the "target" genome) if an associated liftover map is defined for the target genome.
-        Liftover liftover = null;
-        if (searchString.startsWith("!") && genome.getLiftoverMap() != null) {
-            int idx = searchString.indexOf(' ');
-            String genomeKey = searchString.substring(1, idx);
-            liftover = genome.getLiftoverMap().get(genomeKey);
-            if (liftover != null) {
-                searchString = searchString.substring(idx + 1);
-            }
-        }
+//        Liftover liftover = null;
+//        if (searchString.startsWith("!") && genome.getLiftoverMap() != null) {
+//            int idx = searchString.indexOf(' ');
+//            String genomeKey = searchString.substring(1, idx);
+//            liftover = genome.getLiftoverMap().get(genomeKey);
+//            if (liftover != null) {
+//                searchString = searchString.substring(idx + 1);
+//            }
+//        }
 
         List<SearchResult> results = new ArrayList<>();
 
         searchString = searchString.replace("\"", "");
 
-        Set<ResultType> wholeStringType = checkTokenType(searchString);
-        if (wholeStringType.contains(ResultType.LOCUS)) {
-            results.add(calcChromoLocus(searchString));
-        } else {
-            // Space delimited?
-            String[] tokens = searchString.split("\\s+");
-            for (String s : tokens) {
-                SearchResult result = parseToken(s);
-                if (result != null) {
-                    results.add(result);
-                } else {
-                    SearchResult unknownResult = new SearchResult();
-                    unknownResult.setMessage("Unknown search term: " + s);
-                    results.add(unknownResult);
+        // If the search string is space delimited see if it looks like a space delimited locus string (e.g. chr 100 200)
+        String[] tokens = searchString.split("\\s+");
+        if (tokens.length > 1 && tokens.length <= 3) {
+            boolean mightBeLocus = true;
+            for (int i = 1; i < tokens.length; i++) {
+                mightBeLocus = mightBeLocus && isInteger(tokens[i]);
+            }
+            if (mightBeLocus) {
+                Chromosome c1 = genome.getChromosome(tokens[0]);
+                if(c1 != null) {
+                    Chromosome c2 = genome.getChromosome(tokens[1]);
+                    if(c2 == null) {
+                        results.add (calcChromoLocus(searchString));
+                        return results;
+                    }
                 }
             }
         }
 
-        if (results.size() == 0) {
-            SearchResult result = new SearchResult();
-            result.setMessage("\"" + searchString + " \" not found.");
-            results.add(result);
+        for (String s : tokens) {
+            SearchResult result = parseToken(s);
+            if (result != null) {
+                results.add(result);
+            }
         }
+
+
+
 
         // If this is a liftover search map the results
-        // TODO -- support gene name lookup
-        if(liftover != null) {
-            List<SearchResult> mappedResults = new ArrayList<>();
-            for(SearchResult result : results) {
-                if(result.getType() == ResultType.LOCUS) {
-                   List<Range> mapped = liftover.map(new Range(result.getChr(), result.getStart(), result.getEnd()));
-                   for(Range m : mapped) {
-                       mappedResults.add(new SearchResult(result.type, m.chr, m.start, m.end));
-                   }
-                } else {
-                    // ??? Error
-                }
-            }
-            results = mappedResults;
-        }
+//        if (liftover != null) {
+//            List<SearchResult> mappedResults = new ArrayList<>();
+//            for (SearchResult result : results) {
+//                if (result.getType() == ResultType.LOCUS) {
+//                    List<Range> mapped = liftover.map(new Range(result.getChr(), result.getStart(), result.getEnd()));
+//                    for (Range m : mapped) {
+//                        mappedResults.add(new SearchResult(result.type, m.chr, m.start, m.end));
+//                    }
+//                } else {
+//                    // ??? Error
+//                }
+//            }
+//            results = mappedResults;
+//        }
 
         return results;
     }
@@ -336,17 +337,33 @@ public class SearchCommand {
      */
     private SearchResult parseToken(String token) {
 
-        List<IGVNamedFeature> features;
+        // Check featureDB first -- this is cheap
+        NamedFeature feat = searchFeatureDBs(token);
+        if (feat != null) {
+            return new SearchResult(feat);
+        }
 
         //Guess at token type via regex.
         //We don't assume success
         Set<ResultType> types = checkTokenType(token);
-        SearchResult result;
+
         if (types.contains(ResultType.LOCUS) || types.contains(ResultType.CHROMOSOME)) {
             //Check if a full or partial locus string
-            result = calcChromoLocus(token);
-            if (result.type != ResultType.ERROR) {
+            SearchResult result = calcChromoLocus(token);
+            if (result != null) {
                 return result;
+            }
+        }
+
+
+        if (types.contains(ResultType.FEATURE)) {
+            //Check if we have an exact match for the feature name
+            List<Track> searchableTracks = IGV.getInstance().getAllTracks().stream().filter(Track::isSearchable).toList();
+            for (Track t : searchableTracks) {
+                NamedFeature match = t.search(token);
+                if (match != null) {
+                    return new SearchResult(match);
+                }
             }
         }
 
@@ -383,20 +400,15 @@ public class SearchCommand {
             }
 
             for (int genomePos : genomePosList.keySet()) {
-                Feature feat = genomePosList.get(genomePos);
+                Feature feature = genomePosList.get(genomePos);
                 //Zoom in on mutation of interest
                 //The +2 accounts for centering on the center of the amino acid, not beginning
                 //and converting from 0-based to 1-based (which getStartEnd expects)
                 int[] locs = getStartEnd("" + (genomePos + 2));
-                return new SearchResult(ResultType.LOCUS, feat.getChr(), locs[0], locs[1]);
-            }
-        } else if (types.contains(ResultType.FEATURE)) {
-            //Check if we have an exact name for the feature name
-            NamedFeature feat = searchFeatureDBs(token);
-            if (feat != null) {
-                return new SearchResult(feat);
+                return new SearchResult(ResultType.LOCUS, feature.getChr(), locs[0], locs[1]);
             }
         }
+
         return null;
     }
 
@@ -473,12 +485,11 @@ public class SearchCommand {
         }
 
         //startEnd will have coordinates if found.
-        chr = genome.getCanonicalChrName(chr);
         Chromosome chromosome = genome.getChromosome(chr);
         //If we couldn't find chromosome, check
         //whole string
         if (chromosome == null) {
-            chr = genome.getCanonicalChrName(tokens[0]);
+            chr = tokens[0];
             chromosome = genome.getChromosome(chr);
             if (chromosome != null) {
                 //Found chromosome
@@ -488,17 +499,13 @@ public class SearchCommand {
 
         if (chromosome != null && !searchString.equals(Globals.CHR_ALL)) {
             if (startEnd != null) {
-                if (startEnd[1] >= startEnd[0]) {
-                    return new SearchResult(ResultType.LOCUS, chr, startEnd[0], startEnd[1]);
-                } else {
-                    SearchResult error = new SearchResult(ResultType.ERROR, chr, startEnd[0], startEnd[1]);
-                    error.setMessage("End must be greater than start");
-                    return error;
-                }
+                int start = Math.min(startEnd[0], startEnd[1]);
+                int end = Math.max(startEnd[0], startEnd[1]);
+                return new SearchResult(ResultType.LOCUS, chr, start, end);
             }
             return new SearchResult(ResultType.CHROMOSOME, chr, 0, chromosome.getLength() - 1);
         }
-        return new SearchResult(ResultType.ERROR, chr, -1, -1);
+        return null;
     }
 
     private void showFlankedRegion(String chr, int start, int end) {
@@ -675,4 +682,11 @@ public class SearchCommand {
         return results;
     }
 
+    private static boolean isInteger(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c < '0' || c > '9') return false;
+        }
+        return true;
+    }
 }

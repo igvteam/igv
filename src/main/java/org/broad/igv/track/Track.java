@@ -31,6 +31,7 @@ package org.broad.igv.track;
 
 
 import htsjdk.tribble.Feature;
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
@@ -272,9 +273,12 @@ public interface Track extends Persistable {
 
     void setAutoScale(boolean autoScale);
 
-    default boolean isShowFeatureNames() {return true;}
+    default boolean isShowFeatureNames() {
+        return true;
+    }
 
-    default void setShowFeatureNames(boolean b) {}
+    default void setShowFeatureNames(boolean b) {
+    }
 
     /**
      * Return the java property or attribute for the feature display name.  Default is "null", in which case the
@@ -283,6 +287,19 @@ public interface Track extends Persistable {
      * @return
      */
     default String getLabelField() {
+        return null;
+    }
+
+    /**
+     * Return true if the track can be searched for a feature by name.
+     *
+     * @return
+     */
+    default boolean isSearchable() {
+        return false;
+    }
+
+    default NamedFeature search(String token) {
         return null;
     }
 

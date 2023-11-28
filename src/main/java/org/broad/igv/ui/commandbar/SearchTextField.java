@@ -7,6 +7,7 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.util.LongRunningTask;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -32,9 +33,7 @@ public class SearchTextField extends JTextField {
 
 
     public void searchByLocus(final String searchText) {
-
-        (new SearchCommand(FrameManager.getDefaultFrame(), searchText)).execute();
-
+        LongRunningTask.submit((new SearchCommand(FrameManager.getDefaultFrame(), searchText)));
     }
 
     private class SearchHints extends ListDataIntelliHints<String> {

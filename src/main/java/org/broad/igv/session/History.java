@@ -31,6 +31,7 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.util.LongRunningTask;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -121,7 +122,7 @@ public class History {
                 if (FrameManager.isGeneListMode()) {
                     IGV.getInstance().setGeneList(null, false);
                 }
-                (new SearchCommand(FrameManager.getDefaultFrame(), locus, false)).execute();
+                LongRunningTask.submit(new SearchCommand(FrameManager.getDefaultFrame(), locus, false));
                 //Zoom should be implicit in the locus
                 //FrameManager.getDefaultFrame().setZoom(entry.getZoom());
             }

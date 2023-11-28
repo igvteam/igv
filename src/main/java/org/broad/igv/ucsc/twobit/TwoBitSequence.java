@@ -2,6 +2,9 @@ package org.broad.igv.ucsc.twobit;
 
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Sequence;
+import org.broad.igv.feature.genome.SequenceNotFoundException;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.ucsc.BPIndex;
 import org.broad.igv.ucsc.BPTree;
 
@@ -21,6 +24,8 @@ import java.util.Queue;
 
 
 public class TwoBitSequence implements Sequence {
+
+    private static Logger log = LogManager.getLogger(TwoBitSequence.class);
 
     // the number 0x1A412743 in the architecture of the machine that created the file
     static int SIGNATURE = 0x1a412743;
@@ -85,12 +90,15 @@ public class TwoBitSequence implements Sequence {
     }
 
     @Override
-    public int getChromosomeLength(String chrname) {
+    public int getChromosomeLength(String seq) {
         try {
-            SequenceRecord sequenceRecord = getSequenceRecord(chrname);
+            SequenceRecord sequenceRecord = getSequenceRecord(seq);
             return sequenceRecord.getDnaSize();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SequenceNotFoundException e) {
+            return -1;
+        } catch (IOException e) {
+            log.error("Error reading sequence " + seq, e);
+            return -1;
         }
     }
 
@@ -183,7 +191,7 @@ public class TwoBitSequence implements Sequence {
         if (record == null) {
             long[] offset_length = this.index.search(seqName);
             if (offset_length == null) {
-                throw new RuntimeException("Unknown sequence: " + seqName);
+                throw new SequenceNotFoundException("Unknown sequence: " + seqName);
             }
             long offset = offset_length[0];
 

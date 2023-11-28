@@ -191,7 +191,7 @@ public class FastaIndexedSequence implements Sequence {
 
     @Override
     public int getChromosomeLength(String chrname) {
-        return index.getSequenceSize(chrname);
+        return  index.getSequenceSize(chrname);
     }
 
     @Override

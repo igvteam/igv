@@ -38,13 +38,26 @@ import java.util.List;
  */
 public interface Sequence {
 
-    byte[] getSequence(String chr, int start, int end);
+    /**
+     * Return the sequence for the given range.  If sequence named "seq" does not exist returns null.
+     * @param chr
+     * @param start
+     * @param end
+     * @return  The sequence in bytes, or null if no sequence exists
+     */
+    byte[] getSequence(String seq, int start, int end) ;
 
-    byte getBase(String chr, int position);
+    byte getBase(String seq, int position);
 
     List<String> getChromosomeNames();
 
-    int getChromosomeLength(String chrname);
+    /**
+     * Return the given sequence length.  If no sequence exists with name "seq" return -1.
+     *
+     * @param seq
+     * @return
+     */
+    int getChromosomeLength(String seq);
 
     List<Chromosome> getChromosomes();
 

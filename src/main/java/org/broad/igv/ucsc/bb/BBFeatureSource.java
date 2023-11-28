@@ -25,6 +25,7 @@
 
 package org.broad.igv.ucsc.bb;
 
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -32,7 +33,6 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ucsc.Trix;
 
 import java.io.IOException;
 import java.util.*;
@@ -111,7 +111,8 @@ public class BBFeatureSource implements FeatureSource {
         return reader.isSearchable();
     }
 
-    BasicFeature search(String term) {
+    @Override
+    public NamedFeature search(String term) {
         try {
             return reader.search(term);
         } catch (IOException e) {

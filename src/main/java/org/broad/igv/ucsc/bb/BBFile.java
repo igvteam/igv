@@ -1,6 +1,7 @@
 package org.broad.igv.ucsc.bb;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.LocusScore;
@@ -400,6 +401,7 @@ public class BBFile {
      * @param term
      * @returns {Promise<void>}
      */
+
     public BasicFeature search(String term) throws IOException {
 
         if (this.header == null) {

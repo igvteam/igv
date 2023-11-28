@@ -26,6 +26,7 @@
 package org.broad.igv.track;
 
 import htsjdk.tribble.Feature;
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
@@ -90,6 +91,19 @@ public interface FeatureSource<T extends Feature> {
     };
 
     default Object getHeader() {
+        return null;
+    }
+
+    /**
+     * Return true if the source can be searched for a feature by name
+     *
+     * @return
+     */
+    default boolean isSearchable() {
+        return false;
+    }
+
+    default NamedFeature search(String name) {
         return null;
     }
 }

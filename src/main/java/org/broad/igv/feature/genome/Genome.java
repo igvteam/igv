@@ -257,7 +257,7 @@ public class Genome {
                     res.setVisibilityWindow(vw);
                 }
 
-                if(trackConfig.searchTrix != null) {
+                if (trackConfig.searchTrix != null) {
                     res.setTrixURL(trackConfig.searchTrix);
                 }
 
@@ -355,7 +355,7 @@ public class Genome {
      * Return the canonical chromosome name for the (possibly) alias
      *
      * @param str chromosome or alias name
-     * @return the canonical chromsoome name -- i.e. chromosome name as defined by the reference sequence
+     * @return the canonical chromsoome name -if the chromosome exists.
      */
     public String getCanonicalChrName(String str) {
         if (str == null) {
@@ -365,9 +365,7 @@ public class Genome {
         } else if (chromAliasSource != null) {
             try {
                 ChromAlias aliasRecord = chromAliasSource.search(str);
-                if (aliasRecord == null) {
-                    return str;
-                } else {
+                if (aliasRecord != null) {
                     String chr = aliasRecord.getChr();
                     chrAliasCache.put(str, chr);
                     return chr;
@@ -491,9 +489,9 @@ public class Genome {
         if (chromosomeMap.containsKey(chrName)) {
             return chromosomeMap.get(chrName);
         } else {
-            int idx = this.chromosomeMap.size();
             int length = this.sequence.getChromosomeLength(chrName);
             if (length > 0) {
+                int idx = this.chromosomeMap.size();
                 Chromosome chromosome = new Chromosome(idx, chrName, length);
                 chromosomeMap.put(chrName, chromosome);
                 return chromosome;
