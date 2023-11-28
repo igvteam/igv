@@ -95,4 +95,24 @@ public class VCFVariantTest extends AbstractHeadlessTest {
         assertEquals(expFeatStart, variant.getStart());
         return variant;
     }
+
+    /**
+     * Just verifies IGV will read a file marked vcf4.4 in the header, actual format is 4.1.
+     *
+     * @return
+     * @throws Exception
+     */
+    @Test
+    public void tstFakeV4() throws Exception{
+
+        System.setProperty("samjdk.optimistic_vcf_4_4", "true");
+
+        String filePath = TestUtils.DATA_DIR + "vcf/fake_v4.vcf";
+        TestUtils.createIndex(filePath);
+        TribbleFeatureSource src = TribbleFeatureSource.getFeatureSource(new ResourceLocator(filePath), genome);
+
+        VCFVariant variant = (VCFVariant) (src.getFeatures("chr20", 10499352 - 5, 10499352 + 5)).next();
+        assertEquals(VariantContext.Type.INDEL.toString(), variant.getType());
+        assertEquals(10499351, variant.getStart());
+    }
 }
