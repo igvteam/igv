@@ -310,11 +310,10 @@ public class SearchCommand implements Runnable {
     private SearchResult parseToken(String token) {
 
         // Check featureDB first -- this is cheap
-        NamedFeature feat = searchFeatureDBs(token);
+        NamedFeature feat = FeatureDB.getFeature(token.toUpperCase().trim());
         if (feat != null) {
             return new SearchResult(feat);
         }
-
 
         //Check if a full or partial locus string
         SearchResult result = calcChromoLocus(token);
@@ -330,6 +329,13 @@ public class SearchCommand implements Runnable {
                 return new SearchResult(match);
             }
         }
+
+        // Try the webservice
+        feat = searchWebservice(token);
+        if (feat != null) {
+            return new SearchResult(feat);
+        }
+
 
         //2 possible mutation notations, either amino acid (A123B) or nucleotide (123G>C)
         boolean mutAA = token.matches(featureMutAA);
@@ -378,28 +384,23 @@ public class SearchCommand implements Runnable {
         return null;
     }
 
-    private NamedFeature searchFeatureDBs(String str) {
-        NamedFeature feat = FeatureDB.getFeature(str.toUpperCase().trim());
-        if (feat != null) {
-            return feat;
-        } else {
-            try {
-                String tmp = "https://igv.org/genomes/locus.php?genome=$GENOME$&name=$FEATURE$";
-                String genomeID = GenomeManager.getInstance().getGenomeId();
-                if (genomeID != null) {
-                    URL url = new URL(tmp.replace("$GENOME$", genomeID).replace("$FEATURE$", str));
-                    String r = HttpUtils.getInstance().getContentsAsString(url);
-                    String[] t = Globals.whitespacePattern.split(r);
-                    if (t.length > 2) {
-                        Locus l = Locus.fromString(t[1]);
-                        String chr = genome == null ? l.getChr() : genome.getCanonicalChrName(l.getChr());
-                        feat = new BasicFeature(chr, l.getStart(), l.getEnd());
-                        return feat;
-                    }
+    private NamedFeature searchWebservice(String str) {
+        try {
+            String tmp = "https://igv.org/genomes/locus.php?genome=$GENOME$&name=$FEATURE$";
+            String genomeID = GenomeManager.getInstance().getGenomeId();
+            if (genomeID != null && genomeID.indexOf("/") < 0 && genomeID.indexOf("\\") < 0) {   // Filter out file paths
+                URL url = new URL(tmp.replace("$GENOME$", genomeID).replace("$FEATURE$", str));
+                String r = HttpUtils.getInstance().getContentsAsString(url);
+                String[] t = Globals.whitespacePattern.split(r);
+                if (t.length > 2) {
+                    Locus l = Locus.fromString(t[1]);
+                    String chr = genome == null ? l.getChr() : genome.getCanonicalChrName(l.getChr());
+                    return new BasicFeature(chr, l.getStart(), l.getEnd());
                 }
-            } catch (Exception e) {
-                log.error("Search webservice error", e);
             }
+        } catch (Exception e) {
+
+            log.error("Search webservice error", e);
         }
         return null;
     }
