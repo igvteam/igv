@@ -25,6 +25,8 @@
 
 package org.broad.igv.variant;
 
+import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.logging.*;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.prefs.Constants;
@@ -35,7 +37,10 @@ import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.GroupTracksMenuAction;
+import org.broad.igv.ui.action.SearchCommand;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.variant.vcf.VCFVariant;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,6 +55,7 @@ import java.util.List;
  */
 public class VariantMenu extends IGVPopupMenu {
 
+    public static final String VARIANT_ATTR_MATEID = "MATEID";
     private static Logger log = LogManager.getLogger(VariantMenu.class);
     private VariantTrack track;
     private Collection<String> selectedSamples;
@@ -122,6 +128,13 @@ public class VariantMenu extends IGVPopupMenu {
         for (JMenuItem item : getSortMenuItems(variant)) {
             add(item);
             item.setEnabled(variant != null);
+        }
+
+        // goto mate
+        if ( variant != null ) {
+            addSeparator();
+            JMenuItem item = getGotoMateMenuItem(variant);
+            add(item);
         }
 
         if (AttributeManager.getInstance().getVisibleAttributes().size() > 0) {
@@ -387,6 +400,38 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
+    private JMenuItem getGotoMateMenuItem(final Variant variant) {
+        final String mateId = variant.getAttributeAsString(VARIANT_ATTR_MATEID);
+        final String mateLocation = getMateLocation(variant);
+        final String title = "Goto mate" + ((mateId != null) ? (" (" + mateId + ")") : "");
+        final JMenuItem item = new JMenuItem(title);
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+
+                (new SearchCommand(FrameManager.getDefaultFrame(), mateLocation)).execute();
+
+            }
+        });
+        item.setEnabled(mateLocation != null);
+        return item;
+    }
+
+    private String getMateLocation(Variant variant) {
+
+        // sample alt: [chr9:85289982[CCC
+        if ( variant instanceof VCFVariant ) {
+            VCFVariant vcfVariant = (VCFVariant)variant;
+            final List<Allele> alleles = vcfVariant.getAlternateAlleles();
+            if ( alleles.size() > 0 ) {
+                String[] toks = alleles.get(0).getDisplayString().split("(\\[)|(\\])");
+                if ( toks.length >= 2 ) {
+                    return toks[1];
+                }
+            }
+        }
+
+        return null;
+    }
 
     static class GenotypeComparator implements Comparator<String> {
 
