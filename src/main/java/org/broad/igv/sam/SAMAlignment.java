@@ -407,13 +407,19 @@ public class SAMAlignment implements Alignment {
         String[] mmTokens = mm.split(";");
         for (String mmi : mmTokens) {
             String[] tokens = mmi.split(","); //Globals.commaPattern.split(mm);
-            byte base = (byte) tokens[0].charAt(0);
-            char strand = tokens[0].charAt(1);
-            if (strand == '-') {
-                base = SequenceUtil.complement(base);
+            int baseCount;
+            if(tokens[0].charAt(0) == 'N') {
+                baseCount = sequence.length;
+            } else {
+                byte base = (byte) tokens[0].charAt(0);
+                char strand = tokens[0].charAt(1);
+                if (strand == '-') {
+                    base = SequenceUtil.complement(base);
+                }
+                baseCount = 0;
+                for (int i = 0; i < sequence.length; i++) if (sequence[i] == base) baseCount++;
             }
-            int baseCount = 0;
-            for (int i = 0; i < sequence.length; i++) if (sequence[i] == base) baseCount++;
+
             // Count # of bases implied by tag
             int modified = tokens.length - 1;    // All tokens but the first are "skip" numbers
             int skipped = 0;
