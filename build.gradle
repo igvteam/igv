@@ -320,24 +320,24 @@ task createMacAppDist(type: Copy, dependsOn: createDist) {
 }
 
 task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveFileName = "IGV_MacApp_${archiveVersion}.zip"
+    archiveFileName = "IGV_MacApp_${version}.zip"
     from("${buildDir}/IGV-MacApp-dist")
 
     doLast {
-        project.exec { commandLine('chmod', '775', createMacAppDistZip.archivePath) }
+        project.exec { commandLine('chmod', '775', createMacAppDistZip.archiveFileName) }
     }
 }
 
 task createMacAppWithJavaDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveFileName = "IGV_MacApp_${archiveVersion}_WithJava.zip"
-    with copySpec { from jdkBundleMac into "IGV_${archiveVersion}.app/Contents/jdk-17" }
+    archiveFileName = "IGV_MacApp_${version}_WithJava.zip"
+    with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-17" }
     from("${buildDir}/IGV-MacApp-dist")
 
     doLast {
         if (jdkBundleMac == "") {
             throw new GradleException("Required property not set: jdkBundleMac");
         }
-        project.exec { commandLine('chmod', '775', createMacAppWithJavaDistZip.archivePath) }
+        project.exec { commandLine('chmod', '775', createMacAppWithJavaDistZip.archiveFileName) }
     }
 }
 
