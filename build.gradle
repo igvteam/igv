@@ -320,7 +320,7 @@ task createMacAppDist(type: Copy, dependsOn: createDist) {
 }
 
 task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveName = "IGV_MacApp_${version}.zip"
+    archiveFileName  = "IGV_MacApp_${version}.zip"
     from("${buildDir}/IGV-MacApp-dist")
 
     doLast {
@@ -329,7 +329,7 @@ task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
 }
 
 task createMacAppWithJavaDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveName = "IGV_MacApp_${version}_WithJava.zip"
+    archiveFileName = "IGV_MacApp_${version}_WithJava.zip"
     with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-17" }
     from("${buildDir}/IGV-MacApp-dist")
 
