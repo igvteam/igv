@@ -415,11 +415,17 @@ public class SAMAlignment implements Alignment {
             int baseCount = 0;
             for (int i = 0; i < sequence.length; i++) if (sequence[i] == base) baseCount++;
             // Count # of bases implied by tag
-            int modified = tokens.length - 1;
+            int modified = tokens.length - 1;    // All tokens but the first are "skip" numbers
             int skipped = 0;
             for (int i = 1; i < tokens.length; i++) skipped += Integer.parseInt(tokens[i]);
             if (modified + skipped > baseCount) {
-                System.out.println("m+skipped = " + (modified + skipped) + "  base count = " + baseCount);
+//                System.out.println("Cigar = " + record.getCigarString());
+//                System.out.println("MM = " + mm);
+//                System.out.println("modified count = " + modified);
+//                System.out.println("skipped count = " + skipped);
+//                System.out.println("mod + skipped = " + (modified + skipped));
+//                System.out.println("base count = " + baseCount);
+//                System.out.println();
                 return false;
             }
         }
