@@ -131,7 +131,7 @@ public class VariantMenu extends IGVPopupMenu {
         }
 
         // goto mate
-        if ( variant != null ) {
+        if ( variant != null && variant.getAttributeAsString(VARIANT_ATTR_MATEID) != null ) {
             addSeparator();
             JMenuItem item = getGotoMateMenuItem(variant);
             add(item);
