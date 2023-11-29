@@ -115,22 +115,24 @@ public class Genome {
 
         // Load the sequence object.  Some configurations will specify both 2bit and fasta references.  The 2 bit
         // has preference
+        Sequence uncachedSequence;
         if (config.sequence != null) {
-            sequence = config.sequence;
+            uncachedSequence = config.sequence;
         } else if (config.twoBitURL != null) {
-            sequence = (config.twoBitBptURL != null) ?
+            uncachedSequence = (config.twoBitBptURL != null) ?
                     new TwoBitSequence(config.twoBitURL, config.twoBitBptURL) :
                     new TwoBitSequence(config.twoBitURL);
         } else if (config.fastaURL != null) {
             String fastaPath = config.fastaURL;
             String indexPath = config.indexURL;
             String gziIndexPath = config.gziIndexURL;
-            sequence = fastaPath.endsWith(".gz") ?
+            uncachedSequence = fastaPath.endsWith(".gz") ?
                     new FastaBlockCompressedSequence(fastaPath, gziIndexPath, indexPath) :
                     new FastaIndexedSequence(fastaPath, indexPath);
         } else {
             throw new RuntimeException("Genomes require either a .2bit or fasta reference ");
         }
+        sequence = new SequenceWrapper(uncachedSequence);
 
         // Search for chromosomes.  Chromosome names are required to support the chromosome pulldown, names and
         // lengths are required to support whole genome view.  Both can be obtained from fasta index files, but
