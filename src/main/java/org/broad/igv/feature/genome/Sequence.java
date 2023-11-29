@@ -40,7 +40,7 @@ public interface Sequence {
 
     /**
      * Return the sequence for the given range.  If sequence named "seq" does not exist returns null.
-     * @param chr
+     * @param seq
      * @param start
      * @param end
      * @return  The sequence in bytes, or null if no sequence exists
