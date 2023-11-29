@@ -96,6 +96,7 @@ public class ColorMap
      */
     public int getColor(int idx)
     {
+        idx = Math.max(0, Math.min(idx, r.length - 1));
         int pixel = ((r[idx] << 16) & 0xff0000)
                 | ((g[idx] << 8) & 0xff00)
                 | (b[idx] & 0xff);

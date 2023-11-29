@@ -1,37 +1,82 @@
 package org.broad.igv.ultima.render;
 
+import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.*;
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.ultima.FlowUtil;
 
 import java.awt.*;
 
 public class FlowIndelRendering {
 
-    private static ColorMap indelColorMap = ColorMap.getJet(42);
+    // constants
+    private static final String TAG_T0 = "t0";
+    private static final String ATTR_TP = "tp";
+    private static final String RG_ATTR_PL = "PL";
+    private static final String RG_ATTR_MC = "mc";
+    private static final String RG_ATTR_PL_ULTIMA = "ULTIMA";
+    private static final double MIN_POSSIBLE_QUALITY = 0;
+    public static final int COLORMAP_SIZE = 44;
 
+    // the color map
+    private static ColorMap indelColorMap = ColorMap.getJet(COLORMAP_SIZE);
+
+    // an Hmer
+    static class Hmer {
+        int start;
+        int end;
+        int backwardsSize = 0;
+        int forwardSize = 0;
+
+        int size() { return end - start + 1; }
+    }
+
+
+    // is this alignment handled by this renderer?
     public boolean handlesAlignment(final Alignment alignment) {
 
+        // we only handle sam alignments
         if ( !(alignment instanceof SAMAlignment) )
             return false;
-        final SAMAlignment samAlignment = (SAMAlignment)alignment;
 
-        // must be a flow
-        return FlowUtil.isFlow(samAlignment.getRecord());
+        return isFlow(((SAMAlignment)alignment).getRecord());
+    }
+
+    public static boolean isFlow(SAMRecord record) {
+
+        final SAMReadGroupRecord readGroup = record.getReadGroup();
+        if ( readGroup == null )
+            return false;
+        if ( !RG_ATTR_PL_ULTIMA.equals(readGroup.getAttribute(RG_ATTR_PL))
+                &&  (readGroup.getAttribute(RG_ATTR_MC) == null) )
+            return false;
+        if ( !record.hasAttribute(ATTR_TP)  )
+            return false;
+
+        return true;
+    }
+
+    // is this block (INS) handled (accepted)
+    public boolean handlesBlock(AlignmentBlock block) {
+        return true;
+    }
+
+    // is this gap (DEL) handled (accepted)
+    public boolean handlesGap(Gap gap) {
+        return true;
     }
 
     public void renderSmallInsertion(Alignment alignment,
-                                     AlignmentBlock aBlock,
+                                     AlignmentBlock block,
                                      RenderContext context,
                                      int h, int x, int y,
                                      AlignmentTrack.RenderOptions renderOptions) {
 
         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
         int hairline = 2;
-        if ( renderOptions.isInsertQualColoring() ) {
+        if ( renderOptions.isIndelQualColoring() ) {
             pxWing = Math.min(pxWing, Math.max(1, (int) (1 / context.getScale())));
             hairline = Math.min(hairline, pxWing);
         }
@@ -40,21 +85,18 @@ public class FlowIndelRendering {
         g.fillRect(x - pxWing, y, hairline + 2 * pxWing, hairline);
         g.fillRect(x - pxWing, y + h - hairline, hairline + 2 * pxWing, hairline);
 
-        if ( renderOptions.isInsertQualColoring() && FlowUtil.isFlow(alignment) ) {
-            // Ultima: single (==1) INSERT case
-            // map qual into a sort of a linear scale and add indicator
-            double p = qualsAsProbInsertTP((SAMAlignment) alignment, aBlock);
-            if ( p != 0 ) {
-                double q = -10 * Math.log10(p);
-                Color qColor = new Color(indelColorMap.getColor((int) q));
-                g.setColor(qColor);
-                g.fillRect(x - pxWing, (int) (y + (h - hairline) * (q / 42)) - 1, hairline + 2 * pxWing, hairline * 2);
-            }
+        // draw
+        double q = getInsertionQuality(alignment, block, renderOptions);
+        if ( !Double.isNaN(q) && renderOptions.isIndelQualColoring() ) {
+            Color currentColor = g.getColor();
+            g.setColor(new Color(indelColorMap.getColor((int) q)));
+            g.fillRect(x - pxWing, (int) (y + (h - hairline) * ((42 - q) / 42)) - 1, hairline + 2 * pxWing, hairline * 2);
+            g.setColor(currentColor);
         }
     }
 
     public void renderSmallInsertionWings(Alignment alignment,
-                                     AlignmentBlock insertionBlock,
+                                     AlignmentBlock block,
                                      RenderContext context,
                                      int pxH, int pxTop, int pxRight, int pxLeft,
                                      AlignmentTrack.RenderOptions renderOptions) {
@@ -65,25 +107,25 @@ public class FlowIndelRendering {
         // adjust wing and hairline
         int hairline = 2;
         double locScale = context.getScale();
-        if ( renderOptions.isInsertQualColoring() ) {
+        if ( renderOptions.isIndelQualColoring() ) {
             pxWing = Math.min(pxWing, Math.max(1, (int) (1 / locScale)));
             hairline = Math.min(hairline, pxWing);
         }
 
+        Color currentColor = g.getColor();
+        g.setColor(AlignmentRenderer.purple);
         g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + hairline * pxWing, hairline);
         g.fillRect(pxLeft - pxWing, pxTop + pxH - hairline, pxRight - pxLeft + hairline * pxWing, hairline);
-        if ( renderOptions.isInsertQualColoring() && FlowUtil.isFlow(alignment) ) {
-            // Ultima: large (>1) INSERT case
-            // map qual into a sort of a linear scale and add indicator
-            double p = qualsAsProbInsertTP((SAMAlignment)alignment, insertionBlock);
-            if ( p != 0 ) {
-                double q = -10 * Math.log10(p);
-                Color qColor = new Color(indelColorMap.getColor((int) q));
-                g.setColor(qColor);
-                g.fillRect(pxLeft - pxWing, (int) (pxTop + (pxH - hairline) * (q / 42)), pxRight - pxLeft + hairline * pxWing, hairline);
-            }
-        }
+        g.setColor(currentColor);
 
+        // draw
+        double q = getInsertionQuality(alignment, block, renderOptions);
+        if ( !Double.isNaN(q) && renderOptions.isIndelQualColoring() ) {
+            currentColor = g.getColor();
+            g.setColor(new Color(indelColorMap.getColor((int) q)));
+            g.fillRect(pxLeft - pxWing, (int) (pxTop + (pxH - hairline) * ((42 - q) / 42)), pxRight - pxLeft + hairline * pxWing, hairline);
+            g.setColor(currentColor);
+        }
     }
 
     public void renderDeletionGap(Alignment alignment,
@@ -92,317 +134,260 @@ public class FlowIndelRendering {
                                           RenderContext context,
                                           AlignmentTrack.RenderOptions renderOptions) {
 
-        // collect quals (experimental)
-        Color[]       markerColor = new Color[2];
-        double[]      markerQ = new double[2];
-        if ( renderOptions.isInsertQualColoring() && FlowUtil.isFlow(alignment) ) {
+        if ( !renderOptions.isIndelQualColoring() )
+            return;
 
-            // locate block who's end is the same as the start of the gap
-            boolean blockFound = false;
-            int blockIndex = 0;
-            final AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-            for ( ; blockIndex < blocks.length ; blockIndex++ ) {
-                if ( blocks[blockIndex].getEnd() == gap.getStart() ) {
-                    blockFound = true;
-                    break;
-                }
-                else if ( blocks[blockIndex].getEnd() > gap.getStart() )
-                    break;
-            }
-            if ( blockFound && (blockIndex < blocks.length - 1) ) {
-                AlignmentBlock abPrev = alignment.getAlignmentBlocks()[blockIndex];
-                AlignmentBlock abNext = alignment.getAlignmentBlocks()[blockIndex + 1];
-                if (abPrev.getQualities().length > 0 && abNext.getQualities().length > 0) {
+        // establish alignment blocks wrapping this gap (before and after)
+        AlignmentBlock[] blocks = getGapWrappingBlocks(alignment, gap);
+        if ( blocks == null )
+            return;
+        AlignmentBlock abPrev = blocks[0];
+        AlignmentBlock abNext = blocks[1];
 
-                    // calc based on reference
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                    char        gapBase0 = Character.toUpperCase((char)genome.getReference(alignment.getChr(), gap.getStart()));
-                    char        gapBase1 = Character.toUpperCase((char)genome.getReference(alignment.getChr(), gap.getStart() + gap.getnBases() - 1));
-                    char        alignBase0 = Character.toUpperCase((char)abPrev.getBases().getByte(abPrev.getBases().length - 1));
-                    char        alignBase1 = Character.toUpperCase((char)abNext.getBases().getByte(0));
-                    char        gapBase0p = Character.toUpperCase((char)genome.getReference(alignment.getChr(), gap.getStart() - 1));
-                    char        gapBase1n = Character.toUpperCase((char)genome.getReference(alignment.getChr(), gap.getStart() + gap.getnBases()));
-                    boolean     snp0 = gapBase0p != alignBase0;
-                    boolean     snp1 = gapBase1n != alignBase1;
-                    byte[]      quals01 = new byte[1];
-                    if ( !snp0 ) {
-                        quals01[0] = abPrev.getQualities().getByte(abPrev.getQualities().length - 1);
-                        double  p;
-                        int         delLength = 1;
-                        while ( (delLength + 1) < gap.getnBases() &&
-                                (gapBase0 == Character.toUpperCase(genome.getReference(alignment.getChr(), gap.getStart() + delLength))) )
-                            delLength++;
+        // establish the nature of the gap
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        char        nextBlcokFirstBase = Character.toUpperCase((char)abNext.getBases().getByte(0));
+        char        gapLastBase = Character.toUpperCase((char)genome.getReference(alignment.getChr(), gap.getStart() + gap.getnBases() - 1));
+        boolean     isForwardHmer = gapLastBase == nextBlcokFirstBase;
+        char        prevBlcokLastBase = Character.toUpperCase((char)abPrev.getBases().getByte(abPrev.getBasesLength() - 1));
+        char        gapFirstBase = Character.toUpperCase((char)genome.getReference(alignment.getChr(), gap.getStart()));
+        boolean     isBackwardsHmer = gapFirstBase == prevBlcokLastBase;
 
-                        p = qualsAsProbDeleteTP(((SAMAlignment) alignment), abPrev, delLength, false, gap);
-                        if ( p != 0 ) {
-                            markerQ[0] = -10 * Math.log10(p);
-                            markerColor[0] = new Color(indelColorMap.getColor((int) markerQ[0]));
-                        }
-                    }
-                    if ( !snp1 ) {
-                        quals01[0] = abNext.getQualities().getByte(0);
-                        double  p;
-                        int         delLength = 1;
-                        while ( (delLength + 1) < gap.getnBases() &&
-                                (gapBase1 == Character.toUpperCase(genome.getReference(alignment.getChr(), gap.getStart() + gap.getnBases() - delLength))) )
-                            delLength++;
+        // we call something an hmer in this context only if it is hmer on exactly one side
+        boolean     isHmer = isBackwardsHmer ^ isForwardHmer;
 
-                        p = qualsAsProbDeleteTP((SAMAlignment) alignment, abNext, delLength, true, gap);
-                        if ( p != 0 ) {
-                            markerQ[1] = -10 * Math.log10(p);
-                            markerColor[1] = new Color(indelColorMap.getColor((int) markerQ[1]));
-                        }
-                    }
-                }
-            }
-
-            // draw delete markers
-            Graphics2D g = context.getGraphics();
-            if ( markerColor[0] != null || markerColor[1] != null ) {
-
-                int hairline = Math.min(2, (int) (1 / context.getScale()));
-
-                Color c = g.getColor();
-                if ((markerQ[0] == markerQ[1]) || (gap.getnBases() == 1)) {
-
-                    // draw a full line, average as needed
-                    double q1 = markerQ[0];
-                    Color c1 = markerColor[0];
-                    if (c1 == null) {
-                        q1 = markerQ[1];
-                        c1 = markerColor[1];
-                    } else if (markerColor[1] != null && markerQ[1] != q1) {
-                        q1 = (q1 + markerQ[1]) / 2;
-                        c1 = new Color(indelColorMap.getColor((int) q1));
-                    }
-                    g.setColor(c1);
-                    g.fillRect(x + (int) (w * q1 / 42) - hairline, y, hairline * 2, h);
-                } else {
-                    if (markerColor[0] != null) {
-                        g.setColor(markerColor[0]);
-                        g.fillRect(x + (int) (w * markerQ[0] / 42) - hairline, y, hairline * 2, h * 3 / 4);
-                    }
-                    if (markerColor[1] != null) {
-                        g.setColor(markerColor[1]);
-                        g.fillRect(x + (int) (w * markerQ[1] / 42) - hairline, y + h / 4, hairline * 2, h * 3 / 4);
-                    }
-                }
-
-                g.setColor(c);
-            }
+        // in addition, the hmer must span the whole gap
+        if ( isHmer ) {
+            isHmer = gapIsAllSameBase(genome, alignment, gap);
         }
-    }
 
-    static private double qualsAsProb(ByteSubarray quals) {
+        // figure out quality to plot - if any
+        double q = Double.NaN;
+        if ( isHmer ) {
+            final SAMRecord record = ((SAMAlignment)alignment).getRecord();
+            Hmer hmer = isForwardHmer
+                    ? findHmer(record, abNext.getIndexOnRead(), (byte) gapLastBase, false, true)
+                    : findHmer(record, abPrev.getIndexOnRead() + abPrev.getBasesLength() - 1, (byte) gapFirstBase, true, false);
 
-        // calc prob
-        double              probSum = 0.0;
-        double              probCount = 0;
-        for ( int i = 0 ; i < quals.length ; i++ ) {
-            final byte q = quals.getByte(i);
-            if (q != 255) {
-                probSum += Math.pow(10.0, -q / 10.0);
-                probCount++;
-
+            if ( hmer.size() >= getMC(record) ) {
+                // HMER - length is at least max-hmer
+                q = MIN_POSSIBLE_QUALITY;
+            } else {
+                // HMER - otherwise try TP
+                q = getQualityFromTP(record, hmer, gap.getnBases(), renderOptions);
             }
-        }
-        if ( probCount != 0 )
-            return probSum / probCount;
-        else
-            return -1;
-    }
-
-
-    public double qualsAsProbInsertTP(SAMAlignment samAlignment, AlignmentBlock block) {
-        return qualsAsProbInsertTP(samAlignment, block, 0, block.getLength());
-    }
-
-    private class HMer {
-        int     start;
-        int     end;
-    }
-
-    public double qualsAsProbInsertTP(SAMAlignment samAlignment, AlignmentBlock block, int fragOfs, int fragLength) {
-
-        // for now, handle only hmer inserts
-        if ( !blockIsHmer(block, fragOfs, fragLength) ) {
-
-            // by definition, blocks failing this test can only be of multiple bases
-            // try breaking them into two block fragments, one from front and one from back
-            byte[]  bases = block.getBases().getBytes();
-            int     f1ofs = 0;
-            int     f1Length = 0;
-            int     base = bases[f1ofs];
-            for ( int n = 0 ; n < bases.length ; n++ ) {
-                if (bases[n] == base)
-                    f1Length++;
+        } else {
+            if ( gap.getnBases() == 1 ) {
+                // NON-HMER, single base, try T0
+                final SAMRecord record = ((SAMAlignment)alignment).getRecord();
+                double qBefore = getQualityFromT0(record, abPrev, false);
+                double qAfter = getQualityFromT0(record, abNext, true);
+                if ( Double.isNaN(qBefore) )
+                    q = qAfter;
+                else if ( Double.isNaN(qAfter) )
+                    q = qBefore;
                 else
-                    break;
-            }
-
-            int     f2ofs = bases.length;
-            int     f2Length = 0;
-            base = bases[f2ofs-1];
-            for ( int n = bases.length - 1 ; n >= 0 ; n-- ) {
-                if (bases[n] == base) {
-                    f2Length++;
-                    f2ofs--;
-                }
-                else
-                    break;
-            }
-
-            double      p1 = qualsAsProbInsertTP(samAlignment, block, f1ofs, f1Length);
-            double      p2 = qualsAsProbInsertTP(samAlignment, block, f2ofs, f2Length);
-
-            if ( p1 == 0 )
-                return p2;
-            else if ( p2 == 0 )
-                return p1;
-            else
-                return (p1 + p2) / 2;
-        }
-
-        // access read/record
-        SAMRecord record = samAlignment.getRecord();
-        if ( record == null )
-            return 0;
-
-
-        // establish the hmer on which this block sits (inside the read...).
-        byte        base = block.getBase(fragOfs);
-        int         start = block.getIndexOnRead() + fragOfs;
-
-        // short-circuit a simple and common case: insert of 1 with tp=-1 -> quality is already here!
-        if ( fragLength == 1 ) {
-            byte[]      tp = record.getByteArrayAttribute(FlowUtil.ATTR_TP);
-            if ( tp[start] == -1 ) {
-                byte      q = block.getQuality(0);
-                return Math.pow(10.0, -q / 10.0);
+                    q = Math.max(qBefore, qAfter);
             }
         }
-        HMer        hmer = findHmer(record, start, fragLength, base);
+        if ( Double.isNaN(q) )
+            return;
 
-        // find tp value and return it
-        return findQualByTPValue(record, hmer, -fragLength);
+        // draw the marker
+        int hairline = Math.min(2, (int) (1 / context.getScale()));
+        Graphics2D g = context.getGraphics();
+        Color currentColor = g.getColor();
+        g.setColor(new Color(indelColorMap.getColor((int)q)));
+        g.fillRect(x + (int) (w * q / 42) - hairline, y, hairline * 2, h);
+        g.setColor(currentColor);
     }
 
-    private HMer findHmer(SAMRecord record, int start, int length, byte base) {
+    private double getInsertionQuality(Alignment alignment, AlignmentBlock block, AlignmentTrack.RenderOptions renderOptions) {
 
-        HMer        hmer = new HMer();
-        hmer.start = start;
+        // establish alignment blocks wrapping this insertion block (before and after)
+        AlignmentBlock[] blocks = getBlockWrappingBlocks(alignment, block);
+        if ( blocks == null )
+            return Double.NaN;
+        AlignmentBlock abPrev = blocks[0];
+        AlignmentBlock abNext = blocks[1];
 
-        byte[]      bases = record.getReadBases();
-        hmer.end = hmer.start + (length - 1);
-        while ( hmer.start > 0 && bases[hmer.start - 1] == base )
-            hmer.start--;
-        while ( (hmer.end + 1) < bases.length  && bases[hmer.end + 1] == base )
-            hmer.end++;
+        // establish the nature of the block
+        char        nextBlcokFirstBase = Character.toUpperCase((char)abNext.getBases().getByte(0));
+        char        blockLastBase = Character.toUpperCase((char)block.getBases().getByte(block.getBasesLength() - 1));
+        boolean     isForwardHmer = blockLastBase == nextBlcokFirstBase;
+        char        prevBlcokLastBase = Character.toUpperCase((char)abPrev.getBases().getByte(abPrev.getBasesLength() - 1));
+        char        blockFirstBase = Character.toUpperCase((char)block.getBases().getByte(0));
+        boolean     isBackwardsHmer = blockFirstBase == prevBlcokLastBase;
 
-        return hmer;
+        // we call something an hmer in this context only if it is hmer on exactly one side
+        boolean     isHmer = isBackwardsHmer ^ isForwardHmer;
+
+        // in addition, the hmer must span the whole gap
+        if ( isHmer ) {
+            isHmer = blockIsAllSameBase(block);
+        }
+
+        // if both side are non-hmer and size is 1 - special case
+        SAMRecord record = ((SAMAlignment)alignment).getRecord();
+        Double q = Double.NaN;
+        if ( !isBackwardsHmer && !isForwardHmer && block.getBasesLength() == 1 ) {
+
+            // treat insertion as an hmer on to itself
+            Hmer hmer = new Hmer();
+            hmer.start = hmer.end = block.getIndexOnRead();
+            q = getQualityFromTP(record, hmer, -hmer.size(), renderOptions);
+            return q;
+        }
+
+        // if not an hmer, nothing to print
+        if ( !isHmer )
+            return Double.NaN;
+
+        if ( isForwardHmer ) {
+            Hmer hmer = findHmer(record, abNext.getIndexOnRead(), (byte)nextBlcokFirstBase, true, true);
+            q = getQualityFromTP(record, hmer, -hmer.backwardsSize, renderOptions);
+        } else if ( isBackwardsHmer ) {
+            Hmer hmer = findHmer(record, abPrev.getIndexOnRead() + abPrev.getBasesLength() - 1 , (byte)prevBlcokLastBase, true, true);
+            q = getQualityFromTP(record, hmer, -hmer.forwardSize, renderOptions);
+        }
+
+        return q;
     }
 
-    private double findQualByTPValue(SAMRecord record, HMer hmer, int tpValue) {
+    private AlignmentBlock[] getBlockWrappingBlocks(Alignment alignment, AlignmentBlock block) {
+
+        AlignmentBlock abPrev = null;
+        AlignmentBlock abNext = null;
+        for ( final AlignmentBlock b : alignment.getAlignmentBlocks() ) {
+            if ( b.getEnd()  == block.getStart() )
+                abPrev = b;
+            else if ( b.getStart() == block.getStart() )
+                abNext = b;
+        }
+
+        if ( abPrev != null && abNext != null ) {
+            return new AlignmentBlock[] {abPrev, abNext};
+        } else {
+            return null;
+        }
+    }
+
+    private AlignmentBlock[] getGapWrappingBlocks(Alignment alignment, Gap gap) {
+
+        boolean blockFound = false;
+        int blockIndex = 0;
+        final AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
+        for ( ; blockIndex < blocks.length ; blockIndex++ ) {
+            if ( blocks[blockIndex].getEnd() == gap.getStart() ) {
+                blockFound = true;
+                break;
+            }
+            else if ( blocks[blockIndex].getEnd() > gap.getStart() )
+                break;
+        }
+
+        if ( blockFound && (blockIndex < blocks.length - 1) ) {
+            return new AlignmentBlock[] {alignment.getAlignmentBlocks()[blockIndex], alignment.getAlignmentBlocks()[blockIndex + 1]};
+        } else {
+            return null;
+        }
+    }
+
+    private double getQualityFromTP(SAMRecord record, Hmer hmer, int tpValue, AlignmentTrack.RenderOptions renderOptions) {
 
         // get quals and tp
-        byte[]      tp = record.getByteArrayAttribute(FlowUtil.ATTR_TP);
+        byte[]      tp = record.getByteArrayAttribute(ATTR_TP);
 
-        // scan for tpValue, extract qual
-        for ( int ofs = hmer.start ; ofs <= hmer.end ; ofs++ )
-            if ( tp[ofs] == tpValue ) {
-                byte[]      quals = record.getBaseQualities();
-                return Math.pow(10.0, -quals[ofs] / 10.0);
+        // scan for tpValue
+        if ( !renderOptions.isIndelQualUsesMin() ) {
+            for (int ofs = hmer.start; ofs <= hmer.end; ofs++) {
+                if (tp[ofs] == tpValue) {
+                    // all non-central entries must be doubled due to the symmetric nature of the quality string
+                    final double q = record.getBaseQualities()[ofs];
+                    final boolean isCenteralBaseInHmer = (ofs - hmer.start) == (hmer.end - ofs);
+                    if (isCenteralBaseInHmer) {
+                        return q;
+                    } else {
+                        return -10.0 * Math.log10(Math.pow(10, q / -10.0) * 2);
+                    }
+                }
             }
 
-        // if here, none of the tp values matched
-        // check for the special case of a delete which is of an original hmer larger than mc (def:12)
-        if ( tpValue > 0 ) {
-            int     mc = getMC(record);
-            int     hmerSize = hmer.end - hmer.start + 1;
-            if ( tpValue + hmerSize > mc )
-                return 1.0 - FlowUtil.MIN_PROB_DEFAULT;
+            // if here, not found. return highest quality value found on read
+            final byte[] quals = record.getBaseQualities();
+            if (quals.length == 0)
+                return Double.NaN;
+            double q = Double.MIN_VALUE;
+            for (byte qual : quals) {
+                q = Math.max(qual, q);
+            }
+            return q;
+        } else {
+            double q = Double.MAX_VALUE;
+            for (int ofs = hmer.start; ofs <= hmer.end; ofs++) {
+                q = Math.min(q, record.getBaseQualities()[ofs]);
+            }
+            return q;
         }
+    }
 
-        // if here, simply fail
-        return 0;
+    private double getQualityFromT0(SAMRecord record, AlignmentBlock block, boolean delIsBeforeBlock) {
+
+        final byte[] t0 = record.getStringAttribute(TAG_T0).getBytes();
+        final int t0Index = delIsBeforeBlock ? block.getIndexOnRead() : (block.getIndexOnRead() + block.getLength() - 1);
+        return t0[t0Index] - 33;
     }
 
     private int getMC(SAMRecord record) {
         try {
+            if ( record.getReadGroup() == null )
+                return 0;
             return Integer.parseInt(record.getReadGroup().getAttribute("mc"));
         } catch (Exception e) {
             return 0;
         }
     }
 
-    private boolean blockIsHmer(AlignmentBlock block, int fragOfs, int fragLength) {
-        byte[]      bases = block.getBases().getBytes();
+    private Hmer findHmer(SAMRecord record, int start, byte base, boolean walkBackwards, boolean walkForward) {
 
-        if ( bases == null || bases.length < (fragOfs + fragLength) )
-            return false;
-        else if ( fragLength == 1 )
-            return true;
+        Hmer hmer = new Hmer();
+        hmer.end = hmer.start = start;
+        byte[] bases = record.getReadBases();
+        if ( walkBackwards ) {
+            while (hmer.start > 0 && bases[hmer.start - 1] == base) {
+                hmer.start--;
+                hmer.backwardsSize++;
+            }
+        }
+        if ( walkForward ) {
+            while ((hmer.end + 1) < bases.length && bases[hmer.end + 1] == base) {
+                hmer.end++;
+                hmer.forwardSize++;
+            }
+        }
 
-        byte base = bases[fragOfs];
-        for ( int n = fragOfs + 1 ; n < fragOfs + fragLength ; n++ ) {
-            if (bases[n] != base)
+        return hmer;
+    }
+
+    private boolean gapIsAllSameBase(Genome genome, Alignment alignment, Gap gap) {
+        final byte base = genome.getReference(alignment.getChr(), gap.getStart());
+        for ( int i = 1 ; i < gap.getnBases() ; i++ ) {
+            if ( genome.getReference(alignment.getChr(), gap.getStart() + i) != base ) {
                 return false;
+            }
         }
         return true;
     }
 
-    public double qualsAsProbDeleteTP(SAMAlignment samAlignment, AlignmentBlock block, int delLength, boolean delIsBeforeBlock, Gap gap)
-    {
-        // access read/record
-        SAMRecord   record = samAlignment.getRecord();
-        if ( record == null )
-            return 0;
-
-        // establish the hmer on which this block sits (inside the read...)
-        byte        base = block.getBase(delIsBeforeBlock ? 0 : block.getLength() - 1);
-        int         start = block.getIndexOnRead();
-        if ( !delIsBeforeBlock )
-            start += (block.getLength() - 1);
-        HMer        hmer = findHmer(record, start, 0, base);
-
-        // try establising by using t0
-        final double t0qual = qualsAsProbDeleteTPByT0(samAlignment, record, block, delLength, delIsBeforeBlock, gap);
-        if ( t0qual != 0 ) {
-            return t0qual;
+    private boolean blockIsAllSameBase(AlignmentBlock block) {
+        final byte base = block.getBases().getByte(0);
+        for ( int i = 1 ; i < block.getBasesLength() ; i++ ) {
+            if ( block.getBases().getByte(i) != base ) {
+                return false;
+            }
         }
-
-        return findQualByTPValue(record, hmer, delLength);
+        return true;
     }
 
-    private double qualsAsProbDeleteTPByT0(SAMAlignment samAlignment, SAMRecord record, AlignmentBlock block, int delLength, boolean delIsBeforeBlock, Gap gap) {
 
-        // consider using t0 only if DEL of one base (additional conditions to follow)
-        if ( delLength != 1 ) {
-            return 0;
-        }
-
-        // get location just before this read
-        final int         loc = block.getIndexOnRead() + (delIsBeforeBlock ? -1 : (block.getLength() - 1));
-        if ( loc < 0 )
-            return 0;
-
-        // get bases around the deletion. They must be different than the deleted base
-        final byte[]      bases = record.getReadBases();
-        if ( loc >= (bases.length - 1) )
-            return 0;
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        final byte delBase = (byte) Character.toUpperCase(genome.getReference(samAlignment.getChr(), gap.getStart()));
-        if ( (delBase == bases[loc]) ||  (delBase == bases[loc+1]) )
-            return 0;
-
-        // extract t0 values for the surrounding bases, convert to prob
-        if ( !record.hasAttribute(FlowUtil.TAG_T0) )
-            return 0;
-        final byte[]      t0 = record.getStringAttribute(FlowUtil.TAG_T0).getBytes();
-        final double      p0 = Math.pow(10.0, (t0[loc] - '!') / -10.0);
-        final double      p1 = Math.pow(10.0, (t0[loc+1] - '!') / -10.0);
-
-        // return maximal of the two
-        return Math.max(p0, p1);
-    }
 }
