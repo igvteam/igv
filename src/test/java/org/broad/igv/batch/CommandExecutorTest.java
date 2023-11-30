@@ -106,7 +106,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     public void setUp() throws Exception {
         super.setUp();
         Globals.setBatch(true);
-        GenomeManager.getInstance().loadGenome(TestUtils.defaultGenome, null);
+        GenomeManager.getInstance().loadGenome(TestUtils.defaultGenome);
         igv.newSession();
         exec.setSnapshotDirectory(snapshotDir);
     }

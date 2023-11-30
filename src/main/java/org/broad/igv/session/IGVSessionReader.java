@@ -225,13 +225,13 @@ public class IGVSessionReader implements SessionReader {
                     GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
                     if (item != null) {
                         genomePath = item.getPath();
-                        GenomeManager.getInstance().loadGenome(item.getPath(), null);
+                        GenomeManager.getInstance().loadGenome(item.getPath());
                     } else {
                         genomePath = genomeId;
                         if (!FileUtils.isRemote(genomePath) && !ParsingUtils.fileExists(genomePath)) {
                             genomePath = getAbsolutePath(genomeId, sessionPath);
                         }
-                        GenomeManager.getInstance().loadGenome(genomePath, null);
+                        GenomeManager.getInstance().loadGenome(genomePath);
                     }
                 } catch (IOException e) {
                     MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);

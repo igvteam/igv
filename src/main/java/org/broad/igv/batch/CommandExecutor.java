@@ -643,7 +643,7 @@ public class CommandExecutor {
 
         String genomePath = resolveFileReference(genomeID);
         try {
-            GenomeManager.getInstance().loadGenome(genomePath, null);
+            GenomeManager.getInstance().loadGenome(genomePath);
         } catch (IOException e) {
             result = "ERROR: Could not load genome: " + genomeID;
             MessageUtils.showMessage(result);

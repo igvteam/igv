@@ -29,8 +29,6 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.genome.fasta.FastaIndex;
-import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -104,7 +102,7 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
         assertEquals(tG, entry.getContig());
 
         GenomeManager manager = GenomeManager.getInstance();
-        Genome genome = manager.loadGenome(inPath, null);
+        Genome genome = manager.loadGenome(inPath);
         String tAseq = new String(genome.getSequence(tA, 0, tAsize));
         assertEquals(tAsize, tAseq.length());
         String remmed = tAseq.replaceAll("A", "");
@@ -141,7 +139,7 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
         String outPath = tstCreateIndex(inPath);
 
         GenomeManager manager = GenomeManager.getInstance();
-        Genome genome = manager.loadGenome(inPath, null);
+        Genome genome = manager.loadGenome(inPath);
         String chr = "gi|110640213|ref|NC_008253.1|";
         assertNotNull(genome.getChromosome(chr));
         //See http://www.ncbi.nlm.nih.gov/nuccore/110640213
