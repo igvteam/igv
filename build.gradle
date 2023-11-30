@@ -224,24 +224,24 @@ tasks.distTar.enabled = false
 tasks.startScripts.enabled = false
 
 task createDistZip(type: Zip, dependsOn: createDist) {
-    archiveFileName = "IGV_${archiveVersion}.zip"
+    archiveFileName = "IGV_${version}.zip"
     from("${buildDir}/IGV-dist")
     into "IGV_${archiveVersion}"
 }
 
 task createLinuxDistZip(type: Zip, dependsOn: createDist) {
-    archiveFileName = "IGV_Linux_${archiveVersion}.zip"
+    archiveFileName = "IGV_Linux_${version}.zip"
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*.command"
         exclude 'igvtools*'
         exclude 'lib/genomes'
     }
-    into "IGV_Linux_${archiveVersion}"
+    into "IGV_Linux_${version}"
 }
 
 task createLinuxWithJavaDistZip(type: Zip, dependsOn: createDist) {
-    archiveFileName = "IGV_Linux_${archiveVersion}_WithJava.zip"
+    archiveFileName = "IGV_Linux_${version}_WithJava.zip"
     with copySpec { from jdkBundleLinux into "jdk-17" }
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
@@ -249,7 +249,7 @@ task createLinuxWithJavaDistZip(type: Zip, dependsOn: createDist) {
         exclude 'igvtools*'
         exclude 'lib/genomes'
     }
-    into "IGV_Linux_${archiveVersion}"
+    into "IGV_Linux_${version}"
     doLast {
         if (jdkBundleLinux == "") {
             throw new GradleException("Required property not set: jdkBundleLinux");
@@ -258,7 +258,7 @@ task createLinuxWithJavaDistZip(type: Zip, dependsOn: createDist) {
 }
 
 task createMacDistZip(type: Zip, dependsOn: createDist) {
-    archiveFileName = "IGV_Mac_${archiveVersion}.zip"
+    archiveFileName = "IGV_Mac_${version}.zip"
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*_hidpi*"
@@ -266,11 +266,11 @@ task createMacDistZip(type: Zip, dependsOn: createDist) {
         exclude 'lib/genomes'
     }
 
-    into "IGV_Mac_${archiveVersion}"
+    into "IGV_Mac_${version}"
 }
 
 task createMacWithJavaDistZip(type: Zip, dependsOn: createDist) {
-    archiveFileName = "IGV_Mac_${archiveVersion}_WithJava.zip"
+    archiveFileName = "IGV_Mac_${version}_WithJava.zip"
     with copySpec { from jdkBundleMac into "jdk-17" }
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
@@ -278,7 +278,7 @@ task createMacWithJavaDistZip(type: Zip, dependsOn: createDist) {
         exclude "igvtools*"
         exclude 'lib/genomes'
     }
-    into "IGV_Mac_${archiveVersion}"
+    into "IGV_Mac_${version}"
     doLast {
         if (jdkBundleMac == "") {
             throw new GradleException("Required property not set: jdkBundleMac");
@@ -320,24 +320,24 @@ task createMacAppDist(type: Copy, dependsOn: createDist) {
 }
 
 task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveFileName = "IGV_MacApp_${archiveVersion}.zip"
+    archiveFileName  = "IGV_MacApp_${version}.zip"
     from("${buildDir}/IGV-MacApp-dist")
 
     doLast {
-        project.exec { commandLine('chmod', '775', createMacAppDistZip.archivePath) }
+        project.exec { commandLine('chmod', '775', createMacAppDistZip.archiveFileName) }
     }
 }
 
 task createMacAppWithJavaDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveFileName = "IGV_MacApp_${archiveVersion}_WithJava.zip"
-    with copySpec { from jdkBundleMac into "IGV_${archiveVersion}.app/Contents/jdk-17" }
+    archiveFileName = "IGV_MacApp_${version}_WithJava.zip"
+    with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-17" }
     from("${buildDir}/IGV-MacApp-dist")
 
     doLast {
         if (jdkBundleMac == "") {
             throw new GradleException("Required property not set: jdkBundleMac");
         }
-        project.exec { commandLine('chmod', '775', createMacAppWithJavaDistZip.archivePath) }
+        project.exec { commandLine('chmod', '775', createMacAppWithJavaDistZip.archiveFileName) }
     }
 }
 
