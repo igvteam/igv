@@ -157,7 +157,7 @@ public class IGVSessionReader implements SessionReader {
         // Add tracks not explicitly allocated to panels.   This can happen if a track resource path changes after
         // session created, and session is hand-editted.  It can also happen if the annotation paths for a genome change
         // after session creation.
-        if(allocatedToPanel != null) {
+        if (allocatedToPanel != null) {
             List<Track> unallocatedTracks = new ArrayList<>();
             for (List<Track> tracks : allTracks.values()) {
                 for (Track t : tracks) {
@@ -228,7 +228,7 @@ public class IGVSessionReader implements SessionReader {
                         GenomeManager.getInstance().loadGenome(item.getPath(), null);
                     } else {
                         genomePath = genomeId;
-                        if (!FileUtils.isRemote(genomePath) &&  !ParsingUtils.fileExists(genomePath)) {
+                        if (!FileUtils.isRemote(genomePath) && !ParsingUtils.fileExists(genomePath)) {
                             genomePath = getAbsolutePath(genomeId, sessionPath);
                         }
                         GenomeManager.getInstance().loadGenome(genomePath, null);
@@ -405,7 +405,7 @@ public class IGVSessionReader implements SessionReader {
                                 continue;
                             }
 
-                            String id = track.getId();
+                            String id = checkTrackId(track.getId());
                             if (id == null) {
                                 log.info("Null track id for resource " + locator.getPath());
                                 continue;
@@ -419,7 +419,7 @@ public class IGVSessionReader implements SessionReader {
 //                                }
 //                            }
 
-                            if(!allTracks.containsKey(id)) {
+                            if (!allTracks.containsKey(id)) {
                                 allTracks.put(id, new ArrayList<>());
                             }
                             allTracks.get(id).add(track);
@@ -764,12 +764,12 @@ public class IGVSessionReader implements SessionReader {
     private void processPanel(Session session, Element element, String sessionPath) {
 
         if (panelElementPresent == false) {
+            panelElementPresent = true;
             // First panel to be processed, do this only once.
-            // Add any tracks loaded as a side effect of loading genome, these need to be removed and remembered
+            // Add any tracks loaded as a side effect of loading genome
             final List<Track> tmp = igv.getAllTracks();
             for (Track track : tmp) {
-                final String id = track.getId();
-
+                String id = checkTrackId(track.getId());
                 if (!allTracks.containsKey(id)) {
                     allTracks.put(id, new ArrayList<>());
                 }
@@ -782,7 +782,7 @@ public class IGVSessionReader implements SessionReader {
             removeAllTracksFromPanels();
         }
 
-        panelElementPresent = true;
+
         String panelName = element.getAttribute("name");
         if (panelName == null) {
             panelName = "Panel" + panelCounter++;
@@ -854,7 +854,7 @@ public class IGVSessionReader implements SessionReader {
 
     private List<Track> processTrack(Session session, Element element, String sessionPath) {
 
-        String id = getAttribute(element, SessionAttribute.ID);
+        String id = checkTrackId(getAttribute(element, SessionAttribute.ID));
 
         // Find track matching element id, created earlier from "Resource or File" elements, or during genome load.
         // Normally this is a single track, but that can't be assumed as uniqueness of "id" is not enforced.
@@ -885,7 +885,7 @@ public class IGVSessionReader implements SessionReader {
 
                         track.unmarshalXML(element, version);
                         matchedTracks = Arrays.asList(track);
-                        allTracks.put(track.getId(), matchedTracks);   // Important for second pass
+                        allTracks.put(checkTrackId(track.getId()), matchedTracks);   // Important for second pass
 
                         // Special tracks
                         if (className.contains("CombinedDataTrack")) {
@@ -1078,6 +1078,7 @@ public class IGVSessionReader implements SessionReader {
      * @return
      */
     public static Track getMatchingTrack(String trackId, List<Track> allTracks) {
+        trackId = checkTrackId(trackId);
         IGVSessionReader reader = currentReader.get();
         List<Track> matchingTracks;
         if (reader != null) {
@@ -1087,7 +1088,7 @@ public class IGVSessionReader implements SessionReader {
                 throw new IllegalStateException("No session reader and no tracks to search to resolve Track references");
             matchingTracks = new ArrayList<>();
             for (Track track : allTracks) {
-                if (trackId.equals(track.getId())) {
+                if (trackId.equals(checkTrackId(track.getId()))) {
                     matchingTracks.add(track);
                     break;
                 }
@@ -1213,7 +1214,26 @@ public class IGVSessionReader implements SessionReader {
         return tracks;
     }
 
+    private static String checkTrackId(String id) {
+        return id == null ? null : (geneTrackIds.containsKey(id)) ? geneTrackIds.get(id) : id;
+    }
+
+    /**
+     * Set of track classes that are not backed by resources (files).
+     */
     private static Set<String> resourceIndpendentTracks = new HashSet<>(Arrays.asList("MergedTracks", "CombinedDataTrack",
             "SequenceTrack", "BlatTrack", "MotifTrack"));
 
+    /**
+     * Some synonyms for gene tracks with multiple URLs over time.  Allows matching old sessions to updated genomes.
+     */
+    private static Map<String, String> geneTrackIds = Map.of(
+            "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz", "hg38_gene_track",
+            "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/refGene.txt.gz", "hg38_gene_track",
+            "https://s3.amazonaws.com/igv.org.genomes/hg38/ncbiRefSeq.txt.gz", "hg38_gene_track",
+            "https://s3.amazonaws.com/igv.org.genomes/hg38/ncbiRefSeq.sorted.txt.gz", "hg38_gene_track",
+            "https://s3.amazonaws.com/igv.org.genomes/hg38/ncbiRefGene.txt.gz", "hg38_gene_track",
+            "https://s3.dualstack.us-east-1.amazonaws.com/igv.org.genomes/hg38/ncbiRefGene.txt.gz", "hg38_gene_track",
+            "https://s3.amazonaws.com/igv.org.genomes/hg19/ncbiRefSeq.sorted.txt.gz", "hg19_gene_track",
+            "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz", "hg19_gene_track");
 }
