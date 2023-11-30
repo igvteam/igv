@@ -87,6 +87,8 @@ public class HttpUtils {
     private static boolean BYTE_RANGE_DISABLED = false;
     private Map<URL, Boolean> headURLCache = new HashMap<URL, Boolean>();
 
+    private Map<String, Long> contentLengthCache = new HashMap<>();
+
     private class CachedRedirect {
         private URL url = null;
         private ZonedDateTime expires = null;
@@ -463,17 +465,21 @@ public class HttpUtils {
 
     public long getContentLength(URL url) throws IOException {
 
+        if (contentLengthCache.containsKey(url.toExternalForm())) {
+            return contentLengthCache.get(url.toExternalForm());
+        }
+
+        long contentLength = -1;
         try {
             String contentLengthString = getHeaderField(url, "Content-Length");
-            if (contentLengthString == null) {
-                return -1;
-            } else {
-                return Long.parseLong(contentLengthString);
+            if (contentLengthString != null) {
+                contentLength = Long.parseLong(contentLengthString);
             }
         } catch (Exception e) {
             log.error("Error fetching content length", e);
-            return -1;
         }
+        contentLengthCache.put(url.toExternalForm(), contentLength);
+        return contentLength;
     }
 
     public void updateProxySettings() {
@@ -856,7 +862,7 @@ public class HttpUtils {
                     throw new FileNotFoundException(message);
                 } else if (code == 401) {
                     OAuthProvider provider = OAuthUtils.getInstance().getProviderForURL(url);
-                    if(provider == null && GoogleUtils.isGoogleURL(url.toExternalForm())) {
+                    if (provider == null && GoogleUtils.isGoogleURL(url.toExternalForm())) {
                         provider = OAuthUtils.getInstance().getGoogleProvider();
                     }
                     if (provider != null && retries == 0) {
