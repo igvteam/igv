@@ -82,10 +82,10 @@ public class UnsignedByteBuffer {
     public String getFixedLengthString(int length) {
         byte[] bytes = new byte[length];
         int nonPaddedLength = 0;
+        wrappedBuffer.get(bytes);
         for (int i = 0; i < length; i++) {
-            byte b = wrappedBuffer.get();
-            bytes[i] = b;
-            if (b != 0) nonPaddedLength++;
+            if (bytes[i] == 0) break;
+            nonPaddedLength++;
         }
         return new String(bytes, 0, nonPaddedLength);
     }
