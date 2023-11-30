@@ -99,9 +99,6 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
             final Runnable runnable = new Runnable() {
 
-                org.broad.igv.ui.util.ProgressMonitor monitor;
-                ProgressBar.ProgressDialog progressDialog;
-
                 public void run() {
 
                     if (genomeListItem != null && genomeListItem.getPath() != null) {
@@ -113,11 +110,6 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                             loadGenomeFromServer();
                             return;
                         }
-
-                        UIUtilities.invokeAndWaitOnEventThread(() -> {
-                            monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                            progressDialog = ProgressBar.showProgressDialog(IGV.getInstance().getMainFrame(), "Loading Genome...", monitor, false);
-                        });
 
                         try {
                             GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
@@ -139,9 +131,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                                 log.error("Error initializing genome", e);
                             }
                         } finally {
-                            if (progressDialog != null) {
-                                UIUtilities.invokeOnEventThread(() -> progressDialog.setVisible(false));
-                            }
+
                         }
 
                     }
@@ -257,7 +247,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 if (firstItem != null) {
                     try {
 
-                        GenomeManager.getInstance().loadGenome(firstItem.getPath(), null);
+                        GenomeManager.getInstance().loadGenome(firstItem.getPath());
                         // If the user has previously defined this genome, remove it.
                         GenomeListManager.getInstance().removeUserDefinedGenome(firstItem.getId());
 

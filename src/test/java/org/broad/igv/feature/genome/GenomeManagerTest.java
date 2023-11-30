@@ -31,12 +31,7 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.DirectoryManager;
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,7 +40,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
 
 import static org.junit.Assert.*;
 
@@ -107,7 +101,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
     @Test
     public void testLoadGenomeFastaRelative() throws Exception{
         createDotGenomeForTest(fastaFileRelPath);
-        Genome relGenome = GenomeManager.getInstance().loadGenome(genomeZipFile, null);
+        Genome relGenome = GenomeManager.getInstance().loadGenome(genomeZipFile);
 
         checkGenome(relGenome);
     }
@@ -122,7 +116,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         String fastaAbsPath = fastaFile.getAbsolutePath();
 
         createDotGenomeForTest(fastaAbsPath);
-        Genome absGenome = GenomeManager.getInstance().loadGenome(genomeZipFile, null);
+        Genome absGenome = GenomeManager.getInstance().loadGenome(genomeZipFile);
 
         checkGenome(absGenome);
     }
@@ -141,7 +135,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         String fastaPath = TestUtils.DATA_DIR + "fasta/out_order.fa";
         TestUtils.createIndex(fastaPath);
 
-        Genome genome = GenomeManager.getInstance().loadGenome(fastaPath, null);
+        Genome genome = GenomeManager.getInstance().loadGenome(fastaPath);
         String[] chromos = {"chr1", "chr5"};
 
         assertArrayEquals(chromos, genome.getAllChromosomeNames().toArray());
@@ -155,7 +149,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
     @Test
     public void testLoadChromSizes() throws Exception {
         String testFile = TestUtils.DATA_DIR + "genomes/hg19.chrom.sizes";
-        Genome genome = GenomeManager.getInstance().loadGenome(testFile, null);
+        Genome genome = GenomeManager.getInstance().loadGenome(testFile);
 
         assertEquals(37, genome.getAllChromosomeNames().size());
         assertEquals(3130404865l, genome.getTotalLength());

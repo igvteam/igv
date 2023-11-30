@@ -37,7 +37,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
-import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.StringUtils;
 
 import java.awt.*;
@@ -377,14 +376,7 @@ public class CommandListener implements Runnable {
 
         if (command.equals("/")) {
             if (params.containsKey("hubURL")) {
-                final String hubURL = URLDecoder.decode(params.get("hubURL")); // what if not encoded? Usually its not
-                LongRunningTask.submit(() -> {
-                    try {
-                        GenomeManager.getInstance().loadGenome(hubURL, null);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                GenomeManager.getInstance().loadGenome(URLDecoder.decode(params.get("hubURL")));
             }
         } else if (command.equals("/load")) {
             String file = null;

@@ -33,12 +33,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.util.GoogleUtils;
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
@@ -90,7 +86,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                     if (inputs.length == 1 && HubGenomeLoader.isHubURL(inputs[0])) {
                         LongRunningTask.submit(() -> {
                             try {
-                               GenomeManager.getInstance().loadGenome(inputs[0], null);
+                               GenomeManager.getInstance().loadGenome(inputs[0]);
                             } catch (IOException ex) {
                                 log.error("Error loading tack hub", ex);
                                 MessageUtils.showMessage("Error loading track hub: " + ex.getMessage());
@@ -147,7 +143,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                 url = url.trim();
                 try {
                     checkURLs(new String[]{url});
-                    GenomeManager.getInstance().loadGenome(url, null);
+                    GenomeManager.getInstance().loadGenome(url);
                 } catch (Exception e1) {
                     MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
                 }

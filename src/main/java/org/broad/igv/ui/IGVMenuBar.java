@@ -429,7 +429,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                             // If a file selection was made
                             if (file != null) {
-                                GenomeManager.getInstance().loadGenome(file.getAbsolutePath(), null);
+                                GenomeManager.getInstance().loadGenome(file.getAbsolutePath());
                             }
                         } catch (Exception e) {
                             MessageUtils.showErrorMessage(e.getMessage(), e);

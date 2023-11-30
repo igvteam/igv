@@ -41,7 +41,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -118,7 +117,7 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
     public void tstCHR_ALL(String genPath, String wigPath, String tdfPath, boolean expHaveChrAll, String[] posChromos, String[] emptyChromos) throws Exception{
         Genome genome = null;
         try {
-            genome = GenomeManager.getInstance().loadGenome(genPath, null);
+            genome = GenomeManager.getInstance().loadGenome(genPath);
         } catch (Exception e) {
             e.printStackTrace();
         }
