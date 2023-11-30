@@ -433,7 +433,9 @@ public class CommandListener implements Runnable {
             IGV.getInstance().goToLocus(locus);
         } else if (command.equals("/execute")) {
             String param = StringUtils.decodeURL(params.get("command"));
-            return cmdExe.execute(param);
+            result = cmdExe.execute(param);
+        } else if (command.equals("/ping")) {
+            result = "OK";
         } else {
             return ("ERROR Unknown command: " + command);
         }
