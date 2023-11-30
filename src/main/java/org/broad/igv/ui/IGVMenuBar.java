@@ -284,7 +284,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new LoadFromServerAction("Load IGV Hosted Tracks...", KeyEvent.VK_S, igv);
+        menuAction = new LoadFromServerAction("Load Hosted Tracks...", KeyEvent.VK_S, igv);
         menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
