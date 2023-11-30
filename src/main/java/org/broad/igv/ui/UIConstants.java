@@ -52,6 +52,7 @@ public class UIConstants {
 
     static final public String LOAD_HTSGET_TOOLTOP = "Load BAM or VCF tracks from an htsget server";
     static final public String LOAD_SERVER_DATA_TOOLTIP = "Load tracks or sample information from a server";
+    static final public String LOAD_TRACKHUB_TOOLTIP = "Load an assemlby and tracks from a UCSC Track Hub";
     static final public String SAVE_PNG_IMAGE_TOOLTIP = "Capture and save a PNG image";
     static final public String SAVE_SVG_IMAGE_TOOLTIP = "Capture and save an SVG image";
     static final public String NEW_SESSION_TOOLTIP = "Create a new session";

@@ -1,15 +1,14 @@
 package org.broad.igv.feature.genome.load;
 
 import htsjdk.tribble.Feature;
-import org.broad.igv.feature.genome.ChromAliasDefaults;
-import org.broad.igv.feature.genome.ChromAliasFile;
-import org.broad.igv.logging.*;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.Sequence;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.feature.gff.GFFFeatureSource;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TrackProperties;
@@ -19,7 +18,6 @@ import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
 import java.io.*;
-import java.util.Collection;
 import java.util.List;
 
 
