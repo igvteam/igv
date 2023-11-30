@@ -10,6 +10,7 @@ module org.igv {
     exports org.broad.igv.ui.supdiagram;
     exports org.broad.igv.feature.genome.load to com.google.gson;
     opens org.broad.igv.feature.genome.load to com.google.gson;
+    opens org.broad.igv.feature to com.google.gson;
 
     requires com.google.common;
     requires commons.math3;

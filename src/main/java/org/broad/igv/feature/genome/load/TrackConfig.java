@@ -32,6 +32,9 @@ public class TrackConfig {
     public Boolean indexed;
     public Boolean hidden;
 
+    public TrackConfig() {
+    }
+
     /**
      * The only required property of a track configuration is a URL (which can be an actual URL or a static file path)
      * @param url
