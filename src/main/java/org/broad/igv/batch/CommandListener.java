@@ -37,6 +37,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.StringUtils;
 
 import java.awt.*;
@@ -77,7 +78,7 @@ public class CommandListener implements Runnable {
     public static Set<String> indexParams;
 
     static {
-        String[] fps = new String[]{"file", "bigDataURL", "sessionURL", "dataURL"};
+        String[] fps = new String[]{"file", "bigDataURL", "sessionURL", "dataURL", "hubURL"};
         fileParams = new LinkedHashSet<String>(Arrays.asList(fps));
         fileParams = Collections.unmodifiableSet(fileParams);
 
@@ -182,9 +183,8 @@ public class CommandListener implements Runnable {
                 String cmd = inputLine;
                 if (!cmd.contains("/oauthCallback")) {
                     if (cmd.startsWith("SetAccessToken")) {
-                        log.info(cmd.substring(0,14) + " *****");
-                    }
-                    else {
+                        log.info(cmd.substring(0, 14) + " *****");
+                    } else {
                         log.info(cmd);
                     }
                 }
@@ -224,7 +224,6 @@ public class CommandListener implements Runnable {
                         } else {
 
                             if (command != null) {
-
                                 // Detect  oauth callback
                                 if (command.equals("/oauthCallback")) {
                                     OAuthProvider provider = OAuthUtils.getInstance().getProviderForState(params.get("state"));
@@ -376,8 +375,18 @@ public class CommandListener implements Runnable {
         mainFrame.setAlwaysOnTop(true);
         mainFrame.setAlwaysOnTop(false);
 
-
-        if (command.equals("/load")) {
+        if (command.equals("/")) {
+            if (params.containsKey("hubURL")) {
+                final String hubURL = URLDecoder.decode(params.get("hubURL")); // what if not encoded? Usually its not
+                LongRunningTask.submit(() -> {
+                    try {
+                        GenomeManager.getInstance().loadGenome(hubURL, null);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        } else if (command.equals("/load")) {
             String file = null;
             for (String fp : fileParams) {
                 file = params.get(fp);
