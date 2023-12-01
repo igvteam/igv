@@ -138,14 +138,14 @@ public class HttpUtils {
             host = host.replace("*", ".*");
         }
 
-        // If new pattern matches existing keys replace them
         Pattern newPattern = Pattern.compile(host, Pattern.CASE_INSENSITIVE);
         this.accessTokens.add(new Pair<>(newPattern, token));
     }
 
 
     /**
-     * Return an access token, if any, from the access token cache.
+     * Return an access token, if any, from the access token cache.  The queue is iterated
+     * in reverse order so the latest match is returned.  
      *
      * @param url
      * @return
