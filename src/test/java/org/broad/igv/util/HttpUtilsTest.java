@@ -127,7 +127,7 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
             assertEquals("foo", token);
 
             // Superceding match
-            HttpUtils.getInstance().setAccessToken("foo2", "bar.foo.com");
+            HttpUtils.getInstance().setAccessToken("foo2", "*.foo.com");
             token = HttpUtils.getInstance().getCachedTokenFor(new URL("https://bar.foo.com/path"));
             assertEquals("foo2", token);
 
