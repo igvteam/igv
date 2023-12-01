@@ -99,7 +99,7 @@ public class HttpUtils {
     private Map<URL, CachedRedirect> redirectCache = new HashMap<URL, CachedRedirect>();
 
     // oauth tokens set from command line script
-    private Map<Pattern, String> accessTokens = new HashMap<>();
+    Deque<Pair<Pattern, String>> accessTokens = new ArrayDeque<>();
 
     /**
      * @return the single instance
@@ -137,7 +137,10 @@ public class HttpUtils {
         } else {
             host = host.replace("*", ".*");
         }
-        this.accessTokens.put(Pattern.compile(host, Pattern.CASE_INSENSITIVE), token);
+
+        // If new pattern matches existing keys replace them
+        Pattern newPattern = Pattern.compile(host, Pattern.CASE_INSENSITIVE);
+        this.accessTokens.add(new Pair<>(newPattern, token));
     }
 
 
@@ -147,19 +150,17 @@ public class HttpUtils {
      * @param url
      * @return
      */
-    String getAccessTokenFor(URL url) {
+    String getCachedTokenFor(URL url) {
 
-        for (Map.Entry<Pattern, String> entry : this.accessTokens.entrySet()) {
-            final Pattern pattern = entry.getKey();
-            Matcher matcher = pattern.matcher(url.getHost());
+        Iterator<Pair<Pattern, String>> iter = accessTokens.descendingIterator();
+        while(iter.hasNext()) {
+            Pair<Pattern, String> next = iter.next();
+            Matcher matcher = next.getFirst().matcher(url.getHost());
             if (matcher.find()) {
-                return entry.getValue();
+                return next.getSecond();
             }
         }
         return null;
-//        if (token == null && oauthProvider != null && oauthProvider.appliesToUrl(url)) {
-//            token = oauthProvider.getAccessToken();
-//        }
     }
 
     public void clearAccessTokens() {
@@ -689,7 +690,7 @@ public class HttpUtils {
 
         // If we have an explicitly set oauth token for this URL use it.  This is used by port and batch commands
         // and will ovveride oAuth authentication check
-        String token = this.getAccessTokenFor(url);
+        String token = this.getCachedTokenFor(url);
 
         if (token == null) {
 
