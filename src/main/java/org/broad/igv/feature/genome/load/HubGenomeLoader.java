@@ -2,8 +2,12 @@ package org.broad.igv.feature.genome.load;
 
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ucsc.Hub;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.TrackSelectionDialog;
 
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.List;
 
 public class HubGenomeLoader extends GenomeLoader {
 
@@ -37,6 +41,15 @@ public class HubGenomeLoader extends GenomeLoader {
         Hub hub = Hub.loadHub(this.hubURL);
 
         GenomeConfig config = hub.getGenomeConfig(null);
+
+        // Select tracks
+        if(IGV.hasInstance()) {
+            TrackSelectionDialog dlg = new TrackSelectionDialog(hub.getGroupedTrackConfigurations(), IGV.getInstance().getMainFrame());
+            dlg.setVisible(true);
+            List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
+            selectedTracks.sort((o1, o2) -> o1.order - o2.order);
+            config.tracks = selectedTracks;
+        }
 
         return new Genome(config);
 

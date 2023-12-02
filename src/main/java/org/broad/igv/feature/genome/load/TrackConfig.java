@@ -31,6 +31,7 @@ public class TrackConfig {
     public Integer visibilityWindow;
     public Boolean indexed;
     public Boolean hidden;
+    public String html;
 
     public TrackConfig() {
     }
