@@ -1,22 +1,24 @@
-package org.broad.igv.ui;
+package org.broad.igv.ucsc;
 
+import com.jidesoft.swing.FontUtils;
 import org.broad.igv.feature.genome.load.TrackConfig;
-import org.broad.igv.ucsc.Hub;
-import org.broad.igv.ucsc.TrackConfigGroup;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.HyperlinkFactory;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 
+/**
+ * Dialog to enable selection of track hub tracks prior to loading.  Might be generalized to other use cases, but
+ * for now focused on track hubs.
+ *
+ */
 public class TrackSelectionDialog extends JDialog {
-
 
     Map<JCheckBox, TrackConfig> configMap;
 
@@ -35,6 +37,7 @@ public class TrackSelectionDialog extends JDialog {
         configMap = new HashMap<>();
 
         JLabel headerMessage = new JLabel("Select tracks to load");
+        headerMessage.setFont(FontManager.getFont(Font.BOLD, 14));
         headerMessage.setHorizontalAlignment(SwingConstants.CENTER);
         headerMessage.setPreferredSize(new Dimension(300, 50));
         //   add(headerMessage, BorderLayout.NORTH);
@@ -113,8 +116,12 @@ public class TrackSelectionDialog extends JDialog {
     public List<TrackConfig> getSelectedConfigs() {
         List<TrackConfig> selected = new ArrayList<>();
         for(Map.Entry<JCheckBox, TrackConfig> entry : configMap.entrySet()) {
+            final TrackConfig trackConfig = entry.getValue();
             if(entry.getKey().isSelected()) {
-                selected.add(entry.getValue());
+                trackConfig.visible = true;
+                selected.add(trackConfig);
+            } else {
+                trackConfig.visible = false;
             }
         }
         return selected;
