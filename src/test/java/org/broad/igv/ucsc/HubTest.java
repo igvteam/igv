@@ -22,7 +22,7 @@ public class HubTest {
         assertNotNull(hub.genomeStanza);
         assertEquals(22, hub.trackStanzas.size());
 
-        GenomeConfig genomeConfig = hub.getGenomeConfig(null);
+        GenomeConfig genomeConfig = hub.getGenomeConfig(true);
         assertNotNull(genomeConfig);
         assertEquals("GCF_000186305.1", genomeConfig.id);
         assertEquals("Python bivittatus (GCF_000186305.1)", genomeConfig.name);

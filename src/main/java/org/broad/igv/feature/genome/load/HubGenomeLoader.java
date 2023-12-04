@@ -6,10 +6,11 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ucsc.Hub;
 import org.broad.igv.ucsc.TrackConfigGroup;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ucsc.TrackSelectionDialog;
+import org.broad.igv.ucsc.HubTrackSelectionDialog;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class HubGenomeLoader extends GenomeLoader {
 
@@ -42,11 +43,12 @@ public class HubGenomeLoader extends GenomeLoader {
 
         Hub hub = Hub.loadHub(this.hubURL);
 
-        GenomeConfig config = hub.getGenomeConfig(null);
+        GenomeConfig config = hub.getGenomeConfig(false);
 
         // Potentially override default tracks from hub with user selections
 
         // Check previous selections for this hub first
+        // TODO -- Maintain track order?
         String key = "hub:" + this.hubURL;
         if (PreferencesManager.getPreferences().hasExplicitValue(key)) {
             List<TrackConfig> selectedTracks = new ArrayList<>();
@@ -65,10 +67,10 @@ public class HubGenomeLoader extends GenomeLoader {
 
         // If running in interactive mode opend dialog to set tracks.
         else if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting()) {
-            TrackSelectionDialog dlg = new TrackSelectionDialog(hub.getGroupedTrackConfigurations(), IGV.getInstance().getMainFrame());
+            HubTrackSelectionDialog dlg = new HubTrackSelectionDialog(hub.getGroupedTrackConfigurations(), IGV.getInstance().getMainFrame());
             dlg.setVisible(true);
+
             List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
-            selectedTracks.sort((o1, o2) -> o1.order - o2.order);
             config.tracks = selectedTracks;
 
             // Remember selections in user preferences
@@ -76,7 +78,11 @@ public class HubGenomeLoader extends GenomeLoader {
             PreferencesManager.getPreferences().put(key, String.join(",", names));
         }
 
-        return new Genome(config);
+        Genome genome = new Genome(config);
+        genome.setHub(hub);
+
+        return genome;
+
 
     }
 }

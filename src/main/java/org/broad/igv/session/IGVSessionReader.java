@@ -1205,8 +1205,6 @@ public class IGVSessionReader implements SessionReader {
                 if (trackId.equals(legacyGeneTrackID)) {
                     if (genome.getGeneTrack() != null) {
                         return Arrays.asList(genome.getGeneTrack());
-                    } else if (genome.getAnnotationTracks() != null && genome.getAnnotationTracks().size() > 0) {
-                        return genome.getAnnotationTracks().values().iterator().next();
                     }
                 }
             }

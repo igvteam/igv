@@ -720,7 +720,8 @@ public class ReferenceFrame {
      * @return
      */
     public int calculateZoom(double start, double end) {
-        final double windowLength = end - start;
+        final double windowLength = Math.ceil(end) - start;
+        final int chrLength = getChromosomeLength();
         if (windowLength >= getChromosomeLength()) {
             return 0;
         } else {

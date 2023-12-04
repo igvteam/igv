@@ -12,6 +12,7 @@ import java.util.function.Function;
 
 public class Hub {
 
+    private final String url;
     String baseURL;
     Stanza hub;
     Stanza genomeStanza;
@@ -63,11 +64,15 @@ public class Hub {
             }
         }
 
-        return new Hub(baseURL, stanzas, groups);
+        return new Hub(url, stanzas, groups);
     }
 
-    private Hub(String baseURL, List<Stanza> stanzas, List<Stanza> groupStanzas) {
+    private Hub(String url, List<Stanza> stanzas, List<Stanza> groupStanzas) {
 
+        this.url = url;
+
+        int idx = url.lastIndexOf("/");
+        String baseURL = url.substring(0, idx + 1);
         this.baseURL = baseURL;
 
         if (stanzas.size() < 2) {
@@ -167,7 +172,7 @@ public class Hub {
         return nodes;
     }
 
-    public GenomeConfig getGenomeConfig(String includeTrackGroups) {
+    public GenomeConfig getGenomeConfig(boolean includeTracks) {
         // TODO -- add blat?  htmlPath?
 
         GenomeConfig config = new GenomeConfig();
@@ -246,11 +251,10 @@ public class Hub {
         }
 
         // Tracks.  To prevent loading tracks set `includeTrackGroups`to false or "none"
-        if (includeTrackGroups == null || !"none".equals(includeTrackGroups)) {
+        if (includeTracks) {
             Function<Stanza, Boolean> filter = (t) -> {
                 return !Hub.filterTracks.contains(t.name) &&
-                        (!"hide".equals(t.getProperty("visibility"))) &&
-                        (includeTrackGroups == null || "all".equals(includeTrackGroups) || includeTrackGroups.equals(t.getProperty("group")));
+                        (!"hide".equals(t.getProperty("visibility")));
             };
             config.tracks = this.getTracksConfigs(filter);
         }
@@ -389,6 +393,10 @@ public class Hub {
         }
 
         return config;
+    }
+
+    public String getUrl() {
+        return url;
     }
 
 
