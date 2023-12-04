@@ -1,5 +1,6 @@
 package org.broad.igv.ucsc;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.HyperlinkFactory;
@@ -38,11 +39,12 @@ public class HubTrackSelectionDialog extends JDialog {
 
         configMap = new HashMap<>();
 
-        JLabel headerMessage = new JLabel("Select tracks to load");
-        headerMessage.setFont(FontManager.getFont(Font.BOLD, 14));
-        headerMessage.setHorizontalAlignment(SwingConstants.CENTER);
-        headerMessage.setPreferredSize(new Dimension(300, 50));
-        add(headerMessage, BorderLayout.NORTH);
+        setTitle("Select tracks to load");
+//        JLabel headerMessage = new JLabel("Select tracks to load");
+//        headerMessage.setFont(FontManager.getFont(Font.BOLD, 14));
+//        headerMessage.setHorizontalAlignment(SwingConstants.CENTER);
+//        headerMessage.setPreferredSize(new Dimension(300, 50));
+//        add(headerMessage, BorderLayout.NORTH);
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
@@ -80,11 +82,20 @@ public class HubTrackSelectionDialog extends JDialog {
 
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(e -> setVisible(false));
-        buttonPanel.add(cancelButton);
 
         JButton okButton = new JButton("OK");
         okButton.addActionListener(e -> okAction());
-        buttonPanel.add(okButton);
+
+        if (Globals.IS_MAC) {
+            buttonPanel.add(cancelButton);
+            buttonPanel.add(okButton);
+        } else {
+            buttonPanel.add(okButton);
+            buttonPanel.add(cancelButton);
+        }
+
+        getRootPane().setDefaultButton(okButton);
+
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Try to adjust height to "just enough", BoxLayout will potentially leave empty space otherwise.  There might
@@ -119,7 +130,7 @@ public class HubTrackSelectionDialog extends JDialog {
 
         JPanel container = new JPanel();
         container.setLayout(new BorderLayout());
-        Border border = BorderFactory.createLineBorder(Color.gray);//   BorderFactory.createLoweredBevelBorder();
+        Border border = BorderFactory.createLineBorder(Color.lightGray);//   BorderFactory.createLoweredBevelBorder();
         container.setBorder(BorderFactory.createTitledBorder(border, configGroup.label));
 
         JPanel trackContainer = new JPanel();
@@ -151,6 +162,7 @@ public class HubTrackSelectionDialog extends JDialog {
 
     /**
      * Convenience method to extract and return selected track configurations.
+     *
      * @return
      */
     public List<TrackConfig> getSelectedConfigs() {
@@ -162,23 +174,23 @@ public class HubTrackSelectionDialog extends JDialog {
     /**
      * A FlowLayout extension that wraps components as needed and updates the preferre size accordingly.
      * FlowLayout itself does not update the preferred size, so the component width grows without bounds.
-     *
+     * <p>
      * Code courtesy Rob Camick.  See https://tips4java.wordpress.com/2008/11/06/wrap-layout/
-     *
+     * <p>
      * MIT License
-     *
+     * <p>
      * Copyright (c) 2023 Rob Camick
-     *
+     * <p>
      * Permission is hereby granted, free of charge, to any person obtaining a copy
      * of this software and associated documentation files (the "Software"), to deal
      * in the Software without restriction, including without limitation the rights
      * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
      * copies of the Software, and to permit persons to whom the Software is
      * furnished to do so, subject to the following conditions:
-     *
+     * <p>
      * The above copyright notice and this permission notice shall be included in all
      * copies or substantial portions of the Software.
-     *
+     * <p>
      * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
      * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
      * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -186,7 +198,6 @@ public class HubTrackSelectionDialog extends JDialog {
      * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
      * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
      * SOFTWARE.
-     *
      */
     static class WrapLayout extends FlowLayout {
         private Dimension preferredLayoutSize;
