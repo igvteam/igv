@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.broad.igv.prefs.Constants.GOOGLE_PROJECT;
 import static org.broad.igv.prefs.Constants.SAVE_GOOGLE_CREDENTIALS;
@@ -41,7 +43,7 @@ public class GoogleUtils {
         return url != null &&
                 (url.startsWith("gs://") ||
                         url.startsWith("https://www.googleapis.com/storage") ||
-                        url.startsWith("https://storage.cloud.google.com")  ||
+                        url.startsWith("https://storage.cloud.google.com") ||
                         url.startsWith("https://storage.googleapis.com"));
     }
 
@@ -49,6 +51,8 @@ public class GoogleUtils {
     /**
      * gs://igv-bam-test/NA12878.bam
      * https://www.googleapis.com/storage/v1/b/igv-bam-test/o/NA12878.bam
+     * <p>
+     * https://storage.googleapis.com/download/storage/v1/b/BUCKET_NAME/o/OBJECT_NAME?alt=media
      *
      * @param gsUrl
      * @return
@@ -62,15 +66,9 @@ public class GoogleUtils {
         }
 
         String bucket = gsUrl.substring(5, i);
-        String object = gsUrl.substring(i + 1);
-        try {
-            object = URLEncoder.encode(object, "UTF8");
-        } catch (UnsupportedEncodingException e) {
-            // This isn't going to happen
-            log.error(e);
-        }
+        String object = googleObjectEncode(gsUrl.substring(i + 1));
 
-        return "https://www.googleapis.com/storage/v1/b/" + bucket + "/o/" + object + "?alt=media";
+        return "https://storage.googleapis.com/storage/v1/b/" + bucket + "/o/" + object + "?alt=media";
 
     }
 
@@ -148,6 +146,54 @@ public class GoogleUtils {
             log.error("Error fetching google drive info", e);
             return null;
         }
+    }
+
+    /**
+     * Percent a GCS object name. See https://cloud.google.com/storage/docs/request-endpoints
+     * Specific characters to encode: !, #, $, &, ', (, ), *, +, ,, /, :, ;, =, ?, @, [, ], and space characters.
+     * @param objectName
+     * @return
+     */
+
+    static String googleObjectEncode(String objectName) {
+
+        String result = "";
+        for (int i = 0; i < objectName.length(); i++) {
+            Character c = objectName.charAt(i);
+            if (encodings.containsKey(c)) {
+                result += encodings.get(c);
+            } else {
+                result += c;
+            }
+        }
+        return result;
+    }
+
+    //	%23	%24	%25	%26	%27	%28	%29	%2A	%2B	%2C	%2F	%3A	%3B	%3D	%3F	%40	%5B	%5D
+    static Map<Character, String> encodings = new HashMap<>();
+
+    static {
+        encodings.put(' ', "%20");
+        encodings.put('!', "%21");
+        encodings.put('#', "%23");
+        encodings.put('$', "%24");
+        encodings.put('%', "%25");
+        encodings.put('&', "%26");
+        encodings.put('\'', "%27");
+        encodings.put('(', "%28");
+        encodings.put(')', "%29");
+        encodings.put('*', "%2A");
+        encodings.put('+', "%2B");
+        encodings.put(',', "%2C");
+        encodings.put('/', "%2F");
+        encodings.put(':', "%3A");
+        encodings.put(';', "%3B");
+        encodings.put('=', "%3D");
+        encodings.put('?', "%3F");
+        encodings.put('@', "%40");
+        encodings.put('[', "%5B");
+        encodings.put(']', "%5D");
+
     }
 
 }
