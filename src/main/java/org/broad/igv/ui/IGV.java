@@ -1152,7 +1152,7 @@ public class IGV implements IGVEventObserver {
 
             try {
                 List<Track> tracks = load(locator);
-                addTracks(tracks, locator);
+                addTracks(tracks);
             } catch (Exception e) {
                 log.error("Error loading track", e);
                 messages.append("Error loading " + locator + ": " + e.getMessage());
@@ -1186,12 +1186,11 @@ public class IGV implements IGVEventObserver {
      * is chosen based on characteristics of the {@code locator}.
      *
      * @param tracks
-     * @param locator
      */
-    public void addTracks(List<Track> tracks, ResourceLocator locator) {
+    public void addTracks(List<Track> tracks) {
 
         if (tracks.size() > 0) {
-            String path = locator.getPath();
+            String path = tracks.get(0).getResourceLocator().getPath();//  locator.getPath();
             Track representativeTrack = tracks.get(0);
 
             // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes

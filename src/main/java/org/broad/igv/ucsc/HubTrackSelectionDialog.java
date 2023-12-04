@@ -1,33 +1,35 @@
 package org.broad.igv.ucsc;
 
-import com.jidesoft.swing.FontUtils;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.HyperlinkFactory;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Dialog to enable selection of track hub tracks prior to loading.  Might be generalized to other use cases, but
- * for now focused on track hubs.
- *
+ * Dialog to enable selection of tracks defined by track hubs.  Modifies the "visible" property of
+ * supplied track configurations in place.
  */
-public class TrackSelectionDialog extends JDialog {
+public class HubTrackSelectionDialog extends JDialog {
 
-    Map<JCheckBox, TrackConfig> configMap;
+    private static final Dimension TRACK_SPACER = new Dimension(10, 5);
+    private Map<JCheckBox, TrackConfig> configMap;
 
-    public TrackSelectionDialog(List<TrackConfigGroup> groupedTrackConfigurations, Frame owner) {
+    public HubTrackSelectionDialog(List<TrackConfigGroup> groupedTrackConfigurations, Frame owner) {
         super(owner);
         setModal(true);
         init(groupedTrackConfigurations);
-
-        //pack();
         setLocationRelativeTo(owner);
     }
 
@@ -40,19 +42,30 @@ public class TrackSelectionDialog extends JDialog {
         headerMessage.setFont(FontManager.getFont(Font.BOLD, 14));
         headerMessage.setHorizontalAlignment(SwingConstants.CENTER);
         headerMessage.setPreferredSize(new Dimension(300, 50));
-        //   add(headerMessage, BorderLayout.NORTH);
+        add(headerMessage, BorderLayout.NORTH);
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
-
-        mainPanel.add(headerMessage, BorderLayout.NORTH);
-
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         add(scrollPane, BorderLayout.CENTER);
 
         JPanel categoryContainer = new JPanel();
         categoryContainer.setLayout(new BoxLayout(categoryContainer, BoxLayout.PAGE_AXIS));
         mainPanel.add(categoryContainer);
+
+        // Panel for select all/none
+        JPanel checkAllPanel = new JPanel();
+        ((FlowLayout) checkAllPanel.getLayout()).setAlignment(FlowLayout.LEFT);
+        JButton selectAllButton = new JButton("Select All");
+        selectAllButton.setFocusPainted(false);
+        selectAllButton.addActionListener(e -> configMap.keySet().forEach(cb -> cb.setSelected(true)));
+        checkAllPanel.add(selectAllButton);
+        JButton selectNoneButton = new JButton("Select None");
+        selectNoneButton.addActionListener(e -> configMap.keySet().forEach(cb -> cb.setSelected(false)));
+        checkAllPanel.add(selectNoneButton);
+        categoryContainer.add(checkAllPanel);
+        //mainPanel.add(checkAllPanel, BorderLayout.NORTH);
+
 
         List<JPanel> cpl = new ArrayList<>();
         for (TrackConfigGroup configGroup : trackConfigurations) {
@@ -62,24 +75,47 @@ public class TrackSelectionDialog extends JDialog {
             cpl.add(categoryPanel);
         }
 
-
         JPanel buttonPanel = new JPanel();
         ((FlowLayout) buttonPanel.getLayout()).setAlignment(FlowLayout.RIGHT);
 
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> setVisible(false));
+        buttonPanel.add(cancelButton);
+
         JButton okButton = new JButton("OK");
-        okButton.addActionListener(e -> setVisible(false));
+        okButton.addActionListener(e -> okAction());
         buttonPanel.add(okButton);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-
-        pack();
+        // Try to adjust height to "just enough", BoxLayout will potentially leave empty space otherwise.  There might
+        // be a better way to achieve this.
         int h = 75;
         for (JPanel p : cpl) h += p.getMinimumSize().height;
         setSize(new Dimension(800, Math.min(800, h)));
+        pack();
+        revalidate();
 
     }
 
-    JPanel categoryPanel(TrackConfigGroup configGroup) {
+    private void okAction() {
+        for (Map.Entry<JCheckBox, TrackConfig> entry : configMap.entrySet()) {
+            final TrackConfig trackConfig = entry.getValue();
+            if (entry.getKey().isSelected()) {
+                trackConfig.visible = true;
+            } else {
+                trackConfig.visible = false;
+            }
+        }
+        setVisible(false);
+    }
+
+    /**
+     * Create a JPanel for a particular track category, including a label and checkboxes for contained tracks.
+     *
+     * @param configGroup
+     * @return
+     */
+    private JPanel categoryPanel(TrackConfigGroup configGroup) {
 
         JPanel container = new JPanel();
         container.setLayout(new BorderLayout());
@@ -106,26 +142,52 @@ public class TrackSelectionDialog extends JDialog {
 
             p.add(checkBox);
             p.add(label);
-            p.add(Box.createRigidArea(new Dimension(10, 5)));
+            p.add(Box.createRigidArea(TRACK_SPACER));
             trackContainer.add(p);
         }
 
         return container;
     }
 
+    /**
+     * Convenience method to extract and return selected track configurations.
+     * @return
+     */
     public List<TrackConfig> getSelectedConfigs() {
-        List<TrackConfig> selected = new ArrayList<>();
-        for(Map.Entry<JCheckBox, TrackConfig> entry : configMap.entrySet()) {
-            final TrackConfig trackConfig = entry.getValue();
-            if(entry.getKey().isSelected()) {
-                trackConfig.visible = true;
-                selected.add(trackConfig);
-            } else {
-                trackConfig.visible = false;
-            }
-        }
+        List<TrackConfig> selected = configMap.values().stream().filter(trackConfig -> trackConfig.visible).collect(Collectors.toList());
+        selected.sort((o1, o2) -> o1.order - o2.order);
         return selected;
     }
+
+    /**
+     * A FlowLayout extension that wraps components as needed and updates the preferre size accordingly.
+     * FlowLayout itself does not update the preferred size, so the component width grows without bounds.
+     *
+     * Code courtesy Rob Camick.  See https://tips4java.wordpress.com/2008/11/06/wrap-layout/
+     *
+     * MIT License
+     *
+     * Copyright (c) 2023 Rob Camick
+     *
+     * Permission is hereby granted, free of charge, to any person obtaining a copy
+     * of this software and associated documentation files (the "Software"), to deal
+     * in the Software without restriction, including without limitation the rights
+     * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+     * copies of the Software, and to permit persons to whom the Software is
+     * furnished to do so, subject to the following conditions:
+     *
+     * The above copyright notice and this permission notice shall be included in all
+     * copies or substantial portions of the Software.
+     *
+     * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+     * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+     * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+     * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+     * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+     * SOFTWARE.
+     *
+     */
     static class WrapLayout extends FlowLayout {
         private Dimension preferredLayoutSize;
 
@@ -298,17 +360,26 @@ public class TrackSelectionDialog extends JDialog {
         }
     }
 
+
+    /**
+     * main for testing and development
+     *
+     * @param args
+     * @throws InterruptedException
+     * @throws InvocationTargetException
+     * @throws IOException
+     */
     public static void main(String[] args) throws InterruptedException, InvocationTargetException, IOException {
 
         String hubFile = "test/data/hubs/hub.txt";
         Hub hub = Hub.loadHub(hubFile);
         List<TrackConfigGroup> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
 
-        final TrackSelectionDialog dlf = new TrackSelectionDialog(groupedTrackConfigurations, null);
+        final HubTrackSelectionDialog dlf = new HubTrackSelectionDialog(groupedTrackConfigurations, null);
 
         dlf.setVisible(true);
 
-        for(TrackConfig config : dlf.getSelectedConfigs()) {
+        for (TrackConfig config : dlf.getSelectedConfigs()) {
             System.out.println(config.name);
         }
     }

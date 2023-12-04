@@ -253,19 +253,6 @@ public class GenomeManager {
      * @param genome
      */
     public void loadGenomeAnnotations(Genome genome) {
-        List<ResourceLocator> resources = genome.getAnnotationResources();
-        if (resources != null) {
-            Map<ResourceLocator, List<Track>> annotationTracks = new LinkedHashMap<>();
-            for (ResourceLocator locator : resources) {
-                try {
-                    List<Track> tracks = IGV.getInstance().load(locator);
-                    annotationTracks.put(locator, tracks);
-                } catch (DataLoadException e) {
-                    log.error("Error loading genome annotations", e);
-                }
-            }
-            genome.setAnnotationTracks(annotationTracks);
-        }
         restoreGenomeTracks(genome);
         IGV.getInstance().repaint();
     }
@@ -279,6 +266,7 @@ public class GenomeManager {
 
         IGV.getInstance().setSequenceTrack();
 
+        // Fetch the gene track, defined by .genome files.  In this format the genome data is encoded in the .genome file
         FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Can be null
         if (geneFeatureTrack != null) {
             PanelName panelName = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
@@ -289,29 +277,40 @@ public class GenomeManager {
             IGV.getInstance().addTracks(Arrays.asList(geneFeatureTrack), panelName);
         }
 
-        Map<ResourceLocator, List<Track>> annotationTracks = currentGenome.getAnnotationTracks();
-        if (annotationTracks != null) {
-            for (Map.Entry<ResourceLocator, List<Track>> entry : annotationTracks.entrySet()) {
-                IGV.getInstance().addTracks(entry.getValue(), entry.getKey());
-                for (Track track : entry.getValue()) {
-                    ResourceLocator locator = track.getResourceLocator();
-                    String fn = "";
-                    if (locator != null) {
-                        fn = locator.getPath();
-                        int lastSlashIdx = fn.lastIndexOf("/");
-                        if (lastSlashIdx < 0) {
-                            lastSlashIdx = fn.lastIndexOf("\\");
-                        }
-                        if (lastSlashIdx > 0) {
-                            fn = fn.substring(lastSlashIdx + 1);
-                        }
-                    }
-                    track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
-                    track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
-                    track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+        List<ResourceLocator> resources = genome.getAnnotationResources();
+        List<Track> annotationTracks = new ArrayList<>();
+        if (resources != null) {
+            for (ResourceLocator locator : resources) {
+                try {
+                    List<Track> tracks = IGV.getInstance().load(locator);
+                    annotationTracks.addAll(tracks);
+                } catch (DataLoadException e) {
+                    log.error("Error loading genome annotations", e);
                 }
             }
         }
+
+        if (annotationTracks.size() > 0) {
+            IGV.getInstance().addTracks(annotationTracks);
+            for (Track track : annotationTracks) {
+                ResourceLocator locator = track.getResourceLocator();
+                String fn = "";
+                if (locator != null) {
+                    fn = locator.getPath();
+                    int lastSlashIdx = fn.lastIndexOf("/");
+                    if (lastSlashIdx < 0) {
+                        lastSlashIdx = fn.lastIndexOf("\\");
+                    }
+                    if (lastSlashIdx > 0) {
+                        fn = fn.substring(lastSlashIdx + 1);
+                    }
+                }
+                track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
+                track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
+                track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+            }
+        }
+
         IGV.getInstance().revalidateTrackPanels();
     }
 
