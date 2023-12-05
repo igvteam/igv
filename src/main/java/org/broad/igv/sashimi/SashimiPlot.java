@@ -90,12 +90,10 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         plotColors = Arrays.asList(palette.getColors());
     }
 
-
-    public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack) {
+    public SashimiPlot(ReferenceFrame iframe, Collection<AlignmentTrack> alignmentTracks, FeatureTrack geneTrack) {
 
         // setContentPane(new SashimiContentPane());
         getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        int minJunctionCoverage = PreferencesManager.getPreferences().getAsInt(Constants.SAM_JUNCTION_MIN_COVERAGE);
 
         this.eventBus = new IGVEventBus();
         this.referenceFrame = new ReferenceFrame(iframe, eventBus);
@@ -113,6 +111,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         //Add control elements to the top
         sashimiPanel.add(generateControlPanel(this.referenceFrame));
 
+        // Initialize minJunctionCoverage
+
         spliceJunctionTracks = new ArrayList<>(alignmentTracks.size());
 
         int colorInd = 0;
@@ -122,7 +122,6 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         eventBus.subscribe(ViewChange.class, this);
 
         for (AlignmentTrack alignmentTrack : alignmentTracks) {
-
 
             //AlignmentDataManager oldDataManager = alignmentTrack.getDataManager();
             AlignmentDataManager dataManager = alignmentTrack.getDataManager();
@@ -143,7 +142,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             TrackComponent<SpliceJunctionTrack> trackComponent = new TrackComponent<SpliceJunctionTrack>(referenceFrame, spliceJunctionTrack);
             trackComponent.originalFrame = iframe;
 
-            initSpliceJunctionComponent(trackComponent, dataManager, dataManager.getCoverageTrack(), minJunctionCoverage);
+            initSpliceJunctionComponent(trackComponent, dataManager, dataManager.getCoverageTrack());
 
             sashimiPanel.add(trackComponent);
             spliceJunctionTracks.add(spliceJunctionTrack);
@@ -228,7 +227,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         geneComponent.addMouseMotionListener(ad2);
     }
 
-    private void initSpliceJunctionComponent(TrackComponent<SpliceJunctionTrack> trackComponent, AlignmentDataManager dataManager, CoverageTrack coverageTrack, int minJunctionCoverage) {
+    private void initSpliceJunctionComponent(TrackComponent<SpliceJunctionTrack> trackComponent, AlignmentDataManager dataManager, CoverageTrack coverageTrack) {
         JunctionTrackMouseAdapter ad1 = new JunctionTrackMouseAdapter(trackComponent);
         trackComponent.addMouseListener(ad1);
         trackComponent.addMouseMotionListener(ad1);
@@ -236,8 +235,6 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         getRenderer(trackComponent.track).setDataManager(dataManager);
         getRenderer(trackComponent.track).setCoverageTrack(coverageTrack);
         getRenderer(trackComponent.track).getCoverageTrack().rescale(trackComponent.originalFrame);
-
-        dataManager.setMinJunctionCoverage(minJunctionCoverage);
 
         getRenderer(trackComponent.track).setBackground(getBackground());
     }
@@ -298,8 +295,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
      * @param newMinJunctionCoverage
      */
     private void setMinJunctionCoverage(TrackComponent<SpliceJunctionTrack> trackComponent, int newMinJunctionCoverage) {
-        AlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
-        dataManager.setMinJunctionCoverage(newMinJunctionCoverage);
+
         trackComponent.track.clear();
         trackComponent.repaint();
     }
@@ -334,12 +330,9 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
             final JCheckBoxMenuItem showCoverageData = new JCheckBoxMenuItem("Show Exon Coverage Data");
             showCoverageData.setSelected(PreferencesManager.getPreferences().getAsBoolean(Constants.SASHIMI_SHOW_COVERAGE));
-            showCoverageData.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    PreferencesManager.getPreferences().put(Constants.SASHIMI_SHOW_COVERAGE, showCoverageData.isSelected());
-                    SashimiPlot.this.repaint();
-                }
+            showCoverageData.addActionListener(e16 -> {
+                PreferencesManager.getPreferences().put(Constants.SASHIMI_SHOW_COVERAGE, showCoverageData.isSelected());
+                SashimiPlot.this.repaint();
             });
 
             CoverageTrack covTrack = getRenderer(this.trackComponent.track).getCoverageTrack();
@@ -350,51 +343,42 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             JMenuItem maxJunctionCoverageRange = new JMenuItem("Set Junction Coverage Max");
             maxJunctionCoverageRange.setToolTipText("The thickness of each line will be proportional to the coverage, up until this value");
 
-            maxJunctionCoverageRange.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String input = JOptionPane.showInputDialog("Set Max Junction Coverage", getRenderer(trackComponent.track).getMaxDepth());
-                    if (input == null || input.length() == 0) return;
-                    try {
-                        int newMaxDepth = Integer.parseInt(input);
-                        setMaxCoverageDepth(JunctionTrackMouseAdapter.this.trackComponent, newMaxDepth);
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
-                    }
+            maxJunctionCoverageRange.addActionListener(e12 -> {
+                String input = JOptionPane.showInputDialog(SashimiPlot.this, "Set Max Junction Coverage", getRenderer(trackComponent.track).getMaxDepth());
+                if (input == null || input.length() == 0) return;
+                try {
+                    int newMaxDepth = Integer.parseInt(input);
+                    setMaxCoverageDepth(JunctionTrackMouseAdapter.this.trackComponent, newMaxDepth);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
                 }
             });
-            JMenuItem minJunctionCoverage = new JMenuItem("Set Junction Coverage Min");
-            minJunctionCoverage.setToolTipText("Junctions below this threshold will be removed from view");
-            minJunctionCoverage.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    AlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
-                    SpliceJunctionHelper.LoadOptions loadOptions = dataManager.getSpliceJunctionLoadOptions();
 
-                    String input = JOptionPane.showInputDialog("Set Minimum Junction Coverage", loadOptions.minJunctionCoverage);
-                    if (input == null || input.length() == 0) return;
-                    try {
-                        int newMinJunctionCoverage = Integer.parseInt(input);
-                        setMinJunctionCoverage(JunctionTrackMouseAdapter.this.trackComponent, newMinJunctionCoverage);
-
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
-                    }
+            JMenuItem minJunctionCoverageItem = new JMenuItem("Set Junction Coverage Min");
+            minJunctionCoverageItem.setToolTipText("Junctions below this threshold will be removed from view");
+            minJunctionCoverageItem.addActionListener(e1 -> {
+                int minCov = this.trackComponent.track.getMinJunctionCoverage();
+                String input = JOptionPane.showInputDialog(SashimiPlot.this, "Set Minimum Junction Coverage", minCov);
+                if (input == null || input.length() == 0) return;
+                try {
+                    int newMinJunctionCoverage = Integer.parseInt(input);
+                    trackComponent.track.setMinJunctionCoverage(newMinJunctionCoverage);
+                    trackComponent.track.clear();
+                    trackComponent.repaint();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
                 }
             });
 
 
             JMenuItem colorItem = new JMenuItem("Set Color");
-            colorItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Color color = UIUtilities.showColorChooserDialog(
-                            "Select Track Color", trackComponent.track.getColor());
-                    SashimiPlot.this.toFront();
-                    if (color == null) return;
-                    trackComponent.track.setColor(color);
-                    trackComponent.repaint();
-                }
+            colorItem.addActionListener(e15 -> {
+                Color color = UIUtilities.showColorChooserDialog(
+                        "Select Track Color", trackComponent.track.getColor());
+                SashimiPlot.this.toFront();
+                if (color == null) return;
+                trackComponent.track.setColor(color);
+                trackComponent.repaint();
             });
 
             ButtonGroup shapeGroup = new ButtonGroup();
@@ -436,27 +420,21 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
 
             JMenuItem savePngImageItem = new JMenuItem("Save PNG Image...");
-            savePngImageItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    File defaultFile = new File("Sashimi.png");
-                    IGV.getInstance().createSnapshot(SashimiPlot.this.sashimiContentPane, defaultFile);
-                }
+            savePngImageItem.addActionListener(e13 -> {
+                File defaultFile = new File("Sashimi.png");
+                IGV.getInstance().createSnapshot(SashimiPlot.this.sashimiContentPane, defaultFile);
             });
 
             JMenuItem saveSvgImageItem = new JMenuItem("Save SVG Image...");
-            saveSvgImageItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    File defaultFile = new File("Sashimi.svg");
-                    IGV.getInstance().createSnapshot(SashimiPlot.this.sashimiContentPane, defaultFile);
-                }
+            saveSvgImageItem.addActionListener(e14 -> {
+                File defaultFile = new File("Sashimi.svg");
+                IGV.getInstance().createSnapshot(SashimiPlot.this.sashimiContentPane, defaultFile);
             });
 
             // Coverage ranges -- these apply to current plot only
             menu.add(new JLabel("Junction Coverage Display"));
             menu.add(setCoverageDataRange);
-            menu.add(minJunctionCoverage);
+            menu.add(minJunctionCoverageItem);
             menu.add(maxJunctionCoverageRange);
             menu.add(colorItem);
 
@@ -659,10 +637,9 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         }
 
 
-
-        Collection<AlignmentTrack> alignmentTracks =IGV.getInstance().getAlignmentTracks().stream()
+        Collection<AlignmentTrack> alignmentTracks = IGV.getInstance().getAlignmentTracks().stream()
                 .filter(t -> t.getExperimentType() == AlignmentTrack.ExperimentType.RNA).collect(Collectors.toList());
-;
+        ;
         if (alignmentTracks.size() > 1) {
             TrackSelectionDialog<AlignmentTrack> alDlg =
                     new TrackSelectionDialog<AlignmentTrack>(IGV.getInstance().getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, alignmentTracks);

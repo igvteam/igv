@@ -37,6 +37,7 @@ import org.broad.igv.event.RefreshEvent;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.mods.BaseModificationKey;
@@ -64,7 +65,6 @@ public class AlignmentDataManager implements IGVEventObserver {
     private static Logger log = LogManager.getLogger(AlignmentDataManager.class);
 
     private final Genome genome;
-
     private ChromAliasManager chromAliasManager;
     private final AlignmentReader reader;
     private AlignmentTrack alignmentTrack;
@@ -76,13 +76,12 @@ public class AlignmentDataManager implements IGVEventObserver {
     private Set<String> sequenceNames;
     private AlignmentTileLoader loader;
     private Map<String, PEStats> peStats;
-    private SpliceJunctionHelper.LoadOptions loadOptions;
-
     private Set<BaseModificationKey> allBaseModificationKeys = new HashSet<>();
-
     private Set<String> simplexBaseModfications = new HashSet<>();
 
     private Range currentlyLoading;
+    private AlignmentTrack.ExperimentType inferredType;
+    private int minJunctionCoverage;
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
@@ -91,8 +90,9 @@ public class AlignmentDataManager implements IGVEventObserver {
         // mechanism to refresh expired presigned URLs.
         reader = AlignmentReaderFactory.getReader(locator);
         loader = new AlignmentTileLoader(reader);
+        this.inferType();
+        minJunctionCoverage = PreferencesManager.getPreferences(Constants.RNA).getAsInt(SAM_JUNCTION_MIN_COVERAGE);
         peStats = new HashMap();
-        initLoadOptions();
         this.genome = genome;
         intervalCache = Collections.synchronizedList(new ArrayList<>());
         subscribedTracks = Collections.synchronizedSet(new HashSet<>());
@@ -125,16 +125,6 @@ public class AlignmentDataManager implements IGVEventObserver {
             IGVEventBus.getInstance().unsubscribe(this);
         }
     }
-
-    void initLoadOptions() {
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions();
-    }
-
-    /**
-     * The sequenceNames set is used to create an alias -> chromosome lookup map.  Enables loading BAM files that use alternative names for chromosomes
-     * (e.g. 1 -> chr1,  etc).
-     */
-
 
     public AlignmentTileLoader getLoader() {
         return loader;
@@ -182,6 +172,8 @@ public class AlignmentDataManager implements IGVEventObserver {
     public double getVisibilityWindow() {
         return getPreferences().getAsFloat(SAM_MAX_VISIBLE_RANGE) * 1000;
     }
+
+
 
     private IGVPreferences getPreferences() {
         String category = NULL_CATEGORY;
@@ -345,7 +337,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         final AlignmentTrack.BisulfiteContext bisulfiteContext =
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
 
-        SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
+        SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper();
 
         AlignmentTileLoader.AlignmentTile t = getLoader().loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, peStats, bisulfiteContext, renderOptions);
@@ -379,15 +371,19 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public AlignmentTrack.ExperimentType inferType() {
+        if(this.inferredType != null) {
+            return this.inferredType;
+        }
+
         ReadStats readStats = new ReadStats();
         List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 100);
         for (Alignment a : sample) {
             readStats.addAlignment(a);
         }
-        AlignmentTrack.ExperimentType type = readStats.inferType();
+        inferredType = readStats.inferType();
 
-        if (type == AlignmentTrack.ExperimentType.THIRD_GEN) {
-            return type;
+        if (inferredType == AlignmentTrack.ExperimentType.THIRD_GEN) {
+            return inferredType;
         } else {
             // Get a larger sample to distinguish RNA-Seq
             readStats = new ReadStats();
@@ -395,7 +391,8 @@ public class AlignmentDataManager implements IGVEventObserver {
             for (Alignment a : sample) {
                 readStats.addAlignment(a);
             }
-            return readStats.inferType();
+            inferredType = readStats.inferType();
+            return inferredType;
         }
     }
 
@@ -496,17 +493,6 @@ public class AlignmentDataManager implements IGVEventObserver {
             for (PEStats stats : peStats.values()) {
                 stats.computeInsertSize(renderOptions.getMinInsertSizePercentile(), renderOptions.getMaxInsertSizePercentile());
             }
-        }
-    }
-
-    public SpliceJunctionHelper.LoadOptions getSpliceJunctionLoadOptions() {
-        return loadOptions;
-    }
-
-    public void setMinJunctionCoverage(int minJunctionCoverage) {
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions(minJunctionCoverage, this.loadOptions.minReadFlankingWidth);
-        for (AlignmentInterval interval : intervalCache) {
-            interval.getSpliceJunctionHelper().setLoadOptions(this.loadOptions);
         }
     }
 

@@ -1059,7 +1059,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public boolean isSearchable() {
-        return source.isSearchable();
+        return source != null && source.isSearchable();
     }
 
     @Override

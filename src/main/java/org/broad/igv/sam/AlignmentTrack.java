@@ -1223,10 +1223,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Integer smallIndelThreshold;
         private BaseModficationFilter basemodFilter;
         private Float basemodThreshold;
-
         private int baseQualityMin;
-
         private int baseQualityMax;
+
+        private Integer minJunctionCoverage;
 
 
         BisulfiteContext bisulfiteContext = BisulfiteContext.CG;
@@ -1243,6 +1243,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         IGVPreferences getPreferences() {
             return this.track != null ? this.track.getPreferences() : AlignmentTrack.getPreferences(ExperimentType.OTHER);
+        }
+
+        public int getMinJunctionCoverage() {
+            return minJunctionCoverage != null ? minJunctionCoverage : PreferencesManager.getPreferences(Constants.RNA).getAsInt(SAM_JUNCTION_MIN_COVERAGE);
+        }
+
+        public void setMinJunctionCoverage(int minJunctionCoverage) {
+            this.minJunctionCoverage = minJunctionCoverage;
         }
 
         public int getBaseQualityMin() {
@@ -1614,8 +1622,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if (basemodThreshold != null) {
                 element.setAttribute("basemodThredhold", String.valueOf(basemodThreshold));
-
             }
+            if (minJunctionCoverage != null) {
+                element.setAttribute("minJunctionCoverage", String.valueOf(minJunctionCoverage));
+            }
+
         }
 
 
@@ -1738,7 +1749,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (element.hasAttribute("basemodThreshold")) {
                 basemodFilter = BaseModficationFilter.fromString(element.getAttribute("basemodThreshold"));
             }
-
+            if (element.hasAttribute("minJunctionCoverage")) {
+                minJunctionCoverage = Integer.parseInt(element.getAttribute("minJunctionCoverage"));
+            }
         }
     }
 
