@@ -30,10 +30,9 @@
 package org.broad.igv.ui.action;
 
 import org.broad.igv.Globals;
-import org.broad.igv.ext.ExtensionManager;
-import org.broad.igv.ext.load.ILoadTracksFromUrlExtension;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ultima.load.LoadMultipleTracks;
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -65,6 +64,9 @@ public class LoadFromURLMenuAction extends MenuAction {
     public static final String LOAD_FROM_HTSGET = "Load from htsget Server...";
     private IGV igv;
 
+    static private final LoadMultipleTracks loadMultipleTracks = new LoadMultipleTracks();
+
+
     public LoadFromURLMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
         this.igv = igv;
@@ -95,9 +97,8 @@ public class LoadFromURLMenuAction extends MenuAction {
                             checkAWSAccessbility(url);
                         }
                         // extension code
-                        ILoadTracksFromUrlExtension ext = (ILoadTracksFromUrlExtension) ExtensionManager.getExtentionFor(ILoadTracksFromUrlExtension.class, url);
-                        if ( ext != null ) {
-                            igv.loadTracks(ext.locatorsForUrl(url, dlg.getIndexURL()));
+                        if ( loadMultipleTracks.handlesUrl(url) ) {
+                            igv.loadTracks(loadMultipleTracks.locatorsForUrl(url, dlg.getIndexURL()));
                         } else if (SessionReader.isSessionFile(url)) {
 
                             try {

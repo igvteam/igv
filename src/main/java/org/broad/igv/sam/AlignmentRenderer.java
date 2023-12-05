@@ -25,9 +25,6 @@
 
 package org.broad.igv.sam;
 
-import org.broad.igv.ext.ExtensionManager;
-import org.broad.igv.ext.render.IColorByTagExtension;
-import org.broad.igv.ext.render.IIndelRenderingExtension;
 import com.google.common.primitives.Ints;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
@@ -39,7 +36,6 @@ import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.SequenceRenderer;
-import org.broad.igv.sam.BaseRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.sam.mods.BaseModificationRenderer;
@@ -53,6 +49,8 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.GreyscaleColorTable;
 import org.broad.igv.ui.color.HSLColorTable;
 import org.broad.igv.ui.color.PaletteColorTable;
+import org.broad.igv.ultima.render.ColorByTagValueList;
+import org.broad.igv.ultima.render.FlowIndelRendering;
 import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
@@ -136,6 +134,9 @@ public class AlignmentRenderer {
     private static Map<String, ColorTable> tagValueColors;
     private static ColorTable defaultTagColors;
     public static HashMap<Character, Color> nucleotideColors;
+
+    final private static ColorByTagValueList colorByTagValueList = new ColorByTagValueList();
+    final private static FlowIndelRendering flowIndelRendering = new FlowIndelRendering();
 
     private static void initializeTagTypes() {
         // pre-seed from orientation colors
@@ -666,9 +667,8 @@ public class AlignmentRenderer {
                 }
 
                 // gap extensions
-                final IIndelRenderingExtension ext = (IIndelRenderingExtension)ExtensionManager.getExtentionFor(IIndelRenderingExtension.class, alignment);
-                if ( ext != null ) {
-                    ext.renderDeletionGap(alignment, gap, y, h, gapPxStart, gapPxEnd - gapPxStart, context, renderOptions);
+                if ( flowIndelRendering.handlesAlignment(alignment) ) {
+                    flowIndelRendering.renderDeletionGap(alignment, gap, y, h, gapPxStart, gapPxEnd - gapPxStart, context, renderOptions);
                 }
             }
         }
@@ -925,9 +925,8 @@ public class AlignmentRenderer {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D ig = context.getGraphics();
                         ig.setColor(purple);
-                        final IIndelRenderingExtension ext = (IIndelRenderingExtension)ExtensionManager.getExtentionFor(IIndelRenderingExtension.class, alignment);
-                        if ( ext != null ) {
-                            ext.renderSmallInsertion(alignment, aBlock, context, h, x, y, renderOptions);
+                        if ( flowIndelRendering.handlesAlignment(alignment) ) {
+                            flowIndelRendering.renderSmallInsertion(alignment, aBlock, context, h, x, y, renderOptions);
                         } else {
                             ig.fillRect(x, y, 2, h);
                             ig.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
@@ -1063,9 +1062,8 @@ public class AlignmentRenderer {
         g.fillRect(pxLeft, pxTop, pxRight - pxLeft, pxH);
 
         if (isInsertion && pxH > 5) {
-            final IIndelRenderingExtension ext = (IIndelRenderingExtension)ExtensionManager.getExtentionFor(IIndelRenderingExtension.class, alignment);
-            if ( ext != null ) {
-                ext.renderSmallInsertionWings(alignment, insertionBlock, context, pxH, pxTop, pxRight, pxLeft, track.renderOptions);
+            if ( flowIndelRendering.handlesAlignment(alignment) ) {
+                flowIndelRendering.renderSmallInsertionWings(alignment, insertionBlock, context, pxH, pxTop, pxRight, pxLeft, track.renderOptions);
             } else {
                 g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
                 g.fillRect(pxLeft - pxWing, pxTop + pxH - 2, pxRight - pxLeft + 2 * pxWing, 2);
@@ -1139,10 +1137,8 @@ public class AlignmentRenderer {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D g = context.getGraphics();
                         g.setColor(purple);
-
-                        final IIndelRenderingExtension ext = (IIndelRenderingExtension)ExtensionManager.getExtentionFor(IIndelRenderingExtension.class, alignment);
-                        if ( ext != null ) {
-                            ext.renderSmallInsertion(alignment, aBlock, context, h, x, y, renderOptions);
+                        if ( flowIndelRendering.handlesAlignment(alignment) ) {
+                            flowIndelRendering.renderSmallInsertion(alignment, aBlock, context, h, x, y, renderOptions);
                         } else {
                             g.fillRect(x, y, 2, h);
                             g.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
@@ -1404,8 +1400,7 @@ public class AlignmentRenderer {
             case TAG:
                 final String tag = renderOptions.getColorByTag();
                 if (tag != null) {
-                    IColorByTagExtension ext = (IColorByTagExtension) ExtensionManager.getExtentionFor(IColorByTagExtension.class, tag);
-                    Object tagValue = (ext == null) ? alignment.getAttribute(tag) : ext.getValueForColorByTag(alignment, tag);
+                    Object tagValue = !colorByTagValueList.handlesTag(tag) ? alignment.getAttribute(tag) : colorByTagValueList.getValueForColorByTag(alignment, tag);
                     if (tagValue != null) {
 
                         ColorTable ctable;

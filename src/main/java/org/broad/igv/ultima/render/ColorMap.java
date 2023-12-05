@@ -1,4 +1,4 @@
-package org.broad.igv.ext.render;
+package org.broad.igv.ultima.render;
 
 /*
  * Copyright 1999-2004 Carnegie Mellon University.

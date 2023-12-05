@@ -1,4 +1,4 @@
-package org.broad.igv.ext.load;
+package org.broad.igv.ultima.load;
 
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.ui.action.LoadFromURLMenuAction;
@@ -8,17 +8,11 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-public class LoadMultipleTracks implements ILoadTracksFromUrlExtension {
+public class LoadMultipleTracks {
 
     final static String SPLIT_REGEX = "\\s+";
 
-    @Override
-    public boolean extendsContext(final Object context) {
-
-        // context must be a url string
-        if ( !(context instanceof String) )
-            return false;
-        final String        url = (String)context;
+    public boolean handlesUrl(final String url) {
 
         // url must not be a session
         if (url.endsWith(".xml") || url.endsWith(".session")) {
@@ -39,7 +33,6 @@ public class LoadMultipleTracks implements ILoadTracksFromUrlExtension {
         return true;
     }
 
-    @Override
     public Collection<ResourceLocator> locatorsForUrl(final String url, final String indexUrl) {
 
         List<ResourceLocator>   locators = new LinkedList<>();

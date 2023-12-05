@@ -1,23 +1,15 @@
-package org.broad.igv.ext.render;
+package org.broad.igv.ultima.render;
 
 import org.broad.igv.sam.Alignment;
 
-public class ColorByTagValueList implements IColorByTagExtension {
+public class ColorByTagValueList {
 
-    @Override
-    public boolean extendsContext(Object context) {
-
-        // context is tag
-        if ( !(context instanceof String) ) {
-            return false;
-        }
-        final String tag = (String)context;
+    public boolean handlesTag(final String tag) {
 
         // must contain list prefix
         return tag.contains(":");
     }
 
-    @Override
     public Object getValueForColorByTag(Alignment alignment, String tag) {
 
         // parse tag as a tag followed by a series of values, seperated by a column :

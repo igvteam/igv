@@ -34,8 +34,6 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMTag;
-import org.broad.igv.ext.ExtensionManager;
-import org.broad.igv.ext.annotate.IAlignmentBlockAnnotationExtension;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
@@ -47,6 +45,7 @@ import org.broad.igv.sam.mods.BaseModificationUtils;
 import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.sam.smrt.SMRTKinetics;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ultima.annotate.FlowBlockAnnotator;
 
 import java.awt.*;
 import java.util.*;
@@ -96,6 +95,8 @@ public class SAMAlignment implements Alignment {
     private SAMReadGroupRecord readGroupRecord;
 
     private int flags;
+
+    final private static FlowBlockAnnotator flowBlockAnnotator = new FlowBlockAnnotator();
 
     /**
      * Picard object upon which this SAMAlignment is based
@@ -692,9 +693,8 @@ public class SAMAlignment implements Alignment {
                         }
 
                         // extended annotation?
-                        IAlignmentBlockAnnotationExtension ext = (IAlignmentBlockAnnotationExtension) ExtensionManager.getExtentionFor(IAlignmentBlockAnnotationExtension.class, block);
-                        if ( ext != null )
-                            ext.appendBlockQualityAnnotation(this, block, buf);
+                        if ( flowBlockAnnotator.handlesBlocks(block) )
+                            flowBlockAnnotator.appendBlockQualityAnnotation(this, block, buf);
                     }
                     atInsertion = true;
                 }
@@ -887,9 +887,8 @@ public class SAMAlignment implements Alignment {
                 byte quality = block.getQuality(offset);
                 buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
                 buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality));
-                IAlignmentBlockAnnotationExtension ext = (IAlignmentBlockAnnotationExtension) ExtensionManager.getExtentionFor(IAlignmentBlockAnnotationExtension.class, block);
-                if ( ext != null )
-                    ext.appendBlockAttrAnnotation(this, block, offset, buf);
+                if ( flowBlockAnnotator.handlesBlocks(block) )
+                    flowBlockAnnotator.appendBlockAttrAnnotation(this, block, offset, buf);
                 buf.append("<br>");
                 break;
             }

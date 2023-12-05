@@ -1,4 +1,4 @@
-package org.broad.igv.ext.render;
+package org.broad.igv.ultima.render;
 
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
@@ -9,7 +9,7 @@ import org.broad.igv.track.RenderContext;
 
 import java.awt.*;
 
-public class FlowIndelRendering implements IIndelRenderingExtension {
+public class FlowIndelRendering {
 
     public static final String TAG_T0 = "t0";
     private static ColorMap indelColorMap = ColorMap.getJet(42);
@@ -18,22 +18,20 @@ public class FlowIndelRendering implements IIndelRenderingExtension {
     private static String ATTR_TP = "tp";
     private static String ATTR_TI = "ti";
     private static String RG_ATTR_PL = "PL";
+
     private static String RG_ATTR_MC = "mc";
     private static String RG_ATTR_PL_ULTIMA = "ULTIMA";
 
-    public boolean extendsContext(final Object context) {
+    public boolean handlesAlignment(final Alignment alignment) {
 
-        // context is alignment, which must be a sam alignment
-        if ( !(context instanceof SAMAlignment) ) {
+        if ( !(alignment instanceof SAMAlignment) )
             return false;
-        }
-        final SAMAlignment alignment = (SAMAlignment)context;
+        final SAMAlignment samAlignment = (SAMAlignment)alignment;
 
         // must be a flow
         return getUltimaFileVersion(alignment) != UltimaFileFormat.NON_FLOW;
     }
 
-    @Override
     public void renderSmallInsertion(Alignment alignment,
                                      AlignmentBlock aBlock,
                                      RenderContext context,
@@ -67,7 +65,6 @@ public class FlowIndelRendering implements IIndelRenderingExtension {
         }
     }
 
-    @Override
     public void renderSmallInsertionWings(Alignment alignment,
                                      AlignmentBlock insertionBlock,
                                      RenderContext context,
@@ -104,7 +101,6 @@ public class FlowIndelRendering implements IIndelRenderingExtension {
 
     }
 
-    @Override
     public void renderDeletionGap(Alignment alignment,
                                           Gap gap,
                                           int y, int h, int x, int w,

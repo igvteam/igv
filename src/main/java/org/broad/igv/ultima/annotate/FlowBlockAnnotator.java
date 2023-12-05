@@ -1,4 +1,4 @@
-package org.broad.igv.ext.annotate;
+package org.broad.igv.ultima.annotate;
 
 import htsjdk.samtools.SAMRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -6,29 +6,20 @@ import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.ByteSubarray;
 import org.broad.igv.sam.SAMAlignment;
 
-public class FlowBlockAnnotator implements IAlignmentBlockAnnotationExtension {
+public class FlowBlockAnnotator {
 
     private static final String KEY_ATTR = "ti,tp";
 
-    @Override
-    public boolean extendsContext(final Object context) {
-
-        // must be a block with qualities
-        if ( !(context instanceof AlignmentBlock) ) {
-            return false;
-        }
-        final AlignmentBlock block = (AlignmentBlock)context;
+    public boolean handlesBlocks(final AlignmentBlock block) {
 
         // sanity: bases and qualities
         if ( (block.getBases() == null) || (block.getQualities() == null) ) {
             return false;
         }
 
-
         return true;
     }
 
-    @Override
     public void appendBlockQualityAnnotation(SAMAlignment samAlignment, AlignmentBlock block, StringBuffer buf) {
 
         if ( isFlow(samAlignment.getRecord()) ) {
@@ -36,7 +27,6 @@ public class FlowBlockAnnotator implements IAlignmentBlockAnnotationExtension {
         }
     }
 
-    @Override
     public void appendBlockAttrAnnotation(SAMAlignment samAlignment, AlignmentBlock block, int offset, StringBuffer buf) {
 
         if ( isFlow(samAlignment.getRecord()) ) {
