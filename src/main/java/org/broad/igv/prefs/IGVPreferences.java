@@ -49,6 +49,7 @@ import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
@@ -309,7 +310,17 @@ public class IGVPreferences {
         checkForAttributePanelChanges(updatedPrefs);
         checkForCircViewChanges(updatedPrefs);
         checkForGoogleMenuChange(updatedPrefs);
+        checkForRestartChanges(updatedPrefs);
         IGVEventBus.getInstance().post(new PreferencesChangeEvent());
+    }
+
+    private void checkForRestartChanges(Map<String, String> updatedPreferenceMap) {
+        for(String key : RESTART_KEYS) {
+            if(updatedPreferenceMap.containsKey(key)) {
+                MessageUtils.showMessage("Preference changes will take effect after restart.");
+                return;
+            }
+        }
     }
 
     private void checkForGoogleMenuChange(Map<String, String> updatedPreferenceMap) {

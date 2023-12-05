@@ -357,8 +357,15 @@ public class PreferencesEditor {
             saveAction(event, updatedPreferencesMap);
             SwingUtilities.invokeLater(() -> parent.setVisible(false));
         });
-        saveCancelPanel.add(cancelButton);
-        saveCancelPanel.add(saveButton);
+
+        if (Globals.IS_MAC) {
+            saveCancelPanel.add(cancelButton);
+            saveCancelPanel.add(saveButton);
+        } else {
+            saveCancelPanel.add(saveButton);
+            saveCancelPanel.add(cancelButton);
+        }
+
 
         panel.add(saveCancelPanel, BorderLayout.SOUTH);
     }

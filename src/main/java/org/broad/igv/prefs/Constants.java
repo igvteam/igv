@@ -379,4 +379,10 @@ final public class Constants {
             PROXY_WHITELIST
     );
 
+    /**
+     * List of keys that require a restart
+     */
+    static java.util.List<String> RESTART_KEYS = Arrays.asList(
+            BACKGROUND_COLOR
+    );
 }
