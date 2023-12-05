@@ -42,6 +42,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
+import org.broad.igv.ui.IGVMenuBar;
 
 import javax.swing.*;
 import java.awt.*;
