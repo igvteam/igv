@@ -1,11 +1,14 @@
 package org.broad.igv.sam.mods;
 
 import htsjdk.samtools.util.CloseableIterator;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.sam.reader.BAMReader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -14,6 +17,11 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
 public class BaseModificationCountsTest {
+
+    @Before
+    public void setup() {
+        PreferencesManager.getPreferences().put(Constants.BASEMOD_VALIDATE_BASE_COUNT, "false");
+    }
 
     @Test
     public void incrementCounts() throws IOException {

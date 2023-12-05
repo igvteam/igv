@@ -403,6 +403,7 @@ public class SAMAlignment implements Alignment {
      * 1. Validate types of MM and ML tags.  This catches missues of the tags, for example in certain 10X files.
      * 2. If available, validate sequence length vs MN tag.
      * 3. If MN tag is not available, validate implied minimum count of base nucleotide vs actual count.
+     *
      * @return
      */
     boolean validateMMTag(String mm, byte[] ml, byte[] sequence) {
@@ -431,29 +432,32 @@ public class SAMAlignment implements Alignment {
         // Finally, test implied minimum base count vs actual base count in sequence.  The minimum base count is
         // equal to the number of modified bases + the number of skipped bases as codified in the MM tag.
         // e.g. C+m,5,12,0   => at least 20 "Cs", 3 with modifications and 17 skipped
-        String[] mmTokens = mm.split(";");
-        for (String mmi : mmTokens) {
-            String[] tokens = mmi.split(","); //Globals.commaPattern.split(mm);
-            int baseCount;
-            if (tokens[0].charAt(0) == 'N') {
-                baseCount = sequence.length;
-            } else {
-                byte base = (byte) tokens[0].charAt(0);
-                char strand = tokens[0].charAt(1);
-                if (strand == '-') {
-                    base = SequenceUtil.complement(base);
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.BASEMOD_VALIDATE_BASE_COUNT)) {
+            String[] mmTokens = mm.split(";");
+            for (String mmi : mmTokens) {
+                String[] tokens = mmi.split(","); //Globals.commaPattern.split(mm);
+                int baseCount;
+                if (tokens[0].charAt(0) == 'N') {
+                    baseCount = sequence.length;
+                } else {
+                    byte base = (byte) tokens[0].charAt(0);
+                    char strand = tokens[0].charAt(1);
+                    if (strand == '-') {
+                        base = SequenceUtil.complement(base);
+                    }
+                    baseCount = 0;
+                    for (int i = 0; i < sequence.length; i++) if (sequence[i] == base) baseCount++;
                 }
-                baseCount = 0;
-                for (int i = 0; i < sequence.length; i++) if (sequence[i] == base) baseCount++;
-            }
 
-            // Count # of bases implied by tag
-            int modified = tokens.length - 1;    // All tokens but the first are "skip" numbers
-            int skipped = 0;
-            for (int i = 1; i < tokens.length; i++) skipped += Integer.parseInt(tokens[i]);
-            if (modified + skipped > baseCount) {
-                mmValidated = false;
-                return mmValidated;
+                // Count # of bases implied by tag
+                int modified = tokens.length - 1;    // All tokens but the first are "skip" numbers
+                int skipped = 0;
+                for (int i = 1; i < tokens.length; i++) skipped += Integer.parseInt(tokens[i]);
+                if (modified + skipped > baseCount) {
+                    log.warn(this.getReadName() + "  MM base count validation failed: expected " + (modified + skipped) + "'" + (tokens[0].charAt(0) + "'s" + ", actual count = " + baseCount));
+                    mmValidated = false;
+                    return mmValidated;
+                }
             }
         }
 
