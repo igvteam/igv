@@ -243,6 +243,8 @@ BASEMOD.NONE_N_COLOR	G	color	0,0,255
 ##SMRT Kinetics
 SMRT_KINETICS.SHOW_OPTIONS	Show visibility options for SMRT kinetics data	boolean	FALSE
 
+##Validation
+BASEMOD.VALIDATE_BASE_COUNT	Validate base count required by MM tag vs actual base count in read sequence	boolean	TRUE
 
 #Proxy
 PROXY.DISABLE_CHECK	Disable check for system proxy	boolean	FALSE

@@ -34,6 +34,7 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMTag;
+import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
@@ -120,21 +121,24 @@ public class SAMAlignment implements Alignment {
      */
     private List<BaseModificationSet> baseModificationSets;
     private SMRTKinetics smrtKinetics;
+    private Boolean mmValidated;
 
-    private enum CacheKey {CLIPPING_COUNTS, SA_GROUP};
+    private enum CacheKey {CLIPPING_COUNTS, SA_GROUP}
+
+    ;
 
     /**
      * Use this to cache an expensive to compute value on this record and retrieve it as necessary.
      */
     @SuppressWarnings("unchecked")
-    private <T> T getCachedOrCompute(CacheKey key, Supplier<T> supplier){
+    private <T> T getCachedOrCompute(CacheKey key, Supplier<T> supplier) {
         final Object value = record.getTransientAttribute(key);
         if (value == null) {
             final T newValue = supplier.get();
             record.setTransientAttribute(key, newValue);
             return newValue;
         } else {
-            return (T)value;
+            return (T) value;
         }
     }
 
@@ -287,9 +291,9 @@ public class SAMAlignment implements Alignment {
     }
 
     @Override
-    public ClippingCounts getClippingCounts(){
-            return getCachedOrCompute(CacheKey.CLIPPING_COUNTS,
-                    () -> ClippingCounts.fromCigar(record.getCigar()));
+    public ClippingCounts getClippingCounts() {
+        return getCachedOrCompute(CacheKey.CLIPPING_COUNTS,
+                () -> ClippingCounts.fromCigar(record.getCigar()));
     }
 
     public String getReadSequence() {
@@ -367,11 +371,22 @@ public class SAMAlignment implements Alignment {
 
             Object mm = record.hasAttribute("Mm") ? record.getAttribute("Mm") : record.getAttribute("MM");
             byte[] ml = (byte[]) (record.hasAttribute("Ml") ? record.getAttribute("Ml") : record.getAttribute("ML"));
+            Integer mn = record.getIntegerAttribute("MN");
 
-            // Minimal tag validation
-            if(mm instanceof String && (ml == null || ml instanceof byte [])) {
+            // Minimal tag validation  -- 10X uses MM and/or ML for other purposes
+            if (mm instanceof String && (mm.toString().length() > 0) && (ml == null || ml instanceof byte[])) {
 
                 byte[] sequence = record.getReadBases();
+
+                // Sequence length validation -- if MN tag is present use it, otherwise do a partial validation
+                if (mn != null) {
+                    if (mn != record.getReadBases().length) {
+                        return null;
+                    }
+                } else if (!validateMMTag(mm.toString(), ml, sequence)) {  //record.getCigarString().indexOf("H") > 0 &&
+                    return null;
+                }
+
 
                 if (mm.toString().length() == 0) { // TODO -- more extensive validation?
                     baseModificationSets = Collections.EMPTY_LIST;
@@ -381,6 +396,74 @@ public class SAMAlignment implements Alignment {
             }
         }
         return baseModificationSets;
+    }
+
+    /**
+     * Minimally validate an MM tag.  This will not catch all problems, but will many.  Validation proceeds as follows
+     * 1. Validate types of MM and ML tags.  This catches missues of the tags, for example in certain 10X files.
+     * 2. If available, validate sequence length vs MN tag.
+     * 3. If MN tag is not available, validate implied minimum count of base nucleotide vs actual count.
+     *
+     * @return
+     */
+    boolean validateMMTag(String mm, byte[] ml, byte[] sequence) {
+
+        if (mmValidated != null) {
+            return mmValidated;
+        }
+
+        // Minimal tag validation  -- 10X uses MM and/or ML for other purposes
+        if (!(mm instanceof String && mm.toString().length() > 0 && (ml == null || ml instanceof byte[]))) {
+            mmValidated = false;
+            return mmValidated;
+        }
+
+        // Test sequence length vs mn if avaliable
+        Integer mn = record.getIntegerAttribute("MN");
+        if (mn != null) {
+            if (mn == sequence.length) {
+                mmValidated = true;
+            } else {
+                mmValidated = false;
+            }
+            return mmValidated;
+        }
+
+        // Finally, test implied minimum base count vs actual base count in sequence.  The minimum base count is
+        // equal to the number of modified bases + the number of skipped bases as codified in the MM tag.
+        // e.g. C+m,5,12,0   => at least 20 "Cs", 3 with modifications and 17 skipped
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.BASEMOD_VALIDATE_BASE_COUNT)) {
+            String[] mmTokens = mm.split(";");
+            for (String mmi : mmTokens) {
+                String[] tokens = mmi.split(","); //Globals.commaPattern.split(mm);
+                int baseCount;
+                if (tokens[0].charAt(0) == 'N') {
+                    baseCount = sequence.length;
+                } else {
+                    byte base = (byte) tokens[0].charAt(0);
+                    char strand = tokens[0].charAt(1);
+                    if (strand == '-') {
+                        base = SequenceUtil.complement(base);
+                    }
+                    baseCount = 0;
+                    for (int i = 0; i < sequence.length; i++) if (sequence[i] == base) baseCount++;
+                }
+
+                // Count # of bases implied by tag
+                int modified = tokens.length - 1;    // All tokens but the first are "skip" numbers
+                int skipped = 0;
+                for (int i = 1; i < tokens.length; i++) skipped += Integer.parseInt(tokens[i]);
+                if (modified + skipped > baseCount) {
+                    log.warn(this.getReadName() + "  MM base count validation failed: expected " + (modified + skipped) + "'" + (tokens[0].charAt(0) + "'s" + ", actual count = " + baseCount));
+                    mmValidated = false;
+                    return mmValidated;
+                }
+            }
+        }
+
+        // If we get here assume the tag is valide
+        mmValidated = true;
+        return mmValidated;
     }
 
     public SMRTKinetics getSmrtKinetics() {
@@ -794,7 +877,7 @@ public class SAMAlignment implements Alignment {
         // Identify the number of hard and soft clipped bases.
         ClippingCounts clipping = getClippingCounts();
 
-        if (!clipping.isClipped()){
+        if (!clipping.isClipped()) {
             buf.append("None");
         } else {
             if (clipping.isLeftClipped()) {
@@ -978,8 +1061,8 @@ public class SAMAlignment implements Alignment {
         final List<SupplementaryAlignment> supplementaryAlignments = getSupplementaryAlignments();
         final int insertionIndex = SupplementaryAlignment.getInsertionIndex(this, supplementaryAlignments);
         int i = 0;
-        for (SupplementaryAlignment sa: supplementaryAlignments) {
-            if(i == insertionIndex) { //Add this read into the list
+        for (SupplementaryAlignment sa : supplementaryAlignments) {
+            if (i == insertionIndex) { //Add this read into the list
                 sb.append(getThisReadDescriptionForSAList());
             }
             i++;
@@ -989,7 +1072,7 @@ public class SAMAlignment implements Alignment {
                 sb.append("<br>* Invalid SA entry (not listed) *");
             }
         }
-        if(i == insertionIndex){
+        if (i == insertionIndex) {
             sb.append(getThisReadDescriptionForSAList());
         }
         return sb.toString();
@@ -1211,7 +1294,7 @@ public class SAMAlignment implements Alignment {
         return hapDistance;
     }
 
-    public List<SupplementaryAlignment> getSupplementaryAlignments(){
+    public List<SupplementaryAlignment> getSupplementaryAlignments() {
         return getCachedOrCompute(CacheKey.SA_GROUP,
                 () -> {
                     Object rawSAValue = this.getAttribute(SAMTag.SA);
