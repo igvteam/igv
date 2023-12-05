@@ -34,10 +34,8 @@ package org.broad.igv.sam.cram;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.SAMAlignment;
 import org.broad.igv.sam.reader.BAMReader;
-import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
@@ -71,7 +69,7 @@ public class CRAMReaderTest {
     public void testIterateLocalCraiCram() throws Exception {
 
         String cramFile = TestUtils.DATA_DIR + "cram/cram_with_crai_index.cram";
-        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta", null);
+        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta");
 
         BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
 
@@ -89,7 +87,7 @@ public class CRAMReaderTest {
     public void testQueryLocalCraiCram() throws Exception {
 
         String cramFile = TestUtils.DATA_DIR + "cram/cram_with_crai_index.cram";
-        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta", null);
+        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta");
 
         BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
 
@@ -103,7 +101,7 @@ public class CRAMReaderTest {
     public void testQueryLocalBaiCram() throws Exception {
 
         String cramFile = TestUtils.DATA_DIR + "cram/cram_with_bai_index.cram";
-        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta", null);
+        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta");
 
         BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
 
@@ -118,7 +116,7 @@ public class CRAMReaderTest {
     public void testRemoteCraiCram() throws Exception {
 
         String cramFile = "https://s3.amazonaws.com/igv.broadinstitute.org/test/cram/cram_with_crai_index.cram";
-        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta", null);
+        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta");
 
         BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
 
@@ -132,7 +130,7 @@ public class CRAMReaderTest {
     public void testRemoteBaiCram() throws Exception {
 
         String cramFile = TestUtils.DATA_DIR + "cram/cram_with_bai_index.cram";
-        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta", null);
+        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta");
 
         BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
 

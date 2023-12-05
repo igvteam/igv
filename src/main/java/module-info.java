@@ -2,14 +2,20 @@ module org.igv {
     exports org.broad.igv;
     exports org.broad.igv.tools;
     exports org.broad.igv.ui;
+    exports org.broad.igv.event;
     exports org.broad.igv.jbrowse;
     exports org.broad.igv.logging;
     exports org.broad.igv.util.liftover;
     exports org.broad.igv.sam.smrt;
+    exports org.broad.igv.ui.supdiagram;
+    exports org.broad.igv.feature.genome.load to com.google.gson;
+    opens org.broad.igv.feature.genome.load to com.google.gson;
+    opens org.broad.igv.feature to com.google.gson;
+    exports org.broad.igv.ucsc;
 
     requires com.google.common;
     requires commons.math3;
-    requires gson;
+    requires com.google.gson;
     requires htsjdk;
     requires java.datatransfer;
     requires java.desktop;
@@ -37,4 +43,5 @@ module org.igv {
     requires software.amazon.awssdk.http;
     requires software.amazon.awssdk.utils;
     requires com.fasterxml.jackson.core;
+    requires jide.oss;
 }

@@ -87,6 +87,8 @@ public class HttpUtils {
     private static boolean BYTE_RANGE_DISABLED = false;
     private Map<URL, Boolean> headURLCache = new HashMap<URL, Boolean>();
 
+    private Map<String, Long> contentLengthCache = new HashMap<>();
+
     private class CachedRedirect {
         private URL url = null;
         private ZonedDateTime expires = null;
@@ -97,7 +99,7 @@ public class HttpUtils {
     private Map<URL, CachedRedirect> redirectCache = new HashMap<URL, CachedRedirect>();
 
     // oauth tokens set from command line script
-    private Map<Pattern, String> accessTokens = new HashMap<>();
+    Deque<Pair<Pattern, String>> accessTokens = new ArrayDeque<>();
 
     /**
      * @return the single instance
@@ -135,29 +137,30 @@ public class HttpUtils {
         } else {
             host = host.replace("*", ".*");
         }
-        this.accessTokens.put(Pattern.compile(host, Pattern.CASE_INSENSITIVE), token);
+
+        Pattern newPattern = Pattern.compile(host, Pattern.CASE_INSENSITIVE);
+        this.accessTokens.add(new Pair<>(newPattern, token));
     }
 
 
     /**
-     * Return an access token, if any, from the access token cache.
+     * Return an access token, if any, from the access token cache.  The queue is iterated
+     * in reverse order so the latest match is returned.  
      *
      * @param url
      * @return
      */
-    String getAccessTokenFor(URL url) {
+    String getCachedTokenFor(URL url) {
 
-        for (Map.Entry<Pattern, String> entry : this.accessTokens.entrySet()) {
-            final Pattern pattern = entry.getKey();
-            Matcher matcher = pattern.matcher(url.getHost());
+        Iterator<Pair<Pattern, String>> iter = accessTokens.descendingIterator();
+        while(iter.hasNext()) {
+            Pair<Pattern, String> next = iter.next();
+            Matcher matcher = next.getFirst().matcher(url.getHost());
             if (matcher.find()) {
-                return entry.getValue();
+                return next.getSecond();
             }
         }
         return null;
-//        if (token == null && oauthProvider != null && oauthProvider.appliesToUrl(url)) {
-//            token = oauthProvider.getAccessToken();
-//        }
     }
 
     public void clearAccessTokens() {
@@ -463,17 +466,21 @@ public class HttpUtils {
 
     public long getContentLength(URL url) throws IOException {
 
+        if (contentLengthCache.containsKey(url.toExternalForm())) {
+            return contentLengthCache.get(url.toExternalForm());
+        }
+
+        long contentLength = -1;
         try {
             String contentLengthString = getHeaderField(url, "Content-Length");
-            if (contentLengthString == null) {
-                return -1;
-            } else {
-                return Long.parseLong(contentLengthString);
+            if (contentLengthString != null) {
+                contentLength = Long.parseLong(contentLengthString);
             }
         } catch (Exception e) {
             log.error("Error fetching content length", e);
-            return -1;
         }
+        contentLengthCache.put(url.toExternalForm(), contentLength);
+        return contentLength;
     }
 
     public void updateProxySettings() {
@@ -683,7 +690,7 @@ public class HttpUtils {
 
         // If we have an explicitly set oauth token for this URL use it.  This is used by port and batch commands
         // and will ovveride oAuth authentication check
-        String token = this.getAccessTokenFor(url);
+        String token = this.getCachedTokenFor(url);
 
         if (token == null) {
 
@@ -856,7 +863,7 @@ public class HttpUtils {
                     throw new FileNotFoundException(message);
                 } else if (code == 401) {
                     OAuthProvider provider = OAuthUtils.getInstance().getProviderForURL(url);
-                    if(provider == null && GoogleUtils.isGoogleURL(url.toExternalForm())) {
+                    if (provider == null && GoogleUtils.isGoogleURL(url.toExternalForm())) {
                         provider = OAuthUtils.getInstance().getGoogleProvider();
                     }
                     if (provider != null && retries == 0) {

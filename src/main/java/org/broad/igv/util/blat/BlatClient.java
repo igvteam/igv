@@ -98,6 +98,9 @@ public class BlatClient {
                         params.put("db", dbEncoded);
                         params.put("type", "DNA");
                         params.put("output", "json");
+
+                        //System.out.println(urlpref + "?userSeq=" + userSeq + "&db=" + db + "&type=DNA&output=json");
+                        //jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(urlpref + "?userSeq=" + userSeq + "&db=" + db + "&type=DNA&output=json"));
                         jsonString = HttpUtils.getInstance().doPost(new URL(urlpref), params);
                     }
 

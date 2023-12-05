@@ -36,9 +36,7 @@ import java.util.*;
  */
 public class IGVEventBus {
 
-    static final Logger log = LogManager.getLogger(IGVEventBus.class);
-
-    Map<Class, Set<IGVEventObserver>> observerMap;
+    final Map<Class<?>, Set<IGVEventObserver>> observerMap;
 
     private static IGVEventBus instance;
 
@@ -54,13 +52,8 @@ public class IGVEventBus {
         this.observerMap = new HashMap<>();
     }
 
-    public synchronized void subscribe(Class eventClass, IGVEventObserver observer) {
-
-        Set<IGVEventObserver> observerSet = observerMap.get(eventClass);
-        if (observerSet == null) {
-            observerSet = Collections.newSetFromMap(new WeakHashMap<IGVEventObserver, Boolean>());
-            observerMap.put(eventClass, observerSet);
-        }
+    public synchronized void subscribe(Class<?> eventClass, IGVEventObserver observer) {
+        Set<IGVEventObserver> observerSet = observerMap.computeIfAbsent(eventClass, k -> Collections.newSetFromMap(new WeakHashMap<>()));
         observerSet.add(observer);
     }
 
@@ -74,7 +67,7 @@ public class IGVEventBus {
         }
     }
 
-    public void post(Object event) {
+    public void post(IGVEvent event) {
         Set<IGVEventObserver> observerSet = observerMap.get(event.getClass());
         if (observerSet != null) {
             // Make a copy in case original is modified during loop

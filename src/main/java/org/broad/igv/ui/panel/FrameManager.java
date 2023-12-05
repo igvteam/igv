@@ -25,8 +25,9 @@
 
 package org.broad.igv.ui.panel;
 
-import com.jidesoft.utils.SortedList;
+import htsjdk.samtools.util.Locatable;
 import org.broad.igv.event.GenomeChangeEvent;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.Locus;
@@ -43,8 +44,16 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.util.MessageUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.SortOption;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author jrobinso
@@ -260,7 +269,6 @@ public class FrameManager implements IGVEventObserver {
     }
 
     public static void sortFrames(final Track t) {
-
         frames.sort(Comparator.comparingDouble((ReferenceFrame f) ->
                 t.getRegionScore(f.getChromosome().getName(),
                         (int) f.getOrigin(),
@@ -356,28 +364,74 @@ public class FrameManager implements IGVEventObserver {
         IGV.getInstance().resetFrames();
     }
 
+    /*
+     * todo: this shoold be combined with addFrames since they do confusingly similar things
+     *  This takes an arbitrary number of new locations to add as well as a single existing frame to keep
+     *      (possibly that's ignored if there are multiple reference frames due to how loci are processed in createLociList())
+     *  It doesn't merge overlapping frames like addFrames does which it probably should.
+     */
+
+    /**
+     * Open new frames displaying the locations included in toIncludeInSplit
+     * @param frame this is used to set the width of the new frames to be consistent
+     * @param toIncludeInSplit new locations to open frames for
+     * @param selectedReadNames a set of read names which will be sorted to the top of the open frames
+     */
+    public static void addNewLociToFrames(final ReferenceFrame frame, final List<? extends Locatable> toIncludeInSplit, final Set<String> selectedReadNames) {
+        final Stream<String> newLoci = toIncludeInSplit.stream().map(locatable -> getLocusStringScaledToFrame(frame, locatable));
+        final Stream<String> existingFrames = getFrames().stream().map(ref -> {
+            String name = ref.getName();
+            return Locus.fromString(name) != null ? name : ref.getFormattedLocusString();
+        });
+
+        //Can't use FRAME_COMPARATOR because that looks at the existing frames statically and they don't all exist yet
+        final Comparator<String> comparator = Comparator.comparing(Locus::fromString, SortOption.POSITION_COMPARATOR);
+
+        final List<String> loci = Stream.concat(newLoci, existingFrames)
+                .sorted(comparator)
+                .distinct()
+                .collect(Collectors.toList());
+        String listName = String.join("   ", loci);
+        //Need to sort the frames by position
+        GeneList geneList = new GeneList(listName, loci);
+        geneList.sort(comparator);
+        IGV.getInstance().getSession().setCurrentGeneList(geneList);
+        IGV.getInstance().resetFrames();
+
+        /*
+        We want the sort to happen after the frame refresh / track loading begins.
+        This puts the sort onto the event thread so that it happens after loading has already started.
+        Since loading reads happens asynchronously on a different thread from the event thread, it is likely
+        that the loading won't be done by the time the sort fires.  In that case the sort will be set as the
+        action to perform when the load is finished
+        See {@link AlignmentTrack#sortRows(SortOption, Double, String, boolean, Set)}
+        */
+        AlignmentTrack.sortSelectedReadsToTheTop(selectedReadNames);
+    }
+
+    private static String getLocusStringScaledToFrame(final ReferenceFrame frame, final Locatable alignment) {
+        int adjustedMateStart = alignment.getStart() - 1;
+
+        // Generate a locus string for the alignment.  Keep the window width (in base pairs) == to the current range
+        Range range = frame.getCurrentRange();
+        int length = range.getLength();
+        int start = Math.max(0, adjustedMateStart - length / 2);
+        int end = start + length;
+        return alignment.getContig() + ":" + start + "-" + end;
+    }
+
 
     @Override
-    public void receiveEvent(Object event) {
-        if (event instanceof GenomeChangeEvent) {
-            Genome newGenome = ((GenomeChangeEvent) event).genome;
+    public void receiveEvent(IGVEvent event) {
+        if (event instanceof final GenomeChangeEvent e) {
+            Genome newGenome = e.genome();
             boolean force = true;
             getDefaultFrame().setChromosomeName(newGenome.getHomeChromosome(), force);
         }
     }
 
 
-    public static class ChangeEvent {
-        List<ReferenceFrame> frames;
-
-        public ChangeEvent(List<ReferenceFrame> frames) {
-            this.frames = frames;
-        }
-
-        public List<ReferenceFrame> getFrames() {
-            return frames;
-        }
-    }
+    public record ChangeEvent(List<ReferenceFrame> frames) implements IGVEvent {}
 
 }
 

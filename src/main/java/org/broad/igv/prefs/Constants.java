@@ -204,6 +204,7 @@ final public class Constants {
     public static final String BASEMOD_GROUP_BY_STRAND = "BASEMOD.GROUP_BY_STRAND";
     public static final String BASEMOD_SKIPPED_BASES = "BASEMOD.SKIPPED_BASES";
     public static final String SMRT_KINETICS_SHOW_OPTIONS = "SMRT_KINETICS.SHOW_OPTIONS";
+    public static final String BASEMOD_VALIDATE_BASE_COUNT = "BASEMOD.VALIDATE_BASE_COUNT";
 
     // Sequence track settings
     public static final String SEQUENCE_TRANSLATION_STRAND = "SEQUENCE_TRANSLATION_STRAND";
@@ -379,4 +380,10 @@ final public class Constants {
             PROXY_WHITELIST
     );
 
+    /**
+     * List of keys that require a restart
+     */
+    static java.util.List<String> RESTART_KEYS = Arrays.asList(
+            BACKGROUND_COLOR
+    );
 }

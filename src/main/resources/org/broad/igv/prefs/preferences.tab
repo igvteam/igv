@@ -1,6 +1,6 @@
 #General
 SESSION.RELATIVE_PATH	Use relative paths in session files	boolean	FALSE
-IGV.single.track.pane	Display all tracks in a single panel	boolean	FALSE
+IGV.single.track.pane	Display annotation and data tracks in a single panel	boolean	FALSE
 IGV.track.show.attribute.views	Show attribute panel	boolean	FALSE
 SHOW_DEFAULT_TRACK_ATTRIBUTES	Show default track attributes	boolean	FALSE
 SHOW_REGION_BARS	Show region-of-interest boundaries	boolean	FALSE
@@ -244,6 +244,8 @@ BASEMOD.NONE_N_COLOR	G	color	0,0,255
 ##SMRT Kinetics
 SMRT_KINETICS.SHOW_OPTIONS	Show visibility options for SMRT kinetics data	boolean	FALSE
 
+##Validation
+BASEMOD.VALIDATE_BASE_COUNT	Validate base count required by MM tag vs actual base count in read sequence	boolean	TRUE
 
 #Proxy
 PROXY.DISABLE_CHECK	Disable check for system proxy	boolean	FALSE
@@ -268,7 +270,7 @@ MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://data.broadinstitute.or
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
 
-BLAT_URL	BLAT URL	String	http://genome.ucsc.edu/cgi-bin/hgBlat
+BLAT_URL	BLAT URL	String	https://genome.ucsc.edu/cgi-bin/hgBlat
 ---
 
 ## Tooltip

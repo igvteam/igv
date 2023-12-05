@@ -377,21 +377,24 @@ public class SequenceRenderer {
             AminoAcidSequence[] aa = strand == Strand.POSITIVE ? cache.posAA : cache.negAA;
 
             //only draw nucleotide lines the last time this is called
-            drawOneTranslation(context, bandRectangle, 0, shouldDrawLetters, fontSize,
-                    nucleotideLineXPositions, aa[0], strand);
+            int frame = start % 3;
+            drawOneTranslation(context, bandRectangle, frame, shouldDrawLetters, fontSize,
+                    nucleotideLineXPositions, aa[frame], strand);
 
             //rf 1
+            frame = (start + 1) % 3;
             bandRectangle.y = trackRectangle.y + heightAlreadyUsed;
             bandRectangle.height = idealHeightPerBand;
             heightAlreadyUsed += bandRectangle.height;
-            drawOneTranslation(context, bandRectangle, 1, shouldDrawLetters, fontSize,
-                    nucleotideLineXPositions, aa[1], strand);
+            drawOneTranslation(context, bandRectangle, frame, shouldDrawLetters, fontSize,
+                    nucleotideLineXPositions, aa[frame], strand);
 
             //rf 2
+            frame = (start + 2) % 3;
             bandRectangle.y = trackRectangle.y + heightAlreadyUsed;
             bandRectangle.height = trackRectangle.height - heightAlreadyUsed;
-            drawOneTranslation(context, bandRectangle, 2, shouldDrawLetters, fontSize,
-                    nucleotideLineXPositions, aa[2], strand);
+            drawOneTranslation(context, bandRectangle, frame, shouldDrawLetters, fontSize,
+                    nucleotideLineXPositions, aa[frame], strand);
 
             if (shouldDrawNucleotideLines) {
                 Graphics2D graphicsForNucleotideLines = context.getGraphic2DForColor(NUCLEOTIDE_SEPARATOR_COLOR);

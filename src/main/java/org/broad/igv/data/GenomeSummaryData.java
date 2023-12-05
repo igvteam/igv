@@ -93,7 +93,7 @@ public class GenomeSummaryData {
     public GenomeSummaryData(Genome genome, String[] samples) {
         this.genome = genome;
         this.samples = samples;
-        scale = (genome.getNominalLength() / locationUnit) / nPixels;
+        scale = (genome.getWGLength() / locationUnit) / nPixels;
 
         List<String> chrNames = genome.getLongChromosomeNames();
         locationMap = new HashMap<String, IntArrayList>();
@@ -115,7 +115,7 @@ public class GenomeSummaryData {
     void setScale(double scale){
         if(nDataPts > 0) throw new IllegalStateException("Can't alter scale after adding data");
         this.scale = scale;
-        nPixels = (int) (((double) this.genome.getNominalLength() / locationUnit) / scale);
+        nPixels = (int) (((double) this.genome.getWGLength() / locationUnit) / scale);
     }
 
 

@@ -41,6 +41,7 @@ import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.genome.load.ChromAliasParser;
 import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.feature.genome.load.GenomeLoader;
 import org.broad.igv.feature.genome.load.JsonGenomeLoader;
@@ -52,12 +53,11 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.PanelName;
+import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.ProgressBar;
-import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.download.Downloader;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
@@ -70,10 +70,10 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import static org.broad.igv.prefs.Constants.SHOW_SINGLE_TRACK_PANE_KEY;
 
 /**
  * @author jrobinso
@@ -150,69 +150,65 @@ public class GenomeManager {
 
 
     public void loadGenomeById(String genomeId) throws IOException {
-
         final Genome currentGenome = getCurrentGenome();
         if (currentGenome != null && genomeId.equals(currentGenome.getId())) {
             return; // Already loaded
         }
 
-        // If genomeId is a file path load it
+        String genomePath = null;
         if (org.broad.igv.util.ParsingUtils.fileExists(genomeId)) {
-            loadGenome(genomeId, null);
-
+            genomePath = genomeId;
         } else {
-            final ProgressMonitor[] monitor = {new ProgressMonitor()};
-            final ProgressBar.ProgressDialog[] progressDialog = new ProgressBar.ProgressDialog[1];
-            UIUtilities.invokeAndWaitOnEventThread(() -> {
-                progressDialog[0] = ProgressBar.showProgressDialog(IGV.getInstance().getMainFrame(), "Loading Genome...", monitor[0], false);
-            });
-
-            try {
-                GenomeListItem item = genomeListManager.getGenomeListItem(genomeId);
-                if (item == null) {
-                    MessageUtils.showMessage("Could not locate genome with ID: " + genomeId);
-                } else {
-                    loadGenome(item.getPath(), monitor[0]);
-                }
-            } finally {
-                UIUtilities.invokeOnEventThread(() -> {
-                    progressDialog[0].setVisible(false);
-                });
+            GenomeListItem item = genomeListManager.getGenomeListItem(genomeId);
+            if (item == null) {
+                MessageUtils.showMessage("Could not locate genome with ID: " + genomeId);
+                return;
+            } else {
+                genomePath = item.getPath();
             }
         }
+
+        loadGenome(genomePath); // monitor[0]);
+
     }
 
-    public Genome loadGenome(String genomePath, ProgressMonitor monitor) throws IOException {
 
+    /**
+     * The main load method -- loads a genome from a file or url path.  Note this is a long running operation and
+     * should not be done on the Swing event thread as it will block the UI.
+     *
+     * @param genomePath
+     * @return
+     * @throws IOException
+     */
+    public Genome loadGenome(String genomePath) throws IOException {
+
+        WaitCursorManager.CursorToken cursorToken = null;
         try {
             log.info("Loading genome: " + genomePath);
-
-            if (monitor != null) {
-                UIUtilities.invokeAndWaitOnEventThread(() -> monitor.fireProgress(25));
+            if (IGV.hasInstance()) {
+                IGV.getInstance().setStatusBarMessage("<html><font color=blue>Loading genome</font></html>");
+                cursorToken = WaitCursorManager.showWaitCursor();
             }
 
             // Clear Feature DB
             FeatureDB.clearFeatures();
 
             Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
-            setCurrentGenome(newGenome);
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             try {
                 String aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab")).getAbsolutePath();
-                if(!(new File(aliasPath)).exists()) {
+                if (!(new File(aliasPath)).exists()) {
                     aliasPath = (new File(DirectoryManager.getGenomeCacheDirectory(), newGenome.getId() + "_alias.tab.txt")).getAbsolutePath();
                 }
                 if ((new File(aliasPath)).exists()) {
-                    newGenome.addChrAliases(GenomeLoader.loadChrAliases(aliasPath));
+                    newGenome.addChrAliases(ChromAliasParser.loadChrAliases(aliasPath));
                 }
             } catch (Exception e) {
                 log.error("Failed to load user defined alias", e);
             }
 
-            if (monitor != null) {
-                monitor.fireProgress(25);
-            }
 
             if (IGV.hasInstance()) {
                 IGV.getInstance().resetSession(null);
@@ -225,8 +221,12 @@ public class GenomeManager {
             genomeListManager.addGenomeItem(genomeListItem, userDefined);
 
             setCurrentGenome(newGenome);
+
+            // hasInstance() test needed for unit tests
             if (IGV.hasInstance()) {
+                IGV.getInstance().goToLocus(newGenome.getHomeChromosome()); //  newGenome.getDefaultPos());
                 loadGenomeAnnotations(newGenome);
+                IGV.getInstance().resetFrames();
             }
 
             if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
@@ -238,54 +238,79 @@ public class GenomeManager {
 
         } catch (SocketException e) {
             throw new RuntimeException("Server connection error", e);
+        } finally {
+            if (IGV.hasInstance()) {
+                IGV.getInstance().setStatusBarMessage("");
+                WaitCursorManager.removeWaitCursor(cursorToken);
+            }
         }
     }
 
+    /**
+     * Load and initialize the track objects from the genome's track resource locators.  Does not add the tracks
+     * to the IGV instance.
+     *
+     * @param genome
+     */
     public void loadGenomeAnnotations(Genome genome) {
-        List<ResourceLocator> resources = genome.getAnnotationResources();
-        if (resources != null) {
-            Map<ResourceLocator, List<Track>> annotationTracks = new LinkedHashMap<>();
-            for (ResourceLocator locator : resources) {
-                try {
-                    List<Track> tracks = IGV.getInstance().load(locator);
-                    annotationTracks.put(locator, tracks);
-                } catch (DataLoadException e) {
-                    log.error("Error loading genome annotations", e);
-                }
-            }
-            genome.setAnnotationTracks(annotationTracks);
-        }
         restoreGenomeTracks(genome);
         IGV.getInstance().repaint();
     }
 
+    /**
+     * Add a genomes tracks to the IGV instance.
+     *
+     * @param genome
+     */
     public void restoreGenomeTracks(Genome genome) {
-        FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Can be null
-        IGV.getInstance().setGenomeTracks(geneFeatureTrack);
 
-        Map<ResourceLocator, List<Track>> annotationTracks = currentGenome.getAnnotationTracks();
-        if (annotationTracks != null) {
-            for (Map.Entry<ResourceLocator, List<Track>> entry : annotationTracks.entrySet()) {
-                IGV.getInstance().addTracks(entry.getValue(), entry.getKey());
-                for (Track track : entry.getValue()) {
-                    ResourceLocator locator = track.getResourceLocator();
-                    String fn = "";
-                    if (locator != null) {
-                        fn = locator.getPath();
-                        int lastSlashIdx = fn.lastIndexOf("/");
-                        if (lastSlashIdx < 0) {
-                            lastSlashIdx = fn.lastIndexOf("\\");
-                        }
-                        if (lastSlashIdx > 0) {
-                            fn = fn.substring(lastSlashIdx + 1);
-                        }
-                    }
-                    track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
-                    track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
-                    track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+        IGV.getInstance().setSequenceTrack();
+
+        // Fetch the gene track, defined by .genome files.  In this format the genome data is encoded in the .genome file
+        FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Can be null
+        if (geneFeatureTrack != null) {
+            PanelName panelName = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
+                    PanelName.DATA_PANEL : PanelName.FEATURE_PANEL;
+            geneFeatureTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, geneFeatureTrack.getName());
+            geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
+            geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, geneFeatureTrack.getTrackType().toString());
+            IGV.getInstance().addTracks(Arrays.asList(geneFeatureTrack), panelName);
+        }
+
+        List<ResourceLocator> resources = genome.getAnnotationResources();
+        List<Track> annotationTracks = new ArrayList<>();
+        if (resources != null) {
+            for (ResourceLocator locator : resources) {
+                try {
+                    List<Track> tracks = IGV.getInstance().load(locator);
+                    annotationTracks.addAll(tracks);
+                } catch (DataLoadException e) {
+                    log.error("Error loading genome annotations", e);
                 }
             }
         }
+
+        if (annotationTracks.size() > 0) {
+            IGV.getInstance().addTracks(annotationTracks);
+            for (Track track : annotationTracks) {
+                ResourceLocator locator = track.getResourceLocator();
+                String fn = "";
+                if (locator != null) {
+                    fn = locator.getPath();
+                    int lastSlashIdx = fn.lastIndexOf("/");
+                    if (lastSlashIdx < 0) {
+                        lastSlashIdx = fn.lastIndexOf("\\");
+                    }
+                    if (lastSlashIdx > 0) {
+                        fn = fn.substring(lastSlashIdx + 1);
+                    }
+                }
+                track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
+                track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
+                track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+            }
+        }
+
         IGV.getInstance().revalidateTrackPanels();
     }
 
@@ -294,90 +319,11 @@ public class GenomeManager {
      * Delete .genome files from the cache directory
      */
     public void clearGenomeCache() {
-
         File[] files = DirectoryManager.getGenomeCacheDirectory().listFiles();
         for (File file : files) {
             if (file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
                 file.delete();
             }
-        }
-
-    }
-
-    /**
-     * Create a genome archive (.genome) file.
-     *
-     * @param genomeFile
-     * @param cytobandFileName  A File path to a file that contains cytoband data.
-     * @param refFlatFileName   A File path to a gene file.
-     * @param fastaFileName     A File path to a FASTA file, a .gz file containing a
-     *                          single FASTA file, or a directory containing ONLY FASTA files.
-     *                          (relative to the .genome file to be created) where the sequence data for
-     *                          the new genome will be written.
-     * @param genomeDisplayName The unique user-readable name of the new genome.
-     * @param genomeId          The id to be assigned to the genome.
-     * @param monitor           A ProgressMonitor used to track progress - null,
-     *                          if no progress updating is required.
-     * @return GenomeListItem
-     * @throws FileNotFoundException
-     */
-    public GenomeListItem defineGenome(File genomeFile,
-                                       String cytobandFileName,
-                                       String refFlatFileName,
-                                       String fastaFileName,
-                                       String chrAliasFileName,
-                                       String genomeDisplayName,
-                                       String genomeId,
-                                       javax.swing.ProgressMonitor monitor)
-            throws IOException {
-
-        File refFlatFile = null;
-        File cytobandFile = null;
-        File chrAliasFile = null;
-
-        if (genomeFile != null) {
-            PreferencesManager.getPreferences().setLastGenomeImportDirectory(genomeFile.getParentFile());
-        }
-
-        if ((cytobandFileName != null) && (cytobandFileName.trim().length() != 0)) {
-            cytobandFile = new File(cytobandFileName);
-        }
-
-        if ((refFlatFileName != null) && (refFlatFileName.trim().length() != 0)) {
-            refFlatFile = new File(refFlatFileName);
-        }
-
-        if ((chrAliasFileName != null) && (chrAliasFileName.trim().length() != 0)) {
-            chrAliasFile = new File(chrAliasFileName);
-        }
-
-        if (monitor != null) monitor.setProgress(25);
-
-        (new GenomeImporter()).createGenomeArchive(genomeFile, genomeId,
-                genomeDisplayName, fastaFileName, refFlatFile, cytobandFile, chrAliasFile);
-
-        if (monitor != null) monitor.setProgress(75);
-
-        GenomeListItem newItem = new GenomeListItem(genomeDisplayName, genomeFile.getAbsolutePath(), genomeId);
-        genomeListManager.addGenomeItem(newItem, true);
-
-        if (monitor != null) monitor.setProgress(100);
-
-        return newItem;
-
-    }
-
-    /**
-     * Specific to Broad Amazon servers -- use S3 downwload rather than cloudfront
-     *
-     * @param path
-     * @return
-     */
-    private String convertToS3(String path) {
-        if (path.startsWith("http://igvdata") || path.startsWith("https://igvdata")) {
-            return path.replaceFirst("igvdata", "igv");
-        } else {
-            return path;
         }
     }
 
@@ -394,54 +340,6 @@ public class GenomeManager {
      */
     public Genome getCurrentGenome() {
         return currentGenome;
-    }
-
-    /**
-     * Given a directory, looks for all .genome files,
-     * and outputs a list of these genomes suitable for parsing by IGV.
-     * Intended to be run on server periodically.
-     *
-     * @param inDir    Directory in which all genome files live
-     * @param rootPath The path to be prepended to file names (e.g. http://igvdata.broadinstitute.org)
-     * @param outPath  Path to output file, where we will write the results
-     */
-    public void generateGenomeList(File inDir, String rootPath, String outPath) {
-        File[] genomeFiles = inDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                if (name == null) return false;
-                return name.toLowerCase().endsWith(".genome");
-            }
-        });
-
-        PrintWriter writer;
-        try {
-            writer = new PrintWriter(outPath);
-        } catch (FileNotFoundException e) {
-            log.error("Error opening " + outPath);
-            e.printStackTrace();
-            return;
-        }
-
-
-        GenomeDescriptor descriptor;
-        for (File f : genomeFiles) {
-            String curLine = "";
-            try {
-                descriptor = GenomeDescriptor.parseGenomeArchiveFile(f);
-                curLine += descriptor.getName();
-                curLine += "\t" + rootPath + "/" + f.getName();
-                curLine += "\t" + descriptor.getId();
-            } catch (IOException e) {
-                log.error("Error parsing genome file. Skipping " + f.getAbsolutePath());
-                log.error(e);
-                continue;
-            }
-            writer.println(curLine);
-        }
-
-        writer.close();
-
     }
 
 

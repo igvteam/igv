@@ -71,7 +71,7 @@ public class Autoscaler {
             for (Track track : trackList) {
                 DataRange dr = track.getDataRange();
                 float min = Math.min(0, inter.min);
-                float base = Math.max(min, dr.getBaseline());
+                float base = min < 0 ? 0 : min;
                 float max = inter.max;
                 // Pathological case where min ~= max  (no data in view)
                 if (max - min <= (2 * Float.MIN_VALUE)) {

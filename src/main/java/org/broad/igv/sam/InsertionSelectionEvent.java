@@ -26,14 +26,11 @@
 
 package org.broad.igv.sam;
 
+import org.broad.igv.event.IGVEvent;
+
 /**
  * Created by jrobinso on 1/12/17.
  */
-public class InsertionSelectionEvent {
+public record InsertionSelectionEvent(InsertionMarker insertionMarker) implements IGVEvent {
 
-    public final InsertionMarker insertionMarker;
-
-    public InsertionSelectionEvent(InsertionMarker insertionMarker) {
-        this.insertionMarker = insertionMarker;
-    }
 }

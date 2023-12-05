@@ -43,7 +43,6 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.*;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
@@ -260,7 +259,7 @@ public class IGV implements IGVEventObserver {
         subscribeToEvents();
 
         // Start running periodic autosaves (unless the user has specified not to retain timed autosaves)
-        if(PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP) > 0) {
+        if (PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP) > 0) {
             int timerDelay = PreferencesManager.getPreferences().getAsInt(AUTOSAVE_FREQUENCY) * 60000; // Convert timer delay to ms
             sessionAutosaveTimer.scheduleAtFixedRate(new AutosaveTimerTask(this), timerDelay, timerDelay);
         }
@@ -484,7 +483,7 @@ public class IGV implements IGVEventObserver {
         try {
             PreferencesEditor.open(this.mainFrame);
         } catch (Exception e) {
-            log.error("Error openining preference dialog", e);
+            log.error("Error opening preference dialog", e);
         }
     }
 
@@ -516,11 +515,10 @@ public class IGV implements IGVEventObserver {
         this.stopTimedAutosave();
 
         // Autosave current session if configured to do so
-        if(PreferencesManager.getPreferences().getAsBoolean(AUTOSAVE_ON_EXIT)) {
+        if (PreferencesManager.getPreferences().getAsBoolean(AUTOSAVE_ON_EXIT)) {
             try {
                 SessionAutosaveManager.saveExitSessionAutosaveFile(session);
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 log.error("Error autosaving session", e);
             }
         }
@@ -886,9 +884,9 @@ public class IGV implements IGVEventObserver {
             if (tp.getScrollPane().getNamePanel().scrollTo(trackName)) {
                 found = true;
             }
-            }
-        return found;
         }
+        return found;
+    }
 
 
     /**
@@ -1154,7 +1152,7 @@ public class IGV implements IGVEventObserver {
 
             try {
                 List<Track> tracks = load(locator);
-                addTracks(tracks, locator);
+                addTracks(tracks);
             } catch (Exception e) {
                 log.error("Error loading track", e);
                 messages.append("Error loading " + locator + ": " + e.getMessage());
@@ -1188,12 +1186,11 @@ public class IGV implements IGVEventObserver {
      * is chosen based on characteristics of the {@code locator}.
      *
      * @param tracks
-     * @param locator
      */
-    public void addTracks(List<Track> tracks, ResourceLocator locator) {
+    public void addTracks(List<Track> tracks) {
 
         if (tracks.size() > 0) {
-            String path = locator.getPath();
+            String path = tracks.get(0).getResourceLocator().getPath();//  locator.getPath();
             Track representativeTrack = tracks.get(0);
 
             // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
@@ -1221,31 +1218,41 @@ public class IGV implements IGVEventObserver {
      */
     public List<Track> load(ResourceLocator locator) throws DataLoadException {
 
-        TrackLoader loader = new TrackLoader();
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        List<Track> newTracks = loader.load(locator, genome);
-        if (newTracks.size() > 0) {
-            for (Track track : newTracks) {
-                String fn = locator.getPath();
-                int lastSlashIdx = fn.lastIndexOf("/");
-                if (lastSlashIdx < 0) {
-                    lastSlashIdx = fn.lastIndexOf("\\");
-                }
-                if (lastSlashIdx > 0) {
-                    fn = fn.substring(lastSlashIdx + 1);
-                }
-                track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
-                track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
-                track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+        try {
+            if (IGV.hasInstance()) {
+                IGV.getInstance().setStatusBarMessage3("Loading " + locator.getPath());
+            }
 
-                TrackProperties properties = locator.getTrackProperties();
-                if(properties != null) {
-                    track.setProperties(properties);
+            TrackLoader loader = new TrackLoader();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            List<Track> newTracks = loader.load(locator, genome);
+            if (newTracks.size() > 0) {
+                for (Track track : newTracks) {
+                    String fn = locator.getPath();
+                    int lastSlashIdx = fn.lastIndexOf("/");
+                    if (lastSlashIdx < 0) {
+                        lastSlashIdx = fn.lastIndexOf("\\");
+                    }
+                    if (lastSlashIdx > 0) {
+                        fn = fn.substring(lastSlashIdx + 1);
+                    }
+                    track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
+                    track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
+                    track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+
+                    TrackProperties properties = locator.getTrackProperties();
+                    if (properties != null) {
+                        track.setProperties(properties);
+                    }
                 }
             }
+            //revalidateTrackPanels();
+            return newTracks;
+        } finally {
+            if (IGV.hasInstance()) {
+                IGV.getInstance().setStatusBarMessage3("");
+            }
         }
-        //revalidateTrackPanels();
-        return newTracks;
     }
 
 
@@ -1288,7 +1295,7 @@ public class IGV implements IGVEventObserver {
             }
         }
 
-        if(track.getClass() == FeatureTrack.class && !PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY))
+        if (track.getClass() == FeatureTrack.class && !PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY))
             return getTrackPanel(FEATURE_PANEL_NAME);
         else {
             return getTrackPanel(DATA_PANEL_NAME);
@@ -1366,7 +1373,7 @@ public class IGV implements IGVEventObserver {
     public void sortAlignmentTracks(SortOption option, Double location, String tag, boolean invertSort, Set<String> priorityRecords) {
         List<AlignmentTrack> alignmentTracks = getAllTracks().stream()
                 .filter(track -> track instanceof AlignmentTrack)
-                .map(track -> (AlignmentTrack)track)
+                .map(track -> (AlignmentTrack) track)
                 .peek(track -> track.sortRows(option, location, tag, invertSort, priorityRecords))
                 .collect(Collectors.toList());
         this.repaint(alignmentTracks);
@@ -1641,26 +1648,21 @@ public class IGV implements IGVEventObserver {
     /**
      * Add gene and sequence tracks.  This is called upon switching genomes.
      *
-     * @param newGeneTrack
      * @param
      */
-    public void setGenomeTracks(Track newGeneTrack) {
+    public void setSequenceTrack() {
 
         TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
                 getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
         SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
         panel.addTrack(newSeqTrack);
 
-        if (newGeneTrack != null) {
-            newGeneTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, newGeneTrack.getName());
-            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
-            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, newGeneTrack.getTrackType().toString());
-            panel.addTrack(newGeneTrack);
-        }
-    }
-
-    public boolean hasSequenceTrack() {
-        return getSequenceTrack() != null;
+//        if (newGeneTrack != null) {
+//            newGeneTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, newGeneTrack.getName());
+//            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
+//            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, newGeneTrack.getTrackType().toString());
+//            panel.addTrack(newGeneTrack);
+//        }
     }
 
     /**
@@ -1802,7 +1804,7 @@ public class IGV implements IGVEventObserver {
         session.setGroupByAttribute(attributeName);
         resetGroups();
         // Some tracks need to respond to changes in grouping, fire notification event
-        IGVEventBus.getInstance().post(new TrackGroupEvent(this));
+        IGVEventBus.getInstance().post(new TrackGroupEvent());
     }
 
 
@@ -1906,8 +1908,7 @@ public class IGV implements IGVEventObserver {
                 boolean autosavePresent = false;
                 try {
                     autosavePresent = SessionAutosaveManager.getMostRecentAutosaveFile().isPresent();
-                }
-                catch(Exception e) {
+                } catch (Exception e) {
                     log.error("Failure trying to get most recent autosave file", e);
                 }
                 boolean loadAutosave = autosavePresent && PreferencesManager.getPreferences().getAsBoolean(AUTOLOAD_LAST_AUTOSAVE);
@@ -1924,7 +1925,7 @@ public class IGV implements IGVEventObserver {
                     }
                 }
                 // If we're not loading a session file, attempt to load a default genome file
-                if(igvArgs.getSessionFile() == null && !loadAutosave && !genomeLoaded) {
+                if (igvArgs.getSessionFile() == null && !loadAutosave && !genomeLoaded) {
                     String genomeId = preferences.getDefaultGenome();
                     try {
                         GenomeManager.getInstance().loadGenomeById(genomeId);
@@ -1951,26 +1952,27 @@ public class IGV implements IGVEventObserver {
                         log.debug("Loading session data");
                     }
 
-                    final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor();
-                    final ProgressBar.ProgressDialog progressDialog2 = ProgressBar.showProgressDialog(mainFrame, "Loading session data", indefMonitor, false);
-                    indefMonitor.start();
-
-
                     if (log.isDebugEnabled()) {
                         log.debug("Calling restore session");
                     }
 
 
                     if (igvArgs.getSessionFile() != null) {
-                        boolean success = false;
-                        if (HttpUtils.isRemoteURL(igvArgs.getSessionFile())) {
-                            boolean merge = false;
-                            success = loadSession(igvArgs.getSessionFile(), igvArgs.getLocusString());
-                        } else {
-                            File sf = new File(igvArgs.getSessionFile());
-                            if (sf.exists()) {
-                                success = loadSession(sf.getAbsolutePath(), igvArgs.getLocusString());
+                        IGV.getInstance().setStatusBarMessage3("Loading " + igvArgs.getSessionFile());
+                        boolean success;
+                        try {
+                            success = false;
+                            if (HttpUtils.isRemoteURL(igvArgs.getSessionFile())) {
+                                boolean merge = false;
+                                success = loadSession(igvArgs.getSessionFile(), igvArgs.getLocusString());
+                            } else {
+                                File sf = new File(igvArgs.getSessionFile());
+                                if (sf.exists()) {
+                                    success = loadSession(sf.getAbsolutePath(), igvArgs.getLocusString());
+                                }
                             }
+                        } finally {
+                            IGV.getInstance().setStatusBarMessage3("");
                         }
                         if (!success) {
                             String genomeId = preferences.getDefaultGenome();
@@ -2047,8 +2049,7 @@ public class IGV implements IGVEventObserver {
                             // Get the last autosave and attempt to load
                             File sessionAutosave = SessionAutosaveManager.getMostRecentAutosaveFile().get();
                             success = loadSession(sessionAutosave.getAbsolutePath(), null);
-                        }
-                        catch(Exception e) {
+                        } catch (Exception e) {
                             log.error("Failure trying to load most recent autosave file", e);
                         }
 
@@ -2058,11 +2059,6 @@ public class IGV implements IGVEventObserver {
                             contentPane.getCommandBar().selectGenome(genomeId);
                         }
                     }
-
-
-                    indefMonitor.stop();
-                    closeWindow(progressDialog2);
-
                 }
 
                 UIUtilities.invokeAndWaitOnEventThread(() -> {
@@ -2152,12 +2148,12 @@ public class IGV implements IGVEventObserver {
      *
      * @param event
      */
-    public void postEvent(Object event) {
+    public void postEvent(IGVEvent event) {
         IGVEventBus.getInstance().post(event);
     }
 
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
             repaint();
         } else if (event instanceof GenomeChangeEvent) {

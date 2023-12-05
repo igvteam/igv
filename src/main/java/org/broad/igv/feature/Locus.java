@@ -35,7 +35,7 @@ import java.util.Locale;
 /**
  * @author jrobinso
  */
-public class Locus extends Range implements NamedFeature {
+public class Locus extends Range implements IGVNamedFeature {
 
     private static NumberFormat NUMBER_FORMAT = NumberFormat.getInstance(Locale.US);
 

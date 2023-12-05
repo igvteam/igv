@@ -28,6 +28,7 @@ package org.broad.igv.sam;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMTag;
 import htsjdk.samtools.util.CloseableIterator;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.IGVPreferences;
@@ -380,7 +381,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
     }
 
     @Override
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if (event instanceof StopEvent) {
             cancel = true;
             reader.cancelQuery();

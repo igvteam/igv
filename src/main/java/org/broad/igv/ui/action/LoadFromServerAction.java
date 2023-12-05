@@ -80,11 +80,10 @@ public class LoadFromServerAction extends MenuAction {
 
         mainFrame.setStatusBarMessage("Loading ...");
         String genomeId = GenomeManager.getInstance().getGenomeId();
-        String genomeURL = getGenomeDataURL(genomeId);
 
         try {
 
-            LinkedHashSet<String> nodeURLs = getNodeURLs(genomeURL);
+            LinkedHashSet<String> nodeURLs = getNodeURLs(genomeId);
 
             if (nodeURLs == null || nodeURLs.isEmpty()) {
                 MessageUtils.showMessage("No datasets are available for the current genome (" + genomeId + ").");
@@ -103,7 +102,9 @@ public class LoadFromServerAction extends MenuAction {
 
     }
 
-    public static LinkedHashSet<String> getNodeURLs(String genomeURL) {
+    public static LinkedHashSet<String> getNodeURLs(String genomeId) {
+
+        String genomeURL = getGenomeDataURL(genomeId);
 
         InputStream is = null;
         LinkedHashSet<String> nodeURLs = null;

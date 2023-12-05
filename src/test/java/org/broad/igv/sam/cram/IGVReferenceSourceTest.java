@@ -53,7 +53,7 @@ public class IGVReferenceSourceTest {
     }
 
     private void assertReferenceReqionRequestsWork(final String fastaUrl) throws IOException {
-        GenomeManager.getInstance().loadGenome(fastaUrl, null);
+        GenomeManager.getInstance().loadGenome(fastaUrl);
 
         IGVReferenceSource refSource = new IGVReferenceSource();
         String expected = EXPECTED_REFERENCE_BASES;
@@ -76,7 +76,7 @@ public class IGVReferenceSourceTest {
     @Test
     public void testGetReferenceBasesCompressed() throws Exception {
 
-        GenomeManager.getInstance().loadGenome(COMPRESSED_FASTA_URL, null);
+        GenomeManager.getInstance().loadGenome(COMPRESSED_FASTA_URL);
 
         IGVReferenceSource refSource = new IGVReferenceSource();
         SAMSequenceRecord rec = new SAMSequenceRecord("22", 50818468);

@@ -68,10 +68,10 @@ public class DataSourceTrack extends DataTrack {
         this.dataSource = dataSource;
         if (this.dataSource != null) {
             setTrackType(dataSource.getTrackType());
-            List<LocusScore> scores = this.dataSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, 0);
-            if (scores.size() > 0) {
-                initScale(dataSource, scores);
-            }
+ //           List<LocusScore> scores = this.dataSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, 0);
+ //           if (scores.size() > 0) {
+ //               initScale(dataSource, scores);
+ //           }
         }
     }
 

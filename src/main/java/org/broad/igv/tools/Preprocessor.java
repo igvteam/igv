@@ -132,7 +132,7 @@ public class Preprocessor implements DataConsumer {
 
             // Convert genome coordinates from bp to kbp
             if (computeWholeGenome) {
-                int genomeLength = (int) (genome.getNominalLength() / 1000);
+                int genomeLength = (int) (genome.getWGLength() / 1000);
                 genomeZoom = new Zoom(Globals.CHR_ALL, 0, genomeLength);
             }
 

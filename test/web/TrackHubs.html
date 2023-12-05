@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Track Hub links</title>
+</head>
+<body>
+
+<ul>
+
+  <li><a href="#" id="IGV_GCF_016808095.1">GCF_016808095.1 - dynamic link</a> </li>
+</ul>
+
+<script type="module">
+
+    document.getElementById("IGV_GCF_016808095.1").addEventListener('click', async evt => {
+        try {
+            const igvResponse = await fetch("http://localhost:60151/?hubURL=https://hgdownload.soe.ucsc.edu/hubs/GCF/016/808/095/GCF_016808095.1/hub.txt")
+            //igvResponse.ok
+        } catch (e) {
+            //igvDesktopIsResponding = false
+            alert("IGV Desktop is not running or not listening on port 60151");
+        }
+
+    })
+
+</script>
+
+
+<!--<script type="module">-->
+
+<!--  let igvDesktopIsResponding-->
+<!--  try {-->
+<!--    const igvResponse = await fetch("http://localhost:60151/ping")-->
+<!--    igvDesktopIsResponding = igvResponse.ok-->
+<!--  } catch (e) {-->
+<!--    igvDesktopIsResponding = false-->
+<!--  }-->
+
+<!--  console.log(igvDesktopIsResponding);-->
+
+<!--</script>-->
+
+</body>
+</html>

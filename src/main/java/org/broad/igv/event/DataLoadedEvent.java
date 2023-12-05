@@ -31,15 +31,4 @@ import org.broad.igv.ui.panel.ReferenceFrame;
  * User: jacob
  * Date: 2013-Feb-06
  */
-public class DataLoadedEvent {
-
-    public final ReferenceFrame referenceFrame;
-
-    public DataLoadedEvent(ReferenceFrame referenceFrame){
-        this.referenceFrame = referenceFrame;
-    }
-
-    public ReferenceFrame getReferenceFrame() {
-        return referenceFrame;
-    }
-}
+public record DataLoadedEvent(ReferenceFrame referenceFrame) implements IGVEvent {}

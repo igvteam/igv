@@ -27,18 +27,16 @@ package org.broad.igv.ui.action;
 
 import junit.framework.AssertionFailedError;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.feature.genome.ChromAlias;
+import org.broad.igv.feature.genome.ChromAliasSource;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -50,12 +48,12 @@ import static org.junit.Assert.*;
 public class SearchCommandTest extends AbstractHeadlessTest {
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         super.setUp();
     }
 
     @Test
-    public void testSingleChromosomes() throws Exception {
+    public void testSingleLOCUSs() throws Exception {
 
         int min = 1;
         int max = 22;
@@ -68,43 +66,34 @@ public class SearchCommandTest extends AbstractHeadlessTest {
             chrs[cn - min] = chr;
             nums[cn - min] = "" + cn;
         }
-        tstFeatureTypes(chrs, SearchCommand.ResultType.CHROMOSOME);
-        tstFeatureTypes(nums, SearchCommand.ResultType.CHROMOSOME);
+        tstFeatureTypes(chrs, SearchCommand.ResultType.LOCUS);
+        tstFeatureTypes(nums, SearchCommand.ResultType.LOCUS);
     }
 
     @Test
     public void testChromoWithColon() throws Exception {
 
-        List<String> chrNames = Arrays.asList("chr10", "chr1", "chr20");
-        List<List<String>> aliases = Arrays.asList(
-                Arrays.asList("abc:123", "abc:456", "abc:789"),
-                Arrays.asList("xy:12"),
-                Arrays.asList("aaa:bbb"));
 
+        String [] chrNames = {"chr10", "chr1", "chr20"};
+        String [][] aliases = {{"abc:123", "abc:456", "abc:789"}, {"xy:12"}, {"aaa:bbb"}};
+        List<List<String>> synonymsList = new ArrayList<>();
+        synonymsList.add(Arrays.asList("chr10", "abc:123", "abc:456", "abc:789"));
+        synonymsList.add(Arrays.asList("chr1", "xy:12"));
+        synonymsList.add(Arrays.asList("chr20", "aaa:bbb"));
+        genome.addChrAliases(synonymsList);
 
-        Collection<Collection<String>> synonymsList = new ArrayList<Collection<String>>();
-        for (int i = 0; i < chrNames.size(); i++) {
-            List<String> synonyms = new ArrayList<String>();
-            synonyms.addAll(aliases.get(i));
-            synonyms.add(chrNames.get(i));
-            synonymsList.add(synonyms);
-        }
-
-        if (genome instanceof Genome) {
-            ((Genome) genome).addChrAliases(synonymsList);
-        }
 
         SearchCommand cmd;
-        for (int i = 0; i < chrNames.size(); i++) {
+        for (int i = 0; i < chrNames.length; i++) {
 
-            String chr = chrNames.get(i);
-            List<String> synonyms = aliases.get(i);
+            String chr = chrNames[i];
+            String [] synonyms = aliases[i];
 
             for (String searchStr : synonyms) {
                 cmd = new SearchCommand(null, searchStr, genome);
                 List<SearchCommand.SearchResult> results = cmd.runSearch(cmd.searchString);
                 assertEquals(1, results.size());
-                assertEquals(SearchCommand.ResultType.CHROMOSOME, results.get(0).type);
+                assertEquals(SearchCommand.ResultType.LOCUS, results.get(0).type);
                 assertEquals(chr, results.get(0).chr);
             }
         }
@@ -127,7 +116,8 @@ public class SearchCommandTest extends AbstractHeadlessTest {
      *
      * @throws Exception
      */
-    @Test @Ignore("Fails unless tests are run in separate JVMs")
+    @Test
+    @Ignore("Fails unless tests are run in separate JVMs")
     public void testFeatureMuts() throws Exception {
         String[] features = {"EGFR:M1I", "EGFR:G5R", "egfr:g5r", "egfr:r2*"};
         tstFeatureTypes(features, SearchCommand.ResultType.LOCUS);
@@ -190,8 +180,8 @@ public class SearchCommandTest extends AbstractHeadlessTest {
                 SearchCommand.ResultType.FEATURE,
                 SearchCommand.ResultType.FEATURE,
                 SearchCommand.ResultType.LOCUS,
-                SearchCommand.ResultType.CHROMOSOME,
-                SearchCommand.ResultType.CHROMOSOME
+                SearchCommand.ResultType.LOCUS,
+                SearchCommand.ResultType.LOCUS
         };
         String searchStr = tokens[0];
         for (int ii = 1; ii < tokens.length; ii++) {
@@ -214,7 +204,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testMultiChromosomes() throws Exception {
+    public void testMultiLOCUSs() throws Exception {
         String[] tokens = {"chr1", "chr5", "4", "12", "X", "Y"};
         String searchStr = tokens[0];
         for (int ii = 1; ii < tokens.length; ii++) {
@@ -228,16 +218,11 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         for (int ii = 0; ii < tokens.length; ii++) {
             SearchCommand.SearchResult result = results.get(ii);
 
-            assertEquals(SearchCommand.ResultType.CHROMOSOME, result.type);
+            assertEquals(SearchCommand.ResultType.LOCUS, result.type);
             assertTrue(result.getLocus().contains(tokens[ii]));
         }
     }
 
-    @Test
-    public void testError() throws Exception {
-        String[] tokens = {"ueth", "EGFRa", "BRCA56", "EGFR:?1?"};
-        tstFeatureTypes(tokens, SearchCommand.ResultType.ERROR);
-    }
 
 
     /**
@@ -249,7 +234,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         String[] chromos = {"chr3", "chr20", "chrX", "chrY"};
         SearchCommand cmd = new SearchCommand(null, "", genome);
         for (String chr : chromos) {
-            assertEquals(SearchCommand.ResultType.CHROMOSOME, cmd.checkTokenType(chr));
+            assertEquals(SearchCommand.ResultType.LOCUS, cmd.checkTokenType(chr));
         }
 
         String[] starts = {"39,239,480", "958392", "0,4829,44", "5"};
@@ -267,6 +252,6 @@ public class SearchCommandTest extends AbstractHeadlessTest {
             assertEquals(SearchCommand.ResultType.ERROR, cmd.checkTokenType(s));
         }
     }
-
-
 }
+
+

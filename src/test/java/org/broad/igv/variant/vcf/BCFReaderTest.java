@@ -60,6 +60,20 @@ public class BCFReaderTest extends AbstractHeadlessTest {
     public void loadBCF() throws Exception {
         String path = TestUtils.DATA_DIR + "bcf/ex2.bcf";
         FeatureSource source = TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), genome);
+        Iterator<Feature> features = source.getFeatures("20", 14000, 1300000);
+        int count = 0;
+
+        while (features.hasNext()) {
+            features.next();
+            count++;
+        }
+        assertTrue("No features read", count > 0);
+    }
+
+    @Test
+    public void loadBCFChromAlias() throws Exception {
+        String path = TestUtils.DATA_DIR + "bcf/ex2.bcf";
+        FeatureSource source = TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), genome);
         Iterator<Feature> features = source.getFeatures("chr20", 14000, 1300000);
         int count = 0;
 
@@ -67,9 +81,10 @@ public class BCFReaderTest extends AbstractHeadlessTest {
             features.next();
             count++;
         }
-
         assertTrue("No features read", count > 0);
     }
+
+
 
     /**
      * Compare a BCF and VCF file

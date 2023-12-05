@@ -117,24 +117,30 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
         try {
             // Exact match
             HttpUtils.getInstance().setAccessToken("foo", "bar.foo.com");
-            String token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
+            String token = HttpUtils.getInstance().getCachedTokenFor(new URL("https://bar.foo.com/path"));
             assertEquals("foo", token);
             HttpUtils.getInstance().clearAccessTokens();
 
             // Wildcard match
             HttpUtils.getInstance().setAccessToken("foo", "*.foo.com");
-            token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
+            token = HttpUtils.getInstance().getCachedTokenFor(new URL("https://bar.foo.com/path"));
             assertEquals("foo", token);
+
+            // Superceding match
+            HttpUtils.getInstance().setAccessToken("foo2", "*.foo.com");
+            token = HttpUtils.getInstance().getCachedTokenFor(new URL("https://bar.foo.com/path"));
+            assertEquals("foo2", token);
+
 
             // Clear token
             HttpUtils.getInstance().clearAccessTokens();
-            token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://bar.foo.com/path"));
+            token = HttpUtils.getInstance().getCachedTokenFor(new URL("https://bar.foo.com/path"));
             assertNull(token);
             HttpUtils.getInstance().clearAccessTokens();
 
             // Match all hosts
             HttpUtils.getInstance().setAccessToken("foo", "");
-            token = HttpUtils.getInstance().getAccessTokenFor(new URL("https://igv.org/path"));
+            token = HttpUtils.getInstance().getCachedTokenFor(new URL("https://igv.org/path"));
             assertEquals("foo", token);
         } finally {
             HttpUtils.getInstance().clearAccessTokens();

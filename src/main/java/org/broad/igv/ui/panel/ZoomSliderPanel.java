@@ -214,7 +214,8 @@ public class ZoomSliderPanel extends JPanel {
                     .sorted()
                     .distinct()
                     .map(threshold -> this.getReferenceFrame().calculateZoom(0, threshold))
-                    .collect(Collectors.toList());
+                    .filter(z -> z > 1)
+                    .toList();
 
             transGraphics.setColor(TRANSPARENT_BLUE);
             Rectangle maxZoom = zoomLevelRects[zoomLevelRects.length - 1];

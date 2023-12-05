@@ -25,6 +25,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.*;
 import htsjdk.tribble.index.Index;
 import htsjdk.tribble.index.IndexFactory;
@@ -54,9 +55,7 @@ public class TribbleReaderWrapper  implements IGVFeatureReader {
     public synchronized Iterator<Feature> query(String chr, int start, int end) throws IOException {
 
         // Tribble iterators must be closed, so we need to copy the features and insure closure before exiting.
-        CloseableTribbleIterator<Feature> iter = null;
-        try {
-            iter = wrappedReader.query(chr, start + 1, end);
+        try (CloseableTribbleIterator<Feature> iter = wrappedReader.query(chr, start + 1, end)) {
             List<Feature> featureList = new ArrayList<Feature>();
             while (iter.hasNext()) {
                 Feature f = iter.next();
@@ -69,13 +68,11 @@ public class TribbleReaderWrapper  implements IGVFeatureReader {
                 }
             }
             return featureList.iterator();
-        } finally {
-            if(iter != null) iter.close();
         }
     }
 
     @Override
-    public Iterator<Feature> iterator() throws IOException {
+    public CloseableIterator<Feature> iterator() throws IOException {
         // Note: Technically this is a file handle leak as the "close" method of the tribble iterator is not called.
         // In practice this is not a problem as the iterator() method is only called by batch programs transversing
         // the entire file.   It is none-the-less a file handle leak that should be addressed at some point.

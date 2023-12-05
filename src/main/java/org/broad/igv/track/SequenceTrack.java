@@ -28,6 +28,7 @@ package org.broad.igv.track;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
@@ -132,11 +133,11 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         return new String(complement);
     }
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
 
         if (event instanceof FrameManager.ChangeEvent) {
             // Remove cache for discarded frames.  This seems a rather round-about way to do it.
-            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).getFrames();
+            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).frames();
             Map<String, LoadedDataInterval<SeqCache>> newCache = Collections.synchronizedMap(new HashMap<>());
             for (ReferenceFrame f : frames) {
                 newCache.put(f.getName(), loadedIntervalCache.get(f.getName()));
@@ -221,7 +222,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         int start = (int) referenceFrame.getOrigin();
 
         Chromosome chromosome = currentGenome.getChromosome(chr);
-        if(chromosome == null) {
+        if (chromosome == null) {
             return;
         }
 
@@ -444,8 +445,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         public SeqCache(int start, byte[] seq) {
             this.start = start;
             this.seq = seq;
-            this.posAA = posAA;
-            this.negAA = negAA;
         }
 
         /**
@@ -454,10 +453,9 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
          * @param codonTable
          */
         public void refreshAminoAcids(CodonTable codonTable) {
-            int mod = start % 3;
-            int n1 = normalize3(3 - mod);
-            int n2 = normalize3(n1 + 1);
-            int n3 = normalize3(n2 + 1);
+            int n1 = start % 3;
+            int n2 = (start + 1) % 3;
+            int n3 = (start + 2) % 3;
 
             String sequence = new String(seq);
             AminoAcidSequence[] posAA = {

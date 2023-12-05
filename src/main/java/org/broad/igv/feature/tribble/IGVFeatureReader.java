@@ -28,6 +28,7 @@ package org.broad.igv.feature.tribble;
 
 
 
+import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.index.Index;
 
@@ -49,7 +50,7 @@ public interface IGVFeatureReader {
 
     public Iterator<Feature> query(final String chr, final int start, final int end) throws IOException;
 
-    public Iterator<Feature> iterator() throws IOException;
+    public CloseableIterator<Feature> iterator() throws IOException;
 
     public List<String> getSequenceNames();
 

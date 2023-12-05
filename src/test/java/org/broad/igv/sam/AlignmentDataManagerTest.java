@@ -64,57 +64,6 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
     public void tearDown() throws Exception {
         super.tearDown();
     }
-//
-//
-//    @Test
-//    public void testPreloadNoMerge() throws Exception {
-//
-//        final String chr = "chr1";
-//        final int start = 151666494;
-//        final int halfwidth = 1000;
-//        final int end = start + 2 * halfwidth;
-//
-//        //Load separate intervals, check they don't merge
-//        AlignmentDataManager manager = getManager171();
-//        ReferenceFrame frame = new ReferenceFrame(frameName);
-//        AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
-//        frame.setBounds(0, end - start);
-//
-//        RenderContext context = new RenderContext(null, null, frame, null);
-//
-//        int lastStart = genome.getChromosome(chr).getLength() - 4 * halfwidth;
-//        int[] starts = new int[]{500, 5000, 15000, start, 500000, lastStart};
-//        int[] ends = new int[]{600, 10000, 20000, end, 600000, lastStart + 2 * halfwidth};
-//        for (int ii = 0; ii < starts.length; ii++) {
-//            frame.jumpTo(new Locus(chr, starts[ii], ends[ii]));
-//            int actEnd = (int) frame.getEnd();
-//
-//            manager.load(context.getReferenceFrame(), renderOptions, false);
-//
-//            assertManagerHasInterval(manager, context.getReferenceFrame(), chr, starts[ii], actEnd);
-//        }
-//
-//
-//    }
-
-    private static void assertManagerHasInterval(AlignmentDataManager manager, ReferenceFrame frame, String chr, int start, int end) {
-
-        AlignmentInterval interval = manager.getLoadedInterval(frame);
-        assertNotNull(interval);
-
-        boolean haveInterval = interval.contains(chr, start, end);
-        assertTrue(haveInterval);
-    }
-
-    public static AlignmentDataManager getManager171() throws IOException {
-
-        String infilepath = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
-        ResourceLocator locator = new ResourceLocator(infilepath);
-        AlignmentDataManager manager = new AlignmentDataManager(locator, genome);
-        return manager;
-    }
-
-
 
     @Test
     public void testQuery() throws IOException {
@@ -123,8 +72,25 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         int start = 24376039;
         int end = 24376625;
         boolean contained = false;
-
         tstQuery(testFile, sequence, start, end, contained, Integer.MAX_VALUE / 1000);
+    }
+
+    @Test
+    public void testChrAlias() throws IOException {
+        String testFile = TestUtils.DATA_DIR + "bam/gstt1_sample.bam";
+        String sequence = "22";
+        int start = 24376039;
+        int end = 24376625;
+
+        genome = TestUtils.mockUCSCGenome();
+        AlignmentDataManager manager = new AlignmentDataManager(new ResourceLocator(testFile), genome);
+        AlignmentInterval interval = loadInterval(manager, sequence, start, end);
+        List<Alignment> result = new ArrayList();
+        Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
+        while (alignmentIterator.hasNext()) {
+            result.add(alignmentIterator.next());
+        }
+        Assert.assertTrue(result.size() > 0);
     }
 
     /**
@@ -135,6 +101,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
      * and inclusive-end. AlignmentIntervalLoader is 0-based and exclusive end.
      */
     public void tstQuery(String testFile, String sequence, int start, int end, boolean contained, int maxDepth) throws IOException {
+
 
         ResourceLocator loc = new ResourceLocator(testFile);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);

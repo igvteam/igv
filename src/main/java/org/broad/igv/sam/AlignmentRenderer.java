@@ -963,10 +963,10 @@ public class AlignmentRenderer {
         try {
             //left side
             if (drawLeftClip) {
-                if (sri != null && sri.previous != null) {
-                    final SupplementaryAlignment previous = sri.previous;
-                    if (previous.contigsMatch(sri.alignment)) {
-                        g.setColor(previous.getStrand() == sri.alignment.getReadStrand() ? NON_INVERSION_COLOR : INVERSION_COLOR);
+                if (sri != null && sri.previous() != null) {
+                    final SupplementaryAlignment previous = sri.previous();
+                    if (previous.contigsMatch(sri.alignment())) {
+                        g.setColor(previous.getStrand() == sri.alignment().getReadStrand() ? NON_INVERSION_COLOR : INVERSION_COLOR);
                     } else {
                         if (previous.getContig() != null) {
                             g.setColor(ChromosomeColors.getColor(previous.getContig()));
@@ -988,11 +988,11 @@ public class AlignmentRenderer {
             }
             //right side
             if (drawRightClip) {
-                if (sri != null && sri.next != null) {
-                    final SupplementaryAlignment next = sri.next;
-                    if (next.contigsMatch(sri.alignment)) {
+                if (sri != null && sri.next() != null) {
+                    final SupplementaryAlignment next = sri.next();
+                    if (next.contigsMatch(sri.alignment())) {
                         //TODO Set to scaled color by contig position
-                        g.setColor(next.getStrand() == sri.alignment.getReadStrand() ? NON_INVERSION_COLOR : INVERSION_COLOR);
+                        g.setColor(next.getStrand() == sri.alignment().getReadStrand() ? NON_INVERSION_COLOR : INVERSION_COLOR);
                     } else {
                         g.setColor(ChromosomeColors.getColor(next.getContig()));
                         rightContigLabel = next.getContig();

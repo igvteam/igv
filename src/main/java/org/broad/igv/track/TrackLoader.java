@@ -28,10 +28,8 @@ package org.broad.igv.track;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
-import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bedpe.BedPEParser;
 import org.broad.igv.bedpe.InteractionTrack;
-import org.broad.igv.bbfile.BBDataSource;
 import org.broad.igv.blast.BlastMapping;
 import org.broad.igv.blast.BlastParser;
 import org.broad.igv.data.*;
@@ -59,8 +57,6 @@ import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.gwas.GWASData;
-import org.broad.igv.util.GoogleUtils;
-import org.broad.igv.gwas.GWASFeature;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.htsget.HtsgetUtils;
@@ -70,15 +66,20 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.maf.MultipleAlignmentTrack;
-import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.HeatmapRenderer;
 import org.broad.igv.renderer.MutationRenderer;
 import org.broad.igv.renderer.PointsRenderer;
-import org.broad.igv.sam.*;
+import org.broad.igv.sam.AlignmentDataManager;
+import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.reader.IndexNotFoundException;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
+import org.broad.igv.ucsc.Trix;
+import org.broad.igv.ucsc.bb.BBDataSource;
+import org.broad.igv.ucsc.bb.BBFeatureSource;
+import org.broad.igv.ucsc.bb.BBFile;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.ConvertFileDialog;
@@ -91,7 +92,10 @@ import org.broad.igv.variant.util.PedigreeUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -135,7 +139,6 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-
             // Determine track type, if possible, and add new tracks
             if (locator.isHtsget()) {
                 HtsgetUtils.Metadata htsgetMeta = HtsgetUtils.getMetadata(locator.getPath());
@@ -151,7 +154,7 @@ public class TrackLoader {
                     throw new RuntimeException("Format: '" + htsgetMeta.getFormat() + "' is not supported for htsget servers.");
                 }
 
-            }  else if (format.equals("gmt")) {
+            } else if (format.equals("gmt")) {
                 loadGMT(locator);
             } else if (format.equals("vcf.list")) {
                 loadVCFListFile(locator, newTracks, genome);
@@ -188,7 +191,7 @@ public class TrackLoader {
             } else if (format.equals("ewig.tdf")) {
                 loadEwigIBFFile(locator, newTracks, genome);
             } else if (format.equals("bw") || format.equals("bb") || format.equals("bigwig") ||
-                    format.equals("bigbed")) {
+                    format.equals("bigbed") || format.equals("biggenepred") || format.equals("bigrepmsk")) {
                 loadBWFile(locator, newTracks, genome);
             } else if (format.equals("ibf") || format.equals("tdf")) {
                 loadTDFFile(locator, newTracks, genome);
@@ -223,7 +226,7 @@ public class TrackLoader {
                 loadMutFile(locator, newTracks, genome); // Must be tried before ".maf" test below
             } else if (format.equals("maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-            } else  {
+            } else {
                 // If the file is too large, give up
                 // TODO -- ftp test
                 final int tenMB = 10000000;
@@ -790,21 +793,16 @@ public class TrackLoader {
         String trackId = locator.getPath();
 
         String path = locator.getPath();
-        BBFileReader reader = new BBFileReader(path);
-        BBDataSource bigwigSource = new BBDataSource(reader, genome);
-        Track track = null;
-
+        String trixURL = locator.getTrixURL();
+        BBFile reader = trixURL == null ? new BBFile(path, genome) : new BBFile(path, genome, trixURL);
+        Track track;
         if (reader.isBigWigFile()) {
+            BBDataSource bigwigSource = new BBDataSource(reader, genome);
             track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
+            BBFeatureSource featureSource = new BBFeatureSource(reader, genome);
+            track = new FeatureTrack(locator, trackId, trackName, featureSource);
 
-            if (locator.getPath().contains("RRBS_cpgMethylation") ||
-                    locator.getPath().contains("BiSeq_cpgMethylation") ||
-                    (reader.getAutoSql() != null && reader.getAutoSql().startsWith("table BisulfiteSeq"))) {
-                loadMethylTrack(locator, reader, newTracks, genome);
-            } else {
-                track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
-            }
         } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
         }
@@ -813,12 +811,6 @@ public class TrackLoader {
             newTracks.add(track);
         }
 
-    }
-
-    private void loadMethylTrack(ResourceLocator locator, BBFileReader reader, List<Track> newTracks, Genome genome) throws IOException {
-
-        MethylTrack track = new MethylTrack(locator, reader, genome);
-        newTracks.add(track);
     }
 
     private void loadEwigIBFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
@@ -884,7 +876,14 @@ public class TrackLoader {
             // not represented in the genome, buf if there are no matches warn the user.
             List<String> seqNames = dataManager.getSequenceNames();
             if (seqNames != null && seqNames.size() > 0) {
-                if (!dataManager.hasMatchingSequences()) {
+                boolean seqMatch = false;
+                for (String seq : seqNames) {
+                    if (genome.getAliasRecord(seq) != null) {
+                        seqMatch = true;
+                        break;
+                    }
+                }
+                if (!seqMatch) {
                     showMismatchSequenceNameMessage(locator.getPath(), genome, seqNames);
                 }
             }
@@ -961,7 +960,7 @@ public class TrackLoader {
                 break;
             }
         }
-        if (genome != null && genome.getAllChromosomeNames() != null) {
+        if (genome != null && genome.getAllChromosomeNames() != null && genome.getAllChromosomeNames().size() > 0) {
             message.append("<br>Genome: ");
             n = 0;
             for (String cn : genome.getAllChromosomeNames()) {

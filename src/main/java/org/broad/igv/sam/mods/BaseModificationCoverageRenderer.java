@@ -47,8 +47,8 @@ public class BaseModificationCoverageRenderer {
 
                 byte base = (byte) key.getBase();
                 final byte compl = SequenceUtil.complement(base);
-                int modifiable = alignmentCounts.getCount(pos, base) + alignmentCounts.getCount(pos, compl);
-                int detectable = simplexModifications.contains(key.modification) ?
+                int modifiable = base == 'N' ? total : alignmentCounts.getCount(pos, base) + alignmentCounts.getCount(pos, compl);
+                int detectable = base == 'N' ? total : simplexModifications.contains(key.modification) ?
                         alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, compl) :
                         modifiable;
 

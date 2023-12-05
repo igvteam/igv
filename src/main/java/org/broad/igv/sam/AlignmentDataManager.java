@@ -26,6 +26,9 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.event.DataLoadedEvent;
+import org.broad.igv.feature.genome.ChromAlias;
+import org.broad.igv.feature.genome.ChromAliasManager;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
@@ -34,6 +37,7 @@ import org.broad.igv.event.RefreshEvent;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.mods.BaseModificationKey;
@@ -59,23 +63,25 @@ import static org.broad.igv.prefs.Constants.*;
 public class AlignmentDataManager implements IGVEventObserver {
 
     private static Logger log = LogManager.getLogger(AlignmentDataManager.class);
-    private final AlignmentReader reader;
 
+    private final Genome genome;
+    private ChromAliasManager chromAliasManager;
+    private final AlignmentReader reader;
     private AlignmentTrack alignmentTrack;
     private CoverageTrack coverageTrack;
     private Set<Track> subscribedTracks;
     private List<AlignmentInterval> intervalCache;
     private ResourceLocator locator;
-    private HashMap<String, String> chrMappings = new HashMap();
+
+    private Set<String> sequenceNames;
     private AlignmentTileLoader loader;
     private Map<String, PEStats> peStats;
-    private SpliceJunctionHelper.LoadOptions loadOptions;
-
     private Set<BaseModificationKey> allBaseModificationKeys = new HashSet<>();
-
     private Set<String> simplexBaseModfications = new HashSet<>();
 
     private Range currentlyLoading;
+    private AlignmentTrack.ExperimentType inferredType;
+    private int minJunctionCoverage;
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
@@ -84,17 +90,20 @@ public class AlignmentDataManager implements IGVEventObserver {
         // mechanism to refresh expired presigned URLs.
         reader = AlignmentReaderFactory.getReader(locator);
         loader = new AlignmentTileLoader(reader);
+        this.inferType();
+        minJunctionCoverage = PreferencesManager.getPreferences(Constants.RNA).getAsInt(SAM_JUNCTION_MIN_COVERAGE);
         peStats = new HashMap();
-        initLoadOptions();
-        initChrMap(genome);
+        this.genome = genome;
         intervalCache = Collections.synchronizedList(new ArrayList<>());
         subscribedTracks = Collections.synchronizedSet(new HashSet<>());
+        sequenceNames = new HashSet(getLoader().getSequenceNames());
+        chromAliasManager = new ChromAliasManager(sequenceNames, genome);
 
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(RefreshEvent.class, this);
     }
 
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if (event instanceof FrameManager.ChangeEvent) {
             trimCache();
         } else if (event instanceof RefreshEvent) {
@@ -115,76 +124,6 @@ public class AlignmentDataManager implements IGVEventObserver {
             dumpAlignments();
             IGVEventBus.getInstance().unsubscribe(this);
         }
-    }
-
-    void initLoadOptions() {
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions();
-    }
-
-    /**
-     * Create an alias -> chromosome lookup map.  Enables loading BAM files that use alternative names for chromosomes
-     * (e.g. 1 -> chr1,  etc).
-     */
-    private void initChrMap(Genome genome) throws IOException {
-
-        if (genome != null) {
-
-            // Build a chr size -> name lookup table.   We will assume sizes are unique.  This will be used if no alias
-            // is defined for a sequence.
-            Map<Long, String> inverseDict = null;
-            Map<String, Long> sequenceDictionary = getLoader().getSequenceDictionary();
-
-            if (sequenceDictionary != null) {
-
-                Set<Long> nonUnique = new HashSet<>();
-                Set<Long> seen = new HashSet<>();
-                // First find sequences whose size are not unique,  we'll filter these
-                for (Long size : sequenceDictionary.values()) {
-                    if (seen.contains(size)) {
-                        nonUnique.add(size);
-                    } else {
-                        seen.add(size);
-                    }
-                }
-
-                inverseDict = new HashMap<>();
-
-                for (Chromosome chromosome : genome.getChromosomes()) {
-
-                    Long size = (long) chromosome.getLength();
-                    if (!nonUnique.contains(size)) {
-                        if (inverseDict.containsKey(size)) {
-                            inverseDict.remove(size);
-                            nonUnique.add(size);
-                        } else {
-                            inverseDict.put(size, chromosome.getName());
-                        }
-                    }
-                }
-            }
-
-
-            List<String> seqNames = getLoader().getSequenceNames();
-            if (seqNames != null) {
-                for (String seq : seqNames) {
-
-                    if (genome.isKnownChr(seq)) {
-                        String chr = genome.getCanonicalChrName(seq);
-                        chrMappings.put(chr, seq);
-                    } else if (sequenceDictionary != null) {
-                        Long size = sequenceDictionary.get(seq);
-                        String chr = inverseDict.get(size);
-                        if (chr != null) {
-                            chrMappings.put(chr, seq);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public boolean hasMatchingSequences() {
-        return chrMappings.size() > 0;
     }
 
     public AlignmentTileLoader getLoader() {
@@ -234,6 +173,8 @@ public class AlignmentDataManager implements IGVEventObserver {
         return getPreferences().getAsFloat(SAM_MAX_VISIBLE_RANGE) * 1000;
     }
 
+
+
     private IGVPreferences getPreferences() {
         String category = NULL_CATEGORY;
         AlignmentTrack.ExperimentType experimentType = getExperimentType();
@@ -256,16 +197,12 @@ public class AlignmentDataManager implements IGVEventObserver {
         return getLoader().getSequenceNames();
     }
 
-    public Map<String, Long> getSequenceDictionary() {
-        return getLoader().getSequenceDictionary();
-    }
-
     public AlignmentInterval getLoadedInterval(ReferenceFrame frame) {
         return getLoadedInterval(frame, false);
     }
 
     public AlignmentInterval getLoadedInterval(ReferenceFrame frame, boolean includeOverlaps) {
-        // Search for interval completely containining reference frame region
+        // Search for interval completely containing reference frame region
         for (AlignmentInterval interval : intervalCache) {
             if (interval.contains(frame.getCurrentRange())) {
                 return interval;
@@ -341,7 +278,7 @@ public class AlignmentDataManager implements IGVEventObserver {
             if (expandEnds) {
                 adjustedStart = Math.max(0, Math.min(start, center - expand));
                 adjustedEnd = Math.max(end, center + expand);
-                if(adjustedEnd < 0) {
+                if (adjustedEnd < 0) {
                     adjustedEnd = Integer.MAX_VALUE;  // Overflow
                 }
             }
@@ -358,7 +295,9 @@ public class AlignmentDataManager implements IGVEventObserver {
             currentlyLoading = null;
         }
 
+
         IGVEventBus.getInstance().post(new DataLoadedEvent(frame));
+
 
     }
 
@@ -390,14 +329,15 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
 
-        String sequence = chrMappings.getOrDefault(chr, chr);
+
+        String sequence = sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
 
         DownsampleOptions downsampleOptions = new DownsampleOptions();
 
         final AlignmentTrack.BisulfiteContext bisulfiteContext =
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
 
-        SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper(this.loadOptions);
+        SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper();
 
         AlignmentTileLoader.AlignmentTile t = getLoader().loadTile(sequence, start, end, spliceJunctionHelper,
                 downsampleOptions, peStats, bisulfiteContext, renderOptions);
@@ -409,10 +349,10 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     private void updateBaseModfications(List<Alignment> alignments) {
 
-        for(Alignment a : alignments) {
+        for (Alignment a : alignments) {
             List<BaseModificationSet> bmSets = a.getBaseModificationSets();
-            if(bmSets != null) {
-                for(BaseModificationSet bms : bmSets) {
+            if (bmSets != null) {
+                for (BaseModificationSet bms : bmSets) {
                     allBaseModificationKeys.add(BaseModificationKey.getKey(bms.getBase(), bms.getStrand(), bms.getModification()));
                 }
             }
@@ -423,31 +363,36 @@ public class AlignmentDataManager implements IGVEventObserver {
                 .filter(key -> key.getStrand() == '-')
                 .map(key -> key.getModification())
                 .collect(Collectors.toSet());
-        for(BaseModificationKey key : allBaseModificationKeys) {
-            if(key.getStrand() == '+' && !minusStranMods.contains(key.getModification()))
-            simplexBaseModfications.add(key.getModification());
+        for (BaseModificationKey key : allBaseModificationKeys) {
+            if (key.getStrand() == '+' && !minusStranMods.contains(key.getModification()))
+                simplexBaseModfications.add(key.getModification());
             simplexBaseModfications.add("NONE_" + key.getCanonicalBase());  // Mix of simplex & duplex keys for same base not supported.
         }
     }
 
     public AlignmentTrack.ExperimentType inferType() {
+        if(this.inferredType != null) {
+            return this.inferredType;
+        }
+
         ReadStats readStats = new ReadStats();
         List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 100);
-        for(Alignment a : sample) {
+        for (Alignment a : sample) {
             readStats.addAlignment(a);
         }
-        AlignmentTrack.ExperimentType type = readStats.inferType();
+        inferredType = readStats.inferType();
 
-        if(type == AlignmentTrack.ExperimentType.THIRD_GEN) {
-            return type;
+        if (inferredType == AlignmentTrack.ExperimentType.THIRD_GEN) {
+            return inferredType;
         } else {
             // Get a larger sample to distinguish RNA-Seq
             readStats = new ReadStats();
             sample = AlignmentUtils.firstAlignments(reader, 2000);
-            for(Alignment a : sample) {
+            for (Alignment a : sample) {
                 readStats.addAlignment(a);
             }
-            return readStats.inferType();
+            inferredType = readStats.inferType();
+            return inferredType;
         }
     }
 
@@ -548,17 +493,6 @@ public class AlignmentDataManager implements IGVEventObserver {
             for (PEStats stats : peStats.values()) {
                 stats.computeInsertSize(renderOptions.getMinInsertSizePercentile(), renderOptions.getMaxInsertSizePercentile());
             }
-        }
-    }
-
-    public SpliceJunctionHelper.LoadOptions getSpliceJunctionLoadOptions() {
-        return loadOptions;
-    }
-
-    public void setMinJunctionCoverage(int minJunctionCoverage) {
-        this.loadOptions = new SpliceJunctionHelper.LoadOptions(minJunctionCoverage, this.loadOptions.minReadFlankingWidth);
-        for (AlignmentInterval interval : intervalCache) {
-            interval.getSpliceJunctionHelper().setLoadOptions(this.loadOptions);
         }
     }
 

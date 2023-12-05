@@ -32,11 +32,12 @@ import org.broad.igv.aws.S3LoadDialog;
 import org.broad.igv.batch.CommandExecutor;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.event.GenomeChangeEvent;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeUtils;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.GoogleUtils;
@@ -108,7 +109,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
      * We store this as a field because we alter it if
      * we can't access genome server list
      */
-    private JMenuItem loadFromServerMenuItem;
+    private JMenuItem loadGenomeFromServerMenuItem;
+    private JMenuItem loadTracksFromServerMenuItem;
+    private JMenuItem selectGenomeAnnotationsItem;
     private JMenuItem encodeMenuItem;
     private JMenuItem reloadSessionItem;
 
@@ -139,7 +142,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
 
-
         //This is for Macs, so showing the about dialog
         //from the command bar does what we want.
         if (Globals.IS_MAC) {
@@ -150,11 +152,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
 
     public void notifyGenomeServerReachable(boolean reachable) {
-        if (loadFromServerMenuItem != null) {
+        if (loadGenomeFromServerMenuItem != null) {
             UIUtilities.invokeOnEventThread(() -> {
-                loadFromServerMenuItem.setEnabled(reachable);
+                loadGenomeFromServerMenuItem.setEnabled(reachable);
                 String tooltip = reachable ? LOAD_GENOME_SERVER_TOOLTIP : CANNOT_LOAD_GENOME_SERVER_TOOLTIP;
-                loadFromServerMenuItem.setToolTipText(tooltip);
+                loadGenomeFromServerMenuItem.setToolTipText(tooltip);
             });
         }
     }
@@ -270,6 +272,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     JMenu createFileMenu() {
 
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        String genomeId = genome == null ?  null : genome.getId();
+
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
 
@@ -284,13 +289,25 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new LoadFromServerAction("Load IGV Hosted Tracks...", KeyEvent.VK_S, igv);
+        menuAction = new LoadFromServerAction("Load Hosted Tracks...", KeyEvent.VK_S, igv);
         menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        loadTracksFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        loadTracksFromServerMenuItem.setVisible(genomeId != null && LoadFromServerAction.getNodeURLs(genomeId) != null);
+        menuItems.add(loadTracksFromServerMenuItem);
 
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_HTSGET, 0, igv);
-        menuAction.setToolTipText(UIConstants.LOAD_HTSGET_TOOLTOP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        // Track hubs -- moved to Genomes menu
+//        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKHUB, KeyEvent.VK_S, igv);
+//        menuAction.setToolTipText(UIConstants.LOAD_TRACKHUB_TOOLTIP);
+//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//
+//        menuAction = new SelectGenomeAnnotationTracksAction("Select Hub Tracks...", igv);
+//        selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+//        selectGenomeAnnotationsItem.setVisible(genome != null && genome.getHub() != null);
+//        menuItems.add(selectGenomeAnnotationsItem);
+//
+//        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_HTSGET, 0, igv);
+//        menuAction.setToolTipText(UIConstants.LOAD_HTSGET_TOOLTOP);
+//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         if (PreferencesManager.getPreferences().getAsBoolean(DB_ENABLED)) {
             menuAction = new LoadFromDatabaseAction("Load from Database...", 0, igv);
@@ -298,10 +315,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
 
         encodeMenuItem = MenuAndToolbarUtils.createMenuItem(new BrowseEncodeAction("Load from ENCODE (2012)...", KeyEvent.VK_E, igv));
-        menuItems.add(encodeMenuItem);
-        String genomeId = GenomeManager.getInstance().getGenomeId();
         encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(genomeId));
-
+        menuItems.add(encodeMenuItem);
 
         menuItems.add(new JSeparator());
         menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
@@ -411,10 +426,23 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
     private JMenu createGenomesMenu() {
+
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
 
-        // Load genome
+        // Download genome from server
+        menuAction = new MenuAction("Select Hosted Genome...", null) {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                GenomeComboBox.loadGenomeFromServer();
+            }
+        };
+        menuAction.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
+        loadGenomeFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        menuItems.add(loadGenomeFromServerMenuItem);
+
+
+        // Load genome json file
         menuAction =
                 new MenuAction("Load Genome from File...", null, KeyEvent.VK_I) {
                     @Override
@@ -429,7 +457,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                             // If a file selection was made
                             if (file != null) {
-                                GenomeManager.getInstance().loadGenome(file.getAbsolutePath(), null);
+                                GenomeManager.getInstance().loadGenome(file.getAbsolutePath());
                             }
                         } catch (Exception e) {
                             MessageUtils.showErrorMessage(e.getMessage(), e);
@@ -445,16 +473,20 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText("Load a FASTA, .json, or .genome file...");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        // Download genome from server 
-        menuAction = new MenuAction("Select Hosted Genome...", null) {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                GenomeComboBox.loadGenomeFromServer();
-            }
-        };
-        menuAction.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
-        loadFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        menuItems.add(loadFromServerMenuItem);
+
+        // Track hubs
+        menuItems.add(new JSeparator());
+
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKHUB, KeyEvent.VK_S, igv);
+        menuAction.setToolTipText(UIConstants.LOAD_TRACKHUB_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new SelectGenomeAnnotationTracksAction("Select Hub Tracks...", igv);
+        selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        selectGenomeAnnotationsItem.setEnabled(genome != null && genome.getHub() != null);
+        menuItems.add(selectGenomeAnnotationsItem);
+
 
         menuItems.add(new JSeparator());
 
@@ -1163,10 +1195,15 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
 
     @Override
-    public void receiveEvent(final Object event) {
+    public void receiveEvent(final IGVEvent event) {
 
         if (event instanceof GenomeChangeEvent) {
-            UIUtilities.invokeOnEventThread(() -> encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(((GenomeChangeEvent) event).genome.getId())));
+            UIUtilities.invokeOnEventThread(() -> {
+                final Genome genome = ((GenomeChangeEvent) event).genome();
+                encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(genome.getId()));
+                loadTracksFromServerMenuItem.setVisible(LoadFromServerAction.getNodeURLs(genome.getId()) != null);
+                selectGenomeAnnotationsItem.setEnabled(genome != null && genome.getHub() != null);
+            });
         }
     }
 
