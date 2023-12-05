@@ -94,13 +94,17 @@ public class BBFeatureSource implements FeatureSource {
     public Iterator<BasicFeature> getFeatures(String chr, int start, int end) throws IOException {
 
         long rTreeOffset = reader.header.fullIndexOffset;
-        int chrIdx = reader.getIdForChr(chr);
-        List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
-        List features = new ArrayList<>();
-        for (byte[] c : chunks) {
-            features.addAll(reader.decodeFeatures(c, chrIdx, start, end));
+        Integer chrIdx = reader.getIdForChr(chr);
+        if(chrIdx == null) {
+            return Collections.emptyIterator();
+        } else {
+            List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
+            List features = new ArrayList<>();
+            for (byte[] c : chunks) {
+                features.addAll(reader.decodeFeatures(c, chrIdx, start, end));
+            }
+            return new FeatureIterator(features, start, end);
         }
-        return new FeatureIterator(features, start, end);
     }
 
     public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {

@@ -234,7 +234,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                     if(HubGenomeLoader.isHubURL(obj)) {
                        LongRunningTask.submit(() -> {
                            try {
-                               GenomeManager.getInstance().loadGenome(obj, null);
+                               GenomeManager.getInstance().loadGenome(obj);
                            } catch (IOException e) {
                                MessageUtils.showMessage("Error loading track hub: " + e.getMessage());
                            }

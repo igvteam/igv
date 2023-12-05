@@ -1,32 +1,26 @@
 package org.broad.igv.feature.genome.load;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import htsjdk.tribble.CloseableTribbleIterator;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureReader;
-import org.broad.igv.feature.genome.ChromAliasBB;
-import org.broad.igv.feature.genome.ChromAliasDefaults;
-import org.broad.igv.feature.genome.ChromAliasFile;
-import org.broad.igv.feature.IGVNamedFeature;
-import org.broad.igv.logging.*;
-import org.broad.igv.Globals;
-import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.IGVNamedFeature;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
-import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackProperties;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.TribbleFeatureSource;
-import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.liftover.Liftover;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class JsonGenomeLoader extends GenomeLoader {
 
@@ -51,7 +45,7 @@ public class JsonGenomeLoader extends GenomeLoader {
                 jsonString = fixChromosomeOrder(jsonString);
             }
 
-            GenomeConfig genomeConfig = (new Gson()).fromJson(jsonString, GenomeConfig.class);
+            GenomeConfig genomeConfig =  GenomeConfig.fromJson (jsonString);
 
             fixPaths(genomeConfig);
 

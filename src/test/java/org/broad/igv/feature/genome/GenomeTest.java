@@ -40,7 +40,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.Assert.*;
@@ -85,7 +84,7 @@ public class GenomeTest extends AbstractHeadlessTest {
     private Genome loadGenomeAssumeSuccess(String genomeURL) {
         Genome genome = null;
         try {
-            genome = GenomeManager.getInstance().loadGenome(genomeURL, null);
+            genome = GenomeManager.getInstance().loadGenome(genomeURL);
         } catch (Exception e) {
             e.printStackTrace();
         }

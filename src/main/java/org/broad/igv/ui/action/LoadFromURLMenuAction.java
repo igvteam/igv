@@ -33,17 +33,11 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.util.GoogleUtils;
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.AmazonUtils;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,6 +56,7 @@ public class LoadFromURLMenuAction extends MenuAction {
     public static final String LOAD_FROM_URL = "Load from URL...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
     public static final String LOAD_FROM_HTSGET = "Load from htsget Server...";
+    public static final String LOAD_TRACKHUB = "Load Track Hub...";
     private IGV igv;
 
     public LoadFromURLMenuAction(String label, int mnemonic, IGV igv) {
@@ -90,7 +85,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                     if (inputs.length == 1 && HubGenomeLoader.isHubURL(inputs[0])) {
                         LongRunningTask.submit(() -> {
                             try {
-                               GenomeManager.getInstance().loadGenome(inputs[0], null);
+                               GenomeManager.getInstance().loadGenome(inputs[0]);
                             } catch (IOException ex) {
                                 log.error("Error loading tack hub", ex);
                                 MessageUtils.showMessage("Error loading track hub: " + ex.getMessage());
@@ -147,7 +142,32 @@ public class LoadFromURLMenuAction extends MenuAction {
                 url = url.trim();
                 try {
                     checkURLs(new String[]{url});
-                    GenomeManager.getInstance().loadGenome(url, null);
+                    GenomeManager.getInstance().loadGenome(url);
+                } catch (Exception e1) {
+                    MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
+                }
+
+            }
+        } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_TRACKHUB))) {
+
+            String urlOrAccension = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter GCA or GCF accension, or URL to hub.txt file",
+                    JOptionPane.QUESTION_MESSAGE);
+
+            String url;
+            if(urlOrAccension.startsWith("GC")) {
+                url = HubGenomeLoader.convertToHubURL(urlOrAccension);
+                if(url == null || !FileUtils.resourceExists(url)) {
+                    MessageUtils.showMessage("Unrecognized hub identifier: " + urlOrAccension);
+                }
+            } else {
+                url = urlOrAccension;
+            }
+
+            if (url != null && url.trim().length() > 0) {
+                url = url.trim();
+                try {
+                    checkURLs(new String[]{url});
+                    GenomeManager.getInstance().loadGenome(url);
                 } catch (Exception e1) {
                     MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
                 }

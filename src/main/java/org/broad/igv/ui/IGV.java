@@ -1152,7 +1152,7 @@ public class IGV implements IGVEventObserver {
 
             try {
                 List<Track> tracks = load(locator);
-                addTracks(tracks, locator);
+                addTracks(tracks);
             } catch (Exception e) {
                 log.error("Error loading track", e);
                 messages.append("Error loading " + locator + ": " + e.getMessage());
@@ -1186,12 +1186,11 @@ public class IGV implements IGVEventObserver {
      * is chosen based on characteristics of the {@code locator}.
      *
      * @param tracks
-     * @param locator
      */
-    public void addTracks(List<Track> tracks, ResourceLocator locator) {
+    public void addTracks(List<Track> tracks) {
 
         if (tracks.size() > 0) {
-            String path = locator.getPath();
+            String path = tracks.get(0).getResourceLocator().getPath();//  locator.getPath();
             Track representativeTrack = tracks.get(0);
 
             // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
@@ -1219,31 +1218,41 @@ public class IGV implements IGVEventObserver {
      */
     public List<Track> load(ResourceLocator locator) throws DataLoadException {
 
-        TrackLoader loader = new TrackLoader();
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        List<Track> newTracks = loader.load(locator, genome);
-        if (newTracks.size() > 0) {
-            for (Track track : newTracks) {
-                String fn = locator.getPath();
-                int lastSlashIdx = fn.lastIndexOf("/");
-                if (lastSlashIdx < 0) {
-                    lastSlashIdx = fn.lastIndexOf("\\");
-                }
-                if (lastSlashIdx > 0) {
-                    fn = fn.substring(lastSlashIdx + 1);
-                }
-                track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
-                track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
-                track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+        try {
+            if (IGV.hasInstance()) {
+                IGV.getInstance().setStatusBarMessage3("Loading " + locator.getPath());
+            }
 
-                TrackProperties properties = locator.getTrackProperties();
-                if (properties != null) {
-                    track.setProperties(properties);
+            TrackLoader loader = new TrackLoader();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            List<Track> newTracks = loader.load(locator, genome);
+            if (newTracks.size() > 0) {
+                for (Track track : newTracks) {
+                    String fn = locator.getPath();
+                    int lastSlashIdx = fn.lastIndexOf("/");
+                    if (lastSlashIdx < 0) {
+                        lastSlashIdx = fn.lastIndexOf("\\");
+                    }
+                    if (lastSlashIdx > 0) {
+                        fn = fn.substring(lastSlashIdx + 1);
+                    }
+                    track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
+                    track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
+                    track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
+
+                    TrackProperties properties = locator.getTrackProperties();
+                    if (properties != null) {
+                        track.setProperties(properties);
+                    }
                 }
             }
+            //revalidateTrackPanels();
+            return newTracks;
+        } finally {
+            if (IGV.hasInstance()) {
+                IGV.getInstance().setStatusBarMessage3("");
+            }
         }
-        //revalidateTrackPanels();
-        return newTracks;
     }
 
 
@@ -1943,26 +1952,27 @@ public class IGV implements IGVEventObserver {
                         log.debug("Loading session data");
                     }
 
-                    final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor();
-                    final ProgressBar.ProgressDialog progressDialog2 = ProgressBar.showProgressDialog(mainFrame, "Loading session data", indefMonitor, false);
-                    indefMonitor.start();
-
-
                     if (log.isDebugEnabled()) {
                         log.debug("Calling restore session");
                     }
 
 
                     if (igvArgs.getSessionFile() != null) {
-                        boolean success = false;
-                        if (HttpUtils.isRemoteURL(igvArgs.getSessionFile())) {
-                            boolean merge = false;
-                            success = loadSession(igvArgs.getSessionFile(), igvArgs.getLocusString());
-                        } else {
-                            File sf = new File(igvArgs.getSessionFile());
-                            if (sf.exists()) {
-                                success = loadSession(sf.getAbsolutePath(), igvArgs.getLocusString());
+                        IGV.getInstance().setStatusBarMessage3("Loading " + igvArgs.getSessionFile());
+                        boolean success;
+                        try {
+                            success = false;
+                            if (HttpUtils.isRemoteURL(igvArgs.getSessionFile())) {
+                                boolean merge = false;
+                                success = loadSession(igvArgs.getSessionFile(), igvArgs.getLocusString());
+                            } else {
+                                File sf = new File(igvArgs.getSessionFile());
+                                if (sf.exists()) {
+                                    success = loadSession(sf.getAbsolutePath(), igvArgs.getLocusString());
+                                }
                             }
+                        } finally {
+                            IGV.getInstance().setStatusBarMessage3("");
                         }
                         if (!success) {
                             String genomeId = preferences.getDefaultGenome();
@@ -2049,11 +2059,6 @@ public class IGV implements IGVEventObserver {
                             contentPane.getCommandBar().selectGenome(genomeId);
                         }
                     }
-
-
-                    indefMonitor.stop();
-                    closeWindow(progressDialog2);
-
                 }
 
                 UIUtilities.invokeAndWaitOnEventThread(() -> {

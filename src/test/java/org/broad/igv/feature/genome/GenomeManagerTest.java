@@ -31,12 +31,7 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.DirectoryManager;
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,7 +40,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
 
 import static org.junit.Assert.*;
 
@@ -66,82 +60,13 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         genomeManager = GenomeManager.getInstance();
     }
 
-    @Test
-    public void testGenerateGenomeList() throws Exception {
-        File inDir = new File(TestUtils.DATA_DIR, "genomes");
-        String outPath = TestUtils.TMP_OUTPUT_DIR + "/genomelist.txt";
-
-        String rootPath = "http://igvdata.broadinstitute.org/genomes";
-
-        genomeManager.generateGenomeList(inDir, rootPath, outPath);
-
-        BufferedReader reader = new BufferedReader(new FileReader(outPath));
-        int count = 0;
-        String line;
-        while ((line = reader.readLine()) != null) {
-            assertTrue(line.contains(rootPath + "/"));
-            count++;
-        }
-        assertEquals(5, count);
-    }
-
-    private String genomeZipFile = TestUtils.TMP_OUTPUT_DIR + "tmp.genome";
-    private String fastaFileRelPath = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";
-    private String genomeDisplayName = "Unit test genome";
-    private String genomeId = "gmt_001";
-
-    private void createDotGenomeForTest(String fastaFileName) throws IOException{
-        GenomeListManager.getInstance().getUserDefinedGenomeMap();
-        GenomeListItem genomeListItem = GenomeManager.getInstance().defineGenome(
-                new File(genomeZipFile), null, null,
-                fastaFileName, null, genomeDisplayName,
-                genomeId, null);
-
-
-    }
-
-    /**
-     * Use a relative path for fasta file, test that we can load it
-     * @throws Exception
-     */
-    @Test
-    public void testLoadGenomeFastaRelative() throws Exception{
-        createDotGenomeForTest(fastaFileRelPath);
-        Genome relGenome = GenomeManager.getInstance().loadGenome(genomeZipFile, null);
-
-        checkGenome(relGenome);
-    }
-
-    /**
-     * Use an absolute path for fasta file, test that we can load it
-     * @throws Exception
-     */
-    @Test
-    public void testLoadGenomeFastaAbsolute() throws Exception{
-        File fastaFile = new File(fastaFileRelPath);
-        String fastaAbsPath = fastaFile.getAbsolutePath();
-
-        createDotGenomeForTest(fastaAbsPath);
-        Genome absGenome = GenomeManager.getInstance().loadGenome(genomeZipFile, null);
-
-        checkGenome(absGenome);
-    }
-
-    private void checkGenome(Genome genome) {
-        String chr = genome.getAllChromosomeNames().get(0);
-        int end = 10;
-
-        byte[] seq = genome.getSequence(chr, 0, end);
-        assertNotNull(seq);
-        assertEquals(end, seq.length);
-    }
 
     @Test
     public void testLoadFastaOrdering() throws Exception{
         String fastaPath = TestUtils.DATA_DIR + "fasta/out_order.fa";
         TestUtils.createIndex(fastaPath);
 
-        Genome genome = GenomeManager.getInstance().loadGenome(fastaPath, null);
+        Genome genome = GenomeManager.getInstance().loadGenome(fastaPath);
         String[] chromos = {"chr1", "chr5"};
 
         assertArrayEquals(chromos, genome.getAllChromosomeNames().toArray());
@@ -155,7 +80,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
     @Test
     public void testLoadChromSizes() throws Exception {
         String testFile = TestUtils.DATA_DIR + "genomes/hg19.chrom.sizes";
-        Genome genome = GenomeManager.getInstance().loadGenome(testFile, null);
+        Genome genome = GenomeManager.getInstance().loadGenome(testFile);
 
         assertEquals(37, genome.getAllChromosomeNames().size());
         assertEquals(3130404865l, genome.getTotalLength());

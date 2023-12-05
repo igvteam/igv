@@ -1,19 +1,25 @@
 package org.broad.igv.feature.genome.load;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.*;
+import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeException;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.Utilities;
 
 import java.awt.*;
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
 
 /**
  * Collection of static load methods for various genome definition formats

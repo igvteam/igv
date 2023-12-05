@@ -68,7 +68,7 @@ public class CommandListenerTest extends AbstractHeadedTest {
         super.setUp();
         CommandListener.halt();
         CommandListener.start(port);
-        GenomeManager.getInstance().loadGenome(TestUtils.defaultGenome, null);
+        GenomeManager.getInstance().loadGenome(TestUtils.defaultGenome);
     }
 
     @After

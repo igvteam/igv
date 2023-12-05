@@ -12,6 +12,7 @@ import java.util.function.Function;
 
 public class Hub {
 
+    private final String url;
     String baseURL;
     Stanza hub;
     Stanza genomeStanza;
@@ -63,11 +64,15 @@ public class Hub {
             }
         }
 
-        return new Hub(baseURL, stanzas, groups);
+        return new Hub(url, stanzas, groups);
     }
 
-    private Hub(String baseURL, List<Stanza> stanzas, List<Stanza> groupStanzas) {
+    private Hub(String url, List<Stanza> stanzas, List<Stanza> groupStanzas) {
 
+        this.url = url;
+
+        int idx = url.lastIndexOf("/");
+        String baseURL = url.substring(0, idx + 1);
         this.baseURL = baseURL;
 
         if (stanzas.size() < 2) {
@@ -114,6 +119,7 @@ public class Hub {
         List<Stanza> nodes = new ArrayList<>();
         Stanza currentNode = null;
         boolean startNewNode = true;
+        int order = 0;
         try (BufferedReader br = ParsingUtils.openBufferedReader(url)) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -130,7 +136,7 @@ public class Hub {
                     if (startNewNode) {
                         // Start a new node -- indent is currently ignored as igv.js does not support sub-tracks,
                         // so track stanzas are flattened
-                        Stanza newNode = new Stanza(key, value);
+                        Stanza newNode = new Stanza(++order, key, value);
                         nodes.add(newNode);
                         currentNode = newNode;
                         startNewNode = false;
@@ -166,7 +172,7 @@ public class Hub {
         return nodes;
     }
 
-    public GenomeConfig getGenomeConfig(String includeTrackGroups) {
+    public GenomeConfig getGenomeConfig(boolean includeTracks) {
         // TODO -- add blat?  htmlPath?
 
         GenomeConfig config = new GenomeConfig();
@@ -245,11 +251,10 @@ public class Hub {
         }
 
         // Tracks.  To prevent loading tracks set `includeTrackGroups`to false or "none"
-        if (includeTrackGroups == null || !"none".equals(includeTrackGroups)) {
+        if (includeTracks) {
             Function<Stanza, Boolean> filter = (t) -> {
                 return !Hub.filterTracks.contains(t.name) &&
-                        (!"hide".equals(t.getProperty("visibility"))) &&
-                        (includeTrackGroups == null || "all".equals(includeTrackGroups) || includeTrackGroups.equals(t.getProperty("group")));
+                        (!"hide".equals(t.getProperty("visibility")));
             };
             config.tracks = this.getTracksConfigs(filter);
         }
@@ -259,11 +264,12 @@ public class Hub {
         return config;
     }
 
-    List<TrackConfigGroup> getGroupedTrackConfigurations() {
+    public List<TrackConfigGroup> getGroupedTrackConfigurations() {
 
         // Organize track configs by group
         LinkedHashMap<String, List<TrackConfig>> trackConfigMap = new LinkedHashMap<>();
-        for (TrackConfig c : this.getTracksConfigs(null)) {
+        java.util.function.Function<Stanza, Boolean> filter = (stanza -> !stanza.name.equals("cytoBandIdeo"));
+        for (TrackConfig c : this.getTracksConfigs(filter)) {
             String groupName = c.group != null ? c.group : "other";
             if (!trackConfigMap.containsKey(groupName)) {
                 trackConfigMap.put(groupName, new ArrayList<>());
@@ -329,6 +335,12 @@ public class Hub {
             config.description = t.getProperty("longLabel");
         }
 
+        if(t.hasProperty("html")) {
+            config.html = this.baseURL + t.getProperty("html");
+        }
+
+        config.visible = !("hide".equals(t.getProperty("visibility")));
+
         if (t.hasProperty("autoScale")) {
             config.autoscale = t.getProperty("autoScale").toLowerCase().equals("on");
         }
@@ -383,17 +395,23 @@ public class Hub {
         return config;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
 
     static class Stanza {
 
         private final String type;
         private final String name;
+        private final int order;
 
         private Map<String, String> properties;
 
         Stanza parent;
 
-        Stanza(String type, String name) {
+        Stanza(int order, String type, String name) {
+            this.order = order;
             this.type = type;
             this.name = name;
             this.properties = new HashMap<>();

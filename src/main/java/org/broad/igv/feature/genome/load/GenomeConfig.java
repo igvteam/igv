@@ -1,7 +1,7 @@
 package org.broad.igv.feature.genome.load;
 
+import com.google.gson.Gson;
 import org.broad.igv.feature.Cytoband;
-import org.broad.igv.feature.genome.ChromAliasFile;
 import org.broad.igv.feature.genome.Sequence;
 
 import java.util.LinkedHashMap;
@@ -53,4 +53,9 @@ public class GenomeConfig {
     public Sequence sequence;
     public LinkedHashMap<String, List<Cytoband>> cytobands;
     public List<List<String>> chromAliases;
+
+    public static GenomeConfig fromJson(String json) {
+        return (new Gson()).fromJson(json, GenomeConfig.class);
+
+    }
 }

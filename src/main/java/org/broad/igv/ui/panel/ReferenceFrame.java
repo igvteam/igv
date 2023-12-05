@@ -456,12 +456,13 @@ public class ReferenceFrame {
     /**
      * Return the origin in reference genome coordinates.  When an insertion is expanded "origin" is in expansion modified
      * coordinates, we need to adjust for the expansion to convert to reference genome coordinates* *
+     *
      * @return
      */
     public double getExpansionAdjustedOrigin() {
         InsertionMarker im = getExpandedInsertion();
         return (im == null || origin < im.position) ?
-                origin  :
+                origin :
                 origin - im.size;
     }
 
@@ -638,10 +639,10 @@ public class ReferenceFrame {
 //        if (zoom == 0) {
 //            return getGenome().getChromosomeDisplayName(getChrName());
 //        } else {
-            Range range = getCurrentRange();
-            String c = getGenome().getChromosomeDisplayName(range.getChr());
-            return Locus.getFormattedLocusString(c, range.getStart(), range.getEnd());
-       // }
+        Range range = getCurrentRange();
+        String c = getGenome().getChromosomeDisplayName(range.getChr());
+        return Locus.getFormattedLocusString(c, range.getStart(), range.getEnd());
+        // }
     }
 
     public Range getCurrentRange() {
@@ -719,13 +720,16 @@ public class ReferenceFrame {
      * @return
      */
     public int calculateZoom(double start, double end) {
-        final double windowLength = Math.min(end - start, getChromosomeLength());
-        final double exactZoom = Globals.log2((getChromosomeLength() / windowLength) * (((double) widthInPixels) / binsPerTile));
-        //round up so that you get a zoom level which contains the given window
-        return (int) Math.ceil(exactZoom);
+        final double windowLength = Math.ceil(end) - start;
+        final int chrLength = getChromosomeLength();
+        if (windowLength >= getChromosomeLength()) {
+            return 0;
+        } else {
+            final double exactZoom = Globals.log2((getChromosomeLength() / windowLength) * (((double) widthInPixels) / binsPerTile));
+            //round up so that you get a zoom level which contains the given window
+            return (int) Math.ceil(exactZoom);
+        }
     }
-
-
 
 
     private static int getChromosomeLength(String chrName) {
@@ -755,7 +759,7 @@ public class ReferenceFrame {
     public void setExpandedInsertion(InsertionMarker im) {
         InsertionMarker previousInsertion = this.expandedInsertion;
         this.expandedInsertion = im;
-        if(im == null && previousInsertion != null) {
+        if (im == null && previousInsertion != null) {
             this.centerOnLocation(previousInsertion.position);
         }
     }
@@ -763,6 +767,7 @@ public class ReferenceFrame {
     public InsertionMarker getExpandedInsertion() {
         return expandedInsertion;
     }
+
     public int stateHash() {
         int result;
         long temp;
@@ -780,7 +785,6 @@ public class ReferenceFrame {
     private static Genome getGenome() {
         return GenomeManager.getInstance().getCurrentGenome();
     }
-
 
 
 }

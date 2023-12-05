@@ -55,6 +55,7 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TribbleFeatureSource;
+import org.broad.igv.ucsc.Hub;
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
@@ -90,14 +91,14 @@ public class Genome {
     private String ucscID;
     private String blatDB;
     private List<ResourceLocator> annotationResources;
-    private Map<ResourceLocator, List<Track>> annotationTracks;
     private boolean showWholeGenomeView = true;
     private Map<String, Liftover> liftoverMap;
     private CytobandSource cytobandSource;
     private String homeChromosome;
     private String defaultPos;
-
     private String nameSet;
+
+    private Hub hub;
 
     public Genome(GenomeConfig config) throws IOException {
 
@@ -248,73 +249,8 @@ public class Genome {
         if (trackConfigs != null) {
 
             trackConfigs.forEach((TrackConfig trackConfig) -> {
-
-                String trackPath = trackConfig.url;
-                ResourceLocator res = new ResourceLocator(trackPath);
-                res.setName(trackConfig.name);
-                res.setIndexPath(trackConfig.indexURL);
-                res.setFormat(trackConfig.format);
-                Integer vw = trackConfig.visibilityWindow;
-                if (vw != null) {
-                    res.setVisibilityWindow(vw);
-                }
-
-                if (trackConfig.searchTrix != null) {
-                    res.setTrixURL(trackConfig.searchTrix);
-                }
-
-                res.setFeatureInfoURL(trackConfig.infoURL);
-                Boolean indexed = trackConfig.indexed;
-                if (indexed != null) {
-                    res.setIndexed(indexed);
-                }
-
-                // Track properties
-                TrackProperties properties = new TrackProperties();
-                String color = trackConfig.color;
-                if (color != null) {
-                    try {
-                        properties.setColor(ColorUtilities.stringToColor(color.toString()));
-                    } catch (Exception e) {
-                        log.error("Error parsing color string: " + color, e);
-                    }
-                }
-                String altColor = trackConfig.altColor;
-                if (altColor != null) {
-                    try {
-                        properties.setAltColor(ColorUtilities.stringToColor(altColor.toString()));
-                    } catch (Exception e) {
-                        log.error("Error parsing color string: " + altColor, e);
-                    }
-                }
-                String displayMode = trackConfig.displayMode;
-                if (displayMode != null) {
-                    try {
-                        Track.DisplayMode dp = Track.DisplayMode.valueOf(stripQuotes(displayMode.toString()));
-                        properties.setDisplayMode(dp);
-                    } catch (Exception e) {
-                        log.error("Error parsing displayMode " + displayMode, e);
-                    }
-                }
-                Integer vizwindow = trackConfig.visibilityWindow;
-                if (vizwindow != null) {
-                    properties.setFeatureVisibilityWindow(vizwindow);
-                } else {
-                    // If not explicitly set, assume whole chromosome viz window for annotations
-                    properties.setFeatureVisibilityWindow(-1);
-                }
-
-                if (trackConfig.min != null) {
-                    properties.setMinValue(trackConfig.min);
-                }
-                if (trackConfig.max != null) {
-                    properties.setMaxValue(trackConfig.max);
-                }
-                res.setTrackProperties(properties);
-
-
-                Boolean hidden = trackConfig.hidden;
-
+                ResourceLocator res = ResourceLocator.fromTrackConfig(trackConfig);
+                Boolean hidden = trackConfig.hidden;    // Not to be confused with "visible"
                 if (hidden != null && hidden) {
                     hiddenTracks.add(res);
                 } else {
@@ -776,14 +712,6 @@ public class Genome {
         return annotationResources;
     }
 
-    public Map<ResourceLocator, List<Track>> getAnnotationTracks() {
-        return annotationTracks;
-    }
-
-    public void setAnnotationTracks(Map<ResourceLocator, List<Track>> annotationTracks) {
-        this.annotationTracks = annotationTracks;
-    }
-
     /**
      * Mock genome for unit tests
      */
@@ -908,5 +836,13 @@ public class Genome {
 
         return longChromosomeNames;
 
+    }
+
+    public Hub getHub() {
+        return hub;
+    }
+
+    public void setHub(Hub hub) {
+        this.hub = hub;
     }
 }

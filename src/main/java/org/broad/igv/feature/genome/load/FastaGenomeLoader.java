@@ -1,10 +1,6 @@
 package org.broad.igv.feature.genome.load;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.Sequence;
-import org.broad.igv.feature.genome.SequenceWrapper;
-import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
-import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
