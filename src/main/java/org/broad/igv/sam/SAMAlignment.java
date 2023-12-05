@@ -121,6 +121,7 @@ public class SAMAlignment implements Alignment {
      */
     private List<BaseModificationSet> baseModificationSets;
     private SMRTKinetics smrtKinetics;
+    private Boolean mmValidated;
 
     private enum CacheKey {CLIPPING_COUNTS, SA_GROUP}
 
@@ -382,7 +383,7 @@ public class SAMAlignment implements Alignment {
                     if (mn != record.getReadBases().length) {
                         return null;
                     }
-                } else if (!validateMMTag(mm.toString(), sequence)) {  //record.getCigarString().indexOf("H") > 0 &&
+                } else if (!validateMMTag(mm.toString(), ml, sequence)) {  //record.getCigarString().indexOf("H") > 0 &&
                     return null;
                 }
 
@@ -398,17 +399,43 @@ public class SAMAlignment implements Alignment {
     }
 
     /**
-     * Validate an MM tag against the sequence length.  This will not catch all mismatches, but will many.
-     *
-     * @param mm - an MM tag, e.g. C+m,5,12,0   => at least 20 "Cs", 3 with modifications and 17 skipped
+     * Minimally validate an MM tag.  This will not catch all problems, but will many.  Validation proceeds as follows
+     * 1. Validate types of MM and ML tags.  This catches missues of the tags, for example in certain 10X files.
+     * 2. If available, validate sequence length vs MN tag.
+     * 3. If MN tag is not available, validate implied minimum count of base nucleotide vs actual count.
      * @return
      */
-    boolean validateMMTag(String mm, byte[] sequence) {
+    boolean validateMMTag(String mm, byte[] ml, byte[] sequence) {
+
+        if (mmValidated != null) {
+            return mmValidated;
+        }
+
+        // Minimal tag validation  -- 10X uses MM and/or ML for other purposes
+        if (!(mm instanceof String && mm.toString().length() > 0 && (ml == null || ml instanceof byte[]))) {
+            mmValidated = false;
+            return mmValidated;
+        }
+
+        // Test sequence length vs mn if avaliable
+        Integer mn = record.getIntegerAttribute("MN");
+        if (mn != null) {
+            if (mn == sequence.length) {
+                mmValidated = true;
+            } else {
+                mmValidated = false;
+            }
+            return mmValidated;
+        }
+
+        // Finally, test implied minimum base count vs actual base count in sequence.  The minimum base count is
+        // equal to the number of modified bases + the number of skipped bases as codified in the MM tag.
+        // e.g. C+m,5,12,0   => at least 20 "Cs", 3 with modifications and 17 skipped
         String[] mmTokens = mm.split(";");
         for (String mmi : mmTokens) {
             String[] tokens = mmi.split(","); //Globals.commaPattern.split(mm);
             int baseCount;
-            if(tokens[0].charAt(0) == 'N') {
+            if (tokens[0].charAt(0) == 'N') {
                 baseCount = sequence.length;
             } else {
                 byte base = (byte) tokens[0].charAt(0);
@@ -425,17 +452,14 @@ public class SAMAlignment implements Alignment {
             int skipped = 0;
             for (int i = 1; i < tokens.length; i++) skipped += Integer.parseInt(tokens[i]);
             if (modified + skipped > baseCount) {
-//                System.out.println("Cigar = " + record.getCigarString());
-//                System.out.println("MM = " + mm);
-//                System.out.println("modified count = " + modified);
-//                System.out.println("skipped count = " + skipped);
-//                System.out.println("mod + skipped = " + (modified + skipped));
-//                System.out.println("base count = " + baseCount);
-//                System.out.println();
-                return false;
+                mmValidated = false;
+                return mmValidated;
             }
         }
-        return true;
+
+        // If we get here assume the tag is valide
+        mmValidated = true;
+        return mmValidated;
     }
 
     public SMRTKinetics getSmrtKinetics() {
