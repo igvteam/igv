@@ -24,6 +24,7 @@ final public class Constants {
     public static final String DEFAULT_FONT_ATTRIBUTE = "DEFAULT_FONT_ATTRIBUTE";
     public static final String ENABLE_ANTIALISING = "ENABLE_ANTIALIASING";
     public static final String SCALE_FONTS = "SCALE_FONTS";
+    public static final String FONT_SCALE_FACTOR = "FONT_SCALE_FACTOR";
     public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
     public static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
     public static final String SHOW_ATTRIBUTE_VIEWS_KEY = "IGV.track.show.attribute.views";
