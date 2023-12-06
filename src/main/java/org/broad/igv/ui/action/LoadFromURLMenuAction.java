@@ -33,7 +33,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ultima.load.LoadMultipleTracks;
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
@@ -63,9 +62,6 @@ public class LoadFromURLMenuAction extends MenuAction {
     public static final String LOAD_FROM_HTSGET = "Load from htsget Server...";
     public static final String LOAD_TRACKHUB = "Load Track Hub...";
     private IGV igv;
-
-    static private final LoadMultipleTracks loadMultipleTracks = new LoadMultipleTracks();
-
 
     public LoadFromURLMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
@@ -107,16 +103,10 @@ public class LoadFromURLMenuAction extends MenuAction {
                         if (url.startsWith("s3://")) {
                             checkAWSAccessbility(url);
                         }
-                        // extension code
-                        if ( loadMultipleTracks.handlesUrl(url) ) {
-                            igv.loadTracks(loadMultipleTracks.locatorsForUrl(url, dlg.getIndexURL()));
-                        } else if (SessionReader.isSessionFile(url)) {
-
-                            try {
-                                LongRunningTask.submit(() -> this.igv.loadSession(url, null));
-                            } catch (Exception ex) {
-                                MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
-                            }
+                        try {
+                            LongRunningTask.submit(() -> this.igv.loadSession(url, null));
+                        } catch (Exception ex) {
+                            MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                         }
                     } else {
                         // Files, possibly indexed
@@ -206,27 +196,6 @@ public class LoadFromURLMenuAction extends MenuAction {
                 checkAWSAccessbility(url);
             } else if (url.startsWith("ftp://")) {
                 MessageUtils.showMessage("FTP protocol is not supported");
-            }
-        }
-    }
-    public static String mapURL(String url) {
-
-        url = url.trim();
-        if (GoogleUtils.isGoogleDrive(url) || GoogleUtils.isGoogleDrive(url)) {
-            enableGoogleMenu();
-        }
-
-        return url;
-    }
-
-    public static void enableGoogleMenu() {
-
-        if (!PreferencesManager.getPreferences().getAsBoolean(Constants.ENABLE_GOOGLE_MENU)) {
-            PreferencesManager.getPreferences().put(Constants.ENABLE_GOOGLE_MENU, true);
-            try {
-                IGVMenuBar.getInstance().enableGoogleMenu(true);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
         }
     }

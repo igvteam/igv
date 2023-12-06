@@ -124,12 +124,7 @@ public class SessionWriter {
             if (genomeId != null) {
                 // If genomeId is a file try to write it out as a relative path
                 if ((new File(genomeId)).exists() && isUseRelative(outputFile)) {
-                    try {
-                        genomeId = FileUtils.getRelativePath(outputFile.getAbsolutePath(), genomeId);
-                    } catch (Throwable e) {
-                        // ignoring errors here
-                        log.error("failed to convert genomeId to relative path. Ignored. " + genomeId, e);
-                    }
+                    genomeId = FileUtils.getRelativePath(outputFile.getAbsolutePath(), genomeId);
                 }
                 globalElement.setAttribute(SessionAttribute.GENOME, genomeId);
             }
