@@ -9,8 +9,10 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.util.ParsingUtils;
 
+import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -64,6 +66,16 @@ public class PreferencesManager implements IGVEventObserver {
             Map<String, Map<String, String>> defaultPreferences = new HashMap<>();
 
             Map<String, String> nullCategory = loadDefaults23();
+
+            // Special override -- maintains backward compatibility
+            if (!nullCategory.containsKey("FONT_SCALE_FACTOR") || nullCategory.get("FONT_SCALE_FACTOR").equals("1")) {
+                try {
+                    double resolutionScale = Math.max(1, Toolkit.getDefaultToolkit().getScreenResolution() / ((double) Globals.DESIGN_DPI));
+                    nullCategory.put(FONT_SCALE_FACTOR, String.valueOf((float) resolutionScale));
+                } catch (Exception e) {
+                    log.error("Error overriding font scale factor", e);
+                }
+            }
 
             defaultPreferences.put(NULL_CATEGORY, nullCategory);
             defaultPreferences.put(RNA, new HashMap<>());
@@ -119,6 +131,7 @@ public class PreferencesManager implements IGVEventObserver {
     public static String getDefault(String key) {
         return genericDefaults.get(key);
     }
+
     public static IGVPreferences getPreferences() {
         return getPreferences(NULL_CATEGORY);
     }

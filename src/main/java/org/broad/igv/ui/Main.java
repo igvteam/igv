@@ -32,6 +32,7 @@ import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.oauth.OAuthUtils;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.FileUtils;
@@ -205,7 +206,7 @@ public class Main {
         log.info("JVM: " + System.getProperty("java.vm.name", "")
                 + " " + System.getProperty("java.vendor.version", "")
                 + "   " + System.getProperty("java.compiler", ""));
-         log.info("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version")
+        log.info("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version")
                 + " " + System.getProperty("os.arch"));
         log.info("IGV Directory: " + DirectoryManager.getIgvDirectory().getAbsolutePath());
 
@@ -290,9 +291,9 @@ public class Main {
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
         // Start IGV's UI itself (frame) and other components
-       IGV igv = IGV.createInstance(frame);
+        IGV igv = IGV.createInstance(frame);
 
-       igv.startUp(igvArgs);
+        igv.startUp(igvArgs);
 
         // TODO Should this be done here?  Will this step on other key dispatchers?
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(GlobalKeyDispatcher.getInstance());
@@ -309,18 +310,17 @@ public class Main {
         }
 
         double resolutionScale = Toolkit.getDefaultToolkit().getScreenResolution() / Globals.DESIGN_DPI;
-        if(resolutionScale != 1.0) {
+        if (resolutionScale != 1.0) {
             log.info("Resoluction scale = " + resolutionScale);
         }
 
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
-        if (resolutionScale > 1.5) {
-            if (prefMgr.getAsBoolean(SCALE_FONTS)) {
-                FontManager.scaleFontSize(resolutionScale);
-            } else if (prefMgr.hasExplicitValue(DEFAULT_FONT_SIZE)) {
-                int fs = prefMgr.getAsInt(DEFAULT_FONT_SIZE);
-                FontManager.updateSystemFontSize(fs);
-            }
+        if (prefMgr.getAsBoolean(SCALE_FONTS)) {
+            float scaleFactor = prefMgr.getAsFloat(FONT_SCALE_FACTOR);
+            FontManager.scaleFontSize(scaleFactor);
+        } else if (prefMgr.hasExplicitValue(DEFAULT_FONT_SIZE)) {
+            int fs = prefMgr.getAsInt(DEFAULT_FONT_SIZE);
+            FontManager.updateSystemFontSize(fs);
         }
 
 

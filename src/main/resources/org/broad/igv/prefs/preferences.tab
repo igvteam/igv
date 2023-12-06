@@ -22,8 +22,8 @@ NEXT_FLANKING_REGION	Padding region in bp, < 0 is interpreted as a percentage.	i
 BACKGROUND_COLOR	Background color	color	250,250,250
 DEFAULT_FONT_FAMILY	Default font family	string	Arial
 DEFAULT_FONT_SIZE	Default font size	integer	10
-SCALE_FONTS	Scale fonts for high resolution screens.  NOTE: this should not be neccessary for latest release (Java 17).	boolean	FALSE	Scale fonts for high resolution screens.  NOTE: this should not be neccessary for latest release (Java 17).  If fonts are too large disable this option.
-
+SCALE_FONTS	Scale fonts. Useful for some high-resolution screens.  ** REQUIRES RESTART **	boolean	FALSE
+FONT_SCALE_FACTOR	Font scale factor	float	1
 ENABLE_ANTIALIASING	Enable anti-aliasing	boolean	TRUE
 
 ##Nucleotide Colors
