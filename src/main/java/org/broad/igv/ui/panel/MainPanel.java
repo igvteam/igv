@@ -281,7 +281,7 @@ public class MainPanel extends JPanel implements Paintable {
 
             // Insert the new panel just before the feature panel, or at the end if there is no feature panel.
             int featurePaneIdx = centerSplitPane.indexOfPane(featureTrackScrollPane);
-            if (featurePaneIdx > 0) {
+            if (featurePaneIdx >= 0) {
                 centerSplitPane.insertPane(sp, featurePaneIdx);
             } else {
                 centerSplitPane.add(sp);

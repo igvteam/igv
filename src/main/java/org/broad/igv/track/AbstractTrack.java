@@ -120,6 +120,7 @@ public abstract class AbstractTrack implements Track {
 
     protected DataRange dataRange;
     private boolean showFeatureNames = DEFAULT_SHOW_FEATURE_NAMES;
+    private String panelName;
 
     public AbstractTrack() {
     }
@@ -740,7 +741,7 @@ public abstract class AbstractTrack implements Track {
             } else {
                 colorScale = new ContinuousColorScale(min, max, minColor, c);
             }
-            colorScale.setNoDataColor(PreferencesManager.getPreferences().getAsColor(Constants.NO_DATA_COLOR));
+            colorScale.setNoDataColor(PreferencesManager.getPreferences().getAsColor(NO_DATA_COLOR));
         }
         return colorScale;
     }
@@ -1180,4 +1181,13 @@ public abstract class AbstractTrack implements Track {
         }
     }
 
+    @Override
+    public void setPanelName(String panelName) {
+        this.panelName = panelName;
+    }
+
+    @Override
+    public String getPanelName() {
+        return panelName;
+    }
 }

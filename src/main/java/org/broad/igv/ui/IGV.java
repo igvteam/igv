@@ -1190,20 +1190,11 @@ public class IGV implements IGVEventObserver {
     public void addTracks(List<Track> tracks) {
 
         if (tracks.size() > 0) {
-            String path = tracks.get(0).getResourceLocator().getPath();//  locator.getPath();
             Track representativeTrack = tracks.get(0);
 
             // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
             // is greater than 10
             TrackPanel panel = getPanelFor(representativeTrack);
-            if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
-                    path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
-                Track t = tracks.get(0);
-                if (t instanceof VariantTrack && ((VariantTrack) t).getAllSamples().size() > 10) {
-                    String newPanelName = "Panel" + System.currentTimeMillis();
-                    panel = addDataPanel(newPanelName).getTrackPanel();
-                }
-            }
             panel.addTracks(tracks);
         }
     }
@@ -1283,45 +1274,21 @@ public class IGV implements IGVEventObserver {
      */
     public TrackPanel getPanelFor(Track track) {
 
+        ResourceLocator locator = track.getResourceLocator();
+        final String format = locator.getFormat();
+        final String panelName = track.getPanelName();
+
         if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
             return getTrackPanel(FEATURE_PANEL_NAME);
-        }
-
-        ResourceLocator locator = track.getResourceLocator();
-        if (locator != null) {
-            TrackPanel panel = getPanelFor(locator);
-            if (panel != null) {
-                return panel;
-            }
-        }
-        return getTrackPanel(FEATURE_PANEL_NAME);
-
-    }
-
-    /**
-     * Return a DataPanel appropriate for the resource type.  This method should be considered deprecated in
-     * favor of getPanelFor(Track), however the UCSCSessionReader still uses this form.
-     *
-     * @param locator
-     * @return
-     */
-    public TrackPanel getPanelFor(ResourceLocator locator) {
-
-        final String format = locator.getFormat();
-        if ("alist".equals(format)) {
+        } else if (panelName != null) {
+            return this.getTrackPanel(panelName);
+        } else if ("alist".equals(format)) {
             return getVcfBamPanel();
-        } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            return getTrackPanel(FEATURE_PANEL_NAME);
-        } else if (TrackLoader.isAlignmentTrack(format)) {
-            String newPanelName = "Panel" + System.currentTimeMillis();
-            return addDataPanel(newPanelName).getTrackPanel();
-        } else if (isAnnotationFile(format)) {
-            return getTrackPanel(FEATURE_PANEL_NAME);
         } else {
-            return null;  // Can't determine from locator
+            return getTrackPanel(FEATURE_PANEL_NAME);
         }
-
     }
+
 
     public Set<TrackType> getLoadedTypes() {
         Set<TrackType> types = new HashSet();

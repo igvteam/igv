@@ -112,10 +112,7 @@ public class UCSCSessionReader implements SessionReader {
                     locator.setTrackLine(trackLine);
                     // Alignment tracks must be loaded synchronously
                     if (isAlignmentFile(locator.getPath())) {
-                        TrackPanel panel = igv.getPanelFor(locator);
-                        if (panel == null) {
-                            panel = igv.getTrackPanel(FEATURE_PANEL_NAME);
-                        }
+                        TrackPanel panel = igv.getTrackPanel(FEATURE_PANEL_NAME);
                         panel.addTracks(igv.load(locator));
                     } else {
                         aSync.add(locator);

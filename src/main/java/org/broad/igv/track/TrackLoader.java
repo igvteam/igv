@@ -352,6 +352,12 @@ public class TrackLoader {
 
         VariantTrack t = new VariantTrack(locator, src, allSamples, enableMethylationRateSupport);
 
+        if (t.getAllSamples().size() > 10) {
+            // Create a new panel if the number of genotypes is greater than 10
+            String newPanelName = "Panel" + System.currentTimeMillis();
+            t.setPanelName(newPanelName);
+        }
+
         // VCF tracks handle their own margin
         t.setMargin(0);
         newTracks.add(t);
@@ -533,7 +539,6 @@ public class TrackLoader {
                 return;
             }
         }
-
         ExpressionFileParser parser = null;
         ExpressionDataset ds = null;
         parser = new ExpressionFileParser(locator, null, genome);
@@ -550,13 +555,7 @@ public class TrackLoader {
             ds.setNormalized(true);
             ds.setLogValues(true);
 
-            /*
-             * File outputFile = new File(IGV.DEFAULT_USER_DIRECTORY, file.getName() + ".h5");
-             * OverlappingProcessor proc = new OverlappingProcessor(ds);
-             * proc.setZoomMax(0);
-             * proc.process(outputFile.getAbsolutePath());
-             * loadH5File(outputFile, messages, attributeList, group);
-             */
+            String newPanelName = "Panel" + System.currentTimeMillis();
 
             // Counter for generating ID
             TrackProperties trackProperties = ds.getTrackProperties();
@@ -565,6 +564,7 @@ public class TrackLoader {
                 DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
                 String trackId = path + "_" + trackName;
                 DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+                track.setPanelName(newPanelName);
                 track.setRenderer(new HeatmapRenderer());
                 track.setProperties(trackProperties);
                 newTracks.add(track);
@@ -599,6 +599,7 @@ public class TrackLoader {
             }
         }
 
+        String newPanelName = "Panel" + System.currentTimeMillis();
 
         String dsName = locator.getTrackName();
         IGVDataset ds = new IGVDataset(locator, genome);
@@ -607,13 +608,15 @@ public class TrackLoader {
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
         TrackType type = ds.getType();
+        boolean multitrack = ds.getTrackNames().length > 1;
         for (String trackName : ds.getTrackNames()) {
-
             DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
             String trackId = path + "_" + trackName;
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            if (multitrack) {
+                track.setPanelName(newPanelName);
+            }
 
-            // track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
             track.setProperties(trackProperties);
 
@@ -766,6 +769,7 @@ public class TrackLoader {
         int trackNumber = 0;
         String path = locator.getPath();
         boolean multiTrack = reader.getTrackNames().length > 1;
+        String newPanelName = "Panel" + System.currentTimeMillis();
 
         for (String heading : reader.getTrackNames()) {
 
@@ -773,7 +777,9 @@ public class TrackLoader {
             String trackName = multiTrack ? heading : name;
             final DataSource dataSource = new TDFDataSource(reader, trackNumber, heading, genome);
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-
+            if (multiTrack) {
+                track.setPanelName(newPanelName);
+            }
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
             track.setTrackType(type);
@@ -896,8 +902,15 @@ public class TrackLoader {
                 }
             }
 
+            // Place associated tracks in a new panel (coverage, splice junction, alignment)
+
+            String newPanelName = "Panel" + System.currentTimeMillis();
+
             AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName)
+            alignmentTrack.setPanelName(newPanelName);
             alignmentTrack.setVisible(PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK));
+
+            alignmentTrack.getCoverageTrack().setPanelName(newPanelName);
             newTracks.add(alignmentTrack.getCoverageTrack());
 
             //  Precalculated coverage data (can be null)
@@ -931,6 +944,7 @@ public class TrackLoader {
             }
 
             // Splice junction track
+            alignmentTrack.getSpliceJunctionTrack().setPanelName(newPanelName);
             newTracks.add(alignmentTrack.getSpliceJunctionTrack());
 
             alignmentTrack.init();
@@ -985,9 +999,12 @@ public class TrackLoader {
      */
     private void loadMutFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
 
+        String newPanelName = "Panel" + System.currentTimeMillis();
+
         MutationTrackLoader loader = new MutationTrackLoader();
         List<FeatureTrack> mutationTracks = loader.loadMutationTracks(locator, genome);
         for (FeatureTrack track : mutationTracks) {
+            track.setPanelName(newPanelName);
             track.setTrackType(TrackType.MUTATION);
             track.setRenderer(new MutationRenderer());
             newTracks.add(track);
@@ -1020,6 +1037,7 @@ public class TrackLoader {
      * @param ds
      */
     private void loadSegTrack(ResourceLocator locator, List<Track> newTracks, Genome genome, SegmentedDataSet ds) {
+
         String path = locator.getPath();
 
         TrackProperties props = null;
@@ -1027,13 +1045,17 @@ public class TrackLoader {
             props = ((SegmentedAsciiDataSet) ds).getTrackProperties();
         }
 
-        // The "freq" track.  TODO - make this optional
+
+        String newPanelName = "Panel" + System.currentTimeMillis();
+
+        // The "freq" track.
         if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
                 ds.getSampleNames().size() > 1) {
             FreqData fd = new FreqData(ds, genome);
             String freqTrackId = path;
             String freqTrackName = "CNV Summary";
             CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
+            freqTrack.setPanelName(newPanelName);
 
             if (props != null) {
                 freqTrack.setProperties(props);
@@ -1047,6 +1069,7 @@ public class TrackLoader {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            track.setPanelName(newPanelName);
             track.setRenderer(new HeatmapRenderer());
             track.setTrackType(ds.getType());
 
