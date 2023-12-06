@@ -72,7 +72,6 @@ public class Session implements IGVEventObserver {
     private TrackFilter filter;
     private HashMap<String, String> preferences;
     private HashMap<TrackType, ContinuousColorScale> colorScales;
-    private boolean removeEmptyPanels = false;
     double[] dividerFractions = null;
 
     /**
@@ -455,68 +454,6 @@ public class Session implements IGVEventObserver {
 
     public void setHiddenAttributes(Set<String> attributes) {
         this.hiddenAttributes = attributes;
-
-    }
-
-    public boolean isRemoveEmptyPanels() {
-        return removeEmptyPanels;
-    }
-
-    public void setRemoveEmptyPanels(boolean removeEmptyPanels) {
-        this.removeEmptyPanels = removeEmptyPanels;
-    }
-
-
-    static class Locus {
-        String chr;
-        int start;
-        int end;
-
-        Locus(String chr, int start, int end) {
-            this.chr = chr;
-            this.start = start;
-            this.end = end;
-        }
-
-    }
-
-
-    /**
-     * Return the start and end positions as a 2 element array for the input
-     * position string.  UCSC conventions  are followed for coordinates,
-     * specifically the internal representation is "zero" based (first base is
-     * numbered 0) but the display representation is "one" based (first base is
-     * numbered 1).   Consequently, 1 is subtracted from the parsed positions
-     */
-    private static int[] getStartEnd(String posString) {
-        try {
-            String[] posTokens = posString.split("-");
-            String startString = posTokens[0].replaceAll(",", "");
-            int start = Math.max(0, Integer.parseInt(startString)) - 1;
-
-            // Default value for end
-
-            int end = start + 1;
-            if (posTokens.length > 1) {
-                String endString = posTokens[1].replaceAll(",", "");
-                end = Integer.parseInt(endString);
-            }
-
-            if (posTokens.length == 1 || (end - start) < 10) {
-                int center = (start + end) / 2;
-                start = center - 20;
-                end = center + 20;
-            } else {
-                String endString = posTokens[1].replaceAll(",", "");
-
-                // Add 1 bp to end position t make it "inclusive"
-                end = Integer.parseInt(endString);
-            }
-
-            return new int[]{Math.min(start, end), Math.max(start, end)};
-        } catch (NumberFormatException numberFormatException) {
-            return null;
-        }
 
     }
 

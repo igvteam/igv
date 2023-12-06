@@ -303,6 +303,10 @@ public interface Track extends Persistable {
         return null;
     }
 
+    public void setPanelName(String panelName);
+
+    public String getPanelName();
+
     default void repaint() {
         IGV.getInstance().repaint(this);
     }
