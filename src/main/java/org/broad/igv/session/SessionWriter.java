@@ -144,9 +144,6 @@ public class SessionWriter {
                 globalElement.setAttribute(SessionAttribute.NEXT_AUTOSCALE_GROUP, String.valueOf(nextAutoscaleGroup));
             }
 
-            if (session.isRemoveEmptyPanels()) {
-                globalElement.setAttribute("removeEmptyTracks", "true");
-            }
 
             // Resource Files
             writeResources(outputFile, globalElement, document);

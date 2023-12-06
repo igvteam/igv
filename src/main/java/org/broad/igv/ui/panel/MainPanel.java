@@ -64,7 +64,6 @@ public class MainPanel extends JPanel implements Paintable {
 
     public IGVPanel applicationHeaderPanel;
     public HeaderPanelContainer headerPanelContainer;
-    private TrackPanelScrollPane dataTrackScrollPane;
     private TrackPanelScrollPane featureTrackScrollPane;
     private JideSplitPane centerSplitPane;
     private NameHeaderPanel nameHeaderPanel;
@@ -224,19 +223,9 @@ public class MainPanel extends JPanel implements Paintable {
         applicationHeaderPanel.add(headerPanelContainer);
         headerScrollPane.setViewportView(applicationHeaderPanel);
 
-        dataTrackScrollPane = new TrackPanelScrollPane();
-        dataTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 349));
-
-        final TrackPanel dataTrackPanel = new TrackPanel(IGV.DATA_PANEL_NAME, this);
-        dataTrackScrollPane.setViewportView(dataTrackPanel);
-
-        if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            featureTrackScrollPane = new TrackPanelScrollPane();
-            featureTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 50));
-            featureTrackScrollPane.setViewportView(new TrackPanel(IGV.FEATURE_PANEL_NAME, this));
-            // add(featureTrackScrollPane, java.awt.BorderLayout.SOUTH);
-        }
-
+        featureTrackScrollPane = new TrackPanelScrollPane();
+        featureTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 50));
+        featureTrackScrollPane.setViewportView(new TrackPanel(IGV.FEATURE_PANEL_NAME, this));
 
         centerSplitPane = new SplitPane() {
 
@@ -248,11 +237,7 @@ public class MainPanel extends JPanel implements Paintable {
         centerSplitPane.setDividerSize(3);
         //centerSplitPane.setResizeWeight(0.5d);
         centerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-
-        centerSplitPane.add(dataTrackScrollPane, JSplitPane.TOP);
-        if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            centerSplitPane.add(featureTrackScrollPane, JSplitPane.BOTTOM);
-        }
+        centerSplitPane.add(featureTrackScrollPane, JSplitPane.BOTTOM);
 
         add(centerSplitPane, BorderLayout.CENTER);
 
@@ -271,7 +256,7 @@ public class MainPanel extends JPanel implements Paintable {
         }
         for (TrackPanel tp : getTrackPanels()) {
             final TrackPanelScrollPane tsp = tp.getScrollPane();
-            if (tsp == dataTrackScrollPane || tsp == featureTrackScrollPane) {
+            if (tsp == featureTrackScrollPane) {
                 continue;
             }
             centerSplitPane.remove(tsp);
@@ -394,7 +379,7 @@ public class MainPanel extends JPanel implements Paintable {
 
     }
 
-    public void removeEmptyDataPanels() {
+    public void removeEmptyPanels() {
         List<TrackPanelScrollPane> emptyPanels = new ArrayList();
         for (TrackPanel tp : getTrackPanels()) {
             if (tp.getTracks().isEmpty()) {
@@ -421,7 +406,7 @@ public class MainPanel extends JPanel implements Paintable {
             }
         }
         // Don't remove the "special" panes
-        if (sp == dataTrackScrollPane || sp == featureTrackScrollPane) {
+        if (sp == featureTrackScrollPane) {
             return;
         }
         if (sp != null) {

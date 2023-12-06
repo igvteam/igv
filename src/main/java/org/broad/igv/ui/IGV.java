@@ -103,8 +103,14 @@ public class IGV implements IGVEventObserver {
     private static Logger log = LogManager.getLogger(IGV.class);
     private static IGV theInstance;
 
-    public static final String DATA_PANEL_NAME = "DataPanel";
-    public static final String FEATURE_PANEL_NAME = "FeaturePanel";
+    // Cursors
+    public static Cursor fistCursor;
+    public static Cursor zoomInCursor;
+    public static Cursor zoomOutCursor;
+    public static Cursor dragNDropCursor;
+
+
+    public static final String FEATURE_PANEL_NAME = "FeatureTrackPanel";
 
     // Window components
     private Frame mainFrame;
@@ -114,14 +120,9 @@ public class IGV implements IGVEventObserver {
     private StatusWindow statusWindow;
 
     // Glass panes
-    Component glassPane;
-    GhostGlassPane dNdGlassPane;
+    private Component glassPane;
+    private GhostGlassPane dNdGlassPane;
 
-    // Cursors
-    public static Cursor fistCursor;
-    public static Cursor zoomInCursor;
-    public static Cursor zoomOutCursor;
-    public static Cursor dragNDropCursor;
 
     /**
      * Object to hold state that defines a user session.  There is always a user session, even if not initialized
@@ -142,11 +143,11 @@ public class IGV implements IGVEventObserver {
     // Vertical line that follows the mouse
     private boolean rulerEnabled;
 
-    public static IGV createInstance(Frame frame, Main.IGVArgs igvArgs) {
+    public static IGV createInstance(Frame frame) {
         if (theInstance != null) {
             throw new RuntimeException("Only a single instance is allowed.");
         }
-        theInstance = new IGV(frame, igvArgs);
+        theInstance = new IGV(frame);
         return theInstance;
     }
 
@@ -170,7 +171,7 @@ public class IGV implements IGVEventObserver {
     /**
      * Creates new IGV
      */
-    private IGV(Frame frame, Main.IGVArgs igvArgs) {
+    private IGV(Frame frame) {
 
         theInstance = this;
 
@@ -838,7 +839,6 @@ public class IGV implements IGVEventObserver {
      * Add a new data panel set
      */
     public TrackPanelScrollPane addDataPanel(String name) {
-
         return contentPane.getMainPanel().addDataPanel(name);
     }
 
@@ -1284,7 +1284,7 @@ public class IGV implements IGVEventObserver {
     public TrackPanel getPanelFor(Track track) {
 
         if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            return getTrackPanel(DATA_PANEL_NAME);
+            return getTrackPanel(FEATURE_PANEL_NAME);
         }
 
         ResourceLocator locator = track.getResourceLocator();
@@ -1294,12 +1294,8 @@ public class IGV implements IGVEventObserver {
                 return panel;
             }
         }
+        return getTrackPanel(FEATURE_PANEL_NAME);
 
-        if (track.getClass() == FeatureTrack.class && !PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY))
-            return getTrackPanel(FEATURE_PANEL_NAME);
-        else {
-            return getTrackPanel(DATA_PANEL_NAME);
-        }
     }
 
     /**
@@ -1315,20 +1311,16 @@ public class IGV implements IGVEventObserver {
         if ("alist".equals(format)) {
             return getVcfBamPanel();
         } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            return getTrackPanel(DATA_PANEL_NAME);
+            return getTrackPanel(FEATURE_PANEL_NAME);
         } else if (TrackLoader.isAlignmentTrack(format)) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
+        } else if (isAnnotationFile(format)) {
+            return getTrackPanel(FEATURE_PANEL_NAME);
         } else {
-            if (format != null && format.equalsIgnoreCase("das")) {
-                return getTrackPanel(FEATURE_PANEL_NAME);
-            }
-            if (isAnnotationFile(format)) {
-                return getTrackPanel(FEATURE_PANEL_NAME);
-            } else {
-                return null;  // Can't determine from locator
-            }
+            return null;  // Can't determine from locator
         }
+
     }
 
     public Set<TrackType> getLoadedTypes() {
@@ -1361,8 +1353,8 @@ public class IGV implements IGVEventObserver {
     private boolean isAnnotationFile(String format) {
         Set<String> annotationFormats = new HashSet<>(Arrays.asList("refflat", "ucscgene",
                 "genepred", "ensgene", "refgene", "gff", "gtf", "gff3", "embl", "bed", "gistic",
-                "bedz", "repmask", "dranger", "ucscsnp", "genepredext", "bigbed"));
-        return annotationFormats.contains(format);
+                "bedz", "repmask", "dranger", "ucscsnp", "genepredext", "bigbed", "das"));
+        return annotationFormats.contains(format.toLowerCase());
     }
 
 
@@ -1652,8 +1644,7 @@ public class IGV implements IGVEventObserver {
      */
     public void setSequenceTrack() {
 
-        TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
-                getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
+        TrackPanel panel = getTrackPanel(FEATURE_PANEL_NAME);
         SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
         panel.addTrack(newSeqTrack);
 

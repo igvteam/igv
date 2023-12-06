@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.broad.igv.ui.IGV.DATA_PANEL_NAME;
+import static org.broad.igv.ui.IGV.FEATURE_PANEL_NAME;
 
 /**
  * Class to parse an index aware session file
@@ -124,7 +124,7 @@ public class IndexAwareSessionReader implements SessionReader {
                     if (isAlignmentFile(locator.getPath())) {
                         TrackPanel panel = igv.getPanelFor(locator);
                         if (panel == null) {
-                            panel = igv.getTrackPanel(DATA_PANEL_NAME);
+                            panel = igv.getTrackPanel(FEATURE_PANEL_NAME);
                         }
                         panel.addTracks(igv.load(locator));
                     } else {
@@ -201,7 +201,7 @@ public class IndexAwareSessionReader implements SessionReader {
         for (ResourceLocator loc : locatorPaths) {
             //TrackPanel panel = IGV.getInstance().getPanelFor(new ResourceLocator(path));
             // If loading from an index aware session use a single panel
-            TrackPanel panel = igv.getTrackPanel(DATA_PANEL_NAME);
+            TrackPanel panel = igv.getTrackPanel(FEATURE_PANEL_NAME);
             String path = loc.getPath();
             if (loadedTracks.containsKey(path)) {
                 panel.addTracks(loadedTracks.get(path));
