@@ -383,6 +383,11 @@ public class TrackLoader {
 
         VariantTrack t = new VariantTrack(locator, src, allSamples, enableMethylationRateSupport);
 
+        if(t.getAllSamples().size() > 10) {
+            String newPanelName = "Panel" + System.currentTimeMillis();
+            t.setPanelName(newPanelName);
+        }
+
         // VCF tracks handle their own margin
         t.setMargin(0);
         newTracks.add(t);

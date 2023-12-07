@@ -75,7 +75,7 @@ public class RulerPanel extends JPanel {
 
     // TODO -- get from preferences
     boolean drawSpan = true;
-    private Font tickFont = FontManager.getFont(Font.BOLD, 9);
+    private Font tickFont = FontManager.getFont(10);
     private Font spanFont = FontManager.getFont(Font.BOLD, 12);
 
     private List<ClickLink> clickLinks = new ArrayList();
@@ -225,6 +225,7 @@ public class RulerPanel extends JPanel {
 
     /**
      * Draw whole genome view, one "tick" per chromosome. *
+     *
      * @param g
      */
     private void drawChromosomeTicks(Graphics g) {
@@ -342,10 +343,10 @@ public class RulerPanel extends JPanel {
                 p = new Polygon(new int[]{x0 - w, x1 + w, x0},
                         new int[]{y, y, y + INSERTION_ROW_HEIGHT}, 3);
 
-                double expandedInsertionWidth = insertionMarker.size  / frame.getScale();
+                double expandedInsertionWidth = insertionMarker.size / frame.getScale();
 
-                if(expandedInsertionWidth > 5) {
-                    c = Color.BLACK ;
+                if (expandedInsertionWidth > 5) {
+                    c = Color.BLACK;
                     String tooltipText = "Click to expand insertion (" + (insertionMarker.size + "bases)");
                     Rectangle clickArea = p.getBounds();
                     clickArea.y -= 2;
