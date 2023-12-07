@@ -216,6 +216,8 @@ SAM.CLIPPING_THRESHOLD	Flag clipping threshold (bases)	integer	20
 SAM.LINK_READS	Link alignments by tag	boolean	FALSE
 SAM.LINK_TAG	Linking tag	string	READNAME
 
+##SMRT Kinetics
+SMRT_KINETICS.SHOW_OPTIONS	Show visibility options for SMRT kinetics data	boolean	FALSE
 
 #Base Mods
 
@@ -241,9 +243,6 @@ BASEMOD.NONE_C_COLOR	C	color	0,0,255
 BASEMOD.NONE_T_COLOR	T	color	0,0,255
 BASEMOD.NONE_G_COLOR	G	color	0,0,255
 BASEMOD.NONE_N_COLOR	G	color	0,0,255
-
-##SMRT Kinetics
-SMRT_KINETICS.SHOW_OPTIONS	Show visibility options for SMRT kinetics data	boolean	FALSE
 
 ##Validation
 BASEMOD.VALIDATE_BASE_COUNT	Validate base count required by MM tag vs actual base count in read sequence	boolean	TRUE
