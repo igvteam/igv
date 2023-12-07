@@ -547,9 +547,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Overlay tracks
-        menuAction = new OverlayTracksMenuAction("Overlay Data Tracks... ", KeyEvent.VK_O, IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.OVERLAY_TRACKS_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//        menuAction = new OverlayTracksMenuAction("Overlay Data Tracks... ", KeyEvent.VK_O, IGV.getInstance());
+//        menuAction.setToolTipText(UIConstants.OVERLAY_TRACKS_TOOLTIP);
+//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Export track names and attributes -- if > 1 i sselected export those, otherwise export all
         JMenuItem exportNames = new JMenuItem("Export Track Names and Attributes...");

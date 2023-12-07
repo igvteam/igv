@@ -29,8 +29,10 @@
  */
 package org.broad.igv.ui.action;
 
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.AttributeSelectionDialog;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 
 import java.awt.event.ActionEvent;
@@ -51,6 +53,11 @@ public class GroupTracksMenuAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 
+        if(AttributeManager.getInstance().getVisibleAttributes().size() == 0) {
+            MessageUtils.showMessage("To group tracks you must first load sample information.");
+            return;
+        }
+
         doGroupBy();
 
     }
@@ -65,7 +72,6 @@ public class GroupTracksMenuAction extends MenuAction {
                 final AttributeSelectionDialog dlg = new AttributeSelectionDialog(
                         igv.getMainFrame(),
                         "Group");
-
 
                 String currentSelection = IGV.getInstance().getGroupByAttribute();
                 if (currentSelection == null) {
