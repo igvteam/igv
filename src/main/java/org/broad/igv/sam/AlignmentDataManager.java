@@ -81,7 +81,8 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     private Range currentlyLoading;
     private AlignmentTrack.ExperimentType inferredType;
-    private int minJunctionCoverage;
+
+    Map<String, String> chrAliasCache = new HashMap<>();
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
@@ -91,7 +92,6 @@ public class AlignmentDataManager implements IGVEventObserver {
         reader = AlignmentReaderFactory.getReader(locator);
         loader = new AlignmentTileLoader(reader);
         this.inferType();
-        minJunctionCoverage = PreferencesManager.getPreferences(Constants.RNA).getAsInt(SAM_JUNCTION_MIN_COVERAGE);
         peStats = new HashMap();
         this.genome = genome;
         intervalCache = Collections.synchronizedList(new ArrayList<>());
@@ -328,7 +328,16 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
 
-        String seqName = sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
+        final String seqName;
+        if (sequenceNames.contains(chr)) {
+            seqName = chr;
+        } else if (chrAliasCache.containsKey(chr)) {
+            seqName = chrAliasCache.get(chr);
+        } else {
+            seqName = chromAliasManager.getAliasName(chr);
+            chrAliasCache.put(chr, seqName);   // This might be null, but record to prevent further attempts
+        }
+
         if (seqName == null) {
             // No alignments with this chr name -- return empty interval
             return new AlignmentInterval(chr, start, end);
@@ -548,68 +557,5 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     }
 
-
-    /**
-     * Create an alias -> chromosome lookup map.  Enables loading BAM files that use alternative names for chromosomes
-     * (e.g. 1 -> chr1,  etc).
-     */
-//    private void initChrMap(Genome genome) throws IOException {
-//
-//        if (genome != null) {
-//
-//            // Build a chr size -> name lookup table.   We will assume sizes are unique.  This will be used if no alias
-//            // is defined for a sequence.
-//            Map<Long, String> inverseDict = null;
-//            Map<String, Long> sequenceDictionary = getLoader().getSequenceDictionary();
-//
-//            if (sequenceDictionary != null) {
-//
-//                Set<Long> nonUnique = new HashSet<>();
-//                Set<Long> seen = new HashSet<>();
-//                // First find sequences whose size are not unique,  we'll filter these
-//                for (Long size : sequenceDictionary.values()) {
-//                    if (seen.contains(size)) {
-//                        nonUnique.add(size);
-//                    } else {
-//                        seen.add(size);
-//                    }
-//                }
-//
-//                inverseDict = new HashMap<>();
-//
-//                for (Chromosome chromosome : genome.getChromosomes()) {
-//
-//                    Long size = (long) chromosome.getLength();
-//                    if (!nonUnique.contains(size)) {
-//                        if (inverseDict.containsKey(size)) {
-//                            inverseDict.remove(size);
-//                            nonUnique.add(size);
-//                        } else {
-//                            inverseDict.put(size, chromosome.getName());
-//                        }
-//                    }
-//                }
-//            }
-//
-//
-//            List<String> seqNames = getLoader().getSequenceNames();
-//            if (seqNames != null) {
-//                for (String seq : seqNames) {
-//
-//                    if (genome.isKnownChr(seq)) {
-//                        String chr = genome.getCanonicalChrName(seq);
-//                        chrMappings.put(chr, seq);
-//                    } else if (sequenceDictionary != null) {
-//                        Long size = sequenceDictionary.get(seq);
-//                        String chr = inverseDict.get(size);
-//                        if (chr != null) {
-//                            chrMappings.put(chr, seq);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
 }
 
