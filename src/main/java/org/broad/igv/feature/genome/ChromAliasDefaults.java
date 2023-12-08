@@ -1,9 +1,9 @@
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.util.StringUtils;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ChromAliasDefaults extends ChromAliasSource {
 
@@ -20,6 +20,14 @@ public class ChromAliasDefaults extends ChromAliasSource {
             boolean skipRest = false;
             ChromAlias record = new ChromAlias(name);
             aliasRecords.add(record);
+
+            //
+            int version = getVersion(name);
+            if (version >= 0) {
+                int idx = name.indexOf(".");
+                String alias = name.substring(0, idx);
+                record.put("ncbi-noversion", alias);
+            }
 
             if (name.startsWith("gi|")) {
                 // NCBI
@@ -90,7 +98,7 @@ public class ChromAliasDefaults extends ChromAliasSource {
                     record.put("ucsc", "chrM");
                 } else if (name.toLowerCase().startsWith("chr")) {
                     record.put("ncbi", name.substring(3));
-                } else if (isSmallPositiveInteger(name)) {
+                } else if (StringUtils.isSmallPositiveInteger(name)) {
                     record.put("ucsc", "chr" + name);
                 }
             }
@@ -143,16 +151,22 @@ public class ChromAliasDefaults extends ChromAliasSource {
         return tokens[tokens.length - 1];
     }
 
-
-    public static boolean isSmallPositiveInteger(String str) {
-        int length = str.length();
-        if (length > 100) return false;
-        for (int i = 0; i < length; i++) {
-            char c = str.charAt(i);
-            if (c < '0' || c > '9') {
-                return false;
+    /**
+     * If name has what looks like an NCBI version, return the version
+     *
+     * @param name
+     * @return
+     */
+    private static Integer getVersion(String name) {
+        int idx = name.lastIndexOf(".");
+        if (idx > 1) {
+            String possibleVersion = name.substring(idx + 1);
+            if (StringUtils.isSmallPositiveInteger(possibleVersion)) {
+                return Integer.parseInt(possibleVersion);
             }
         }
-        return true;
+        return -1;
     }
+
+
 }

@@ -62,6 +62,21 @@ public class AlignmentInterval extends Locus {
         this.downsampledIntervals = downsampledIntervals;
     }
 
+    /**
+     * Constructor to create empty interval, that is interval with no alignments
+     *
+     * @param chr
+     * @param start
+     * @param end
+     */
+    public AlignmentInterval(String chr, int start, int end) {
+        super(chr, start, end);
+        alignments = Collections.EMPTY_LIST;
+        counts = EmptyAlignmentCounts.getInstance();
+        spliceJunctionHelper = new SpliceJunctionHelper();
+        downsampledIntervals = Collections.EMPTY_LIST;
+    }
+
     static Alignment getFeatureContaining(List<Alignment> features, int right) {
 
         int leftBounds = 0;
