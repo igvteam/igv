@@ -81,7 +81,8 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     private Range currentlyLoading;
     private AlignmentTrack.ExperimentType inferredType;
-    private int minJunctionCoverage;
+
+    Map<String, String> chrAliasCache = new HashMap<>();
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
         this.locator = locator;
@@ -91,7 +92,6 @@ public class AlignmentDataManager implements IGVEventObserver {
         reader = AlignmentReaderFactory.getReader(locator);
         loader = new AlignmentTileLoader(reader);
         this.inferType();
-        minJunctionCoverage = PreferencesManager.getPreferences(Constants.RNA).getAsInt(SAM_JUNCTION_MIN_COVERAGE);
         peStats = new HashMap();
         this.genome = genome;
         intervalCache = Collections.synchronizedList(new ArrayList<>());
@@ -172,7 +172,6 @@ public class AlignmentDataManager implements IGVEventObserver {
     public double getVisibilityWindow() {
         return getPreferences().getAsFloat(SAM_MAX_VISIBLE_RANGE) * 1000;
     }
-
 
 
     private IGVPreferences getPreferences() {
@@ -329,17 +328,27 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
 
+        final String seqName;
+        if (sequenceNames.contains(chr)) {
+            seqName = chr;
+        } else if (chrAliasCache.containsKey(chr)) {
+            seqName = chrAliasCache.get(chr);
+        } else {
+            seqName = chromAliasManager.getAliasName(chr);
+            chrAliasCache.put(chr, seqName);   // This might be null, but record to prevent further attempts
+        }
 
-        String sequence = sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
+        if (seqName == null) {
+            // No alignments with this chr name -- return empty interval
+            return new AlignmentInterval(chr, start, end);
+        }
 
         DownsampleOptions downsampleOptions = new DownsampleOptions();
-
         final AlignmentTrack.BisulfiteContext bisulfiteContext =
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
-
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper();
 
-        AlignmentTileLoader.AlignmentTile t = getLoader().loadTile(sequence, start, end, spliceJunctionHelper,
+        AlignmentTileLoader.AlignmentTile t = getLoader().loadTile(seqName, start, end, spliceJunctionHelper,
                 downsampleOptions, peStats, bisulfiteContext, renderOptions);
         List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
@@ -371,7 +380,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public AlignmentTrack.ExperimentType inferType() {
-        if(this.inferredType != null) {
+        if (this.inferredType != null) {
             return this.inferredType;
         }
 
