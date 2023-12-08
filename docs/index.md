@@ -1,0 +1,1 @@
+This site contains test and example static web pages.  To view IGV documentation visit [igv.org](https://igv.org)
