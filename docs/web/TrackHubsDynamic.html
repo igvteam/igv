@@ -21,23 +21,20 @@
     ])
 
     const igvIsRunning = await igvRunning()
+    
+    for (let key of hubs.keys()) {
+        const div = document.createElement("div")
+        div.innerText = key
+        div.dataset.hubUrl = hubs.get(key)
+        div.addEventListener("click", loadIGV)
+        div.style = "cursor:pointer;color:blue;text-decoration:underline;"
 
-    if (igvIsRunning) {
-        for (let key of hubs.keys()) {
-            const div = document.createElement("div")
-            div.innerText = key
-            div.dataset.hubUrl = hubs.get(key)
-            div.addEventListener("click", loadIGV)
-            div.style = "cursor:pointer;color:blue;text-decoration:underline;"
+        const li = document.createElement("li")
+        li.appendChild(div)
 
-            const li = document.createElement("li")
-            li.appendChild(div)
-
-            document.getElementById("hub_list").appendChild(li)
-        }
-    } else {
-        document.getElementById("hub_message").innerText = "You must start IGV 3.0 or later to enable links."
+        document.getElementById("hub_list").appendChild(li)
     }
+
 
     async function loadIGV(e) {
         if (igvIsRunning) {
