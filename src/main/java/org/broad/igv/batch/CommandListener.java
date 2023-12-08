@@ -436,6 +436,8 @@ public class CommandListener implements Runnable {
             result = cmdExe.execute(param);
         } else if (command.equals("/ping")) {
             result = "OK";
+        } else if (command.equals("/version")) {
+            result = "3.0";   // TODO, use actual version
         } else {
             return ("ERROR Unknown command: " + command);
         }
