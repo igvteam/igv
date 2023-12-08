@@ -174,7 +174,6 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
 
-
     private IGVPreferences getPreferences() {
         String category = NULL_CATEGORY;
         AlignmentTrack.ExperimentType experimentType = getExperimentType();
@@ -329,17 +328,18 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
 
-
-        String sequence = sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
+        String seqName = sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
+        if (seqName == null) {
+            // No alignments with this chr name -- return empty interval
+            return new AlignmentInterval(chr, start, end);
+        }
 
         DownsampleOptions downsampleOptions = new DownsampleOptions();
-
         final AlignmentTrack.BisulfiteContext bisulfiteContext =
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
-
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper();
 
-        AlignmentTileLoader.AlignmentTile t = getLoader().loadTile(sequence, start, end, spliceJunctionHelper,
+        AlignmentTileLoader.AlignmentTile t = getLoader().loadTile(seqName, start, end, spliceJunctionHelper,
                 downsampleOptions, peStats, bisulfiteContext, renderOptions);
         List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
@@ -371,7 +371,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public AlignmentTrack.ExperimentType inferType() {
-        if(this.inferredType != null) {
+        if (this.inferredType != null) {
             return this.inferredType;
         }
 
@@ -548,5 +548,68 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     }
 
+
+    /**
+     * Create an alias -> chromosome lookup map.  Enables loading BAM files that use alternative names for chromosomes
+     * (e.g. 1 -> chr1,  etc).
+     */
+//    private void initChrMap(Genome genome) throws IOException {
+//
+//        if (genome != null) {
+//
+//            // Build a chr size -> name lookup table.   We will assume sizes are unique.  This will be used if no alias
+//            // is defined for a sequence.
+//            Map<Long, String> inverseDict = null;
+//            Map<String, Long> sequenceDictionary = getLoader().getSequenceDictionary();
+//
+//            if (sequenceDictionary != null) {
+//
+//                Set<Long> nonUnique = new HashSet<>();
+//                Set<Long> seen = new HashSet<>();
+//                // First find sequences whose size are not unique,  we'll filter these
+//                for (Long size : sequenceDictionary.values()) {
+//                    if (seen.contains(size)) {
+//                        nonUnique.add(size);
+//                    } else {
+//                        seen.add(size);
+//                    }
+//                }
+//
+//                inverseDict = new HashMap<>();
+//
+//                for (Chromosome chromosome : genome.getChromosomes()) {
+//
+//                    Long size = (long) chromosome.getLength();
+//                    if (!nonUnique.contains(size)) {
+//                        if (inverseDict.containsKey(size)) {
+//                            inverseDict.remove(size);
+//                            nonUnique.add(size);
+//                        } else {
+//                            inverseDict.put(size, chromosome.getName());
+//                        }
+//                    }
+//                }
+//            }
+//
+//
+//            List<String> seqNames = getLoader().getSequenceNames();
+//            if (seqNames != null) {
+//                for (String seq : seqNames) {
+//
+//                    if (genome.isKnownChr(seq)) {
+//                        String chr = genome.getCanonicalChrName(seq);
+//                        chrMappings.put(chr, seq);
+//                    } else if (sequenceDictionary != null) {
+//                        Long size = sequenceDictionary.get(seq);
+//                        String chr = inverseDict.get(size);
+//                        if (chr != null) {
+//                            chrMappings.put(chr, seq);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
 }
 
