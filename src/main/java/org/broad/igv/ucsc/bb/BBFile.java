@@ -414,7 +414,7 @@ public class BBFile {
         if (this.trix != null) {
             String termLower = term.toLowerCase();
             Map<String, String[]> results = trix.search(termLower);
-            if (results != null) {
+            if (results != null && results.containsKey(termLower)) {
                 String[] exactMatches = results.get(termLower);
                 if (exactMatches.length > 0) term = exactMatches[0];
             }

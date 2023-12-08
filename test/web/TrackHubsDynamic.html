@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Track Hub links</title>
+</head>
+<body>
+
+<div>
+    <h2>Hubs</h2>
+    <div id="hub_message"></div>
+    <ul id="hub_list"></ul>
+</div>
+
+
+<script type="module">
+
+    const hubs = new Map([
+        ["African ostritch", "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/698/965/GCF_000698965.1/hub.txt"],
+        ["African hunting dog", "https://hgdownload.soe.ucsc.edu/hubs/GCA/001/887/905/GCA_001887905.1/hub.txt"]
+    ])
+
+    const igvIsRunning = await igvRunning()
+
+    if (igvIsRunning) {
+        for (let key of hubs.keys()) {
+            const div = document.createElement("div")
+            div.innerText = key
+            div.dataset.hubUrl = hubs.get(key)
+            div.addEventListener("click", loadIGV)
+            div.style = "cursor:pointer;color:blue;text-decoration:underline;"
+
+            const li = document.createElement("li")
+            li.appendChild(div)
+
+            document.getElementById("hub_list").appendChild(li)
+        }
+    } else {
+        document.getElementById("hub_message").innerText = "You must start IGV 3.0 or later to enable links."
+    }
+
+    async function loadIGV(e) {
+        if (igvIsRunning) {
+            const url = `http://localhost:60151?hubURL=${e.currentTarget.dataset.hubUrl}`
+            return fetch(url)
+        } else {
+            alert("You must start IGV 3.0 or later to enable links.")
+        }
+    }
+
+    async function igvRunning() {
+        try {
+            const igvResponse = await fetch("http://localhost:60151/version")
+            if (igvResponse.ok) {
+                const text = await igvResponse.text()
+                return text.length > 0 && Number.parseInt(text.charAt(0)) >= 3
+            } else {
+                return false
+            }
+        } catch (e) {
+            return false
+        }
+    }
+
+
+</script>
+
+<!--<script type="module">-->
+
+<!--  let igvDesktopIsResponding-->
+<!--  try {-->
+<!--    const igvResponse = await fetch("http://localhost:60151/ping")-->
+<!--    igvDesktopIsResponding = igvResponse.ok-->
+<!--  } catch (e) {-->
+<!--    igvDesktopIsResponding = false-->
+<!--  }-->
+
+<!--  console.log(igvDesktopIsResponding);-->
+
+<!--</script>-->
+
+</body>
+</html>
