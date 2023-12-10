@@ -742,15 +742,15 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.REGION_NAVIGATOR_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction =
-                new MenuAction("Gene Lists...", null, KeyEvent.VK_S) {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        (GeneListManagerUI.getInstance(igv.getMainFrame())).setVisible(true);
-                    }
-                };
-        menuAction.setToolTipText("Open gene list manager");
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//        menuAction =
+//                new MenuAction("Gene Lists...", null, KeyEvent.VK_S) {
+//                    @Override
+//                    public void actionPerformed(ActionEvent e) {
+//                        (GeneListManagerUI.getInstance(igv.getMainFrame())).setVisible(true);
+//                    }
+//                };
+//        menuAction.setToolTipText("Open gene list manager");
+//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
 
@@ -788,7 +788,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         try {
-                            BrowserLauncher.openURL(SERVER_BASE_URL + "igv/UserGuide");
+                            BrowserLauncher.openURL("https://igv.org/doc/desktop/");
                         } catch (IOException ex) {
                             log.error("Error opening browser", ex);
                         }

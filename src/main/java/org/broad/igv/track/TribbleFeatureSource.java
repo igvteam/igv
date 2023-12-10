@@ -569,7 +569,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 if (scores == null) {
                     return "";
                 } else {
-                    LocusScore score = (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, scores);
+                    LocusScore score = FeatureUtils.getFeatureAt(position, minWidth, scores);
                     return score == null ? "" : "Mean count: " + score.getScore();
                 }
             }

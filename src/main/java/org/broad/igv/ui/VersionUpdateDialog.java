@@ -37,7 +37,6 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
-import static org.broad.igv.ui.UIConstants.SERVER_BASE_URL;
 
 /**
  * @author Jim Robinson
