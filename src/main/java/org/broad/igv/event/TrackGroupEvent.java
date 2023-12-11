@@ -29,13 +29,5 @@ package org.broad.igv.event;
  * @author Jim Robinson
  * @date 10/28/11
  */
-public class TrackGroupEvent  {
-
-    Object source;
-
-    public TrackGroupEvent(Object source) {
-        this.source = source;
-    }
-
-
+public final class TrackGroupEvent implements IGVEvent {
 }

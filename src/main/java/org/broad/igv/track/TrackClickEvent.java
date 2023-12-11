@@ -35,9 +35,9 @@ import java.awt.event.MouseEvent;
  */
 public class TrackClickEvent {
 
-    private MouseEvent mouseEvent;
-    private ReferenceFrame frame;
-    private double chromosomePosition;
+    private final MouseEvent mouseEvent;
+    private final ReferenceFrame frame;
+    private final double chromosomePosition;
 
     public TrackClickEvent(MouseEvent mouseEvent, ReferenceFrame frame) {
         this.mouseEvent = mouseEvent;
@@ -56,6 +56,5 @@ public class TrackClickEvent {
 
     public double getChromosomePosition() {
         return chromosomePosition;
-
     }
 }

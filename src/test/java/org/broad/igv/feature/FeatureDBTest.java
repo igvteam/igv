@@ -25,13 +25,11 @@
 
 package org.broad.igv.feature;
 
-import junit.framework.AssertionFailedError;
 import org.broad.igv.AbstractHeadlessTest;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +74,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
 
     @Test
     public void testFeaturesMap() throws Exception {
-        Map<String, List<NamedFeature>> fMap = FeatureDB.getFeaturesMap(CHECK_STR);
+        Map<String, List<IGVNamedFeature>> fMap = FeatureDB.getFeaturesMap(CHECK_STR);
 
         for (String k : fMap.keySet()) {
 
@@ -87,7 +85,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
 
     @Test
     public void testFeatureListSize() throws Exception {
-        List<NamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, 3);
+        List<IGVNamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, 3);
         assertEquals(3, features.size());
 
         features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
@@ -98,8 +96,8 @@ public class FeatureDBTest extends AbstractHeadlessTest {
 
     @Test
     public void testFeatureList() throws Exception {
-        List<NamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
-        for (NamedFeature f : features) {
+        List<IGVNamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
+        for (IGVNamedFeature f : features) {
             assertTrue(f.getName().startsWith(CHECK_STR));
             assertNotNull(FeatureDB.getFeature(f.getName()));
         }
@@ -109,21 +107,21 @@ public class FeatureDBTest extends AbstractHeadlessTest {
     @Test
     public void testMultiRetrieve() throws Exception {
         String checkstr = "EGFLAM";
-        Map<String, List<NamedFeature>> fMap = FeatureDB.getFeaturesMap(checkstr);
-        List<NamedFeature> data = fMap.get(checkstr);
+        Map<String, List<IGVNamedFeature>> fMap = FeatureDB.getFeaturesMap(checkstr);
+        List<IGVNamedFeature> data = fMap.get(checkstr);
         assertEquals(4, data.size());
     }
 
     @Test
     public void testMultipleEntries() throws Exception {
         String checkstr = "EG";
-        Map<String, List<NamedFeature>> fMap = FeatureDB.getFeaturesMap(checkstr);
+        Map<String, List<IGVNamedFeature>> fMap = FeatureDB.getFeaturesMap(checkstr);
         for (String k : fMap.keySet()) {
-            List<NamedFeature> data = fMap.get(k);
+            List<IGVNamedFeature> data = fMap.get(k);
             //System.out.println("key " + k + " has " + data.size());
             for (int ii = 0; ii < data.size() - 1; ii++) {
-                NamedFeature feat1 = data.get(ii);
-                NamedFeature feat2 = data.get(ii + 1);
+                IGVNamedFeature feat1 = data.get(ii);
+                IGVNamedFeature feat2 = data.get(ii + 1);
                 int len1 = feat1.getEnd() - feat1.getStart();
                 int len2 = feat2.getEnd() - feat2.getStart();
                 assertTrue("Data for key " + k + " not sorted", len1 >= len2);

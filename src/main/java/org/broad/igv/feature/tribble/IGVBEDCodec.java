@@ -34,6 +34,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.StringUtils;
 import htsjdk.tribble.Feature;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -195,15 +196,18 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
             // Description from https://www.encodeproject.org/data-standards/wgbs/
             // 10.  Coverage, or number of reads
             // 11.  Percentage of reads that show methylation at this position in the genome
+            String[] extraColumnHeadings = {"Coverage", "% Showing Methylation", "N-mod", "N-canonical", "N-other mod",
+                    "N-delete", "N-fail", "N-dff", "N-nocall"};
+
+            // Bed methyl files sometimes use space delimiters for columns > 9.
+
             Map<String, String> attributes = new LinkedHashMap<>();
-                attributes.put("Coverage", tokens[9]);
-
-                // Columns after 10 are sometimes space delimited
-                int idx = tokens[10].indexOf(' ');
-                String value = idx > 0 ? tokens[10].substring(0, idx) : tokens[10];
-                attributes.put("Percentage of reads that show methylation", value);
-
+            for (int i = 9; i < tokens.length; i++) {
+                String heading = extraColumnHeadings[i - 9];
+                attributes.put(heading, tokens[i]);
+            }
             feature.setAttributes(attributes);
+
         } else {
             // Exons
             try {
@@ -294,7 +298,11 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
 
         // Bed files can be tab or whitespace delimited
         if (delimiter == null) {
-            delimiter = trimLine.contains("\t") ? Globals.multiTabPattern : Globals.whitespacePattern;
+            if(featureType == FeatureType.BED_METHYL) {
+                delimiter = Globals.whitespacePattern;
+            } else {
+                delimiter = trimLine.contains("\t") ? Globals.multiTabPattern : Globals.whitespacePattern;
+            }
         }
 
         tokens = delimiter.split(trimLine);
@@ -333,7 +341,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
         String[] exonSizes = Globals.commaPattern.split(tokens[10]);
         String[] startsBuffer = Globals.commaPattern.split(tokens[11]);
 
-        if(exonCount == exonSizes.length && exonCount == startsBuffer.length) {
+        if (exonCount == exonSizes.length && exonCount == startsBuffer.length) {
             int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
             if (startsBuffer.length == exonSizes.length) {
                 for (int i = 0; i < startsBuffer.length; i++) {

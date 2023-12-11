@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -66,7 +66,15 @@ public class StringUtilsTest {
         assertEquals(tokens.get(0), "abc");
         assertEquals(tokens.get(1), "def");
         assertEquals(tokens.get(2), "'beforeComma,afterComma'");
+    }
 
+    @Test
+    public void testIsSmallPositiveInteger() {
+        assertTrue(StringUtils.isSmallPositiveInteger("99"));
+        assertFalse(StringUtils.isSmallPositiveInteger("100"));
+        assertFalse(StringUtils.isSmallPositiveInteger("1.5"));
+        assertFalse(StringUtils.isSmallPositiveInteger("-1"));
+        assertFalse(StringUtils.isSmallPositiveInteger("foo"));
     }
 
 }

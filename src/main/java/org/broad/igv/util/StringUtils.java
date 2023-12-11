@@ -334,4 +334,15 @@ public class StringUtils {
                 (fileString.startsWith("'") && fileString.endsWith("'"));
     }
 
+    public static boolean isSmallPositiveInteger(String str) {
+        int length = str.length();
+        if (length > 2) return false;
+        for (int i = 0; i < length; i++) {
+            char c = str.charAt(i);
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+        return true;
+    }
 }

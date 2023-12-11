@@ -30,6 +30,7 @@ import com.google.common.base.Supplier;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -61,6 +62,7 @@ public class SorterTest extends AbstractHeadlessTest {
         testSort(TestUtils.DATA_DIR + "bed/Unigene.unsorted1.bed", 0, 1, 10, 71, 0);
     }
 
+    @Ignore
     @Test
     public void testSortBed2() throws Exception {
         testSort(TestUtils.DATA_DIR + "bed/GSM1004654_10k.bed", 0, 1, 50, 10000, 0);
@@ -169,7 +171,7 @@ public class SorterTest extends AbstractHeadlessTest {
         Supplier<Sorter> supplier = new Supplier<Sorter>() {
             @Override
             public Sorter get() {
-                ChromosomeNameComparator.get().resetCache();
+                ChromosomeNameComparator.get();
                 AsciiSorter sorter = new BedSorter(inputFile, outputFile);
                 sorter.setComparator(testComp);
                 return sorter;

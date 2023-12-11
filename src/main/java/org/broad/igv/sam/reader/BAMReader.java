@@ -119,7 +119,7 @@ public class BAMReader implements AlignmentReader<SAMAlignment> {
         if (records.size() > 0) {
             for (SAMSequenceRecord rec : header.getSequenceDictionary().getSequences()) {
                 String chr = rec.getSequenceName();
-                Long size = new Long(rec.getSequenceLength());
+                Long size = (long) rec.getSequenceLength();
 
                 sequenceNames.add(chr);
                 sequenceDictionary.put(chr, size);

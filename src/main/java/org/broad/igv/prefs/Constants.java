@@ -24,6 +24,7 @@ final public class Constants {
     public static final String DEFAULT_FONT_ATTRIBUTE = "DEFAULT_FONT_ATTRIBUTE";
     public static final String ENABLE_ANTIALISING = "ENABLE_ANTIALIASING";
     public static final String SCALE_FONTS = "SCALE_FONTS";
+    public static final String FONT_SCALE_FACTOR = "FONT_SCALE_FACTOR";
     public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
     public static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
     public static final String SHOW_ATTRIBUTE_VIEWS_KEY = "IGV.track.show.attribute.views";
@@ -113,6 +114,7 @@ final public class Constants {
     public static final String SAM_ALIGNMENT_SCORE_THRESHOLD = "SAM.ALIGNMENT_SCORE_THRESHOLD";
     public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
     public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
+    public static final String SAM_INSERT_QUAL_COLORING = "SAM.INSERT_QUAL_COLORING";
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
     public static final String SAM_MAX_INSERT_SIZE_PERCENTILE = "SAM.ISIZE_MAX_PERCENTILE";
     public static final String SAM_MIN_INSERT_SIZE_PERCENTILE = "SAM.MIN_ISIZE_MIN_PERCENTILE";
@@ -203,6 +205,7 @@ final public class Constants {
     public static final String BASEMOD_GROUP_BY_STRAND = "BASEMOD.GROUP_BY_STRAND";
     public static final String BASEMOD_SKIPPED_BASES = "BASEMOD.SKIPPED_BASES";
     public static final String SMRT_KINETICS_SHOW_OPTIONS = "SMRT_KINETICS.SHOW_OPTIONS";
+    public static final String BASEMOD_VALIDATE_BASE_COUNT = "BASEMOD.VALIDATE_BASE_COUNT";
 
     // Sequence track settings
     public static final String SEQUENCE_TRANSLATION_STRAND = "SEQUENCE_TRANSLATION_STRAND";
@@ -378,4 +381,10 @@ final public class Constants {
             PROXY_WHITELIST
     );
 
+    /**
+     * List of keys that require a restart
+     */
+    static java.util.List<String> RESTART_KEYS = Arrays.asList(
+            BACKGROUND_COLOR
+    );
 }

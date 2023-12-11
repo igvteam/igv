@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Track Hub links</title>
+</head>
+<body>
+
+<div>
+    <h2>Hubs</h2>
+    <div id="load_igv_message"></div>
+    <ul id="hubs_list">
+        <li>
+            <a id="IGV_GCF_000698965.1"
+               target="_blank"
+               href="http://localhost:60151?hubURL=https://hgdownload.soe.ucsc.edu/hubs/GCF/000/698/965/GCF_000698965.1/hub.txt">
+                African ostrich
+            </a>
+        </li>
+        <li>
+            <a id="IGV_GCA_001887905.1"
+                 target="_blank"
+                 href="http://localhost:60151?hubURL=https://hgdownload.soe.ucsc.edu/hubs/GCA/001/887/905/GCA_001887905.1/hub.txt">
+                African hunting dog
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+<script type="module">
+
+    const igvIsRunning = await igvRunning()
+
+    if (!igvIsRunning) {
+        document.getElementById("load_igv_message").innerText = "You must start IGV (version >= 3.0) to enable hub links"
+        document.getElementById("hubs_list").style = "display:none"
+    }
+
+
+    function loadInIGV(e) {
+        console.log(e)
+    }
+
+    async function igvRunning() {
+        try {
+            const igvResponse = await fetch("http://localhost:60151/version")
+            if (igvResponse.ok) {
+                const text = await igvResponse.text()
+                return text.length > 0 && Number.parseInt(text.charAt(0)) >= 3
+            } else {
+                return false
+            }
+        } catch (e) {
+            return false
+        }
+    }
+
+
+</script>
+
+<!--<script type="module">-->
+
+<!--  let igvDesktopIsResponding-->
+<!--  try {-->
+<!--    const igvResponse = await fetch("http://localhost:60151/ping")-->
+<!--    igvDesktopIsResponding = igvResponse.ok-->
+<!--  } catch (e) {-->
+<!--    igvDesktopIsResponding = false-->
+<!--  }-->
+
+<!--  console.log(igvDesktopIsResponding);-->
+
+<!--</script>-->
+
+</body>
+</html>

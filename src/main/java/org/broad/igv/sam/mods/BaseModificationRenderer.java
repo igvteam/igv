@@ -31,6 +31,8 @@ public class BaseModificationRenderer {
 
     public static void drawBlock(double bpStart, double locScale, Rectangle rowRect, Graphics g, AlignmentTrack.RenderOptions renderOptions, List<BaseModificationSet> baseModificationSets, AlignmentBlock block) {
 
+        if(baseModificationSets == null) return;
+
         AlignmentTrack.ColorOption colorOption = renderOptions.getColorOption();
         BaseModficationFilter filter = renderOptions.getBasemodFilter();
         float threshold = renderOptions.getBasemodThreshold();

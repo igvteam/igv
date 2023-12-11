@@ -77,7 +77,7 @@ public class CommandListener implements Runnable {
     public static Set<String> indexParams;
 
     static {
-        String[] fps = new String[]{"file", "bigDataURL", "sessionURL", "dataURL"};
+        String[] fps = new String[]{"file", "bigDataURL", "sessionURL", "dataURL", "hubURL"};
         fileParams = new LinkedHashSet<String>(Arrays.asList(fps));
         fileParams = Collections.unmodifiableSet(fileParams);
 
@@ -181,7 +181,11 @@ public class CommandListener implements Runnable {
 
                 String cmd = inputLine;
                 if (!cmd.contains("/oauthCallback")) {
-                    log.info(cmd);
+                    if (cmd.startsWith("SetAccessToken")) {
+                        log.info(cmd.substring(0, 14) + " *****");
+                    } else {
+                        log.info(cmd);
+                    }
                 }
 
                 boolean isHTTP = cmd.startsWith("OPTIONS") || cmd.startsWith("HEAD") || cmd.startsWith("GET");
@@ -219,7 +223,6 @@ public class CommandListener implements Runnable {
                         } else {
 
                             if (command != null) {
-
                                 // Detect  oauth callback
                                 if (command.equals("/oauthCallback")) {
                                     OAuthProvider provider = OAuthUtils.getInstance().getProviderForState(params.get("state"));
@@ -371,8 +374,11 @@ public class CommandListener implements Runnable {
         mainFrame.setAlwaysOnTop(true);
         mainFrame.setAlwaysOnTop(false);
 
-
-        if (command.equals("/load")) {
+        if (command.equals("/")) {
+            if (params.containsKey("hubURL")) {
+                GenomeManager.getInstance().loadGenome(URLDecoder.decode(params.get("hubURL")));
+            }
+        } else if (command.equals("/load")) {
             String file = null;
             for (String fp : fileParams) {
                 file = params.get(fp);
@@ -427,7 +433,11 @@ public class CommandListener implements Runnable {
             IGV.getInstance().goToLocus(locus);
         } else if (command.equals("/execute")) {
             String param = StringUtils.decodeURL(params.get("command"));
-            return cmdExe.execute(param);
+            result = cmdExe.execute(param);
+        } else if (command.equals("/ping")) {
+            result = "OK";
+        } else if (command.equals("/version")) {
+            result = "3.0";   // TODO, use actual version
         } else {
             return ("ERROR Unknown command: " + command);
         }

@@ -29,6 +29,7 @@
  */
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.logging.*;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ObjectCache;
@@ -88,28 +89,13 @@ public class SequenceWrapper implements Sequence  {
     }
 
     @Override
-    public boolean isLoaded(ReferenceFrame frame) {
-        if (!cacheSequences) return false;
-
-        int startTile = (int) frame.getOrigin() / tileSize;
-        int endTile = (int) frame.getEnd() / tileSize;
-        String chr = frame.getChrName();
-        for (int i = startTile; i <= endTile; i++) {
-            String key = getKey(chr, i);
-            if (!sequenceCache.containsKey(key)) return false;
-
-        }
-        return true;
+    public List<Chromosome> getChromosomes() {
+        return sequence.getChromosomes();
     }
 
     @Override
-    public boolean isRemote() {
-        return sequence.isRemote();
-    }
-
-    @Override
-    public boolean isFasta() {
-        return sequence.isFasta();
+    public boolean hasChromosomes() {
+        return sequence.hasChromosomes();
     }
 
     /**
@@ -118,12 +104,11 @@ public class SequenceWrapper implements Sequence  {
      * @param chr
      * @param start
      * @param end
-     * @param useCache
      * @return
      */
-    public byte[] getSequence(String chr, int start, int end, boolean useCache) {
+    public byte[] getSequence(String chr, int start, int end) {
 
-        if (cacheSequences && useCache) {
+        if (cacheSequences) {
             byte[] seqbytes = new byte[end - start];
 
             int startTile = start / tileSize;
@@ -170,7 +155,7 @@ public class SequenceWrapper implements Sequence  {
 
             return seqbytes;
         } else {
-            return sequence.getSequence(chr, start, end, useCache);
+            return sequence.getSequence(chr, start, end);
         }
     }
 
@@ -187,7 +172,7 @@ public class SequenceWrapper implements Sequence  {
                 return null;
             }
 
-            byte[] seq = sequence.getSequence(chr, start, end, true);
+            byte[] seq = sequence.getSequence(chr, start, end);
             tile = new SequenceTile(start, seq);
             sequenceCache.put(key, tile);
         }
@@ -235,7 +220,7 @@ public class SequenceWrapper implements Sequence  {
     private void loadTiles(String chr, int startTile, SequenceTile[] tiles, TileRange toLoad) {
         int start = toLoad.startTile * tileSize;
         int end = (toLoad.endTile + 1) * tileSize;
-        byte[] seq = sequence.getSequence(chr, start, end, true);
+        byte[] seq = sequence.getSequence(chr, start, end);
 
         if(seq == null) {
             log.warn("Null sequence for " + chr + ":" + start + "-" + end);

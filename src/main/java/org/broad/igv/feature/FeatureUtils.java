@@ -370,7 +370,8 @@ public class FeatureUtils {
      * Return all features from the supplied list who's extent, expanded by "flanking", intersect the position
      *
      * @param position
-     * @param flanking  -- the minimum effective width of the feature
+     * @param flanking - flanking distance in BP for hit test,  a hit occurs over the feature region +/- flanking
+
      * @param features
      * @return
      */
@@ -379,7 +380,6 @@ public class FeatureUtils {
                                                  List<? extends htsjdk.tribble.Feature> features) {
 
         List<Feature> returnList = null;
-
 
         int startIdx = Math.max(0, getIndexBefore(position - flanking, features));
         double start = position - (flanking / 2);
@@ -394,15 +394,17 @@ public class FeatureUtils {
             if (feature.getStart() > end) {
                 break;
             }
+
         }
 
         // Sort features by distance from position (features closest to position listed first)
-        returnList.sort((o1, o2) -> {
-            double dist1 = Math.abs((o1.getStart() + (o1.getEnd() - o1.getStart()) / 2) - position);
-            double dist2 = Math.abs((o2.getStart() + (o2.getEnd() - o2.getStart()) / 2) - position);
-            return dist1 == dist2 ? 0 : dist1 > dist2 ? 1 : -1;
-        });
-
+        if (returnList != null) {
+            returnList.sort((o1, o2) -> {
+                double dist1 = Math.abs((o1.getStart() + (o1.getEnd() - o1.getStart()) / 2) - position);
+                double dist2 = Math.abs((o2.getStart() + (o2.getEnd() - o2.getStart()) / 2) - position);
+                return dist1 == dist2 ? 0 : dist1 > dist2 ? 1 : -1;
+            });
+        }
         return returnList;
     }
 

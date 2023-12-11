@@ -29,6 +29,7 @@
  */
 package org.broad.igv.tdf;
 
+import org.broad.igv.feature.genome.ChromAliasManager;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.data.BasicScore;
@@ -64,8 +65,10 @@ public class TDFDataSource implements CoverageDataSource {
     boolean normalizeCounts = false;
     int totalCount = 0;
     float normalizationFactor = 1.0f;
-    private Map<String, String> chrNameMap = new HashMap();
 
+    Set<String> sequenceNames;
+
+    ChromAliasManager chromAliasManager;
 
     public TDFDataSource(TDFReader reader, int trackNumber, String trackName, Genome genome) {
 
@@ -74,12 +77,12 @@ public class TDFDataSource implements CoverageDataSource {
         this.trackName = trackName;
         this.reader = reader;
         init();
-
-
     }
 
     private void init() {
 
+        sequenceNames = new HashSet<>(reader.getChromosomeNames());
+        chromAliasManager = new ChromAliasManager(sequenceNames, genome);
         this.availableFunctions = reader.getWindowFunctions();
         if(this.availableFunctions != null) {
             this.availableFunctions.add(WindowFunction.none);   // Always available => raw data
@@ -108,29 +111,8 @@ public class TDFDataSource implements CoverageDataSource {
             log.error("Error reading attribute 'totalCount'", e);
         }
 
-        intChrMap();
-
-        boolean normalizeCounts = PreferencesManager.getPreferences().getAsBoolean(Constants.NORMALIZE_COVERAGE);
+       boolean normalizeCounts = PreferencesManager.getPreferences().getAsBoolean(Constants.NORMALIZE_COVERAGE);
         setNormalize(normalizeCounts);
-    }
-
-    public void updateGenome(Genome genome) {
-        this.genome = genome;
-        chrNameMap.clear();
-        intChrMap();
-    }
-
-    private void intChrMap() {
-        // If we have a genome, build a reverse-lookup table for queries
-        if (genome != null) {
-            Set<String> chrNames = reader.getChromosomeNames();
-            for (String chr : chrNames) {
-                String igvChr = genome.getCanonicalChrName(chr);
-                if (igvChr != null && !igvChr.equals(chr)) {
-                    chrNameMap.put(igvChr, chr);
-                }
-            }
-        }
     }
 
     public void setNormalize(boolean normalizeCounts) {
@@ -253,7 +235,7 @@ public class TDFDataSource implements CoverageDataSource {
 
     public int getChrLength(String chr) {
         if (chr.equals(Globals.CHR_ALL)) {
-            return (int) (genome.getNominalLength() / 1000);
+            return (int) (genome.getWGLength() / 1000);
         } else {
             Chromosome c = genome.getChromosome(chr);
             return c == null ? 0 : c.getLength();
@@ -425,15 +407,14 @@ public class TDFDataSource implements CoverageDataSource {
             endLocation = Math.min(chromosome.getLength(), endLocation);
         }
 
-        String tmp = chrNameMap.get(chr);
-        String querySeq = tmp == null ? chr : tmp;
+        String querySeq = sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
 
         ArrayList scores = new ArrayList();
 
         // TODO -- this whole section could be computed once and stored,  it is only a function of the genome, chr, and zoom level.
         int tileWidth = 0;
         if (chr.equals(Globals.CHR_ALL)) {
-            tileWidth = (int) Math.ceil(genome.getNominalLength() / 1000.0);
+            tileWidth = (int) Math.ceil(genome.getWGLength() / 1000.0);
         } else {
             if (chromosome != null) {
                 tileWidth = chromosome.getLength() / ((int) Math.pow(2.0, zoom));

@@ -22,7 +22,8 @@ NEXT_FLANKING_REGION	Padding region in bp, < 0 is interpreted as a percentage.	i
 BACKGROUND_COLOR	Background color	color	250,250,250
 DEFAULT_FONT_FAMILY	Default font family	string	Arial
 DEFAULT_FONT_SIZE	Default font size	integer	10
-SCALE_FONTS	Scale fonts	boolean	FALSE	Scale fonts for high resolution screens. Requires restart.
+SCALE_FONTS	Scale fonts. Useful for some high-resolution screens.  ** REQUIRES RESTART **	boolean	FALSE
+FONT_SCALE_FACTOR	Font scale factor	float	1
 ENABLE_ANTIALIASING	Enable anti-aliasing	boolean	TRUE
 
 ##Nucleotide Colors
@@ -163,6 +164,7 @@ SAM.MIN_ISIZE_MIN_PERCENTILE	Minimum (percentile)	float	0.5
 SAM.ISIZE_MAX_PERCENTILE	Maximum (percentile)	float	99.5
 SAM.MIN_INSERT_SIZE_THRESHOLD	Default minimum (bp)	float	50
 SAM.INSERT_SIZE_THRESHOLD	Default maximum (bp)	float	1000
+SAM.INSERT_QUAL_COLORING	INDEL coloring (ultima)	boolean	TRUE
 
 #RNA	RNA
 info Settings below override defaults for RNA alignments.
@@ -214,6 +216,8 @@ SAM.CLIPPING_THRESHOLD	Flag clipping threshold (bases)	integer	20
 SAM.LINK_READS	Link alignments by tag	boolean	FALSE
 SAM.LINK_TAG	Linking tag	string	READNAME
 
+##SMRT Kinetics
+SMRT_KINETICS.SHOW_OPTIONS	Show visibility options for SMRT kinetics data	boolean	FALSE
 
 #Base Mods
 
@@ -240,9 +244,8 @@ BASEMOD.NONE_T_COLOR	T	color	0,0,255
 BASEMOD.NONE_G_COLOR	G	color	0,0,255
 BASEMOD.NONE_N_COLOR	G	color	0,0,255
 
-##SMRT Kinetics
-SMRT_KINETICS.SHOW_OPTIONS	Show visibility options for SMRT kinetics data	boolean	FALSE
-
+##Validation
+BASEMOD.VALIDATE_BASE_COUNT	Validate base count required by MM tag vs actual base count in read sequence	boolean	TRUE
 
 #Proxy
 PROXY.DISABLE_CHECK	Disable check for system proxy	boolean	FALSE
@@ -267,7 +270,7 @@ MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://data.broadinstitute.or
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
 
-BLAT_URL	BLAT URL	String	http://genome.ucsc.edu/cgi-bin/hgBlat
+BLAT_URL	BLAT URL	String	https://genome.ucsc.edu/cgi-bin/hgBlat
 ---
 
 ## Tooltip

@@ -33,7 +33,6 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 
 import java.util.ArrayList;
@@ -58,13 +57,11 @@ public class SpliceJunctionHelper {
     Table<Integer, Integer, SpliceJunctionFeature> posStartEndJunctionsMap = HashBasedTable.create();
     Table<Integer, Integer, SpliceJunctionFeature> negStartEndJunctionsMap = HashBasedTable.create();
 
-    private LoadOptions loadOptions;
 
-    public SpliceJunctionHelper(LoadOptions loadOptions) {
-        this.loadOptions = loadOptions;
+    public SpliceJunctionHelper() {
     }
 
-    public List<SpliceJunctionFeature> getFilteredJunctions(SpliceJunctionTrack.StrandOption strandOption) {
+    public List<SpliceJunctionFeature> getFilteredJunctions(SpliceJunctionTrack.StrandOption strandOption, int minJunctionCoverage) {
 
         List<SpliceJunctionFeature> junctions;
 
@@ -83,7 +80,20 @@ public class SpliceJunctionHelper {
                 junctions = combineStrandJunctionsMaps();
         }
 
-        List<SpliceJunctionFeature> filteredJunctions = filterJunctionList(this.loadOptions, junctions);
+        List<SpliceJunctionFeature> unfiltered = junctions;
+        List<SpliceJunctionFeature> filteredJunctions;
+
+        if (minJunctionCoverage > 1) {
+            List<SpliceJunctionFeature> coveredFeatures = new ArrayList<SpliceJunctionFeature>(unfiltered.size());
+            for (SpliceJunctionFeature feature : unfiltered) {
+                if (feature.getJunctionDepth() >= minJunctionCoverage) {
+                    coveredFeatures.add(feature);
+                }
+            }
+            filteredJunctions = coveredFeatures;
+        } else {
+            filteredJunctions = unfiltered;
+        }
 
         FeatureUtils.sortFeatureList(filteredJunctions);
 
@@ -116,6 +126,7 @@ public class SpliceJunctionHelper {
 
         // For each gap marked "skip" (cigar N), create or add evidence to a splice junction
         List<Gap> gaps = alignment.getGaps();
+        int minReadFlankingWidth = PreferencesManager.getPreferences(Constants.RNA).getAsInt(Constants.SAM_JUNCTION_MIN_FLANKING_WIDTH);
         if (gaps != null) {
             for (Gap gap : gaps) {
 
@@ -123,9 +134,9 @@ public class SpliceJunctionHelper {
 
                     SpliceGap spliceGap = (SpliceGap) gap;
                     //only proceed if the flanking regions are both bigger than the minimum
-                    if (loadOptions.minReadFlankingWidth == 0 ||
-                            (spliceGap.getFlankingLeft() >= loadOptions.minReadFlankingWidth &&
-                                    spliceGap.getFlankingRight() >= loadOptions.minReadFlankingWidth)) {
+                    if (minReadFlankingWidth == 0 ||
+                            (spliceGap.getFlankingLeft() >= minReadFlankingWidth &&
+                                    spliceGap.getFlankingRight() >= minReadFlankingWidth)) {
 
                         int junctionStart = spliceGap.getStart();
                         int junctionEnd = junctionStart + spliceGap.getnBases();
@@ -142,24 +153,8 @@ public class SpliceJunctionHelper {
                         }
                         junction.addRead(flankingStart, flankingEnd);
                     }
-
                 }
             }
-        }
-    }
-
-    private static List<SpliceJunctionFeature> filterJunctionList(LoadOptions loadOptions, List<SpliceJunctionFeature> unfiltered) {
-
-        if (loadOptions.minJunctionCoverage > 1) {
-            List<SpliceJunctionFeature> coveredFeatures = new ArrayList<SpliceJunctionFeature>(unfiltered.size());
-            for (SpliceJunctionFeature feature : unfiltered) {
-                if (feature.getJunctionDepth() >= loadOptions.minJunctionCoverage) {
-                    coveredFeatures.add(feature);
-                }
-            }
-            return coveredFeatures;
-        } else {
-            return unfiltered;
         }
     }
 
@@ -184,7 +179,7 @@ public class SpliceJunctionHelper {
 
 
         // Merge in - junctions
-        for (SpliceJunctionFeature negFeature: negStartEndJunctionsMap.values()) {
+        for (SpliceJunctionFeature negFeature : negStartEndJunctionsMap.values()) {
 
             int junctionStart = negFeature.getJunctionStart();
             int junctionEnd = negFeature.getJunctionEnd();
@@ -205,31 +200,5 @@ public class SpliceJunctionHelper {
         return new ArrayList<>(combinedMap.values());
     }
 
-
-    void setLoadOptions(LoadOptions loadOptions) {
-        int oldMinJunctionCoverage = this.loadOptions.minJunctionCoverage;
-        //Can't change this, need to reload everything
-        assert this.loadOptions.minReadFlankingWidth == loadOptions.minReadFlankingWidth;
-        this.loadOptions = loadOptions;
-
-    }
-
-    public static class LoadOptions {
-
-        private static IGVPreferences prefs = PreferencesManager.getPreferences();
-
-        public final int minJunctionCoverage;
-        public final int minReadFlankingWidth;
-
-        public LoadOptions() {
-            this(prefs.getAsInt(Constants.SAM_JUNCTION_MIN_COVERAGE),
-                    prefs.getAsInt(Constants.SAM_JUNCTION_MIN_FLANKING_WIDTH));
-        }
-
-        public LoadOptions(int minJunctionCoverage, int minReadFlankingWidth) {
-            this.minJunctionCoverage = minJunctionCoverage;
-            this.minReadFlankingWidth = minReadFlankingWidth;
-        }
-    }
 
 }

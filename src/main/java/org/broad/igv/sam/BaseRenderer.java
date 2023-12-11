@@ -95,7 +95,7 @@ public class BaseRenderer {
 
                     // Compute the start and end of the expanded insertion in pixels
                     int pixelStart = (int) ((insertion.getStart() - origin) / locScale);
-                    int pixelEnd = (int) (pixelStart +  insertion.getLength() / locScale);
+                    int pixelEnd = (int) (pixelStart + insertion.getLength() / locScale);
 
                     // Skip if insertion is out of clipping rectangle -- this probably shouldn't happen
                     if (pixelEnd < rect.x || pixelStart > rect.getMaxX()) {
@@ -150,7 +150,9 @@ public class BaseRenderer {
 
                     if (colorOption.isBaseMod()) {
                         List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
-                        BaseModificationRenderer.drawBlock(origin, locScale, rect, g, renderOptions, baseModificationSets, insertion);
+                        if (baseModificationSets != null) {
+                            BaseModificationRenderer.drawBlock(origin, locScale, rect, g, renderOptions, baseModificationSets, insertion);
+                        }
                     }
                 }
             }

@@ -31,6 +31,9 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.SpliceJunctionFeature;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
@@ -40,6 +43,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -63,6 +67,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
 
     // Strand option is shared by all tracks
     private static StrandOption strandOption;
+
     public static void setStrandOption(StrandOption so) {
         strandOption = so;
     }
@@ -113,7 +118,6 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         return frame.getCurrentRange().getLength() <= dataManager.getVisibilityWindow();
     }
 
-
     @Override
     public void render(RenderContext context, Rectangle rect) {
         if (!isShowFeatures(context.getReferenceFrame())) {
@@ -138,7 +142,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     public Range getInViewRange(ReferenceFrame referenceFrame) {
 
         PackedFeatures packedFeatures = packedFeaturesMap.get(referenceFrame.getName());
-        if(packedFeatures == null) {
+        if (packedFeatures == null) {
             return new Range(0, ((SpliceJunctionRenderer) renderer).getMaxDepth());
         } else {
 
@@ -148,7 +152,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
             List<IGVFeature> featureList = packedFeatures.getFeatures();
             for (IGVFeature feature : featureList) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
-                if(feature.getEnd() >= referenceFrame.getOrigin() && feature.getStart() <= referenceFrame.getEnd()) {
+                if (feature.getEnd() >= referenceFrame.getOrigin() && feature.getStart() <= referenceFrame.getEnd()) {
                     f.addValue(junctionFeature.getScore());
                     scores.add((int) junctionFeature.getScore());
                 }
@@ -157,8 +161,8 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
             Collections.sort(scores);
             Collections.reverse(scores);
             int max = 0;
-            for (int s: scores)	{
-                if (f.getCumPct(s) < 0.99)	{
+            for (int s : scores) {
+                if (f.getCumPct(s) < 0.99) {
                     max = s;
                     break;
                 }
@@ -189,9 +193,6 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     public void setVisible(boolean visible) {
         if (visible != isVisible()) {
             super.setVisible(visible);
-            if (visible) {
-                dataManager.initLoadOptions();
-            }
             if (IGV.hasInstance()) {
                 IGV.getInstance().getMainPanel().revalidate();
             }
@@ -221,7 +222,9 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
             AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame);
             if (loadedInterval != null) {
                 SpliceJunctionHelper helper = loadedInterval.getSpliceJunctionHelper();
-                List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption);
+                int minJunctionCoverage = alignmentTrack.getRenderOptions().getMinJunctionCoverage();
+                List<SpliceJunctionFeature> features = helper.getFilteredJunctions(strandOption, minJunctionCoverage);
+
                 if (features == null) {
                     features = Collections.emptyList();
                 }
@@ -263,6 +266,16 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     }
 
 
+    public int getMinJunctionCoverage() {
+        return alignmentTrack.getRenderOptions().getMinJunctionCoverage();
+    }
+
+    public void setMinJunctionCoverage(int minJunctionCoverage) {
+        alignmentTrack.getRenderOptions().setMinJunctionCoverage(minJunctionCoverage);
+        this.packedFeaturesMap.clear();
+        this.repaint();
+    }
+
     /**
      * Override to return a specialized popup menu
      *
@@ -293,7 +306,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
 
         setScaleItem.addActionListener(evt -> {
             Integer newDepth = TrackMenuUtils.getIntegerInput("Maximum Depth", ((SpliceJunctionRenderer) renderer).getMaxDepth());
-            if(newDepth != null && newDepth > 0) {
+            if (newDepth != null && newDepth > 0) {
                 ((SpliceJunctionRenderer) renderer).setMaxDepth(newDepth);
                 setAutoScale(false);
                 autoscaleItem.setSelected(false);
@@ -314,6 +327,21 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
             this.repaint();
         });
         menu.add(autoscaleItem);
+
+        JMenuItem minJunctionCoverageItem = new JMenuItem("Set Junction Coverage Min");
+        minJunctionCoverageItem.setToolTipText("Junctions below this threshold will be removed from view");
+        minJunctionCoverageItem.addActionListener(e1 -> {
+            int minCov = alignmentTrack.getRenderOptions().getMinJunctionCoverage();
+            String input = JOptionPane.showInputDialog("Set Minimum Junction Coverage", minCov);
+            if (input == null || input.length() == 0) return;
+            try {
+                int newMinJunctionCoverage = Integer.parseInt(input);
+                setMinJunctionCoverage(newMinJunctionCoverage);
+            } catch (NumberFormatException ex) {
+                MessageUtils.showMessage("" + input + " is not an integer");
+            }
+        });
+        menu.add(minJunctionCoverageItem);
 
         menu.addSeparator();
         JMenuItem sashimi = new JMenuItem("Sashimi Plot");
@@ -364,7 +392,6 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     }
 
 
-
     @Override
     public void marshalXML(Document document, Element element) {
 
@@ -391,8 +418,8 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
             this.removed = Boolean.parseBoolean(element.getAttribute("removed"));
         }
 
-        if(element.hasAttribute("maxdepth")) {
-            if(renderer != null && renderer instanceof SpliceJunctionRenderer) {
+        if (element.hasAttribute("maxdepth")) {
+            if (renderer != null && renderer instanceof SpliceJunctionRenderer) {
                 ((SpliceJunctionRenderer) renderer).setMaxDepth((int) Float.parseFloat(element.getAttribute("maxdepth")));
             }
         }

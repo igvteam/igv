@@ -53,21 +53,15 @@ import java.util.List;
  */
 abstract public class TrackPanelComponent extends JPanel {
 
-    private static Logger log = LogManager.getLogger(TrackPanelComponent.class);
+    private static final String DELETE_TRACKS_KEY = "deleteTracks";
     List<MouseableRegion> mouseRegions;
 
     private TrackPanel trackPanel;
 
-    /**
-     * A scheduler is used to distinguish a click from a double click.
-     */
-    protected ClickTaskScheduler clickScheduler = new ClickTaskScheduler();
-
-
     public TrackPanelComponent(TrackPanel trackPanel) {
         this.trackPanel = trackPanel;
         setFocusable(true);
-        mouseRegions = new ArrayList();
+        mouseRegions = new ArrayList<>();
 
         initKeyDispatcher();
     }
@@ -80,15 +74,13 @@ abstract public class TrackPanelComponent extends JPanel {
             }
         };
 
+        final KeyStroke delKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0, false);
+        final KeyStroke backspaceKey = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0, false);
 
-        if (Globals.isDevelopment()) {
-            final KeyStroke delKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0, false);
-            final KeyStroke backspaceKey = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0, false);
+        getInputMap().put(delKey, DELETE_TRACKS_KEY);
+        getInputMap().put(backspaceKey, DELETE_TRACKS_KEY);
+        getActionMap().put(DELETE_TRACKS_KEY, delTracksAction);
 
-            getInputMap().put(delKey, "deleteTracks");
-            getInputMap().put(backspaceKey, "deleteTracks");
-            getActionMap().put("deleteTracks", delTracksAction);
-        }
     }
 
     public TrackPanel getTrackPanel() {
@@ -186,7 +178,7 @@ abstract public class TrackPanelComponent extends JPanel {
         MouseEvent e = te.getMouseEvent();
 
         final Collection<Track> selectedTracks = getSelectedTracks();
-        if (selectedTracks.size() == 0) {
+        if (selectedTracks.isEmpty()) {
             return;
         }
 

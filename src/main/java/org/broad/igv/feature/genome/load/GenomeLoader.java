@@ -1,19 +1,25 @@
 package org.broad.igv.feature.genome.load;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.*;
+import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeException;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.Utilities;
 
 import java.awt.*;
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
 
 /**
  * Collection of static load methods for various genome definition formats
@@ -44,18 +50,23 @@ abstract public class GenomeLoader {
             return new ChromsizesLoader(genomePath);
         } else if (genomePath.endsWith(".json")) {
             return new JsonGenomeLoader(genomePath);
+        } else if (genomePath.endsWith(".2bit")) {
+            GenomeConfig config = new GenomeConfig();
+            config.twoBitURL = genomePath;
+            config.id = genomePath;
+            config.name = (HttpUtils.isRemoteURL(genomePath)) ?
+                    Utilities.getFileNameFromURL(genomePath) :
+                    (new File(genomePath)).getName();
+            return new GenomeObjectLoader(config);
+        } else if (genomePath.endsWith("hub.txt")) {
+            return new HubGenomeLoader(genomePath);
         } else {
-            // Assume a fasta file
+            // Assume a fasta or 2bit file file
             if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
                 String gziPath = genomePath + ".gzi";
                 String faiPath = genomePath + ".fai";
                 if (!(FileUtils.resourceExists(gziPath) && FileUtils.resourceExists(faiPath))) {
                     throw new GenomeException("IGV cannot readed gzipped fasta files.");
-                }
-            }
-            if (!FileUtils.isRemote(genomePath)) {
-                if (!(new File(genomePath)).exists()) {
-                    throw new GenomeException("Cannot locate genome: " + genomePath);
                 }
             }
             return new FastaGenomeLoader(genomePath);
@@ -64,37 +75,6 @@ abstract public class GenomeLoader {
 
     abstract public Genome loadGenome() throws IOException;
 
-    public static Collection<Collection<String>> loadChrAliases(String path) {
-        BufferedReader br = null;
-        try {
-            br = ParsingUtils.openBufferedReader(path);
-            return loadChrAliases(br);
-        } catch (IOException e) {
-            log.error("Error loading chr alias table", e);
-            MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be available<br>" +
-                    e.toString());
-            return null;
-        } finally {
-            closeSilently(br);
-        }
-    }
-
-    static Collection<Collection<String>> loadChrAliases(BufferedReader br) throws IOException {
-        String nextLine = "";
-        Collection<Collection<String>> synonymList = new ArrayList<Collection<String>>();
-        while ((nextLine = br.readLine()) != null) {
-            String[] tokens = nextLine.split("\t");
-            if (tokens.length > 1) {
-                Collection<String> synonyms = new ArrayList<String>();
-                for (String t : tokens) {
-                    String syn = t.trim();
-                    if (t.length() > 0) synonyms.add(syn.trim());
-                }
-                synonymList.add(synonyms);
-            }
-        }
-        return synonymList;
-    }
 
     /**
      * Create an annotation track for the genome from a supplied list of features

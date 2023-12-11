@@ -25,12 +25,14 @@
 
 package org.broad.igv.track;
 
+import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.*;
 import htsjdk.tribble.index.Index;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.genome.ChromAliasManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.*;
 import org.broad.igv.feature.tribble.reader.IGVComponentMethods;
@@ -61,9 +63,11 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
     Genome genome;
 
     /**
-     * Map of IGV chromosome name -> source name
+     * Sequence names used in this file, which might differ from reference sequence names.
      */
-    Map<String, String> chrNameMap = new HashMap<String, String>();
+    Set<String> sequenceNames;
+
+    ChromAliasManager chromAliasManager;
     private Integer featureWindowSize;
     Object header;
     Class featureClass;
@@ -174,6 +178,8 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         this.header = reader.getHeader();
         this.reader = new TribbleReaderWrapper(reader);
         this.wrappedReader = reader;
+        this.sequenceNames = new HashSet(reader.getSequenceNames());
+        this.chromAliasManager = new ChromAliasManager(sequenceNames, genome);
     }
 
     protected abstract int estimateFeatureWindowSize(FeatureReader reader);
@@ -203,18 +209,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         private IndexedFeatureSource(AbstractFeatureReader basicReader, FeatureCodec codec, ResourceLocator locator,
                                      Genome genome, boolean useCache, boolean useIndex) throws IOException {
             super(basicReader, codec, genome);
-
-            if (genome != null) {
-                Collection<String> seqNames = reader.getSequenceNames();
-                if (seqNames != null) {
-                    for (String seqName : seqNames) {
-                        String igvChr = genome.getCanonicalChrName(seqName);
-                        if (igvChr != null && !igvChr.equals(seqName)) {
-                            chrNameMap.put(igvChr, seqName);
-                        }
-                    }
-                }
-            }
         }
 
 
@@ -226,7 +220,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         @Override
         public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
 
-            String seqName = chrNameMap.get(chr);
+            String seqName =  sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
             if (seqName == null) seqName = chr;
 
             return reader.query(seqName, start, end);
@@ -332,10 +326,8 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             super(basicReader, codec, genome);
 
             featureMap = new HashMap<>(25);
-            Iterator<Feature> iter = null;
 
-            try {
-                iter = reader.iterator();
+            try (CloseableIterator<Feature> iter = reader.iterator()) {
                 while (iter.hasNext()) {
                     Feature f = iter.next();
                     if (f == null) continue;
@@ -343,33 +335,20 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     String seqName = f.getChr();
                     String igvChr = genome == null ? seqName : genome.getCanonicalChrName(seqName);
 
-                    List<Feature> featureList = featureMap.get(igvChr);
-                    if (featureList == null) {
-                        featureList = new ArrayList();
-                        featureMap.put(igvChr, featureList);
-                    }
+                    List<Feature> featureList = featureMap.computeIfAbsent(igvChr, k -> new ArrayList<>());
                     featureList.add(f);
-                    if (f instanceof NamedFeature) FeatureDB.addFeature((NamedFeature) f, genome);
+                    if (f instanceof IGVNamedFeature named) FeatureDB.addFeature(named, genome);
 
-                    if (this.isVCF && f instanceof Variant) {
-                        Variant v = (Variant) f;
+                    if (this.isVCF && f instanceof Variant v) {
                         String chr2 = v.getAttributeAsString("CHR2");
                         String pos2 = v.getAttributeAsString("END");
                         if (chr2 != null && pos2 != null) {
                             String mateChr = genome == null ? chr2 : genome.getCanonicalChrName(chr2);
                             MateVariant mate = new MateVariant(mateChr, Integer.parseInt(pos2), v);
-                            featureList = featureMap.get(mateChr);
-                            if (featureList == null) {
-                                featureList = new ArrayList();
-                                featureMap.put(mateChr, featureList);
-                            }
+                            featureList = featureMap.computeIfAbsent(mateChr, k -> new ArrayList<>());
                             featureList.add(mate);
                         }
                     }
-                }
-            } finally {
-                if (iter instanceof CloseableTribbleIterator) {
-                    ((CloseableTribbleIterator) iter).close();
                 }
             }
 
@@ -402,11 +381,16 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         @Override
         public Iterator getFeatures(String chr, int start, int end) throws IOException {
-            List<Feature> features = featureMap.get(chr);
+
+            String seqName =  sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
+            if (seqName == null) seqName = chr;
+
+
+            List<Feature> features = featureMap.get(seqName);
             if (features == null) {
                 return Collections.<Feature>emptyList().iterator();
             }
-            List<Feature> filteredFeatures = CollUtils.filter(features, FeatureUtils.getOverlapPredicate(chr, start, end));
+            List<Feature> filteredFeatures = CollUtils.filter(features, FeatureUtils.getOverlapPredicate(seqName, start, end));
             return filteredFeatures.iterator();
 
         }
@@ -432,7 +416,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
         protected void sampleGenomeFeatures() {
             List<Feature> chrAllFeatures = new ArrayList(1000);
-            int sampleLength = (int) ((double) genome.getNominalLength() / (1000 * 700));
+            int sampleLength = (int) ((double) genome.getWGLength() / (1000 * 700));
             int lastFeaturePosition = -1;
             for (String chr : genome.getLongChromosomeNames()) {
                 List<Feature> features = featureMap.get(chr);
@@ -544,7 +528,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 Arrays.fill(values, 0);
 
 
-                double step = ((double) genome.getNominalLength() / 1000) / nBins;
+                double step = ((double) genome.getWGLength() / 1000) / nBins;
                 for (int i = 0; i < nBins; i++) {
                     starts[i] = (int) (i * step);
                     ends[i] = (int) ((i + 1) * step);

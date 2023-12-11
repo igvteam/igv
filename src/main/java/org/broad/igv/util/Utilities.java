@@ -164,7 +164,7 @@ public class Utilities {
 
     static public Comparator getNumericStringComparator() {
 
-        Comparator comparator = new Comparator<String>() {
+        Comparator<String> comparator = new Comparator<String>() {
 
             public int compare(String s1, String s2) {
                 StringTokenizer st1 = new StringTokenizer(s1, " ");
@@ -177,10 +177,10 @@ public class Utilities {
                     int c;
 
                     try {
-                        Integer i1 = new Integer(t1);
-                        Integer i2 = new Integer(t2);
+                        int i1 = Integer.parseInt(t1);
+                        int i2 = Integer.parseInt(t2);
 
-                        c = i1.compareTo(i2);
+                        c = Integer.compare(i1, i2);
                     } catch (NumberFormatException e) {
                         c = t1.compareTo(t2);
                     }

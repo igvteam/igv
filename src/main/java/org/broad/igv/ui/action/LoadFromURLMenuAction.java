@@ -30,6 +30,7 @@
 package org.broad.igv.ui.action;
 
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.GoogleUtils;
@@ -37,16 +38,15 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.AmazonUtils;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.*;
+import org.broad.igv.ui.IGVMenuBar;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
@@ -59,8 +59,9 @@ public class LoadFromURLMenuAction extends MenuAction {
     static Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
     public static final String LOAD_FROM_URL = "Load from URL...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
+    public static final String LOAD_FROM_HTSGET = "Load from htsget Server...";
+    public static final String LOAD_TRACKHUB = "Load Track Hub...";
 
-    public static final String LOAD_FROM_HTSGET = "Load from htsget server...";
     private IGV igv;
 
     public LoadFromURLMenuAction(String label, int mnemonic, IGV igv) {
@@ -76,7 +77,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         boolean isHtsGet = e.getActionCommand().equalsIgnoreCase(LOAD_FROM_HTSGET);
         if (e.getActionCommand().equalsIgnoreCase(LOAD_FROM_URL) || isHtsGet) {
 
-            LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame());
+            LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame(), isHtsGet);
             dlg.setVisible(true);
 
             if (!dlg.isCanceled()) {
@@ -86,7 +87,18 @@ public class LoadFromURLMenuAction extends MenuAction {
 
                     String[] inputs = Globals.whitespacePattern.split(inputURLs.trim());
                     checkURLs(inputs);
-                    if (inputs.length == 1 && SessionReader.isSessionFile(inputs[0])) {
+                    if (inputs.length == 1 && HubGenomeLoader.isHubURL(inputs[0])) {
+                        LongRunningTask.submit(() -> {
+                            try {
+                               GenomeManager.getInstance().loadGenome(inputs[0]);
+                            } catch (IOException ex) {
+                                log.error("Error loading tack hub", ex);
+                                MessageUtils.showMessage("Error loading track hub: " + ex.getMessage());
+
+                            }
+                        });
+                    }
+                    else if (inputs.length == 1 && SessionReader.isSessionFile(inputs[0])) {
                         // Session URL
                         String url = inputs[0];
                         if (url.startsWith("s3://")) {
@@ -117,7 +129,8 @@ public class LoadFromURLMenuAction extends MenuAction {
                                 String indexUrl = indexes[i];
                                 rl.setIndexPath(indexUrl);
                             }
-                            if(isHtsGet) {
+
+                            if (isHtsGet) {
                                 rl.setHtsget(true);
                             }
                             locators.add(rl);
@@ -135,13 +148,48 @@ public class LoadFromURLMenuAction extends MenuAction {
                 url = url.trim();
                 try {
                     checkURLs(new String[]{url});
-                    GenomeManager.getInstance().loadGenome(url, null);
+                    GenomeManager.getInstance().loadGenome(url);
+                } catch (Exception e1) {
+                    MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
+                }
+
+            }
+        } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_TRACKHUB))) {
+
+            String urlOrAccension = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter GCA or GCF accension, or URL to hub.txt file",
+                    JOptionPane.QUESTION_MESSAGE);
+
+            String url;
+            if(urlOrAccension.startsWith("GC")) {
+                url = HubGenomeLoader.convertToHubURL(urlOrAccension);
+                if(url == null || !FileUtils.resourceExists(url)) {
+                    MessageUtils.showMessage("Unrecognized hub identifier: " + urlOrAccension);
+                }
+            } else {
+                url = urlOrAccension;
+            }
+
+            if (url != null && url.trim().length() > 0) {
+                url = url.trim();
+                try {
+                    checkURLs(new String[]{url});
+                    GenomeManager.getInstance().loadGenome(url);
                 } catch (Exception e1) {
                     MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
                 }
 
             }
         }
+    }
+
+    /**
+     * Somewhat crude test for a hub url
+     *
+     * @param input
+     * @return
+     */
+    private boolean isHubURL(String input) {
+        return input.endsWith("/hub.txt");
     }
 
     private void checkURLs(String[] urls) {
@@ -163,7 +211,6 @@ public class LoadFromURLMenuAction extends MenuAction {
                 AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucket, key);
                 if (!res.isObjectAvailable()) {
                     MessageUtils.showErrorMessage(res.getErrorReason(), null);
-                    return;
                 }
             }
         } catch (NullPointerException npe) {

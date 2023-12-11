@@ -91,7 +91,7 @@ public class GenomeUtils {
                     System.out.println("Updating " + genomeID);
                     String genomePath = tokens[1];
                     try {
-                        Genome genome = GenomeManager.getInstance().loadGenome(genomePath, null);
+                        Genome genome = GenomeManager.getInstance().loadGenome(genomePath);
                         System.out.println(genome.getId());
                         exportChromSizes(directory, genome);
 

@@ -26,7 +26,9 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.fasta.FastaIndex;
+import org.broad.igv.feature.genome.load.GenomeConfig;
 import org.broad.igv.util.TestUtils;
 import org.junit.Assume;
 import org.junit.Rule;
@@ -53,11 +55,12 @@ public class GenomeTest extends AbstractHeadlessTest {
 
     /**
      * Test some aliases, both manually entered and automatic.
+     *
      * @throws Exception
      */
     @Test
     public void testAlias_01() throws Exception {
-        String genomeURL = "http://igv.broadinstitute.org/genomes/hg19.genome";
+        String genomeURL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg19.genome";
         Genome genome = loadGenomeAssumeSuccess(genomeURL);
 
         assertEquals("chrUn_gl000229", genome.getCanonicalChrName("GL000229.1"));
@@ -74,13 +77,14 @@ public class GenomeTest extends AbstractHeadlessTest {
 
     /**
      * Loads a genome
+     *
      * @param genomeURL
      * @return
      */
-    private Genome loadGenomeAssumeSuccess(String genomeURL){
+    private Genome loadGenomeAssumeSuccess(String genomeURL) {
         Genome genome = null;
         try {
-            genome = GenomeManager.getInstance().loadGenome(genomeURL, null);
+            genome = GenomeManager.getInstance().loadGenome(genomeURL);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -102,11 +106,19 @@ public class GenomeTest extends AbstractHeadlessTest {
         //contigs into "small" and "large"
         String indexPath = TestUtils.DATA_DIR + "fasta/CE.cns.all.fa.fai";
         Sequence seq = new MockSequence(indexPath);
-        Genome genome = new Genome("GenomeTest", "GenomeTest", seq, false);
+        GenomeConfig genomeConfig = new GenomeConfig();
+        genomeConfig.id = "GenomeTest";
+        genomeConfig.name = "GenomeTest";
+        genomeConfig.sequence = seq;
+        Genome genome = new Genome(genomeConfig);
+
+        List<String> longNames = genome.getLongChromosomeNames();
+        assertEquals(21, longNames.size());
+
         List<String> actNames = genome.getAllChromosomeNames();
 
-        String[] expNames = {"chr1", "chr2", "chr3", "chrX", "C121713571", "scaffold22502"};
-        int[] expInds = {0, 1, 2, 21, 22, actNames.size() - 1};
+        String[] expNames = {"chr1", "chr2", "chr3", "chrX"};
+        int[] expInds = {0, 1, 2, 20};
         int counter = 0;
         for (int expInd : expInds) {
             String expName = expNames[counter];
@@ -120,7 +132,11 @@ public class GenomeTest extends AbstractHeadlessTest {
     public void testGetLongChromosomeNames() throws Exception {
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/bosTau9.fa.fai";
         Sequence sequence = new MockSequence(mockIndexPath);
-        Genome genome = new Genome("bosTau9", "bosTau9", sequence, true);
+        GenomeConfig genomeConfig = new GenomeConfig();
+        genomeConfig.id = "bosTau9";
+        genomeConfig.name = "bosTau9";
+        genomeConfig.sequence = sequence;
+        Genome genome = new Genome(genomeConfig);
         List<String> longChrs = genome.getLongChromosomeNames();
         assertEquals(30, longChrs.size());
     }
@@ -129,7 +145,11 @@ public class GenomeTest extends AbstractHeadlessTest {
     public void testGetLongChromosomeNames2() throws Exception {
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/hg19.fa.fai";
         Sequence sequence = new MockSequence(mockIndexPath);
-        Genome genome = new Genome("hg19", "hg19", sequence, true);
+        GenomeConfig genomeConfig = new GenomeConfig();
+        genomeConfig.id = "hg19";
+        genomeConfig.name = "hg19";
+        genomeConfig.sequence = sequence;
+        Genome genome = new Genome(genomeConfig);
         List<String> longChrs = genome.getLongChromosomeNames();
         assertEquals(24, longChrs.size());
     }
@@ -138,7 +158,11 @@ public class GenomeTest extends AbstractHeadlessTest {
     public void testGetLongChromosomeNames3() throws Exception {
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/musa_pseudochromosome.fa.fai";
         Sequence sequence = new MockSequence(mockIndexPath);
-        Genome genome = new Genome("musa_pseudochromosome", "musa_pseudochromosome", sequence, true);
+        GenomeConfig genomeConfig = new GenomeConfig();
+        genomeConfig.id = "musa_pseudochromosome";
+        genomeConfig.name = "musa_pseudochromosome";
+        genomeConfig.sequence = sequence;
+        Genome genome = new Genome(genomeConfig);
         List<String> longChrs = genome.getLongChromosomeNames();
         assertEquals(12, longChrs.size());
     }
@@ -147,7 +171,11 @@ public class GenomeTest extends AbstractHeadlessTest {
     public void testGetLongChromosomeNames_manySmall() throws Exception {
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/mock_many_small.fa.fai";
         Sequence sequence = new MockSequence(mockIndexPath);
-        Genome genome = new Genome("mock_many_small", "mock_many_small", sequence, true);
+        GenomeConfig genomeConfig = new GenomeConfig();
+        genomeConfig.id = "mock_many_small";
+        genomeConfig.name = "mock_many_small";
+        genomeConfig.sequence = sequence;
+        Genome genome = new Genome(genomeConfig);
         assertNotNull(genome.getLongChromosomeNames());
         assertTrue("No 'Long' chromosome names found", genome.getLongChromosomeNames().size() > 0);
     }
@@ -167,7 +195,7 @@ public class GenomeTest extends AbstractHeadlessTest {
         }
 
         @Override
-        public byte[] getSequence(String chr, int start, int end, boolean useCache) {
+        public byte[] getSequence(String chr, int start, int end) {
             return new byte[0];
         }
 
@@ -187,9 +215,10 @@ public class GenomeTest extends AbstractHeadlessTest {
         }
 
         @Override
-        public boolean isRemote() {
-            return false;
+        public List<Chromosome> getChromosomes() {
+            return index.getChromosomes();
         }
+
     }
 
     public static void generateJunkIndex() throws Exception {

@@ -38,8 +38,8 @@ public class FastaBlockCompressedSequenceTest {
         int len2 = bgSequence.getChromosomeLength("chr12");
         assertEquals(len1, len2);
 
-        byte[] seq1 = fastaSequence.getSequence("chr12", 50000, 51000, false);
-        byte[] seq2 = fastaSequence.getSequence("chr12", 50000, 51000, false);
+        byte[] seq1 = fastaSequence.getSequence("chr12", 50000, 51000);
+        byte[] seq2 = fastaSequence.getSequence("chr12", 50000, 51000);
 
         for (int i = 0; i < seq1.length; i++) {
             byte b1 = seq1[i];

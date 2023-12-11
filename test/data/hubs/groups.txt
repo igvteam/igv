@@ -1,0 +1,39 @@
+name user
+label Custom Tracks
+priority 1
+defaultIsClosed 1
+
+name map
+label Mapping and Sequencing
+priority 2
+defaultIsClosed 0
+
+name genes
+label Genes and Gene Predictions
+priority 3
+defaultIsClosed 0
+
+name rna
+label mRNA and EST
+priority 4
+defaultIsClosed 0
+
+name regulation
+label Expression and Regulation
+priority 5
+defaultIsClosed 0
+
+name compGeno
+label Comparative Genomics
+priority 6
+defaultIsClosed 0
+
+name varRep
+label Variation and Repeats
+priority 7
+defaultIsClosed 0
+
+name x
+label Experimental Tracks
+priority 10
+defaultIsClosed 1

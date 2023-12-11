@@ -27,6 +27,7 @@
 package org.broad.igv.ui.util;
 
 import com.jidesoft.swing.JideBoxLayout;
+import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.StopEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.oauth.OAuthProvider;
@@ -34,13 +35,10 @@ import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.ui.IGV;
 //import org.broad.igv.event.StopEvent;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.TimerTask;
 
@@ -157,7 +155,7 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
     }
 
     @Override
-    public void receiveEvent(Object event) {
+    public void receiveEvent(IGVEvent event) {
         if (event instanceof OAuthProvider.AuthStateEvent) {
 
             String msg = "";

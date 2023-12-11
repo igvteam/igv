@@ -27,24 +27,24 @@ apply plugin: 'application'
 
 import org.apache.tools.ant.filters.ReplaceTokens
 
-//import proguard.gradle.ProGuardTask
-
 mainClassName = 'org.broad.igv.ui.Main'
 ext.moduleName = 'org.igv'
 
-// Build sourceset for ProGuard
 buildscript {
     repositories {
         mavenCentral()
-    }
-    dependencies {
-        [group: 'net.sf.proguard', name: 'proguard-gradle', version: '6.1.1']
-        classpath 'net.sf.proguard:proguard-gradle:6.1.1'
     }
 }
 
 repositories {
     mavenCentral()
+    mavenLocal()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 sourceSets {
@@ -104,17 +104,17 @@ configurations {
 dependencies {
     implementation(
             fileTree(dir: 'lib', include: '*.jar'), // first search on disk (old behavior), then maven repos
-            [group: 'com.google.code.gson', name: 'gson', version: '2.8.5'],
+            [group: 'com.google.code.gson', name: 'gson', version: '2.8.9'],
             [group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'],
-            [group: 'commons-io', name: 'commons-io', version: '2.6'],
-            [group: 'org.apache.commons', name: 'commons-compress', version: '1.18'],
+            [group: 'commons-io', name: 'commons-io', version: '2.7'],
+            [group: 'org.apache.commons', name: 'commons-compress', version: '1.21'],
             [group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.7.3'],
             [group: 'org.apache.commons', name: 'commons-jexl', version: '2.1.1'],
             [group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'],
-            [group: 'com.github.samtools', name: 'htsjdk', version: '3.0.5'],
+            [group: 'com.github.samtools', name: 'htsjdk', version: '4.0.2'],
             [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
-            //[group: 'org.bidib.com.jidesoft', name: 'jide-common', version: '3.7.3'],  // no longer in Maven Central
-            [group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'],
+            [group: 'com.formdev', name: 'jide-oss', version: '3.7.12'],
+            [group: 'com.google.guava', name: 'guava', version: '32.1.3-jre'],
             [group: 'org.apache.xmlgraphics', name: 'batik-dom', version: '1.11'],
             [group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: '1.11'],
             [group: 'org.apache.xmlgraphics', name: 'batik-codec', version: '1.11'],
@@ -128,9 +128,12 @@ dependencies {
     )
 
     testImplementation(
-            [group: 'junit', name: 'junit', version: '4.12'],
-            [group: 'com.sparkjava', name: 'spark-core', version: '2.2'],
-            [group: 'org.glassfish.jersey.core', name: 'jersey-common', version: '2.22.4']
+            [group: 'junit', name: 'junit', version: '4.13.1'],
+            [group: 'com.sparkjava', name: 'spark-core', version: '2.7.2'],
+            [group: 'org.glassfish.jersey.core', name: 'jersey-common', version: '2.34']
+    )
+    testRuntimeOnly(
+           [group: 'org.junit.vintage', name:'junit-vintage-engine', version:'5.8.2']
     )
 }
 
@@ -144,7 +147,7 @@ processResources {
     filesMatching('resources/about.properties') {
         filter(ReplaceTokens,
                 tokens: [VERSION  : version, BUILD: buildNumber, DEFAULT_MASTER_RESOURCE_URL: dataServerUrl,
-                         TIMESTAMP: timestamp, DEVELOPMENT: development])
+                         TIMESTAMP: timestamp])
     }
 }
 
@@ -158,6 +161,10 @@ jar {
                 "Main-Class": mainClassName,
         )
     }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
 
 compileJava {
@@ -179,35 +186,7 @@ tasks.withType(Test) {
     systemProperties['org.xerial.snappy.tempdir'] = 'build/tmp'
     maxHeapSize = '2g'
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
-}
-
-compileTestJava {
-    inputs.property("moduleName", moduleName)
-    doFirst {
-        options.compilerArgs = [
-                '--module-path', classpath.asPath,
-                '--add-modules', 'junit',
-                '--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath,
-        ]
-        classpath = files()
-    }
-}
-
-test {
-    inputs.property("moduleName", moduleName)
-
-    doFirst {
-        jvmArgs = [
-                '-Dcom.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize',
-                '--module-path', classpath.asPath,
-                '--add-modules', 'junit',
-                '--add-modules', 'ALL-MODULE-PATH',
-                '--add-reads', "$moduleName=junit",
-                '@scripts/test_suite.args',
-                '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir, sourceSets.main.output.resourcesDir).asPath,
-        ]
-        classpath = files()
-    }
+    useJUnitPlatform()
 }
 
 task createDist(type: Copy, dependsOn: jar) {
@@ -229,10 +208,11 @@ task createDist(type: Copy, dependsOn: jar) {
     }
     // Copies all Maven-fetched dependency jars
     with copySpec {
-        from configurations.default {
+        from configurations.runtimeClasspath {
             exclude '**/*log4j*.jar' 
         }
         into "lib"
+        duplicatesStrategy DuplicatesStrategy.EXCLUDE
     }
     with copySpec { from("genomes/sizes") {} into "lib/genomes" }
 
@@ -243,14 +223,16 @@ tasks.distZip.enabled = false
 tasks.distTar.enabled = false
 tasks.startScripts.enabled = false
 
+// Create the platform agnostic zip distribution
 task createDistZip(type: Zip, dependsOn: createDist) {
-    archiveName = "IGV_${version}.zip"
+    archiveFileName = "IGV_${version}.zip"
     from("${buildDir}/IGV-dist")
     into "IGV_${version}"
 }
 
+// Create a linux distribution for IGV , excluding igvtools.  Basically identical to generic dist without window and mac scripts
 task createLinuxDistZip(type: Zip, dependsOn: createDist) {
-    archiveName = "IGV_Linux_${version}.zip"
+    archiveFileName = "IGV_Linux_${version}.zip"
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*.command"
@@ -260,9 +242,10 @@ task createLinuxDistZip(type: Zip, dependsOn: createDist) {
     into "IGV_Linux_${version}"
 }
 
+// Create a linux distrubtion with bundled Java
 task createLinuxWithJavaDistZip(type: Zip, dependsOn: createDist) {
-    archiveName = "IGV_Linux_${version}_WithJava.zip"
-    with copySpec { from jdkBundleLinux into "jdk-11" }
+    archiveFileName = "IGV_Linux_${version}_WithJava.zip"
+    with copySpec { from jdkBundleLinux into "jdk-17" }
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*.command"
@@ -278,26 +261,27 @@ task createLinuxWithJavaDistZip(type: Zip, dependsOn: createDist) {
 }
 
 task createMacDistZip(type: Zip, dependsOn: createDist) {
-    archiveName = "IGV_Mac_${version}.zip"
+    archiveFileName = "IGV_MacApp_${version}.zip"
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*_hidpi*"
         exclude "igvtools*"
         exclude 'lib/genomes'
     }
-    into "IGV_Mac_${version}"
+
+    into "IGV_MacApp_${version}"
 }
 
 task createMacWithJavaDistZip(type: Zip, dependsOn: createDist) {
-    archiveName = "IGV_Mac_${version}_WithJava.zip"
-    with copySpec { from jdkBundleMac into "jdk-11" }
+    archiveFileName = "IGV_MacApp_${version}_WithJava.zip"
+    with copySpec { from jdkBundleMac into "jdk-17" }
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*_hidpi*"
         exclude "igvtools*"
         exclude 'lib/genomes'
     }
-    into "IGV_Mac_${version}"
+    into "IGV_MacApp_${version}"
     doLast {
         if (jdkBundleMac == "") {
             throw new GradleException("Required property not set: jdkBundleMac");
@@ -339,24 +323,24 @@ task createMacAppDist(type: Copy, dependsOn: createDist) {
 }
 
 task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveName = "IGV_MacApp_${version}.zip"
+    archiveFileName  = "IGV_MacApp_${version}.zip"
     from("${buildDir}/IGV-MacApp-dist")
 
     doLast {
-        project.exec { commandLine('chmod', '775', createMacAppDistZip.archivePath) }
+        //project.exec { commandLine('chmod', '775', createMacAppDistZip.archiveFileName) }
     }
 }
 
 task createMacAppWithJavaDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveName = "IGV_MacApp_${version}_WithJava.zip"
-    with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-11" }
+    archiveFileName = "IGV_MacApp_${version}_WithJava.zip"
+    with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-17" }
     from("${buildDir}/IGV-MacApp-dist")
 
     doLast {
         if (jdkBundleMac == "") {
             throw new GradleException("Required property not set: jdkBundleMac");
         }
-        project.exec { commandLine('chmod', '775', createMacAppWithJavaDistZip.archivePath) }
+        //project.exec { commandLine('chmod', '775', createMacAppWithJavaDistZip.archiveFileName) }
     }
 }
 
@@ -383,7 +367,7 @@ task createWinDist(type: Copy, dependsOn: createDist) {
 }
 
 task createWinWithJavaDist(type: Copy, dependsOn: createWinDist) {
-    with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-11" }
+    with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-17" }
     with copySpec {
         from("${buildDir}/IGV-WinExe-dist/IGV_${version}") { exclude 'installer.nsi' }
         into "IGV_${version}"
@@ -465,7 +449,8 @@ task fullJar(type: Jar, dependsOn: jar) {
                 "Application-Name": "IGV",
                 "Built-By": System.getProperty('user.name'),
                 "Main-Class": mainClassName,
-                "Class-Path": configurations.default.collect { it.getName() }.join(' ')
+
+                "Class-Path": configurations.runtimeClasspath.collect { it.getName() }.join(' ')
         )
     }
 }
@@ -474,17 +459,4 @@ task fullJar(type: Jar, dependsOn: jar) {
 
 //if (!makensisCommand == "" && !signcodeCommand == "") {
 //    dependsOn signWinExeDist
-//}
-
-// XXX: META-INF versions support (Java11) seem to clash with proguard at this point in time:
-// https://sourceforge.net/p/proguard/bugs/665/
-// https://sourceforge.net/p/proguard/discussion/182456/thread/8c56b22dc2/?limit=25
-//task myproguard(type: ProGuardTask) {
-////    configuration 'proguard.txt'
-//
-//    injars "${buildDir}/IGV-dist/lib"
-//    outjars "${buildDir}/libs/igv-proguard.jar"
-//
-//    //libraryjars "${buildDir}/IGV-dist/lib", jarfilter:"lib/**.jar(!META-INF/**)"
-//    //libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
 //}

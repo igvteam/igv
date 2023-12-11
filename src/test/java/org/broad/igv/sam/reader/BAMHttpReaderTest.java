@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
 
 public class BAMHttpReaderTest extends AbstractHeadlessTest {
 
-    private static final String BAM_URL_STRING = "http://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam";
+    private static final String BAM_URL_STRING = "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam";
 
     BAMReader reader;
 
@@ -70,7 +70,7 @@ public class BAMHttpReaderTest extends AbstractHeadlessTest {
 
     @After
     public void tearDown() throws Exception {
-        reader.close();
+        if (reader != null) reader.close();
         reader = null;
     }
 
@@ -84,7 +84,7 @@ public class BAMHttpReaderTest extends AbstractHeadlessTest {
     @Test
     public void testIterator() throws IOException {
         CloseableIterator<SAMAlignment> iter = reader.iterator();
-        //This takes a long time. We just look for a minimum number
+        //This will iterate over the entire file, so we break and exit after a few iterations
         int minnum = 10;
         int actnum = 0;
         while (iter.hasNext()) {
@@ -103,10 +103,11 @@ public class BAMHttpReaderTest extends AbstractHeadlessTest {
 
     @Test
     public void testQuery() throws Exception {
-        checkNumber("Y", 10000000 - 1, 10004000, 4);
-    }
+        int expected_count = 4;
+        String chr = "Y";
+        int start = 10000000 - 1;
+        int end = 10004000;
 
-    private void checkNumber(String chr, int start, int end, int expected_count) throws IOException {
         CloseableIterator<SAMAlignment> iter = reader.query(chr, start, end, false);
         int counted = 0;
         while (iter.hasNext()) {
@@ -118,8 +119,6 @@ public class BAMHttpReaderTest extends AbstractHeadlessTest {
 
         assertEquals(expected_count, counted);
     }
-
-
 
 
 }

@@ -26,7 +26,6 @@
 package org.broad.igv.lists;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -43,7 +42,11 @@ public class GeneList {
     private List<String> loci;
 
     public GeneList(String name, String description, String group, List<String> loci) {
-        init(name, description, group, loci);
+        this.group = group;
+        this.description = description;
+        this.name = name;
+        //We do this to guarantee that certain operations will be supported
+        this.loci = loci;
     }
 
     public GeneList(String name, List<String> loci) {
@@ -52,14 +55,6 @@ public class GeneList {
 
     public GeneList() {
         this.group = GeneListManager.USER_GROUP;
-    }
-
-    private void init(String name, String description, String group, List<String> loci) {
-        this.group = group;
-        this.description = description;
-        this.name = name;
-        //We do this to guarantee that certain operations will be supported
-        this.loci = loci;
     }
 
     public String getName() {
@@ -76,13 +71,13 @@ public class GeneList {
 
     public void add(String gene) {
         if (loci == null) {
-            loci = new ArrayList<String>(1);
+            loci = new ArrayList<>(1);
         }
         try {
             //Can't guarantee that list will support this operation
             loci.add(gene);
         } catch (Exception e) {
-            loci = new ArrayList<String>(loci);
+            loci = new ArrayList<>(loci);
             loci.add(gene);
         }
     }

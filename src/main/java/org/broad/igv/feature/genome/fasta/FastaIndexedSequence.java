@@ -26,15 +26,16 @@
 package org.broad.igv.feature.genome.fasta;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Sequence;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -86,11 +87,10 @@ public class FastaIndexedSequence implements Sequence {
      * @param chr
      * @param qstart
      * @param qend
-     * @param useCache
      * @return
      */
 
-    public byte[] getSequence(String chr, int qstart, int qend, boolean useCache) {
+    public byte[] getSequence(String chr, int qstart, int qend) {
 
         FastaIndex.FastaSequenceIndexEntry idxEntry = index.getIndexEntry(chr);
 
@@ -191,18 +191,11 @@ public class FastaIndexedSequence implements Sequence {
 
     @Override
     public int getChromosomeLength(String chrname) {
-        return index.getSequenceSize(chrname);
+        return  index.getSequenceSize(chrname);
     }
 
     @Override
-    public boolean isRemote() {
-        return FileUtils.isRemote(path);
+    public List<Chromosome> getChromosomes() {
+        return index.getChromosomes();
     }
-
-    @Override
-    public boolean isFasta() {
-        return true;
-    }
-
-
 }

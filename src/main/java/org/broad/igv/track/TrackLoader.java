@@ -28,10 +28,8 @@ package org.broad.igv.track;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
-import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bedpe.BedPEParser;
 import org.broad.igv.bedpe.InteractionTrack;
-import org.broad.igv.bbfile.BBDataSource;
 import org.broad.igv.blast.BlastMapping;
 import org.broad.igv.blast.BlastParser;
 import org.broad.igv.data.*;
@@ -59,8 +57,6 @@ import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.gwas.GWASData;
-import org.broad.igv.util.GoogleUtils;
-import org.broad.igv.gwas.GWASFeature;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.htsget.HtsgetUtils;
@@ -70,15 +66,20 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.maf.MultipleAlignmentTrack;
-import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.HeatmapRenderer;
 import org.broad.igv.renderer.MutationRenderer;
 import org.broad.igv.renderer.PointsRenderer;
-import org.broad.igv.sam.*;
+import org.broad.igv.sam.AlignmentDataManager;
+import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.reader.IndexNotFoundException;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
+import org.broad.igv.ucsc.Trix;
+import org.broad.igv.ucsc.bb.BBDataSource;
+import org.broad.igv.ucsc.bb.BBFeatureSource;
+import org.broad.igv.ucsc.bb.BBFile;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.ConvertFileDialog;
@@ -91,7 +92,10 @@ import org.broad.igv.variant.util.PedigreeUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -135,7 +139,6 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-
             // Determine track type, if possible, and add new tracks
             if (locator.isHtsget()) {
                 HtsgetUtils.Metadata htsgetMeta = HtsgetUtils.getMetadata(locator.getPath());
@@ -150,8 +153,9 @@ public class TrackLoader {
                 } else {
                     throw new RuntimeException("Format: '" + htsgetMeta.getFormat() + "' is not supported for htsget servers.");
                 }
-
+              
             }  else if (format.equals("gmt")) {
+
                 loadGMT(locator);
             } else if (format.equals("vcf.list")) {
                 loadVCFListFile(locator, newTracks, genome);
@@ -188,7 +192,7 @@ public class TrackLoader {
             } else if (format.equals("ewig.tdf")) {
                 loadEwigIBFFile(locator, newTracks, genome);
             } else if (format.equals("bw") || format.equals("bb") || format.equals("bigwig") ||
-                    format.equals("bigbed")) {
+                    format.equals("bigbed") || format.equals("biggenepred") || format.equals("bigrepmsk")) {
                 loadBWFile(locator, newTracks, genome);
             } else if (format.equals("ibf") || format.equals("tdf")) {
                 loadTDFFile(locator, newTracks, genome);
@@ -224,6 +228,7 @@ public class TrackLoader {
             } else if (format.equals("maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
             } else  {
+
                 // If the file is too large, give up
                 // TODO -- ftp test
                 final int tenMB = 10000000;
@@ -349,6 +354,12 @@ public class TrackLoader {
 
         VariantTrack t = new VariantTrack(locator, src, allSamples, enableMethylationRateSupport);
 
+        if (t.getAllSamples().size() > 10) {
+            // Create a new panel if the number of genotypes is greater than 10
+            String newPanelName = "Panel" + System.currentTimeMillis();
+            t.setPanelName(newPanelName);
+        }
+
         // VCF tracks handle their own margin
         t.setMargin(0);
         newTracks.add(t);
@@ -373,6 +384,11 @@ public class TrackLoader {
         List<String> allSamples = new ArrayList(header.getGenotypeSamples());
 
         VariantTrack t = new VariantTrack(locator, src, allSamples, enableMethylationRateSupport);
+
+        if(t.getAllSamples().size() > 10) {
+            String newPanelName = "Panel" + System.currentTimeMillis();
+            t.setPanelName(newPanelName);
+        }
 
         // VCF tracks handle their own margin
         t.setMargin(0);
@@ -530,7 +546,6 @@ public class TrackLoader {
                 return;
             }
         }
-
         ExpressionFileParser parser = null;
         ExpressionDataset ds = null;
         parser = new ExpressionFileParser(locator, null, genome);
@@ -547,13 +562,7 @@ public class TrackLoader {
             ds.setNormalized(true);
             ds.setLogValues(true);
 
-            /*
-             * File outputFile = new File(IGV.DEFAULT_USER_DIRECTORY, file.getName() + ".h5");
-             * OverlappingProcessor proc = new OverlappingProcessor(ds);
-             * proc.setZoomMax(0);
-             * proc.process(outputFile.getAbsolutePath());
-             * loadH5File(outputFile, messages, attributeList, group);
-             */
+            String newPanelName = "Panel" + System.currentTimeMillis();
 
             // Counter for generating ID
             TrackProperties trackProperties = ds.getTrackProperties();
@@ -562,6 +571,7 @@ public class TrackLoader {
                 DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
                 String trackId = path + "_" + trackName;
                 DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+                track.setPanelName(newPanelName);
                 track.setRenderer(new HeatmapRenderer());
                 track.setProperties(trackProperties);
                 newTracks.add(track);
@@ -596,6 +606,7 @@ public class TrackLoader {
             }
         }
 
+        String newPanelName = "Panel" + System.currentTimeMillis();
 
         String dsName = locator.getTrackName();
         IGVDataset ds = new IGVDataset(locator, genome);
@@ -604,13 +615,15 @@ public class TrackLoader {
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
         TrackType type = ds.getType();
+        boolean multitrack = ds.getTrackNames().length > 1;
         for (String trackName : ds.getTrackNames()) {
-
             DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
             String trackId = path + "_" + trackName;
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            if (multitrack) {
+                track.setPanelName(newPanelName);
+            }
 
-            // track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
             track.setProperties(trackProperties);
 
@@ -763,6 +776,7 @@ public class TrackLoader {
         int trackNumber = 0;
         String path = locator.getPath();
         boolean multiTrack = reader.getTrackNames().length > 1;
+        String newPanelName = "Panel" + System.currentTimeMillis();
 
         for (String heading : reader.getTrackNames()) {
 
@@ -770,7 +784,9 @@ public class TrackLoader {
             String trackName = multiTrack ? heading : name;
             final DataSource dataSource = new TDFDataSource(reader, trackNumber, heading, genome);
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-
+            if (multiTrack) {
+                track.setPanelName(newPanelName);
+            }
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
             track.setTrackType(type);
@@ -790,21 +806,16 @@ public class TrackLoader {
         String trackId = locator.getPath();
 
         String path = locator.getPath();
-        BBFileReader reader = new BBFileReader(path);
-        BBDataSource bigwigSource = new BBDataSource(reader, genome);
-        Track track = null;
-
+        String trixURL = locator.getTrixURL();
+        BBFile reader = trixURL == null ? new BBFile(path, genome) : new BBFile(path, genome, trixURL);
+        Track track;
         if (reader.isBigWigFile()) {
+            BBDataSource bigwigSource = new BBDataSource(reader, genome);
             track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
+            BBFeatureSource featureSource = new BBFeatureSource(reader, genome);
+            track = new FeatureTrack(locator, trackId, trackName, featureSource);
 
-            if (locator.getPath().contains("RRBS_cpgMethylation") ||
-                    locator.getPath().contains("BiSeq_cpgMethylation") ||
-                    (reader.getAutoSql() != null && reader.getAutoSql().startsWith("table BisulfiteSeq"))) {
-                loadMethylTrack(locator, reader, newTracks, genome);
-            } else {
-                track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
-            }
         } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
         }
@@ -813,12 +824,6 @@ public class TrackLoader {
             newTracks.add(track);
         }
 
-    }
-
-    private void loadMethylTrack(ResourceLocator locator, BBFileReader reader, List<Track> newTracks, Genome genome) throws IOException {
-
-        MethylTrack track = new MethylTrack(locator, reader, genome);
-        newTracks.add(track);
     }
 
     private void loadEwigIBFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
@@ -884,7 +889,14 @@ public class TrackLoader {
             // not represented in the genome, buf if there are no matches warn the user.
             List<String> seqNames = dataManager.getSequenceNames();
             if (seqNames != null && seqNames.size() > 0) {
-                if (!dataManager.hasMatchingSequences()) {
+                boolean seqMatch = false;
+                for (String seq : seqNames) {
+                    if (genome.getAliasRecord(seq) != null) {
+                        seqMatch = true;
+                        break;
+                    }
+                }
+                if (!seqMatch) {
                     showMismatchSequenceNameMessage(locator.getPath(), genome, seqNames);
                 }
             }
@@ -897,8 +909,15 @@ public class TrackLoader {
                 }
             }
 
+            // Place associated tracks in a new panel (coverage, splice junction, alignment)
+
+            String newPanelName = "Panel" + System.currentTimeMillis();
+
             AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName)
+            alignmentTrack.setPanelName(newPanelName);
             alignmentTrack.setVisible(PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK));
+
+            alignmentTrack.getCoverageTrack().setPanelName(newPanelName);
             newTracks.add(alignmentTrack.getCoverageTrack());
 
             //  Precalculated coverage data (can be null)
@@ -932,6 +951,7 @@ public class TrackLoader {
             }
 
             // Splice junction track
+            alignmentTrack.getSpliceJunctionTrack().setPanelName(newPanelName);
             newTracks.add(alignmentTrack.getSpliceJunctionTrack());
 
             alignmentTrack.init();
@@ -961,7 +981,7 @@ public class TrackLoader {
                 break;
             }
         }
-        if (genome != null && genome.getAllChromosomeNames() != null) {
+        if (genome != null && genome.getAllChromosomeNames() != null && genome.getAllChromosomeNames().size() > 0) {
             message.append("<br>Genome: ");
             n = 0;
             for (String cn : genome.getAllChromosomeNames()) {
@@ -986,9 +1006,12 @@ public class TrackLoader {
      */
     private void loadMutFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
 
+        String newPanelName = "Panel" + System.currentTimeMillis();
+
         MutationTrackLoader loader = new MutationTrackLoader();
         List<FeatureTrack> mutationTracks = loader.loadMutationTracks(locator, genome);
         for (FeatureTrack track : mutationTracks) {
+            track.setPanelName(newPanelName);
             track.setTrackType(TrackType.MUTATION);
             track.setRenderer(new MutationRenderer());
             newTracks.add(track);
@@ -1021,6 +1044,7 @@ public class TrackLoader {
      * @param ds
      */
     private void loadSegTrack(ResourceLocator locator, List<Track> newTracks, Genome genome, SegmentedDataSet ds) {
+
         String path = locator.getPath();
 
         TrackProperties props = null;
@@ -1028,13 +1052,17 @@ public class TrackLoader {
             props = ((SegmentedAsciiDataSet) ds).getTrackProperties();
         }
 
-        // The "freq" track.  TODO - make this optional
+
+        String newPanelName = "Panel" + System.currentTimeMillis();
+
+        // The "freq" track.
         if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
                 ds.getSampleNames().size() > 1) {
             FreqData fd = new FreqData(ds, genome);
             String freqTrackId = path;
             String freqTrackName = "CNV Summary";
             CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
+            freqTrack.setPanelName(newPanelName);
 
             if (props != null) {
                 freqTrack.setProperties(props);
@@ -1048,6 +1076,7 @@ public class TrackLoader {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            track.setPanelName(newPanelName);
             track.setRenderer(new HeatmapRenderer());
             track.setTrackType(ds.getType());
 

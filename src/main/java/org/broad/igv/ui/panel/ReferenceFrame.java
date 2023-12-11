@@ -29,7 +29,6 @@
  */
 package org.broad.igv.ui.panel;
 
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.ViewChange;
@@ -38,10 +37,11 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
@@ -54,7 +54,7 @@ import java.awt.event.MouseEvent;
  */
 public class ReferenceFrame {
 
-    private static Logger log = LogManager.getLogger(ReferenceFrame.class);
+    private static final Logger log = LogManager.getLogger(ReferenceFrame.class);
 
     IGVEventBus eventBus;
 
@@ -167,7 +167,7 @@ public class ReferenceFrame {
 
     public void dragStopped() {
         setOrigin(Math.round(origin));   // Snap to gride
-        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd()));
+        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd(), false));
     }
 
     public void changeGenome(Genome genome) {
@@ -177,8 +177,7 @@ public class ReferenceFrame {
     public void changeChromosome(String chrName, boolean recordHistory) {
         boolean changed = setChromosomeName(chrName, false);
         // if (changed) {
-        ViewChange resultEvent = ViewChange.ChromosomeChangeResult(chrName);
-        resultEvent.setRecordHistory(recordHistory);
+        ViewChange resultEvent = ViewChange.ChromosomeChangeResult(chrName, recordHistory);
         eventBus.post(resultEvent);
         changeZoom(0);
         // }
@@ -186,8 +185,7 @@ public class ReferenceFrame {
 
     public void changeZoom(int newZoom) {
         doSetZoom(newZoom);
-        ViewChange result = ViewChange.LocusChangeResult(chrName, origin, getEnd());
-        result.setRecordHistory(false);
+        ViewChange result = ViewChange.LocusChangeResult(chrName, origin, getEnd(), false);
         eventBus.post(result);
     }
 
@@ -382,7 +380,7 @@ public class ReferenceFrame {
 
         double shiftBP = delta * getScale();
         setOrigin(shiftBP + origin);
-        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd()));
+        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd(), false));
     }
 
     public void centerOnLocation(String chr, double chrLocation) {
@@ -395,7 +393,7 @@ public class ReferenceFrame {
     public void centerOnLocation(double chrLocation) {
         double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
-        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, chrLocation + windowWidth));
+        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, chrLocation + windowWidth, false));
     }
 
     public boolean windowAtEnd() {
@@ -448,7 +446,7 @@ public class ReferenceFrame {
             log.debug("Scale = " + scale);
         }
 
-        eventBus.post(ViewChange.LocusChangeResult(chrName, start, end));
+        eventBus.post(ViewChange.LocusChangeResult(chrName, start, end, false));
     }
 
     public double getOrigin() {
@@ -458,12 +456,13 @@ public class ReferenceFrame {
     /**
      * Return the origin in reference genome coordinates.  When an insertion is expanded "origin" is in expansion modified
      * coordinates, we need to adjust for the expansion to convert to reference genome coordinates* *
+     *
      * @return
      */
     public double getExpansionAdjustedOrigin() {
         InsertionMarker im = getExpandedInsertion();
         return (im == null || origin < im.position) ?
-                origin  :
+                origin :
                 origin - im.size;
     }
 
@@ -586,7 +585,6 @@ public class ReferenceFrame {
         if (genome == null) {
             return null;
         }
-
         return genome.getChromosome(chrName);
     }
 
@@ -638,13 +636,13 @@ public class ReferenceFrame {
      */
     public String getFormattedLocusString() {
 
-        if (zoom == 0) {
-            return getChrName();
-        } else {
-
-            Range range = getCurrentRange();
-            return Locus.getFormattedLocusString(range.getChr(), range.getStart(), range.getEnd());
-        }
+//        if (zoom == 0) {
+//            return getGenome().getChromosomeDisplayName(getChrName());
+//        } else {
+        Range range = getCurrentRange();
+        String c = getGenome().getChromosomeDisplayName(range.getChr());
+        return Locus.getFormattedLocusString(c, range.getStart(), range.getEnd());
+        // }
     }
 
     public Range getCurrentRange() {
@@ -714,7 +712,7 @@ public class ReferenceFrame {
     }
 
     /**
-     * Calculate the zoom level given start/end in bp.
+     * Calculate the minimum zoom level which can completely contain the given start/end in bp.
      * Doesn't change anything
      *
      * @param start
@@ -722,8 +720,15 @@ public class ReferenceFrame {
      * @return
      */
     public int calculateZoom(double start, double end) {
-        final double windowLength = Math.min(end - start, getChromosomeLength());
-        return (int) Math.round(Globals.log2((getChromosomeLength() / windowLength) * (((double) widthInPixels) / binsPerTile)));
+        final double windowLength = Math.ceil(end) - start;
+        final int chrLength = getChromosomeLength();
+        if (windowLength >= getChromosomeLength()) {
+            return 0;
+        } else {
+            final double exactZoom = Globals.log2((getChromosomeLength() / windowLength) * (((double) widthInPixels) / binsPerTile));
+            //round up so that you get a zoom level which contains the given window
+            return (int) Math.ceil(exactZoom);
+        }
     }
 
 
@@ -736,7 +741,7 @@ public class ReferenceFrame {
 
         if (chrName.equals("All")) {
             // Genome coordinates are in kb => divde by 1000
-            return (int) (genome.getNominalLength() / 1000);
+            return (int) (genome.getWGLength() / 1000);
         } else {
             Chromosome chromosome = genome.getChromosome(chrName);
             if (chromosome == null) {
@@ -754,7 +759,7 @@ public class ReferenceFrame {
     public void setExpandedInsertion(InsertionMarker im) {
         InsertionMarker previousInsertion = this.expandedInsertion;
         this.expandedInsertion = im;
-        if(im == null && previousInsertion != null) {
+        if (im == null && previousInsertion != null) {
             this.centerOnLocation(previousInsertion.position);
         }
     }
@@ -762,6 +767,7 @@ public class ReferenceFrame {
     public InsertionMarker getExpandedInsertion() {
         return expandedInsertion;
     }
+
     public int stateHash() {
         int result;
         long temp;
@@ -779,7 +785,6 @@ public class ReferenceFrame {
     private static Genome getGenome() {
         return GenomeManager.getInstance().getCurrentGenome();
     }
-
 
 
 }

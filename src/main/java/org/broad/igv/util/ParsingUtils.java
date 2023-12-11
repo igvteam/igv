@@ -147,6 +147,10 @@ public class ParsingUtils {
         return new String(bytes, "UTF-8");
     }
 
+    public static String readContentsAsString(String path) throws IOException {
+        return readContentsFromStream(openInputStream(path));
+    }
+
     /**
      * Parse the string and return the result as an integer.  This method supports scientific notation for integers,
      * which Integer.parseInt() does not.

@@ -28,6 +28,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import com.jidesoft.utils.SortedList;
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.aa.AminoAcidManager;
@@ -53,7 +54,7 @@ public class FeatureDB {
     /**
      * Map for all features other than genes.
      */
-    //private static Map<String, NamedFeature> featureMap = new HashMap(10000);
+    //private static Map<String, IGVNamedFeature> featureMap = new HashMap(10000);
     private static Map<String, List<NamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<String, List<NamedFeature>>());
     private static final int MAX_DUPLICATE_COUNT = 20;
 
@@ -81,7 +82,7 @@ public class FeatureDB {
         }
     }
 
-    public static void removeFeature(NamedFeature feature, Genome genome) {
+    public static void removeFeature(IGVNamedFeature feature, Genome genome) {
 
         final String name = feature.getName();
         if (name != null && name.length() > 0 && !name.equals(".")) {
@@ -170,7 +171,7 @@ public class FeatureDB {
 
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         if (currentGenome == null || currentGenome.getChromosome(feature.getChr()) != null) {
-            NamedFeature currentFeature = featureMap.get(key);
+            IGVNamedFeature currentFeature = featureMap.get(key);
             if (currentFeature == null) {
                 featureMap.put(key, feature);
             } else {
@@ -200,7 +201,7 @@ public class FeatureDB {
      */
 
 
-    public static void addFeature(String name, NamedFeature feature, Genome genome) {
+    public static void addFeature(String name, IGVNamedFeature feature, Genome genome) {
         put(name.toUpperCase(), feature, genome);
     }
 
@@ -255,9 +256,9 @@ public class FeatureDB {
      *             string will be found.
      * @return
      */
-    static Map<String, List<NamedFeature>> getFeaturesMap(String name) {
+    static Map<String, List<IGVNamedFeature>> getFeaturesMap(String name) {
         String nm = name.trim().toUpperCase();
-        SortedMap<String, List<NamedFeature>> treeMap = (SortedMap) featureMap;
+        SortedMap<String, List<IGVNamedFeature>> treeMap = (SortedMap) featureMap;
         //Search is inclusive to first argument, exclusive to second
         return treeMap.subMap(nm, nm + Character.MAX_VALUE);
     }
@@ -270,7 +271,7 @@ public class FeatureDB {
      * @return
      * @see #getFeaturesList(String, int, boolean)
      */
-    public static List<NamedFeature> getFeaturesList(String name, int limit) {
+    public static List<IGVNamedFeature> getFeaturesList(String name, int limit) {
         return getFeaturesList(name, limit, true);
     }
 
@@ -283,18 +284,18 @@ public class FeatureDB {
      * @param longestOnly Whether to take only the longest feature for each name
      * @return
      */
-    public static List<NamedFeature> getFeaturesList(String name, int limit, boolean longestOnly) {
+    public static List<IGVNamedFeature> getFeaturesList(String name, int limit, boolean longestOnly) {
 
         //Note: We are iterating over submap, this needs
         //to be synchronized over the main map.
         synchronized (featureMap) {
-            Map<String, List<NamedFeature>> resultMap = getFeaturesMap(name);
+            Map<String, List<IGVNamedFeature>> resultMap = getFeaturesMap(name);
             Set<String> names = resultMap.keySet();
             Iterator<String> nameIter = names.iterator();
-            ArrayList<NamedFeature> features = new ArrayList<NamedFeature>((Math.min(limit, names.size())));
+            ArrayList<IGVNamedFeature> features = new ArrayList<IGVNamedFeature>((Math.min(limit, names.size())));
             int ii = 0;
             while (nameIter.hasNext() && ii < limit) {
-                List<NamedFeature> subFeats = resultMap.get(nameIter.next());
+                List<IGVNamedFeature> subFeats = resultMap.get(nameIter.next());
                 if (longestOnly) {
                     features.add(subFeats.get(0));
                 } else {

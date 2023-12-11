@@ -1,22 +1,14 @@
 =======================
-IGV BINARY DISTRIBUTION
+IGV DISTRIBUTION
 =======================
 
 Prerequisites:
 
-Java 11 (http://openjdk.java.net).  Not compatible with Java 8, 9, 10.  We do not test 
-on Java releases > 11 and cannot vouch for the behavior.
+Java 17 or greater is required.  A free open source distributions of Java is available at https://adoptium.net/.
 
-Java 11 is bundled with our "Java included" distributions.
-
-For our other "separate Java 11 required" distributions, Java 11 must be installed and made
-available as the default.  These bundles are recommended only for those users that wish to 
-manage Java for themselves.
-
-Note that we provide both a Mac App and a Windows installer for users on those platforms that
-want a more standard way to launch.
 
 Instructions:
+-------------
 
 1. Download and unzip the distribution file to a directory of your choice.
 
@@ -30,6 +22,10 @@ igv.command       (for macOS, double-click to start)
 
 Some of these may not be present depending on the distribution you downloaded.  You might have to
 make the script executable (e.g. chmod a+x igv.sh) depending on the way the bundle was unpacked.
+
+
+Advanced options follow -- these are not common:
+------------------------------------------------
 
 The bat and shell scripts are configured to start IGV with 4GB of memory.  This is a 
 reasonable default for most machines but if you are working with very large datasets
@@ -79,14 +75,14 @@ command-line.  To use the default Java, independently installed (java 11 require
 
      java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
      
-To use the java included with our packaged bundles substitute "./jdk-11/bin/java" for "java", as follows.
+To use the java included with our packaged bundles substitute "./jdk-17/bin/java" for "java", as follows.
 
-    ./jdk-11/bin/java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
+    ./jdk-17/bin/java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
 
 The above commands assume that you are launching IGV from the directory where it was unpacked.
 
 Note that this lists the memory specification directly, and that the java_arguments file will be skipped.
-If you wish to use the java_arguments file (assuming one exists), modify the above to (substituting ./jdk-11/bin/java for java as required):
+If you wish to use the java_arguments file (assuming one exists), modify the above to (substituting ./jdk-17/bin/java for java as required):
 
      java --module-path=lib @igv.args @"$HOME/.igv/java_arguments" --module=org.igv/org.broad.igv.ui.Main
 

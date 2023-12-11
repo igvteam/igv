@@ -41,7 +41,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -72,19 +71,6 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
     String[] dm3posChromos = new String[]{"chr2RHet", "chr4", "chrU"};
     String[] dm3emptyChromos = new String[]{"chrUextra"};
 
-//    NOTE:  V3 files for genomes other than hg18, hg19, mm8, or mm9 always fail by definition, so there is nothing to test
-//    @Test
-//    public void testChrAlldm3_v3() throws Exception{
-//        //TODO Put in test dir
-//        String genPath = "http://igvdata.broadinstitute.org/genomes/dm3.genome"; //"dm3";
-//
-//        String wigPath = TestUtils.DATA_DIR + "wig/dm3_var_sample.wig";
-//
-//        //TDF file generated from wiggle, using IGV 2.1.30 (tdf version 3)
-//        String tdf3Path = TestUtils.DATA_DIR + "tdf/dm3_var_sample.wig.v2.1.30.tdf";
-//
-//        tstCHR_ALL(genPath, wigPath, tdf3Path, false, dm3posChromos, dm3emptyChromos);
-//    }
 
     @Test
     public void testChrAlldm3_v4() throws Exception{
@@ -111,16 +97,6 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
 
         tstCHR_ALL(genPath, wigPath, tdf3Path, false, hg18posChromos, hg18emptyChromos);
     }
-//
-//    @Test
-//    public void testChrAllhg18_v4() throws Exception{
-//        String genPath = TestUtils.DATA_DIR + "genomes/hg18.unittest.genome";
-//
-//        String wigPath = TestUtils.DATA_DIR + "wig/hg18_var_sample.wig";
-//        String tdf4Path = TestUtils.DATA_DIR + "tdf/hg18_var_sample.wig.v2.2.1.tdf";
-//
-//        tstCHR_ALL(genPath, wigPath, tdf4Path, true, hg18posChromos, hg18emptyChromos);
-//    }
 
     private boolean overlaps(long start, long end, LocusScore score){
         return score.getStart() >= start && score.getStart() < end ||
@@ -141,7 +117,7 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
     public void tstCHR_ALL(String genPath, String wigPath, String tdfPath, boolean expHaveChrAll, String[] posChromos, String[] emptyChromos) throws Exception{
         Genome genome = null;
         try {
-            genome = GenomeManager.getInstance().loadGenome(genPath, null);
+            genome = GenomeManager.getInstance().loadGenome(genPath);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -31,11 +31,4 @@ import org.broad.igv.feature.genome.Genome;
 /**
  * Created by jrobinso on 1/7/17.
  */
-public class GenomeChangeEvent {
-
-    public Genome genome;
-
-    public GenomeChangeEvent(Genome genome) {
-        this.genome = genome;
-    }
-}
+public record GenomeChangeEvent(Genome genome) implements IGVEvent {}

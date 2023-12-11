@@ -1,18 +1,16 @@
 package org.broad.igv.sam;
 
 import htsjdk.samtools.SAMTag;
-import htsjdk.samtools.util.Locatable;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.jbrowse.CircularViewUtilities;
-import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.mods.BaseModficationFilter;
+import org.broad.igv.sam.mods.BaseModificationKey;
 import org.broad.igv.sam.mods.BaseModificationUtils;
 import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.tools.PFMExporter;
@@ -20,7 +18,7 @@ import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
-import org.broad.igv.ui.AlignmentDiagramFrame;
+import org.broad.igv.ui.supdiagram.SupplementaryAlignmentDiagramDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.panel.FrameManager;
@@ -203,7 +201,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                 try {
                     List<SupplementaryAlignment> supplementaryAlignments = SupplementaryAlignment.parseFromSATag(saTag);
                     alignmentTrack.setSelectedAlignment(clickedAlignment);
-                    addNewLociToFrames(e.getFrame(), supplementaryAlignments, alignmentTrack.getSelectedReadNames().keySet());
+                    FrameManager.addNewLociToFrames(e.getFrame(), supplementaryAlignments, alignmentTrack.getSelectedReadNames().keySet());
                 } catch (final Exception ex) {
                     MessageUtils.showMessage("Failed to handle SA tag: " + saTag + " due to " + ex.getMessage());
                     item.setEnabled(false);
@@ -221,7 +219,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             item.setEnabled(true);
             item.addActionListener(aEvt -> {
                 try {
-                    final AlignmentDiagramFrame frame = new AlignmentDiagramFrame(clickedAlignment, new Dimension(500, 100));
+                    final SupplementaryAlignmentDiagramDialog frame = new SupplementaryAlignmentDiagramDialog(IGV.getInstance().getMainFrame(), clickedAlignment, new Dimension(500, 250));
                     frame.setVisible(true);
                 } catch (final Exception ex) {
                     MessageUtils.showMessage("Failed to handle SA tag: " + clickedAlignment.getAttribute(SAMTag.SA.name()) + " due to " + ex.getMessage());
@@ -683,7 +681,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         // Base modifications
         JRadioButtonMenuItem bmMenuItem;
 
-        Set<String> allModifications = dataManager.getAllBaseModificationKeys().stream().map(bmKey -> bmKey.getModification()).collect(Collectors.toSet());
+        Set<String> allModifications = dataManager.getAllBaseModificationKeys().stream().map(BaseModificationKey::getModification).collect(Collectors.toSet());
         if (allModifications.size() > 0) {
             BaseModficationFilter filter = renderOptions.getBasemodFilter();
             boolean groupByStrand = alignmentTrack.getPreferences().getAsBoolean(BASEMOD_GROUP_BY_STRAND);
@@ -1228,7 +1226,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                 int newStart = (int) Math.max(0, (start + (alignment.getEnd() - alignment.getStart()) / 2 - range / 2));
                 int newEnd = newStart + (int) range;
                 frame.jumpTo(chr, newStart, newEnd);
-                sortSelectedReadsToTheTop(alignmentTrack.getSelectedReadNames().keySet());
+                AlignmentTrack.sortSelectedReadsToTheTop(alignmentTrack.getSelectedReadNames().keySet());
                 frame.recordHistory();
             } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
@@ -1246,68 +1244,11 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             ReadMate mate = alignment.getMate();
             if (mate != null && mate.isMapped()) {
                 alignmentTrack.setSelectedAlignment(alignment);
-                addNewLociToFrames(frame, List.of(mate), alignmentTrack.getSelectedReadNames().keySet());
+                FrameManager.addNewLociToFrames(frame, List.of(mate), alignmentTrack.getSelectedReadNames().keySet());
             } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
             }
         }
-    }
-
-    private static void addNewLociToFrames(final ReferenceFrame frame, final List<? extends Locatable> toIncludeInSplit, final Set<String> selectedReadNames) {
-        final List<String> newLoci = toIncludeInSplit.stream()
-                .map(locatable -> getLocusStringForAlignment(frame, locatable))
-                .collect(Collectors.toList());
-        List<String> loci = createLociList(frame, newLoci);
-        String listName = String.join("   ", loci); // TODO check the trailing "   " was unnecessary
-        //Need to sort the frames by position
-        GeneList geneList = new GeneList(listName, loci);
-        geneList.sort(Comparator.comparing(Locus::fromString, SortOption.POSITION_COMPARATOR));
-        IGV.getInstance().getSession().setCurrentGeneList(geneList);
-        IGV.getInstance().resetFrames();
-
-        /*
-        We want the sort to happen after the frame refresh / track loading begins.
-        This puts the sort onto the event thread so that it happens after loading has already started.
-        Since loading reads happens asynchronously on a different thread from the event thread, it is likely
-        that the loading won't be done by the time the sort fires.  In that case the sort will be set as the
-        action to perform when the load is finished
-        See {@link AlignmentTrack#sortRows(SortOption, Double, String, boolean, Set)}
-        */
-        sortSelectedReadsToTheTop(selectedReadNames);
-    }
-
-    private static void sortSelectedReadsToTheTop(final Set<String> selectedReadNames) {
-        //copy this in case it changes out from under us
-        Set<String> selectedReadNameCopy = new HashSet<>(selectedReadNames);
-        UIUtilities.invokeOnEventThread(() ->
-                IGV.getInstance().sortAlignmentTracks(SortOption.NONE, null, null, false, selectedReadNameCopy));
-    }
-
-    private static List<String> createLociList(final ReferenceFrame frame, final List<String> lociToAdd) {
-        final List<String> loci = new ArrayList<>(FrameManager.getFrames().size() + lociToAdd.size());
-        if (FrameManager.isGeneListMode()) {
-            for (ReferenceFrame ref : FrameManager.getFrames()) {
-                //If the frame-name is a locus, we use it unaltered
-                //Don't want to reprocess, easy to get off-by-one
-                String name = ref.getName();
-                loci.add(Locus.fromString(name) != null ? name : ref.getFormattedLocusString());
-            }
-        } else {
-            loci.add(frame.getFormattedLocusString());
-        }
-        loci.addAll(lociToAdd);
-        return loci;
-    }
-
-    private static String getLocusStringForAlignment(final ReferenceFrame frame, final Locatable alignment) {
-        int adjustedMateStart = alignment.getStart() - 1;
-
-        // Generate a locus string for the alignment.  Keep the window width (in base pairs) == to the current range
-        Range range = frame.getCurrentRange();
-        int length = range.getLength();
-        int start = Math.max(0, adjustedMateStart - length / 2);
-        int end = start + length;
-        return Locus.getFormattedLocusString(alignment.getContig(), start, end);
     }
 
 

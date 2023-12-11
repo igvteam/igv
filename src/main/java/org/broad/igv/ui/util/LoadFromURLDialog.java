@@ -39,15 +39,15 @@ import javax.swing.border.*;
 /**
  * @author James Robinson
  */
-public class LoadFromURLDialog extends org.broad.igv.ui.IGVDialog  {
+public class LoadFromURLDialog extends org.broad.igv.ui.IGVDialog {
 
     boolean canceled = false;
     String fileURL;
     String indexURL;
 
-    public LoadFromURLDialog(Frame owner) {
-        super(owner, "Load from URL");
-        initComponents();
+    public LoadFromURLDialog(Frame owner, boolean isHtsget) {
+        super(owner, isHtsget ? "htsget URL": "Load from URL");
+        initComponents(isHtsget);
     }
 
 
@@ -82,7 +82,7 @@ public class LoadFromURLDialog extends org.broad.igv.ui.IGVDialog  {
         return indexURL;
     }
 
-    private void initComponents() {
+    private void initComponents(boolean isHtsget) {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
@@ -112,69 +112,75 @@ public class LoadFromURLDialog extends org.broad.igv.ui.IGVDialog  {
             {
                 contentPanel.setBorder(new EmptyBorder(10, 10, 5, 5));
                 contentPanel.setLayout(new GridBagLayout());
-                ((GridBagLayout)contentPanel.getLayout()).columnWidths = new int[] {0, 0, 0};
-                ((GridBagLayout)contentPanel.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0};
-                ((GridBagLayout)contentPanel.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
-                ((GridBagLayout)contentPanel.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                ((GridBagLayout) contentPanel.getLayout()).columnWidths = new int[]{0, 0, 0};
+                ((GridBagLayout) contentPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
+                ((GridBagLayout) contentPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 1.0E-4};
+                ((GridBagLayout) contentPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
                 contentPanel.add(vSpacer2, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 10, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 0), 0, 0));
 
                 //---- label1 ----
                 label1.setText("File URL:");
                 contentPanel.add(label1, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 10, 5), 0, 0));
-
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
+                fileField.setPreferredSize(new Dimension(720, 28));
+                fileField.setMinimumSize(new Dimension(720, 28));
                 //---- label2 ----
-                label2.setText("Index URL:");
-                contentPanel.add(label2, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+
                 contentPanel.add(fileField, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 10, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 0), 0, 0));
                 contentPanel.add(vSpacer1, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 10, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
                 contentPanel.add(vSpacer3, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 10, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
 
                 //---- indexField ----
-                indexField.setPreferredSize(new Dimension(720, 28));
-                indexField.setMinimumSize(new Dimension(720, 28));
-                contentPanel.add(indexField, new GridBagConstraints(1, 5, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                if (!isHtsget) {
+                    label2.setText("Index URL:");
+                    contentPanel.add(label2, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 5), 0, 0));
 
-                //---- label3 ----
-                label3.setText("<html><i>Specify url to an index file. <b>Required for BAM and indexed files</b></i>");
-                contentPanel.add(label3, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 10, 0), 0, 0));
+                    indexField.setPreferredSize(new Dimension(720, 28));
+                    indexField.setMinimumSize(new Dimension(720, 28));
+                    contentPanel.add(indexField, new GridBagConstraints(1, 5, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
+
+
+                    //---- label3 ----
+                    label3.setText("<html><i>Specify url to an index file. <b>Required for BAM and indexed files</b></i>");
+                    contentPanel.add(label3, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 10, 0), 0, 0));
+                }
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
 
             //======== buttonBar ========
             {
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
                 okButton.addActionListener(e -> okButtonActionPerformed(e));
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
                 cancelButton.addActionListener(e -> cancelButtonActionPerformed(e));
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }

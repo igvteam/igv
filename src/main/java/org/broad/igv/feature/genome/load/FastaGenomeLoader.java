@@ -1,10 +1,6 @@
 package org.broad.igv.feature.genome.load;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.Sequence;
-import org.broad.igv.feature.genome.SequenceWrapper;
-import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
-import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.feature.genome.fasta.FastaUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
@@ -56,10 +52,13 @@ public class FastaGenomeLoader extends GenomeLoader {
             name = file.getName();
         }
 
-        FastaIndexedSequence sequence = fastaPath.endsWith(".gz") ?
-                new FastaBlockCompressedSequence(fastaPath) :
-                new FastaIndexedSequence(fastaPath);
-        return new Genome(id, name, sequence, true);
+        GenomeConfig config = new GenomeConfig();
+        config.id = id;
+        config.name = name;
+        config.fastaURL = fastaPath;
+        config.indexURL = fastaIndexPath;
+
+        return new Genome(config);
     }
 
 

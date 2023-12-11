@@ -181,7 +181,7 @@ public class CmdLineParser {
 
         protected Option( char shortForm, String longForm,
                           boolean wantsValue ) {
-            this(new String(new char[]{shortForm}), longForm, wantsValue);
+            this(String.valueOf(shortForm), longForm, wantsValue);
         }
 
         private Option( String shortForm, String longForm, boolean wantsValue ) {
@@ -281,7 +281,7 @@ public class CmdLineParser {
             protected Integer parseValue( String arg, Locale locale )
                     throws IllegalOptionValueException {
                 try {
-                    return new Integer(arg);
+                    return Integer.valueOf(arg);
                 } catch (NumberFormatException e) {
                     throw new IllegalOptionValueException(this, arg);
                 }
@@ -303,7 +303,7 @@ public class CmdLineParser {
             protected Long parseValue( String arg, Locale locale )
                     throws IllegalOptionValueException {
                 try {
-                    return new Long(arg);
+                    return Long.valueOf(arg);
                 } catch (NumberFormatException e) {
                     throw new IllegalOptionValueException(this, arg);
                 }

@@ -65,7 +65,6 @@ public class DatasetDataSource extends AbstractDataSource {
         this.trackId = trackId;
         this.dataset = dataset;
 
-        // TODO -- remove this "instanceof" hack
         if (genome != null && genome.getHomeChromosome() != null) {
             if (genome.getHomeChromosome().equals(Globals.CHR_ALL)) {
                 if (dataset instanceof IGVDataset) {

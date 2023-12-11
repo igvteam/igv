@@ -466,13 +466,7 @@ public class IgvTools {
                 String ofile = nonOptionArgs[2];
                 Boolean pairOption = (Boolean) parser.getOptionValue(pairedCoverageOpt, false);
                 BamToBed.convert(new File(ifile), new File(ofile), pairOption);
-            } else if (command.equalsIgnoreCase(CMD_GEN_GENOME_LIST)) {
-                //Generate a genomes.txt list file based on a directory
-                //TODO Probably a better place for this. Users won't generally use it
-                File inDir = new File(ifile);
-                GenomeManager manager = GenomeManager.getInstance();
-                manager.generateGenomeList(inDir, nonOptionArgs[2], nonOptionArgs[3]);
-            } else if (command.equalsIgnoreCase(CMD_CONTACTS)) {
+            }  else if (command.equalsIgnoreCase(CMD_CONTACTS)) {
                 PairedUtils.extractInteractions(ifile, nonOptionArgs[2], Integer.parseInt(nonOptionArgs[3]));
             } else if (command.equalsIgnoreCase(CMD_DISCORDANT)) {
                 PairedUtils.extractUnexpectedPairs(ifile, nonOptionArgs[2]);
@@ -864,7 +858,7 @@ public class IgvTools {
             String[] tracknames = counter.getTrackNames(prefix + " ");
             p.setTrackParameters(TrackType.COVERAGE, trackLine, tracknames);
 
-            p.setSizeEstimate(((int) (genome.getNominalLength() / windowSizeValue)));
+            p.setSizeEstimate(((int) (genome.getWGLength() / windowSizeValue)));
 
             counter.parse();
 
@@ -1166,7 +1160,7 @@ public class IgvTools {
             }
         }
 
-        genome = genomeManager.loadGenome(genomeFile.getAbsolutePath(), null);
+        genome = genomeManager.loadGenome(genomeFile.getAbsolutePath());
         if (genome == null) {
             throw new PreprocessingException("Error loading: " + genomeFileOrID);
         }
