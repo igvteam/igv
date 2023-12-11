@@ -61,6 +61,7 @@ public class LoadFromURLMenuAction extends MenuAction {
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
     public static final String LOAD_FROM_HTSGET = "Load from htsget Server...";
     public static final String LOAD_TRACKHUB = "Load Track Hub...";
+
     private IGV igv;
 
     public LoadFromURLMenuAction(String label, int mnemonic, IGV igv) {
@@ -128,6 +129,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                                 String indexUrl = indexes[i];
                                 rl.setIndexPath(indexUrl);
                             }
+
                             if (isHtsGet) {
                                 rl.setHtsget(true);
                             }

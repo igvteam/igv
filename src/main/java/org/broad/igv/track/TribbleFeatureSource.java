@@ -562,14 +562,11 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                 int zoom = Math.max(0, frame.getZoom());
                 List<LocusScore> scores = getSummaryScoresForRange(chr, (int) position - 10, (int) position + 10, zoom);
 
-                // give a 2 pixel window, otherwise very narrow features will be missed.
-                double bpPerPixel = frame.getScale();
-                int minWidth = (int) (2 * bpPerPixel);    /* * */
-
                 if (scores == null) {
                     return "";
                 } else {
-                    LocusScore score = FeatureUtils.getFeatureAt(position, minWidth, scores);
+
+                    LocusScore score = FeatureUtils.getFeatureAt(position, frame.getScale(), scores);
                     return score == null ? "" : "Mean count: " + score.getScore();
                 }
             }
