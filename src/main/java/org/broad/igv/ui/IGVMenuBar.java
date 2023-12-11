@@ -172,8 +172,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         menus.add(createFileMenu());
         menus.add(createGenomesMenu());
-        menus.add(createViewMenu());
         menus.add(createTracksMenu());
+        menus.add(createViewMenu());
         menus.add(createRegionsMenu());
 
         refreshToolsMenu();
@@ -226,31 +226,20 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // igvtools
-        menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
+        JMenuItem toolsItem = new JMenuItem("Run igvtools...", KeyEvent.VK_T);
+        toolsItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 IgvToolsGui.launch(false, GenomeManager.getInstance().getGenomeId());
             }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        });
+        menuItems.add(toolsItem);
 
         // Motif finder
         menuItems.add(MotifFinderPlugin.getMenuItem());
 
         // BLAT
         menuItems.add(createBlatMenuItem());
-
-        // Combine data tracks
-        JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks");
-        combineDataItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                CombinedDataSourceDialog dialog = new CombinedDataSourceDialog(igv.getMainFrame());
-                dialog.setVisible(true);
-            }
-        });
-        menuItems.add(combineDataItem);
-
 
         MenuAction toolsMenuAction = new MenuAction("Tools", null);
         if (toolsMenu == null) {
@@ -277,57 +266,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
-
-        menuItems.add(new JSeparator());
-
-        // Load menu items
-        menuAction = new LoadFilesMenuAction("Load from File...", KeyEvent.VK_L, igv);
-        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_URL, KeyEvent.VK_U, igv);
-        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_HTSGET, 0, igv);
-        menuAction.setToolTipText(UIConstants.LOAD_HTSGET_TOOLTOP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new LoadFromServerAction("Load Hosted Tracks...", KeyEvent.VK_S, igv);
-        menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
-        loadTracksFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        loadTracksFromServerMenuItem.setVisible(genomeId != null && LoadFromServerAction.getNodeURLs(genomeId) != null);
-        menuItems.add(loadTracksFromServerMenuItem);
-
-        // Track hubs -- moved to Genomes menu
-//        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKHUB, KeyEvent.VK_S, igv);
-//        menuAction.setToolTipText(UIConstants.LOAD_TRACKHUB_TOOLTIP);
-//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-//
-//        menuAction = new SelectGenomeAnnotationTracksAction("Select Hub Tracks...", igv);
-//        selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-//        selectGenomeAnnotationsItem.setVisible(genome != null && genome.getHub() != null);
-//        menuItems.add(selectGenomeAnnotationsItem);
-//
-//        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_HTSGET, 0, igv);
-//        menuAction.setToolTipText(UIConstants.LOAD_HTSGET_TOOLTOP);
-//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        if (PreferencesManager.getPreferences().getAsBoolean(DB_ENABLED)) {
-            menuAction = new LoadFromDatabaseAction("Load from Database...", 0, igv);
-            menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        }
-
-        encodeMenuItem = MenuAndToolbarUtils.createMenuItem(new BrowseEncodeAction("Load from ENCODE (2012)...", KeyEvent.VK_E, igv));
-        encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(genomeId));
-        menuItems.add(encodeMenuItem);
-
-        menuItems.add(new JSeparator());
-        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
-        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuItems.add(new JSeparator());
 
         // Session menu items
         menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
@@ -380,7 +318,19 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(SAVE_SVG_IMAGE_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        // TODO -- change "Exit" to "Close" for BioClipse
+        menuItems.add(new JSeparator());
+
+        // Export track names and attributes -- if > 1 i sselected export those, otherwise export all
+        JMenuItem exportNames = new JMenuItem("Export Track Names and Attributes...");
+        exportNames.addActionListener(e12 -> {
+            Collection<Track> exportTracks = IGV.getInstance().getSelectedTracks();
+            if (exportTracks.size() <= 1) {
+                exportTracks = IGV.getInstance().getAllTracks();
+            }
+            exportTrackNames(exportTracks);
+        });
+        menuItems.add(exportNames);
+
         menuItems.add(new JSeparator());      // Exit
         menuAction =
                 new MenuAction("Exit", null, KeyEvent.VK_X) {
@@ -528,56 +478,89 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private JMenu createTracksMenu() {
 
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        String genomeId = genome == null ?  null : genome.getId();
+
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
 
+        // Load menu items
+        menuAction = new LoadFilesMenuAction("Load from File...", KeyEvent.VK_L, igv);
+        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_URL, KeyEvent.VK_U, igv);
+        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new LoadFromServerAction("Load Hosted Tracks...", KeyEvent.VK_S, igv);
+        menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
+        loadTracksFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        loadTracksFromServerMenuItem.setVisible(genomeId != null && LoadFromServerAction.getNodeURLs(genomeId) != null);
+        menuItems.add(loadTracksFromServerMenuItem);
+
+        if (PreferencesManager.getPreferences().getAsBoolean(DB_ENABLED)) {
+            menuAction = new LoadFromDatabaseAction("Load from Database...", 0, igv);
+            menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        }
+
+        encodeMenuItem = MenuAndToolbarUtils.createMenuItem(new BrowseEncodeAction("Load from ENCODE (2012)...", KeyEvent.VK_E, igv));
+        encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(genomeId));
+        menuItems.add(encodeMenuItem);
+
+
+        menuItems.add(new JSeparator());
+
+        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
+        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuItems.add(new JSeparator());
+
+        // Combine data tracks
+        JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks");
+        combineDataItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CombinedDataSourceDialog dialog = new CombinedDataSourceDialog(igv.getMainFrame());
+                dialog.setVisible(true);
+            }
+        });
+        menuItems.add(combineDataItem);
+
+        menuItems.add(new JSeparator());
+
         // Sort Context
-        menuAction = new SortTracksMenuAction("Sort Tracks...", KeyEvent.VK_S, IGV.getInstance());
+        menuAction = new SortTracksMenuAction("Order Tracks by Attribute...", KeyEvent.VK_S, IGV.getInstance());
         menuAction.setToolTipText(SORT_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new GroupTracksMenuAction("Group Tracks... ", KeyEvent.VK_G, IGV.getInstance());
+        menuAction = new GroupTracksMenuAction("Group Tracks by Attribute... ", KeyEvent.VK_G, IGV.getInstance());
         menuAction.setToolTipText(UIConstants.GROUP_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Filter Tracks
-        filterTracksAction = new FilterTracksMenuAction("Filter Tracks...", KeyEvent.VK_F, IGV.getInstance());
+        filterTracksAction = new FilterTracksMenuAction("Filter Tracks by Attribute...", KeyEvent.VK_F, IGV.getInstance());
         filterTracksAction.setToolTipText(UIConstants.FILTER_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(filterTracksAction));
 
         // Rename tracks
-        menuAction = new RenameTracksMenuAction("Rename Tracks... ", KeyEvent.VK_R, IGV.getInstance());
+        menuAction = new RenameTracksMenuAction("Rename Tracks by Attribute... ", KeyEvent.VK_R, IGV.getInstance());
         menuAction.setToolTipText(UIConstants.RENAME_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        // Overlay tracks
-        menuAction = new OverlayTracksMenuAction("Overlay Data Tracks... ", KeyEvent.VK_O, IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.OVERLAY_TRACKS_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Export track names and attributes -- if > 1 i sselected export those, otherwise export all
-        JMenuItem exportNames = new JMenuItem("Export Track Names and Attributes...");
-        exportNames.addActionListener(e12 -> {
-            Collection<Track> exportTracks = IGV.getInstance().getSelectedTracks();
-            if (exportTracks.size() <= 1) {
-                exportTracks = IGV.getInstance().getAllTracks();
-            }
-            exportTrackNames(exportTracks);
-        });
-        menuItems.add(exportNames);
-
-        menuItems.add(new JSeparator());
-
-        // Reset Tracks
-        menuAction = new FitDataToWindowMenuAction("Fit Data to Window", KeyEvent.VK_W, IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.FIT_DATA_TO_WINDOW_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        // Set track height
-        menuAction = new SetTrackHeightMenuAction("Set Track Height...", KeyEvent.VK_H, IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.SET_DEFAULT_TRACK_HEIGHT_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//        menuItems.add(new JSeparator());
+//
+//        // Reset Tracks
+//        menuAction = new FitDataToWindowMenuAction("Fit Data to Window", KeyEvent.VK_W, IGV.getInstance());
+//        menuAction.setToolTipText(UIConstants.FIT_DATA_TO_WINDOW_TOOLTIP);
+//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//
+//
+//        // Set track height
+//        menuAction = new SetTrackHeightMenuAction("Set Track Height...", KeyEvent.VK_H, IGV.getInstance());
+//        menuAction.setToolTipText(UIConstants.SET_DEFAULT_TRACK_HEIGHT_TOOLTIP);
+//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
         MenuAction dataMenuAction = new MenuAction("Tracks", null, KeyEvent.VK_K);
