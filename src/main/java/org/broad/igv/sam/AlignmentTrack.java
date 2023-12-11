@@ -879,8 +879,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     List<Alignment> features = row.alignments;
 
                     // No buffer for alignments,  you must zoom in far enough for them to be visible
-                    int buffer = 0;
-                    return FeatureUtils.getFeatureAt(position, buffer, features);
+                    return FeatureUtils.getFeatureAt(position, 0, features);
                 }
             }
         }

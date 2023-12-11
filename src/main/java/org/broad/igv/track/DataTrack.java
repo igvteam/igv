@@ -301,9 +301,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
             return null;
         } else {
             // give a 2 pixel window, otherwise very narrow features will be missed.
-            double bpPerPixel = frame.getScale();
-            int buffer = (int) (2 * bpPerPixel);    /* * */
-            return (LocusScore) FeatureUtils.getFeatureAt(position, buffer, scores);
+            return FeatureUtils.getFeatureAt(position, frame.getScale(), scores);
         }
     }
 

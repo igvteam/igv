@@ -426,10 +426,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             if (scores == null) {
                 return "";
             } else {
-                // give a +/- 2 pixel buffer, otherwise very narrow features will be missed.
-                double bpPerPixel = frame.getScale();
-                int minWidth = (int) (2 * bpPerPixel);    /* * */
-                LocusScore score = (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, scores);
+                LocusScore score = FeatureUtils.getFeatureAt(position, frame.getScale(), scores);
                 return score == null ? null : "Mean count: " + score.getScore();
             }
 
@@ -560,8 +557,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         if (possFeatures != null) {
             // give a minum 2 pixel or 1/2 bp window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
-            double flanking = 4 * bpPerPixel;
-            featureList = FeatureUtils.getAllFeaturesAt(position, flanking, possFeatures);
+            double minWidth = (int)  (2* bpPerPixel);
+            featureList = FeatureUtils.getAllFeaturesAt(position, minWidth, possFeatures);
         }
         return featureList;
     }

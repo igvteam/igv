@@ -303,14 +303,10 @@ public class FeatureCollectionSource implements FeatureSource {
             int zoom = Math.max(0, frame.getZoom());
             List<LocusScore> scores = getSummaryScoresForRange(chr, (int) position - 10, (int) position + 10, zoom);
 
-            // give a 2 pixel window, otherwise very narrow features will be missed.
-            double bpPerPixel = frame.getScale();
-            int minWidth = (int) (2 * bpPerPixel);    /* * */
-
             if (scores == null) {
                 return "";
             } else {
-                LocusScore score = (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, scores);
+                LocusScore score = (LocusScore) FeatureUtils.getFeatureAt(position, frame.getScale(), scores);
                 return score == null ? "" : "Mean count: " + score.getScore();
             }
         }
