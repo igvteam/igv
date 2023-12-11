@@ -290,7 +290,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private final Genome genome;
     private ExperimentType experimentType;
     private final AlignmentRenderer renderer;
-    private RenderOptions renderOptions;
+    RenderOptions renderOptions;
 
     private boolean removed = false;
     private boolean showGroupLine;
@@ -1211,6 +1211,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean linkedReads;
         private Boolean quickConsensusMode;
         private Boolean showMismatches;
+        private Boolean insertQualColoring;
         Boolean computeIsizes;
         private Double minInsertSizePercentile;
         private Double maxInsertSizePercentile;
@@ -1276,6 +1277,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         public void setViewPairs(boolean viewPairs) {
             this.viewPairs = viewPairs;
+        }
+
+        void setInsertQualColoring(boolean insertQualColoring) {
+            this.insertQualColoring = insertQualColoring;
         }
 
         void setComputeIsizes(boolean computeIsizes) {
@@ -1396,6 +1401,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return viewPairs;
         }
 
+        public boolean isInsertQualColoring() {
+            return insertQualColoring == null ? getPreferences().getAsBoolean(SAM_INSERT_QUAL_COLORING) : insertQualColoring;
+        }
         public boolean isComputeIsizes() {
             return computeIsizes == null ? getPreferences().getAsBoolean(SAM_COMPUTE_ISIZES) : computeIsizes;
         }

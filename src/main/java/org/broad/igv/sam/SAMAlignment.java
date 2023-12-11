@@ -46,6 +46,7 @@ import org.broad.igv.sam.mods.BaseModificationUtils;
 import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.sam.smrt.SMRTKinetics;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ultima.annotate.FlowBlockAnnotator;
 
 import java.awt.*;
 import java.util.*;
@@ -95,6 +96,8 @@ public class SAMAlignment implements Alignment {
     private SAMReadGroupRecord readGroupRecord;
 
     private int flags;
+
+    final private static FlowBlockAnnotator flowBlockAnnotator = new FlowBlockAnnotator();
 
     /**
      * Picard object upon which this SAMAlignment is based
@@ -771,6 +774,10 @@ public class SAMAlignment implements Alignment {
                             buf.append("Insertion (" + bases.length + " bases): " + new String(bases.copyOfRange(0, 25)) + "..." +
                                     new String(bases.copyOfRange(len - 25, len)) + "<br>");
                         }
+
+                        // extended annotation?
+                        if ( flowBlockAnnotator.handlesBlocks(block) )
+                            flowBlockAnnotator.appendBlockQualityAnnotation(this, block, buf);
                     }
                     atInsertion = true;
                 }
@@ -962,8 +969,10 @@ public class SAMAlignment implements Alignment {
 
                 byte quality = block.getQuality(offset);
                 buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
-                buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality) + "<br>");
-
+                buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality));
+                if ( flowBlockAnnotator.handlesBlocks(block) )
+                    flowBlockAnnotator.appendBlockAttrAnnotation(this, block, offset, buf);
+                buf.append("<br>");
                 break;
             }
         }

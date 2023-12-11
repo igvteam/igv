@@ -35,6 +35,7 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.sam.mods.BaseModificationRenderer;
@@ -48,6 +49,8 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.GreyscaleColorTable;
 import org.broad.igv.ui.color.HSLColorTable;
 import org.broad.igv.ui.color.PaletteColorTable;
+import org.broad.igv.ultima.render.ColorByTagValueList;
+import org.broad.igv.ultima.render.FlowIndelRendering;
 import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
@@ -101,9 +104,9 @@ public class AlignmentRenderer {
 
     // Indel colors
     public static Color purple = new Color(118, 24, 220);
-    private static final Color deletionColor = Color.black;
-    private static final Color skippedColor = new Color(150, 184, 200);
-    private static final Color unknownGapColor = new Color(0, 150, 0);
+    public static Color deletionColor = Color.black;
+    private static Color skippedColor = new Color(150, 184, 200);
+    private static Color unknownGapColor = new Color(0, 150, 0);
 
     // Bisulfite colors
     private static final Color bisulfiteColorFw1 = new Color(195, 195, 195);
@@ -131,6 +134,9 @@ public class AlignmentRenderer {
     private static Map<String, ColorTable> tagValueColors;
     private static ColorTable defaultTagColors;
     public static HashMap<Character, Color> nucleotideColors;
+
+    final private static ColorByTagValueList colorByTagValueList = new ColorByTagValueList();
+    final private static FlowIndelRendering flowIndelRendering = new FlowIndelRendering();
 
     private static void initializeTagTypes() {
         // pre-seed from orientation colors
@@ -654,8 +660,15 @@ public class AlignmentRenderer {
                             y,
                             h,
                             gapPxEnd - gapPxStart - 2,
+                            context.translateX,
                             null,
+                            alignment,
                             context);
+                }
+
+                // gap extensions
+                if ( flowIndelRendering.handlesAlignment(alignment) ) {
+                    flowIndelRendering.renderDeletionGap(alignment, gap, y, h, gapPxStart, gapPxEnd - gapPxStart, context, renderOptions);
                 }
             }
         }
@@ -904,15 +917,21 @@ public class AlignmentRenderer {
                                 y,
                                 h,
                                 (int) pxWidthExact,
+                                context.translateX,
                                 aBlock,
-                                context );
+                                alignment,
+                                context);
                     } else {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D ig = context.getGraphics();
                         ig.setColor(purple);
-                        ig.fillRect(x, y, 2, h);
-                        ig.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
-                        ig.fillRect(x - pxWing, y + h - 2, 2 + 2 * pxWing, 2);
+                        if ( flowIndelRendering.handlesAlignment(alignment) ) {
+                            flowIndelRendering.renderSmallInsertion(alignment, aBlock, context, h, x, y, renderOptions);
+                        } else {
+                            ig.fillRect(x, y, 2, h);
+                            ig.fillRect(x - pxWing, y, 2 + 2 * pxWing, 2);
+                            ig.fillRect(x - pxWing, y + h - 2, 2 + 2 * pxWing, 2);
+                        }
 
                         aBlock.setPixelRange(context.translateX + x - pxWing, context.translateX + x + 2 + pxWing);
                     }
@@ -1018,7 +1037,7 @@ public class AlignmentRenderer {
     }
 
     private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter,
-                                     int pxTop, int pxH, int pxWmax, AlignmentBlock insertionBlock, RenderContext context) {
+                                     int pxTop, int pxH, int pxWmax, int translateX, AlignmentBlock insertionBlock, Alignment alignment, RenderContext context) {
 
         final int pxPad = 2;   // text padding in the label
         final int pxWing = (pxH > 10 ? 2 : 1);  // width of the cursor "wing"
@@ -1043,8 +1062,12 @@ public class AlignmentRenderer {
         g.fillRect(pxLeft, pxTop, pxRight - pxLeft, pxH);
 
         if (isInsertion && pxH > 5) {
-            g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
-            g.fillRect(pxLeft - pxWing, pxTop + pxH - 2, pxRight - pxLeft + 2 * pxWing, 2);
+            if ( flowIndelRendering.handlesAlignment(alignment) ) {
+                flowIndelRendering.renderSmallInsertionWings(alignment, insertionBlock, context, pxH, pxTop, pxRight, pxLeft, track.renderOptions);
+            } else {
+                g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
+                g.fillRect(pxLeft - pxWing, pxTop + pxH - 2, pxRight - pxLeft + 2 * pxWing, 2);
+            }
         } // draw "wings" For insertions
 
         if (doesTextFit) {
@@ -1056,6 +1079,104 @@ public class AlignmentRenderer {
             insertionBlock.setPixelRange(context.translateX + pxLeft, context.translateX + pxRight);
         }
     }
+
+    public void renderExpandedInsertion(InsertionMarker i,
+                                        List<Alignment> alignments,
+                                        RenderContext context,
+                                        Rectangle rect,
+                                        boolean leaveMargin) {
+        double origin = context.getOrigin();
+        double locScale = context.getScale();
+        if ((alignments != null) && (alignments.size() > 0)) {
+
+            Graphics2D g = context.getGraphics2D("INSERTIONS");
+            double dX = 1 / context.getScale();
+            int fontSize = (int) Math.min(dX, 12);
+            if (fontSize >= 8) {
+                Font f = FontManager.getFont(Font.BOLD, fontSize);
+                g.setFont(f);
+            }
+
+            for (Alignment alignment : alignments) {
+                if (alignment.getEnd() < i.position) continue;
+                if (alignment.getStart() > i.position) break;
+                AlignmentBlock insertion = alignment.getInsertionAt(i.position);
+                if (insertion != null) {
+
+                    // Compute the start and dend of the alignment in pixels
+                    double pixelStart = (insertion.getStart() - origin) / locScale;
+                    double pixelEnd = (insertion.getEnd() - origin) / locScale;
+                    int x = (int) pixelStart;
+
+                    // If any any part of the feature fits in the track rectangle draw  it
+                    if (pixelEnd < rect.x || pixelStart > rect.getMaxX()) {
+                        continue;
+                    }
+
+                    int bpWidth = insertion.getBasesLength();
+                    double pxWidthExact = ((double) bpWidth) / locScale;
+                    int h = (int) Math.max(1, rect.getHeight() - 2);
+                    int y = (int) (rect.getY() + (rect.getHeight() - h) / 2) - 1;
+
+                    if (!insertion.hasBases()) {
+                        g.setColor(purple);
+                        g.fillRect(x, y, (int) pxWidthExact, h);
+
+                    } else {
+                        drawExpandedInsertionBases(x, context, rect, insertion, leaveMargin);
+                    }
+                }
+            }
+        }
+    }
+
+
+    private void drawExpandedInsertionBases(int pixelPosition,
+                                            RenderContext context,
+                                            Rectangle rect,
+                                            AlignmentBlock block,
+                                            boolean leaveMargin) {
+        Graphics2D g = context.getGraphics2D("INSERTIONS");
+        ByteSubarray bases = block.getBases();
+        int padding = block.getPadding();
+
+        double locScale = context.getScale();
+        double origin = context.getOrigin();
+
+        // Compute bounds
+        int pY = (int) rect.getY();
+        int dY = (int) rect.getHeight();
+        int dX = (int) Math.max(1, (1.0 / locScale));
+
+        final int size = bases.length + padding;
+        for (int p = 0; p < size; p++) {
+
+            char c = p < padding ? '-' : (char) bases.getByte(p - padding);
+
+            Color color = SequenceRenderer.nucleotideColors.get(c);
+            if (color == null) {
+                color = Color.black;
+            }
+
+            // If there is room for text draw the character, otherwise
+            // just draw a rectangle to represent the
+            int pX = (int) (pixelPosition + (p / locScale));
+
+            // Don't draw out of clipping rect
+            if (pX > rect.getMaxX()) {
+                break;
+            } else if (pX + dX < rect.getX()) {
+                continue;
+            }
+            BaseRenderer.drawBase(g, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), false, null);
+        }
+
+        int leftX = pixelPosition + context.translateX;
+        int rightX = leftX + rect.width;
+        block.setPixelRange(leftX, rightX);
+
+    }
+
 
     private Color getAlignmentColor(Alignment alignment, AlignmentTrack track) {
 
@@ -1205,7 +1326,7 @@ public class AlignmentRenderer {
             case TAG:
                 final String tag = renderOptions.getColorByTag();
                 if (tag != null) {
-                    Object tagValue = alignment.getAttribute(tag);
+                    Object tagValue = !colorByTagValueList.handlesTag(tag) ? alignment.getAttribute(tag) : colorByTagValueList.getValueForColorByTag(alignment, tag);
                     if (tagValue != null) {
 
                         ColorTable ctable;

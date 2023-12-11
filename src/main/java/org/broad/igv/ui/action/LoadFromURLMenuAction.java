@@ -33,11 +33,15 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.util.GoogleUtils;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
+import org.broad.igv.ui.IGVMenuBar;
 
 import javax.swing.*;
 import java.awt.*;
@@ -205,7 +209,6 @@ public class LoadFromURLMenuAction extends MenuAction {
                 AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucket, key);
                 if (!res.isObjectAvailable()) {
                     MessageUtils.showErrorMessage(res.getErrorReason(), null);
-                    return;
                 }
             }
         } catch (NullPointerException npe) {
