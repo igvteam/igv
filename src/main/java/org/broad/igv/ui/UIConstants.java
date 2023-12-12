@@ -77,32 +77,19 @@ public class UIConstants {
 
     static final public String EXPORT_REGION_TOOLTIP = "Save all defined regions to a file";
     static final public String IMPORT_REGION_TOOLTIP = "Load regions from a file";
-
     static final public String HELP_TOOLTIP = "Open web help page";
     static final public String ABOUT_TOOLTIP = "Display application information";
-
     static final public String RESET_FACTORY_TOOLTIP = "Restores all user preferences to their default settings.";
     public static final String REGION_NAVIGATOR_TOOLTIP = "Navigate regions";
-
-
     static final public String CLICK_ITEM_TO_EDIT_TOOLTIP = "Click this item bring up its editor";
     static final public String CHANGE_GENOME_TOOLTIP = "Switch the current genome";
-
     static final public String PREFERENCE_TOOLTIP = "Set user specific preferences";
     static final public String SHOW_HEATMAP_LEGEND_TOOLTIP = "Edit color legends and scales";
-
-    final public static String OVERWRITE_SESSION_MESSAGE =
-            "<html>Opening a session will unload all current data. " + "<br>Are you sure you wish to continue?";
-    final public static String CANNOT_ACCESS_SERVER_GENOME_LIST = "The Genome server is currently inaccessible.";
     final public static int NUMBER_OF_RECENT_SESSIONS_TO_LIST = 10;
     final public static String DEFAULT_SESSION_FILE = "igv_session" + Globals.SESSION_FILE_EXTENSION;
-    static final public String SERVER_BASE_URL = "http://www.broadinstitute.org/";
     static final public Color LIGHT_YELLOW = new Color(255, 244, 201);
-
     final public static Color LIGHT_GREY = new Color(238, 239, 240);
-
     final public static Color TRACK_BORDER_GRAY = new Color(240, 240, 240);
-
     static final public String REMOVE_GENOME_LIST_MENU_ITEM = "Remove Imported Genomes...";
     static final public String GENOME_LIST_SEPARATOR = "--SEPARATOR--";
     static final public int DEFAULT_DOUBLE_CLICK_INTERVAL = 400;

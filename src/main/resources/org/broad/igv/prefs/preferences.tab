@@ -34,14 +34,27 @@ COLOR.G	G	color	209,113,5
 COLOR.N	n	color	128,128,128
 
 #Tracks
-IGV.chart.track.height	Default numeric track height (pixels)	integer	40
-IGV.track.height	Default feature track height (pixels)	integer	15
-TRACK_ATTRIBUTE_NAME_KEY	Sample attribute key for track names	string	null
-EXPAND_FEATURE_TRACKS	Expand feature tracks	boolean	FALSE
-NORMALIZE_COVERAGE	Normalize coverage data (.tdf files only)	boolean	FALSE
-##Heatmaps
+
+##Annotation Track Defaults
+IGV.track.height	Default annotation track height	integer	15
+EXPAND_FEATURE_TRACKS	Expand annotation tracks	boolean	FALSE
+
+##Wig Track Defaults
+IGV.chart.track.height	Default wig track height 	integer	40
+CHART.DRAW_AXIS	Label Y axis	boolean	FALSE
+CHART.AUTOSCALE	Continuous autoscale	boolean	FALSE
+CHART.SHOW_DATA_RANGE	Show data range	boolean	TRUE
+
+##Segmented Copy Number Track Defaults
+CN_FREQ.AMP_THRESHOLD	CN freq amplification threshold	float	0.1
+CN_FREQ.DEL_THRESHOLD	CN freq deletion threshold	float	-0.1
 NO_DATA.COLOR	 No data	color	216,216,216
 NO_CALL.COLOR	 No call	color	150,150,150
+COLOR_LEGENDS	Color Legends	colorScale
+
+##Miscellaneous
+TRACK_ATTRIBUTE_NAME_KEY	Sample attribute key for track names	string	null
+NORMALIZE_COVERAGE	Normalize coverage data (.tdf files only)	boolean	FALSE
 
 #Variants
 
@@ -54,9 +67,7 @@ AF_REF.COLOR	Allele frequency - reference	color	0,0,220
 AF_VAR.COLOR	Allele frequency - variant	color	255,0,0
 VARIANT_COLOR_BY_ALLELE_FREQ	Color by allele frequency (uncheck to color by allele fraction)	boolean	TRUE
 
-#Mutations
-info	Settings on this tab apply to TCGA  "maf" and "mut" files.
-##Color Options
+##Mutation Colors - Settings below apply to TCGA  "maf" and "mut" files.
 COVER_OVERLAY_KEY	Color Mutations	boolean	TRUE
 MUTATION_INDEL_COLOR_KEY	Indel	color	0,200,0
 MUTATION_MISSENSE_COLOR_KEY	Missense	color	170,20,240
@@ -69,19 +80,7 @@ MUTATION_Non-coding_Transcript_COLOR	Non-coding Transcript	color	0,0,150
 MUTATION_Other_AA_changing_COLOR	Other AA Changing	color	0,150,150
 MUTATION_Other_likely_neutral_COLOR	Other Likely Neutral	color	225,180,225
 MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
-##Coordinate System
-MUT_COORDS	Mut file coordinate convention. 0 = zero based half-open, 1 = one based fully closed.	select 0|1	0
 
-#Charts
-CHART.DRAW_TOP_BORDER	Draw top border	boolean	FALSE
-CHART.DRAW_BOTTOM_BORDER	Draw bottom border	boolean	FALSE
-CHART.COLOR_BORDERS	Color borders	boolean	TRUE
-CHART.DRAW_TRACK_NAME	Draw track label	boolean	FALSE
-CHART.DRAW_AXIS	Label Y axis	boolean	FALSE
-CHART.AUTOSCALE	Continuous autoscale	boolean	FALSE
-CHART.SHOW_DATA_RANGE	Show data range	boolean	TRUE
-CN_FREQ.AMP_THRESHOLD	CN freq amplification threshold	float	0.1
-CN_FREQ.DEL_THRESHOLD	CN freq deletion threshold	float	-0.1
 
 #Alignments
 info	Default settings for alignment tracks.  A subset of these properties can be overriden for RNA and 3rd generation data.

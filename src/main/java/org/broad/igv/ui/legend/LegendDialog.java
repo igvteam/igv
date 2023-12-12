@@ -43,14 +43,9 @@ import java.awt.event.ActionListener;
  */
 public class LegendDialog extends org.broad.igv.ui.IGVDialog  {
 
-    public LegendDialog(Frame owner) {
-        super(owner);
+    public LegendDialog() {
         initComponents();
-    }
-
-
-    public LegendDialog(Frame owner, boolean b) {
-        super(owner, b);
+        this.setModal(true);
     }
 
     private void okButtonActionPerformed(ActionEvent e) {
@@ -413,7 +408,7 @@ public class LegendDialog extends org.broad.igv.ui.IGVDialog  {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                LegendDialog dialog = new LegendDialog(new javax.swing.JFrame());
+                LegendDialog dialog = new LegendDialog();
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 
                     public void windowClosing(java.awt.event.WindowEvent e) {

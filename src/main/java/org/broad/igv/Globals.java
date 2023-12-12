@@ -55,7 +55,6 @@ public class Globals {
     private static boolean testing = false;
     public static int CONNECT_TIMEOUT = 20000;        // 20 seconds
     public static int READ_TIMEOUT = 1000 * 3 * 60;   // 3 minutes
-    public static int TOKEN_EXPIRE_GRACE_TIME = 1000 * 60; // 1 minute
 
     /**
      * Field description
@@ -107,22 +106,7 @@ public class Globals {
     //However, the path environment variable will be checked if the executable
     //is named rather than the full path given
     public static String BEDtoolsPath = "/usr/local/bin/bedtools"; //"bedtools"
-    public static boolean toolsMenuEnabled = false;
 
-    public static String downloadURL = "https://software.broadinstitute.org/software/igv/download";
-    static {
-        Properties properties = new Properties();
-        try {
-            properties.load(Globals.class.getResourceAsStream("/resources/about.properties"));
-        } catch (Exception e) {
-            log.error("*** Error retrieving version and build information! ***", e);
-        }
-        VERSION = properties.getProperty("version", "???");
-        BUILD = properties.getProperty("build", "???");
-        TIMESTAMP = properties.getProperty("timestamp", "???");
-        BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
-
-    }
 
     public static void setHeadless(boolean bool) {
         headless = bool;
@@ -162,23 +146,6 @@ public class Globals {
 
     public static void setBatch(boolean batch) {
         Globals.batch = batch;
-    }
-
-
-    /**
-     * Checks whether the current JVM is the minimum specified version
-     * or higher. Only compares up to as many characters as
-     * in {@code minVersion}
-     *
-     * @param minVersion
-     * @return
-     */
-    public static boolean checkJavaVersion(String minVersion) {
-        String curVersion = System.getProperty(JAVA_VERSION_STRING);
-        if (curVersion.length() >= minVersion.length()) {
-            curVersion = curVersion.substring(0, minVersion.length());
-        }
-        return curVersion.compareTo(minVersion) >= 0;
     }
 
     public static double log2(final double value) {

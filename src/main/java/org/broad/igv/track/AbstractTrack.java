@@ -1080,7 +1080,7 @@ public abstract class AbstractTrack implements Track {
 
         if (element.hasAttribute("colorScale")) {
             try {
-                this.colorScale = (ContinuousColorScale) ColorScaleFactory.getScaleFromString(element.getAttribute("colorScale"));
+                this.colorScale = ColorScaleFactory.getScaleFromString(element.getAttribute("colorScale"));
             } catch (Exception e) {
                 log.error("Unrecognized colorScale: " + element.getAttribute("colorScale"));
             }

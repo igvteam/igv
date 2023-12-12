@@ -35,6 +35,7 @@ import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.List;
@@ -74,36 +75,16 @@ public class MainPanel extends JPanel implements Paintable {
 
 
     public MainPanel(IGV igv) {
+
         this.igv = igv;
+
         initComponents();
 
-        //Load IGV logo
-//        try {
-//            BufferedImage logo = ImageIO.read(getClass().getResource("resources/IGV_64.png"));
-//            JLabel picLabel = new JLabel(new ImageIcon(logo));
-//            picLabel.setVerticalAlignment(SwingConstants.CENTER);
-//            nameHeaderPanel.add(picLabel);
-//        } catch (IOException e) {
-//            //pass
-//        }
-
-        addComponentListener(new ComponentListener() {
-
+        addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentResized(ComponentEvent componentEvent) {
                 revalidateTrackPanels();
                 igv.repaint();
-            }
-
-            public void componentMoved(ComponentEvent componentEvent) {
-                //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            public void componentShown(ComponentEvent componentEvent) {
-                //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            public void componentHidden(ComponentEvent componentEvent) {
-                //To change body of implemented methods use File | Settings | File Templates.
             }
         });
     }
