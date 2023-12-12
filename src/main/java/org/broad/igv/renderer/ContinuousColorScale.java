@@ -34,7 +34,6 @@ package org.broad.igv.renderer;
 
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
@@ -60,7 +59,7 @@ public class ContinuousColorScale extends AbstractColorScale {
     private Color minColor;
     private Color midColor = Color.white;
     private Color maxColor;
-    private Color[] colors;
+    private Color[] colorCache;
     private boolean defaultCS = false;
 
 
@@ -188,32 +187,32 @@ public class ContinuousColorScale extends AbstractColorScale {
 
     public void setPosEnd(double posEnd) {
         this.posEnd = posEnd;
-        colors = null;
+        colorCache = null;
     }
 
     public void setNegStart(double negStart) {
         this.negStart = negStart;
-        colors = null;
+        colorCache = null;
     }
 
     public void setPosStart(double posStart) {
         this.posStart = posStart;
-        colors = null;
+        colorCache = null;
     }
 
     public void setMinColor(Color minColor) {
         this.minColor = minColor;
-        colors = null;
+        colorCache = null;
     }
 
     public void setMidColor(Color midColor) {
         this.midColor = midColor;
-        colors = null;
+        colorCache = null;
     }
 
     public void setMaxColor(Color maxColor) {
         this.maxColor = maxColor;
-        colors = null;
+        colorCache = null;
     }
 
     /**
@@ -244,29 +243,29 @@ public class ContinuousColorScale extends AbstractColorScale {
     private double delta;
 
     private void initColors() {
-        colors = new Color[251];
-        delta = (posEnd - negEnd) / colors.length;
+        colorCache = new Color[251];
+        delta = (posEnd - negEnd) / colorCache.length;
         if (isUseDoubleGradient()) {
             ColorGradient csPos = new ColorGradient(posStart, posEnd, midColor, maxColor);
             ColorGradient csNeg = new ColorGradient(negEnd, negStart, minColor, midColor);
 
-            for (int i = 0; i < colors.length; i++) {
+            for (int i = 0; i < colorCache.length; i++) {
                 double x = getMinimum() + i * delta;
                 if ((x > negStart) && (x < posStart)) {
-                    colors[i] = midColor;
+                    colorCache[i] = midColor;
                 } else if (x <= negStart) {
-                    colors[i] = csNeg.getColor(x);
+                    colorCache[i] = csNeg.getColor(x);
                 } else {
-                    colors[i] = csPos.getColor(x);
+                    colorCache[i] = csPos.getColor(x);
                 }
             }
 
         } else {
 
             ColorGradient cs = new ColorGradient(negEnd, posEnd, minColor, maxColor);
-            for (int i = 0; i < colors.length; i++) {
+            for (int i = 0; i < colorCache.length; i++) {
                 double x = getMinimum() + i * delta;
-                colors[i] = cs.getColor(x);
+                colorCache[i] = cs.getColor(x);
             }
         }
     }
@@ -280,7 +279,7 @@ public class ContinuousColorScale extends AbstractColorScale {
     @Override
     public Color getColor(float val) {
 
-        if (colors == null) {
+        if (colorCache == null) {
             initColors();
         }
 
@@ -295,8 +294,8 @@ public class ContinuousColorScale extends AbstractColorScale {
         } else {
             //double f = (val - getMinimum()) / (getMaximum() - getMinimum());
             int index = (int) Math.round((val - negEnd) / delta);
-            index = Math.max(0, Math.min(index, colors.length - 1));
-            return colors[index];
+            index = Math.max(0, Math.min(index, colorCache.length - 1));
+            return colorCache[index];
         }
     }
 

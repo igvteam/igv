@@ -171,7 +171,7 @@ public class IGV implements IGVEventObserver {
     /**
      * Creates new IGV
      */
-    private IGV(Frame frame) {
+    private  IGV(Frame frame) {
 
         theInstance = this;
 

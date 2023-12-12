@@ -4,10 +4,13 @@ import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.oauth.OAuthUtils;
+import org.broad.igv.renderer.ColorScaleFactory;
+import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorSwatch;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
+import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
@@ -18,6 +21,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -25,6 +29,7 @@ import java.util.*;
 
 import static org.broad.igv.prefs.Constants.MUTATION_COLOR_TABLE;
 import static org.broad.igv.prefs.Constants.PROVISIONING_URL;
+import static org.broad.igv.ui.UIConstants.SHOW_HEATMAP_LEGEND_TOOLTIP;
 
 public class PreferencesEditor {
 
@@ -196,6 +201,17 @@ public class PreferencesEditor {
                             label.setToolTipText(pref.getComment());
                             comboBox.setToolTipText(pref.getComment());
                         }
+                    } else if (pref.getKey().equals("COLOR_LEGENDS")) {
+                        JButton legendButton = new JButton(pref.getLabel());
+                        legendButton.addActionListener(e -> {
+                            LegendDialog dlg = new LegendDialog();
+                            dlg.setLocationRelativeTo(parent);
+                            dlg.setVisible(true);
+
+                        });
+                        legendButton.setToolTipText(SHOW_HEATMAP_LEGEND_TOOLTIP);
+                        grid.addLayoutComponent(legendButton, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(3, 5, 2, 3), 2, 2));
+                        group.add(legendButton);
                     } else if (pref.getType().startsWith("color")) {
                         String colorString = preferences.get(pref.getKey());
                         Color c;
@@ -214,7 +230,6 @@ public class PreferencesEditor {
                         grid.addLayoutComponent(colorSwatch, new GridBagConstraints(1, row, 3, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 2, 2, 5), 2, 2));
                         group.add(label);
                         group.add(colorSwatch);
-
                     } else {
                         JLabel label = new JLabel(pref.getLabel());
 

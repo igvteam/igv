@@ -44,6 +44,9 @@ public class MenuAction extends AbstractAction {
 
     private String toolTipText;
 
+    public MenuAction() {
+    }
+
     /**
      * Creates a new instance of MenuAction
      */

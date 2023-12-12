@@ -269,6 +269,7 @@ public class IGVPreferences {
 
     /**
      * Update preference.  This command is ignored if in batch mode *
+     *
      * @param key
      * @param value
      */
@@ -315,8 +316,8 @@ public class IGVPreferences {
     }
 
     private void checkForRestartChanges(Map<String, String> updatedPreferenceMap) {
-        for(String key : RESTART_KEYS) {
-            if(updatedPreferenceMap.containsKey(key)) {
+        for (String key : RESTART_KEYS) {
+            if (updatedPreferenceMap.containsKey(key)) {
                 MessageUtils.showMessage("Preference changes will take effect after restart.");
                 return;
             }
@@ -325,7 +326,7 @@ public class IGVPreferences {
 
     private void checkForGoogleMenuChange(Map<String, String> updatedPreferenceMap) {
 
-        if(updatedPreferenceMap.containsKey(ENABLE_GOOGLE_MENU) && IGV.hasInstance()) {
+        if (updatedPreferenceMap.containsKey(ENABLE_GOOGLE_MENU) && IGV.hasInstance()) {
             try {
                 IGVMenuBar.getInstance().enableGoogleMenu(getAsBoolean(ENABLE_GOOGLE_MENU));
             } catch (IOException e) {
@@ -719,7 +720,7 @@ public class IGVPreferences {
         if (scale == null && scaledTypes.contains(type)) {
             String colorScaleString = get(COLOR_SCALE_KEY + type.toString(), null);
             if (colorScaleString != null) {
-                scale = (ContinuousColorScale) ColorScaleFactory.getScaleFromString(colorScaleString);
+                scale = ColorScaleFactory.getScaleFromString(colorScaleString);
             } else {
                 scale = getDefaultColorScale(type);
             }
