@@ -43,7 +43,7 @@ import java.awt.event.MouseWheelListener;
 /**
  * @author jrobinso
  */
-public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
+public class TrackPanelScrollPane extends JScrollPane implements Paintable {
 
     private static Logger log = LogManager.getLogger(TrackPanelScrollPane.class);
 
@@ -51,10 +51,10 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
     boolean isScrolling = false;
 
     public TrackPanelScrollPane() {
-        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
+       // setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
         setForeground(new java.awt.Color(153, 153, 153));
         setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         getVerticalScrollBar().setUnitIncrement(16);
 
         addMouseWheelListener(new MouseWheelListener() {
@@ -105,14 +105,6 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
     public String getTrackPanelName() {
         return trackPanel.getName();
     }
-
-    public void minimizeHeight() {
-        int prefHeight = trackPanel.getPreferredPanelHeight();
-        if (prefHeight < trackPanel.getViewportHeight()) {
-            this.setSize(getWidth(), prefHeight);
-        }
-    }
-
     public DataPanelContainer getDataPanel() {
         return trackPanel.getDataPanelContainer();
     }
@@ -158,5 +150,17 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
         } else {
             return getHeight();  // This is the height of the scroll pane, the visible height in the UI
         }
+    }
+
+    @Override
+    public void setSize(int width, int height) {
+        super.setSize(width, height);
+        System.out.println("Set size " + width + " " + height);
+    }
+
+    @Override
+    public void setSize(Dimension d) {
+        super.setSize(d);
+        System.out.println("Set size " + d);
     }
 }

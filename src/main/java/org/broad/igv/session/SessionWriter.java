@@ -396,19 +396,21 @@ public class SessionWriter {
 
     private void writePanelLayout(Element globalElement, Document document) {
 
-        double[] dividerFractions = IGV.getInstance().getMainPanel().getDividerFractions();
-        if (dividerFractions.length > 0) {
+        //TODO -- write component size?
 
-            Element panelLayout = document.createElement(SessionElement.PANEL_LAYOUT);
-            globalElement.appendChild(panelLayout);
-
-            StringBuffer locString = new StringBuffer();
-            locString.append(dividerFractions[0]);
-            for (int i = 1; i < dividerFractions.length; i++) {
-                locString.append("," + dividerFractions[i]);
-            }
-            panelLayout.setAttribute("dividerFractions", locString.toString());
-        }
+//        double[] dividerFractions = IGV.getInstance().getMainPanel().getDividerFractions();
+//        if (dividerFractions.length > 0) {
+//
+//            Element panelLayout = document.createElement(SessionElement.PANEL_LAYOUT);
+//            globalElement.appendChild(panelLayout);
+//
+//            StringBuffer locString = new StringBuffer();
+//            locString.append(dividerFractions[0]);
+//            for (int i = 1; i < dividerFractions.length; i++) {
+//                locString.append("," + dividerFractions[i]);
+//            }
+//            panelLayout.setAttribute("dividerFractions", locString.toString());
+//        }
     }
 
     /**

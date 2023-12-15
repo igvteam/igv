@@ -77,7 +77,7 @@ public class ClusterTrack extends AbstractTrack {
 
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
         return binnedClusters.size() * rowHeight;
     }
 

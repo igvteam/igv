@@ -71,7 +71,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     List<GroupExtent> groupExtents = new ArrayList();
     BufferedImage dndImage = null;
-    TrackGroup selectedGroup = null;
     boolean showGroupNames = true;
     boolean showSampleNamesWhenGrouped = false;
 
@@ -218,17 +217,16 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         for (Track track : tmp) {
             if (track == null) continue;
             track.setY(regionY);
-            int trackHeight = track.getHeight();
+            int trackHeight = track.getContentHeight();
             if (track.isVisible()) {
 
                 if (regionY + trackHeight >= clipRect.y && regionY < clipRect.getMaxY()) {
                     int width = getWidth();
-                    int height = track.getHeight();
+                    int height = track.getContentHeight();
 
                     Rectangle region = new Rectangle(regionX, regionY, width, height);
                     addMousableRegion(new MouseableRegion(region, track));
 
-                    if (!isGrouped() || showSampleNamesWhenGrouped) {
                         Rectangle rect = new Rectangle(regionX, regionY, width, height);
                         //Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
                         if (!snapshot && track.isSelected()) {
@@ -238,7 +236,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                         }
                         graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
                         track.renderName(graphics2D, rect, visibleRect);
-                    }
+
 
                 }
                 regionY += trackHeight;
@@ -266,41 +264,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         DropListener dndListener = new DropListener(this);
         addGhostDropListener(dndListener);
     }
-
-
-    @Override
-    protected void openPopupMenu(TrackClickEvent te) {
-
-        ArrayList<Component> extraItems = null;
-        if (isGrouped()) {
-            extraItems = new ArrayList();
-
-            final JMenuItem item = new JCheckBoxMenuItem("Show group names");
-            item.setSelected(showGroupNames);
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    showGroupNames = item.isSelected();
-                    repaint();
-                }
-            });
-            extraItems.add(item);
-
-            final JMenuItem item2 = new JCheckBoxMenuItem("Show sample names");
-            item2.setSelected(showSampleNamesWhenGrouped);
-            item2.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    showSampleNamesWhenGrouped = item2.isSelected();
-                    repaint();
-                }
-            });
-            extraItems.add(item2);
-        }
-
-        super.openPopupMenu(te, extraItems);
-
-
-    }
-
 
     public String getTooltipTextForLocation(int x, int y) {
 
@@ -383,18 +346,8 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             requestFocus();
             grabFocus();
 
-            boolean isGrouped = isGrouped();
-
             if (e.isPopupTrigger()) {
-                if (isGrouped) {
-                    clearTrackSelections();
-                    TrackGroup g = getGroup(e.getY());
-                    if (null == g || g == selectedGroup) {
-                        selectedGroup = null;
-                    } else {
-                        selectGroup(g);
-                    }
-                } else if (!isTrackSelected(e)) {
+                if (!isTrackSelected(e)) {
                     clearTrackSelections();
                     selectTracks(e);
                 }
@@ -402,16 +355,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                 openPopupMenu(te);
             } // meta (mac) or control,  toggle selection]
             else if (e.getButton() == MouseEvent.BUTTON1) {
-
-                if (isGrouped) {
-                    clearTrackSelections();
-                    TrackGroup g = getGroup(e.getY());
-                    if (g == selectedGroup) {
-                        selectedGroup = null;
-                    } else {
-                        selectGroup(getGroup(e.getY()));
-                    }
-                } else {
                     if (e.isMetaDown() || e.isControlDown()) {
                         toggleTrackSelections(e);
                     } else if (e.isShiftDown()) {
@@ -420,11 +363,9 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                         clearTrackSelections();
                         selectTracks(e);
                     }
-                }
-            } else {
-                if (isGrouped) {
 
-                } else if (!isTrackSelected(e)) {
+            } else {
+                 if (!isTrackSelected(e)) {
                     clearTrackSelections();
                     selectTracks(e);
                 }
@@ -458,16 +399,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                 glassPane.setImage(null);
 
                 fireGhostDropEvent(new GhostDropEvent(dragStart, eventPoint, dragTracks));
-
-                if (selectedGroup != null) {
-                    int idx = getGroupGapNumber(e.getY());
-                    TrackPanel dataTrackView = (TrackPanel) getParent();
-                    dataTrackView.moveGroup(selectedGroup, idx);
-                    dataTrackView.repaint();
-                }
-                selectedGroup = null;
-
-
             }
 
             if (e.isPopupTrigger()) {
@@ -515,13 +446,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                 isDragging = true;
                 dragTracks.clear();
                 dragTracks.addAll(IGV.getInstance().getSelectedTracks());
-
-
-                if (getGroups().size() > 0) {
-                    selectedGroup = getGroup(e.getY());
-                } else {
-                    selectedGroup = null;
-                }
 
                 // Code below paints target component on the dndImage.  It needs modified to paint some representation
                 // of the selectect tracks, probably the track names printed as a list.
@@ -658,16 +582,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         }
     }
-
-    private void selectGroup(TrackGroup group) {
-        selectedGroup = group;
-        if (selectedGroup != null) {
-            for (Track t : selectedGroup.getVisibleTracks()) {
-                t.setSelected(true);
-            }
-        }
-    }
-
 
     class GroupExtent {
         TrackGroup group;

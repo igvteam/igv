@@ -40,6 +40,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
@@ -51,6 +52,10 @@ import java.util.List;
  * @author jrobinso
  */
 public interface Track extends Persistable {
+
+    void setTrackPanel(TrackPanel trackPanel);
+
+    TrackPanel getTrackPanel();
 
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED
@@ -160,11 +165,6 @@ public interface Track extends Persistable {
     void setOverlayed(boolean overlayVisible);
 
     TrackType getTrackType();
-
-    void setHeight(int preferredHeight);
-
-    void setHeight(int preferredHeight, boolean force);
-
     void setY(int top);
 
     int getY();
@@ -173,9 +173,43 @@ public interface Track extends Persistable {
 
     ContinuousColorScale getColorScale();
 
+    /**
+     * Return the height to display all content without scrolling.  This is a dynamically computed value, and will
+     * vary for many tracks at different genome locations.
+     * @return
+     */
+    default int getContentHeight() {
+        return getHeight();
+    }
+
+
+    /**
+     * Set the visibile (viewport) height for this track.
+     * @param preferredHeight
+     */
+    void setHeight(int preferredHeight);
+
+    /**
+     * Return the visibile height of the track, that is the desired visibile height of the track.  This can differ
+     * from the content height.
+     *
+     * @return
+     */
     int getHeight();
 
+    /**
+     * The default height.  Can vary by track type
+     * @return
+     */
+    int getDefaultHeight();
+
+    /**
+     * Return the minimum visible height for the track. Arguable that a minimum height should be enforced.
+     * @return
+     */
     int getMinimumHeight();
+
+
 
     /**
      * Manually specify the data range.

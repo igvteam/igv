@@ -586,17 +586,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction =
-                new MenuAction("Add New Panel", null, KeyEvent.VK_S) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        String newPanelName = "Panel" + System.currentTimeMillis();
-                        igv.addDataPanel(newPanelName);
-                    }
-                };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
         menuItems.add(new JSeparator());
         menuItems.add(new HistoryMenu("Go to"));
 

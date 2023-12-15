@@ -30,9 +30,7 @@ import com.google.common.collect.Lists;
 import htsjdk.tribble.Feature;
 import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.logging.*;
-import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
-import org.broad.igv.data.CombinedDataSource;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.basepair.BasePairTrack;
@@ -1018,7 +1016,7 @@ public class TrackMenuUtils {
 
         value = Math.max(0, value);
         for (Track track : selectedTracks) {
-            track.setHeight(value, true);
+            track.setHeight(value);
         }
         IGV.getInstance().repaint(selectedTracks);
     }
@@ -1285,7 +1283,7 @@ public class TrackMenuUtils {
         double[] heights = new double[tracks.size()];
         int i = 0;
         for (Track track : tracks) {
-            heights[i] = track.getHeight();
+            heights[i] = track.getContentHeight();
             i++;
         }
         int medianTrackHeight = (int) Math.round(StatUtils.percentile(heights, 50));

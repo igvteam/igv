@@ -76,7 +76,7 @@ public class InteractionTrack extends AbstractTrack {
         super(locator);
         init(dataset.features, genome);
         this.genome = genome;
-        setHeight(250, true);
+        setHeight(250);
         setColor(new Color(180, 25, 137));
 
         renderers = new HashMap<>();

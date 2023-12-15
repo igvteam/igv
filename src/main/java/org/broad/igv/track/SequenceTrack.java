@@ -72,7 +72,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     private static Logger log = LogManager.getLogger(SequenceTrack.class);
 
-    private static final int SEQUENCE_HEIGHT = 14;
+    private static final int SEQUENCE_HEIGHT = 16;
 
     private static String NAME = "Sequence";
 
@@ -131,6 +131,26 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             }
         }
         return new String(complement);
+    }
+
+    @Override
+    public int getDefaultHeight() {
+        return SEQUENCE_HEIGHT;
+    }
+
+    @Override
+    public int getMinimumHeight() {
+        return SEQUENCE_HEIGHT;
+    }
+
+    @Override
+    public int getHeight() {
+        return getContentHeight();
+    }
+    @Override
+    public int getContentHeight() {
+        return SEQUENCE_HEIGHT +
+                (showTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0);
     }
 
     public void receiveEvent(IGVEvent event) {
@@ -296,13 +316,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         return false;
     }
 
-    @Override
-    public int getHeight() {
-        return isVisible() ? SEQUENCE_HEIGHT +
-                (showTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0) :
-                0;
-    }
-
 
     @Override
     public boolean handleDataClick(TrackClickEvent e) {
@@ -339,6 +352,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public void setShowTranslation(boolean showTranslation) {
         this.showTranslation = showTranslation;
         PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, showTranslation);
+        //setHeight(getContentHeight());
+        this.trackPanel.updatePreferredSize();
         repaint();
     }
 
@@ -495,6 +510,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         if (element.hasAttribute("sequenceTranslationStrandValue")) {
             this.strand = Strand.fromString(element.getAttribute("sequenceTranslationStrandValue"));
         }
+
+        setHeight(getContentHeight());
     }
 
 }

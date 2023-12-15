@@ -209,7 +209,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                 List<Track> trackList = group.getVisibleTracks();
                 for (Track track : trackList) {
                     if (track == null) continue;
-                    int trackHeight = track.getHeight();
+                    int trackHeight = track.getContentHeight();
 
                     if (track.isVisible()) {
                         Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
@@ -476,7 +476,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
 
     private void init() {
-        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
+        //setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
         setRequestFocusEnabled(false);
 
         // Key Events

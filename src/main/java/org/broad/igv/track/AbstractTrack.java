@@ -33,7 +33,6 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.SessionAttribute;
@@ -41,10 +40,7 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TooltipTextFrame;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.panel.AttributeHeaderPanel;
-import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.panel.MouseableRegion;
-import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.w3c.dom.Document;
@@ -66,7 +62,6 @@ public abstract class AbstractTrack implements Track {
 
     public static final Color DEFAULT_COLOR = Color.blue.darker();
     public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.COLLAPSED;
-    public static final int DEFAULT_HEIGHT = -1;
     public static final int VISIBILITY_WINDOW = -1;
     public static final boolean DEFAULT_SHOW_FEATURE_NAMES = true;
     private static Logger log = LogManager.getLogger(AbstractTrack.class);
@@ -84,8 +79,8 @@ public abstract class AbstractTrack implements Track {
 
     protected int fontSize;
     private boolean showDataRange = true;
-    protected String sampleId;
 
+    protected String sampleId;
     private ResourceLocator resourceLocator;
 
     private int top;
@@ -115,12 +110,11 @@ public abstract class AbstractTrack implements Track {
 
     protected int visibilityWindow = VISIBILITY_WINDOW;
     private DisplayMode displayMode = DEFAULT_DISPLAY_MODE;
-
-    protected Integer height = DEFAULT_HEIGHT;
-
     protected DataRange dataRange;
     private boolean showFeatureNames = DEFAULT_SHOW_FEATURE_NAMES;
     private String panelName;
+    protected TrackPanel trackPanel;
+    private Integer height;
 
     public AbstractTrack() {
     }
@@ -144,8 +138,7 @@ public abstract class AbstractTrack implements Track {
 
         try {
             fontSize = PreferencesManager.getPreferences().getAsInt(DEFAULT_FONT_SIZE);
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             log.error("Error initializing font size. ", e);
         }
 
@@ -169,6 +162,16 @@ public abstract class AbstractTrack implements Track {
 
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;
+    }
+
+    @Override
+    public void setTrackPanel(TrackPanel trackPanel) {
+        this.trackPanel = trackPanel;
+    }
+
+    @Override
+    public TrackPanel getTrackPanel() {
+        return trackPanel;
     }
 
     public String getId() {
@@ -395,7 +398,8 @@ public abstract class AbstractTrack implements Track {
      *
      * @return
      */
-    private int getDefaultHeight() {
+    @Override
+    public int  getDefaultHeight() {
         if (getDefaultRenderer() instanceof XYPlotRenderer) {
             return PreferencesManager.getPreferences().getAsInt(CHART_TRACK_HEIGHT_KEY);
         } else {
@@ -485,26 +489,15 @@ public abstract class AbstractTrack implements Track {
     }
 
     public void setHeight(int height) {
-        setHeight(height, false);
+        this.height = height;
+        if(this.trackPanel != null) {
+            this.trackPanel.updatePreferredSize();
+        }
     }
 
     @Override
-    public void setHeight(int preferredHeight, boolean force) {
-        if (height < getHeight()) {
-            if ((this.getDisplayMode() == DisplayMode.EXPANDED) && (getTrackType() != TrackType.GENE)) {
-                this.setDisplayMode(DisplayMode.SQUISHED);
-            }
-        }
-
-        if (force) {
-            this.height = preferredHeight;
-        } else {
-            this.height = Math.max(getMinimumHeight(), preferredHeight);
-        }
-    }
-
     public int getHeight() {
-        return (height < 0) ? getDefaultHeight() : height;
+        return height == null ? getDefaultHeight() : height;
     }
 
     public DataRange getDataRange() {
@@ -1002,17 +995,13 @@ public abstract class AbstractTrack implements Track {
             element.setAttribute(SessionAttribute.DISPLAY_MODE, displayMode.toString());
         }
 
-        if (height != DEFAULT_HEIGHT) {
+        if (height != null) {
             element.setAttribute(SessionAttribute.HEIGHT, height.toString());
         }
 
         if (colorScale != null) {
             //colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,153,204;255,255,255;255,0,0"
             element.setAttribute("colorScale", colorScale.asString());
-        }
-
-        if (height != DEFAULT_HEIGHT) {
-            element.setAttribute("height", String.valueOf(this.height));
         }
 
         if (showDataRange == false) {
@@ -1142,7 +1131,7 @@ public abstract class AbstractTrack implements Track {
 
         if (element.hasAttribute("height")) {
             try {
-                this.height = Integer.parseInt(element.getAttribute("height"));
+                this.height = Integer.valueOf(element.getAttribute("height"));
             } catch (NumberFormatException e) {
                 log.error("Unrecognized height: " + element.getAttribute("height"));
             }

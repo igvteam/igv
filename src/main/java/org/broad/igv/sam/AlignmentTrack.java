@@ -468,20 +468,21 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return new AlignmentTrackMenu(this, te);
     }
 
+
     @Override
-    public void setHeight(int preferredHeight) {
-        super.setHeight(preferredHeight);
-        minimumHeight = preferredHeight;
+    public int getDefaultHeight() {
+        return 300;   // TODO - preference
     }
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
 
         int nGroups = dataManager.getMaxGroupCount();
         int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN
                 + DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT);
         return Math.max(minimumHeight, h);
     }
+
 
     private int getRowHeight() {
         if (getDisplayMode() == DisplayMode.EXPANDED) {
@@ -535,7 +536,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         context.getGraphics2D("LABEL").setFont(FontManager.getFont(GROUP_LABEL_HEIGHT));
 
         // Split track rectangle into sections.
-        int seqHeight = sequenceTrack == null ? 0 : sequenceTrack.getHeight();
+        int seqHeight = sequenceTrack == null ? 0 : sequenceTrack.getContentHeight();
         if (seqHeight > 0) {
             Rectangle seqRect = new Rectangle(rect);
             seqRect.height = seqHeight;

@@ -37,6 +37,7 @@ import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
@@ -44,19 +45,18 @@ import java.util.*;
 /**
  * @author eflakes
  */
-public class TrackPanel extends IGVPanel {
+public class TrackPanel extends JPanel implements Paintable  { //} implements Scrollable {
+
+    MainPanel mainPanel;
 
     private static Logger log = LogManager.getLogger(TrackPanel.class);
 
     private String name = null;
-    //private JPanel grabPanel;
     private TrackNamePanel namePanel;
     private AttributePanel attributePanel;
     private DataPanelContainer dataPanelContainer;
     private String groupAttribute;
-    private int trackCountEstimate = 0;  // <= used to size array list, not neccesarily precise
     private List<TrackGroup> trackGroups;
-
     transient int lastHeight = 0;
 
     /**
@@ -65,7 +65,8 @@ public class TrackPanel extends IGVPanel {
      * @param name
      */
     public TrackPanel(String name, MainPanel mainPanel) {
-        super(mainPanel);
+        setLayout(null); //new TrackPanelLayout());
+        this.mainPanel = mainPanel;
         this.name = name;
         TrackGroup nullGroup = new TrackGroup();
         nullGroup.setDrawBorder(false);
@@ -73,6 +74,8 @@ public class TrackPanel extends IGVPanel {
         trackGroups.add(nullGroup);
         init();
     }
+
+
 
 
     private void init() {
@@ -88,6 +91,69 @@ public class TrackPanel extends IGVPanel {
 
     }
 
+    public int getViewportHeight() {
+
+        Container parent = getParent();
+        return parent == null ? 0 : parent.getHeight();
+    }
+
+    public TrackPanelScrollPane getScrollPane() {
+
+        TrackPanelScrollPane scollpane = null;
+        Container parent = getParent();
+
+        if (parent instanceof JViewport) {
+            scollpane = (TrackPanelScrollPane) ((JViewport) parent).getParent();
+        }
+        return scollpane;
+    }
+
+    @Override
+    public void doLayout() {
+
+        synchronized (getTreeLock()) {
+
+            int h = getHeight(); //getPreferredSize().height;
+            Component[] children = getComponents();
+
+            int nw = mainPanel.getNamePanelWidth();
+
+            Component namePanel = children[0];
+            Component attributePanel = children[1];
+            Component dataPanel = children[2];
+            namePanel.setBounds(mainPanel.getNamePanelX(), 0, nw, h);
+
+            attributePanel.setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);  // Attributes
+            dataPanel.setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
+
+            dataPanel.doLayout();
+        }
+    }
+
+    public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
+
+        g.setColor(Color.black);
+
+        Component[] children = getComponents();
+
+        for(Component component : children) {
+            if (component instanceof Paintable) {
+                if (component.getWidth() > 0) {
+                    Rectangle clipRect = new Rectangle(0, rect.y, component.getWidth(), rect.height);
+                    Graphics2D graphics = (Graphics2D) g.create();
+                    graphics.translate(component.getX(), component.getY());
+                    //  graphics.setClip(clipRect);
+                    ((Paintable) component).paintOffscreen(graphics, clipRect, batch);
+                    graphics.dispose();
+                }
+            }
+        }
+    }
+
+    @Override
+    public int getSnapshotHeight(boolean batch) {
+        return getHeight();
+    }
 
     public void createDataPanels() {
         dataPanelContainer.createDataPanels();
@@ -166,7 +232,7 @@ public class TrackPanel extends IGVPanel {
     }
 
     public List<Track> getTracks() {
-        ArrayList<Track> tracks = new ArrayList(trackCountEstimate);
+        ArrayList<Track> tracks = new ArrayList();
         for (TrackGroup tg : trackGroups) {
             tracks.addAll(tg.getTracks());
         }
@@ -180,7 +246,6 @@ public class TrackPanel extends IGVPanel {
         }
         groupAttribute = null;
         trackGroups.clear();
-        trackCountEstimate = 0;
     }
 
 
@@ -259,8 +324,6 @@ public class TrackPanel extends IGVPanel {
             }
             trackGroups.add(newGroup);
         }
-        log.debug("Done adding track to TrackPanel");
-        trackCountEstimate++;
     }
 
     public void addTracks(Collection<? extends Track> tracks) {
@@ -391,32 +454,6 @@ public class TrackPanel extends IGVPanel {
         }
     }
 
-
-    /**
-     * This is called upon switching genomes to replace the gene and sequence tracks
-     *
-     * @param newTrack
-     * @return true if gene track is found.
-     */
-    public boolean replaceTrack(Track oldTrack, Track newTrack) {
-
-        boolean foundTrack = false;
-
-        for (TrackGroup g : trackGroups) {
-            if (g.contains(oldTrack)) {
-                int idx = g.indexOf(oldTrack);
-                g.remove(oldTrack);
-                idx = Math.min(g.size(), idx);
-                if (newTrack != null) {
-                    g.add(idx, newTrack);
-                }
-                foundTrack = true;
-            }
-        }
-
-        return foundTrack;
-    }
-
     public void removeTracks(Collection<? extends Track> tracksToRemove) {
         for (TrackGroup tg : trackGroups) {
             tg.removeTracks(tracksToRemove);
@@ -428,7 +465,6 @@ public class TrackPanel extends IGVPanel {
      */
     public void removeAllTracks() {
         trackGroups.clear();
-        trackCountEstimate = 0;
     }
 
     /**
@@ -453,8 +489,8 @@ public class TrackPanel extends IGVPanel {
         }
     }
 
-
     public int getPreferredPanelHeight() {
+
         int height = 0;
 
         Collection<TrackGroup> groups = getGroups();
@@ -476,9 +512,13 @@ public class TrackPanel extends IGVPanel {
             }
         }
 
-        return Math.max(20, height);
+        return height;
     }
 
+    /**
+     * Prefered size == size to view all content without scrolling.
+     * @return
+     */
     @Override
     public Dimension getPreferredSize() {
         Dimension dim = super.getPreferredSize();
@@ -486,9 +526,30 @@ public class TrackPanel extends IGVPanel {
         return dim;
     }
 
+    public void updatePreferredSize() {
+
+        int height = 0;
+        int minimumHeight = 0;
+        for(TrackGroup trackGroup : this.trackGroups) {
+            for(Track t : trackGroup.getVisibleTracks());
+            height += trackGroup.getHeight();
+                    }
+
+        TrackPanelScrollPane sp = getScrollPane();
+        Insets insets2 = sp.getInsets();
+        int dy = insets2.top + insets2.bottom;
+        sp.setPreferredSize(new Dimension(1000, height + dy));
+        mainPanel.revalidate();
+    }
+
+
     @Override
-    public int getSnapshotHeight(boolean batch) {
-        return getHeight();
+    public Dimension getMinimumSize() {
+        return new Dimension(0, 50);
+    }
+
+    public Dimension getMaximumSize() {
+        return new Dimension(32767, 500);  // 32767 is hardcoded in Swing
     }
 
     public void addTrackGroup(TrackGroup trackGroup) {

@@ -136,7 +136,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
         return GAPS_HEIGHT + (getSelectedSpecies().size() + 1) * EXPANDED_HEIGHT;
     }
 

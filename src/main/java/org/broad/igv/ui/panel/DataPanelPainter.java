@@ -35,7 +35,6 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.logging.*;
 import org.broad.igv.sam.AlignmentTrack;
-import org.broad.igv.sam.InsertionManager;
 import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -159,7 +158,7 @@ public class DataPanelPainter {
                 synchronized (trackList) {
                     for (Track track : trackList) {
                         if (track == null) continue;
-                        int trackHeight = track.getHeight();
+                        int trackHeight = track.getContentHeight();
                         if (dRect != null) {
                             if (trackY > dRect.y + dRect.height) {
                                 break;
@@ -204,7 +203,7 @@ public class DataPanelPainter {
 
                     for (Track track : trackList) {
                         if (track == null) continue;
-                        int trackHeight = track.getHeight();
+                        int trackHeight = track.getContentHeight();
                         if (dRect != null) {
                             if (trackY > dRect.y + dRect.height) {
                                 break;

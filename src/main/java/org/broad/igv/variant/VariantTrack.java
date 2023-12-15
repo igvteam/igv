@@ -229,7 +229,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
         squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
-                Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (height - getVariantBandHeight() - margins) / sampleCount));
+                Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (getHeight() - getVariantBandHeight() - margins) / sampleCount));
         showGenotypes = defaultShowGenotypes();
 
 
@@ -410,7 +410,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      *
      * @return
      */
-    public int getHeight() {
+    public int getContentHeight() {
         int sampleCount = sampleCount();
         int h;
         if (getDisplayMode() == DisplayMode.COLLAPSED || sampleCount == 0 || showGenotypes == false) {
@@ -562,7 +562,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                         boolean isSelected = selectedVariant != null && selectedVariant == variant;
                         if (isSelected) {
                             Graphics2D selectionGraphics = context.getGraphic2DForColor(Color.black);
-                            selectionGraphics.drawRect(x, curRowTop, w, getHeight());
+                            selectionGraphics.drawRect(x, curRowTop, w, getContentHeight());
                         }
                     }
 

@@ -281,7 +281,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(Integer.MAX_VALUE, track.getHeight());
+            return new Dimension(Integer.MAX_VALUE, track.getContentHeight());
         }
     }
 

@@ -419,24 +419,6 @@ public class IGV implements IGVEventObserver {
                     totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
             }
 
-            // Adjust dividers for data panel.  The data panel divider can be
-            // zero if there are no data tracks loaded.
-            final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
-            int htotal = centerSplitPane.getHeight();
-            int y = 0;
-            int i = 0;
-            for (Component c : centerSplitPane.getComponents()) {
-                if (c instanceof TrackPanelScrollPane) {
-                    final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
-                    if (trackPanel.getTracks().size() > 0) {
-                        int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
-                        int dh = (int) ((panelWeight / totalHeight) * htotal);
-                        y += dh;
-                    }
-                    centerSplitPane.setDividerLocation(i, y);
-                    i++;
-                }
-            }
 
             contentPane.getMainPanel().invalidate();
         });
@@ -1021,11 +1003,11 @@ public class IGV implements IGVEventObserver {
 
         sessionReader.loadSession(inputStream, session, sessionPath);
 
-        double[] dividerFractions = session.getDividerFractions();
-        if (dividerFractions != null) {
-            contentPane.getMainPanel().setDividerFractions(dividerFractions);
-        }
-        session.clearDividerLocations();
+//        double[] dividerFractions = session.getDividerFractions();
+//        if (dividerFractions != null) {
+//            contentPane.getMainPanel().setDividerFractions(dividerFractions);
+//        }
+//        session.clearDividerLocations();
 
         revalidateTrackPanels();
         return true;
@@ -1087,7 +1069,8 @@ public class IGV implements IGVEventObserver {
     }
 
     public void tweakPanelDivider() {
-        contentPane.getMainPanel().tweakPanelDivider();
+
+        //contentPane.getMainPanel().tweakPanelDivider();
     }
 
     public void removeDataPanel(String name) {
@@ -1189,14 +1172,18 @@ public class IGV implements IGVEventObserver {
      */
     public void addTracks(List<Track> tracks) {
 
-        if (tracks.size() > 0) {
-            Track representativeTrack = tracks.get(0);
-
-            // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
-            // is greater than 10
-            TrackPanel panel = getPanelFor(representativeTrack);
-            panel.addTracks(tracks);
+        for(Track t : tracks) {
+            getMainPanel().addTrack(t);
         }
+
+//        if (tracks.size() > 0) {
+//            Track representativeTrack = tracks.get(0);
+//
+//            // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
+//            // is greater than 10
+//            TrackPanel panel = getPanelFor(representativeTrack);
+//            panel.addTracks(tracks);
+//        }
     }
 
 
@@ -1574,7 +1561,7 @@ public class IGV implements IGVEventObserver {
 
     public void setAllTrackHeights(int newHeight) {
         for (Track track : getAllTracks()) {
-            track.setHeight(newHeight, true);
+            track.setHeight(newHeight);
         }
 
     }
@@ -1611,16 +1598,10 @@ public class IGV implements IGVEventObserver {
      */
     public void setSequenceTrack() {
 
-        TrackPanel panel = getTrackPanel(FEATURE_PANEL_NAME);
+        //TrackPanel panel = getTrackPanel(FEATURE_PANEL_NAME);
         SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
-        panel.addTrack(newSeqTrack);
-
-//        if (newGeneTrack != null) {
-//            newGeneTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, newGeneTrack.getName());
-//            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
-//            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, newGeneTrack.getTrackType().toString());
-//            panel.addTrack(newGeneTrack);
-//        }
+       // panel.addTrack(newSeqTrack);
+        getMainPanel().addTrack(newSeqTrack);
     }
 
     /**

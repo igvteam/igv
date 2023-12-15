@@ -25,11 +25,11 @@
 
 package org.broad.igv.ui.panel;
 
-import com.jidesoft.swing.JideSplitPane;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -37,7 +37,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.util.List;
 import java.util.*;
 
@@ -66,7 +65,7 @@ public class MainPanel extends JPanel implements Paintable {
     public IGVPanel applicationHeaderPanel;
     public HeaderPanelContainer headerPanelContainer;
     private TrackPanelScrollPane featureTrackScrollPane;
-    private JideSplitPane centerSplitPane;
+    private JPanel outerScrollContainer;
     private NameHeaderPanel nameHeaderPanel;
     private AttributeHeaderPanel attributeHeaderPanel;
 
@@ -88,26 +87,6 @@ public class MainPanel extends JPanel implements Paintable {
             }
         });
     }
-
-    public void setDividerFractions(double[] fractions) {
-        int[] dividerLocations = new int[fractions.length];
-        double h = centerSplitPane.getHeight();
-        for (int i = 0; i < fractions.length; i++) {
-            dividerLocations[i] = (int) Math.round(h * fractions[i]);
-        }
-        centerSplitPane.setDividerLocations(dividerLocations);
-    }
-
-    public double[] getDividerFractions() {
-        int[] dividerLocations = centerSplitPane.getDividerLocations();
-        double h = centerSplitPane.getHeight();
-        double[] dividerFractions = new double[dividerLocations.length];
-        for (int i = 0; i < dividerLocations.length; i++) {
-            dividerFractions[i] = dividerLocations[i] / h;
-        }
-        return dividerFractions;
-    }
-
 
     public void collapseNamePanel() {
         namePanelWidth = 0;
@@ -188,42 +167,37 @@ public class MainPanel extends JPanel implements Paintable {
         attributeHeaderPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         attributeHeaderPanel.setPreferredSize(new java.awt.Dimension(0, 0));
 
-
         headerPanelContainer = new HeaderPanelContainer();
-        headerScrollPane = new JScrollPane();
-        headerScrollPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
-        headerScrollPane.setForeground(new java.awt.Color(153, 153, 153));
-        headerScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        headerScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        headerScrollPane.setPreferredSize(new java.awt.Dimension(1021, 130));
-        add(headerScrollPane, java.awt.BorderLayout.NORTH);
 
         applicationHeaderPanel = new IGVPanel(this);
         applicationHeaderPanel.add(nameHeaderPanel);
         applicationHeaderPanel.add(attributeHeaderPanel);
         applicationHeaderPanel.add(headerPanelContainer);
-        headerScrollPane.setViewportView(applicationHeaderPanel);
+        applicationHeaderPanel.setPreferredSize(new java.awt.Dimension(1021, 130));
 
-        featureTrackScrollPane = new TrackPanelScrollPane();
-        featureTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 50));
-        featureTrackScrollPane.setViewportView(new TrackPanel(IGV.FEATURE_PANEL_NAME, this));
+        // The header panel is wrapped in a scroll pane, never used, so that it will align with the data panels.
+        JScrollPane headerPanelScrollpane = new JScrollPane(applicationHeaderPanel);
+        headerPanelScrollpane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        headerPanelScrollpane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-        centerSplitPane = new SplitPane() {
+        outerScrollContainer = new JPanel();
+        outerScrollContainer.setLayout(new MainPanelLayout(outerScrollContainer));
 
-            @Override
-            public Insets getInsets(Insets insets) {
-                return new Insets(0, 0, 0, 0);
-            }
-        };
-        centerSplitPane.setDividerSize(3);
-        //centerSplitPane.setResizeWeight(0.5d);
-        centerSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-        centerSplitPane.add(featureTrackScrollPane, JSplitPane.BOTTOM);
+//        featureTrackScrollPane = new TrackPanelScrollPane();
+//        featureTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 50));
+//        featureTrackScrollPane.setViewportView(new TrackPanel(IGV.FEATURE_PANEL_NAME, this));
+//
+//        outerScrollContainer.add(featureTrackScrollPane);
 
-        add(centerSplitPane, BorderLayout.CENTER);
+
+        JScrollPane outerScrollPane = new JScrollPane(outerScrollContainer);
+        outerScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        outerScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        outerScrollPane.setColumnHeaderView(headerPanelScrollpane);
+
+        add(outerScrollPane, BorderLayout.CENTER);
 
         setBackground(PreferencesManager.getPreferences().getAsColor(BACKGROUND_COLOR));
-
 
     }
 
@@ -240,9 +214,32 @@ public class MainPanel extends JPanel implements Paintable {
             if (tsp == featureTrackScrollPane) {
                 continue;
             }
-            centerSplitPane.remove(tsp);
+            outerScrollContainer.remove(tsp);
             TrackNamePanel.removeDropListenerFor(tsp.getNamePanel());
         }
+    }
+
+    public void addTrack(Track t) {
+
+        Runnable runnable = () -> {
+            final TrackPanel trackPanel = new TrackPanel(t.getName(), this);
+            trackPanel.addTrack(t);
+            t.setTrackPanel(trackPanel);
+
+            final TrackPanelScrollPane sp = new TrackPanelScrollPane();
+            sp.setViewportView(trackPanel);
+
+            Insets insets2 = sp.getInsets();
+            int dy = insets2.top + insets2.bottom;
+
+            // trackPanel.setPreferredSize(new Dimension(1000, t.getHeight() + dy));
+            // trackPanel.setMinimumSize(new Dimension(0, t.getMinimumHeight() + dy));
+            final int height = t.getHeight() + dy;
+            sp.setPreferredSize(new Dimension(1000, height));
+            sp.setMinimumSize(new Dimension(0, t.getMinimumHeight() + dy));
+            outerScrollContainer.add(sp);
+        };
+        UIUtilities.invokeAndWaitOnEventThread(runnable);
     }
 
     /**
@@ -253,28 +250,10 @@ public class MainPanel extends JPanel implements Paintable {
         final TrackPanel trackPanel = new TrackPanel(name, this);
         final TrackPanelScrollPane sp = new TrackPanelScrollPane();
         Runnable runnable = () -> {
-
             sp.setViewportView(trackPanel);
-
-            for (TrackPanel tp : getTrackPanels()) {
-                tp.getScrollPane().minimizeHeight();
-            }
-
-            // Insert the new panel just before the feature panel, or at the end if there is no feature panel.
-            int featurePaneIdx = centerSplitPane.indexOfPane(featureTrackScrollPane);
-            if (featurePaneIdx >= 0) {
-                centerSplitPane.insertPane(sp, featurePaneIdx);
-            } else {
-                centerSplitPane.add(sp);
-            }
-
-            if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-                if (sp.getTrackPanel().getTracks().size() == 0) {
-                    //If the igv window is too small the divider won't exist and this causes an exception
-                    //We solved by setting a minimum size
-                    centerSplitPane.setDividerLocation(0, 3);
-                }
-            }
+            trackPanel.setPreferredSize(new Dimension(1000, 200));
+            sp.setPreferredSize(new Dimension(1000, 200));
+            outerScrollContainer.add(sp);
         };
 
         UIUtilities.invokeAndWaitOnEventThread(runnable);
@@ -290,7 +269,7 @@ public class MainPanel extends JPanel implements Paintable {
      */
     public java.util.List<TrackPanel> getTrackPanels() {
         ArrayList<TrackPanel> panels = new ArrayList<TrackPanel>();
-        for (Component c : centerSplitPane.getComponents()) {
+        for (Component c : outerScrollContainer.getComponents()) {
             if (c instanceof TrackPanelScrollPane) {
                 panels.add(((TrackPanelScrollPane) c).getTrackPanel());
             }
@@ -301,64 +280,23 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void reorderPanels(java.util.List<String> names) {
 
-        // First get visibile "heights" (distance between split pane dividers)
-        int h = centerSplitPane.getHeight();
-        int[] dividerLocations = centerSplitPane.getDividerLocations();
-        Map<String, Integer> panelHeights = new HashMap();
-        int idx = 0;
-
         Map<String, TrackPanelScrollPane> panes = new HashMap();
-        for (Component c : centerSplitPane.getComponents()) {
+        for (Component c : outerScrollContainer.getComponents()) {
             if (c instanceof TrackPanelScrollPane) {
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
                 panes.put(tsp.getTrackPanelName(), tsp);
-                int top = idx == 0 ? 0 : dividerLocations[idx - 1];
-                int bottom = idx < dividerLocations.length ? dividerLocations[idx] : h;
-                panelHeights.put(tsp.getTrackPanelName(), (bottom - top));
-                idx++;
             }
         }
 
         //
-        centerSplitPane.removeAll();
-        idx = 0;
-        int divLoc = 0;
+        outerScrollContainer.removeAll();
         for (String name : names) {
-            centerSplitPane.add(panes.get(name));
-            if (idx < dividerLocations.length) {
-                divLoc += panelHeights.get(name);
-                dividerLocations[idx] = divLoc;
-                idx++;
-            }
+            outerScrollContainer.add(panes.get(name));
         }
-        centerSplitPane.setDividerLocations(dividerLocations);
-        centerSplitPane.invalidate();
+
+        outerScrollContainer.invalidate();
     }
 
-
-    public void tweakPanelDivider() {
-        UIUtilities.invokeOnEventThread(new Runnable() {
-
-            public void run() {
-                // TODO Resize the data panel to make as much space as possible
-                int h = centerSplitPane.getHeight();
-                int nPanes = centerSplitPane.getPaneCount();
-
-                double prefHeight = 0;
-                for (int i = 0; i < nPanes; i++) {
-                    prefHeight += centerSplitPane.getPaneAt(i).getPreferredSize().getHeight();
-                }
-                double ratio = h / prefHeight;
-                int pos = 0;
-                for (int i = 0; i < nPanes - 1; i++) {
-
-                    pos += (int) (ratio * centerSplitPane.getPaneAt(i).getPreferredSize().getHeight());
-                    centerSplitPane.setDividerLocation(i, pos);
-                }
-            }
-        });
-
-    }
 
     public void removeEmptyPanels() {
         List<TrackPanelScrollPane> emptyPanels = new ArrayList();
@@ -369,7 +307,7 @@ public class MainPanel extends JPanel implements Paintable {
         }
         for (TrackPanelScrollPane panel : emptyPanels) {
             if (panel != null) {
-                centerSplitPane.remove(panel);
+                outerScrollContainer.remove(panel);
                 TrackNamePanel.removeDropListenerFor(panel.getNamePanel());
             }
 
@@ -391,7 +329,7 @@ public class MainPanel extends JPanel implements Paintable {
             return;
         }
         if (sp != null) {
-            centerSplitPane.remove(sp);
+            outerScrollContainer.remove(sp);
             TrackNamePanel.removeDropListenerFor(sp.getNamePanel());
         }
     }
@@ -437,7 +375,6 @@ public class MainPanel extends JPanel implements Paintable {
         return attributePanelX;
     }
 
-
     public int getDataPanelX() {
         return dataPanelX;
     }
@@ -447,20 +384,9 @@ public class MainPanel extends JPanel implements Paintable {
         return dataPanelWidth;
     }
 
-    public JideSplitPane getCenterSplitPane() {
-        return centerSplitPane;
+    public JPanel getOuterScrollContainer() {
+        return outerScrollContainer;
     }
-
-    static class SplitPane extends JideSplitPane {
-//        @Override
-//        public void doLayout() {
-//            if (log.isTraceEnabled()) {
-//                log.trace("Layout");
-//            }
-//            super.doLayout();    //To change body of overridden methods use File | Settings | File Templates.
-//        }
-    }
-
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
@@ -474,11 +400,11 @@ public class MainPanel extends JPanel implements Paintable {
         headerGraphics.dispose();
 
         // Now loop through track panels
-        Rectangle r = centerSplitPane.getBounds();
+        Rectangle r = outerScrollContainer.getBounds();
         g.translate(0, r.y);
 
         // Get the components of the center pane and sort by Y position.
-        Component[] components = centerSplitPane.getComponents();
+        Component[] components = outerScrollContainer.getComponents();
         Arrays.sort(components, Comparator.comparingInt(Component::getY));
 
         int dy = components[0].getY();
@@ -529,7 +455,7 @@ public class MainPanel extends JPanel implements Paintable {
         if (batch) {
             int height = applicationHeaderPanel.getHeight();
 
-            for (Component c : centerSplitPane.getComponents()) {
+            for (Component c : outerScrollContainer.getComponents()) {
 
                 if (c instanceof TrackPanelScrollPane) {
 

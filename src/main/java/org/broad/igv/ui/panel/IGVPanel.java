@@ -51,9 +51,7 @@ public class IGVPanel extends JPanel implements Paintable {
     }
 
     public int getViewportHeight() {
-
-        Container parent = getParent();
-        return parent == null ? 0 : parent.getHeight();
+        return getScrollPane().getViewport().getHeight();
     }
 
     public TrackPanelScrollPane getScrollPane() {
@@ -95,7 +93,7 @@ public class IGVPanel extends JPanel implements Paintable {
 
         Component[] children = getComponents();
 
-        for(Component component : children) {
+        for (Component component : children) {
             if (component instanceof Paintable) {
                 if (component.getWidth() > 0) {
                     Rectangle clipRect = new Rectangle(0, rect.y, component.getWidth(), rect.height);

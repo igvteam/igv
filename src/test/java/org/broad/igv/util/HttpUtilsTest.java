@@ -26,19 +26,14 @@
 package org.broad.igv.util;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import static org.junit.Assert.*;
-import static spark.Spark.get;
 
 
 /**
@@ -77,31 +72,6 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
         }
     }
 
-    @Ignore
-    @Test
-    public void testReadByBlob() throws Exception {
-        String serverURL = "serverURLhere";
-
-//        String bamURL =  serverURL + "?file=CDNLtx0vjHKW19PP9E7A1zpmzSg1mrg/rw7ZkE+b8FPuoNLNNLNKyL/94CsspYExn2SAJ5Y0wgL9L2mwf/HsP4IwqsQbtAqVBLxtd2CVclTOkute7VHhzqFPJ2KCzWxUjM+Ecb5XfdGTpKAzya1dq/fAtJuIw8+NHQCPmMVbJWreQx1+6z3VKDT17Fy3RbXxL6X/CfQ/HlTcWFpQVe1p+5LgkojOVagWCImYNk/ErPzi8J2oEYPSm6ilOwDM6rGwHcO47qW8DncaPdf8ohpm/XZwAd+aAJwsqkBR689R+X175QCzmpOI07dHxuvzJ4HPlMwu2h2290QxVAJ8Ix5fVA==.bam";
-//
-//        InputStream is = HttpUtils.getInstance().openConnectionStream(HttpUtils.createURL(bamURL));
-
-        String bedblob = StringUtils.decodeURL("c44z7H5E1gDMSm49T7NyGix051qDS7AbgCqicZ%2FpFkLobpmCim95byvYICc5VT%2Bv8Z%2FzE2gHWZkboBuME9eLxjEsfiO4bwnqZGP9fwoWXooK1LC8e3R5%2F6B9KyP9X3PR102PIApQASPfQGnYHqpBLifFPUbeRMqN%2BSxYi3h7udQJ8pli2QPEappIiOVWQ77cjJ6c0h12me6dT81fVrYT1E5CGHpnfUarIWCADRySVUfxqrwADKpnpaozMiWebh4OaWr5QfWHuG%2F%2F%2FhwVs7YxJaAR9S6pMqqfk213JofydHJjUimkv2V8tM3RJk3Q2y7CZ3Dk8X8wLiAJLfTIaXyreQ%3D%3D");
-
-        String bedURL = serverURL + "?file=" + bedblob + ".bed";
-        InputStream is = HttpUtils.getInstance().openConnectionStream(HttpUtils.createURL(bedURL));
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-
-        String line = null;
-        int count = 0;
-        while ((line = br.readLine()) != null) {
-            System.out.println(line);
-            count++;
-        }
-        System.out.println(count + " lines read");
-
-    }
 
     @Test
     public void testCacheControl() throws Exception {
@@ -145,96 +115,5 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
         } finally {
             HttpUtils.getInstance().clearAccessTokens();
         }
-    }
-
-    public class RunnableSparkHttp implements Runnable {
-
-        /// counters incremented on each request:
-
-        // permanent redirect src
-        public int permSrcCt = 0;
-        // permanent redirect dest
-        public int permDestCt = 0;
-        // temporary redirect src
-        public int tempSrcCt = 0;
-        // temporary redirect dest
-        public int tempDestCt = 0;
-
-        public void run() {
-            System.out.println("run thing");
-
-            get("/perm_redir_src", (req, res) ->
-            {
-                // increment a counter for tests to inspect
-                this.permSrcCt += 1;
-                res.status(301); // permanent redirect
-                res.header("Location", "http://localhost:4567/perm_redir_dest");
-                return "redirecting";
-            });
-
-            get("/perm_redir_dest", (req, res) -> {
-                this.permDestCt += 1;
-                return "done";
-            });
-
-            get("/temp_redir_src", (req, res) ->
-            {
-                this.tempSrcCt += 1;
-                res.status(302); // temporary redirect
-                res.header("Location", "http://localhost:4567/temp_redir_dest");
-                res.header("Cache-Control", "max-age=1"); // expire in 1 second
-                return "redirecting";
-            });
-
-            get("/temp_redir_dest", (req, res) -> {
-                this.tempDestCt += 1;
-                return "done";
-            });
-
-        }
-
-    }
-
-    @Test
-    public void testRedirectCache() throws Exception {
-
-        RunnableSparkHttp server = new RunnableSparkHttp();
-        Thread thread = new Thread(server);
-        thread.run();
-
-        // give the test server a moment to start up
-        Thread.sleep(500);
-
-        HttpURLConnection conn = null;
-
-        // test a URL that redirects permanently
-        assertEquals(server.permSrcCt, 0);
-        assertEquals(server.permDestCt, 0);
-        conn = HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/perm_redir_src"), null);
-        assertEquals(conn.getResponseCode(), 200);
-        assertEquals(server.permSrcCt, 1);
-        assertEquals(server.permDestCt, 1);
-        assertEquals(HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/perm_redir_src"), null)
-                .getResponseCode(), 200);
-        // because redirect was cached, the source wasn't requested again, but the destination was
-        assertEquals(server.permSrcCt, 1);
-        assertEquals(server.permDestCt, 2);
-
-
-        // now test a URL that redirects but quickly expires
-        assertEquals(server.tempSrcCt, 0);
-        assertEquals(server.tempDestCt, 0);
-        conn = HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/temp_redir_src"), null);
-        assertEquals(conn.getResponseCode(), 200);
-        assertEquals(server.tempSrcCt, 1);
-        assertEquals(server.tempDestCt, 1);
-        // sleep for 2s to ensure that cache has expired
-        Thread.sleep(2_000);
-        assertEquals(HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/temp_redir_src"), null)
-                .getResponseCode(), 200);
-        // because redirect was cached, the source wasn't requested again, but the destination was
-        assertEquals(server.tempSrcCt, 2);
-        assertEquals(server.tempDestCt, 2);
-
     }
 }

@@ -45,7 +45,6 @@ import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.util.Packable;
 
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
@@ -158,7 +157,7 @@ public class AttributePanel extends TrackPanelComponent implements  Paintable {
 
                         for (Track track : group.getVisibleTracks()) {
                             if (track == null) continue;
-                            int trackHeight = track.getHeight();
+                            int trackHeight = track.getContentHeight();
                             if (regionY > bottom) {
                                 break;
                             }

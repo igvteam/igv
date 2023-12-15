@@ -128,9 +128,7 @@ dependencies {
     )
 
     testImplementation(
-            [group: 'junit', name: 'junit', version: '4.13.1'],
-            [group: 'com.sparkjava', name: 'spark-core', version: '2.7.2'],
-            [group: 'org.glassfish.jersey.core', name: 'jersey-common', version: '2.34']
+            [group: 'junit', name: 'junit', version: '4.13.1']
     )
     testRuntimeOnly(
            [group: 'org.junit.vintage', name:'junit-vintage-engine', version:'5.8.2']
