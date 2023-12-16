@@ -41,11 +41,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author eflakes
  */
-public class TrackPanel extends JPanel implements Paintable  { //} implements Scrollable {
+public class TrackPanel extends JPanel implements Paintable {
 
     MainPanel mainPanel;
 
@@ -55,8 +56,7 @@ public class TrackPanel extends JPanel implements Paintable  { //} implements Sc
     private TrackNamePanel namePanel;
     private AttributePanel attributePanel;
     private DataPanelContainer dataPanelContainer;
-    private String groupAttribute;
-    private List<TrackGroup> trackGroups;
+    private List<Track> tracks;
     transient int lastHeight = 0;
 
     /**
@@ -68,14 +68,9 @@ public class TrackPanel extends JPanel implements Paintable  { //} implements Sc
         setLayout(null); //new TrackPanelLayout());
         this.mainPanel = mainPanel;
         this.name = name;
-        TrackGroup nullGroup = new TrackGroup();
-        nullGroup.setDrawBorder(false);
-        trackGroups = Collections.synchronizedList(new LinkedList<TrackGroup>());
-        trackGroups.add(nullGroup);
+        tracks = Collections.synchronizedList(new LinkedList<Track>());
         init();
     }
-
-
 
 
     private void init() {
@@ -136,7 +131,7 @@ public class TrackPanel extends JPanel implements Paintable  { //} implements Sc
 
         Component[] children = getComponents();
 
-        for(Component component : children) {
+        for (Component component : children) {
             if (component instanceof Paintable) {
                 if (component.getWidth() > 0) {
                     Rectangle clipRect = new Rectangle(0, rect.y, component.getWidth(), rect.height);
@@ -194,31 +189,15 @@ public class TrackPanel extends JPanel implements Paintable  { //} implements Sc
      *
      * @return
      */
-    public List<TrackGroup> getGroups() {
-        return trackGroups;
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
     public boolean hasTracks() {
-        for (TrackGroup tg : trackGroups) {
-            if (tg.getVisibleTracks().size() > 0) {
-                return true;
-            }
-        }
-        return false;
+        return !tracks.isEmpty();
     }
 
     public int getVisibleTrackCount() {
         int count = 0;
-        for (TrackGroup tg : trackGroups) {
-            for (Track t : tg.getVisibleTracks()) {
-                if (t != null && t.isVisible()) {
-                    count++;
-                }
+        for (Track t : tracks) {
+            if (t != null && t.isVisible()) {
+                count++;
             }
         }
         return count;
@@ -232,98 +211,28 @@ public class TrackPanel extends JPanel implements Paintable  { //} implements Sc
     }
 
     public List<Track> getTracks() {
-        ArrayList<Track> tracks = new ArrayList();
-        for (TrackGroup tg : trackGroups) {
-            tracks.addAll(tg.getTracks());
-        }
         return tracks;
     }
 
+    public List<Track> getVisibleTracks() {
+        return tracks.stream().filter(t -> t.isVisible()).collect(Collectors.toList());
+    }
+
     public void clearTracks() {
-
-        for (Track t : getTracks()) {
-            t.unload();
-        }
-        groupAttribute = null;
-        trackGroups.clear();
+        tracks.clear();
     }
 
-
-    public boolean fitTracksToPanel() {
-        DataPanelContainer dataPanel = this.getScrollPane().getDataPanel();
-        boolean success = true;
-
-        int availableHeight = dataPanel.getVisibleHeight();
-        int visibleTrackCount = 0;
-
-        // Process data tracks first
-        Collection<TrackGroup> groups = dataPanel.getTrackGroups();
-
-
-        // Count visible tracks.
-        for (TrackGroup group : groups) {
-            List<Track> tracks = group.getVisibleTracks();
-            for (Track track : tracks) {
-                if (track.isVisible()) {
-                    ++visibleTrackCount;
-                }
-            }
-        }
-
-
-        // Auto resize the height of the visible tracks
-        if (visibleTrackCount > 0) {
-            int groupGapHeight = (groups.size() + 1) * UIConstants.groupGap;
-            double adjustedAvailableHeight = Math.max(1, availableHeight - groupGapHeight);
-
-            double delta = adjustedAvailableHeight / visibleTrackCount;
-
-            // Minimum track height is 1
-            if (delta < 1) {
-                delta = 1;
-            }
-
-            int iTotal = 0;
-            double target = 0;
-            for (TrackGroup group : groups) {
-                List<Track> tracks = group.getVisibleTracks();
-                for (Track track : tracks) {
-                    target += delta;
-                    int height = (int) (target - iTotal);
-                    track.setHeight(height);
-                    iTotal += height;
-                }
-            }
-
-        }
-
-        return success;
-    }
 
     /**
-     * Add a track to this panel.  If tracks are grouped, search for correct group, or make a new one if not found.
-     *
-     * @param track
+     * @return
+     * @deprecated
      */
+    public boolean fitTracksToPanel() {
+        return true;
+    }
+
     public void addTrack(Track track) {
-        log.debug("Adding track " + track.getName() + " to panel " + getName());
-        String groupName = (groupAttribute == null ? null : track.getAttributeValue(groupAttribute));
-        boolean foundGroup = false;
-        for (TrackGroup tg : trackGroups) {
-            if (groupAttribute == null || groupName == null || tg.getName().equals(groupName)) {
-                tg.add(track);
-                foundGroup = true;
-                break;
-            }
-        }
-        if (!foundGroup) {
-            TrackGroup newGroup = new TrackGroup(groupName);
-            newGroup.add(track);
-            if (groupAttribute == null) {
-                newGroup.setDrawBorder(false);
-            }
-            trackGroups.add(newGroup);
-        }
+        tracks.add(track);
     }
 
     public void addTracks(Collection<? extends Track> tracks) {
@@ -332,139 +241,20 @@ public class TrackPanel extends JPanel implements Paintable  { //} implements Sc
         }
     }
 
-    public void moveGroup(TrackGroup group, int index) {
-
-        if (index > trackGroups.indexOf(group)) {
-            index--;
-        }
-        trackGroups.remove(group);
-        if (index >= trackGroups.size()) {
-            trackGroups.add(group);
-        } else {
-            trackGroups.add(index, group);
-        }
-    }
-
-
     public void reset() {
-        this.groupAttribute = null;
         clearTracks();
     }
 
-    /**
-     * Rebuild group list for supplied attribute.
-     *
-     * @param attribute
-     */
-    public void groupTracksByAttribute(String attribute) {
-
-        this.groupAttribute = attribute;
-        List<Track> tracks = getTracks();
-        trackGroups.clear();
-
-        if (attribute == null || attribute.length() == 0) {
-            TrackGroup nullGroup = new TrackGroup();
-            nullGroup.addAll(tracks);
-            nullGroup.setDrawBorder(false);
-            trackGroups.add(nullGroup);
-        } else {
-            Map<String, TrackGroup> groupMap = new HashMap();
-            for (Track track : tracks) {
-                String attributeValue = track.getAttributeValue(attribute);
-
-                if (attributeValue == null) {
-                    attributeValue = "";
-                }
-
-                TrackGroup group = groupMap.get(attributeValue);
-
-                if (group == null) {
-                    group = new TrackGroup(attributeValue);
-                    groupMap.put(attributeValue, group);
-                    trackGroups.add(group);
-                }
-                group.add(track);
-            }
-        }
-    }
-
-    public void sortTracksByAttributes(final String attributeNames[], final boolean[] ascending) {
-
-        assert attributeNames.length == ascending.length;
-
-        for (TrackGroup tg : trackGroups) {
-            tg.sortByAttributes(attributeNames, ascending);
-        }
-    }
-
-
-    public void sortTracksByPosition(List<String> trackIds) {
-        for (TrackGroup tg : trackGroups) {
-            tg.sortByList(trackIds);
-        }
-
-    }
-
-
-    /**
-     * Sort all groups (data and feature) by a computed score over a region.  The
-     * sort is done twice (1) groups are sorted with the featureGroup, and (2) the
-     * groups themselves are sorted.
-     *
-     * @param region
-     * @param type
-     */
-    public void sortByRegionsScore(final RegionOfInterest region, final RegionScoreType type,
-                                   final ReferenceFrame frame, List<String> sortedSamples) {
-
-        sortGroupsByRegionScore(trackGroups, region, type, frame.getZoom(), frame.getName());
-        for (TrackGroup group : trackGroups) {
-            // If there is a non-null linking attribute
-            // Segregate tracks into 2 sub-groups, those matching the score type and those that do not
-            group.sortGroup(type, sortedSamples);
-        }
-    }
-
-    /**
-     * Sort groups by a score (not the tracks within the group).
-     *
-     * @param groups
-     * @param region
-     * @param type
-     * @param inzoom
-     * @param frameName
-     */
-    private void sortGroupsByRegionScore(List<TrackGroup> groups,
-                                         final RegionOfInterest region,
-                                         final RegionScoreType type,
-                                         int inzoom,
-                                         final String frameName) {
-        if ((groups != null) && (region != null) && !groups.isEmpty()) {
-            final int zoom = Math.max(0, inzoom);
-            final String chr = region.getChr();
-            final int start = region.getStart();
-            final int end = region.getEnd();
-            Comparator<TrackGroup> c = (group1, group2) -> {
-                float s1 = group1.getRegionScore(chr, start, end, zoom, type, frameName);
-                float s2 = group2.getRegionScore(chr, start, end, zoom, type, frameName);
-                // Use the Float comparator as it handles NaN.  Need to flip the order to make it descending
-                return Float.compare(s2, s1);
-            };
-            Collections.sort(groups, c);
-        }
-    }
 
     public void removeTracks(Collection<? extends Track> tracksToRemove) {
-        for (TrackGroup tg : trackGroups) {
-            tg.removeTracks(tracksToRemove);
-        }
+        tracks.removeAll(tracksToRemove);
     }
 
     /**
      * Remove, but do not dispose of, tracks.  Used by session reader
      */
     public void removeAllTracks() {
-        trackGroups.clear();
+        tracks.clear();
     }
 
     /**
@@ -482,41 +272,44 @@ public class TrackPanel extends JPanel implements Paintable  { //} implements Sc
             return;
         }
 
-        for (TrackGroup tg : trackGroups) {
-            if (tg.moveSelectedTracksTo(selectedTracks, targetTrack, before)) {
-                return;
+        int index = (targetTrack == null ? tracks.size() : tracks.indexOf(targetTrack));
+        if (index > 0) {
+
+            if (!before) {
+                index = index + 1;
             }
+
+            // 1. Divdide the target list up into 2 parts, one before the index and one after
+            List<Track> beforeList = new ArrayList(tracks.subList(0, index));
+            List<Track> afterList = new ArrayList(tracks.subList(index, tracks.size()));
+
+            // 2.  Remove the selected tracks from anywhere they occur
+            beforeList.removeAll(selectedTracks);
+            afterList.removeAll(selectedTracks);
+
+            // 3. Now insert the selected tracks
+            tracks.clear();
+            tracks.addAll(beforeList);
+            tracks.addAll(selectedTracks);
+            tracks.addAll(afterList);
         }
+
     }
 
     public int getPreferredPanelHeight() {
 
-        int height = 0;
-
-        Collection<TrackGroup> groups = getGroups();
-
-        if (groups.size() > 1) {
-            height += UIConstants.groupGap;
-        }
-
-        synchronized (groups) {
-
-            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-                TrackGroup group = groupIter.next();
-                if (group != null && group.isVisible()) {
-                    if (groups.size() > 1) {
-                        height += UIConstants.groupGap;
-                    }
-                    height += group.getHeight();
-                }
+        int h = 0;
+        for (Track track : tracks) {
+            if (track != null && track.isVisible()) {
+                h += track.getContentHeight();
             }
         }
-
-        return height;
+        return h;
     }
 
     /**
      * Prefered size == size to view all content without scrolling.
+     *
      * @return
      */
     @Override
@@ -529,11 +322,9 @@ public class TrackPanel extends JPanel implements Paintable  { //} implements Sc
     public void updatePreferredSize() {
 
         int height = 0;
-        int minimumHeight = 0;
-        for(TrackGroup trackGroup : this.trackGroups) {
-            for(Track t : trackGroup.getVisibleTracks());
-            height += trackGroup.getHeight();
-                    }
+        for (Track t : tracks) {
+            height += t.getContentHeight();
+        }
 
         TrackPanelScrollPane sp = getScrollPane();
         Insets insets2 = sp.getInsets();
@@ -552,18 +343,37 @@ public class TrackPanel extends JPanel implements Paintable  { //} implements Sc
         return new Dimension(32767, 500);  // 32767 is hardcoded in Swing
     }
 
-    public void addTrackGroup(TrackGroup trackGroup) {
-        trackGroups.add(trackGroup);
+
+    public void sortTracksByAttributes(final String attributeNames[], final boolean[] ascending) {
+        assert attributeNames.length == ascending.length;
+        tracks = TrackPanelHelper.sortByAttributes(tracks, attributeNames, ascending);
     }
 
-    public static TrackPanel getParentPanel(Track track) {
-        for (TrackPanel panel : IGV.getInstance().getTrackPanels()) {
-            for (TrackGroup group : panel.getGroups()) {
-                if (group.contains(track)) {
-                    return panel;
-                }
-            }
-        }
-        return null;
+    public void sortTracksByPosition(List<String> trackIds) {
+        tracks = TrackPanelHelper.sortByList(tracks, trackIds);
     }
+
+
+    /**
+     * Sort all groups (data and feature) by a computed score over a region.  The
+     * sort is done twice (1) groups are sorted with the featureGroup, and (2) the
+     * groups themselves are sorted.
+     *
+     * @param region
+     * @param type
+     */
+    public void sortByRegionsScore(final RegionOfInterest region, final RegionScoreType type,
+                                   final ReferenceFrame frame, List<String> sortedSamples) {
+
+//        sortGroupsByRegionScore(trackGroups, region, type, frame.getZoom(), frame.getName());
+//        for (TrackGroup group : trackGroups) {
+//            // If there is a non-null linking attribute
+//            // Segregate tracks into 2 sub-groups, those matching the score type and those that do not
+//            group.sortGroup(type, sortedSamples);
+//        }
+//
+        tracks = TrackPanelHelper.sortByRegionScore(tracks, type, sortedSamples);
+    }
+
+
 }

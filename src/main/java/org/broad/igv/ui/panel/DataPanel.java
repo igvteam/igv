@@ -142,13 +142,13 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
             context = new RenderContext(this, graphics2D, frame, visibleRect);
 
-            final Collection<TrackGroup> groups = parent.getTrackGroups();
+            final List<Track> tracks = parent.getTracks();
 
             int trackWidth = getWidth();
 
-            computeMousableRegions(groups, trackWidth);
+            computeMousableRegions(tracks, trackWidth);
 
-            painter.paint(groups, context, getBackground(), damageRect);
+            painter.paint(tracks, context, getBackground(), damageRect);
 
             // If there is a partial ROI in progress draw it first
             if (currentTool instanceof RegionOfInterestTool) {
@@ -191,38 +191,25 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     /**
      * TODO -- move this to a "layout" command, to layout tracks and assign positions
      */
-    private void computeMousableRegions(Collection<TrackGroup> groups, int width) {
+    private void computeMousableRegions(List<Track> tracks, int width) {
 
         final List<MouseableRegion> mouseableRegions = parent.getMouseRegions();
         mouseableRegions.clear();
         int trackX = 0;
         int trackY = 0;
-        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-            TrackGroup group = groupIter.next();
 
+        for (Track track : tracks) {
+            if (track == null) continue;
+            int trackHeight = track.getContentHeight();
 
-            if (group.isVisible()) {
-                if (groups.size() > 1) {
-                    trackY += UIConstants.groupGap;
+            if (track.isVisible()) {
+                Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
+                if (mouseableRegions != null) {
+                    mouseableRegions.add(new MouseableRegion(rect, track));
                 }
-
-                List<Track> trackList = group.getVisibleTracks();
-                for (Track track : trackList) {
-                    if (track == null) continue;
-                    int trackHeight = track.getContentHeight();
-
-                    if (track.isVisible()) {
-                        Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
-                        if (mouseableRegions != null) {
-                            mouseableRegions.add(new MouseableRegion(rect, track));
-                        }
-                        trackY += trackHeight;
-                    }
-                }
-
+                trackY += trackHeight;
             }
         }
-
     }
 
     /**
@@ -240,18 +227,18 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
         try {
             context = new RenderContext(null, g, frame, rect);
-            final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
+            final List<Track> tracks = new ArrayList(parent.getTracks());
             Insets insets = getInsets();
-            Rectangle contentRect =  new Rectangle(
+            Rectangle contentRect = new Rectangle(
                     rect.x + insets.left,
                     rect.y + insets.top,
                     rect.width - (insets.left + insets.right),
                     rect.height - (insets.top + insets.bottom));
             context.getGraphics().setClip(contentRect);
-            painter.paint(groups, context, getBackground(), contentRect);
+            painter.paint(tracks, context, getBackground(), contentRect);
             drawAllRegions(g);
 
-            borderGraphics.drawRect(0, rect.y, rect.width, rect.height-1);
+            borderGraphics.drawRect(0, rect.y, rect.width, rect.height - 1);
 
         } finally {
             if (context != null) {

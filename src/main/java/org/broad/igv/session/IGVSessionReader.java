@@ -167,7 +167,7 @@ public class IGVSessionReader implements SessionReader {
 
 
         if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {
-            igv.setGroupByAttribute(session.getGroupTracksBy());
+           // igv.setGroupByAttribute(session.getGroupTracksBy());
         }
 
         igv.getMainPanel().removeEmptyPanels();

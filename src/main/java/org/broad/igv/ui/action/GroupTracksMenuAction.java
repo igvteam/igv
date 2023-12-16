@@ -57,34 +57,34 @@ public class GroupTracksMenuAction extends MenuAction {
 
     final public void doGroupBy() {
 
-
-        UIUtilities.invokeOnEventThread(new Runnable() {
-
-            public void run() {
-
-                final AttributeSelectionDialog dlg = new AttributeSelectionDialog(
-                        igv.getMainFrame(),
-                        "Group");
-
-
-                String currentSelection = IGV.getInstance().getGroupByAttribute();
-                if (currentSelection == null) {
-                    dlg.setSelectedIndex(0);
-                } else {
-                    dlg.setSelectedItem(currentSelection);
-                }
-
-                dlg.setVisible(true);
-
-                if (!dlg.isCanceled()) {
-                    String selectedAttribute = dlg.getSelected();
-                    IGV.getInstance().setGroupByAttribute(selectedAttribute);
-                    igv.repaint();
-
-                }
-
-            }
-
-        });
+//
+//        UIUtilities.invokeOnEventThread(new Runnable() {
+//
+//            public void run() {
+//
+//                final AttributeSelectionDialog dlg = new AttributeSelectionDialog(
+//                        igv.getMainFrame(),
+//                        "Group");
+//
+//
+//                String currentSelection = IGV.getInstance().getGroupByAttribute();
+//                if (currentSelection == null) {
+//                    dlg.setSelectedIndex(0);
+//                } else {
+//                    dlg.setSelectedItem(currentSelection);
+//                }
+//
+//                dlg.setVisible(true);
+//
+//                if (!dlg.isCanceled()) {
+//                    String selectedAttribute = dlg.getSelected();
+//                    IGV.getInstance().setGroupByAttribute(selectedAttribute);
+//                    igv.repaint();
+//
+//                }
+//
+//            }
+//
+//        });
     }
 }

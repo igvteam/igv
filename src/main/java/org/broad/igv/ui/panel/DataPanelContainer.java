@@ -31,6 +31,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -103,9 +104,9 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
     }
 
 
-    public Collection<TrackGroup> getTrackGroups() {
+    public List<Track> getTracks() {
         TrackPanel dataTrackView = (TrackPanel) getParent();
-        return dataTrackView.getGroups();
+        return dataTrackView.getTracks();
     }
 
 

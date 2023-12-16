@@ -1731,29 +1731,6 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////
-    // Groups
-
-    public String getGroupByAttribute() {
-        return session.getGroupByAttribute();
-    }
-
-
-    public void setGroupByAttribute(String attributeName) {
-        session.setGroupByAttribute(attributeName);
-        resetGroups();
-        // Some tracks need to respond to changes in grouping, fire notification event
-        IGVEventBus.getInstance().post(new TrackGroupEvent());
-    }
-
-
-    private void resetGroups() {
-        log.debug("Resetting Groups");
-        for (TrackPanel trackPanel : getTrackPanels()) {
-            trackPanel.groupTracksByAttribute(session.getGroupByAttribute());
-        }
-    }
-
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Startup
@@ -2260,10 +2237,7 @@ public class IGV implements IGVEventObserver {
 
 
     public List<Track> visibleTracks(DataPanelContainer dataPanelContainer) {
-        return dataPanelContainer.getTrackGroups().stream().
-                filter(TrackGroup::isVisible).
-                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
-                collect(Collectors.toList());
+        return dataPanelContainer.getTrackPanel().getVisibleTracks();
     }
 
     /**

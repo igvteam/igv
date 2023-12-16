@@ -79,15 +79,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         init();
     }
 
-    Collection<TrackGroup> getGroups() {
-        return getTrackPanel().getGroups();
-    }
-
-    private boolean isGrouped() {
-        return getGroups().size() > 1;
-    }
-
-
     @Override
     public void paintComponent(Graphics g) {
 
@@ -112,7 +103,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         Graphics2D bg = (Graphics2D) g.create();
         paintImpl(g, rect, true);
 
-        borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
+        borderGraphics.drawRect(rect.x, rect.y, rect.width - 1, rect.height - 1);
         borderGraphics.dispose();
     }
 
@@ -125,13 +116,12 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     private void paintImpl(Graphics g, Rectangle visibleRect, boolean snapshot) {
 
         // Get available tracks
-        Collection<TrackGroup> groups = getGroups();
-        boolean isGrouped = groups.size() > 1;
+        List<Track> tracks = getTrackPanel().getTracks();
 
         Graphics2D fontGraphics = (Graphics2D) g.create();
         fontGraphics.setColor(Color.BLACK);
 
-        if (!groups.isEmpty()) {
+        if (!tracks.isEmpty()) {
 
             final Graphics2D graphics2D = (Graphics2D) g;
             graphics2D.setColor(Color.BLACK);
@@ -139,51 +129,9 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             final Graphics2D greyGraphics = (Graphics2D) g.create();
             greyGraphics.setColor(UIConstants.LIGHT_GREY);
 
-            int regionY = 0;
+            Rectangle displayableRect = visibleRect;
+            printTrackNames(tracks, displayableRect, visibleRect, fontGraphics, 0, 0, snapshot);
 
-            groupExtents.clear();
-
-            //Rectangle clipRect = g.getClipBounds();
-
-            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-                TrackGroup group = groupIter.next();
-
-                if (regionY > visibleRect.getMaxY()) {
-                    break;
-                }
-
-                if (group.isVisible()) {
-                    if (isGrouped) {
-                        if (regionY + UIConstants.groupGap >= visibleRect.y && regionY < visibleRect.getMaxY()) {
-                            greyGraphics.fillRect(0, regionY + 1, getWidth(), UIConstants.groupGap - 1);
-                        }
-                        regionY += UIConstants.groupGap;
-                    }
-
-                    if (group.isDrawBorder() && regionY + UIConstants.groupGap >= visibleRect.y &&
-                            regionY < visibleRect.getMaxY()) {
-                        g.drawLine(0, regionY - 1, getWidth(), regionY - 1);
-                    }
-
-                    int h = group.getHeight();
-                    Rectangle groupRect = new Rectangle(visibleRect.x, regionY, visibleRect.width, h);
-                    Rectangle displayableRect = getDisplayableRect(groupRect, visibleRect);
-                    regionY = printTrackNames(group, displayableRect, visibleRect, fontGraphics, 0, regionY, snapshot);
-
-                    if (isGrouped) {
-                        groupExtents.add(new GroupExtent(group, groupRect.y, groupRect.y + groupRect.height));
-                        if (showGroupNames) {
-                            //Rectangle displayableRect = getDisplayableRect(groupRect, visibleRect);
-                            group.renderName(fontGraphics, displayableRect);
-                        }
-                    }
-
-                    if (group.isDrawBorder()) {
-                        g.drawLine(0, regionY, getWidth(), regionY);
-                    }
-                }
-
-            }
             graphics2D.dispose();
             greyGraphics.dispose();
         }
@@ -205,14 +153,12 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     }
 
-    private int printTrackNames(TrackGroup group, Rectangle visibleRect, Rectangle clipRect,
+    private int printTrackNames(List<Track> tmp, Rectangle visibleRect, Rectangle clipRect,
                                 Graphics2D graphics2D, int regionX, int regionY, boolean snapshot) {
 
-        List<Track> tmp = new ArrayList(group.getVisibleTracks());
         final Color backgroundColor = PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
         graphics2D.setBackground(backgroundColor);
         graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
-
 
         for (Track track : tmp) {
             if (track == null) continue;
@@ -227,15 +173,15 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                     Rectangle region = new Rectangle(regionX, regionY, width, height);
                     addMousableRegion(new MouseableRegion(region, track));
 
-                        Rectangle rect = new Rectangle(regionX, regionY, width, height);
-                        //Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
-                        if (!snapshot && track.isSelected()) {
-                            graphics2D.setBackground(Color.LIGHT_GRAY);
-                        } else {
-                            graphics2D.setBackground(backgroundColor);
-                        }
-                        graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
-                        track.renderName(graphics2D, rect, visibleRect);
+                    Rectangle rect = new Rectangle(regionX, regionY, width, height);
+                    //Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
+                    if (!snapshot && track.isSelected()) {
+                        graphics2D.setBackground(Color.LIGHT_GRAY);
+                    } else {
+                        graphics2D.setBackground(backgroundColor);
+                    }
+                    graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
+                    track.renderName(graphics2D, rect, visibleRect);
 
 
                 }
@@ -248,7 +194,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     private void init() {
 
-    //    setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
+        //    setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
         setBackground(new java.awt.Color(255, 255, 255));
         GroupLayout dataTrackNamePanelLayout = new org.jdesktop.layout.GroupLayout(this);
         setLayout(dataTrackNamePanelLayout);
@@ -355,17 +301,17 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                 openPopupMenu(te);
             } // meta (mac) or control,  toggle selection]
             else if (e.getButton() == MouseEvent.BUTTON1) {
-                    if (e.isMetaDown() || e.isControlDown()) {
-                        toggleTrackSelections(e);
-                    } else if (e.isShiftDown()) {
-                        shiftSelectTracks(e);
-                    } else if (!isTrackSelected(e)) {
-                        clearTrackSelections();
-                        selectTracks(e);
-                    }
+                if (e.isMetaDown() || e.isControlDown()) {
+                    toggleTrackSelections(e);
+                } else if (e.isShiftDown()) {
+                    shiftSelectTracks(e);
+                } else if (!isTrackSelected(e)) {
+                    clearTrackSelections();
+                    selectTracks(e);
+                }
 
             } else {
-                 if (!isTrackSelected(e)) {
+                if (!isTrackSelected(e)) {
                     clearTrackSelections();
                     selectTracks(e);
                 }

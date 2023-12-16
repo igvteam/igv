@@ -55,7 +55,7 @@ import java.util.*;
 /**
  * @author jrobinso
  */
-public class AttributePanel extends TrackPanelComponent implements  Paintable {
+public class AttributePanel extends TrackPanelComponent implements Paintable {
 
     private static Logger log = LogManager.getLogger(AttributePanel.class);
 
@@ -99,7 +99,7 @@ public class AttributePanel extends TrackPanelComponent implements  Paintable {
         paintImpl(g, rect, batch);
         Graphics2D borderGraphics = (Graphics2D) g.create();
         borderGraphics.setColor(Color.lightGray);
-        rect.height -=1;
+        rect.height -= 1;
         borderGraphics.draw(rect);
         borderGraphics.dispose();
     }
@@ -120,10 +120,9 @@ public class AttributePanel extends TrackPanelComponent implements  Paintable {
 
             // Get the current tracks
             TrackPanel trackPanel = (TrackPanel) getParent();
-            Collection<TrackGroup> groups = trackPanel.getGroups();
+            List<Track> tracks = getTrackPanel().getTracks();
 
-
-            if (!groups.isEmpty()) {
+            if (!tracks.isEmpty()) {
 
                 // int attributeColumnWidth = getAttributeColumnWidth();
                 final Graphics2D graphics2D = (Graphics2D) g.create();
@@ -136,48 +135,24 @@ public class AttributePanel extends TrackPanelComponent implements  Paintable {
                 int regionY = 0;
                 final int bottom = rect.y + rect.height;
 
-                for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-                    TrackGroup group = groupIter.next();
-
-                    // Out of view?
+                for (Track track : tracks) {
+                    if (track == null) continue;
+                    int trackHeight = track.getContentHeight();
                     if (regionY > bottom) {
                         break;
                     }
 
-                    if (group.isVisible()) {
-                        if (groups.size() > 1) {
-                            greyGraphics.fillRect(0, regionY + 1, getWidth(), UIConstants.groupGap - 1);
-                            regionY += UIConstants.groupGap;
+                    if (track.isVisible()) {
+                        int border = trackHeight < 5 ? 0 : 1;
+                        if (regionY + trackHeight >= rect.y) {
+                            Rectangle trackRectangle = new Rectangle(left, regionY + border, getWidth(), trackHeight - border);
+                            track.renderAttributes(graphics2D, trackRectangle, rect, names, mouseRegions);
+                            //regionY = draw(names, track, regionX, regionY, attributeColumnWidth, track.getHeight(), graphics2D);
                         }
-
-
-                        if (group.isDrawBorder()) {
-                            g.drawLine(0, regionY - 1, getWidth(), regionY - 1);
-                        }
-
-                        for (Track track : group.getVisibleTracks()) {
-                            if (track == null) continue;
-                            int trackHeight = track.getContentHeight();
-                            if (regionY > bottom) {
-                                break;
-                            }
-
-                            if (track.isVisible()) {
-                                int border = trackHeight < 5 ? 0 : 1;
-                                if (regionY + trackHeight >= rect.y) {
-                                    Rectangle trackRectangle = new Rectangle(left, regionY + border, getWidth(), trackHeight - border);
-                                    track.renderAttributes(graphics2D, trackRectangle, rect, names, mouseRegions);
-                                    //regionY = draw(names, track, regionX, regionY, attributeColumnWidth, track.getHeight(), graphics2D);
-                                }
-                                regionY += trackHeight;
-                            }
-                        }
-
-                        if (group.isDrawBorder()) {
-                            g.drawLine(0, regionY, getWidth(), regionY);
-                        }
+                        regionY += trackHeight;
                     }
                 }
+
 
                 // Border between columns
                 final Graphics2D columnBorderGraphics = (Graphics2D) g.create();

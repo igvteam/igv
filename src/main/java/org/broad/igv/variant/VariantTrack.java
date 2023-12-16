@@ -330,42 +330,42 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private void setupGroupsFromAttributes() {
         // setup groups according to the attribute used for sorting (loaded from a sample information file):
 
-        AttributeManager manager = AttributeManager.getInstance();
-        String newGroupByAttribute = !IGV.hasInstance() ? null : IGV.getInstance().getGroupByAttribute();
-
-        // The first equality handles the case where both are null
-        if ((newGroupByAttribute == groupByAttribute) ||
-                (newGroupByAttribute != null && newGroupByAttribute.equals(groupByAttribute))) {
-            // Nothing to do
-            return;
-        }
-
-
-        samplesByGroups.clear();
-
-        groupByAttribute = newGroupByAttribute;
-
-        if (groupByAttribute == null) {
-            grouped = false;
-            return;
-        }
-
-        if (allSamples != null) {
-            for (String sample : allSamples) {
-
-                String sampleGroup = manager.getAttribute(sample, newGroupByAttribute);
-
-                List<String> sampleList = samplesByGroups.get(sampleGroup);
-                if (sampleList == null) {
-                    sampleList = new ArrayList<String>();
-                    samplesByGroups.put(sampleGroup, sampleList);
-                }
-                sampleList.add(sample);
-            }
-        }
-
-        grouped = samplesByGroups.size() > 1;
-        groupByAttribute = newGroupByAttribute;
+//        AttributeManager manager = AttributeManager.getInstance();
+//        String newGroupByAttribute = !IGV.hasInstance() ? null : IGV.getInstance().getGroupByAttribute();
+//
+//        // The first equality handles the case where both are null
+//        if ((newGroupByAttribute == groupByAttribute) ||
+//                (newGroupByAttribute != null && newGroupByAttribute.equals(groupByAttribute))) {
+//            // Nothing to do
+//            return;
+//        }
+//
+//
+//        samplesByGroups.clear();
+//
+//        groupByAttribute = newGroupByAttribute;
+//
+//        if (groupByAttribute == null) {
+//            grouped = false;
+//            return;
+//        }
+//
+//        if (allSamples != null) {
+//            for (String sample : allSamples) {
+//
+//                String sampleGroup = manager.getAttribute(sample, newGroupByAttribute);
+//
+//                List<String> sampleList = samplesByGroups.get(sampleGroup);
+//                if (sampleList == null) {
+//                    sampleList = new ArrayList<String>();
+//                    samplesByGroups.put(sampleGroup, sampleList);
+//                }
+//                sampleList.add(sample);
+//            }
+//        }
+//
+//        grouped = samplesByGroups.size() > 1;
+//        groupByAttribute = newGroupByAttribute;
     }
 
     /**
