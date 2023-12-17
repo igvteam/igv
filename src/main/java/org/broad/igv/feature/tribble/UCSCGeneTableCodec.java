@@ -39,6 +39,7 @@ import java.util.List;
  */
 public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
 
+    boolean triedShift = false;    // We don't know initially if the file contains the "bin" column, or not.
     private int nameColumn = 0;
     private int idColumn = 1;
     private int chrColumn = 2;
@@ -112,71 +113,98 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
      * a comment)
      */
     public BasicFeature decode(String line) {
-        if (line.startsWith("#")) {
-            //Header line
-            readHeaderLine(line);
-            return null;
-        }
-
-        line = line.replaceAll("\"", "");
-        String[] tokens = Globals.tabPattern.split(line);
-        int tokenCount = tokens.length;
-
-        if (tokenCount <= strandColumn) {
-            return null;
-        }
-
-        String identifier = tokens[idColumn].trim();
-        String name = null;
-        if (tokenCount > nameColumn && tokens[nameColumn] != null) {
-            name = tokens[nameColumn];
-        }
-
-        if (name == null || name.length() == nameColumn) {
-            name = identifier;
-        }
-
-        String chrToken = tokens[chrColumn].trim();
-        String chr = genome == null ? chrToken : genome.getCanonicalChrName(chrToken);
-
-        int start = Integer.parseInt(tokens[startColumn]);
-        int end = Integer.parseInt(tokens[endColumn]);
-        String strandString = tokens[strandColumn];
-        Strand strand = Strand.NONE;
-        if (strandString != null) {
-            if (strandString.trim().equals("+")) {
-                strand = Strand.POSITIVE;
-            } else if (strandString.trim().equals("-")) {
-                strand = Strand.NEGATIVE;
+        try {
+            if (line.startsWith("#")) {
+                //Header line
+                readHeaderLine(line);
+                return null;
             }
+
+            line = line.replaceAll("\"", "");
+            String[] tokens = Globals.tabPattern.split(line);
+            int tokenCount = tokens.length;
+
+            if (tokenCount <= strandColumn) {
+                return null;
+            }
+
+            String identifier = tokens[idColumn].trim();
+            String name = null;
+            if (tokenCount > nameColumn && tokens[nameColumn] != null) {
+                name = tokens[nameColumn];
+            }
+
+            if (name == null || name.length() == nameColumn) {
+                name = identifier;
+            }
+
+            String chrToken = tokens[chrColumn].trim();
+            String chr = genome == null ? chrToken : genome.getCanonicalChrName(chrToken);
+
+            int start = Integer.parseInt(tokens[startColumn]);
+            int end = Integer.parseInt(tokens[endColumn]);
+            String strandString = tokens[strandColumn];
+            Strand strand = Strand.NONE;
+            if (strandString != null) {
+                if (strandString.trim().equals("+")) {
+                    strand = Strand.POSITIVE;
+                } else if (strandString.trim().equals("-")) {
+                    strand = Strand.NEGATIVE;
+                }
+            }
+
+            BasicFeature gene = new BasicFeature(chr, start, end, strand);
+            gene.setRepresentation(line);
+
+            gene.setName(name);
+            gene.setIdentifier(identifier);
+
+            if (tokenCount > 7) {
+                gene.setThickStart(Integer.parseInt(tokens[6]));
+                gene.setThickEnd(Integer.parseInt(tokens[7]));
+            }
+
+            if (scoreColumn > 0 && tokenCount > scoreColumn) {
+                gene.setScore((float) Double.parseDouble(tokens[scoreColumn]));
+            }
+
+            // Coding information is optional
+            if (tokenCount > 8) {
+                createExons(tokens, tokenCount, gene, chr, strand);
+            }
+
+            // Optional standard name column
+            if (tokenCount > 16) {
+                gene.setAttribute("Standard Name", tokens[16]);
+            }
+
+            return gene;
+        } catch (Exception e) {
+            if(triedShift) {
+                throw new RuntimeException(e);
+            } else {
+                triedShift = true;
+                shiftColumns();
+                return decode(line);
+            }
+
         }
+    }
 
-        BasicFeature gene = new BasicFeature(chr, start, end, strand);
-        gene.setRepresentation(line);
 
-        gene.setName(name);
-        gene.setIdentifier(identifier);
-
-        if (tokenCount > 7) {
-            gene.setThickStart(Integer.parseInt(tokens[6]));
-            gene.setThickEnd(Integer.parseInt(tokens[7]));
-        }
-
-        if(scoreColumn > 0 && tokenCount > scoreColumn) {
-            gene.setScore((float) Double.parseDouble(tokens[scoreColumn]));
-        }
-
-        // Coding information is optional
-        if (tokenCount > 8) {
-            createExons(tokens, tokenCount, gene, chr, strand);
-        }
-
-        // Optional standard name column
-        if (tokenCount > 16) {
-            gene.setAttribute("Standard Name", tokens[16]);
-        }
-
-        return gene;
+    private void shiftColumns() {
+        nameColumn--;
+        idColumn--;
+        chrColumn--;
+        strandColumn--;
+        startColumn--;
+        endColumn--;
+        cdStartColumn--;
+        cdEndColumn--;
+        exonCountColumn--;
+        startsBufferColumn--;
+        endsBufferColumn--;
+        frameBufferColumn--;
     }
 
     /**
