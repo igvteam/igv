@@ -29,6 +29,7 @@
 
 package org.broad.igv.ui.panel;
 
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -45,6 +46,15 @@ import org.broad.igv.ui.util.*;
 public class ReorderPanelsDialog extends org.broad.igv.ui.IGVDialog  {
 
     private boolean canceled = false;
+    private JPanel dialogPane;
+    private JPanel contentPanel;
+    private JScrollPane scrollPane1;
+    private ReorderableJList list;
+    private JLabel label1;
+    private JPanel buttonBar;
+    private JButton okButton;
+    private JButton cancelButton;
+
 
     public ReorderPanelsDialog(Frame owner) {
         super(owner);
@@ -82,8 +92,7 @@ public class ReorderPanelsDialog extends org.broad.igv.ui.IGVDialog  {
     }
 
     private void initComponents() {
-        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner non-commercial license
+
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         scrollPane1 = new JScrollPane();
@@ -154,7 +163,6 @@ public class ReorderPanelsDialog extends org.broad.igv.ui.IGVDialog  {
         contentPane.add(dialogPane, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(getOwner());
-        // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     static class Wrapper {
@@ -181,15 +189,6 @@ public class ReorderPanelsDialog extends org.broad.igv.ui.IGVDialog  {
         }
     }
 
-    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner non-commercial license
-    private JPanel dialogPane;
-    private JPanel contentPanel;
-    private JScrollPane scrollPane1;
-    private ReorderableJList list;
-    private JLabel label1;
-    private JPanel buttonBar;
-    private JButton okButton;
-    private JButton cancelButton;
-    // JFormDesigner - End of variables declaration  //GEN-END:variables
+
+
 }

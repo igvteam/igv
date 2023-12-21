@@ -1073,8 +1073,8 @@ public class IGV implements IGVEventObserver {
         //contentPane.getMainPanel().tweakPanelDivider();
     }
 
-    public void removeDataPanel(String name) {
-        contentPane.getMainPanel().removeDataPanel(name);
+    public void removeDataPanel(Component panel) {
+        contentPane.getMainPanel().removeDataPanel(panel);
     }
 
     public MainPanel getMainPanel() {
@@ -1573,13 +1573,9 @@ public class IGV implements IGVEventObserver {
      */
     public void deleteTracks(Collection<? extends Track> tracksToRemove) {
 
-        // Make copy of list as we will be modifying the original in the loop
-        List<TrackPanel> panels = getTrackPanels();
+        List<TrackPanel> panels = new ArrayList<>(getTrackPanels());
         for (TrackPanel trackPanel : panels) {
             trackPanel.removeTracks(tracksToRemove);
-            if (!trackPanel.hasTracks()) {
-                removeDataPanel(trackPanel.getName());
-            }
         }
 
         for (Track t : tracksToRemove) {
@@ -1588,6 +1584,14 @@ public class IGV implements IGVEventObserver {
             }
             t.unload();
         }
+
+        for (TrackPanel trackPanel : panels) {
+            if (!trackPanel.hasTracks()) {
+                removeDataPanel(trackPanel.getScrollPane());
+            }
+        }
+
+
         revalidateTrackPanels();
     }
 

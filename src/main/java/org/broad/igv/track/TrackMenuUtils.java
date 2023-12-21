@@ -956,12 +956,7 @@ public class TrackMenuUtils {
         boolean multiple = selectedTracks.size() > 1;
 
         JMenuItem item = new JMenuItem("Remove Track" + (multiple ? "s" : ""));
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                removeTracksAction(selectedTracks);
-            }
-        });
+        item.addActionListener(evt -> removeTracksAction(selectedTracks));
         return item;
     }
 
@@ -1009,7 +1004,8 @@ public class TrackMenuUtils {
         }
 
         final String parameter = "Track height";
-        Integer value = getIntegerInput(parameter, getRepresentativeTrackHeight(selectedTracks));
+        int initialValue = selectedTracks.iterator().next().getHeight();
+        Integer value = getIntegerInput(parameter, initialValue);
         if (value == null) {
             return;
         }
@@ -1018,7 +1014,7 @@ public class TrackMenuUtils {
         for (Track track : selectedTracks) {
             track.setHeight(value);
         }
-        IGV.getInstance().repaint(selectedTracks);
+        IGV.getInstance().revalidateTrackPanels();
     }
 
     public static void changeFeatureVisibilityWindow(final Collection<Track> selectedTracks) {
@@ -1071,13 +1067,13 @@ public class TrackMenuUtils {
         IGV.getInstance().repaint(selectedTracks);
     }
 
-    public static Integer getIntegerInput(String parameter, int value) {
+    public static Integer getIntegerInput(String parameter, int initialValue) {
 
         while (true) {
 
             String strValue = JOptionPane.showInputDialog(
                     IGV.getInstance().getMainFrame(), parameter + ": ",
-                    String.valueOf(value));
+                    String.valueOf(initialValue));
 
             //strValue will be null if dialog cancelled
             if ((strValue == null) || strValue.trim().equals("")) {
@@ -1085,8 +1081,7 @@ public class TrackMenuUtils {
             }
 
             try {
-                value = Integer.parseInt(strValue);
-                return value;
+                return Integer.parseInt(strValue);
             } catch (NumberFormatException numberFormatException) {
                 JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(),
                         parameter + " must be an integer number.");
@@ -1298,12 +1293,7 @@ public class TrackMenuUtils {
     public static JMenuItem getChangeTrackHeightItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Change Track Height...");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                changeTrackHeight(selectedTracks);
-            }
-        });
+        item.addActionListener(evt -> changeTrackHeight(selectedTracks));
         return item;
     }
 

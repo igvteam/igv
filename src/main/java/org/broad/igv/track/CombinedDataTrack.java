@@ -5,6 +5,9 @@ import org.broad.igv.data.DataSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+/**
+ * A CombinedDataTrack consists of two tracks combined with an arithmetic operator.
+ */
 public class CombinedDataTrack extends DataSourceTrack {
 
     /**

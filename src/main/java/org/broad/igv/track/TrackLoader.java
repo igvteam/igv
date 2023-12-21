@@ -909,15 +909,10 @@ public class TrackLoader {
                 }
             }
 
-            // Place associated tracks in a new panel (coverage, splice junction, alignment)
-
-            String newPanelName = "Panel" + System.currentTimeMillis();
 
             AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName)
-            alignmentTrack.setPanelName(newPanelName);
             alignmentTrack.setVisible(PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK));
 
-            alignmentTrack.getCoverageTrack().setPanelName(newPanelName);
             newTracks.add(alignmentTrack.getCoverageTrack());
 
             //  Precalculated coverage data (can be null)
@@ -951,7 +946,6 @@ public class TrackLoader {
             }
 
             // Splice junction track
-            alignmentTrack.getSpliceJunctionTrack().setPanelName(newPanelName);
             newTracks.add(alignmentTrack.getSpliceJunctionTrack());
 
             alignmentTrack.init();
@@ -1031,29 +1025,12 @@ public class TrackLoader {
             SegmentFileParser parser = new SegmentFileParser(locator);
             ds = parser.loadSegments(locator, genome);
         }
-        loadSegTrack(locator, newTracks, genome, ds);
-    }
 
-    /**
-     * Add the provided SegmentedDataSet to the list of tracks,
-     * set other relevant properties
-     *
-     * @param locator
-     * @param newTracks
-     * @param genome
-     * @param ds
-     */
-    private void loadSegTrack(ResourceLocator locator, List<Track> newTracks, Genome genome, SegmentedDataSet ds) {
-
-        String path = locator.getPath();
 
         TrackProperties props = null;
         if (ds instanceof SegmentedAsciiDataSet) {
             props = ((SegmentedAsciiDataSet) ds).getTrackProperties();
         }
-
-
-        String newPanelName = "Panel" + System.currentTimeMillis();
 
         // The "freq" track.
         if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
@@ -1062,21 +1039,17 @@ public class TrackLoader {
             String freqTrackId = path;
             String freqTrackName = "CNV Summary";
             CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
-            freqTrack.setPanelName(newPanelName);
-
             if (props != null) {
                 freqTrack.setProperties(props);
             }
-
             newTracks.add(freqTrack);
         }
 
-
+        List<Track> sampleTracks = new ArrayList<>();
         for (String trackName : ds.getSampleNames()) {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-            track.setPanelName(newPanelName);
             track.setRenderer(new HeatmapRenderer());
             track.setTrackType(ds.getType());
 
@@ -1084,8 +1057,11 @@ public class TrackLoader {
                 track.setProperties(props);
             }
 
-            newTracks.add(track);
+            sampleTracks.add(track);
         }
+
+
+        newTracks.add(new CompositeTrack(locator, sampleTracks));
     }
 
     private void loadTrioData(ResourceLocator locator) throws IOException {

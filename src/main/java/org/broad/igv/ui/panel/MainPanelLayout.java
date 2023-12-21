@@ -108,15 +108,28 @@ public class MainPanelLayout implements LayoutManager2 {
 
         int w = target.getWidth();
 
-        Insets insets = target.getInsets();
-
         int y = 0;
         for (int i = 0; i < n; i++) {
             Component c = target.getComponent(i);
-            Dimension d = new Dimension(w, Math.max(15, c.getPreferredSize().height));
-            c.setSize(d);
-            c.setLocation(0, y);
-            y += d.height;
+            if (c.isVisible()) {
+
+                Dimension d;
+                if (c instanceof TrackPanelScrollPane) {
+                    TrackPanelScrollPane sp = (TrackPanelScrollPane) c;
+                    Insets insets = sp.getInsets();
+                    int h = ((TrackPanelScrollPane) c).getTrackPanel().getTotalTrackHeight() + insets.bottom + insets.top;
+                    d = new Dimension(w, h);
+                } else {
+                    // This should never happen
+                    d = c.getPreferredSize();
+                }
+
+                c.setSize(d);
+                c.setLocation(0, y);
+                y += d.height;
+            } else {
+                c.setSize(new Dimension(0, 0));
+            }
         }
     }
 

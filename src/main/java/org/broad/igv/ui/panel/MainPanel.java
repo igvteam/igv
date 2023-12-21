@@ -183,13 +183,6 @@ public class MainPanel extends JPanel implements Paintable {
         outerScrollContainer = new JPanel();
         outerScrollContainer.setLayout(new MainPanelLayout(outerScrollContainer));
 
-//        featureTrackScrollPane = new TrackPanelScrollPane();
-//        featureTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 50));
-//        featureTrackScrollPane.setViewportView(new TrackPanel(IGV.FEATURE_PANEL_NAME, this));
-//
-//        outerScrollContainer.add(featureTrackScrollPane);
-
-
         JScrollPane outerScrollPane = new JScrollPane(outerScrollContainer);
         outerScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         outerScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -228,6 +221,7 @@ public class MainPanel extends JPanel implements Paintable {
 
             final TrackPanelScrollPane sp = new TrackPanelScrollPane();
             sp.setViewportView(trackPanel);
+            trackPanel.setScrollPane(sp);
 
             Insets insets2 = sp.getInsets();
             int dy = insets2.top + insets2.bottom;
@@ -238,6 +232,9 @@ public class MainPanel extends JPanel implements Paintable {
             sp.setPreferredSize(new Dimension(1000, height));
             sp.setMinimumSize(new Dimension(0, t.getMinimumHeight() + dy));
             outerScrollContainer.add(sp);
+
+            trackPanel.setVisible(t.isVisible());
+
         };
         UIUtilities.invokeAndWaitOnEventThread(runnable);
     }
@@ -280,7 +277,7 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void reorderPanels(java.util.List<String> names) {
 
-        Map<String, TrackPanelScrollPane> panes = new HashMap();
+        Map<String, TrackPanelScrollPane> panes = new LinkedHashMap<>();
         for (Component c : outerScrollContainer.getComponents()) {
             if (c instanceof TrackPanelScrollPane) {
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
@@ -288,13 +285,12 @@ public class MainPanel extends JPanel implements Paintable {
             }
         }
 
-        //
         outerScrollContainer.removeAll();
         for (String name : names) {
             outerScrollContainer.add(panes.get(name));
         }
 
-        outerScrollContainer.invalidate();
+        outerScrollContainer.revalidate();
     }
 
 
@@ -315,23 +311,11 @@ public class MainPanel extends JPanel implements Paintable {
 
     }
 
-    public void removeDataPanel(String name) {
+    public void removeDataPanel(Component panel) {
 
-        TrackPanelScrollPane sp = null;
-        for (TrackPanel tp : getTrackPanels()) {
-            if (name.equals(tp.getName())) {
-                sp = tp.getScrollPane();
-                break;
-            }
-        }
-        // Don't remove the "special" panes
-        if (sp == featureTrackScrollPane) {
-            return;
-        }
-        if (sp != null) {
-            outerScrollContainer.remove(sp);
-            TrackNamePanel.removeDropListenerFor(sp.getNamePanel());
-        }
+        outerScrollContainer.remove(panel);
+        // TrackNamePanel.removeDropListenerFor(sp.getNamePanel());
+
     }
 
     public void updatePanelDimensions() {

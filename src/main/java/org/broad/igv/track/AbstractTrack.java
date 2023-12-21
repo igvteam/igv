@@ -445,19 +445,6 @@ public abstract class AbstractTrack implements Track {
     }
 
     public boolean isVisible() {
-
-        if (visible && getTrackType() == TrackType.MUTATION) {
-            // Special rules for mutations.  If display as overlays == true, only show if not overlaid on another
-            // track and "show orphaned" is true
-            boolean displayOverlays = IGV.getInstance().getSession().getOverlayMutationTracks();
-            if (displayOverlays) {
-                if (overlaid) {
-                    return false;
-                } else {
-                    return PreferencesManager.getPreferences().getAsBoolean(SHOW_ORPHANED_MUTATIONS);
-                }
-            }
-        }
         return visible;
     }
 
@@ -472,7 +459,10 @@ public abstract class AbstractTrack implements Track {
     public void setVisible(boolean visible) {
         if (this.visible != visible) {
             this.visible = visible;
-            if (IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
+            if(this.trackPanel != null) {
+                this.trackPanel.setVisible(this.trackPanel.getVisibleTracks().size() > 0);
+                IGV.getInstance().getMainPanel().revalidate();
+            }
         }
     }
 
@@ -490,9 +480,14 @@ public abstract class AbstractTrack implements Track {
 
     public void setHeight(int height) {
         this.height = height;
-        if(this.trackPanel != null) {
-            this.trackPanel.updatePreferredSize();
-        }
+//        if(this.trackPanel != null) {
+//            TrackPanelScrollPane tsp = trackPanel.getScrollPane();
+//            Dimension d = tsp.getSize();
+//            d.height = height;
+//            //this.trackPanel.getScrollPane().setSize(d);
+//            //this.trackPanel.updatePreferredSize();
+//        }
+        IGV.getInstance().getMainPanel().revalidate();
     }
 
     @Override

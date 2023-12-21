@@ -49,7 +49,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Track to serve as a container for several tracks rendered on top of each other
+ * Track to serve as a container for several "wig" tracks rendered on top of each other
  *
  * @author jacob
  * @date 2013-Nov-05

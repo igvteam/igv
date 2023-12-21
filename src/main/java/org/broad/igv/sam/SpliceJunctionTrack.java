@@ -193,9 +193,6 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     public void setVisible(boolean visible) {
         if (visible != isVisible()) {
             super.setVisible(visible);
-            if (IGV.hasInstance()) {
-                IGV.getInstance().getMainPanel().revalidate();
-            }
         }
     }
 

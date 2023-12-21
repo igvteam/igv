@@ -927,7 +927,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             item.setSelected(spliceJunctionTrack.isVisible());
             item.setEnabled(!spliceJunctionTrack.isRemoved());
             item.addActionListener(aEvt -> {
-                alignmentTrack.setVisible(item.isSelected());
+                spliceJunctionTrack.setVisible(item.isSelected());
                 IGV.getInstance().repaint(Arrays.asList(spliceJunctionTrack));
 
             });

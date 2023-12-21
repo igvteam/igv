@@ -190,7 +190,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
         boolean visible = isVisible();
 
-        if (visible) {
+        //if (visible) {
             graphics.setFont(font);
             int textBaseline = trackRectangle.y + 12;
             graphics.drawString(NAME, trackRectangle.x + 5, textBaseline);
@@ -208,7 +208,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 //            }
 
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
-        }
+       // }
 
         graphics.dispose();
     }
@@ -353,7 +353,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         this.showTranslation = showTranslation;
         PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, showTranslation);
         //setHeight(getContentHeight());
-        this.trackPanel.updatePreferredSize();
+        //this.trackPanel.updatePreferredSize();
         repaint();
     }
 

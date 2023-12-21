@@ -59,6 +59,9 @@ public class TrackPanel extends JPanel implements Paintable {
     private List<Track> tracks;
     transient int lastHeight = 0;
 
+    transient int visibleHeight;
+    private TrackPanelScrollPane scrollPane;
+
     /**
      * Constructs ...
      *
@@ -93,14 +96,7 @@ public class TrackPanel extends JPanel implements Paintable {
     }
 
     public TrackPanelScrollPane getScrollPane() {
-
-        TrackPanelScrollPane scollpane = null;
-        Container parent = getParent();
-
-        if (parent instanceof JViewport) {
-            scollpane = (TrackPanelScrollPane) ((JViewport) parent).getParent();
-        }
-        return scollpane;
+        return scrollPane;
     }
 
     @Override
@@ -123,6 +119,18 @@ public class TrackPanel extends JPanel implements Paintable {
 
             dataPanel.doLayout();
         }
+    }
+
+    /**
+     * Override setVisible to also hide the containing scroll pane.
+     * @param aFlag  true to make the component visible; false to
+     *          make it invisible
+     */
+    @Override
+    public void setVisible(boolean aFlag) {
+        //super.setVisible(aFlag);
+        getScrollPane().setVisible(aFlag);
+        IGV.getInstance().getMainPanel().revalidate();
     }
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
@@ -319,18 +327,26 @@ public class TrackPanel extends JPanel implements Paintable {
         return dim;
     }
 
-    public void updatePreferredSize() {
+//    public void updatePreferredSize() {
+//
+//        int height = 0;
+//        for (Track t : tracks) {
+//            height += t.getContentHeight();
+//        }
+//        TrackPanelScrollPane sp = getScrollPane();
+//        Insets insets2 = sp.getInsets();
+//        int dy = insets2.top + insets2.bottom;
+//        sp.setPreferredSize(new Dimension(1000, height + dy));
+//        mainPanel.revalidate();
+//    }
 
-        int height = 0;
-        for (Track t : tracks) {
-            height += t.getContentHeight();
-        }
-
-        TrackPanelScrollPane sp = getScrollPane();
-        Insets insets2 = sp.getInsets();
-        int dy = insets2.top + insets2.bottom;
-        sp.setPreferredSize(new Dimension(1000, height + dy));
-        mainPanel.revalidate();
+    /**
+     * Return the sum of track.height values for all tracks associated with this panel.  Normally this is a single
+     * track.  The "track.height" property corresponds to the height from the users perspective, i.e. the height
+     * of the associated scroll pane
+     */
+    public int getTotalTrackHeight() {
+        return tracks.stream().collect(Collectors.summingInt(t -> t.isVisible() ? t.getHeight() : 0));
     }
 
 
@@ -375,5 +391,9 @@ public class TrackPanel extends JPanel implements Paintable {
         tracks = TrackPanelHelper.sortByRegionScore(tracks, type, sortedSamples);
     }
 
+
+    public void setScrollPane(TrackPanelScrollPane sp) {
+        this.scrollPane = sp;
+    }
 
 }
