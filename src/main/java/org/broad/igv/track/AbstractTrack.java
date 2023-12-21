@@ -461,7 +461,7 @@ public abstract class AbstractTrack implements Track {
             this.visible = visible;
             if(this.trackPanel != null) {
                 this.trackPanel.setVisible(this.trackPanel.getVisibleTracks().size() > 0);
-                IGV.getInstance().getMainPanel().revalidate();
+                IGV.getInstance().getMainPanel().revalidateTrackPanels();
             }
         }
     }
@@ -487,7 +487,7 @@ public abstract class AbstractTrack implements Track {
 //            //this.trackPanel.getScrollPane().setSize(d);
 //            //this.trackPanel.updatePreferredSize();
 //        }
-        IGV.getInstance().getMainPanel().revalidate();
+        IGV.getInstance().getMainPanel().revalidateTrackPanels();
     }
 
     @Override

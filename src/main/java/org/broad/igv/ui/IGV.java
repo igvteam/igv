@@ -401,7 +401,6 @@ public class IGV implements IGVEventObserver {
 
         UIUtilities.invokeAndWaitOnEventThread(() -> {
 
-            double totalHeight = 0;
             for (TrackPanel tp : getTrackPanels()) {
                 TrackPanelScrollPane sp = tp.getScrollPane();
                 if (trackCountMap.containsKey(sp)) {
@@ -414,11 +413,7 @@ public class IGV implements IGVEventObserver {
                         }
                     }
                 }
-                // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
-                if (sp.getTrackPanel().getTracks().size() > 0)
-                    totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
             }
-
 
             contentPane.getMainPanel().invalidate();
         });

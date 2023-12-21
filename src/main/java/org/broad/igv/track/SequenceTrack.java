@@ -301,15 +301,22 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
                 sequenceRenderer.setStrand(strand);
                 sequenceRenderer.draw(sequenceInterval, context, rect, showTranslation, resolutionThreshold);
             }
+        } else {
+            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+            Rectangle textRect = new Rectangle(rect);
+            // Keep text near the top of the track rectangle
+            textRect.height = rect.height;
+            String message = "Zoom in to see sequence";
+            GraphicUtils.drawCenteredText(message, textRect, g);
         }
     }
 
-    @Override
-    public boolean isVisible() {
-        int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);
-        return FrameManager.getFrames().stream().anyMatch(frame -> (frame.getScale() < resolutionThreshold &&
-                !frame.getChrName().equals(Globals.CHR_ALL)));
-    }
+//    @Override
+//    public boolean isVisible() {
+//        int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);
+//        return FrameManager.getFrames().stream().anyMatch(frame -> (frame.getScale() < resolutionThreshold &&
+//                !frame.getChrName().equals(Globals.CHR_ALL)));
+//    }
 
     @Override
     public boolean isFilterable() {
@@ -352,9 +359,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public void setShowTranslation(boolean showTranslation) {
         this.showTranslation = showTranslation;
         PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, showTranslation);
-        //setHeight(getContentHeight());
-        //this.trackPanel.updatePreferredSize();
-        repaint();
+        IGV.getInstance().getMainPanel().revalidateTrackPanels();
     }
 
 

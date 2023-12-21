@@ -123,14 +123,15 @@ public class TrackPanel extends JPanel implements Paintable {
 
     /**
      * Override setVisible to also hide the containing scroll pane.
-     * @param aFlag  true to make the component visible; false to
-     *          make it invisible
+     *
+     * @param aFlag true to make the component visible; false to
+     *              make it invisible
      */
     @Override
     public void setVisible(boolean aFlag) {
         //super.setVisible(aFlag);
         getScrollPane().setVisible(aFlag);
-        IGV.getInstance().getMainPanel().revalidate();
+        IGV.getInstance().getMainPanel().revalidateTrackPanels();
     }
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
@@ -209,13 +210,6 @@ public class TrackPanel extends JPanel implements Paintable {
             }
         }
         return count;
-    }
-
-    public boolean isHeightChanged() {
-        int height = getPreferredPanelHeight();
-        boolean change = height != lastHeight;
-        lastHeight = height;
-        return change;
     }
 
     public List<Track> getTracks() {
@@ -304,17 +298,6 @@ public class TrackPanel extends JPanel implements Paintable {
 
     }
 
-    public int getPreferredPanelHeight() {
-
-        int h = 0;
-        for (Track track : tracks) {
-            if (track != null && track.isVisible()) {
-                h += track.getContentHeight();
-            }
-        }
-        return h;
-    }
-
     /**
      * Prefered size == size to view all content without scrolling.
      *
@@ -340,6 +323,18 @@ public class TrackPanel extends JPanel implements Paintable {
 //        mainPanel.revalidate();
 //    }
 
+    public int getPreferredPanelHeight() {
+
+        int h = 0;
+        for (Track track : tracks) {
+            if (track != null && track.isVisible()) {
+                h += track.getContentHeight();
+            }
+        }
+        return h;
+    }
+
+
     /**
      * Return the sum of track.height values for all tracks associated with this panel.  Normally this is a single
      * track.  The "track.height" property corresponds to the height from the users perspective, i.e. the height
@@ -347,6 +342,13 @@ public class TrackPanel extends JPanel implements Paintable {
      */
     public int getTotalTrackHeight() {
         return tracks.stream().collect(Collectors.summingInt(t -> t.isVisible() ? t.getHeight() : 0));
+    }
+
+    public boolean isHeightChanged() {
+        int height = getPreferredPanelHeight();
+        boolean change = height != lastHeight;
+        lastHeight = height;
+        return change;
     }
 
 

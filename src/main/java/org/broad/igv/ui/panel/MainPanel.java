@@ -127,15 +127,6 @@ public class MainPanel extends JPanel implements Paintable {
 
 
     @Override
-    public void doLayout() {
-        super.doLayout();
-        applicationHeaderPanel.doLayout();
-        for (TrackPanel tp : getTrackPanels()) {
-            tp.getScrollPane().doLayout();
-        }
-    }
-
-    @Override
     public void setBackground(Color color) {
         super.setBackground(color);
         if (headerPanelContainer != null) {
