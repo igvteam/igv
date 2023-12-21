@@ -1266,30 +1266,6 @@ public class TrackMenuUtils {
         return item;
     }
 
-
-    /**
-     * Return a representative track height to use as the default.  For now
-     * using the median track height.
-     *
-     * @return
-     */
-    public static int getRepresentativeTrackHeight(Collection<Track> tracks) {
-
-        double[] heights = new double[tracks.size()];
-        int i = 0;
-        for (Track track : tracks) {
-            heights[i] = track.getContentHeight();
-            i++;
-        }
-        int medianTrackHeight = (int) Math.round(StatUtils.percentile(heights, 50));
-        if (medianTrackHeight > 0) {
-            return medianTrackHeight;
-        }
-
-        return PreferencesManager.getPreferences().getAsInt(Constants.INITIAL_TRACK_HEIGHT);
-
-    }
-
     public static JMenuItem getChangeTrackHeightItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Change Track Height...");

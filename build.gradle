@@ -30,6 +30,8 @@ import org.apache.tools.ant.filters.ReplaceTokens
 mainClassName = 'org.broad.igv.ui.Main'
 ext.moduleName = 'org.igv'
 
+test.onlyIf { !project.hasProperty('skipTests') }
+
 buildscript {
     repositories {
         mavenCentral()

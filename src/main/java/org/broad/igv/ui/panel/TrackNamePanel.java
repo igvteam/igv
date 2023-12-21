@@ -168,7 +168,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
                 if (regionY + trackHeight >= clipRect.y && regionY < clipRect.getMaxY()) {
                     int width = getWidth();
-                    int height = track.getContentHeight();
+                    int height = track.getHeight();
 
                     Rectangle region = new Rectangle(regionX, regionY, width, height);
                     addMousableRegion(new MouseableRegion(region, track));

@@ -200,7 +200,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
         for (Track track : tracks) {
             if (track == null) continue;
-            int trackHeight = track.getContentHeight();
+            int trackHeight = track.getHeight();
 
             if (track.isVisible()) {
                 Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
