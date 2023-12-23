@@ -1039,6 +1039,7 @@ public class TrackLoader {
             String freqTrackId = path;
             String freqTrackName = "CNV Summary";
             CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
+            freqTrack.setHeight(15);
             if (props != null) {
                 freqTrack.setProperties(props);
             }
@@ -1061,7 +1062,7 @@ public class TrackLoader {
         }
 
 
-        newTracks.add(new CompositeTrack(locator, sampleTracks));
+        newTracks.add(new SegTrack(locator, sampleTracks));
     }
 
     private void loadTrioData(ResourceLocator locator) throws IOException {
