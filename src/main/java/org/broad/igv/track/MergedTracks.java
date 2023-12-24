@@ -33,6 +33,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -327,7 +328,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         menu.add(setNegColorMenu);
 
         menu.add(TrackMenuUtils.getChangeTrackHeightItem(selfAsList));
-        menu.add(TrackMenuUtils.getChangeFontSizeItem(selfAsList));
+        //menu.add(TrackMenuUtils.getChangeFontSizeItem(selfAsList));
 
         menu.addSeparator();
         TrackMenuUtils.addDataItems(menu, selfAsList, true);

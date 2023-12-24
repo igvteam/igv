@@ -35,6 +35,7 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.SessionAttribute;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -47,6 +48,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -480,15 +482,9 @@ public abstract class AbstractTrack implements Track {
 
     public void setHeight(int height) {
         this.height = height;
-//        if(this.trackPanel != null) {
-//            TrackPanelScrollPane tsp = trackPanel.getScrollPane();
-//            Dimension d = tsp.getSize();
-//            d.height = height;
-//            //this.trackPanel.getScrollPane().setSize(d);
-//            //this.trackPanel.updatePreferredSize();
-//        }
-        IGV.getInstance().getMainPanel().revalidateTrackPanels();
+        UIUtilities.invokeAndWaitOnEventThread(() -> IGV.getInstance().getMainPanel().revalidate());
     }
+    
 
     @Override
     public int getHeight() {

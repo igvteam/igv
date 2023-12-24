@@ -87,7 +87,7 @@ public class VariantMenu extends IGVPopupMenu {
 
         List<Track> selectedTracks = Arrays.asList(variantTrack);
         add(TrackMenuUtils.getTrackRenameItem(selectedTracks));
-        add(TrackMenuUtils.getChangeFontSizeItem(selectedTracks));
+        //add(TrackMenuUtils.getChangeFontSizeItem(selectedTracks));
 
         // Color items
 //        addSeparator();

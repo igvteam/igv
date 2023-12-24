@@ -1,12 +1,15 @@
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.logging.Level;
 
 public class MainPanelLayout implements LayoutManager2 {
 
-
+    private static Logger log = LogManager.getLogger(MainPanelLayout.class);
     Container target;
 
     int minSize = -1;
@@ -90,9 +93,7 @@ public class MainPanelLayout implements LayoutManager2 {
     @Override
     public Dimension preferredLayoutSize(Container parent) {
         checkSizes();
-        System.out.println("pref size " + prefSize);
         return new Dimension(width, prefSize);
-
     }
 
     @Override
@@ -103,11 +104,9 @@ public class MainPanelLayout implements LayoutManager2 {
 
     @Override
     public void layoutContainer(Container parent) {
-
         int n = target.getComponentCount();
 
         int w = target.getWidth();
-
         int y = 0;
         for (int i = 0; i < n; i++) {
             Component c = target.getComponent(i);
@@ -131,6 +130,10 @@ public class MainPanelLayout implements LayoutManager2 {
                 c.setSize(new Dimension(0, 0));
             }
         }
+
+        Dimension targetPrefSize = target.getPreferredSize();
+        targetPrefSize.height = y;
+        target.setPreferredSize(targetPrefSize);
     }
 
     void checkSizes() {

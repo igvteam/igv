@@ -110,8 +110,7 @@ public class MainPanel extends JPanel implements Paintable {
             for (TrackPanel tp : this.getTrackPanels()) {
                 tp.invalidate();
             }
-            this.invalidate(); // this should not be neccessary, but is harmless
-            this.validate();
+            this.revalidate();
         });
     }
 
@@ -224,7 +223,10 @@ public class MainPanel extends JPanel implements Paintable {
             sp.setMinimumSize(new Dimension(0, t.getMinimumHeight() + dy));
             outerScrollContainer.add(sp);
 
-            trackPanel.setVisible(t.isVisible());
+            outerScrollContainer.revalidate();
+
+
+            //trackPanel.setVisible(t.isVisible());
 
         };
         UIUtilities.invokeAndWaitOnEventThread(runnable);

@@ -185,9 +185,10 @@ public interface Track extends Persistable {
 
     /**
      * Set the visibile (viewport) height for this track.
-     * @param preferredHeight
+     *
+     * @param height
      */
-    void setHeight(int preferredHeight);
+    void setHeight(int height);
 
     /**
      * Return the visibile height of the track, that is the desired visibile height of the track.  This can differ

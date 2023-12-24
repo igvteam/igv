@@ -67,7 +67,7 @@ public class CompositeTrack extends AbstractTrack {
         return t == null ? "" : t.getValueStringAt(chr, position, mouseX, mouseY, frame);
     }
 
-    private Track getTrackAtY(int y) {
+    protected Track getTrackAtY(int y) {
         int trackY = 0;
         for (Track t : tracks) {
             int h = t.getContentHeight();

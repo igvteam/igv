@@ -681,14 +681,14 @@ public class TrackMenuUtils {
         menu.add(item);
 
         // Change track color by attribute
-        item = new JMenuItem("Change Track Color (Negative Values or Strand)...");
+        item = new JMenuItem("Change Track Alt Color (Negative Values / (-) Strand)...");
         item.setToolTipText(
                 "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
         item.addActionListener(evt -> changeAltTrackColor(tracks));
         menu.add(item);
 
         menu.add(getChangeTrackHeightItem(tracks));
-        menu.add(getChangeFontSizeItem(tracks));
+        //menu.add(getChangeFontSizeItem(tracks));
     }
 
 
