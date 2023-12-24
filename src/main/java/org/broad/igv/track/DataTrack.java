@@ -45,10 +45,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.renderer.DataRenderer;
-import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.renderer.Renderer;
-import org.broad.igv.renderer.XYPlotRenderer;
+import org.broad.igv.renderer.*;
 import org.broad.igv.session.RendererFactory;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
@@ -243,17 +240,15 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         loadedIntervalCache.clear();
     }
 
-    public void setRendererClass(Class rc) {
-        try {
-            renderer = (DataRenderer) rc.getDeclaredConstructor().newInstance();
-        } catch (Exception ex) {
-            log.error("Error instantiating renderer ", ex);
-        }
-    }
-
-    @Override
     public void setRenderer(Renderer renderer) {
-        this.renderer = (DataRenderer) renderer;
+        if(renderer instanceof DataRenderer) {
+            this.renderer = (DataRenderer) renderer;
+            if (renderer instanceof PointsRenderer) {
+                setWindowFunction(WindowFunction.none);
+            }
+        } else {
+            log.error("Unsupported renderer type for data tracks: " + renderer.getClass().getName());
+        }
     }
 
 

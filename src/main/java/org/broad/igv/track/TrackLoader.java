@@ -153,8 +153,8 @@ public class TrackLoader {
                 } else {
                     throw new RuntimeException("Format: '" + htsgetMeta.getFormat() + "' is not supported for htsget servers.");
                 }
-              
-            }  else if (format.equals("gmt")) {
+
+            } else if (format.equals("gmt")) {
 
                 loadGMT(locator);
             } else if (format.equals("vcf.list")) {
@@ -227,7 +227,7 @@ public class TrackLoader {
                 loadMutFile(locator, newTracks, genome); // Must be tried before ".maf" test below
             } else if (format.equals("maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-            } else  {
+            } else {
 
                 // If the file is too large, give up
                 // TODO -- ftp test
@@ -385,7 +385,7 @@ public class TrackLoader {
 
         VariantTrack t = new VariantTrack(locator, src, allSamples, enableMethylationRateSupport);
 
-        if(t.getAllSamples().size() > 10) {
+        if (t.getAllSamples().size() > 10) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             t.setPanelName(newPanelName);
         }

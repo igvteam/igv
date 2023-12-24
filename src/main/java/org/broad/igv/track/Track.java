@@ -242,7 +242,9 @@ public interface Track extends Persistable {
 
     WindowFunction getWindowFunction();
 
-    void setRendererClass(Class rc);
+    default void setRenderer(Renderer rc) {
+        // Do nothing by default
+    }
 
     Renderer getRenderer();
 

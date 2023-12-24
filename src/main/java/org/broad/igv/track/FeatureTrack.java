@@ -263,12 +263,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         this.squishedRowHeight = squishedRowHeight;
     }
 
-    public void setRendererClass(Class rc) {
-        try {
-            renderer = (Renderer) rc.getDeclaredConstructor().newInstance();
-        } catch (Exception ex) {
-            log.error("Error instatiating renderer ", ex);
-        }
+    public void setRenderer(Renderer rc) {
+        this.renderer = renderer;
     }
 
     public void setMargin(int margin) {
@@ -408,7 +404,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                     }
                     firstFeature = false;
                     if (n > maxNumber) {
-                        buf.append("<hr><br<b>>+ " + (allFeatures.size() - maxNumber) +  " more ...</b>");
+                        buf.append("<hr><br<b>>+ " + (allFeatures.size() - maxNumber) + " more ...</b>");
                         break;
                     }
                 }
@@ -449,7 +445,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                         labelField != null ?
                                 igvFeature.getDisplayName(labelField) :
                                 igvFeature.getName();
-                    url = trackURL.replaceAll("\\$\\$", StringUtils.encodeURL(idOrName));
+                url = trackURL.replaceAll("\\$\\$", StringUtils.encodeURL(idOrName));
             }
         }
         return url;
@@ -556,7 +552,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         if (possFeatures != null) {
             // give a minum 2 pixel or 1/2 bp window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
-            double minWidth = (int)  (2* bpPerPixel);
+            double minWidth = (int) (2 * bpPerPixel);
             featureList = FeatureUtils.getAllFeaturesAt(position, minWidth, possFeatures);
         }
         return featureList;

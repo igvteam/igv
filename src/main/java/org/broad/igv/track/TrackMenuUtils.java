@@ -28,7 +28,6 @@ package org.broad.igv.track;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import htsjdk.tribble.Feature;
-import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.logging.*;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.feature.Range;
@@ -37,9 +36,9 @@ import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
@@ -254,11 +253,7 @@ public class TrackMenuUtils {
                 if (currentRenderers.contains(rendererClass)) {
                     item.setSelected(true);
                 }
-                item.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        changeRendererClass(tracks, rendererClass);
-                    }
-                });
+                item.addActionListener(evt -> changeRendererClass(tracks, rendererClass));
                 menu.add(item);
             }
             menu.addSeparator();
@@ -977,7 +972,12 @@ public class TrackMenuUtils {
 
     public static void changeRendererClass(final Collection<Track> selectedTracks, Class rendererClass) {
         for (Track track : selectedTracks) {
-            track.setRendererClass(rendererClass);
+            try {
+                Renderer renderer = (Renderer) rendererClass.getDeclaredConstructor().newInstance();
+                track.setRenderer(renderer);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
         IGV.getInstance().repaint(selectedTracks);
     }

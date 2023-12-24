@@ -48,7 +48,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -148,10 +147,6 @@ public abstract class AbstractTrack implements Track {
         if (PreferencesManager.getPreferences().getAsBoolean(EXPAND_FEAUTRE_TRACKS)) {
             displayMode = DisplayMode.EXPANDED;
         }
-    }
-
-    public void setRendererClass(Class rc) {
-        // Ignore by default
     }
 
     public String getFeatureInfoURL() {
@@ -401,7 +396,7 @@ public abstract class AbstractTrack implements Track {
      * @return
      */
     @Override
-    public int  getDefaultHeight() {
+    public int getDefaultHeight() {
         if (getDefaultRenderer() instanceof XYPlotRenderer) {
             return PreferencesManager.getPreferences().getAsInt(CHART_TRACK_HEIGHT_KEY);
         } else {
@@ -461,7 +456,7 @@ public abstract class AbstractTrack implements Track {
     public void setVisible(boolean visible) {
         if (this.visible != visible) {
             this.visible = visible;
-            if(this.trackPanel != null) {
+            if (this.trackPanel != null) {
                 this.trackPanel.setVisible(this.trackPanel.getVisibleTracks().size() > 0);
                 IGV.getInstance().getMainPanel().revalidateTrackPanels();
             }
@@ -484,7 +479,7 @@ public abstract class AbstractTrack implements Track {
         this.height = height;
         UIUtilities.invokeAndWaitOnEventThread(() -> IGV.getInstance().getMainPanel().revalidate());
     }
-    
+
 
     @Override
     public int getHeight() {
@@ -654,10 +649,14 @@ public abstract class AbstractTrack implements Track {
             setMinimumHeight(properties.getMinHeight());
         }
         if (properties.getRendererClass() != null) {
-            setRendererClass(properties.getRendererClass());
-            if (properties.getRendererClass() == PointsRenderer.class) {
-                setWindowFunction(WindowFunction.none);
+
+            try {
+                Renderer renderer = renderer = (Renderer) properties.getRendererClass().getDeclaredConstructor().newInstance();
+                this.setRenderer(renderer);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
+
         }
         if (properties.getWindowingFunction() != null) {
             setWindowFunction(properties.getWindowingFunction());
@@ -924,11 +923,6 @@ public abstract class AbstractTrack implements Track {
         if (this instanceof IGVEventObserver) {
             IGVEventBus.getInstance().unsubscribe((IGVEventObserver) this);
         }
-    }
-
-
-    public void setRenderer(Renderer renderer) {
-        //Here as setter for corresponding getter, subclasses should override
     }
 
     @Override
