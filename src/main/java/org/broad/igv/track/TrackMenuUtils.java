@@ -705,7 +705,7 @@ public class TrackMenuUtils {
         return item;
     }
 
-    private static JMenuItem getHeatmapScaleItem(final Collection<Track> selectedTracks) {
+    public static JMenuItem getHeatmapScaleItem(final Collection<Track> selectedTracks) {
 
         JMenuItem item = new JMenuItem("Set Heatmap Scale...");
 

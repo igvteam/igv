@@ -3,6 +3,8 @@ package org.broad.igv.track;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.renderer.HeatmapRenderer;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.util.ResourceLocator;
@@ -11,9 +13,7 @@ import org.broad.igv.variant.VariantMenu;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
 
 public class SegTrack extends CompositeTrack {
@@ -23,7 +23,6 @@ public class SegTrack extends CompositeTrack {
     public SegTrack(ResourceLocator locator, List<Track> tracks) {
         super(locator, tracks);
     }
-
 
 
     @Override
@@ -39,15 +38,38 @@ public class SegTrack extends CompositeTrack {
     }
 
     @Override
+    public Renderer getRenderer() {
+        // All tracks have the same renderer
+        return tracks.isEmpty() ? new HeatmapRenderer() : tracks.get(0).getRenderer();
+    }
+
+    @Override
+    public void setRenderer(Renderer renderer) {
+        for (Track t : tracks) {
+            t.setRenderer(renderer);
+        }
+    }
+
+    @Override
+    public Collection<WindowFunction> getAvailableWindowFunctions() {
+        return tracks.isEmpty() ? Collections.EMPTY_LIST : tracks.get(0).getAvailableWindowFunctions();
+    }
+
+    @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
 
         List<Track> tmp = Arrays.asList(this);
 
-        IGVPopupMenu popupMenu =  new IGVPopupMenu();
-
+        IGVPopupMenu popupMenu = new IGVPopupMenu();
 
         popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmp));
         popupMenu.add(TrackMenuUtils.getChangeTrackHeightItem(tmp));
+
+        TrackMenuUtils.addDataItems(popupMenu, tmp, false);
+
+        popupMenu.addSeparator();
+
+        popupMenu.add(TrackMenuUtils.getHeatmapScaleItem(tracks));
 
 
 //        popupMenu.addSeparator();

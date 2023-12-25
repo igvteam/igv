@@ -52,7 +52,8 @@ public class CompositeTrack extends AbstractTrack {
     @Override
     public int getDefaultHeight() {
         int h = tracks.stream().collect(Collectors.summingInt(t -> t.getDefaultHeight()));
-        return Math.min(300, h);
+        //return Math.min(300, h);
+        return h;
     }
 
     @Override
