@@ -1039,7 +1039,7 @@ public class TrackLoader {
             String freqTrackId = path;
             String freqTrackName = "CNV Summary";
             CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
-            freqTrack.setHeight(15);
+            freqTrack.setHeight(25);
             if (props != null) {
                 freqTrack.setProperties(props);
             }
@@ -1053,6 +1053,7 @@ public class TrackLoader {
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
             track.setRenderer(new HeatmapRenderer());
             track.setTrackType(ds.getType());
+            track.setSubtrack(true);
 
             if (props != null) {
                 track.setProperties(props);

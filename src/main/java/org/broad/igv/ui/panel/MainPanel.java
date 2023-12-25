@@ -103,6 +103,11 @@ public class MainPanel extends JPanel implements Paintable {
         revalidateTrackPanels();
     }
 
+    public void forceTracksLayout() {
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
+            outerScrollContainer.revalidate();
+        });
+    }
     public void revalidateTrackPanels() {
         updatePanelDimensions();
         UIUtilities.invokeOnEventThread(() -> {
@@ -224,10 +229,6 @@ public class MainPanel extends JPanel implements Paintable {
             outerScrollContainer.add(sp);
 
             outerScrollContainer.revalidate();
-
-
-            //trackPanel.setVisible(t.isVisible());
-
         };
         UIUtilities.invokeAndWaitOnEventThread(runnable);
     }

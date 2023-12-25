@@ -155,12 +155,10 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
     @Override
     public void setSize(int width, int height) {
         super.setSize(width, height);
-        System.out.println("Set size " + width + " " + height);
     }
 
     @Override
     public void setSize(Dimension d) {
         super.setSize(d);
-        System.out.println("Set size " + d);
     }
 }

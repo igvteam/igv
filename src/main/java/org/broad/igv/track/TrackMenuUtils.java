@@ -228,34 +228,7 @@ public class TrackMenuUtils {
 
             // The "Points" renderer cannot be used with
 
-            final String[] labels = {"Heatmap", "Bar Chart", "Points", "Line Plot"};
-            final Class[] renderers = {HeatmapRenderer.class, BarChartRenderer.class,
-                    PointsRenderer.class, LineplotRenderer.class
-            };
-
-            JLabel rendererHeading = new JLabel(LEADING_HEADING_SPACER + "Type of Graph", JLabel.LEFT);
-            rendererHeading.setFont(FontManager.getFont(Font.BOLD, 12));
-
-            menu.add(rendererHeading);
-
-            // Get existing selections
-            Set<Class> currentRenderers = new HashSet<Class>();
-            for (Track track : tracks) {
-                if (track.getRenderer() != null) {
-                    currentRenderers.add(track.getRenderer().getClass());
-                }
-            }
-
-            // Create renderer menu items
-            for (int i = 0; i < labels.length; i++) {
-                JCheckBoxMenuItem item = new JCheckBoxMenuItem(labels[i]);
-                final Class rendererClass = renderers[i];
-                if (currentRenderers.contains(rendererClass)) {
-                    item.setSelected(true);
-                }
-                item.addActionListener(evt -> changeRendererClass(tracks, rendererClass));
-                menu.add(item);
-            }
+            addRendererItems(menu, tracks);
             menu.addSeparator();
 
 
@@ -366,6 +339,37 @@ public class TrackMenuUtils {
                 menu.add(alphaItem);
 
             }
+        }
+    }
+
+    public static void addRendererItems(JPopupMenu menu, Collection<Track> tracks) {
+
+        final String[] labels = {"Heatmap", "Bar Chart", "Points", "Line Plot"};
+        final Class[] renderers = {HeatmapRenderer.class, BarChartRenderer.class,
+                PointsRenderer.class, LineplotRenderer.class
+        };
+
+        JLabel rendererHeading = new JLabel(LEADING_HEADING_SPACER + "Type of Graph", JLabel.LEFT);
+        rendererHeading.setFont(FontManager.getFont(Font.BOLD, 12));
+        menu.add(rendererHeading);
+
+        // Get existing selections
+        Set<Class> currentRenderers = new HashSet<Class>();
+        for (Track track : tracks) {
+            if (track.getRenderer() != null) {
+                currentRenderers.add(track.getRenderer().getClass());
+            }
+        }
+
+        // Create renderer menu items
+        for (int i = 0; i < labels.length; i++) {
+            JCheckBoxMenuItem item = new JCheckBoxMenuItem(labels[i]);
+            final Class rendererClass = renderers[i];
+            if (currentRenderers.contains(rendererClass)) {
+                item.setSelected(true);
+            }
+            item.addActionListener(evt -> changeRendererClass(tracks, rendererClass));
+            menu.add(item);
         }
     }
 
@@ -1272,7 +1276,6 @@ public class TrackMenuUtils {
         item.addActionListener(evt -> changeTrackHeight(selectedTracks));
         return item;
     }
-
 
     public static JMenuItem getChangeFeatureWindow(final Collection<Track> selectedTracks) {
         // Change track height by attribute

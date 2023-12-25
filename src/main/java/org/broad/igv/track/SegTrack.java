@@ -7,12 +7,15 @@ import org.broad.igv.renderer.HeatmapRenderer;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.VariantMenu;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
@@ -65,7 +68,12 @@ public class SegTrack extends CompositeTrack {
         popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmp));
         popupMenu.add(TrackMenuUtils.getChangeTrackHeightItem(tmp));
 
-        TrackMenuUtils.addDataItems(popupMenu, tmp, false);
+        JMenuItem rowHeightItem = new JMenuItem("Change Sample Row Height...");
+        rowHeightItem.addActionListener(e -> changeTrackHeight());
+        popupMenu.add(rowHeightItem);
+
+        popupMenu.addSeparator();
+        TrackMenuUtils.addRendererItems(popupMenu, tmp);
 
         popupMenu.addSeparator();
 
@@ -125,5 +133,28 @@ public class SegTrack extends CompositeTrack {
 //
 //        return item;
 //    }
+
+
+    public void changeTrackHeight() {
+
+        if (tracks.isEmpty()) {
+            return;
+        }
+
+        final String parameter = "Sample Row height";
+        int initialValue = tracks.iterator().next().getHeight();
+        Integer value = TrackMenuUtils.getIntegerInput(parameter, initialValue);
+        if (value == null) {
+            return;
+        }
+
+        value = Math.max(0, value);
+        for (Track track : tracks) {
+            track.setHeight(value);
+        }
+
+        IGV.getInstance().getMainPanel().forceTracksLayout();
+
+    }
 
 }

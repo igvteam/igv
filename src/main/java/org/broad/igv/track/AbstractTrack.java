@@ -117,6 +117,8 @@ public abstract class AbstractTrack implements Track {
     protected TrackPanel trackPanel;
     private Integer height;
 
+    private boolean subtrack;
+
     public AbstractTrack() {
     }
 
@@ -147,6 +149,10 @@ public abstract class AbstractTrack implements Track {
         if (PreferencesManager.getPreferences().getAsBoolean(EXPAND_FEAUTRE_TRACKS)) {
             displayMode = DisplayMode.EXPANDED;
         }
+    }
+
+    public void setSubtrack(boolean subtrack) {
+        this.subtrack = subtrack;
     }
 
     public String getFeatureInfoURL() {
@@ -477,7 +483,9 @@ public abstract class AbstractTrack implements Track {
 
     public void setHeight(int height) {
         this.height = height;
-        UIUtilities.invokeAndWaitOnEventThread(() -> IGV.getInstance().getMainPanel().revalidate());
+        if (subtrack) {
+            UIUtilities.invokeAndWaitOnEventThread(() -> IGV.getInstance().getMainPanel().revalidate());
+        }
     }
 
 
