@@ -111,7 +111,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
      */
     private JMenuItem loadGenomeFromServerMenuItem;
     private JMenuItem loadTracksFromServerMenuItem;
-    private JMenuItem selectGenomeAnnotationsItem;
+    //private JMenuItem selectGenomeAnnotationsItem;
     private JMenuItem encodeMenuItem;
     private JMenuItem reloadSessionItem;
 
@@ -1202,7 +1202,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 final Genome genome = ((GenomeChangeEvent) event).genome();
                 encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(genome.getId()));
                 loadTracksFromServerMenuItem.setVisible(LoadFromServerAction.getNodeURLs(genome.getId()) != null);
-                selectGenomeAnnotationsItem.setEnabled(genome != null && genome.getHub() != null);
+                //selectGenomeAnnotationsItem .setEnabled(genome != null && genome.getHub() != null);
             });
         }
     }
