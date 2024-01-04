@@ -291,7 +291,7 @@ public class Main {
         SeekableStreamFactory.setInstance(IGVSeekableStreamFactory.getInstance());
 
         // Start IGV's UI itself (frame) and other components
-        IGV igv = IGV.createInstance(frame);
+       IGV igv = IGV.createInstance(frame, igvArgs);
 
         igv.startUp(igvArgs);
 

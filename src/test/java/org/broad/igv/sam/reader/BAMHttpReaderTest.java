@@ -107,7 +107,7 @@ public class BAMHttpReaderTest extends AbstractHeadlessTest {
         String chr = "Y";
         int start = 10000000 - 1;
         int end = 10004000;
-
+        
         CloseableIterator<SAMAlignment> iter = reader.query(chr, start, end, false);
         int counted = 0;
         while (iter.hasNext()) {

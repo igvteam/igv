@@ -73,6 +73,8 @@ import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
 
+import static org.broad.igv.prefs.Constants.SHOW_SINGLE_TRACK_PANE_KEY;
+
 /**
  * @author jrobinso
  */
@@ -167,8 +169,6 @@ public class GenomeManager {
         }
 
         loadGenome(genomePath); // monitor[0]);
-
-        IGV.getInstance().getMainPanel().removeEmptyPanels();
 
     }
 
@@ -269,7 +269,8 @@ public class GenomeManager {
         // Fetch the gene track, defined by .genome files.  In this format the genome data is encoded in the .genome file
         FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Can be null
         if (geneFeatureTrack != null) {
-            PanelName panelName = PanelName.FEATURE_PANEL;
+            PanelName panelName = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
+                    PanelName.DATA_PANEL : PanelName.FEATURE_PANEL;
             geneFeatureTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, geneFeatureTrack.getName());
             geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
             geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, geneFeatureTrack.getTrackType().toString());

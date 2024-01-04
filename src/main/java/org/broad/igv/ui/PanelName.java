@@ -33,7 +33,8 @@ package org.broad.igv.ui;
  * @api
  */
 public enum PanelName {
-    FEATURE_PANEL(IGV.FEATURE_PANEL_NAME);
+    FEATURE_PANEL(IGV.FEATURE_PANEL_NAME),
+    DATA_PANEL(IGV.DATA_PANEL_NAME);
 
     private final String panelName;
 

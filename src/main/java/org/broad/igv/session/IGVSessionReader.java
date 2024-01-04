@@ -81,8 +81,10 @@ import java.util.stream.Collectors;
 public class IGVSessionReader implements SessionReader {
 
     private static Logger log = LogManager.getLogger(IGVSessionReader.class);
+    private static String INPUT_FILE_KEY = "INPUT_FILE_KEY";
     private static Map<String, String> attributeSynonymMap = new HashMap();
     private static WeakReference<IGVSessionReader> currentReader;
+
     private IGV igv;
     private int version;
     private String genomePath;
@@ -113,10 +115,12 @@ public class IGVSessionReader implements SessionReader {
         attributeSynonymMap.put("TRACK NAME", "NAME");
     }
 
+
     public IGVSessionReader(IGV igv) {
         this.igv = igv;
         currentReader = new WeakReference<IGVSessionReader>(this);
     }
+
 
     /**
      * @param inputStream
@@ -170,7 +174,9 @@ public class IGVSessionReader implements SessionReader {
             igv.setGroupByAttribute(session.getGroupTracksBy());
         }
 
-        igv.getMainPanel().removeEmptyPanels();
+        if (session.isRemoveEmptyPanels()) {
+            igv.getMainPanel().removeEmptyDataPanels();
+        }
 
         igv.resetOverlayTracks();
 
@@ -243,6 +249,16 @@ public class IGVSessionReader implements SessionReader {
                 session.setNextAutoscaleGroup(Integer.parseInt(nextAutoscaleGroup));
             } catch (NumberFormatException e) {
                 log.error("Error setting next autoscale group", e);
+            }
+        }
+
+        String removeEmptyTracks = getAttribute(rootElement, "removeEmptyTracks");
+        if (removeEmptyTracks != null) {
+            try {
+                Boolean b = Boolean.parseBoolean(removeEmptyTracks);
+                session.setRemoveEmptyPanels(b);
+            } catch (Exception e) {
+                log.error("Error parsing removeEmptyTracks string: " + removeEmptyTracks, e);
             }
         }
 
