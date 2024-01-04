@@ -42,7 +42,11 @@ public class ShutdownThread extends Thread {
         log.info("Shutting down");
         CommandListener.halt();
         if (IGV.hasInstance()) {
-            IGV.getInstance().saveStateForExit();
+            try {
+                IGV.getInstance().saveStateForExit();
+            } catch (Exception e) {
+                log.error("Error saving session ", e);
+            }
             PreferencesManager.getPreferences().setApplicationFrameBounds(IGV.getInstance().getMainFrame().getBounds());
             for (Track t : IGV.getInstance().getAllTracks()) {
                 t.unload();
