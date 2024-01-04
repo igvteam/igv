@@ -764,7 +764,6 @@ public class IGVSessionReader implements SessionReader {
     private void processPanel(Session session, Element element, String sessionPath) {
 
         if (panelElementPresent == false) {
-
             panelElementPresent = true;
             // First panel to be processed, do this only once.
             // Add any tracks loaded as a side effect of loading genome
@@ -822,8 +821,6 @@ public class IGVSessionReader implements SessionReader {
     private void processPanelLayout(Session session, Element element) {
 
         String nodeName = element.getNodeName();
-
-        igv.removeEmptyPanels();
 
         NamedNodeMap tNodeMap = element.getAttributes();
         for (int i = 0; i < tNodeMap.getLength(); i++) {
