@@ -65,6 +65,8 @@ public class SAMAlignment implements Alignment {
     public static final Pattern LEFT_CIGAR_PATTERN = Pattern.compile("^(.{1," + (MAX_CIGAR_STRING_LENGTH_TO_DISPLAY / 2 - 1) + "}[A-Z])");
     private static final Logger log = LogManager.getLogger(SAMAlignment.class);
 
+    private static int MM_WARNING_COUNT = 0;
+
     public static final char DELETE_CHAR = '-';
     public static final char SKIP_CHAR = '=';
     public static final char MATCH = 'M';
@@ -457,7 +459,12 @@ public class SAMAlignment implements Alignment {
                 int skipped = 0;
                 for (int i = 1; i < tokens.length; i++) skipped += Integer.parseInt(tokens[i]);
                 if (modified + skipped > baseCount) {
-                    log.warn(this.getReadName() + "  MM base count validation failed: expected " + (modified + skipped) + "'" + (tokens[0].charAt(0) + "'s" + ", actual count = " + baseCount));
+                    if(++MM_WARNING_COUNT < 21) {
+                        log.warn(this.getReadName() + "  MM base count validation failed: expected " + (modified + skipped) + "'" + (tokens[0].charAt(0) + "'s" + ", actual count = " + baseCount));
+                        if(MM_WARNING_COUNT == 20) {
+                            log.warn("MM validation warning count exceeded.  Further failures will not be logged.");
+                        }
+                    }
                     mmValidated = false;
                     return mmValidated;
                 }
