@@ -1077,6 +1077,10 @@ public class IGV implements IGVEventObserver {
         contentPane.getMainPanel().removeDataPanel(name);
     }
 
+    public void removeEmptyPanels() {
+        contentPane.getMainPanel().removeEmptyDataPanels();
+    }
+
     public MainPanel getMainPanel() {
         return contentPane.getMainPanel();
     }
