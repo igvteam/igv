@@ -47,6 +47,7 @@ public class SupplementaryAlignmentDiagramDialog extends JDialog {
     public SupplementaryAlignmentDiagramDialog(Frame frame, Alignment alignment, Dimension dimension) {
         super(frame);
         setSize(dimension);
+        setLocationRelativeTo(frame);
         diagram = new SupplementalAlignmentDiagram(new SupplementaryGroup(alignment));
         this.add(diagram);
 
