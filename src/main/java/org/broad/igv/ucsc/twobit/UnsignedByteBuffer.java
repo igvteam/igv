@@ -67,13 +67,14 @@ public class UnsignedByteBuffer {
         return wrappedBuffer.getDouble();
     }
 
+    /**
+     * Return a null (0) terminated string
+     * @return
+     */
     public String getString() {
         ByteArrayOutputStream bis = new ByteArrayOutputStream(1000);
         int b;
         while ((b = wrappedBuffer.get()) != 0) {
-            if (b < 0) {
-                return new String(bis.toByteArray());
-            }
             bis.write((byte) b);
         }
         return new String(bis.toByteArray());
