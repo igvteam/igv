@@ -25,6 +25,8 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
 
@@ -33,21 +35,11 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.html.HTML;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.parser.ParserDelegator;
 
 /**
  * @author Jim Robinson
@@ -55,34 +47,26 @@ import javax.swing.text.html.parser.ParserDelegator;
  */
 public class TooltipTextFrame extends JFrame {
 
-
-    private static final DataFlavor[] supportedFlavors;
-
-    static {
-        try {
-            supportedFlavors = new DataFlavor[]{
-                    new DataFlavor("text/html;class=java.lang.String"),
-                    new DataFlavor("text/plain;class=java.lang.String")
-            };
-        } catch (ClassNotFoundException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
+    private static Logger log = LogManager.getLogger(TooltipTextFrame.class);
 
     public TooltipTextFrame(String title, String text) throws HeadlessException {
 
         setTitle(title);
 
-        //setUndecorated(true);
         setAlwaysOnTop(true);
-
 
         setLayout(new BorderLayout());
 
+        // Translate line breaks to divs.  This is a workaround to allow partial selection of text and maintain
+        // line feeds.  The HTMLDocument does not preserve line feeds in text output for selectedText with <br> tags,
+        // but does with <div>
+        text = text
+                .replace("<br>", "<div>")
+                .replace("<br/>", "<div>");
+
         JEditorPane pane = new JEditorPane("text/html", text);
         pane.setEditable(false);
-        pane.setTransferHandler(new MyTransferHandler());
+        pane.setTransferHandler(new TTTransferHandler());
 
         Dimension d = pane.getPreferredSize();
         int w = (int) (1.2 * d.width);
@@ -92,40 +76,13 @@ public class TooltipTextFrame extends JFrame {
         w = w > 800 ? 800 : (Math.max(w, 100));
         setSize(w, h);
 
-
         JScrollPane scrollPane = new JScrollPane(pane);
-
-        MouseAdapter mouseAdapter = new MouseAdapter() {
-
-            private Point point = new Point();
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                Point p = getLocation();
-                final int dx = e.getX() - point.x;
-                final int dy = e.getY() - point.y;
-                setLocation(p.x + dx, p.y + dy);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                point.x = e.getX();
-                point.y = e.getY();
-            }
-        };
-
-        pane.addMouseListener(mouseAdapter);
-
-        pane.addMouseMotionListener(mouseAdapter);
-
-        pane.addHyperlinkListener(new HyperlinkListener() {
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                try {
-                    if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
-                        BrowserLauncher.openURL(e.getURL().toExternalForm());
-                } catch (IOException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
+        pane.addHyperlinkListener(e -> {
+            try {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
+                    BrowserLauncher.openURL(e.getURL().toExternalForm());
+            } catch (IOException e1) {
+                log.error("Error opening hyperlink", e1);
             }
         });
 
@@ -134,55 +91,20 @@ public class TooltipTextFrame extends JFrame {
 
 
     /**
-     * Custom transfer handler that preserves line breaks in html when copying to clipboard
+     * TransferHandler for copy to clipboard -- fetches selected text from the pane, if no text is selected
+     * fetches all text.
      */
-    class MyTransferHandler extends TransferHandler {
+    static class TTTransferHandler extends TransferHandler {
 
         protected Transferable createTransferable(JComponent c) {
             final JEditorPane pane = (JEditorPane) c;
-            final String htmlText = pane.getText();
-            final String plainText = extractText(new StringReader(htmlText));
-            return new MyTransferable(plainText, htmlText);
-        }
-
-        public String extractText(Reader reader) {
-            final ArrayList<String> list = new ArrayList<String>();
-
-            HTMLEditorKit.ParserCallback parserCallback = new HTMLEditorKit.ParserCallback() {
-                public void handleText(final char[] data, final int pos) {
-                    list.add(new String(data));
-                }
-
-                public void handleStartTag(HTML.Tag tag, MutableAttributeSet attribute, int pos) {
-                }
-
-                public void handleEndTag(HTML.Tag t, final int pos) {
-                }
-
-                public void handleSimpleTag(HTML.Tag t, MutableAttributeSet a, final int pos) {
-                    if (t.equals(HTML.Tag.BR)) {
-                        list.add("\n");
-                    }
-                }
-
-                public void handleComment(final char[] data, final int pos) {
-                }
-
-                public void handleError(final String errMsg, final int pos) {
-                }
-            };
-            try {
-                new ParserDelegator().parse(reader, parserCallback, true);
-            } catch (IOException e) {
-                e.printStackTrace();
+            String selectedText = pane.getSelectedText();
+            if (selectedText == null) {
+                pane.selectAll();
+                selectedText = pane.getSelectedText();
             }
-            String result = "";
-            for (String s : list) {
-                result += s;
-            }
-            return result;
+            return new TTTransferable(selectedText);
         }
-
 
         @Override
         public void exportToClipboard(JComponent comp, Clipboard clip, int action) throws IllegalStateException {
@@ -198,15 +120,24 @@ public class TooltipTextFrame extends JFrame {
 
     }
 
-    class MyTransferable implements Transferable {
+    static class TTTransferable implements Transferable {
 
+        private static final DataFlavor[] supportedFlavors;
 
-        private final String plainData;
-        private final String htmlData;
+        static {
+            try {
+                supportedFlavors = new DataFlavor[]{
+                        new DataFlavor("text/plain;class=java.lang.String")
+                };
+            } catch (ClassNotFoundException e) {
+                throw new ExceptionInInitializerError(e);
+            }
+        }
 
-        public MyTransferable(String plainData, String htmlData) {
-            this.plainData = plainData;
-            this.htmlData = htmlData;
+        private final String text;
+
+        public TTTransferable(String text) {
+            this.text = text;
         }
 
         public DataFlavor[] getTransferDataFlavors() {
@@ -222,14 +153,12 @@ public class TooltipTextFrame extends JFrame {
             return false;
         }
 
-        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-            if (flavor.equals(supportedFlavors[0])) {
-                return htmlData;
-            }
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
             if (flavor.equals(supportedFlavors[1])) {
-                return plainData;
+                return text;
+            } else {
+                throw new UnsupportedFlavorException(flavor);
             }
-            throw new UnsupportedFlavorException(flavor);
         }
     }
 
