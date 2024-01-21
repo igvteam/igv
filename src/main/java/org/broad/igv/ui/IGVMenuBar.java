@@ -111,7 +111,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
      */
     private JMenuItem loadGenomeFromServerMenuItem;
     private JMenuItem loadTracksFromServerMenuItem;
-    //private JMenuItem selectGenomeAnnotationsItem;
+    private JMenuItem selectGenomeAnnotationsItem;
     private JMenuItem encodeMenuItem;
     private JMenuItem reloadSessionItem;
 
@@ -475,17 +475,17 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
 
         // Track hubs
-//        menuItems.add(new JSeparator());
-//
-//        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKHUB, KeyEvent.VK_S, igv);
-//        menuAction.setToolTipText(UIConstants.LOAD_TRACKHUB_TOOLTIP);
-//        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-//
-//        menuAction = new SelectGenomeAnnotationTracksAction("Select Hub Tracks...", igv);
-//        selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-//        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-//        selectGenomeAnnotationsItem.setEnabled(genome != null && genome.getHub() != null);
-//        menuItems.add(selectGenomeAnnotationsItem);
+        menuItems.add(new JSeparator());
+
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKHUB, KeyEvent.VK_S, igv);
+        menuAction.setToolTipText(UIConstants.LOAD_TRACKHUB_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new SelectGenomeAnnotationTracksAction("Select Hub Tracks...", igv);
+        selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        selectGenomeAnnotationsItem.setEnabled(genome != null && genome.getHub() != null);
+        menuItems.add(selectGenomeAnnotationsItem);
 
 
         menuItems.add(new JSeparator());

@@ -134,6 +134,7 @@ public class ResourceLocator {
 
     private Integer visibilityWindow;
     private String trixURL;
+    private String panelName;
 
     public static List<ResourceLocator> getLocators(Collection<File> files) {
 
@@ -632,7 +633,9 @@ public class ResourceLocator {
         if (vw != null) {
             res.setVisibilityWindow(vw);
         }
-
+        if(trackConfig.panelName != null) {
+            res.setPanelName(trackConfig.panelName);
+        }
         if (trackConfig.searchTrix != null) {
             res.setTrixURL(trackConfig.searchTrix);
         }
@@ -688,6 +691,14 @@ public class ResourceLocator {
 
         return res;
 
+    }
+
+    public String getPanelName() {
+        return panelName;
+    }
+
+    public void setPanelName(String panelName) {
+        this.panelName = panelName;
     }
 
 

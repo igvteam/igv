@@ -32,6 +32,7 @@ public class TrackConfig {
     public Boolean indexed;
     public Boolean hidden;
     public String html;
+    public String panelName;
 
     public TrackConfig() {
     }

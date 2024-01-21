@@ -111,7 +111,7 @@ public class SelectGenomeAnnotationTracksAction extends MenuAction {
         IGV.getInstance().loadTracks(locators);
 
         // Update genome
-        genome.setAnnotationResources(selected.stream().map(c -> ResourceLocator.fromTrackConfig(c)).toList());
+        genome.setAnnotationResources(locators);
 
         // Update preferences
         String key = "hub:" + hub.getUrl();

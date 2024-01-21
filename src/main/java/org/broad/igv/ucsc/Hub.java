@@ -3,6 +3,7 @@ package org.broad.igv.ucsc;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.GenomeConfig;
 import org.broad.igv.feature.genome.load.TrackConfig;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -312,6 +313,8 @@ public class Hub {
         String format = t.format();
         String url = this.baseURL + t.getProperty("bigDataUrl");
         TrackConfig config = new TrackConfig(url);
+
+        config.panelName = IGV.DATA_PANEL_NAME;
 
         config.id = t.getProperty("track");
         config.name = t.getProperty("shortLabel");
