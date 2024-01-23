@@ -46,6 +46,7 @@ import org.broad.igv.sam.mods.BaseModificationUtils;
 import org.broad.igv.sam.mods.BaseModificationSet;
 import org.broad.igv.sam.smrt.SMRTKinetics;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ultima.FlowUtil;
 import org.broad.igv.ultima.annotate.FlowBlockAnnotator;
 
 import java.awt.*;
@@ -977,7 +978,7 @@ public class SAMAlignment implements Alignment {
                 byte quality = block.getQuality(offset);
                 buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
                 buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality));
-                if ( flowBlockAnnotator.handlesBlocks(block) )
+                if (FlowUtil.isFlow(this) && flowBlockAnnotator.handlesBlocks(block) )
                     flowBlockAnnotator.appendBlockAttrAnnotation(this, block, offset, buf);
                 buf.append("<br>");
                 break;
