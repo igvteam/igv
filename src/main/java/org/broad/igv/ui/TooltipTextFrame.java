@@ -154,7 +154,7 @@ public class TooltipTextFrame extends JFrame {
         }
 
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-            if (flavor.equals(supportedFlavors[1])) {
+            if (flavor.equals(supportedFlavors[0])) {
                 return text;
             } else {
                 throw new UnsupportedFlavorException(flavor);
