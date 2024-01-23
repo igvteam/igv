@@ -1,26 +1,18 @@
 package org.broad.igv.ultima.render;
 
-import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.*;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.ultima.FlowUtil;
 
 import java.awt.*;
+import java.util.concurrent.Flow;
 
 public class FlowIndelRendering {
 
-    public static final String TAG_T0 = "t0";
     private static ColorMap indelColorMap = ColorMap.getJet(42);
-    private static final double MIN_PROB_DEFAULT = 0.01;
-
-    private static String ATTR_TP = "tp";
-    private static String ATTR_TI = "ti";
-    private static String RG_ATTR_PL = "PL";
-
-    private static String RG_ATTR_MC = "mc";
-    private static String RG_ATTR_PL_ULTIMA = "ULTIMA";
 
     public boolean handlesAlignment(final Alignment alignment) {
 
@@ -29,7 +21,7 @@ public class FlowIndelRendering {
         final SAMAlignment samAlignment = (SAMAlignment)alignment;
 
         // must be a flow
-        return getUltimaFileVersion(alignment) != UltimaFileFormat.NON_FLOW;
+        return FlowUtil.isFlow(samAlignment.getRecord());
     }
 
     public void renderSmallInsertion(Alignment alignment,
@@ -49,11 +41,11 @@ public class FlowIndelRendering {
         g.fillRect(x - pxWing, y, hairline + 2 * pxWing, hairline);
         g.fillRect(x - pxWing, y + h - hairline, hairline + 2 * pxWing, hairline);
 
-        UltimaFileFormat    uff = getUltimaFileVersion(alignment);
-        if ( renderOptions.isInsertQualColoring() && (uff != UltimaFileFormat.NON_FLOW) ) {
+        FlowUtil.UltimaFileFormat uff = FlowUtil.getUltimaFileVersion(alignment);
+        if ( renderOptions.isInsertQualColoring() && (uff != FlowUtil.UltimaFileFormat.NON_FLOW) ) {
             // Ultima: single (==1) INSERT case
             // map qual into a sort of a linear scale and add indicator
-            double p = (uff == UltimaFileFormat.BASE_TP)
+            double p = (uff == FlowUtil.UltimaFileFormat.BASE_TP)
                     ? qualsAsProbInsertTP((SAMAlignment) alignment, aBlock)
                     : qualsAsProb(aBlock.getQualities());
             if ( p != 0 ) {
@@ -84,11 +76,11 @@ public class FlowIndelRendering {
 
         g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + hairline * pxWing, hairline);
         g.fillRect(pxLeft - pxWing, pxTop + pxH - hairline, pxRight - pxLeft + hairline * pxWing, hairline);
-        UltimaFileFormat    uff = getUltimaFileVersion(alignment);
-        if ( renderOptions.isInsertQualColoring() & (uff != UltimaFileFormat.NON_FLOW) ) {
+        FlowUtil.UltimaFileFormat uff = FlowUtil.getUltimaFileVersion(alignment);
+        if ( renderOptions.isInsertQualColoring() & (uff != FlowUtil.UltimaFileFormat.NON_FLOW) ) {
             // Ultima: large (>1) INSERT case
             // map qual into a sort of a linear scale and add indicator
-            double p = (uff == UltimaFileFormat.BASE_TP)
+            double p = (uff == FlowUtil.UltimaFileFormat.BASE_TP)
                     ? qualsAsProbInsertTP((SAMAlignment)alignment, insertionBlock)
                     : qualsAsProb(insertionBlock.getQualities());
             if ( p != 0 ) {
@@ -110,8 +102,8 @@ public class FlowIndelRendering {
         // collect quals (experimental)
         Color[]       markerColor = new Color[2];
         double[]      markerQ = new double[2];
-        UltimaFileFormat uff = getUltimaFileVersion(alignment);
-        if ( renderOptions.isInsertQualColoring() && (uff != UltimaFileFormat.NON_FLOW) ) {
+        FlowUtil.UltimaFileFormat uff = FlowUtil.getUltimaFileVersion(alignment);
+        if ( renderOptions.isInsertQualColoring() && (uff != FlowUtil.UltimaFileFormat.NON_FLOW) ) {
 
             // locate block who's end is the same as the start of the gap
             boolean blockFound = false;
@@ -144,7 +136,7 @@ public class FlowIndelRendering {
                     if ( !snp0 ) {
                         quals01[0] = abPrev.getQualities().getByte(abPrev.getQualities().length - 1);
                         double  p;
-                        if ( uff == UltimaFileFormat.BASE_TP ) {
+                        if ( uff == FlowUtil.UltimaFileFormat.BASE_TP ) {
                             int         delLength = 1;
                             while ( (delLength + 1) < gap.getnBases() &&
                                     (gapBase0 == Character.toUpperCase(genome.getReference(alignment.getChr(), gap.getStart() + delLength))) )
@@ -162,7 +154,7 @@ public class FlowIndelRendering {
                     if ( !snp1 ) {
                         quals01[0] = abNext.getQualities().getByte(0);
                         double  p;
-                        if ( uff == UltimaFileFormat.BASE_TP ) {
+                        if ( uff == FlowUtil.UltimaFileFormat.BASE_TP ) {
                             int         delLength = 1;
                             while ( (delLength + 1) < gap.getnBases() &&
                                     (gapBase1 == Character.toUpperCase(genome.getReference(alignment.getChr(), gap.getStart() + gap.getnBases() - delLength))) )
@@ -215,49 +207,6 @@ public class FlowIndelRendering {
                 g.setColor(c);
             }
         }
-    }
-
-    private enum UltimaFileFormat {
-        NON_FLOW,
-        BASE_TI,
-        BASE_TP
-    };
-
-    static private UltimaFileFormat getUltimaFileVersion(Alignment alignment)
-    {
-        // check for preconditions for a flow file.  note that we extend only SAMAlignment instances
-        if ( !(alignment instanceof SAMAlignment) ) {
-            return UltimaFileFormat.NON_FLOW;
-        }
-        final SAMAlignment samAlignment = (SAMAlignment)alignment;
-        if ( !isUltimaFlowReadGroup(samAlignment.getRecord().getReadGroup()) ) {
-            return UltimaFileFormat.NON_FLOW;
-        }
-
-        if ( alignment.getAttribute(ATTR_TI) != null )
-            return UltimaFileFormat.BASE_TI;
-        else if ( alignment.getAttribute(ATTR_TP) != null )
-            return UltimaFileFormat.BASE_TP;
-        else
-            return UltimaFileFormat.NON_FLOW;
-    }
-
-    private static boolean isUltimaFlowReadGroup(SAMReadGroupRecord readGroup) {
-
-        // must have a read group to begin with
-        if ( readGroup == null )
-            return false;
-
-        // modern files have an ultima platform
-        if ( RG_ATTR_PL_ULTIMA.equals(readGroup.getAttribute(RG_ATTR_PL)) )
-            return true;
-
-        // fall back on the presence of an mc (max-class)
-        if ( readGroup.getAttribute(RG_ATTR_MC) != null )
-            return true;
-
-        // if here, probably not an ultima flow read group
-        return false;
     }
 
     static private double qualsAsProb(ByteSubarray quals) {
@@ -342,7 +291,7 @@ public class FlowIndelRendering {
 
         // short-circuit a simple and common case: insert of 1 with tp=-1 -> quality is already here!
         if ( fragLength == 1 ) {
-            byte[]      tp = record.getByteArrayAttribute(ATTR_TP);
+            byte[]      tp = record.getByteArrayAttribute(FlowUtil.ATTR_TP);
             if ( tp[start] == -1 ) {
                 byte      q = block.getQuality(0);
                 return Math.pow(10.0, -q / 10.0);
@@ -372,7 +321,7 @@ public class FlowIndelRendering {
     private double findQualByTPValue(SAMRecord record, HMer hmer, int tpValue) {
 
         // get quals and tp
-        byte[]      tp = record.getByteArrayAttribute(ATTR_TP);
+        byte[]      tp = record.getByteArrayAttribute(FlowUtil.ATTR_TP);
 
         // scan for tpValue, extract qual
         for ( int ofs = hmer.start ; ofs <= hmer.end ; ofs++ )
@@ -387,7 +336,7 @@ public class FlowIndelRendering {
             int     mc = getMC(record);
             int     hmerSize = hmer.end - hmer.start + 1;
             if ( tpValue + hmerSize > mc )
-                return 1.0 - MIN_PROB_DEFAULT;
+                return 1.0 - FlowUtil.MIN_PROB_DEFAULT;
         }
 
         // if here, simply fail
@@ -463,9 +412,9 @@ public class FlowIndelRendering {
             return 0;
 
         // extract t0 values for the surrounding bases, convert to prob
-        if ( !record.hasAttribute(TAG_T0) )
+        if ( !record.hasAttribute(FlowUtil.TAG_T0) )
             return 0;
-        final byte[]      t0 = record.getStringAttribute(TAG_T0).getBytes();
+        final byte[]      t0 = record.getStringAttribute(FlowUtil.TAG_T0).getBytes();
         final double      p0 = Math.pow(10.0, (t0[loc] - '!') / -10.0);
         final double      p1 = Math.pow(10.0, (t0[loc+1] - '!') / -10.0);
 
