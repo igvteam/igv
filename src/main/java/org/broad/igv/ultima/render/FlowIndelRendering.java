@@ -8,7 +8,6 @@ import org.broad.igv.track.RenderContext;
 import org.broad.igv.ultima.FlowUtil;
 
 import java.awt.*;
-import java.util.concurrent.Flow;
 
 public class FlowIndelRendering {
 
@@ -41,13 +40,10 @@ public class FlowIndelRendering {
         g.fillRect(x - pxWing, y, hairline + 2 * pxWing, hairline);
         g.fillRect(x - pxWing, y + h - hairline, hairline + 2 * pxWing, hairline);
 
-        FlowUtil.UltimaFileFormat uff = FlowUtil.getUltimaFileVersion(alignment);
-        if ( renderOptions.isInsertQualColoring() && (uff != FlowUtil.UltimaFileFormat.NON_FLOW) ) {
+        if ( renderOptions.isInsertQualColoring() && FlowUtil.isFlow(alignment) ) {
             // Ultima: single (==1) INSERT case
             // map qual into a sort of a linear scale and add indicator
-            double p = (uff == FlowUtil.UltimaFileFormat.BASE_TP)
-                    ? qualsAsProbInsertTP((SAMAlignment) alignment, aBlock)
-                    : qualsAsProb(aBlock.getQualities());
+            double p = qualsAsProbInsertTP((SAMAlignment) alignment, aBlock);
             if ( p != 0 ) {
                 double q = -10 * Math.log10(p);
                 Color qColor = new Color(indelColorMap.getColor((int) q));
@@ -76,13 +72,10 @@ public class FlowIndelRendering {
 
         g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + hairline * pxWing, hairline);
         g.fillRect(pxLeft - pxWing, pxTop + pxH - hairline, pxRight - pxLeft + hairline * pxWing, hairline);
-        FlowUtil.UltimaFileFormat uff = FlowUtil.getUltimaFileVersion(alignment);
-        if ( renderOptions.isInsertQualColoring() & (uff != FlowUtil.UltimaFileFormat.NON_FLOW) ) {
+        if ( renderOptions.isInsertQualColoring() && FlowUtil.isFlow(alignment) ) {
             // Ultima: large (>1) INSERT case
             // map qual into a sort of a linear scale and add indicator
-            double p = (uff == FlowUtil.UltimaFileFormat.BASE_TP)
-                    ? qualsAsProbInsertTP((SAMAlignment)alignment, insertionBlock)
-                    : qualsAsProb(insertionBlock.getQualities());
+            double p = qualsAsProbInsertTP((SAMAlignment)alignment, insertionBlock);
             if ( p != 0 ) {
                 double q = -10 * Math.log10(p);
                 Color qColor = new Color(indelColorMap.getColor((int) q));
@@ -102,8 +95,7 @@ public class FlowIndelRendering {
         // collect quals (experimental)
         Color[]       markerColor = new Color[2];
         double[]      markerQ = new double[2];
-        FlowUtil.UltimaFileFormat uff = FlowUtil.getUltimaFileVersion(alignment);
-        if ( renderOptions.isInsertQualColoring() && (uff != FlowUtil.UltimaFileFormat.NON_FLOW) ) {
+        if ( renderOptions.isInsertQualColoring() && FlowUtil.isFlow(alignment) ) {
 
             // locate block who's end is the same as the start of the gap
             boolean blockFound = false;
@@ -136,16 +128,12 @@ public class FlowIndelRendering {
                     if ( !snp0 ) {
                         quals01[0] = abPrev.getQualities().getByte(abPrev.getQualities().length - 1);
                         double  p;
-                        if ( uff == FlowUtil.UltimaFileFormat.BASE_TP ) {
-                            int         delLength = 1;
-                            while ( (delLength + 1) < gap.getnBases() &&
-                                    (gapBase0 == Character.toUpperCase(genome.getReference(alignment.getChr(), gap.getStart() + delLength))) )
-                                delLength++;
+                        int         delLength = 1;
+                        while ( (delLength + 1) < gap.getnBases() &&
+                                (gapBase0 == Character.toUpperCase(genome.getReference(alignment.getChr(), gap.getStart() + delLength))) )
+                            delLength++;
 
-                            p = qualsAsProbDeleteTP(((SAMAlignment) alignment), abPrev, delLength, false, gap);
-                        } else {
-                            p = qualsAsProb(new ByteSubarray(quals01, 0, quals01.length, (byte)0));
-                        }
+                        p = qualsAsProbDeleteTP(((SAMAlignment) alignment), abPrev, delLength, false, gap);
                         if ( p != 0 ) {
                             markerQ[0] = -10 * Math.log10(p);
                             markerColor[0] = new Color(indelColorMap.getColor((int) markerQ[0]));
@@ -154,16 +142,12 @@ public class FlowIndelRendering {
                     if ( !snp1 ) {
                         quals01[0] = abNext.getQualities().getByte(0);
                         double  p;
-                        if ( uff == FlowUtil.UltimaFileFormat.BASE_TP ) {
-                            int         delLength = 1;
-                            while ( (delLength + 1) < gap.getnBases() &&
-                                    (gapBase1 == Character.toUpperCase(genome.getReference(alignment.getChr(), gap.getStart() + gap.getnBases() - delLength))) )
-                                delLength++;
+                        int         delLength = 1;
+                        while ( (delLength + 1) < gap.getnBases() &&
+                                (gapBase1 == Character.toUpperCase(genome.getReference(alignment.getChr(), gap.getStart() + gap.getnBases() - delLength))) )
+                            delLength++;
 
-                            p = qualsAsProbDeleteTP((SAMAlignment) alignment, abNext, delLength, true, gap);
-                        } else {
-                            p = qualsAsProb(new ByteSubarray(quals01, 0, quals01.length, (byte)0));
-                        }
+                        p = qualsAsProbDeleteTP((SAMAlignment) alignment, abNext, delLength, true, gap);
                         if ( p != 0 ) {
                             markerQ[1] = -10 * Math.log10(p);
                             markerColor[1] = new Color(indelColorMap.getColor((int) markerQ[1]));
