@@ -521,7 +521,7 @@ public class Genome {
     }
 
     public String getBlatDB() {
-        return blatDB;
+        return blatDB == null ? getUCSCId() : blatDB;
     }
 
 

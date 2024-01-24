@@ -110,14 +110,6 @@ public class BlatClient {
 
                 JsonObject obj = (new JsonParser()).parse(jsonString).getAsJsonObject();
 
-                // If response includes "genome" property, verify against DB argument
-                if (obj.has("genome")) {
-                    String responseGenome = obj.get("genome").getAsString();
-                    if (!(responseGenome.equalsIgnoreCase(db) || responseGenome.equalsIgnoreCase(dbEncoded))) {
-                        throw new BlatException("Genome '" + db + "' not supported by BLAT server.");
-                    }
-                }
-
                 // Collect PSL lines, stripping quotes from individual tokens in the process.
                 JsonArray arr = obj.get("blat").getAsJsonArray();
                 Iterator<JsonElement> iter = arr.iterator();
@@ -157,11 +149,7 @@ public class BlatClient {
             Genome genome = GenomeManager.getInstance().getCurrentGenome();
             String db = genome.getBlatDB();
             if (db == null) {
-                // If this is a known UCSC genome, or a custom blat server is configured, use the genome ID
-                if (knownUCSCGenomes.contains(genome.getId()) ||
-                        !PreferencesManager.getPreferences().get(Constants.BLAT_URL).equals(PreferencesManager.getDefault(Constants.BLAT_URL))) {
                     db = genome.getId();
-                }
             }
 
             List<PSLRecord> features = blat(db, userSeq);
