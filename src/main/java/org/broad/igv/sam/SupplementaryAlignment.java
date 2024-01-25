@@ -21,6 +21,9 @@ import java.util.List;
 public class SupplementaryAlignment implements Locatable {
     private static final Logger log = LogManager.getLogger(SupplementaryAlignment.class);
 
+    private static int MAX_ERROR_COUNT = 10;
+    private static int errorCount = 0;
+
     public final String chr;
     public final int start;
 
@@ -34,7 +37,7 @@ public class SupplementaryAlignment implements Locatable {
     private Integer lenOnRef = null;  //number of reference bases covered
     private Integer numberOfAlignedBases = null; //number of bases in read which are aligned
 
-    public SupplementaryAlignment(String chr, int start, Strand strand, Cigar cigar, int mapQ, int numMismatches){
+    public SupplementaryAlignment(String chr, int start, Strand strand, Cigar cigar, int mapQ, int numMismatches) {
         this.chr = chr;
         this.start = start;
         this.strand = strand;
@@ -52,52 +55,62 @@ public class SupplementaryAlignment implements Locatable {
                 0, 0);  //We're just using this as a placeholder for sorting since Alignment
         // and SupplementaryAlignment don't share any common class
         int insertionIndex = Collections.binarySearch(supplementaryAlignments, alignmentAsSupplementary, LEADING_CLIP_COMPARATOR);
-        if(insertionIndex > 0) {
+        if (insertionIndex > 0) {
             log.warn("Saw 2 SupplementaryReads with the same leading clip length.");
         } else {
-            insertionIndex = -1* (insertionIndex + 1);
+            insertionIndex = -1 * (insertionIndex + 1);
         }
         return insertionIndex;
     }
 
     public static SupplementaryNeighbors getAdjacentSupplementaryReads(final Alignment alignment) {
-        final List<SupplementaryAlignment> supplementaryAlignments;
+        try {
+            final List<SupplementaryAlignment> supplementaryAlignments;
 
-        final SupplementaryNeighbors supplementaryRenderingInfo;
+            final SupplementaryNeighbors supplementaryRenderingInfo;
 
-        if( alignment instanceof SAMAlignment){
-            supplementaryAlignments = ((SAMAlignment) alignment).getSupplementaryAlignments();
-        } else {
-            final Object rawSATag = alignment.getAttribute(SAMTag.SA.name());
-            supplementaryAlignments = rawSATag == null ? null : new ArrayList<>(parseFromSATag(rawSATag.toString()));
-        }
+            if (alignment instanceof SAMAlignment) {
+                supplementaryAlignments = ((SAMAlignment) alignment).getSupplementaryAlignments();
+            } else {
+                final Object rawSATag = alignment.getAttribute(SAMTag.SA.name());
+                supplementaryAlignments = rawSATag == null ? null : new ArrayList<>(parseFromSATag(rawSATag.toString()));
+            }
 
 
-        if(supplementaryAlignments != null && !supplementaryAlignments.isEmpty()) {
+            if (supplementaryAlignments != null && !supplementaryAlignments.isEmpty()) {
 
-            int insertionIndex = getInsertionIndex(alignment, supplementaryAlignments);
-            if( insertionIndex < 0 ){
-                log.warn("Encountered a group of supplementary alignments that couldn't be sorted unambiguously." +
-                        "\nSee reads with the name: " + alignment.getReadName());
+                int insertionIndex = getInsertionIndex(alignment, supplementaryAlignments);
+                if (insertionIndex < 0) {
+                    log.warn("Encountered a group of supplementary alignments that couldn't be sorted unambiguously." +
+                            "\nSee reads with the name: " + alignment.getReadName());
+                    return null;
+                }
+                //Is this the first or last in a set of supplementary reads by position along the original read.
+                // ex:
+                // --- Match / xxxx Clip
+                // original unaligned read:
+                // -----------------------------
+                // split into 3
+                // xxxxxx--------xxxxxxxxxxxxxx : not first or last
+                // ------xxxxxxxxxxxxxxxxxxxxxx: first
+                // xxxxxxxxxxxxxx--------------: last
+
+                final boolean firstInRead = insertionIndex == 0;
+                final boolean lastInRead = insertionIndex == supplementaryAlignments.size();
+                supplementaryRenderingInfo = new SupplementaryNeighbors(alignment,
+                        firstInRead ? null : supplementaryAlignments.get(insertionIndex - 1),
+                        lastInRead ? null : supplementaryAlignments.get(insertionIndex));
+                return supplementaryRenderingInfo;
+            } else {
                 return null;
             }
-            //Is this the first or last in a set of supplementary reads by position along the original read.
-            // ex:
-            // --- Match / xxxx Clip
-            // original unaligned read:
-            // -----------------------------
-            // split into 3
-            // xxxxxx--------xxxxxxxxxxxxxx : not first or last
-            // ------xxxxxxxxxxxxxxxxxxxxxx: first
-            // xxxxxxxxxxxxxx--------------: last
-
-            final boolean firstInRead = insertionIndex == 0;
-            final boolean lastInRead = insertionIndex == supplementaryAlignments.size();
-            supplementaryRenderingInfo = new SupplementaryNeighbors(alignment,
-                    firstInRead ? null : supplementaryAlignments.get(insertionIndex - 1),
-                    lastInRead ? null : supplementaryAlignments.get(insertionIndex));
-            return supplementaryRenderingInfo;
-        } else {
+        } catch (Exception e) {
+            if (++errorCount <= MAX_ERROR_COUNT) {
+                log.error("Error parsing supplementary alignments. ", e);
+                if (errorCount == MAX_ERROR_COUNT) {
+                    log.error("Maximum error count exceeded.  Further errors parsing supplementary alignments will not be logged.");
+                }
+            }
             return null;
         }
     }
@@ -109,14 +122,14 @@ public class SupplementaryAlignment implements Locatable {
                 + " (" + strand.toShortString() + ") = " + Globals.DECIMAL_FORMAT.format(getLengthOnReference()) + "bp  @MAPQ " + mapQ + " NM" + numMismatches;
     }
 
-    public static List<SupplementaryAlignment> parseFromSATag(String saTag){
+    public static List<SupplementaryAlignment> parseFromSATag(String saTag) {
         return Arrays.stream(Globals.semicolonPattern.split(saTag))
                 .map(SupplementaryAlignment::fromSingleSaTagRecord)
                 .sorted(LEADING_CLIP_COMPARATOR)
                 .toList();
     }
 
-    public static SupplementaryAlignment fromSingleSaTagRecord(String saTagRecord){
+    public static SupplementaryAlignment fromSingleSaTagRecord(String saTagRecord) {
         //SA:(reference name, pos, strand, CIGAR, mapQ, NM;)+
         String[] tokens = Globals.commaPattern.split(saTagRecord);
 
@@ -134,7 +147,7 @@ public class SupplementaryAlignment implements Locatable {
     }
 
 
-    public int getCountOfLeadingClipping(){
+    public int getCountOfLeadingClipping() {
         ClippingCounts counts = ClippingCounts.fromCigar(this.cigar);
         return getCountOfLeadingClipping(counts, this.strand);
     }
@@ -168,7 +181,7 @@ public class SupplementaryAlignment implements Locatable {
 
     @Override
     public int getLengthOnReference() {
-        if(lenOnRef == null) {
+        if (lenOnRef == null) {
             lenOnRef = cigar.getReferenceLength();
         }
         return cigar.getReferenceLength();
@@ -178,13 +191,14 @@ public class SupplementaryAlignment implements Locatable {
      * get the count of non-clipped bases which are in the read
      * this differs from {@link #getLengthOnReference()} because it includes insertions bases but not deletions
      */
-    public int getNumberOfAlignedBases(){
-        if( numberOfAlignedBases == null) {
+    public int getNumberOfAlignedBases() {
+        if (numberOfAlignedBases == null) {
             int length = 0;
-            for(CigarElement element : cigar) {
+            for (CigarElement element : cigar) {
                 switch (element.getOperator()) {
                     case M, I, EQ, X -> length += element.getLength();
-                    default -> {}
+                    default -> {
+                    }
                 }
             }
             numberOfAlignedBases = length;
@@ -194,17 +208,17 @@ public class SupplementaryAlignment implements Locatable {
 
 
     record SupplementaryNeighbors(Alignment alignment, SupplementaryAlignment previous, SupplementaryAlignment next) {
-            SupplementaryNeighbors(Alignment alignment, SupplementaryAlignment previous, SupplementaryAlignment next) {
-                this.alignment = alignment;
-                if (alignment.isNegativeStrand()) {
-                    this.next = previous;
-                    this.previous = next;
-                } else {
-                    this.next = next;
-                    this.previous = previous;
-                }
+        SupplementaryNeighbors(Alignment alignment, SupplementaryAlignment previous, SupplementaryAlignment next) {
+            this.alignment = alignment;
+            if (alignment.isNegativeStrand()) {
+                this.next = previous;
+                this.previous = next;
+            } else {
+                this.next = next;
+                this.previous = previous;
             }
-
         }
+
+    }
 
 }
