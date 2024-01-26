@@ -19,9 +19,12 @@ else
     echo "Using system JDK."
 fi
 
+# Report on Java version
+java -version
+
 # Check if there is a user-specified Java arguments file
 if [ -e "$HOME/.igv/java_arguments" ]; then
-    java -showversion --module-path="${prefix}/lib" -Xmx8g \
+    java --module-path="${prefix}/lib" -Xmx8g \
         @"${prefix}/igv.args" \
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
@@ -29,7 +32,7 @@ if [ -e "$HOME/.igv/java_arguments" ]; then
         @"$HOME/.igv/java_arguments" \
         --module=org.igv/org.broad.igv.ui.Main "$@"
 else
-    java -showversion --module-path="${prefix}/lib" -Xmx8g \
+    java --module-path="${prefix}/lib" -Xmx8g \
         @"${prefix}/igv.args" \
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
