@@ -673,10 +673,6 @@ public class AlignmentRenderer {
             }
         }
 
-if("SRR18130587.2109746".equals(alignment.getReadName())) {
-    System.out.println();
-}
-
         // Draw blocks
         // Get a graphics context for outlining alignment blocks.
         Graphics2D outlineGraphics = null;
