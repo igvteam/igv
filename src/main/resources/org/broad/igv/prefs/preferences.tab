@@ -245,7 +245,7 @@ BASEMOD.NONE_G_COLOR	G	color	0,0,255
 BASEMOD.NONE_N_COLOR	G	color	0,0,255
 
 ##Validation
-BASEMOD.VALIDATE_BASE_COUNT	Validate base count required by MM tag vs actual base count in read sequence	boolean	TRUE
+BASEMOD.VALIDATE_BASE_COUNT	Validate base count required by MM tag vs actual base count in read sequence	boolean	FALSE
 
 #Proxy
 PROXY.DISABLE_CHECK	Disable check for system proxy	boolean	FALSE
