@@ -222,7 +222,7 @@ SMRT_KINETICS.SHOW_OPTIONS	Show visibility options for SMRT kinetics data	boolea
 #Base Mods
 
 BASEMOD.THRESHOLD	Base modification likelihood threshold (0-1)	float	0
-BASEMOD.GROUP_BY_STRAND	Group alignments by strand	boolean	TRUE
+BASEMOD.GROUP_BY_STRAND	Group alignments by strand	boolean	FALSE
 BASEMOD.SKIPPED_BASES	Assume skipped bases have low probability of modification.	boolean	FALSE
 
 ## Modified base colors
