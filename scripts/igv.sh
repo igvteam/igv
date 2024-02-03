@@ -12,7 +12,7 @@ prefix=`dirname $(readlink -f $0 || echo $0)`
 
 # Check whether or not to use the bundled JDK
 if [ -d "${prefix}/jdk-17" ]; then
-    echo echo "Using bundled JDK."
+    echo "Using bundled JDK."
     JAVA_HOME="${prefix}/jdk-17"
     PATH=$JAVA_HOME/bin:$PATH
 else
