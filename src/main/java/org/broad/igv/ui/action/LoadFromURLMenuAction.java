@@ -155,7 +155,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_TRACKHUB))) {
 
             String urlOrAccension = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter GCA or GCF accension, or URL to hub.txt file",
-                    JOptionPane.QUESTION_MESSAGE);
+                    JOptionPane.QUESTION_MESSAGE).trim();
 
             String url;
             if(urlOrAccension.startsWith("GC")) {
