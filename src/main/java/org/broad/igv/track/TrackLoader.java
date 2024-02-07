@@ -540,9 +540,7 @@ public class TrackLoader {
         ds = parser.createDataset();
         if (ds.isEmpty()) {
             String message = "The probes in the file <br>&nbsp;&nbsp;&nbsp;" + locator.getPath() + "<br>" +
-                    "could not be mapped to genomic positions.  This can be corrected by specify a probe mapping<br>" +
-                    "file from the Preferences window (Probes tab), or by specifing the genomic positions in the<br>" +
-                    "expression data file.  Please see the user guide for more details.";
+                    "could not be mapped to genomic positions.";
             MessageUtils.showMessage(message);
 
         } else {
