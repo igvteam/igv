@@ -386,10 +386,10 @@ public class SAMAlignment implements Alignment {
 
                 // Sequence length validation -- if MN tag is present use it, otherwise do a partial validation
                 if (mn != null) {
-                    if (mn != record.getReadBases().length) {
+                    if (mn != sequence.length) {
                         return null;
                     }
-                } else if (!validateMMTag(mm.toString(), ml, sequence)) {  //record.getCigarString().indexOf("H") > 0 &&
+                } else if (!validateMMTag(mm.toString(), ml, record.getReadBases(), isNegativeStrand())) {  //record.getCigarString().indexOf("H") > 0 &&
                     return null;
                 }
 
@@ -412,7 +412,7 @@ public class SAMAlignment implements Alignment {
      *
      * @return
      */
-    boolean validateMMTag(String mm, byte[] ml, byte[] sequence) {
+    boolean validateMMTag(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand) {
 
         if (mmValidated != null) {
             return mmValidated;
@@ -437,7 +437,7 @@ public class SAMAlignment implements Alignment {
 
         // Finally, test implied minimum base count vs actual base count in sequence.  The minimum base count is
         // equal to the number of modified bases + the number of skipped bases as codified in the MM tag.
-        // e.g. C+m,5,12,0   => at least 20 "Cs", 3 with modifications and 17 skipped
+        // e.g. C+m,5,12,0   => at least 20 "Cs" in the read sequence, 3 with modifications and 17 skipped
         if (PreferencesManager.getPreferences().getAsBoolean(Constants.BASEMOD_VALIDATE_BASE_COUNT)) {
             String[] mmTokens = mm.split(";");
             for (String mmi : mmTokens) {
@@ -452,7 +452,10 @@ public class SAMAlignment implements Alignment {
                         base = SequenceUtil.complement(base);
                     }
                     baseCount = 0;
-                    for (int i = 0; i < sequence.length; i++) if (sequence[i] == base) baseCount++;
+                    for (int i = 0; i < sequence.length; i++) {
+                        byte readBase = isNegativeStrand ? SequenceUtil.complement(sequence[i]) : sequence[i];
+                        if (readBase == base) baseCount++;
+                    }
                 }
 
                 // Count # of bases implied by tag
