@@ -705,7 +705,9 @@ public class AlignmentRenderer {
 
             // Check if block is in visible rectangle
             if (blockPxEnd < 0) {
-                blockChromStart = blocks[blockIx + 1].getStart(); // start position for the next block
+                if(blockIx + 1 < blocks.length) {
+                    blockChromStart = blocks[blockIx + 1].getStart(); // start position for the next block
+                }
                 continue;
             } else if (blockPxStart > rowRect.x + rowRect.width) {
                 break;
