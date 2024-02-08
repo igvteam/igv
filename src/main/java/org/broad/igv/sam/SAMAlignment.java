@@ -66,6 +66,8 @@ public class SAMAlignment implements Alignment {
     public static final Pattern LEFT_CIGAR_PATTERN = Pattern.compile("^(.{1," + (MAX_CIGAR_STRING_LENGTH_TO_DISPLAY / 2 - 1) + "}[A-Z])");
     private static final Logger log = LogManager.getLogger(SAMAlignment.class);
 
+    private static int MM_WARNING_COUNT = 0;
+
     public static final char DELETE_CHAR = '-';
     public static final char SKIP_CHAR = '=';
     public static final char MATCH = 'M';
@@ -125,7 +127,6 @@ public class SAMAlignment implements Alignment {
      */
     private List<BaseModificationSet> baseModificationSets;
     private SMRTKinetics smrtKinetics;
-    private Boolean mmValidated;
 
     private enum CacheKey {CLIPPING_COUNTS, SA_GROUP}
 
@@ -384,10 +385,10 @@ public class SAMAlignment implements Alignment {
 
                 // Sequence length validation -- if MN tag is present use it, otherwise do a partial validation
                 if (mn != null) {
-                    if (mn != record.getReadBases().length) {
+                    if (mn != sequence.length) {
                         return null;
                     }
-                } else if (!validateMMTag(mm.toString(), ml, sequence)) {  //record.getCigarString().indexOf("H") > 0 &&
+                } else if (!validateMMTag(mm.toString(), ml, record.getReadBases(), isNegativeStrand())) {  //record.getCigarString().indexOf("H") > 0 &&
                     return null;
                 }
 
@@ -410,34 +411,26 @@ public class SAMAlignment implements Alignment {
      *
      * @return
      */
-    boolean validateMMTag(String mm, byte[] ml, byte[] sequence) {
-
-        if (mmValidated != null) {
-            return mmValidated;
-        }
+    boolean validateMMTag(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand) {
 
         // Minimal tag validation  -- 10X uses MM and/or ML for other purposes
         if (!(mm instanceof String && mm.toString().length() > 0 && (ml == null || ml instanceof byte[]))) {
-            mmValidated = false;
-            return mmValidated;
+            return false;
         }
 
         // Test sequence length vs mn if avaliable
         Integer mn = record.getIntegerAttribute("MN");
         if (mn != null) {
-            if (mn == sequence.length) {
-                mmValidated = true;
-            } else {
-                mmValidated = false;
-            }
-            return mmValidated;
+            return (mn == sequence.length);
         }
 
         // Finally, test implied minimum base count vs actual base count in sequence.  The minimum base count is
         // equal to the number of modified bases + the number of skipped bases as codified in the MM tag.
-        // e.g. C+m,5,12,0   => at least 20 "Cs", 3 with modifications and 17 skipped
+        // e.g. C+m,5,12,0   => at least 20 "Cs" in the read sequence, 3 with modifications and 17 skipped
         if (PreferencesManager.getPreferences().getAsBoolean(Constants.BASEMOD_VALIDATE_BASE_COUNT)) {
+
             String[] mmTokens = mm.split(";");
+
             for (String mmi : mmTokens) {
                 String[] tokens = mmi.split(","); //Globals.commaPattern.split(mm);
                 int baseCount;
@@ -450,7 +443,10 @@ public class SAMAlignment implements Alignment {
                         base = SequenceUtil.complement(base);
                     }
                     baseCount = 0;
-                    for (int i = 0; i < sequence.length; i++) if (sequence[i] == base) baseCount++;
+                    for (int i = 0; i < sequence.length; i++) {
+                        byte readBase = isNegativeStrand ? SequenceUtil.complement(sequence[i]) : sequence[i];
+                        if (readBase == base) baseCount++;
+                    }
                 }
 
                 // Count # of bases implied by tag
@@ -458,16 +454,19 @@ public class SAMAlignment implements Alignment {
                 int skipped = 0;
                 for (int i = 1; i < tokens.length; i++) skipped += Integer.parseInt(tokens[i]);
                 if (modified + skipped > baseCount) {
-                    log.warn(this.getReadName() + "  MM base count validation failed: expected " + (modified + skipped) + "'" + (tokens[0].charAt(0) + "'s" + ", actual count = " + baseCount));
-                    mmValidated = false;
-                    return mmValidated;
+                    if (++MM_WARNING_COUNT < 21) {
+                        log.warn(this.getReadName() + "  MM base count validation failed: expected " + (modified + skipped) + "'" + (tokens[0].charAt(0) + "'s" + ", actual count = " + baseCount));
+                        if (MM_WARNING_COUNT == 20) {
+                            log.warn("MM validation warning count exceeded.  Further failures will not be logged.");
+                        }
+                    }
+                    return false;
                 }
             }
         }
 
-        // If we get here assume the tag is valide
-        mmValidated = true;
-        return mmValidated;
+        // If we get here assume the tag is valid
+        return true;
     }
 
     public SMRTKinetics getSmrtKinetics() {
@@ -734,7 +733,7 @@ public class SAMAlignment implements Alignment {
 
     @Override
     public String getClipboardString(double location, int mouseX) {
-        return getAlignmentValueString(location, mouseX, (AlignmentTrack.RenderOptions) null);
+        return getAlignmentValueString(location, mouseX, null);
     }
 
     private Integer positionToReadIndex(double position) {
@@ -777,7 +776,7 @@ public class SAMAlignment implements Alignment {
                         }
 
                         // extended annotation?
-                        if ( flowBlockAnnotator.handlesBlocks(block) )
+                        if (flowBlockAnnotator.handlesBlocks(block))
                             flowBlockAnnotator.appendBlockQualityAnnotation(this, block, buf);
                     }
                     atInsertion = true;
@@ -971,7 +970,7 @@ public class SAMAlignment implements Alignment {
                 byte quality = block.getQuality(offset);
                 buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
                 buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality));
-                if (FlowUtil.isFlow(this) && flowBlockAnnotator.handlesBlocks(block) )
+                if (FlowUtil.isFlow(this) && flowBlockAnnotator.handlesBlocks(block))
                     flowBlockAnnotator.appendBlockAttrAnnotation(this, block, offset, buf);
                 buf.append("<br>");
                 break;

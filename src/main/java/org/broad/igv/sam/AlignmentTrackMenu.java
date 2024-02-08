@@ -682,44 +682,42 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         JRadioButtonMenuItem bmMenuItem;
 
         Set<String> allModifications = dataManager.getAllBaseModificationKeys().stream().map(BaseModificationKey::getModification).collect(Collectors.toSet());
-        if (allModifications.size() > 0) {
+        final int modificationCount = allModifications.size();
+        if (modificationCount > 0) {
             BaseModficationFilter filter = renderOptions.getBasemodFilter();
             boolean groupByStrand = alignmentTrack.getPreferences().getAsBoolean(BASEMOD_GROUP_BY_STRAND);
             colorMenu.addSeparator();
-            String allModLabel = allModifications.size() > 1 ? "base modification (all)" : "base modification";
-            bmMenuItem = getBasemodColorMenuItem(allModLabel, AlignmentTrack.ColorOption.BASE_MODIFICATION, groupByStrand, null);
-            bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && filter == null);
-            colorMenu.add(bmMenuItem);
-            group.add(bmMenuItem);
-            if (allModifications.size() > 1) {
-                for (String m : allModifications) {
-                    String name = BaseModificationUtils.modificationName(m);
-                    bmMenuItem = getBasemodColorMenuItem("base modification (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION, groupByStrand, m);
-                    bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && (filter != null && filter.pass(m)));
-                    colorMenu.add(bmMenuItem);
-                    group.add(bmMenuItem);
-                }
+            if (modificationCount > 1) {
+                bmMenuItem = getBasemodColorMenuItem("base modification (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION, groupByStrand, null);
+                bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && filter == null);
+                colorMenu.add(bmMenuItem);
+                group.add(bmMenuItem);
             }
+            for (String m : allModifications) {
+                String name = BaseModificationUtils.modificationName(m);
+                bmMenuItem = getBasemodColorMenuItem("base modification (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION, groupByStrand, m);
+                bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION && (filter != null && filter.pass(m)));
+                colorMenu.add(bmMenuItem);
+                group.add(bmMenuItem);
+            }
+
 
             colorMenu.addSeparator();
-            allModLabel = allModifications.size() > 1 ? "base modification 2-color (all)" : "base modification 2-color";
-            bmMenuItem = getBasemodColorMenuItem(allModLabel, AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR, groupByStrand, null);
-            bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR && filter == null);
-            colorMenu.add(bmMenuItem);
-            group.add(bmMenuItem);
-            if (allModifications.size() > 1) {
-                for (String m : allModifications) {
-                    String name = BaseModificationUtils.modificationName(m);
-                    bmMenuItem = getBasemodColorMenuItem("base modification 2-color (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR, groupByStrand, m);
-                    bmMenuItem.setSelected(renderOptions.getColorOption() ==
-                            AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR &&
-                            (filter != null && filter.pass(m)));
-                    colorMenu.add(bmMenuItem);
-                    group.add(bmMenuItem);
-                }
+            if (modificationCount > 1) {
+                bmMenuItem = getBasemodColorMenuItem("base modification 2-color (all)", AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR, groupByStrand, null);
+                bmMenuItem.setSelected(renderOptions.getColorOption() == AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR && filter == null);
+                colorMenu.add(bmMenuItem);
+                group.add(bmMenuItem);
             }
-
-
+            for (String m : allModifications) {
+                String name = BaseModificationUtils.modificationName(m);
+                bmMenuItem = getBasemodColorMenuItem("base modification 2-color (" + name + ")", AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR, groupByStrand, m);
+                bmMenuItem.setSelected(renderOptions.getColorOption() ==
+                        AlignmentTrack.ColorOption.BASE_MODIFICATION_2COLOR &&
+                        (filter != null && filter.pass(m)));
+                colorMenu.add(bmMenuItem);
+                group.add(bmMenuItem);
+            }
         }
 
 
@@ -970,18 +968,17 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         int minimumBlatLength = BlatClient.MINIMUM_BLAT_LENGTH;
         ClippingCounts clipping = alignment.getClippingCounts();
         if (clipping.getLeftSoft() > 0) {
-            String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping.getLeftSoft());
+            String lcSeq = getClippedSequence(alignment.getReadSequence(), 0, clipping.getLeftSoft());
             final JMenuItem lccItem = new JMenuItem("Copy left-clipped sequence");
             add(lccItem);
             lccItem.addActionListener(aEvt -> StringUtils.copyTextToClipboard(lcSeq));
         }
 
         /* Add a "Copy right clipped sequence" item if there is  right clipping. */
-        if (clipping.getRightHard() > 0) {
+        if (clipping.getRightSoft() > 0) {
             int seqLength = seq.length();
             String rcSeq = getClippedSequence(
                     alignment.getReadSequence(),
-                    alignment.getReadStrand(),
                     seqLength - clipping.getRightSoft(),
                     seqLength);
 
@@ -1029,11 +1026,14 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
         /* Add a "BLAT left clipped sequence" item if there is significant left clipping. */
         if (clipping.getLeftSoft() > minimumBlatLength) {
-            String lcSeq = getClippedSequence(alignment.getReadSequence(), alignment.getReadStrand(), 0, clipping.getLeftSoft());
+            String lcSeq = getClippedSequence(alignment.getReadSequence(), 0, clipping.getLeftSoft());
+            String blatSeq = alignment.isNegativeStrand() ?
+                    SequenceTrack.getReverseComplement(lcSeq) :
+                    lcSeq;
             final JMenuItem lcbItem = new JMenuItem("BLAT left-clipped sequence");
             add(lcbItem);
             lcbItem.addActionListener(aEvt ->
-                    BlatClient.doBlatQuery(lcSeq, alignment.getReadName() + " - left clip")
+                    BlatClient.doBlatQuery(blatSeq, alignment.getReadName() + " - left clip")
             );
         }
         /* Add a "BLAT right clipped sequence" item if there is significant right clipping. */
@@ -1043,28 +1043,26 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             int seqLength = seq.length();
             String rcSeq = getClippedSequence(
                     alignment.getReadSequence(),
-                    alignment.getReadStrand(),
                     seqLength - clipping.getRightSoft(),
                     seqLength);
+            String blatSeq = alignment.isNegativeStrand() ?
+                    SequenceTrack.getReverseComplement(rcSeq) :
+                    rcSeq;
 
             final JMenuItem rcbItem = new JMenuItem("BLAT right-clipped sequence");
             add(rcbItem);
             rcbItem.addActionListener(aEvt ->
-                    BlatClient.doBlatQuery(rcSeq, alignment.getReadName() + " - right clip")
+                    BlatClient.doBlatQuery(blatSeq, alignment.getReadName() + " - right clip")
             );
 
         }
     }
 
-    private String getClippedSequence(String readSequence, Strand strand, int i, int i2) {
+    private String getClippedSequence(String readSequence, int i, int i2) {
         if (readSequence == null || readSequence.equals("*")) {
             return "*";
         }
-        String seq = readSequence.substring(i, i2);
-        if (strand == Strand.NEGATIVE) {
-            seq = SequenceTrack.getReverseComplement(seq);
-        }
-        return seq;
+        return readSequence.substring(i, i2);
     }
 
     void addExtViewItem(final TrackClickEvent te) {
