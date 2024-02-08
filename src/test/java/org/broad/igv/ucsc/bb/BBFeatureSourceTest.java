@@ -5,6 +5,7 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ucsc.Trix;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -98,6 +99,8 @@ public class BBFeatureSourceTest {
 
 
     @Test
+    @Ignore
+    // Ignored as data file has moved or been deleted
     public void testBigGenePred() throws IOException {
 
         String path = "https://hgdownload.soe.ucsc.edu/hubs/GCA/009/914/755/GCA_009914755.4/bbi/GCA_009914755.4_T2T-CHM13v2.0.catLiftOffGenesV1/catLiftOffGenesV1.bb";
@@ -194,6 +197,8 @@ public class BBFeatureSourceTest {
 
     // NOTE:  bigInteract is not yet supported in IGV desktop, bigInteract is treated as a plain bed file.
     @Test
+    @Ignore
+    // Ignored as data file has moved or been deleted
     public void testBigRmsk() throws IOException {
 
         String path = "https://hgdownload.soe.ucsc.edu/hubs/GCA/009/914/755/GCA_009914755.4/bbi/GCA_009914755.4_T2T-CHM13v2.0.t2tRepeatMasker/chm13v2.0_rmsk.bb";
