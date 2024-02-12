@@ -9,7 +9,7 @@ import org.broad.igv.ultima.render.FlowIndelRendering;
 
 public class FlowBlockAnnotator {
 
-    private static final String KEY_ATTR = "ti,tp";
+    private static final String KEY_ATTR = "tp";
     private static final String T0_ATTR = "t0";
 
     public boolean handlesBlocks(final AlignmentBlock block) {
