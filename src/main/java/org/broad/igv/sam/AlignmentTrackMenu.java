@@ -18,7 +18,6 @@ import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
-import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.supdiagram.SupplementaryAlignmentDiagramDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
@@ -233,30 +232,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         add(item);
     }
 
-    private void addGotoSA(final TrackClickEvent e, final Alignment clickedAlignment) {
-        if (clickedAlignment != null && clickedAlignment.getAttribute(SAMTag.SA.name()) != null) {
-            final String[] saLocationList = clickedAlignment.getAttribute(SAMTag.SA.name()).toString().split(";");
-            final JMenu menu = new JMenu("Goto Supplementary Alignment");
-            for ( final String saSpec : saLocationList ) {
-                final String[] saSpecToks = saSpec.split(",");
-                if ( saSpecToks.length >= 2 ) {
-                    final String saLocation = saSpecToks[0] + ":" + saSpecToks[1];
-                    JMenuItem menuItem = new JMenuItem(saLocation);
-                    menuItem.setEnabled(true);
-                    menuItem.addActionListener(aEvt -> {
-                        (new SearchCommand(FrameManager.getDefaultFrame(), saLocation)).run();
-                    });
-                    menu.add(menuItem);
-                }
-            }
-            menu.setEnabled(true);
-            add(menu);
-        } else {
-            JMenuItem item = new JMenuItem("Goto Supplementary Alignment");
-            item.setEnabled(false);
-            add(item);
-        }
-    }
 
     private void addHaplotype(TrackClickEvent e) {
 
@@ -1204,8 +1179,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         addShowChimericRegions(alignmentTrack, tce, clickedAlignment);
         addShowDiagram(tce, clickedAlignment);
 
-        // goto to one of the supplemental alignments
-        addGotoSA(tce, clickedAlignment);
     }
 
     /**
@@ -1318,6 +1291,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         dataManager.packAlignments(renderOptions);
         alignmentTrack.repaint();
     }
+
 
     /**
      * Listener for deselecting one component when another is selected
