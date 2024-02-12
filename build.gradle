@@ -342,22 +342,6 @@ task createMacAppWithJavaDistZip(type: Zip, dependsOn: createMacAppDist) {
     }
 }
 
-task createMacM1AppWithJavaDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveFileName = "IGV_MacM1App_${version}_WithJava.zip"
-    with copySpec { from jdkBundleMacM1 into "IGV_${version}.app/Contents/jdk-11" }
-    from("${buildDir}/IGV-MacApp-dist")
-
-    doLast {
-        if (jdkBundleMacM1 == "") {
-            throw new GradleException("Required property not set: jdkBundleMacM1");
-        }
-        //project.exec { commandLine('chmod', '775', createMacM1AppWithJavaDistZip.archivePath) }
-    }
-}
-
-
-
-
 task createWinDist(type: Copy, dependsOn: createDist) {
     with copySpec {
         from("${buildDir}/IGV-dist") {
