@@ -366,9 +366,13 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // Track hubs
         menu.add(new JSeparator());
 
+        JMenuItem genArkItem = new JMenuItem(new UCSCGenArkAction("Select UCSC GenArk assembly...", 0, igv));
+        menu.add(genArkItem);
+
         JMenuItem trackHubItem = new JMenuItem(new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKHUB, KeyEvent.VK_S, igv));
         trackHubItem.setToolTipText(UIConstants.LOAD_TRACKHUB_TOOLTIP);
         menu.add(trackHubItem);
+
 
         selectGenomeAnnotationsItem = new JMenuItem(new SelectGenomeAnnotationTracksAction("Select Hub Tracks...", igv));
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
