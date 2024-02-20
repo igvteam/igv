@@ -477,6 +477,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // Track hubs
         menuItems.add(new JSeparator());
 
+        menuAction = new UCSCGenArkAction("Select UCSC GenArk assembly...", 0, igv);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKHUB, KeyEvent.VK_S, igv);
         menuAction.setToolTipText(UIConstants.LOAD_TRACKHUB_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
