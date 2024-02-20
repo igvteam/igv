@@ -151,16 +151,4 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
             return getHeight();  // This is the height of the scroll pane, the visible height in the UI
         }
     }
-
-    @Override
-    public void setSize(int width, int height) {
-        super.setSize(width, height);
-        System.out.println("Set size " + width + " " + height);
-    }
-
-    @Override
-    public void setSize(Dimension d) {
-        super.setSize(d);
-        System.out.println("Set size " + d);
-    }
 }
