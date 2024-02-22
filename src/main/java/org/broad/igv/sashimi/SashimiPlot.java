@@ -139,7 +139,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             colorInd = (colorInd + 1) % plotColors.size();
             spliceJunctionTrack.setColor(color);
 
-            TrackComponent<SpliceJunctionTrack> trackComponent = new TrackComponent<SpliceJunctionTrack>(referenceFrame, spliceJunctionTrack);
+            TrackComponent<SpliceJunctionTrack> trackComponent = new TrackComponent<>(referenceFrame, spliceJunctionTrack);
             trackComponent.originalFrame = iframe;
 
             initSpliceJunctionComponent(trackComponent, dataManager, dataManager.getCoverageTrack());
@@ -281,7 +281,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(Integer.MAX_VALUE, track.getContentHeight());
+            return new Dimension(100, track.getContentHeight());
         }
     }
 
