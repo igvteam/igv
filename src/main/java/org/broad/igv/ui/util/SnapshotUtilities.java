@@ -137,7 +137,7 @@ public class SnapshotUtilities {
         try {
             // Finally, stream out SVG to the standard output using                                                                         
             // UTF-8 encoding.                                                                                                              
-            boolean useCSS = true; // we want to use CSS style attributes                                                                   
+            boolean useCSS = false; // we want to use CSS style attributes
             out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(selectedFile), "UTF-8"));
             svgGenerator.stream(out, useCSS);
         } finally {

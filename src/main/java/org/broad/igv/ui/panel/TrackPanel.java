@@ -223,10 +223,7 @@ public class TrackPanel extends JPanel implements Paintable {
     }
 
 
-    /**
-     * @return
-     * @deprecated
-     */
+    @Deprecated
     public boolean fitTracksToPanel() {
         return true;
     }
