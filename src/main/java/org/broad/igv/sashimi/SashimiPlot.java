@@ -94,6 +94,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         // setContentPane(new SashimiContentPane());
         getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        getContentPane().setLayout(new BorderLayout());
+        setBackground(Color.white);
 
         this.eventBus = new IGVEventBus();
         this.referenceFrame = new ReferenceFrame(iframe, eventBus);
@@ -104,14 +106,18 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         int height = IGV.hasInstance() ? IGV.getInstance().getMainFrame().getHeight() : 800;
         setSize(referenceFrame.getWidthInPixels(), height);
 
+        //Add control elements to the top
+        final JPanel controlPanel = generateControlPanel(this.referenceFrame);
+        controlPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        getContentPane().add(controlPanel, BorderLayout.NORTH);
+
+
         JPanel sashimiPanel = new JPanel();
+        sashimiPanel.setBackground(Color.WHITE);
         BoxLayout boxLayout = new BoxLayout(sashimiPanel, BoxLayout.Y_AXIS);
         sashimiPanel.setLayout(boxLayout);
 
-        //Add control elements to the top
-        sashimiPanel.add(generateControlPanel(this.referenceFrame));
-
-        // Initialize minJunctionCoverage
+        // TODO ? Initialize minJunctionCoverage
 
         spliceJunctionTracks = new ArrayList<>(alignmentTracks.size());
 
@@ -154,7 +160,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         sashimiPanel.add(axis);
 
         SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
-        TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(referenceFrame, geneTrackClone);
+        TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<>(referenceFrame, geneTrackClone);
         initGeneComponent(referenceFrame.getWidthInPixels(), geneComponent, geneTrackClone);
 
         JScrollPane scrollableGenePane = new JScrollPane(geneComponent);
@@ -168,7 +174,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         validate();
     }
 
-    private Component generateControlPanel(ReferenceFrame frame) {
+    private JPanel generateControlPanel(ReferenceFrame frame) {
         JPanel controlPanel = new JPanel();
 
         ZoomSliderPanel zoomSliderPanel = new ZoomSliderPanel(frame);
@@ -188,10 +194,6 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         Dimension panelSize = controlSize;
         setFixedSize(controlPanel, panelSize);
-
-
-        BoxLayout layout = new BoxLayout(controlPanel, BoxLayout.X_AXIS);
-        controlPanel.setLayout(layout);
 
         return controlPanel;
     }
@@ -235,8 +237,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         getRenderer(trackComponent.track).setDataManager(dataManager);
         getRenderer(trackComponent.track).setCoverageTrack(coverageTrack);
         getRenderer(trackComponent.track).getCoverageTrack().rescale(trackComponent.originalFrame);
-
-        getRenderer(trackComponent.track).setBackground(getBackground());
+        getRenderer(trackComponent.track).setBackground(getBackground());  // <= this is neccessary
     }
 
     private SashimiJunctionRenderer getRenderer(SpliceJunctionTrack spliceJunctionTrack) {
