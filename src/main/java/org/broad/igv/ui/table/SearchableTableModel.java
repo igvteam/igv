@@ -33,29 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * //wgEncodeBroadHistoneGm12878H3k4me1StdSig.bigWig
- * // size=346M;
- * // dateSubmitted=2009-01-05;
- * // dataType=ChipSeq;
- * // cell=GM12878;
- * // antibody=H3K4me1;
- * // control=std;
- * // expId=33;
- * // setType=exp;
- * // controlId=GM12878/Input/std;
- * // subId=2804;
- * // dataVersion=ENCODE Jan 2011 Freeze;
- * // dateResubmitted=2010-11-05;
- * // grant=Bernstein;
- * // lab=Broad;
- * // view=Signal;
- * // type=bigWig;
- * // dccAccession=wgEncodeEH000033;
- * // origAssembly=hg18
- *
  * @author jrobinso
- *         Date: 10/31/13
- *         Time: 10:09 PM
  */
 public class SearchableTableModel extends AbstractTableModel {
 
@@ -78,7 +56,6 @@ public class SearchableTableModel extends AbstractTableModel {
         //tmp.add("path");
         columnHeadings = tmp.toArray(new String[tmp.size()]);
 
-
         sorter = new TableRowSorter<>(this);
 
         sorter.setStringConverter(new TableStringConverter() {
@@ -93,11 +70,6 @@ public class SearchableTableModel extends AbstractTableModel {
     public TableRowSorter<SearchableTableModel> getSorter() {
         return sorter;
     }
-
-//    @Override
-//    public Class<?> getColumnClass(int columnIndex) {
-//        return String.class;
-//    }
 
     @Override
     public String getColumnName(int column) {
@@ -126,19 +98,6 @@ public class SearchableTableModel extends AbstractTableModel {
             return record.getAttributeValue(att);
 
     }
-
-//    @Override
-//    public boolean isCellEditable(int rowIndex, int columnIndex) {
-//        return false;
-//    }
-
-//    @Override
-//    public void setValueAt(Object value, int row, int col) {
-//        if(col == 0) {
-//            records.get(row).setSelected((Boolean) value);
-//        }
-//        fireTableCellUpdated(row, col);
-//    }
 
     public List<SearchableTableRecord> getRecords() {
         return records;

@@ -33,7 +33,6 @@ import com.jidesoft.swing.JideBoxLayout;
 import org.broad.igv.Globals;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.util.ParsingUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -42,11 +41,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -63,7 +60,7 @@ public class SearchableTableDialog extends org.broad.igv.ui.IGVDialog {
     private JTable table;
     private JTextField filterTextField;
     private JLabel rowCountLabel;
-    SearchableTableModel model;
+    private SearchableTableModel model;
     private boolean canceled;
 
     public SearchableTableDialog(Frame owner, SearchableTableModel model) {
@@ -126,7 +123,7 @@ public class SearchableTableDialog extends org.broad.igv.ui.IGVDialog {
         try {
             rowCountLabel.setText(numberFormatter.valueToString(table.getRowCount()) + " rows");
         } catch (ParseException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            log.error(e);
         }
     }
 
@@ -201,7 +198,7 @@ public class SearchableTableDialog extends org.broad.igv.ui.IGVDialog {
         JLabel filterLabel = new JLabel();
         filterLabel.setText("Filter:");
         filterPanel.add(filterLabel, JideBoxLayout.FIX);
-        final String filterToolTip = "Enter multiple filter strings separated by commas.  e.g.  GM12878, ChipSeq";
+        final String filterToolTip = "Enter multiple filter strings separated by spaces.";
         filterLabel.setToolTipText(filterToolTip);
         filterTextField.setToolTipText(filterToolTip);
 
