@@ -67,6 +67,18 @@ public class PreferencesManager implements IGVEventObserver {
 
             Map<String, String> nullCategory = loadDefaults23();
 
+            // Special override -- maintains backward compatibility
+            if (!nullCategory.containsKey("FONT_SCALE_FACTOR") || nullCategory.get("FONT_SCALE_FACTOR").equals("1")) {
+                try {
+                    double resolutionScale = Math.max(1, Toolkit.getDefaultToolkit().getScreenResolution() / ((double) Globals.DESIGN_DPI));
+                    nullCategory.put(FONT_SCALE_FACTOR, String.valueOf((float) resolutionScale));
+                } catch (HeadlessException e) {
+                    // Ignore -- this is expected
+                } catch (Exception e) {
+                    log.error("Error overriding font scale factor", e);
+                }
+            }
+
             defaultPreferences.put(NULL_CATEGORY, nullCategory);
             defaultPreferences.put(RNA, new HashMap<>());
             defaultPreferences.put(THIRD_GEN, new HashMap<>());

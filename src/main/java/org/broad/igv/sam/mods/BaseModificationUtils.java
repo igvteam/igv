@@ -1,13 +1,11 @@
 package org.broad.igv.sam.mods;
 
+import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.AlignmentBlock;
-import org.broad.igv.sam.AlignmentTrack;
-import org.broad.igv.sam.AlignmentUtils;
+import org.broad.igv.sam.*;
 
 import java.awt.*;
 import java.util.*;
@@ -41,6 +39,8 @@ public class BaseModificationUtils {
         codeValues.put("NONE_G", "Unmodified G");
         codeValues.put("NONE_A", "Unmodified A");
     }
+
+    private static int MM_WARNING_COUNT = 0;
 
     public static String modificationName(String modification) {
         return ((codeValues.containsKey(modification)) ? codeValues.get(modification) : modification);
@@ -190,4 +190,57 @@ public class BaseModificationUtils {
         return true;
     }
 
+    /**
+     * Minimally validate an MM tag.  This will not catch all problems, but will many.  Validation proceeds as follows
+     * 1. Validate types of MM and ML tags.  This catches missues of the tags, for example in certain 10X files.
+     * 2. If available, validate sequence length vs MN tag.
+     * 3. If MN tag is not available, validate implied minimum count of base nucleotide vs actual count.
+     *
+     * @return
+     */
+    public static boolean validateMMTag(String readName, String mm, byte[] sequence, boolean isNegativeStrand) {
+
+
+        // Finally, test implied minimum base count vs actual base count in sequence.  The minimum base count is
+        // equal to the number of modified bases + the number of skipped bases as codified in the MM tag.
+        // e.g. C+m,5,12,0   => at least 20 "Cs" in the read sequence, 3 with modifications and 17 skipped
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.BASEMOD_VALIDATE_BASE_COUNT)) {
+
+            String[] mmTokens = mm.split(";");
+
+            for (String mmi : mmTokens) {
+                String[] tokens = mmi.split(","); //Globals.commaPattern.split(mm);
+                int baseCount;
+                if (tokens[0].charAt(0) == 'N') {
+                    baseCount = sequence.length;
+                } else {
+                    byte base = (byte) tokens[0].charAt(0);  // "Top strand" base seen by sequencing instrument
+                    byte readBase = isNegativeStrand ? SequenceUtil.complement(base) : base;  // Base as reported in BAM file
+                    baseCount = 0;
+                    for (int i = 0; i < sequence.length; i++) {
+                        if (readBase == sequence[i]) baseCount++;
+                    }
+                }
+
+                // Count # of bases implied by tag
+                int modified = tokens.length - 1;    // All tokens but the first are "skip" numbers
+                int skipped = 0;
+                for (int i = 1; i < tokens.length; i++) {
+                    skipped += Integer.parseInt(tokens[i]);
+                }
+                if (modified + skipped > baseCount) {
+                    if (++MM_WARNING_COUNT < 21) {
+                        log.warn(readName + "  MM base count validation failed: expected " + (modified + skipped) + "'" + (tokens[0].charAt(0) + "'s" + ", actual count = " + baseCount));
+                        if (MM_WARNING_COUNT == 20) {
+                            log.warn("MM validation warning count exceeded.  Further failures will not be logged.");
+                        }
+                    }
+                    return false;
+                }
+            }
+        }
+
+        // If we get here assume the tag is valid
+        return true;
+    }
 }

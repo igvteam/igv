@@ -34,7 +34,6 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMTag;
-import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
@@ -65,9 +64,6 @@ public class SAMAlignment implements Alignment {
     public static final Pattern RIGHT_CIGAR_PATTERN = Pattern.compile("[A-Z](.{1," + MAX_CIGAR_STRING_LENGTH_TO_DISPLAY / 2 + "})$");
     public static final Pattern LEFT_CIGAR_PATTERN = Pattern.compile("^(.{1," + (MAX_CIGAR_STRING_LENGTH_TO_DISPLAY / 2 - 1) + "}[A-Z])");
     private static final Logger log = LogManager.getLogger(SAMAlignment.class);
-
-    private static int MM_WARNING_COUNT = 0;
-
     public static final char DELETE_CHAR = '-';
     public static final char SKIP_CHAR = '=';
     public static final char MATCH = 'M';
@@ -376,7 +372,6 @@ public class SAMAlignment implements Alignment {
 
             Object mm = record.hasAttribute("Mm") ? record.getAttribute("Mm") : record.getAttribute("MM");
             byte[] ml = (byte[]) (record.hasAttribute("Ml") ? record.getAttribute("Ml") : record.getAttribute("ML"));
-            Integer mn = record.getIntegerAttribute("MN");
 
             // Minimal tag validation  -- 10X uses MM and/or ML for other purposes
             if (mm instanceof String && (mm.toString().length() > 0) && (ml == null || ml instanceof byte[])) {
@@ -384,14 +379,18 @@ public class SAMAlignment implements Alignment {
                 byte[] sequence = record.getReadBases();
 
                 // Sequence length validation -- if MN tag is present use it, otherwise do a partial validation
+                // Test sequence length vs mn if avaliable
+                Integer mn = record.getIntegerAttribute("MN");
+                if (mn == null) {
+                    mn = sequence.length;
+                }
                 if (mn != null) {
                     if (mn != sequence.length) {
                         return null;
                     }
-                } else if (!validateMMTag(mm.toString(), ml, record.getReadBases(), isNegativeStrand())) {  //record.getCigarString().indexOf("H") > 0 &&
+                } else if (!BaseModificationUtils.validateMMTag(this.getReadName(), mm.toString(), record.getReadBases(), isNegativeStrand())) {  //record.getCigarString().indexOf("H") > 0 &&
                     return null;
                 }
-
 
                 if (mm.toString().length() == 0) { // TODO -- more extensive validation?
                     baseModificationSets = Collections.EMPTY_LIST;
@@ -401,72 +400,6 @@ public class SAMAlignment implements Alignment {
             }
         }
         return baseModificationSets;
-    }
-
-    /**
-     * Minimally validate an MM tag.  This will not catch all problems, but will many.  Validation proceeds as follows
-     * 1. Validate types of MM and ML tags.  This catches missues of the tags, for example in certain 10X files.
-     * 2. If available, validate sequence length vs MN tag.
-     * 3. If MN tag is not available, validate implied minimum count of base nucleotide vs actual count.
-     *
-     * @return
-     */
-    boolean validateMMTag(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand) {
-
-        // Minimal tag validation  -- 10X uses MM and/or ML for other purposes
-        if (!(mm instanceof String && mm.toString().length() > 0 && (ml == null || ml instanceof byte[]))) {
-            return false;
-        }
-
-        // Test sequence length vs mn if avaliable
-        Integer mn = record.getIntegerAttribute("MN");
-        if (mn != null) {
-            return (mn == sequence.length);
-        }
-
-        // Finally, test implied minimum base count vs actual base count in sequence.  The minimum base count is
-        // equal to the number of modified bases + the number of skipped bases as codified in the MM tag.
-        // e.g. C+m,5,12,0   => at least 20 "Cs" in the read sequence, 3 with modifications and 17 skipped
-        if (PreferencesManager.getPreferences().getAsBoolean(Constants.BASEMOD_VALIDATE_BASE_COUNT)) {
-
-            String[] mmTokens = mm.split(";");
-
-            for (String mmi : mmTokens) {
-                String[] tokens = mmi.split(","); //Globals.commaPattern.split(mm);
-                int baseCount;
-                if (tokens[0].charAt(0) == 'N') {
-                    baseCount = sequence.length;
-                } else {
-                    byte base = (byte) tokens[0].charAt(0);
-                    char strand = tokens[0].charAt(1);
-                    if (strand == '-') {
-                        base = SequenceUtil.complement(base);
-                    }
-                    baseCount = 0;
-                    for (int i = 0; i < sequence.length; i++) {
-                        byte readBase = isNegativeStrand ? SequenceUtil.complement(sequence[i]) : sequence[i];
-                        if (readBase == base) baseCount++;
-                    }
-                }
-
-                // Count # of bases implied by tag
-                int modified = tokens.length - 1;    // All tokens but the first are "skip" numbers
-                int skipped = 0;
-                for (int i = 1; i < tokens.length; i++) skipped += Integer.parseInt(tokens[i]);
-                if (modified + skipped > baseCount) {
-                    if (++MM_WARNING_COUNT < 21) {
-                        log.warn(this.getReadName() + "  MM base count validation failed: expected " + (modified + skipped) + "'" + (tokens[0].charAt(0) + "'s" + ", actual count = " + baseCount));
-                        if (MM_WARNING_COUNT == 20) {
-                            log.warn("MM validation warning count exceeded.  Further failures will not be logged.");
-                        }
-                    }
-                    return false;
-                }
-            }
-        }
-
-        // If we get here assume the tag is valid
-        return true;
     }
 
     public SMRTKinetics getSmrtKinetics() {
