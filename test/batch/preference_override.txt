@@ -1,0 +1,5 @@
+genome hg19
+preference SAM.COLOR.A 150,0,150
+load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
+goto chr8:128,749,908-128,749,947
+
