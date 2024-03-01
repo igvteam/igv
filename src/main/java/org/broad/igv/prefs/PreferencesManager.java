@@ -72,6 +72,8 @@ public class PreferencesManager implements IGVEventObserver {
                 try {
                     double resolutionScale = Math.max(1, Toolkit.getDefaultToolkit().getScreenResolution() / ((double) Globals.DESIGN_DPI));
                     nullCategory.put(FONT_SCALE_FACTOR, String.valueOf((float) resolutionScale));
+                } catch (HeadlessException e) {
+                    // Ignore -- this is expected
                 } catch (Exception e) {
                     log.error("Error overriding font scale factor", e);
                 }
