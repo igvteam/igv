@@ -761,7 +761,9 @@ public class Genome {
                 return null;
             }
         } else {
-            return null;
+            // Return a psuedo cytoband -- used to paint navigation widget, and maintain backward compatibility
+            Chromosome chromosome = getChromosome(chrName);
+            return Collections.singletonList(new Cytoband(chromosome.getName(), 0, chromosome.getLength(), "", "gneg"));
         }
     }
 
