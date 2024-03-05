@@ -253,7 +253,7 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                     int screenWidth = 1000;  // nominal
                     double scale = genome.getWGLength() / screenWidth;
 
-                    int maxChromId = reader.getChromosomeNames().size() - 1;
+                    int maxChromId = reader.getChromosomeNames().length - 1;
                     String firstChr = reader.getChrForId(0);
                     String lastChr = reader.getChrForId(maxChromId);
 

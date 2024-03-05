@@ -35,4 +35,8 @@ public class CytobandMap implements CytobandSource {
     public List<Cytoband> getCytobands(String chr) {
         return cytobandMap.get(chr);
     }
+
+    public String [] getChromosomeNames() {
+        return this.cytobandMap.keySet().toArray(new String[0]);
+    }
 }

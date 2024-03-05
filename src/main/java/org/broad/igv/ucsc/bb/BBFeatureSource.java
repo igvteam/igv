@@ -170,5 +170,9 @@ public class BBFeatureSource implements FeatureSource {
         }
     }
 
+    public String [] getChromosomeNames() {
+        return this.reader.getChromosomeNames();
+    }
+
 
 }

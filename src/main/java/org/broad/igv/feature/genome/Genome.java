@@ -173,7 +173,6 @@ public class Genome {
             }
         }
 
-
         if (showWholeGenomeView) {
             homeChromosome = Globals.CHR_ALL;
         } else if (config.defaultPos != null) {
@@ -185,6 +184,20 @@ public class Genome {
             // TODO -- no place to go
         }
 
+        // Chromosome aliases
+        if (config.aliasURL != null) {
+            chromAliasSource = (new ChromAliasFile(config.aliasURL, chromosomeNames));
+        } else if (config.chromAliasBbURL != null) {
+            chromAliasSource = (new ChromAliasBB(config.chromAliasBbURL, this));
+            if (chromosomeNames == null || chromosomeNames.size() == 0) {
+                chromosomeNames = Arrays.asList(((ChromAliasBB) chromAliasSource).getChromosomeNames());
+            }
+        } else {
+            chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
+        }
+        if (config.chromAliases != null) {
+            addChrAliases(config.chromAliases);
+        }
 
         // Cytobands
         if (config.cytobands != null) {
@@ -194,22 +207,35 @@ public class Genome {
         } else if (config.cytobandURL != null) {
             cytobandSource = new CytobandMap(config.cytobandURL);
         }
-
-        // Chromosome aliases
-        if (config.aliasURL != null) {
-            chromAliasSource = (new ChromAliasFile(config.aliasURL, chromosomeNames));
-        } else if (config.chromAliasBbURL != null) {
-            chromAliasSource = (new ChromAliasBB(config.chromAliasBbURL, this));
-        } else {
-            chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
-        }
-        if (config.chromAliases != null) {
-            addChrAliases(config.chromAliases);
+        if (chromosomeNames == null || chromosomeNames.size() == 0) {
+            chromosomeNames = Arrays.asList(cytobandSource.getChromosomeNames());
         }
 
 
         addTracks(config);
 
+    }
+
+
+    /**
+     * Alternate constructor for defining a minimal genome, usually from parsing a chrom.sizes file.  Used to
+     * create mock genomes for testing.
+     *
+     * @param id
+     * @param chromosomes
+     */
+    public Genome(String id, List<Chromosome> chromosomes) {
+        this.id = id;
+        this.displayName = id;
+        this.chrAliasCache = new HashMap<>();
+        this.sequence = null;
+
+        chromosomeNames = new ArrayList<>(chromosomes.size());
+        chromosomeMap = new LinkedHashMap<>(chromosomes.size());
+        for (Chromosome chromosome : chromosomes) {
+            chromosomeNames.add(chromosome.getName());
+            chromosomeMap.put(chromosome.getName(), chromosome);
+        }
     }
 
     private static List<Chromosome> sortChromosomeList(List<Chromosome> chromosomeList, String[] orderedNames) {
@@ -264,28 +290,6 @@ public class Genome {
 
         if (hiddenTracks.size() > 0) {
             addToFeatureDB(hiddenTracks, this);
-        }
-    }
-
-
-    /**
-     * Alternate constructor for defining a minimal genome, usually from parsing a chrom.sizes file.  Used to
-     * create mock genomes for testing.
-     *
-     * @param id
-     * @param chromosomes
-     */
-    public Genome(String id, List<Chromosome> chromosomes) {
-        this.id = id;
-        this.displayName = id;
-        this.chrAliasCache = new HashMap<>();
-        this.sequence = null;
-
-        chromosomeNames = new ArrayList<>(chromosomes.size());
-        chromosomeMap = new LinkedHashMap<>(chromosomes.size());
-        for (Chromosome chromosome : chromosomes) {
-            chromosomeNames.add(chromosome.getName());
-            chromosomeMap.put(chromosome.getName(), chromosome);
         }
     }
 
@@ -720,20 +724,8 @@ public class Genome {
         this.id = id;
     }
 
-    ;
-
-    public static Genome mockGenome = new Genome("hg19");
-
-    public void setShowWholeGenomeView(boolean showWholeGenomeView) {
-        this.showWholeGenomeView = showWholeGenomeView;
-    }
-
     public boolean getShowWholeGenomeView() {
         return showWholeGenomeView;
-    }
-
-    public void setLongChromosomeNames(List<String> chrNames) {
-        this.longChromosomeNames = chrNames;
     }
 
     public Map<String, Liftover> getLiftoverMap() {
