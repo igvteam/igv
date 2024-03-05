@@ -354,6 +354,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 MessageUtils.showErrorMessage(ex.getMessage(), ex);
             }
         });
+
         genomeFileItem.setToolTipText("Load a FASTA, .json, or .genome file...");
         menu.add(genomeFileItem);
 
@@ -363,34 +364,53 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menu.add(loadFromURLItem);
 
 
+
         // Track hubs
         menu.add(new JSeparator());
-        
-        JMenuItem genArkItem = new JMenuItem(new UCSCGenArkAction("Search UCSC GenArk Assemblies...", 0, igv));
-        menu.add(genArkItem);
 
-        JMenuItem trackHubItem = new JMenuItem(new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKHUB, KeyEvent.VK_S, igv));
-        trackHubItem.setToolTipText(UIConstants.LOAD_TRACKHUB_TOOLTIP);
-        menu.add(trackHubItem);
+        MenuAction genArkAction = new UCSCGenArkAction("Load Genome from UCSC GenArk...", 0, igv);
+        menu.add(MenuAndToolbarUtils.createMenuItem(genArkAction));
 
-
-        selectGenomeAnnotationsItem = new JMenuItem(new SelectGenomeAnnotationTracksAction("Select Hub Tracks...", igv));
+        MenuAction menuAction = new SelectGenomeAnnotationTracksAction("Select GenArk Tracks...", igv);
+        selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         selectGenomeAnnotationsItem.setEnabled(genome != null && genome.getHub() != null);
         menu.add(selectGenomeAnnotationsItem);
 
+
         menu.add(new JSeparator());
 
         // Add genome to combo box from server
-        JMenuItem removeItem = new JMenuItem("Remove Genomes...");
-        removeItem.addActionListener(e -> {
-            RemoveGenomesDialog dialog2 = new RemoveGenomesDialog(igv.getMainFrame());
-            dialog2.setVisible(true);
+        menuAction = new MenuAction("Remove Genomes...", null) {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                RemoveGenomesDialog dialog2 = new RemoveGenomesDialog(igv.getMainFrame());
+                dialog2.setVisible(true);
+            }
+        };
+        menuAction.setToolTipText("Remove genomes which appear in the dropdown list");
+        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                selectGenomeAnnotationsItem.setEnabled(genome != null && genome.getHub() != null);
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+
+            }
         });
-        removeItem.setToolTipText("Remove genomes which appear in the dropdown list");
-        menu.add(removeItem);
 
         return menu;
+
     }
 
 
