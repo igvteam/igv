@@ -471,7 +471,7 @@ public class ReferenceFrame {
     }
 
     public double getEnd() {
-        return getChromosomePosition(widthInPixels);
+        return widthInPixels > 0 ? getChromosomePosition(widthInPixels) : initialLocus != null ? initialLocus.getEnd() : 0;
     }
 
     public int getZoom() {
@@ -646,7 +646,7 @@ public class ReferenceFrame {
     }
 
     public Range getCurrentRange() {
-        int endLoc = (int) Math.round(getChromosomePosition(widthInPixels));
+        int endLoc = (int) Math.round(getEnd());
         Range range = new Range(getChrName(), (int) origin, endLoc);
         return range;
     }
