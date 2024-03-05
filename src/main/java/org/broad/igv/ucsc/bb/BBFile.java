@@ -89,7 +89,7 @@ public class BBFile {
     private Trix trix;
     String autosql;
     private ChromTree chromTree;
-    private HashSet<String> chrNames;
+    private String[] chrNames;
     double featureDensity;
 
     Map<String, String> chrAliasTable;
@@ -109,7 +109,7 @@ public class BBFile {
         return autosql;
     }
 
-    public Set<String> getChromosomeNames() {
+    public String [] getChromosomeNames() {
         return chrNames;
     }
 
@@ -213,7 +213,7 @@ public class BBFile {
         // TODO replace with BPTree
         buffer.position((int) (header.chromTreeOffset - startOffset));
         this.chromTree = ChromTree.parseTree(buffer, startOffset, this.genome);
-        this.chrNames = new HashSet<>(Arrays.asList(this.chromTree.names()));
+        this.chrNames = this.chromTree.names();
 
         //Total data count -- for bigbed this is the number of features, for bigwig it is number of sections
         buffer.position((int) (header.fullDataOffset - BBFILE_HEADER_SIZE));

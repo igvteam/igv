@@ -17,6 +17,9 @@ import java.util.List;
 public class ChromosomeComboBox extends JComboBox {
 
 
+    private static int MAX_CHROMOSOME_COUNT = 10000;
+    private static String MAX_EXCEEDED = "Max exceeded";
+
     public ChromosomeComboBox() {
         addActionListener(evt -> chromosomeComboBoxActionPerformed(evt));
     }
@@ -24,7 +27,7 @@ public class ChromosomeComboBox extends JComboBox {
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         JComboBox combobox = (JComboBox) evt.getSource();
         final String chrName = (String) combobox.getSelectedItem();
-        if (chrName != null & !chrName.equals(FrameManager.getDefaultFrame().getChrName())) {
+        if (chrName != null & !chrName.equals(FrameManager.getDefaultFrame().getChrName()) && !chrName.equals(MAX_EXCEEDED)) {
             FrameManager.getDefaultFrame().changeChromosome(chrName, true);
         }
     }
@@ -36,39 +39,48 @@ public class ChromosomeComboBox extends JComboBox {
 
         UIUtilities.invokeAndWaitOnEventThread(() -> {
 
-            List<String> tmp = new ArrayList<String>(genome.getAllChromosomeNames().size());
-            tmp.addAll(genome.getAllChromosomeNames());
-            if (tmp.size() > 1) {
+            List<String> allChromosomeNames = genome.getAllChromosomeNames();
+            if (allChromosomeNames.size() > 1) {
+                this.setVisible(true);
+
+                List<String> tmp = new ArrayList<>();
+                tmp.addAll(allChromosomeNames.size() > MAX_CHROMOSOME_COUNT ?
+                        allChromosomeNames.subList(0, MAX_CHROMOSOME_COUNT) :
+                        allChromosomeNames);
+
                 String homeChr = genome.getHomeChromosome();
                 if (homeChr.equals(Globals.CHR_ALL)) {
                     tmp.add(0, Globals.CHR_ALL);
                 }
-            }
 
-            Graphics2D graphics2D = (Graphics2D) getGraphics();
-            Font font = getFont();
-            FontMetrics fontMetrics = getFontMetrics(font);
+                if(allChromosomeNames.size() > MAX_CHROMOSOME_COUNT) {
+                    tmp.add(MAX_EXCEEDED);
+                }
 
-            int w = IGVCommandBar.DEFAULT_CHROMOSOME_DROPDOWN_WIDTH;
-            for (String chromosomeName : tmp) {
-                Rectangle2D textBounds = fontMetrics.getStringBounds(chromosomeName, graphics2D);
-                if (textBounds != null) {
-                    int width = textBounds.getBounds().width + 50;
+                Graphics2D graphics2D = (Graphics2D) getGraphics();
+                Font font = getFont();
+                FontMetrics fontMetrics = getFontMetrics(font);
 
-                    // int width = chromosomeName.length()*fontSize-(fontSize*4);  // TODO Hack figure out whats's wrong with previous line
-                    if (width > w) {
-                        w = width;
+                int w = IGVCommandBar.DEFAULT_CHROMOSOME_DROPDOWN_WIDTH;
+                for (String chromosomeName : tmp) {
+                    Rectangle2D textBounds = fontMetrics.getStringBounds(chromosomeName, graphics2D);
+                    if (textBounds != null) {
+                        int width = textBounds.getBounds().width + 50;
+                        if (width > w) {
+                            w = width;
+                        }
                     }
                 }
+
+                final DefaultComboBoxModel defaultModel = new DefaultComboBoxModel(tmp.toArray());
+                final int dropdownWidth = w;
+
+                setModel(defaultModel);
+                setSelectedItem(genome.getHomeChromosome());
+                adjustChromosomeDropdownWidth(dropdownWidth);
+            } else {
+                this.setVisible(false);
             }
-
-            Object[] chomosomeNames = tmp.toArray();
-            final DefaultComboBoxModel defaultModel = new DefaultComboBoxModel(chomosomeNames);
-            final int dropdownWidth = w;
-
-            setModel(defaultModel);
-            setSelectedItem(genome.getHomeChromosome());
-            adjustChromosomeDropdownWidth(dropdownWidth);
         });
     }
 

@@ -3,6 +3,8 @@ package org.broad.igv.feature.genome;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.ucsc.bb.BBFile;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChromAliasBB extends ChromAliasSource {
 
@@ -71,6 +73,10 @@ public class ChromAliasBB extends ChromAliasSource {
             }
         }
         return this.aliasCache.get(alias);
+    }
+
+    public String [] getChromosomeNames() {
+        return this.reader.getChromosomeNames();
     }
 
 }
