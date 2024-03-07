@@ -12,7 +12,7 @@ import java.util.*;
  */
 public class ChromAliasManager {
 
-    private static Logger log = LogManager.getLogger(ChromAliasManager.class)
+    private static Logger log = LogManager.getLogger(ChromAliasManager.class);
 
     private Set<String> sequenceNames;
 
