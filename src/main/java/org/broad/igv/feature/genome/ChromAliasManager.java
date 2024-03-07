@@ -1,5 +1,8 @@
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -8,6 +11,8 @@ import java.util.*;
  * used by the feature source (e.g. chr20 -> 20).
  */
 public class ChromAliasManager {
+
+    private static Logger log = LogManager.getLogger(ChromAliasManager.class)
 
     private Set<String> sequenceNames;
 
@@ -42,9 +47,11 @@ public class ChromAliasManager {
                     }
                 }
             }
-            return aliasCache.get(seqName);
+            String alias = aliasCache.get(seqName);
+            return alias != null ? alias : seqName;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("Error loading alias file ", e);
+            return seqName;
         }
     }
 
