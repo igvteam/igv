@@ -407,9 +407,11 @@ public class TDFDataSource implements CoverageDataSource {
             endLocation = Math.min(chromosome.getLength(), endLocation);
         }
 
-        String querySeq = sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
-
         ArrayList scores = new ArrayList();
+
+        String querySeq = sequenceNames.contains(chr) ? chr : chromAliasManager.getAliasName(chr);
+        if(querySeq == null) return scores;
+
 
         // TODO -- this whole section could be computed once and stored,  it is only a function of the genome, chr, and zoom level.
         int tileWidth = 0;
