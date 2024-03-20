@@ -95,6 +95,7 @@ public class BBFile {
     Map<String, String> chrAliasTable;
     public BBTotalSummary totalSummary;
     private BPTree[] _searchTrees;
+    private Map<Long, RPTree> rTreeCache;
     BBCodec bedCodec;
 
     public boolean isBigWigFile() {
@@ -131,6 +132,7 @@ public class BBFile {
         this.path = path;
         this.genome = genome;
         this.chrAliasTable = new HashMap<>();
+        this.rTreeCache = new HashMap<>();
         init();
     }
 
@@ -300,7 +302,12 @@ public class BBFile {
         }
 
         // Load the R Tree and fine leaf items
-        RPTree rpTree = RPTree.loadTree(this.path, treeOffset);
+        RPTree rpTree = rTreeCache.get(treeOffset);
+        if(rpTree == null) {
+             rpTree = RPTree.loadTree(this.path, treeOffset);
+             rTreeCache.put(treeOffset, rpTree);
+        }
+
         List<byte[]> leafChunks = new ArrayList<>();
         List<RPTree.Item> leafItems = rpTree.findLeafItemsOverlapping(chrIdx1, bpStart, chrIdx2, bpEnd);
         if (leafItems != null && leafItems.size() > 0) {
