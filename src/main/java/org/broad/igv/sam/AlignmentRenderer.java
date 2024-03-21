@@ -667,7 +667,7 @@ public class AlignmentRenderer {
                 }
 
                 // gap extensions
-                if ( flowIndelRendering.handlesAlignment(alignment) ) {
+                if ( flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesGap(gap)) {
                     flowIndelRendering.renderDeletionGap(alignment, gap, y, h, gapPxStart, gapPxEnd - gapPxStart, context, renderOptions);
                 }
             }
@@ -928,7 +928,7 @@ public class AlignmentRenderer {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D ig = context.getGraphics();
                         ig.setColor(purple);
-                        if ( flowIndelRendering.handlesAlignment(alignment) ) {
+                        if ( flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesBlock(aBlock) ) {
                             flowIndelRendering.renderSmallInsertion(alignment, aBlock, context, h, x, y, renderOptions);
                         } else {
                             ig.fillRect(x, y, 2, h);
@@ -1065,7 +1065,7 @@ public class AlignmentRenderer {
         g.fillRect(pxLeft, pxTop, pxRight - pxLeft, pxH);
 
         if (isInsertion && pxH > 5) {
-            if ( flowIndelRendering.handlesAlignment(alignment) ) {
+            if ( flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesBlock(insertionBlock) ) {
                 flowIndelRendering.renderSmallInsertionWings(alignment, insertionBlock, context, pxH, pxTop, pxRight, pxLeft, track.renderOptions);
             } else {
                 g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
