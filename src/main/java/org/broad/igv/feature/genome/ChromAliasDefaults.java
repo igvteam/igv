@@ -3,7 +3,9 @@ package org.broad.igv.feature.genome;
 import org.broad.igv.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ChromAliasDefaults extends ChromAliasSource {
 
@@ -13,6 +15,8 @@ public class ChromAliasDefaults extends ChromAliasSource {
     }
 
     private void init(String id, List<String> chromosomeNames) {
+
+        Set<String> allNames = new HashSet<>(chromosomeNames);
 
         List<ChromAlias> aliasRecords = new ArrayList<>();
         for (String name : chromosomeNames) {
@@ -26,7 +30,9 @@ public class ChromAliasDefaults extends ChromAliasSource {
             if (version >= 0) {
                 int idx = name.indexOf(".");
                 String alias = name.substring(0, idx);
-                record.put("ncbi-noversion", alias);
+                if(!allNames.contains(alias)) {
+                    record.put("ncbi-noversion", alias);
+                }
             }
 
             if (name.startsWith("gi|")) {
@@ -36,7 +42,7 @@ public class ChromAliasDefaults extends ChromAliasSource {
 
                 // Also strip version number out, if present
                 int dotIndex = alias.lastIndexOf('.');
-                if (dotIndex > 0) {
+                if (dotIndex > 0 && !allNames.contains(name.substring(0, name.lastIndexOf('.')))) {
                     alias = alias.substring(0, dotIndex);
                     record.put("ncbi-gi", alias);
                 }
