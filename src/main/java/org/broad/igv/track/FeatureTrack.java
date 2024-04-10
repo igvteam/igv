@@ -826,7 +826,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     private float getMaxEstimate(List<LocusScore> scores) {
         float max = 0;
-        int n = Math.min(200, scores.size());
+        int n = scores.size();
         for (int i = 0; i < n; i++) {
             max = Math.max(max, scores.get(i).getScore());
         }
