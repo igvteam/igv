@@ -138,19 +138,12 @@ public class UIUtilities {
     }
 
     /**
-     * A wrapper around invokeOnEventThread.  If the runnable is already in the event dispatching
-     * queue it is just run.  Otherwise it is placed in the queue via invokeOnEventThread.
-     * <p/>
-     * I'm not sure this is strictly necessary,  but is safe.
+     * A wrapper around invokeLater.
      *
      * @param runnable
      */
     public static void invokeOnEventThread(Runnable runnable) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            runnable.run();
-        } else {
-            SwingUtilities.invokeLater(runnable);
-        }
+        SwingUtilities.invokeLater(runnable);
     }
 
     /**
