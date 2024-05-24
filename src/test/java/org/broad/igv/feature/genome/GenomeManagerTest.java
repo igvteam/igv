@@ -31,15 +31,9 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -67,9 +61,9 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         TestUtils.createIndex(fastaPath);
 
         Genome genome = GenomeManager.getInstance().loadGenome(fastaPath);
-        String[] chromos = {"chr1", "chr5"};
+        String[] chromos = {"chr5", "chr1"};
 
-        assertArrayEquals(chromos, genome.getAllChromosomeNames().toArray());
+        assertArrayEquals(chromos, genome.getChromosomeNames().toArray());
     }
 
     /**
@@ -82,8 +76,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         String testFile = TestUtils.DATA_DIR + "genomes/hg19.chrom.sizes";
         Genome genome = GenomeManager.getInstance().loadGenome(testFile);
 
-        assertEquals(37, genome.getAllChromosomeNames().size());
-        assertEquals(3130404865l, genome.getTotalLength());
+        assertEquals(37, genome.getChromosomeNames().size());
     }
 
 }

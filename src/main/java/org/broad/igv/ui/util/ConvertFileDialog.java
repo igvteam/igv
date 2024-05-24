@@ -67,7 +67,7 @@ public class ConvertFileDialog extends org.broad.igv.ui.IGVDialog  {
     public static ConvertOptions showConvertFileDialog(String message) {
         ConvertFileDialog dlg = new ConvertFileDialog(IGV.getInstance().getMainFrame(),
                                                       message,
-                                                      GenomeManager.getInstance().getCurrentGenome().getAllChromosomeNames());
+                                                      GenomeManager.getInstance().getCurrentGenome().getChromosomeNames());
         dlg.setVisible(true);
         dlg.opts.chrom = dlg.chromBox.getSelectedItem().toString();
         dlg.opts.start = Integer.parseInt(dlg.startTextField.getText());

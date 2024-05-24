@@ -46,8 +46,6 @@ public class FeatureCache<T extends Locatable> {
 
         featureMap = new HashMap<>();
 
-        features.sort(getPositionComparator());
-
         for (T f : features) {
 
             final String chr = f.getContig();
@@ -107,18 +105,4 @@ public class FeatureCache<T extends Locatable> {
 
     }
 
-    private  Comparator<T> getPositionComparator() {
-        Comparator<T> comp = new Comparator<T>() {
-            private Comparator<String> nameComparator = ChromosomeNameComparator.get();
-            public int compare(T o1, T o2) {
-                int nameComp = nameComparator.compare(o1.getContig(), o2.getContig());
-                if (nameComp == 0) {
-                    return o1.getStart() - o2.getStart();
-                } else {
-                    return nameComp;
-                }
-            }
-        };
-        return comp;
-    }
 }

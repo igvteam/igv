@@ -297,7 +297,7 @@ public class Preprocessor implements DataConsumer {
          * in the file
          */
         StringBuffer chrString = new StringBuffer();
-        Iterator<String> iter = genome.getAllChromosomeNames().iterator();
+        Iterator<String> iter = genome.getChromosomeNames().iterator();
         while (iter.hasNext()) {
             String chromoName = iter.next();
             if (!chromosomes.contains(chromoName)) {

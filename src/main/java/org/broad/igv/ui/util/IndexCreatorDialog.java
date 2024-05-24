@@ -48,7 +48,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 
-public class IndexCreatorDialog extends org.broad.igv.ui.IGVDialog  {
+public class IndexCreatorDialog extends org.broad.igv.ui.IGVDialog {
 
     private static Logger log = LogManager.getLogger(IndexCreatorDialog.class);
 
@@ -309,7 +309,7 @@ public class IndexCreatorDialog extends org.broad.igv.ui.IGVDialog  {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -327,8 +327,8 @@ public class IndexCreatorDialog extends org.broad.igv.ui.IGVDialog  {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- goButton ----
                 goButton.setText("Go");
@@ -339,8 +339,8 @@ public class IndexCreatorDialog extends org.broad.igv.ui.IGVDialog  {
                     }
                 });
                 buttonBar.add(goButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -351,8 +351,8 @@ public class IndexCreatorDialog extends org.broad.igv.ui.IGVDialog  {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }

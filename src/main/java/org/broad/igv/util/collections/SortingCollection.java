@@ -304,45 +304,6 @@ public class SortingCollection<T> implements Iterable<T> {
 
     }
 
-    /**
-     * Syntactic sugar around the ctor, to save some typing of type parameters
-     *
-     * @param componentType Class of the record to be sorted.  Necessary because of Java generic lameness.
-     * @param codec For writing records to file and reading them back into RAM
-     * @param comparator Defines output sort order
-     * @param maxRecordsInRAM how many records to accumulate in memory before spilling to disk
-     * @param tmpDirs Where to write files of records that will not fit in RAM
-     */
-    public static <T> SortingCollection<T> newInstance(final Class<T> componentType,
-                                                       final SortingCollection.Codec<T> codec,
-                                                       final Comparator<T> comparator,
-                                                       final int maxRecordsInRAM,
-                                                       final Collection<File> tmpDirs) {
-        return new SortingCollection<T>(componentType,
-                codec,
-                comparator,
-                maxRecordsInRAM,
-                tmpDirs.toArray(new File[tmpDirs.size()]));
-
-    }
-
-
-    /**
-     * Syntactic sugar around the ctor, to save some typing of type parameters.  Writes files to java.io.tmpdir
-     *
-     * @param componentType Class of the record to be sorted.  Necessary because of Java generic lameness.
-     * @param codec For writing records to file and reading them back into RAM
-     * @param comparator Defines output sort order
-     * @param maxRecordsInRAM how many records to accumulate in memory before spilling to disk
-     */
-    public static <T> SortingCollection<T> newInstance(final Class<T> componentType,
-                                                       final SortingCollection.Codec<T> codec,
-                                                       final Comparator<T> comparator,
-                                                       final int maxRecordsInRAM) {
-
-        final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-        return new SortingCollection<T>(componentType, codec, comparator, maxRecordsInRAM, tmpDir);
-    }
 
     /**
      * For iteration when number of records added is less than the threshold for spilling to disk.

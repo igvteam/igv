@@ -122,7 +122,7 @@ public class WiggleParser {
     private int estArraySize(ResourceLocator locator, Genome genome) {
 
         int estLines = ParsingUtils.estimateLineCount(locator.getPath());
-        int nChromosomes = genome == null ? 24 : genome.getAllChromosomeNames().size();
+        int nChromosomes = genome == null ? 24 : genome.getChromosomeNames().size();
         return Math.max(1000, (estLines / nChromosomes));
 
     }

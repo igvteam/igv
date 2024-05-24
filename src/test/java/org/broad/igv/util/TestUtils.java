@@ -128,7 +128,7 @@ public class TestUtils {
         chromosomeList.add(new Chromosome(25, "chrM", chromSizes.get(25)));
 
         Genome mockGenome = new Genome("hg38", chromosomeList);
-        mockGenome.setChromAliasSource(new ChromAliasDefaults(mockGenome.getId(), mockGenome.getAllChromosomeNames()));
+        mockGenome.setChromAliasSource(new ChromAliasDefaults(mockGenome.getId(), mockGenome.getChromosomeNames()));
 
         return mockGenome;
     }
@@ -142,7 +142,7 @@ public class TestUtils {
         chromosomeList.add(new Chromosome(25, "MT", chromSizes.get(25)));
 
         Genome mockGenome = new Genome("GRCh38", chromosomeList);
-        mockGenome.setChromAliasSource(new ChromAliasDefaults(mockGenome.getId(), mockGenome.getAllChromosomeNames()));
+        mockGenome.setChromAliasSource(new ChromAliasDefaults(mockGenome.getId(), mockGenome.getChromosomeNames()));
 
         return mockGenome;
     }

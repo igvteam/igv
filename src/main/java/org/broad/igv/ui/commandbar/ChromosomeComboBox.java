@@ -39,7 +39,7 @@ public class ChromosomeComboBox extends JComboBox {
 
         UIUtilities.invokeAndWaitOnEventThread(() -> {
 
-            List<String> allChromosomeNames = genome.getAllChromosomeNames();
+            List<String> allChromosomeNames = genome.getChromosomeNames();
             if (allChromosomeNames.size() > 1) {
                 this.setVisible(true);
 

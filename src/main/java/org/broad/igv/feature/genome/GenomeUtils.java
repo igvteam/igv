@@ -124,7 +124,7 @@ public class GenomeUtils {
 
         try {
             pw = new PrintWriter(file);
-            for (String chr : genome.getAllChromosomeNames()) {
+            for (String chr : genome.getChromosomeNames()) {
 
                 Chromosome chromosome = genome.getChromosome(chr);
                 pw.println(chromosome.getName() + "\t" + chromosome.getLength());

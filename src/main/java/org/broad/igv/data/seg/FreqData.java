@@ -81,7 +81,7 @@ public class FreqData {
         int wgBinCount = sizeInKB / wgBinSize + 1;
 
         //Chromosome bins
-        for (String chr : genome.getAllChromosomeNames()) {
+        for (String chr : genome.getChromosomeNames()) {
             Chromosome c = genome.getChromosome(chr);
             int len = c.getLength();
             int nBins = len / binSize + 1;

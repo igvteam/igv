@@ -252,7 +252,6 @@ public class MAFtoSAM {
     private static void outputHeader(Map<String, Integer> sequenceDictionary, PrintWriter out) {
 
         List<String> chrNames = new ArrayList<String>(sequenceDictionary.keySet());
-        Collections.sort(chrNames, ChromosomeNameComparator.get());
 
         out.println("@HD\tVN:1.5");
         for (String chr : chrNames) {
