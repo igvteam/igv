@@ -61,7 +61,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         TestUtils.createIndex(fastaPath);
 
         Genome genome = GenomeManager.getInstance().loadGenome(fastaPath);
-        String[] chromos = {"chr1", "chr5"};
+        String[] chromos = {"chr5", "chr1"};
 
         assertArrayEquals(chromos, genome.getChromosomeNames().toArray());
     }

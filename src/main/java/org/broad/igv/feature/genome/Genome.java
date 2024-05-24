@@ -806,10 +806,4 @@ public class Genome {
         this.hub = hub;
     }
 
-    public int compareChromosomeNames(String chr1, String chr2) {
-        String c1 = getCanonicalChrName(chr1);
-        String c2 = getCanonicalChrName(chr2);
-
-        return 0;
-    }
 }

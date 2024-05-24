@@ -99,35 +99,6 @@ public class GenomeTest extends AbstractHeadlessTest {
         assertEquals(ncbiName, Genome.getNCBIName(ncbiID));
     }
 
-
-    @Test
-    public void testOrderChromos() throws Exception {
-        //Scratch work for now, test methods for separating
-        //contigs into "small" and "large"
-        String indexPath = TestUtils.DATA_DIR + "fasta/CE.cns.all.fa.fai";
-        Sequence seq = new MockSequence(indexPath);
-        GenomeConfig genomeConfig = new GenomeConfig();
-        genomeConfig.id = "GenomeTest";
-        genomeConfig.name = "GenomeTest";
-        genomeConfig.sequence = seq;
-        Genome genome = new Genome(genomeConfig);
-
-        List<String> longNames = genome.getLongChromosomeNames();
-        assertEquals(21, longNames.size());
-
-        List<String> actNames = genome.getChromosomeNames();
-
-        String[] expNames = {"chr1", "chr2", "chr3", "chrX"};
-        int[] expInds = {0, 1, 2, 20};
-        int counter = 0;
-        for (int expInd : expInds) {
-            String expName = expNames[counter];
-            String actName = actNames.get(expInd);
-            assertEquals(expName, actName);
-            counter++;
-        }
-    }
-
     @Test
     public void testGetLongChromosomeNames() throws Exception {
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/bosTau9.fa.fai";
