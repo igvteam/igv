@@ -208,7 +208,6 @@ public class FastaIndex {
      * @return
      */
     public List<Chromosome> getChromosomes() {
-        Collection<String> chromosomeNames = getSequenceNames();
         int i = 0;
         List<Chromosome> chromosomes = new ArrayList<>();
         for(Map.Entry<String, FastaSequenceIndexEntry> e : sequenceEntries.entrySet()) {

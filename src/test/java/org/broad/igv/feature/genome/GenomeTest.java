@@ -115,7 +115,7 @@ public class GenomeTest extends AbstractHeadlessTest {
         List<String> longNames = genome.getLongChromosomeNames();
         assertEquals(21, longNames.size());
 
-        List<String> actNames = genome.getAllChromosomeNames();
+        List<String> actNames = genome.getChromosomeNames();
 
         String[] expNames = {"chr1", "chr2", "chr3", "chrX"};
         int[] expInds = {0, 1, 2, 20};

@@ -246,7 +246,7 @@ public class TDFDataSource implements CoverageDataSource {
 
         List<LocusScore> scores = new ArrayList(10000);
 
-        for (String chr : genome.getAllChromosomeNames()) {
+        for (String chr : genome.getChromosomeNames()) {
             Chromosome c = genome.getChromosome(chr);
 
             String dsName = "/" + chr + "/raw";

@@ -45,22 +45,13 @@ import java.util.Objects;
  */
 public class Chromosome {
     private String name;
-    private int index;  // Order in the chromosome (for convenience)
+    private  transient int index;  // Order in the chromosome (for convenience)
     private int length = 0;
-    private List<Cytoband> cytobands;
 
     public Chromosome(int index, String name, int length) {
         this.index = index;
         this.name = name;
         this.length = length;
-
-        // Create a single "cytoband" to represent the entire chromosome.  This can be overriden explicitly
-        // if a cytoband file is loaded
-        final Cytoband cytoband = new Cytoband(name);
-        cytoband.setStart(0);
-        cytoband.setEnd(length);
-        cytobands = Arrays.asList(cytoband);
-
     }
 
     public int getIndex() {
@@ -71,15 +62,9 @@ public class Chromosome {
         this.index = ii;
     }
 
-
-    public void setCytobands(List<Cytoband> cytobands) {
-        this.cytobands = cytobands;
-    }
-
-
     /**
      * /**
-     * Return the length of the chromosome, which is the end of the last cytoband
+     * Return the length of the chromosome
      */
     public int getLength() {
         return length;
@@ -96,12 +81,12 @@ public class Chromosome {
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof Chromosome) &&
-                ((Chromosome)obj).getIndex() == getIndex()
-                && ((Chromosome)obj).getLength() == getLength();
+                ((Chromosome)obj).name.equals(name)
+                && ((Chromosome)obj).length == length;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(index, length);
+        return Objects.hash(name, length);
     }
 }

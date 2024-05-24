@@ -25,7 +25,7 @@ public class GenomeConfig {
     public String compressedIndexURL;
     public String twoBitURL;
     public String nameSet;
-    public Boolean wholeGenomeView;
+    public boolean wholeGenomeView = true;
     public String defaultPos;
     public String description;
     public String blat;

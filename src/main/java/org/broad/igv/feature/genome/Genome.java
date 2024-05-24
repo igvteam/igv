@@ -52,12 +52,9 @@ import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ucsc.Hub;
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
-import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
 
@@ -79,7 +76,7 @@ public class Genome {
     private String displayName;
     private List<String> chromosomeNames;
     private List<String> longChromosomeNames;
-    private LinkedHashMap<String, Chromosome> chromosomeMap;
+    private Map<String, Chromosome> chromosomeMap;
     private long totalLength = -1;
     private long nominalLength = -1;
     private Map<String, Long> cumulativeOffsets = new HashMap();
@@ -115,9 +112,10 @@ public class Genome {
         defaultPos = config.defaultPos;
 
         // Load the sequence object.  Some configurations will specify both 2bit and fasta references.  The 2 bit
-        // has preference
+        // has preference but the fasta index might still be read for chromosome information.
         Sequence uncachedSequence;
         if (config.sequence != null) {
+            // Genbank sequences are read directly into memory and referenced by the "sequence" object
             uncachedSequence = config.sequence;
         } else if (config.twoBitURL != null) {
             uncachedSequence = (config.twoBitBptURL != null) ?
@@ -148,41 +146,47 @@ public class Genome {
             chromosomeList = index.getChromosomes();
         }
 
-        // Whole genome view is initially enabled by default if we have the chromosome information.  This might
-        // still get disabled if we can't determine a sufficiently small number of wg chromosomes.
-        showWholeGenomeView = (config.wholeGenomeView == null || config.wholeGenomeView) && chromosomeList.size() > 1;
-
-        this.chromosomeMap = new LinkedHashMap<>();
+        // If list of chromosomes is specified use it for the whole genome view, and to prepopulate the
+        // ordered list of chromosomes.
         this.chromosomeNames = new ArrayList<>();
+        Set<String> ordered = new HashSet<>();
+        if (config.chromosomeOrder != null) {
+            this.longChromosomeNames = Arrays.asList(config.chromosomeOrder);
+            this.chromosomeNames.addAll(this.longChromosomeNames);
+            ordered.addAll(this.longChromosomeNames);
+        }
+
+        // If we have chromosome information pre-populate the chromosome cache.
+        this.chromosomeMap = new HashMap<>();
         if (chromosomeList != null) {
-
-            chromosomeList = sortChromosomeList(chromosomeList, config.chromosomeOrder);
-
             for (Chromosome c : chromosomeList) {
                 this.chromosomeMap.put(c.getName(), c);
-                this.chromosomeNames.add(c.getName());
-            }
-
-            if (config.chromosomeOrder != null) {
-                this.longChromosomeNames = Arrays.asList(config.chromosomeOrder);
-            } else {
-                this.longChromosomeNames = computeLongChromosomeNames();
-                if (longChromosomeNames.size() > MAX_WHOLE_GENOME_LONG) {
-                    showWholeGenomeView = false;
+                if (!ordered.contains(c.getName())) {
+                    this.chromosomeNames.add(c.getName());
                 }
             }
+            // If whole genome chromosomes are not explicitly specified try to infer them.
+            if (this.longChromosomeNames == null && config.wholeGenomeView != false) {
+                this.longChromosomeNames = computeLongChromosomeNames();
+            }
         }
 
-        if (showWholeGenomeView) {
-            homeChromosome = Globals.CHR_ALL;
-        } else if (config.defaultPos != null) {
-            int idx = config.defaultPos.indexOf(":");
-            homeChromosome = idx > 0 ? config.defaultPos.substring(0, idx) : config.defaultPos;
-        } else if (this.chromosomeNames != null && this.chromosomeNames.size() > 0) {
-            homeChromosome = this.chromosomeNames.get(0);
-        } else {
-            // TODO -- no place to go
+        // Whole genome view is enabled by default if we have the chromosome information amd the
+        // number of chromosomes is not too large
+        showWholeGenomeView = config.wholeGenomeView  &&
+                chromosomeList.size() > 1 &&
+                longChromosomeNames.size() <= MAX_WHOLE_GENOME_LONG;
+
+
+        // Cytobands
+        if (config.cytobands != null) {
+            cytobandSource = new CytobandMap(config.cytobands);    // Directly supplied, from .genome file
+        } else if (config.cytobandBbURL != null) {
+            cytobandSource = new CytobandSourceBB(config.cytobandBbURL, this);
+        } else if (config.cytobandURL != null) {
+            cytobandSource = new CytobandMap(config.cytobandURL);
         }
+
 
         // Chromosome aliases
         if (config.aliasURL != null) {
@@ -199,16 +203,17 @@ public class Genome {
             addChrAliases(config.chromAliases);
         }
 
-        // Cytobands
-        if (config.cytobands != null) {
-            cytobandSource = new CytobandMap(config.cytobands);    // Directly supplied, from .genome file
-        } else if (config.cytobandBbURL != null) {
-            cytobandSource = new CytobandSourceBB(config.cytobandBbURL, this);
-        } else if (config.cytobandURL != null) {
-            cytobandSource = new CytobandMap(config.cytobandURL);
-        }
-        if (chromosomeNames == null || chromosomeNames.size() == 0) {
-            chromosomeNames = Arrays.asList(cytobandSource.getChromosomeNames());
+
+        // Set the default position.
+        if (showWholeGenomeView) {
+            homeChromosome = Globals.CHR_ALL;
+        } else if (config.defaultPos != null) {
+            int idx = config.defaultPos.indexOf(":");
+            homeChromosome = idx > 0 ? config.defaultPos.substring(0, idx) : config.defaultPos;
+        } else if (this.chromosomeNames != null && this.chromosomeNames.size() > 0) {
+            homeChromosome = this.chromosomeNames.get(0);
+        } else {
+            // TODO -- no place to go
         }
 
 
@@ -235,30 +240,6 @@ public class Genome {
         for (Chromosome chromosome : chromosomes) {
             chromosomeNames.add(chromosome.getName());
             chromosomeMap.put(chromosome.getName(), chromosome);
-        }
-    }
-
-    private static List<Chromosome> sortChromosomeList(List<Chromosome> chromosomeList, String[] orderedNames) {
-        if (orderedNames == null) {
-            Collections.sort(chromosomeList, new ChromosomeComparator());
-            return chromosomeList;
-        } else {
-            // Order chromosomes in orderedNames, leave others in original order
-            Map<String, Chromosome> chrMap = new HashMap<>();
-            for (Chromosome c : chromosomeList) {
-                chrMap.put(c.getName(), c);
-            }
-            List<Chromosome> orderedChromosomes = new ArrayList<>(chromosomeList.size());
-            Set<String> orderedNameSet = new HashSet<>(Arrays.asList(orderedNames));
-            for (String nm : orderedNames) {
-                orderedChromosomes.add(chrMap.get(nm));
-            }
-            for (Chromosome c : chromosomeList) {
-                if (!orderedNameSet.contains(c.getName())) {
-                    orderedChromosomes.add(c);
-                }
-            }
-            return orderedChromosomes;
         }
     }
 
@@ -410,14 +391,6 @@ public class Genome {
      * @return
      */
     public String getHomeChromosome() {
-        if (homeChromosome == null) {
-            if (showWholeGenomeView == false || chromosomeNames.size() == 1 || getLongChromosomeNames().size() > MAX_WHOLE_GENOME_LONG) {
-                homeChromosome = chromosomeNames.get(0);
-            } else {
-                homeChromosome = Globals.CHR_ALL;
-            }
-
-        }
         return homeChromosome;
     }
 
@@ -444,7 +417,12 @@ public class Genome {
     }
 
 
-    public List<String> getAllChromosomeNames() {
+    /**
+     * Return the ordered list of chromosome names.
+     *
+     * @return
+     */
+    public List<String> getChromosomeNames() {
         return chromosomeNames;
     }
 
@@ -452,18 +430,6 @@ public class Genome {
     public Collection<Chromosome> getChromosomes() {
         return chromosomeMap.values();
     }
-
-
-    public long getTotalLength() {
-        if (totalLength < 0) {
-            totalLength = 0;
-            for (Chromosome chr : chromosomeMap.values()) {
-                totalLength += chr.getLength();
-            }
-        }
-        return totalLength;
-    }
-
 
     public long getCumulativeOffset(String chr) {
 
@@ -545,7 +511,7 @@ public class Genome {
     }
 
     public String getNextChrName(String chr) {
-        List<String> chrList = getAllChromosomeNames();
+        List<String> chrList = getChromosomeNames();
         for (int i = 0; i < chrList.size() - 1; i++) {
             if (chrList.get(i).equals(chr)) {
                 return chrList.get(i + 1);
@@ -555,7 +521,7 @@ public class Genome {
     }
 
     public String getPrevChrName(String chr) {
-        List<String> chrList = getAllChromosomeNames();
+        List<String> chrList = getChromosomeNames();
         for (int i = chrList.size() - 1; i > 0; i--) {
             if (chrList.get(i).equals(chr)) {
                 return chrList.get(i - 1);
@@ -796,7 +762,7 @@ public class Genome {
             }
             double mean = StatUtils.mean(lengths);
             double min = 0.1 * mean;
-            for (String chr : getAllChromosomeNames()) {
+            for (String chr : getChromosomeNames()) {
                 if (chromosomeMap.get(chr).getLength() > min) {
                     longChromosomeNames.add(chr);
                 }
@@ -821,7 +787,7 @@ public class Genome {
             }
 
 
-            for (String chr : getAllChromosomeNames()) {
+            for (String chr : getChromosomeNames()) {
                 if (tmp.contains(chr)) {
                     longChromosomeNames.add(chr);
                 }
@@ -838,5 +804,12 @@ public class Genome {
 
     public void setHub(Hub hub) {
         this.hub = hub;
+    }
+
+    public int compareChromosomeNames(String chr1, String chr2) {
+        String c1 = getCanonicalChrName(chr1);
+        String c2 = getCanonicalChrName(chr2);
+
+        return 0;
     }
 }

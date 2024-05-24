@@ -65,22 +65,22 @@ public class DatasetDataSource extends AbstractDataSource {
         this.trackId = trackId;
         this.dataset = dataset;
 
-        if (genome != null && genome.getHomeChromosome() != null) {
-            if (genome.getHomeChromosome().equals(Globals.CHR_ALL)) {
-                if (dataset instanceof IGVDataset) {
-                    genomeSummaryData = ((IGVDataset) dataset).getGenomeSummary();
-                } else {
-                    genomeSummaryData = new GenomeSummaryData(genome, new String[]{trackId});
-                    for (Chromosome chr : genome.getChromosomes()) {
-                        int[] startLocations = dataset.getStartLocations(chr.getName());
-                        if (!chr.getName().equals(Globals.CHR_ALL) && (startLocations != null) && (startLocations.length > 0)) {
-                            Map<String, float[]> dMap = new HashMap<String, float[]>();
-                            dMap.put(trackId, dataset.getData(trackId, chr.getName()));
-                            genomeSummaryData.addData(chr.getName(), startLocations, dMap);
-                        }
+        if (genome != null && genome.getLongChromosomeNames() != null && genome.getLongChromosomeNames().size() > 0) {
+            if (dataset instanceof IGVDataset) {
+                genomeSummaryData = ((IGVDataset) dataset).getGenomeSummary();
+            } else {
+                genomeSummaryData = new GenomeSummaryData(genome, new String[]{trackId});
+                for (String chrName : genome.getLongChromosomeNames()) {
+                    Chromosome chr = genome.getChromosome(chrName);
+                    int[] startLocations = dataset.getStartLocations(chr.getName());
+                    if (!chr.getName().equals(Globals.CHR_ALL) && (startLocations != null) && (startLocations.length > 0)) {
+                        Map<String, float[]> dMap = new HashMap<String, float[]>();
+                        dMap.put(trackId, dataset.getData(trackId, chr.getName()));
+                        genomeSummaryData.addData(chr.getName(), startLocations, dMap);
                     }
                 }
             }
+
         }
     }
 
@@ -118,7 +118,7 @@ public class DatasetDataSource extends AbstractDataSource {
     private DataTile getWGRawData() {
 
         int size = 0;
-        for (String chr : genome.getAllChromosomeNames()) {
+        for (String chr : genome.getChromosomeNames()) {
             int[] s = dataset.getStartLocations(chr);
             int[] e = dataset.getEndLocations(chr);
             float[] d = dataset.getData(trackId, chr);
@@ -132,7 +132,7 @@ public class DatasetDataSource extends AbstractDataSource {
         String[] features = new String[size];
 
         int i = 0;
-        for (String chr : genome.getAllChromosomeNames()) {
+        for (String chr : genome.getChromosomeNames()) {
             int[] s = dataset.getStartLocations(chr);
             int[] e = dataset.getEndLocations(chr);
             float[] d = dataset.getData(trackId, chr);

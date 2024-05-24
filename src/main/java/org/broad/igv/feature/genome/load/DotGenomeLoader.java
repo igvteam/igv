@@ -96,20 +96,19 @@ public class DotGenomeLoader extends GenomeLoader {
                 loadSequenceMap().get(genomeDescriptor.getId()).getAbsolutePath() :
                 genomeDescriptor.getSequencePath();
 
-        Sequence sequence;
         if (sequencePath == null) {
-            sequence = null;
+            // TODO -- is this an error?
         } else {
+            config.fastaURL = sequencePath;
+            config.indexURL =  sequencePath + ".fai";
             if (sequencePath.endsWith(".gz")) {
-                sequence = new FastaBlockCompressedSequence(sequencePath);
-            } else {
-                sequence = new FastaIndexedSequence(sequencePath);
+                config.gziIndexURL = sequencePath + "gzi";
             }
         }
 
         config.id = id;
         config.name = displayName;
-        config.sequence = sequence;
+
 
         if (genomeDescriptor.hasCytobands()) {
             InputStream cytobandStream = null;

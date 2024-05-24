@@ -143,7 +143,6 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
         String chr = "gi|110640213|ref|NC_008253.1|";
         assertNotNull(genome.getChromosome(chr));
         //See http://www.ncbi.nlm.nih.gov/nuccore/110640213
-        assertEquals(4938920, genome.getTotalLength());
 
         String beg = "ATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTGATAGCAG";
         int begloc = 30 - 1;

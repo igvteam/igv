@@ -76,7 +76,6 @@ import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.reader.IndexNotFoundException;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
-import org.broad.igv.ucsc.Trix;
 import org.broad.igv.ucsc.bb.BBDataSource;
 import org.broad.igv.ucsc.bb.BBFeatureSource;
 import org.broad.igv.ucsc.bb.BBFile;
@@ -295,7 +294,7 @@ public class TrackLoader {
         } else {
             return typeString.equals("sam") || typeString.equals("bam") || typeString.equals("cram") ||
                     typeString.equals("sam.list") || typeString.equals("bam.list") ||
-                    typeString.equals("aligned") || typeString.equals("sai") ||
+                    typeString.equals("aligned") || typeString.equals("sai") || typeString.equals("bedz") ||
                     typeString.equals("bai") || typeString.equals("csi") || typeString.equals("alist");
         }
     }
@@ -958,10 +957,10 @@ public class TrackLoader {
                 break;
             }
         }
-        if (genome != null && genome.getAllChromosomeNames() != null && genome.getAllChromosomeNames().size() > 0) {
+        if (genome != null && genome.getChromosomeNames() != null && genome.getChromosomeNames().size() > 0) {
             message.append("<br>Genome: ");
             n = 0;
-            for (String cn : genome.getAllChromosomeNames()) {
+            for (String cn : genome.getChromosomeNames()) {
                 message.append(cn + ", ");
                 n++;
                 if (n > 3) {

@@ -32,10 +32,6 @@ import java.util.Comparator;
 
 /**
  * Comparator for chromosome names.
- * * Names starting with "chr" are sorted to top (UCSC)
- * * Names that are numeric, after removing "chr", are sorted above names that are not.  Allowance is made for
- * *     suffixes to numeric chromosomes (e.g. chr2a, chr2b).
- * * The "mito" chromosome is sorted to top of non "chr" chromosomes, i.e. the last of the "chr" chromosomes.
  */
 public class ChromosomeNameComparator implements Comparator<String> {
 
@@ -59,6 +55,16 @@ public class ChromosomeNameComparator implements Comparator<String> {
 
     public int compare(String chr1, String chr2) {
 
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        if(genome != null) {
+            return genome.compareChromosomeNames(chr1, chr2);
+        } else {
+            return heuristicComparator(chr1, chr2);
+        }
+
+    }
+
+    private int heuristicComparator(String chr1, String chr2) {
         boolean t1 = chr1.toLowerCase().startsWith("chr");
         boolean t2 = chr2.toLowerCase().startsWith("chr");
 
@@ -115,7 +121,6 @@ public class ChromosomeNameComparator implements Comparator<String> {
                 return chr1.compareToIgnoreCase(chr2);
             }
         }
-
     }
 
 
