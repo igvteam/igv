@@ -30,6 +30,9 @@ public class UnsignedByteBuffer {
         return new UnsignedByteBuffer(bb);
     }
 
+    public static UnsignedByteBuffer wrap(byte[] bytes) {
+        return wrap(bytes, ByteOrder.LITTLE_ENDIAN);
+    }
 
     private UnsignedByteBuffer(ByteBuffer wrappedBuffer) {
         this.wrappedBuffer = wrappedBuffer;

@@ -41,7 +41,6 @@ public class SamReaderPool {
 
     public static final int BUFFER_SIZE = 512000;
     private static Logger log = LogManager.getLogger(SamReaderPool.class);
-
     private ResourceLocator locator;
     private boolean requireIndex;
     private List<SamReader> availableReaders;
@@ -289,6 +288,7 @@ public class SamReaderPool {
                 "Index is required, but no index found.  Please enter path to index file:",
                 defaultValue);
         if (indexPath != null && FileUtils.resourceExists(indexPath)) {
+            locator.setIndexPath(indexPath);
             return indexPath;
         }
 

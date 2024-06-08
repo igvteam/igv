@@ -226,12 +226,21 @@ public class TrackLoader {
             } else if (format.equals("maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
             } else {
+
+                // Try overriding format
+                 String determinedFormat = FileFormatUtils.determineFormat(locator.getPath());
+                 if(determinedFormat != null && !determinedFormat.equals(format)) {
+                     locator.setFormat(determinedFormat);
+                     return load(locator, genome);
+                 }
+
+
                 // If the file is too large, give up
-                // TODO -- ftp test
                 final int tenMB = 10000000;
                 long fileLength = ParsingUtils.getContentLength(locator.getPath());
                 if (fileLength > tenMB) {
                     MessageUtils.confirm("<html>Cannot determine file type of: " + locator.getPath());
+                    return newTracks;
                 }
 
                 // Read file contents and try to sort it out
