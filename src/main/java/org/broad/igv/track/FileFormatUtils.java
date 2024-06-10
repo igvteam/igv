@@ -9,6 +9,7 @@ import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
@@ -16,29 +17,8 @@ public class FileFormatUtils {
 
     static final byte[] BAM_MAGIC = "BAM\1".getBytes();
     static final byte[] CRAM_MAGIC = "CRAM".getBytes();
-
     static final long BIGWIG_MAGIC = 2291137574l; // BigWig Magic
     static final long BIGBED_MAGIC = 2273964779l; // BigBed Magic
-
-
-    public static boolean isGzip(SeekableStream seekableStream) throws IOException {
-        seekableStream.seek(0);
-        byte[] bytes = new byte[2];
-        seekableStream.readFully(bytes);
-        return bytes[0] == 31 && bytes[1] == -117;
-    }
-
-    public static boolean isBAM(SeekableStream seekableStream) throws IOException {
-        if (isGzip(seekableStream)) {
-            seekableStream.seek(0);
-            BlockCompressedInputStream blockCompressedInputStream = new BlockCompressedInputStream(seekableStream);
-            byte[] bytes = new byte[4];
-            blockCompressedInputStream.read(bytes);
-            return Arrays.equals(bytes, BAM_MAGIC);
-        } else {
-            return false;
-        }
-    }
 
     public static boolean isBAM(String path) throws IOException {
         SeekableStream seekableStream = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
@@ -64,7 +44,16 @@ public class FileFormatUtils {
             inputStream.read(bytes);
         } else {
             seekableStream.seek(0);
-            seekableStream.readFully(bytes);
+            try {
+                seekableStream.readFully(bytes);
+            } catch (EOFException e) {
+                // File is < bytes.length, this is o.k. for this application, but trim zeroes
+                int idx = 0;
+                while (idx < bytes.length && bytes[idx] != 0) {
+                    idx++;
+                }
+                bytes = Arrays.copyOf(bytes, idx);
+            }
         }
 
         // Try BAM and CRAM
@@ -103,6 +92,9 @@ public class FileFormatUtils {
             if (firstLine.startsWith("##gff-version")) {
                 return "gff";
             }
+            if(maybeSampleInfo(bytes)) {
+                return "sampleinfo";
+            }
         } catch (IOException e) {
             // Ignore, apparently not text
         }
@@ -110,5 +102,30 @@ public class FileFormatUtils {
 
         // Format unknown
         return null;
+    }
+
+    /**
+     * Minimal validation of a sample info file (1) contents are UTF-8, (2) file contains tabs
+     * @param bytes
+     * @return
+     */
+    private static boolean maybeSampleInfo(byte [] bytes) {
+        final String converted = new String(bytes, StandardCharsets.UTF_8);
+        final byte[] outputBytes = converted.getBytes(StandardCharsets.UTF_8);
+        if (!Arrays.equals(bytes, outputBytes)) {
+            return false;   // Not a UTF 8 string
+        }
+        // Now look for tab characters, there needs to be at least 2
+        int firstTab = converted.indexOf('\t');
+        if(firstTab < 0) return false;
+        int secondTab = converted.indexOf('\t', firstTab + 1);
+        return secondTab > 0;
+    }
+
+    private static boolean isGzip(SeekableStream seekableStream) throws IOException {
+        seekableStream.seek(0);
+        byte[] bytes = new byte[2];
+        seekableStream.readFully(bytes);
+        return bytes[0] == 31 && bytes[1] == -117;
     }
 }

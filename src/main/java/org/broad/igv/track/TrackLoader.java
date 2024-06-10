@@ -229,7 +229,7 @@ public class TrackLoader {
 
                 // Try overriding format
                  String determinedFormat = FileFormatUtils.determineFormat(locator.getPath());
-                 if(determinedFormat != null && !determinedFormat.equals(format)) {
+                 if(determinedFormat != null && !determinedFormat.equals("sampleinfo") && !determinedFormat.equals(format)) {
                      locator.setFormat(determinedFormat);
                      return load(locator, genome);
                  }
@@ -250,7 +250,7 @@ public class TrackLoader {
                 if (CytoBandFileParser.isValid(reader, locator.getPath())) {
                     Track track = new CytobandTrack(locator, new BufferedReader(new StringReader(contents)), genome);
                     newTracks.add(track);
-                } else if (AttributeManager.isSampleInfoFile(reader)) {
+                } else if ("sampleinfo".equals(determinedFormat)) {
                     // This might be a sample information file.
                     AttributeManager.getInstance().loadSampleInfo(locator);
                 } else {

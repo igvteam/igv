@@ -301,16 +301,6 @@ public class AttributeManager {
     }
 
     /**
-     * Test to see if this file could be a sample information file.  Some characteristics are (1) is tab delimited
-     * with at least 2 columns
-     *
-     * @return
-     */
-    public static boolean isSampleInfoFile(BufferedReader reader) throws IOException {
-        return FileUtils.isTabDelimited(reader, 2);
-    }
-
-    /**
      * Load attributes from an ascii file in "Sample Info" format.
      */
     public void loadSampleInfo(ResourceLocator locator) {

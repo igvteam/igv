@@ -7,14 +7,6 @@ import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 public class FileFormatUtilsTest extends TestCase {
 
-    public void testIsGzip() throws Exception {
-        String path = "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam";
-        SeekableStream ss = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
-        boolean b = FileFormatUtils.isGzip(ss);
-        assertTrue(b);
-
-    }
-
     public void testIsBAM() throws Exception {
         String path = "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam";
         boolean b = FileFormatUtils.isBAM(path);
