@@ -113,6 +113,8 @@ final public class Constants {
     public static final String SAM_SHADE_ALIGNMENT_BY = "SAM.SHADE_ALIGNMENT_BY";
     public static final String SAM_ALIGNMENT_SCORE_THRESHOLD = "SAM.ALIGNMENT_SCORE_THRESHOLD";
     public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
+    public static final String SAM_INDEL_QUAL_COLORING = "SAM.INDEL_QUAL_COLORING";
+    public static final String SAM_INDEL_QUAL_USES_MIN = "SAM.INDEL_QUAL_USES_MIN";
     public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
     public static final String SAM_INSERT_QUAL_COLORING = "SAM.INSERT_QUAL_COLORING";
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";

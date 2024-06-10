@@ -1211,6 +1211,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean linkedReads;
         private Boolean quickConsensusMode;
         private Boolean showMismatches;
+        private Boolean indelQualColoring;
+        private Boolean indelQualUsesMin;
         private Boolean insertQualColoring;
         Boolean computeIsizes;
         private Double minInsertSizePercentile;
@@ -1279,8 +1281,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.viewPairs = viewPairs;
         }
 
-        void setInsertQualColoring(boolean insertQualColoring) {
-            this.insertQualColoring = insertQualColoring;
+        void setIndelQualColoring(boolean indelQualColoring) {
+            this.indelQualColoring = indelQualColoring;
+        }
+
+        void setIndelQualUsesMin(boolean indelQualUsesMin) {
+            this.indelQualUsesMin = indelQualUsesMin;
         }
 
         void setComputeIsizes(boolean computeIsizes) {
@@ -1399,6 +1405,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         public boolean isViewPairs() {
             return viewPairs;
+        }
+
+        public boolean isIndelQualColoring() {
+            return indelQualColoring == null ? getPreferences().getAsBoolean(SAM_INDEL_QUAL_COLORING) : indelQualColoring;
+        }
+        public boolean isIndelQualUsesMin() {
+            return indelQualUsesMin == null ? getPreferences().getAsBoolean(SAM_INDEL_QUAL_USES_MIN) : indelQualUsesMin;
         }
 
         public boolean isInsertQualColoring() {
