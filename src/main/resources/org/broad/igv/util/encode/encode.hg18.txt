@@ -243,8 +243,12 @@ http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeDukeAffyExonArr
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeDukeAffyExonArray/wgEncodeDukeAffyExonArraySimpleSignalRep3Gm18507.broadPeak.gz	GM18507	AffyExonArray			3	broadPeak	Duke
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeDukeAffyExonArray/wgEncodeDukeAffyExonArraySimpleSignalRep3Helas3.broadPeak.gz	HeLa-S3	AffyExonArray			3	broadPeak	Duke
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeDukeAffyExonArray/wgEncodeDukeAffyExonArraySimpleSignalRep3Hepg2.broadPeak.gz	HepG2	AffyExonArray			3	broadPeak	Duke
+http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqA549ControlPcr2xDex100nmAlnRep1.bam	A549	ChipSeq	RevXlinkChromatin	Alignments	1	bam	HudsonAlpha
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqA549ControlPcr2xDex100nmRawRep1.bigWig	A549	ChipSeq	RevXlinkChromatin	RawSignal	1	bigWig	HudsonAlpha
+http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqGm12878ControlPcr1xAlnRep2.bam	GM12878	ChipSeq	RevXlinkChromatin	Alignments	2	bam	HudsonAlpha
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqGm12878ControlPcr1xRawRep2.bigWig	GM12878	ChipSeq	RevXlinkChromatin	RawSignal	2	bigWig	HudsonAlpha
+http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqHepg2ControlPcr2xAlnRep1.bam	HepG2	ChipSeq	RevXlinkChromatin	Alignments	1	bam	HudsonAlpha
+http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqHepg2ControlPcr2xAlnRep2.bam	HepG2	ChipSeq	RevXlinkChromatin	Alignments	2	bam	HudsonAlpha
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqHepg2ControlPcr2xRawRep1.bigWig	HepG2	ChipSeq	RevXlinkChromatin	RawSignal	1	bigWig	HudsonAlpha
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqHepg2ControlPcr2xRawRep2.bigWig	HepG2	ChipSeq	RevXlinkChromatin	RawSignal	2	bigWig	HudsonAlpha
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqPeaksA549Gr.broadPeak.gz	A549	ChipSeq	GR	Peaks	1	broadPeak	HudsonAlpha
@@ -366,6 +370,8 @@ http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChip
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqPeaksRep2Pfsk1Nrsf.broadPeak.gz	PFSK-1	ChipSeq	NRSF	Peaks	2	broadPeak	HudsonAlpha
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqPeaksRep2SknshNrsf.broadPeak.gz	SK-N-SH	ChipSeq	NRSF	Peaks	2	broadPeak	HudsonAlpha
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqPeaksRep2U87Nrsf.broadPeak.gz	U87	ChipSeq	NRSF	Peaks	2	broadPeak	HudsonAlpha
+http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqPfsk1ControlPcr2xAlnRep1.bam	PFSK-1	ChipSeq	RevXlinkChromatin	Alignments	1	bam	HudsonAlpha
+http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqPfsk1ControlPcr2xAlnRep2.bam	PFSK-1	ChipSeq	RevXlinkChromatin	Alignments	2	bam	HudsonAlpha
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqPfsk1ControlPcr2xRawRep1.bigWig	PFSK-1	ChipSeq	RevXlinkChromatin	RawSignal	1	bigWig	HudsonAlpha
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaChipSeq/wgEncodeHudsonalphaChipSeqPfsk1ControlPcr2xRawRep2.bigWig	PFSK-1	ChipSeq	RevXlinkChromatin	RawSignal	2	bigWig	HudsonAlpha
 http://hgdownload.cse.ucsc.edu/goldenPath/hg18/encodeDCC/wgEncodeHudsonalphaCnv/wgEncodeHudsonalphaCnvRegionsGM12878V2.bed.gz	GM12878	Genotype		Regions		bed	HudsonAlpha
