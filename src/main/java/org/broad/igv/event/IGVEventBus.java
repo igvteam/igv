@@ -58,7 +58,7 @@ public class IGVEventBus {
     }
 
     /**
-     * Unsubscribe observer from all observer lists.  Not that if this method is not called the observer should
+     * Unsubscribe observer from all observer lists.  Note that if this method is not called the observer should
      * still be eligible for garbage collection, but its good practice to call this nonetheless.
      */
     public synchronized void unsubscribe(IGVEventObserver observer) {

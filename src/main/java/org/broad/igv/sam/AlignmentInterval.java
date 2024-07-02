@@ -30,6 +30,8 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.track.Track;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.util.*;
 
@@ -39,20 +41,20 @@ import java.util.*;
 public class AlignmentInterval extends Locus {
 
     private static Logger log = LogManager.getLogger(AlignmentInterval.class);
-
+    private  ReferenceFrame referenceFrame;
     Genome genome;
     private AlignmentCounts counts;
     private List<Alignment> alignments;
     private SpliceJunctionHelper spliceJunctionHelper;
     private List<DownsampledInterval> downsampledIntervals;
-
     private PackedAlignments packedAlignments;
 
     public AlignmentInterval(String chr, int start, int end,
                              List<Alignment> alignments,
                              AlignmentCounts counts,
                              SpliceJunctionHelper spliceJunctionHelper,
-                             List<DownsampledInterval> downsampledIntervals) {
+                             List<DownsampledInterval> downsampledIntervals,
+                             ReferenceFrame frame) {
 
         super(chr, start, end);
         this.alignments = alignments;
@@ -60,6 +62,7 @@ public class AlignmentInterval extends Locus {
         this.counts = counts;
         this.spliceJunctionHelper = spliceJunctionHelper;
         this.downsampledIntervals = downsampledIntervals;
+        this.referenceFrame = frame;
     }
 
     /**
@@ -209,10 +212,10 @@ public class AlignmentInterval extends Locus {
         return new Range(getChr(), getStart(), getEnd());
     }
 
-    public void packAlignments(AlignmentTrack.RenderOptions renderOptions) {
+    public void packAlignments(AlignmentTrack.RenderOptions renderOptions, Track.DisplayMode displayMode) {
 
         final AlignmentPacker alignmentPacker = new AlignmentPacker();
-        this.packedAlignments = alignmentPacker.packAlignments(this, renderOptions);
+        this.packedAlignments = alignmentPacker.packAlignments(this, renderOptions, this.referenceFrame, displayMode);
     }
 
     public PackedAlignments getPackedAlignments() {

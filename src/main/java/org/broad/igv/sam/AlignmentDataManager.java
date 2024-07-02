@@ -26,7 +26,6 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.event.DataLoadedEvent;
-import org.broad.igv.feature.genome.ChromAlias;
 import org.broad.igv.feature.genome.ChromAliasManager;
 import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
@@ -34,10 +33,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.RefreshEvent;
-import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.mods.BaseModificationKey;
@@ -218,12 +215,12 @@ public class AlignmentDataManager implements IGVEventObserver {
         return null;
     }
 
-    public void setViewAsPairs(boolean option, AlignmentTrack.RenderOptions renderOptions) {
+    public void setViewAsPairs(boolean option, AlignmentTrack.RenderOptions renderOptions, Track.DisplayMode displayMode) {
         if (option == renderOptions.isViewPairs()) {
             return;
         }
         renderOptions.setViewPairs(option);
-        packAlignments(renderOptions);
+        packAlignments(renderOptions, displayMode);
     }
 
     /**
@@ -233,9 +230,9 @@ public class AlignmentDataManager implements IGVEventObserver {
      * @param renderOptions
      * @return Whether repacking was performed
      */
-    void packAlignments(AlignmentTrack.RenderOptions renderOptions) {
+    void packAlignments(AlignmentTrack.RenderOptions renderOptions, Track.DisplayMode displayMode) {
         for (AlignmentInterval interval : intervalCache) {
-            interval.packAlignments(renderOptions);
+            interval.packAlignments(renderOptions, displayMode);
         }
     }
 
@@ -246,6 +243,7 @@ public class AlignmentDataManager implements IGVEventObserver {
 
     public void load(ReferenceFrame frame,
                      AlignmentTrack.RenderOptions renderOptions,
+                     Track.DisplayMode displayMode,
                      boolean expandEnds) {
 
         if (frame.getChrName().equals(Globals.CHR_ALL) || (frame.getEnd() - frame.getOrigin()) > getVisibilityWindow())
@@ -282,13 +280,13 @@ public class AlignmentDataManager implements IGVEventObserver {
                 }
             }
 
-            AlignmentInterval loadedInterval = loadInterval(chr, adjustedStart, adjustedEnd, renderOptions);
+            AlignmentInterval loadedInterval = loadInterval(chr, adjustedStart, adjustedEnd, renderOptions, frame);
 
             trimCache();
 
             intervalCache.add(loadedInterval);
 
-            loadedInterval.packAlignments(renderOptions);
+            loadedInterval.packAlignments(renderOptions, displayMode);
 
         } finally {
             currentlyLoading = null;
@@ -326,7 +324,7 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
 
-    AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
+    AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions, ReferenceFrame frame) {
 
         final String seqName;
         if (sequenceNames.contains(chr)) {
@@ -353,7 +351,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
         this.updateBaseModfications(alignments);
-        return new AlignmentInterval(chr, start, end, alignments, t.getCounts(), spliceJunctionHelper, downsampledIntervals);
+        return new AlignmentInterval(chr, start, end, alignments, t.getCounts(), spliceJunctionHelper, downsampledIntervals, frame);
     }
 
     private void updateBaseModfications(List<Alignment> alignments) {

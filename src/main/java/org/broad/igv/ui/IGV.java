@@ -319,7 +319,6 @@ public class IGV implements IGVEventObserver {
             DataPanelContainer dp = tp.getScrollPane().getDataPanel();
             dp.setCurrentTool(null);
         }
-
     }
 
     // Set the focus on the command bar search box

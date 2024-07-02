@@ -53,7 +53,7 @@ import java.util.List;
 public interface Track extends Persistable {
 
     enum DisplayMode {
-        COLLAPSED, SQUISHED, EXPANDED
+        COLLAPSED, SQUISHED, EXPANDED, FULL
     }
 
     /**
@@ -154,6 +154,10 @@ public interface Track extends Persistable {
     boolean isVisible();
 
     default boolean isNumeric() {
+        return false;
+    }
+
+    default boolean isAlignment() {
         return false;
     }
 

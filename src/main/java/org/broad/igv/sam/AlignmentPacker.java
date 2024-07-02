@@ -33,6 +33,8 @@ import htsjdk.samtools.SAMTag;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.track.Track;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.util.*;
 
@@ -65,9 +67,11 @@ public class AlignmentPacker {
      */
     public PackedAlignments packAlignments(
             AlignmentInterval interval,
-            AlignmentTrack.RenderOptions renderOptions) {
+            AlignmentTrack.RenderOptions renderOptions,
+            ReferenceFrame referenceFrame,
+            Track.DisplayMode displayMode) {
 
-        LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
+        LinkedHashMap<String, List<Row>> packedAlignments = new LinkedHashMap<>();
 
         List<Alignment> alList = interval.getAlignments();
 
@@ -78,7 +82,11 @@ public class AlignmentPacker {
 
         if (renderOptions.getGroupByOption() == AlignmentTrack.GroupOption.NONE) {
             List<Row> alignmentRows = new ArrayList<>(10000);
-            pack(alList, renderOptions, alignmentRows);
+            if (displayMode == Track.DisplayMode.FULL) {
+                packFull(alList, renderOptions, alignmentRows, referenceFrame);
+            } else {
+                packDense(alList, renderOptions, alignmentRows);
+            }
             packedAlignments.put("", alignmentRows);
         } else {
 
@@ -99,11 +107,11 @@ public class AlignmentPacker {
             Comparator<Object> groupComparator = getGroupComparator(renderOptions.getGroupByOption());
 
             // Certain group options sort descending by default, as indicated by the "reverse" property
-            if(renderOptions.getGroupByOption().reverse) {
+            if (renderOptions.getGroupByOption().reverse) {
                 groupComparator = groupComparator.reversed();
             }
 
-            if(renderOptions.isInvertGroupSorting()){
+            if (renderOptions.isInvertGroupSorting()) {
                 groupComparator = groupComparator.reversed();
             }
             keys.sort(groupComparator);
@@ -111,7 +119,12 @@ public class AlignmentPacker {
             for (Object key : keys) {
                 List<Row> alignmentRows = new ArrayList<>(10000);
                 List<Alignment> group = groupedAlignments.get(key);
-                pack(group, renderOptions, alignmentRows);
+
+                if (displayMode == Track.DisplayMode.FULL) {
+                    packFull(group, renderOptions, alignmentRows, referenceFrame);
+                } else {
+                    packDense(group, renderOptions, alignmentRows);
+                }
                 packedAlignments.put(key.toString(), alignmentRows);
             }
         }
@@ -122,7 +135,7 @@ public class AlignmentPacker {
     }
 
 
-    private void pack(List<Alignment> alList, AlignmentTrack.RenderOptions renderOptions, List<Row> alignmentRows) {
+    private void packDense(List<Alignment> alList, AlignmentTrack.RenderOptions renderOptions, List<Row> alignmentRows) {
 
         Map<String, PairedAlignment> pairs = null;
 
@@ -132,13 +145,11 @@ public class AlignmentPacker {
             pairs = new HashMap<>(1000);
         }
 
-
         // Allocate alignemnts to buckets for each range.
         // We use priority queues to keep the buckets sorted by alignment length.  However this  is probably a needless
         // complication,  any collection type would do.
 
         int totalCount = 0;
-
 
         if (alList == null || alList.size() == 0) return;
 
@@ -254,6 +265,49 @@ public class AlignmentPacker {
 
 
     }
+
+    private void packFull(List<Alignment> alList, AlignmentTrack.RenderOptions renderOptions, List<Row> alignmentRows, ReferenceFrame referenceFrame) {
+
+        Map<String, PairedAlignment> pairs = null;
+
+        boolean isPairedAlignments = renderOptions.isViewPairs();
+
+        if (isPairedAlignments) {
+            pairs = new HashMap<>(1000);
+        }
+
+        Range genomicRange = referenceFrame.getCurrentRange();
+
+        for (Alignment al : alList) {
+
+            if (al.isMapped()) {
+                Alignment alignment = al;
+
+                // Pair alignments -- do not pair secondaryalignments
+                if (isPairedAlignments && isPairable(al)) {
+                    String readName = al.getReadName();
+                    PairedAlignment pair = pairs.get(readName);
+                    if (pair == null) {
+                        pair = new PairedAlignment(al);
+                        pairs.put(readName, pair);
+                        alignment = pair;
+                    } else {
+                        // Add second alignment to pair.
+                        pair.setSecondAlignment(al);
+                        pairs.remove(readName);
+                        continue;
+                    }
+                }
+
+                if (alignment.getEnd() > genomicRange.start && alignment.getStart() < genomicRange.end) {
+                    Row row = new Row();
+                    row.addAlignment(alignment);
+                    alignmentRows.add(row);
+                }
+            }
+        }
+    }
+
 
     private boolean isPairable(Alignment al) {
         return al.isPrimary() &&
@@ -438,14 +492,14 @@ public class AlignmentPacker {
                     return mate.getChr();
                 }
             case CHIMERIC:
-                return al.getAttribute(SAMTag.SA.name()) != null ?  "CHIMERIC" : "";
+                return al.getAttribute(SAMTag.SA.name()) != null ? "CHIMERIC" : "";
             case SUPPLEMENTARY:
                 return al.isSupplementary() ? "SUPPLEMENTARY" : "";
             case REFERENCE_CONCORDANCE:
                 return !al.isProperPair() ||
                         al.getCigarString().toUpperCase().contains("S") ||
                         al.isSupplementary() ?
-                        "DISCORDANT": "";
+                        "DISCORDANT" : "";
             case BASE_AT_POS:
                 // Use a string prefix to enforce grouping rules:
                 //    1: alignments with a base at the position
@@ -477,11 +531,11 @@ public class AlignmentPacker {
                         al.getAlignmentEnd() > pos.getStart()) {
                     int insertionBaseCount = 0;
                     AlignmentBlock leftInsertion = al.getInsertionAt(pos.getStart() + 1);
-                    if(leftInsertion != null) {
+                    if (leftInsertion != null) {
                         insertionBaseCount += leftInsertion.getLength();
                     }
                     AlignmentBlock rightInsertion = al.getInsertionAt(pos.getStart());
-                    if(rightInsertion != null) {
+                    if (rightInsertion != null) {
                         insertionBaseCount += rightInsertion.getLength();
                     }
                     return insertionBaseCount;

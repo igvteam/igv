@@ -27,11 +27,7 @@ package org.broad.igv.sam;
 
 
 import org.broad.igv.Globals;
-import org.broad.igv.event.AlignmentTrackEvent;
-import org.broad.igv.event.DataLoadedEvent;
-import org.broad.igv.event.IGVEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
+import org.broad.igv.event.*;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
@@ -361,11 +357,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
         readNamePalette = new PaletteColorTable(ColorUtilities.getDefaultPalette());
 
-        dataManager.setViewAsPairs(prefs.getAsBoolean(SAM_DISPLAY_PAIRED), renderOptions);
+        dataManager.setViewAsPairs(prefs.getAsBoolean(SAM_DISPLAY_PAIRED), renderOptions, getDisplayMode());
 
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(AlignmentTrackEvent.class, this);
         IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
     }
 
     public void init() {
@@ -375,6 +372,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
+    @Override
+    public boolean isAlignment() {
+        return true;
+    }
 
     @Override
     public void receiveEvent(IGVEvent event) {
@@ -397,6 +398,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     v.accept(k);
                     return null; //remove this action from the map
                 });
+            }
+        } else if (event instanceof ViewChange viewChange) {
+            if(viewChange.type == ViewChange.Type.LocusChange && !viewChange.panning) {
+                packAlignments();
             }
         }
     }
@@ -469,6 +474,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
+    public void setDisplayMode(DisplayMode mode) {
+        boolean repack = (getDisplayMode() == DisplayMode.FULL ||  mode == DisplayMode.FULL);
+        super.setDisplayMode(mode);
+        if(repack) {
+            packAlignments();
+        }
+    }
+
+    @Override
     public void setHeight(int preferredHeight) {
         super.setHeight(preferredHeight);
         minimumHeight = preferredHeight;
@@ -484,9 +498,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     private int getRowHeight() {
-        if (getDisplayMode() == DisplayMode.EXPANDED) {
+        final DisplayMode displayMode = getDisplayMode();
+        if (displayMode == DisplayMode.EXPANDED || displayMode == DisplayMode.FULL) {
             return expandedHeight;
-        } else if (getDisplayMode() == DisplayMode.COLLAPSED) {
+        } else if (displayMode == DisplayMode.COLLAPSED) {
             return collapsedHeight;
         } else {
             return squishedHeight;
@@ -514,7 +529,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (log.isDebugEnabled()) {
             log.debug("Reading - thread: " + Thread.currentThread().getName());
         }
-        dataManager.load(referenceFrame, renderOptions, true);
+        dataManager.load(referenceFrame, renderOptions, getDisplayMode(), true);
     }
 
     @Override
@@ -615,9 +630,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         // Divide rectangle into equal height levels
         double y = inputRect.getY();
         double h;
-        if (getDisplayMode() == DisplayMode.EXPANDED) {
+        final DisplayMode displayMode = getDisplayMode();
+        if (displayMode == DisplayMode.EXPANDED || displayMode == DisplayMode.FULL) {
             h = expandedHeight;
-        } else if (getDisplayMode() == DisplayMode.COLLAPSED) {
+        } else if (displayMode == DisplayMode.COLLAPSED) {
             h = collapsedHeight;
         } else {
 
@@ -796,7 +812,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             renderOptions.setGroupByPos(pos);
         }
         renderOptions.setGroupByOption(option);
-        dataManager.packAlignments(renderOptions);
+        dataManager.packAlignments(renderOptions, getDisplayMode());
         repaint();
     }
 
@@ -819,7 +835,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public void packAlignments() {
-        dataManager.packAlignments(renderOptions);
+        dataManager.packAlignments(renderOptions, getDisplayMode());
     }
 
 
@@ -937,7 +953,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
         }
 
-        dataManager.setViewAsPairs(vAP, renderOptions);
+        dataManager.setViewAsPairs(vAP, renderOptions, getDisplayMode());
         repaint();
     }
 
@@ -1022,7 +1038,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             showGroupLine = false;
             setDisplayMode(DisplayMode.SQUISHED);
         }
-        dataManager.packAlignments(renderOptions);
+        dataManager.packAlignments(renderOptions, getDisplayMode());
         repaint();
     }
 

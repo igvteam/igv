@@ -182,7 +182,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public void load(ReferenceFrame referenceFrame) {
-        dataManager.load(referenceFrame, alignmentTrack.getRenderOptions(), true);
+        dataManager.load(referenceFrame, alignmentTrack.getRenderOptions(), alignmentTrack.getDisplayMode(), true);
     }
 
 

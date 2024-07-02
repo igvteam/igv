@@ -918,12 +918,17 @@ public class TrackMenuUtils {
         modes.put("Expanded", Track.DisplayMode.EXPANDED);
         modes.put("Squished", Track.DisplayMode.SQUISHED);
 
+        if(tracks.stream().allMatch(t -> t.isAlignment())) {
+            modes.put("Full", Track.DisplayMode.FULL);
+        }
+
         for (final Map.Entry<String, Track.DisplayMode> entry : modes.entrySet()) {
             JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
             mm.setSelected(currentMode == entry.getValue());
             mm.addActionListener(evt -> {
                 for (Track t : tracks) {
                     t.setDisplayMode(entry.getValue());
+
                 }
                 IGV.getInstance().repaint(tracks);
             });

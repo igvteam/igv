@@ -239,7 +239,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     }
 
     public void load(ReferenceFrame frame) {
-        dataManager.load(frame, alignmentTrack.getRenderOptions(), true);
+        dataManager.load(frame, alignmentTrack.getRenderOptions(), alignmentTrack.getDisplayMode(), true);
 
     }
 
