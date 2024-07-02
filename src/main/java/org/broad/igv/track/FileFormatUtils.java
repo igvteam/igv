@@ -92,7 +92,7 @@ public class FileFormatUtils {
             if (firstLine.startsWith("##gff-version")) {
                 return "gff";
             }
-            if(maybeSampleInfo(bytes)) {
+            if (maybeSampleInfo(bytes)) {
                 return "sampleinfo";
             }
         } catch (IOException e) {
@@ -106,20 +106,40 @@ public class FileFormatUtils {
 
     /**
      * Minimal validation of a sample info file (1) contents are UTF-8, (2) file contains tabs
+     *
      * @param bytes
      * @return
      */
-    private static boolean maybeSampleInfo(byte [] bytes) {
-        final String converted = new String(bytes, StandardCharsets.UTF_8);
-        final byte[] outputBytes = converted.getBytes(StandardCharsets.UTF_8);
-        if (!Arrays.equals(bytes, outputBytes)) {
-            return false;   // Not a UTF 8 string
+    private static boolean maybeSampleInfo(byte[] bytes) {
+
+        try {
+            if(!isUTF8(bytes)) {
+                return false;
+            }
+
+            String converted = new String(bytes, "UTF-8");
+
+            // Now look for tab characters, there needs to be at least 2
+            int firstTab = converted.indexOf('\t');
+            if (firstTab < 0) return false;
+            int secondTab = converted.indexOf('\t', firstTab + 1);
+            if (secondTab < 0) return false;
+
+            //
+            boolean nullSeen = false;
+            for(int i=0; i<converted.length(); i++) {
+                if(converted.charAt(i) == 0) {
+                    nullSeen = true;
+                } else {
+                    if(nullSeen) return false;
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            return false;
         }
-        // Now look for tab characters, there needs to be at least 2
-        int firstTab = converted.indexOf('\t');
-        if(firstTab < 0) return false;
-        int secondTab = converted.indexOf('\t', firstTab + 1);
-        return secondTab > 0;
+        return true;
+
+        //
     }
 
     private static boolean isGzip(SeekableStream seekableStream) throws IOException {
@@ -128,4 +148,49 @@ public class FileFormatUtils {
         seekableStream.readFully(bytes);
         return bytes[0] == 31 && bytes[1] == -117;
     }
+
+    private static boolean isUTF8(byte[] data) {
+
+
+        int len = data.length;
+
+        // for each value in the data array we have to take
+        // the "and" with the masks array
+        for (int i = 0; i < len; i++) {
+            int curr = data[i];
+
+            // method to check the array if the
+            // and with the num and masks array is
+            // 0 then return true
+            int type = getType(curr);
+
+            if (type == 0) {
+                continue;
+            } else if (type > 1 && i + type <= len) {
+                while (type-- > 1) {
+                    if (getType(data[++i]) != 1) {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // method to check the type
+    private static int getType(int num) {
+        int[] masks = {128, 64, 32, 16, 8};
+        for (int i = 0; i < 5; i++) {
+
+            // checking the each input
+            if ((masks[i] & num) == 0) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
 }
+

@@ -35,8 +35,12 @@ public class FileFormatUtilsTest extends TestCase {
         format = FileFormatUtils.determineFormat(tdfFile);
         assertEquals("tdf", format);
 
-        String unknown = TestUtils.DATA_DIR + "cram/cram_with_crai_index.cram.crai";
+        String unknown = TestUtils.DATA_DIR + "testgzip.fasta.gz";
         format = FileFormatUtils.determineFormat(unknown);
         assertNull(format);
+
+        String sampleInfoFile = "http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/sampleTable.txt.gz";
+        format = FileFormatUtils.determineFormat(sampleInfoFile);
+        assertEquals("sampleinfo", format);
     }
 }
