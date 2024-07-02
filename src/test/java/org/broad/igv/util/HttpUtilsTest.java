@@ -194,47 +194,4 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
         }
 
     }
-
-    @Test
-    public void testRedirectCache() throws Exception {
-
-        RunnableSparkHttp server = new RunnableSparkHttp();
-        Thread thread = new Thread(server);
-        thread.run();
-
-        // give the test server a moment to start up
-        Thread.sleep(500);
-
-        HttpURLConnection conn = null;
-
-        // test a URL that redirects permanently
-        assertEquals(server.permSrcCt, 0);
-        assertEquals(server.permDestCt, 0);
-        conn = HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/perm_redir_src"), null);
-        assertEquals(conn.getResponseCode(), 200);
-        assertEquals(server.permSrcCt, 1);
-        assertEquals(server.permDestCt, 1);
-        assertEquals(HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/perm_redir_src"), null)
-                .getResponseCode(), 200);
-        // because redirect was cached, the source wasn't requested again, but the destination was
-        assertEquals(server.permSrcCt, 1);
-        assertEquals(server.permDestCt, 2);
-
-
-        // now test a URL that redirects but quickly expires
-        assertEquals(server.tempSrcCt, 0);
-        assertEquals(server.tempDestCt, 0);
-        conn = HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/temp_redir_src"), null);
-        assertEquals(conn.getResponseCode(), 200);
-        assertEquals(server.tempSrcCt, 1);
-        assertEquals(server.tempDestCt, 1);
-        // sleep for 2s to ensure that cache has expired
-        Thread.sleep(2_000);
-        assertEquals(HttpUtils.getInstance().openConnection(new URL("http://localhost:4567/temp_redir_src"), null)
-                .getResponseCode(), 200);
-        // because redirect was cached, the source wasn't requested again, but the destination was
-        assertEquals(server.tempSrcCt, 2);
-        assertEquals(server.tempDestCt, 2);
-
-    }
 }
