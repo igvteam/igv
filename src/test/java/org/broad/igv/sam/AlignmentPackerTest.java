@@ -34,6 +34,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
+import org.broad.igv.track.Track;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Ignore;
@@ -64,7 +65,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         while(iter.hasNext()){
             list.add(iter.next());
         }
-        AlignmentInterval interval = new AlignmentInterval(chr, start, end, list, null, null, null);
+        AlignmentInterval interval = new AlignmentInterval(chr, start, end, list, null, null, null, null);
         return interval;
     }
 
@@ -82,7 +83,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         */
         AlignmentInterval interval = getAlignmentInterval();
 
-        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(interval, (new AlignmentTrack.RenderOptions(null)));
+        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(interval, (new AlignmentTrack.RenderOptions(null)), null, Track.DisplayMode.EXPANDED);
         assertEquals(1, result.size());
         for (List<Row> alignmentrows : result.values()) {
             for (Row alignmentrow : alignmentrows) {
@@ -109,7 +110,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         renderOptions.setGroupByOption(groupOption);
 
         AlignmentInterval interval = getAlignmentInterval();
-        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(interval, renderOptions);
+        Map<String, List<Row>> result = (new AlignmentPacker()).packAlignments(interval, renderOptions, null, Track.DisplayMode.EXPANDED);
         Set<String> names = result.keySet();
         //names.removeAll(Arrays.asList("", null));
 

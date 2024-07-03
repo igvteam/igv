@@ -487,7 +487,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         invertGroupNameSortingOption.setSelected(renderOptions.isInvertGroupSorting());
         invertGroupNameSortingOption.addActionListener(aEvt -> {
             renderOptions.setInvertGroupSorting(!renderOptions.isInvertGroupSorting());
-            dataManager.packAlignments(renderOptions);
+            alignmentTrack.packAlignments();
             alignmentTrack.repaint();
         });
         groupMenu.add(invertGroupNameSortingOption);
@@ -1288,7 +1288,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             }
         }
         renderOptions.setLinkedReads(linkReads);
-        dataManager.packAlignments(renderOptions);
+        alignmentTrack.packAlignments();
         alignmentTrack.repaint();
     }
 

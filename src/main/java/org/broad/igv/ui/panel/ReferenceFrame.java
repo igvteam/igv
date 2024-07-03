@@ -377,10 +377,15 @@ public class ReferenceFrame {
 
 
     public void shiftOriginPixels(int delta) {
-
         double shiftBP = delta * getScale();
         setOrigin(shiftBP + origin);
         eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd(), false));
+    }
+
+    public void shiftOriginPixelsPanning(int delta) {
+        double shiftBP = delta * getScale();
+        setOrigin(shiftBP + origin);
+        eventBus.post(ViewChange.LocusChangeResultPanning(chrName, origin, getEnd(), false));
     }
 
     public void centerOnLocation(String chr, double chrLocation) {

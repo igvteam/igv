@@ -33,6 +33,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.ReadGroupFilter;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
@@ -323,7 +324,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         TestUtils.createIndex(filepath);
 
         AlignmentDataManager manager = new AlignmentDataManager(new ResourceLocator(filepath), genome);
-        AlignmentInterval interval = manager.loadInterval("chr22", 0, Integer.MAX_VALUE, null);
+        AlignmentInterval interval = manager.loadInterval("chr22", 0, Integer.MAX_VALUE, null, null);
         Iterator<Alignment> iter = interval.getAlignmentIterator();
         while(iter.hasNext()){
             Alignment al = iter.next();
@@ -331,12 +332,9 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         }
     }
 
-    /**
-     * Load alignment interval. Here for other tests, so we don't need to expose
-     * {@link AlignmentDataManager#loadInterval(String, int, int, AlignmentTrack.RenderOptions)}
-     */
+
     public static AlignmentInterval loadInterval(AlignmentDataManager manager, String chr, int start, int end) {
-        return manager.loadInterval(chr, start, end, (new AlignmentTrack.RenderOptions(null)));
+        return manager.loadInterval(chr, start, end, (new AlignmentTrack.RenderOptions(null)), null);
     }
 
 

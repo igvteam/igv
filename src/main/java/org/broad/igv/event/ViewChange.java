@@ -46,6 +46,7 @@ public final class ViewChange implements IGVEvent{
     final public String chrName;
     final public double start;
     final public double end;
+    public boolean panning = false;
 
     private ViewChange(Type type, String chrName, double start, double end, boolean recordHistory) {
         this.type = type;
@@ -54,6 +55,7 @@ public final class ViewChange implements IGVEvent{
         this.end = end;
         this.recordHistory = recordHistory;
     }
+
 
     public boolean recordHistory() {
         return this.recordHistory;
@@ -67,4 +69,9 @@ public final class ViewChange implements IGVEvent{
         return new ViewChange(Type.LocusChange, chrName, start, end, recordHistory);
     }
 
+    public static ViewChange LocusChangeResultPanning(String chrName, double start, double end, boolean recordHistory) {
+        ViewChange vc =  new ViewChange(Type.LocusChange, chrName, start, end, recordHistory);
+        vc.panning = true;
+        return vc;
+    }
 }

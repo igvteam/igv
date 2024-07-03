@@ -62,8 +62,6 @@ public class PanTool extends AbstractDataPanelTool {
     private boolean isDragging = false;
     private long lastDragEventTime = 0;
 
-
-
     private ReferenceFrame referenceFrame;
 
     public PanTool(DataPanel owner) {
@@ -163,7 +161,7 @@ public class PanTool extends AbstractDataPanelTool {
                 if (cumulativeDeltaX > cumulativeDeltaY) {
 
                     // Horizontal scrolling
-                    getReferenceFame().shiftOriginPixels(deltaX);
+                    getReferenceFame().shiftOriginPixelsPanning(deltaX);
                 } else {
                     // Vertical Scrolling 
                     int totalYChange = (int) (lastMousePoint.getY() - e.getY());
