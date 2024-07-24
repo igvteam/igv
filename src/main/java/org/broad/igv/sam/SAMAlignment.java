@@ -939,7 +939,7 @@ public class SAMAlignment implements Alignment {
                 }
                 buf.append("<br>" + tag.tag + " = ");
 
-                if (tag.tag.equals("Ml")) {
+                if (tag.tag.equals("ML") || tag.tag.equals("Ml")) {
                     buf.append(this.getMlTagString(tag));
                     buf.append("<br>");
                     continue;

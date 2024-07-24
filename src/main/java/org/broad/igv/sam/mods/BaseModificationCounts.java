@@ -82,7 +82,7 @@ public class BaseModificationCounts {
                         }
                     }
 
-                    // Count the modification with highest likelihood, which might be the likelihood of no-modification
+                    // Take the modification with highest likelihood, which might be the likelihood of no-modification
                     if (canonicalBase != 0) {
                         BaseModificationKey noModKey = BaseModificationKey.getKey(canonicalBase, '+', "NONE_" + canonicalBase);
                         allModifications.add(noModKey);
