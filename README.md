@@ -1,6 +1,6 @@
 # igv
 
-![Build Status](https://github.com/igvteam/igv/actions/workflows/gradle_test.yml/badge.svg)
+![Build Status](https://github.com/igvteam/igv/actions/workflows/gradle.yml/badge.svg)
 ![GitHub issues](https://img.shields.io/github/issues/igvteam/igv)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/igvteam/igv)
 ![](https://img.shields.io/npm/l/igv.svg)
