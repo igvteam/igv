@@ -39,9 +39,9 @@ public class GenomeListManager {
     private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
 
     public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem(
-            "Human (hg19)",
-            "https://s3.amazonaws.com/igv.org.genomes/hg19/hg19.json",
-            "hg19");
+            "Human (hg38)",
+            "https://igv-genepattern-org.s3.amazonaws.com/genomes/hg38/hg38.json",
+            "hg38");
 
     private Map<String, GenomeListItem> genomeItemMap;
 
