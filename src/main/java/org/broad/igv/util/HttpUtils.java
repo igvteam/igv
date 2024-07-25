@@ -345,6 +345,9 @@ public class HttpUtils {
      * @throws IOException
      */
     public InputStream openConnectionStream(URL url) throws IOException {
+
+        url = new URL(mapURL(url.toExternalForm()));
+
         log.debug("Opening connection stream to  " + url);
         if (url.getProtocol().toLowerCase().equals("ftp")) {
             String userInfo = url.getUserInfo();
