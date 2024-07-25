@@ -311,9 +311,19 @@ public class GenomeListManager {
 
 
     public void removeGenomeListItem(GenomeListItem genomeListItem) {
-
         final String id = genomeListItem.getId();
         genomeItemMap.remove(id);
+
+        // If this is a cached genome remove it from cache
+        Map<String, GenomeListItem> cachedItems = getCachedGenomeList();
+        if(cachedItems.containsKey(id)){
+            try {
+                (new File(genomeListItem.getPath())).delete();
+            } catch (Exception e) {
+                log.error("Error deleting genome file: " + genomeListItem.getPath() + ": " + e.getMessage());
+            }
+        }
+
         removeUserDefinedGenome(id);
     }
 

@@ -455,4 +455,11 @@ public class GenomeManager {
         }
     }
 
+    public void refreshHostedGenome(String genomeId) {
+
+        Map<String, GenomeListItem> itemMap = GenomeListManager.getInstance().getServerGenomeMap();
+        if(itemMap.containsKey(genomeId)) {
+            downloadGenome(itemMap.get(genomeId), false);
+        }
+    }
 }

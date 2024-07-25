@@ -1940,11 +1940,16 @@ public class IGV implements IGVEventObserver {
                         GenomeManager.getInstance().loadGenomeById(genomeId);
                         genomeLoaded = true;
                     } catch (Exception e) {
-                        MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                        log.error("Error loading genome: " + genomeId, e);
-                    }
+                        MessageUtils.showErrorMessage("Error loading genome " + genomeId + "<br/>" + e.getMessage(), e);
+                        genomeLoaded = false;
+                     }
 
                     if (!genomeLoaded) {
+                        // If the error is with the default genome try refreshing it.
+                        if(genomeId.equals(GenomeListManager.DEFAULT_GENOME.getId())) {
+                            GenomeManager.getInstance().refreshHostedGenome(genomeId);
+                        }
+
                         genomeId = GenomeListManager.DEFAULT_GENOME.getId();
                         try {
                             GenomeManager.getInstance().loadGenomeById(genomeId);
