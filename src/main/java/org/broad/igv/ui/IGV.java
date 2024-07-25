@@ -1093,6 +1093,14 @@ public class IGV implements IGVEventObserver {
         contentPane.getMainPanel().removeDataPanel(name);
     }
 
+    public void removeTrackPanel(TrackPanel trackPanel) {
+        contentPane.getMainPanel().removeTrackPanel(trackPanel);
+    }
+
+    public boolean panelIsRemovable(TrackPanel trackPanel) {
+        return contentPane.getMainPanel().panelIsRemovable(trackPanel);
+    }
+
     public MainPanel getMainPanel() {
         return contentPane.getMainPanel();
     }

@@ -413,21 +413,28 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void removeDataPanel(String name) {
 
-        TrackPanelScrollPane sp = null;
         for (TrackPanel tp : getTrackPanels()) {
             if (name.equals(tp.getName())) {
-                sp = tp.getScrollPane();
-                break;
+                removeTrackPanel(tp);
+                return;
             }
         }
+    }
+
+    public void removeTrackPanel(TrackPanel trackPanel) {
         // Don't remove the "special" panes
-        if (sp == dataTrackScrollPane || sp == featureTrackScrollPane) {
-            return;
+        if (panelIsRemovable(trackPanel)) {
+            TrackPanelScrollPane sp = trackPanel.getScrollPane();
+            if (sp != null) {
+                centerSplitPane.remove(sp);
+                TrackNamePanel.removeDropListenerFor(sp.getNamePanel());
+                centerSplitPane.revalidate();
+            }
         }
-        if (sp != null) {
-            centerSplitPane.remove(sp);
-            TrackNamePanel.removeDropListenerFor(sp.getNamePanel());
-        }
+    }
+
+    public boolean panelIsRemovable(TrackPanel trackPanel) {
+        return trackPanel.getScrollPane() != dataTrackScrollPane && trackPanel.getScrollPane() != featureTrackScrollPane;
     }
 
     public void updatePanelDimensions() {
