@@ -27,7 +27,6 @@ public class ClusterUtils {
 
     public boolean clusterAlignments(String chr, int start, int end, int nClasses) {
 
-
         try {
             AlignmentCounts counts = this.alignmentInterval.getCounts();
 
@@ -46,14 +45,13 @@ public class ClusterUtils {
                 MessageUtils.showMessage("Not enough variants, reducing # of clusters: " + nClasses);
             }
 
-
             // Adjust start and end to min and max snp positions, there is no information outside these bounds
             start = snpPos.get(0) - 1;
             end = snpPos.get(snpPos.size() - 1) + 1;
 
             // Clear any existing names
             for(Alignment a : this.alignmentInterval.getAlignments()) {
-                a.setClusterName("?");
+                a.setClusterName(null);
             }
 
             // Label alignments
@@ -65,9 +63,7 @@ public class ClusterUtils {
             }
 
             // Sort labels (entries) by # of associated alignments
-            labels.sort((o1, o2) -> {
-                return labelAlignmentMap.get(o2).size() - labelAlignmentMap.get(o1).size();
-            });
+            labels.sort((o1, o2) -> labelAlignmentMap.get(o2).size() - labelAlignmentMap.get(o1).size());
 
             // Create initial cluster centroids
             List<V> clusters = new ArrayList<>();
@@ -78,7 +74,6 @@ public class ClusterUtils {
             }
 
             // Now assign all labels to a cluster
-
             int n = 0;
             int max = 50;
             while (true) {
@@ -145,7 +140,7 @@ public class ClusterUtils {
 
             byte ref = reference[i - start];
 
-            float mismatchCount = getMismatchCount(counts, i, ref);
+            float mismatchCount = getMismatchFraction(counts, i, ref);
 
             if (mismatchCount > 0.2f) {
                 snpPos.add(i);
@@ -170,29 +165,29 @@ public class ClusterUtils {
         while (iter.hasNext()) {
             Alignment alignment = iter.next();
             if (start >= alignment.getStart() && end <= alignment.getEnd()) {
-                String hapName = "";
+                String clusterName = "";
                 for (Integer pos : positions) {
                     boolean found = false;
                     for (AlignmentBlock block : alignment.getAlignmentBlocks()) {
                         if (block.isSoftClip()) continue;
                         if (block.contains(pos)) {
                             int blockOffset = pos - block.getStart();
-                            hapName += (char) block.getBase(blockOffset);
+                            clusterName += (char) block.getBase(blockOffset);
                             found = true;
                             break;
                         }
                     }
                     if (!found) {
-                        hapName += "_";
+                        clusterName += "_";
                     }
                 }
 
-                hapName = hapName.toLowerCase();
+                clusterName = clusterName.toLowerCase();
 
-                List<Alignment> alignments = alignmentMap.get(hapName);
+                List<Alignment> alignments = alignmentMap.get(clusterName);
                 if (alignments == null) {
                     alignments = new ArrayList<>();
-                    alignmentMap.put(hapName, alignments);
+                    alignmentMap.put(clusterName, alignments);
                 }
                 alignments.add(alignment);
 
@@ -201,12 +196,9 @@ public class ClusterUtils {
         return alignmentMap;
     }
 
-
-    public float getMismatchCount(AlignmentCounts counts, int pos, byte ref) {
-
+    public float getMismatchFraction(AlignmentCounts counts, int pos, byte ref) {
 
         float mismatchQualitySum = 0;
-
 
         if (ref < 96) ref += 32;  // a fast "toLowercase"
         for (char c : BaseAlignmentCounts.nucleotides) {
@@ -215,8 +207,6 @@ public class ClusterUtils {
             }
         }
         return mismatchQualitySum / counts.getTotalCount(pos);
-
-
     }
 
 //    List<V> combineClusters(List<V> clusters) {
