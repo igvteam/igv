@@ -113,7 +113,7 @@ public class SaveSessionMenuAction extends MenuAction {
 
         } catch (Exception e2) {
             JOptionPane.showMessageDialog(igv.getMainFrame(), "There was an error writing to " + sf.getName() + "(" + e2.getMessage() + ")");
-            log.error("Failed to save session!", e2);
+            log.error("Failed to save session <br/>" + e2.getMessage(), e2);
         } finally {
             WaitCursorManager.removeWaitCursor(token);
             igv.resetStatusMessage();

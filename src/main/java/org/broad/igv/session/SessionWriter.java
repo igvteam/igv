@@ -179,7 +179,6 @@ public class SessionWriter {
         } catch (Exception e) {
             String message = "Error creating session.";
             log.error(message, e);
-            JOptionPane.showMessageDialog(IGV.getInstance().getMainFrame(), message);
             throw new RuntimeException(e);
         }
     }
