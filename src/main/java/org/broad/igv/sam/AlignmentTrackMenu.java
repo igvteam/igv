@@ -2,7 +2,6 @@ package org.broad.igv.sam;
 
 import htsjdk.samtools.SAMTag;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.jbrowse.CircularViewUtilities;
@@ -95,10 +94,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         // Experiment type  (RNA, THIRD GEN, OTHER)
         addSeparator();
         addExperimentTypeMenuItem();
-//        if (alignmentTrack.getExperimentType() == AlignmentTrack.ExperimentType.THIRD_GEN) {
-//            addHaplotype(e);
-//        }
-
 
         // Group, sort, color, shade, and pack
         addSeparator();
@@ -186,6 +181,12 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             add(sashimi);
         }
 
+        // Experimental items
+        if (alignmentTrack.getExperimentType() == AlignmentTrack.ExperimentType.THIRD_GEN) {
+            addSeparator();
+            addClusterItem(e);
+        }
+
         // Show alignments, coverage, splice junctions
         addSeparator();
         addShowItems();
@@ -233,9 +234,9 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     }
 
 
-    private void addHaplotype(TrackClickEvent e) {
+    private void addClusterItem(TrackClickEvent e) {
 
-        JMenuItem item = new JMenuItem("Cluster (phase) alignments");
+        JMenuItem item = new JMenuItem("Cluster alignments  *EXPERIMENTAL*");
 
         final ReferenceFrame frame;
         if (e.getFrame() == null && FrameManager.getFrames().size() == 1) {
@@ -269,16 +270,13 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             final int end = (int) frame.getEnd();
 
             AlignmentInterval interval = dataManager.getLoadedInterval(frame);
-            HaplotypeUtils haplotypeUtils = new HaplotypeUtils(interval);
-            boolean success = haplotypeUtils.clusterAlignments(frame.getChrName(), start, end, nClusters);
+            ClusterUtils clusterUtils = new ClusterUtils(interval);
+            boolean success = clusterUtils.clusterAlignments(frame.getChrName(), start, end, nClusters);
 
             if (success) {
-                groupAlignments(AlignmentTrack.GroupOption.HAPLOTYPE, null, null);
+                groupAlignments(AlignmentTrack.GroupOption.CLUSTER, null, null);
                 alignmentTrack.repaint();
             }
-
-            //dataManager.sortRows(SortOption.HAPLOTYPE, frame, (end + start) / 2, null);
-            //AlignmentTrack.repaint();
 
         });
 

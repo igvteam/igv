@@ -164,7 +164,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         INSERTION_AT_POS("insertion at position", true),
         MOVIE("movie"),
         ZMW("ZMW"),
-        HAPLOTYPE("haplotype"),
+        CLUSTER("cluster"),
         READ_ORDER("read order"),
         LINKED("linked"),
         PHASE("phase"),
@@ -1711,7 +1711,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 sortOption = SortOption.valueOf((element.getAttribute("sortOption")));
             }
             if (element.hasAttribute("groupByOption")) {
-                groupByOption = GroupOption.valueOf(element.getAttribute("groupByOption"));
+                String value = element.getAttribute("groupByOption");
+                if(value.equals("HAPLOTYPE")) {
+                    value = "CLUSTER";  // Backward compatibility
+                }
+                groupByOption = GroupOption.valueOf(value);
             }
             if (element.hasAttribute("shadeAlignmentsByOption")) {
                 shadeAlignmentsOption = ShadeAlignmentsOption.valueOf(element.getAttribute("shadeAlignmentsByOption"));

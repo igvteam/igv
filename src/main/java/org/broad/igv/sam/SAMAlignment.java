@@ -685,9 +685,9 @@ public class SAMAlignment implements Alignment {
         int basePosition = (int) position;
         StringBuffer buf = new StringBuffer();
 
-        if (getHaplotypeName() != null) {
-            buf.append("Hap name: " + getHaplotypeName() + "<br>");
-            buf.append("Dist: " + getHapDistance() + "<br>");
+        if (getClusterName() != null) {
+            buf.append("Cluster name: " + getClusterName() + "<br>");
+            buf.append("Dist: " + getClusterDistance() + "<br>");
         }
 
         boolean atInsertion = false;
@@ -1215,12 +1215,12 @@ public class SAMAlignment implements Alignment {
     String haplotypeName;
 
     @Override
-    public void setHaplotypeName(String hap) {
+    public void setClusterName(String hap) {
         haplotypeName = hap;
     }
 
     @Override
-    public String getHaplotypeName() {
+    public String getClusterName() {
         return haplotypeName;
     }
 
@@ -1232,7 +1232,7 @@ public class SAMAlignment implements Alignment {
     }
 
     @Override
-    public int getHapDistance() {
+    public int getClusterDistance() {
         return hapDistance;
     }
 

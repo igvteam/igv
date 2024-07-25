@@ -175,13 +175,13 @@ public interface Alignment extends LocusScore {
         return ClippingCounts.fromCigar(getCigar());
     }
 
-    default void setHaplotypeName(String hap) {}
+    default void setClusterName(String hap) {}
 
-    default String getHaplotypeName() {return null;}
+    default String getClusterName() {return null;}
 
     default void setHapDistance(int dist) {};
 
-    default int getHapDistance() {return 0;}
+    default int getClusterDistance() {return 0;}
 
     default Map<Integer, BaseModificationUtils> getBaseModificationMap() { return null;}
 

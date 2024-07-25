@@ -3,7 +3,6 @@ package org.broad.igv.sam;
 
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.*;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.util.*;
@@ -15,14 +14,14 @@ import java.util.*;
  * @author Jim Robinson
  */
 
-public class HaplotypeUtils {
+public class ClusterUtils {
 
-    private static Logger log = LogManager.getLogger(HaplotypeUtils.class);
+    private static Logger log = LogManager.getLogger(ClusterUtils.class);
 
     private final AlignmentInterval alignmentInterval;
 
 
-    public HaplotypeUtils(AlignmentInterval alignmentInterval) {
+    public ClusterUtils(AlignmentInterval alignmentInterval) {
         this.alignmentInterval = alignmentInterval;
     }
 
@@ -54,7 +53,7 @@ public class HaplotypeUtils {
 
             // Clear any existing names
             for(Alignment a : this.alignmentInterval.getAlignments()) {
-                a.setHaplotypeName("NONE");
+                a.setClusterName("?");
             }
 
             // Label alignments
@@ -126,7 +125,7 @@ public class HaplotypeUtils {
 
                     List<Alignment> alignments = labelAlignmentMap.get(l);
                     for (Alignment a : alignments) {
-                        a.setHaplotypeName(label);
+                        a.setClusterName(label);
                     }
                 }
             }

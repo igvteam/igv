@@ -1,13 +1,10 @@
 package org.broad.igv.sam;
 
-import htsjdk.samtools.SAMTag;
 import htsjdk.samtools.util.Locatable;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
@@ -134,7 +131,7 @@ public enum SortOption {
     }, HAPLOTYPE {
         @Override
         Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
-            return Comparator.comparingInt(Alignment::getHapDistance);
+            return Comparator.comparingInt(Alignment::getClusterDistance);
         }
     }, READ_ORDER {
         @Override
