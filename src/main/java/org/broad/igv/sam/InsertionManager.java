@@ -69,7 +69,6 @@ public class InsertionManager {
 
     public List<InsertionMarker> getInsertions(String chrName, double start, double end) {
 
-
         Map<Integer, InsertionMarker> insertionMap = insertionMaps.get(chrName);
         if(insertionMap == null ) return null;
 
@@ -80,11 +79,6 @@ public class InsertionManager {
     public void setSelected(InsertionMarker insertionMarker) {
         this.selectedInsertion = insertionMarker;
     }
-
-    public InsertionMarker getSelectedInsertion(String chrName) {
-        return this.selectedInsertion;
-    }
-
 
     public synchronized void processAlignments(String chr, List<Alignment> alignments) {
 
@@ -107,7 +101,7 @@ public class InsertionManager {
             AlignmentBlock[] blocks = a.getInsertions();
             if (blocks != null) {
                 for (AlignmentBlock block : blocks) {
-                    if (block.getBases() == null || block.getBases().length < minLength) continue;
+                    if (block.getBasesLength() < minLength) continue;
                     Integer key = block.getStart();
                     InsertionMarker insertionMarker = insertionMap.get(key);
                     if (insertionMarker == null) {

@@ -762,11 +762,7 @@ public class ReferenceFrame {
     }
 
     public void setExpandedInsertion(InsertionMarker im) {
-        InsertionMarker previousInsertion = this.expandedInsertion;
         this.expandedInsertion = im;
-        if (im == null && previousInsertion != null) {
-            this.centerOnLocation(previousInsertion.position);
-        }
     }
 
     public InsertionMarker getExpandedInsertion() {

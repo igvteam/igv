@@ -88,7 +88,7 @@ public class BaseRenderer {
                 if (alignment.getStart() > insertionMarker.position) break;
 
                 AlignmentBlock insertion = alignment.getInsertionAt(insertionMarker.position);
-                if (insertion != null && insertion.hasBases()) {
+                if (insertion != null && insertion.getBasesLength() > 0) {
 
                     double origin = context.getOrigin();
                     double locScale = context.getScale();
@@ -104,8 +104,7 @@ public class BaseRenderer {
 
                     ByteSubarray bases = insertion.getBases();
                     int padding = insertion.getPadding();
-
-                    final int size = bases.length + padding;
+                    final int size = insertion.getBasesLength() + padding;
                     for (int p = 0; p < size; p++) {
 
                         double pX = (pixelStart + (p / locScale));
@@ -114,8 +113,10 @@ public class BaseRenderer {
                         if (pX > rect.getMaxX()) break;
                         else if (pX + dX < rect.getX()) continue;
 
-                        char c = p < padding ? '-' : (char) bases.getByte(p - padding);
-
+                        // idx can be out of range due to (1) padding, (2) no read sequence (sequence == *)
+                        int idx = p - padding;
+                        char c = idx >= 0 && idx < bases.length ? (char) bases.getByte(p - padding) :
+                                padding > 0 ? '-' : '*';
 
                         Color color = null;
                         // TODO -- support bisulfite mode?  Probably not possible as that depends on the reference
