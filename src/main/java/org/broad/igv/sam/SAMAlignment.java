@@ -55,6 +55,8 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.broad.igv.prefs.Constants.SAM_HIDE_SMALL_INDEL;
+
 /**
  * @author jrobinso
  */
@@ -690,12 +692,18 @@ public class SAMAlignment implements Alignment {
             buf.append("Dist: " + getClusterDistance() + "<br>");
         }
 
+        boolean hideSmallIndels = renderOptions.isHideSmallIndels();
+        int smallIndelThreshold = renderOptions.getSmallIndelThreshold();
+
         boolean atInsertion = false;
         boolean atBaseMod = false;
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
             for (AlignmentBlock block : this.insertions) {
                 if (block.containsPixel(mouseX)) {
+                    if(hideSmallIndels && block.getBasesLength() < smallIndelThreshold) {
+                        continue;
+                    }
                     ByteSubarray bases = block.getBases();
                     if (bases == null) {
                         buf.append("Insertion: " + block.getLength() + " bases<br>");
