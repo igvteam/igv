@@ -107,6 +107,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         MAPPED_SIZE,
         LINK_STRAND,
         YC_TAG,
+        SPLIT,
         BASE_MODIFICATION,
         BASE_MODIFICATION_2COLOR,
         SMRT_SUBREAD_IPD,
