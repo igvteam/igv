@@ -206,7 +206,7 @@ SAM.MAX_LEVELS	Number of reads per window	integer	100
 SAM.FLAG_LARGE_INDELS	Label indels > label threshold	boolean	TRUE
 SAM.LARGE_INSERTIONS_THRESOLD	Label threshold (bases)	integer	1
 ---
-SAM.HIDE_SMALL_INDEL	Hide indels < show indel threshold	boolean	TRUE
+SAM.HIDE_SMALL_INDEL	Hide indels < show indel threshold	boolean	FALSE
 SAM.SMALL_INDEL_BP_THRESHOLD	Show indel threshold (bases)	integer	2
 
 ##Clipping
