@@ -1,3 +1,5 @@
+// Simple proxy server for testing IGV
+
 // Proxy server from https://github.com/kasattejaswi/nodejs-proxy-server
 // Copyright (c) 2021 Tejaswi Kasat
 
@@ -31,8 +33,8 @@ server.on("connection", (clientToProxySocket) => {
 
         // Require a password
         //if(dataString.indexOf("Proxy-Authorization") < 0) {
-        //    clientToProxySocket.write("HTTP/1.1 407 Proxy requires authentication\r\n\r\n")
-        //    return;
+        //   clientToProxySocket.write("HTTP/1.1 407 Proxy requires authentication\r\n\r\n")
+         //  return;
         //}
 
         // Creating a connection from proxy to destination server
@@ -69,12 +71,4 @@ server.on("close", () => {
     console.log("Client disconnected")
 })
 
-server.listen(
-    {
-        host: "0.0.0.0",
-        port: 9999,
-    },
-    () => {
-        console.log("Server listening on 0.0.0.0:9999")
-    }
-)
+server.listen(9999)
