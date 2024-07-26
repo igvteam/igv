@@ -52,7 +52,7 @@ public class AlignmentBlockImpl implements AlignmentBlock {
 
         this.start = start;
         this.offset = offset;
-        this.bases = new ByteSubarray(bases, offset, nBases, (byte) '?');
+        this.bases = bases.length == 0 ? EMPTY_ARRAY :new ByteSubarray(bases, offset, nBases, (byte) '?');
         this.basesLength = nBases;
 
         // qualities are optional in a SAMRecord, we might get null or an array of zero

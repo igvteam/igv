@@ -60,7 +60,7 @@ public class ReadStats {
 
     public void addAlignment(Alignment alignment) {
 
-        if(readCount > MAX_READ_COUNT) return;
+        if (readCount > MAX_READ_COUNT) return;
 
         if (alignment.isMapped()) {
 
@@ -135,10 +135,10 @@ public class ReadStats {
     public AlignmentTrack.ExperimentType inferType() {
         compute();
         if (readCount < 20) return AlignmentTrack.ExperimentType.UNKOWN; // Not enough reads
-        if ((readLengthStdDev > 100 || medianReadLength > 1000) && averageCigarLength > 10) { // Cigar length to filter consensus reads
-            return AlignmentTrack.ExperimentType.THIRD_GEN;
-        } else if (medianRefToReadRatio > 5 || fracReadsWithNs > 0.01) {
+        if (medianRefToReadRatio > 5 || fracReadsWithNs > 0.01) {
             return AlignmentTrack.ExperimentType.RNA;
+        } else if ((readLengthStdDev > 100 || medianReadLength > 1000) && averageCigarLength > 10) { // Cigar length to filter consensus reads
+            return AlignmentTrack.ExperimentType.THIRD_GEN;
         } else {
             return AlignmentTrack.ExperimentType.OTHER;
         }
