@@ -501,11 +501,18 @@ public class RulerPanel extends JPanel {
                 setCursor(Cursor.getDefaultCursor());
                 WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                 try {
+                    boolean clickHandled = false;
                     for (final ClickLink link : clickLinks) {
                         if (link.region.contains(e.getPoint())) {
                             link.action.accept(link.value);
+                            clickHandled = true;
                         }
                     }
+                    if (!clickHandled && !isWholeGenomeView()) {
+                        double newLocation = frame.getChromosomePosition(e);
+                        frame.centerOnLocation(newLocation);
+                    }
+
                 } finally {
                     WaitCursorManager.removeWaitCursor(token);
                 }
