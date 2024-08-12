@@ -30,6 +30,7 @@ import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.data.WiggleParser;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeUtils;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFDataset;
@@ -57,7 +58,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
 
     IgvTools igvTools;
 
-    private static final String hg18id = TestUtils.DATA_DIR + "genomes/hg18.unittest.genome";
+    private static final String genomePath = TestUtils.DATA_DIR + "genomes/hg19.chrom.sizes";
     private static final int MAX_LINES_CHECK = 200;
 
     @Rule
@@ -91,9 +92,12 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
 
     @Test
     public void testCountBEDoutWigCheckBW() throws Exception {
+
+        GenomeUtils.main(null);
+
         String inputFile = TestUtils.DATA_DIR + "bed/test2.bed";
         String fullout = TestUtils.TMP_OUTPUT_DIR + "twig.wig";
-        String input = "count " + inputFile + " " + fullout + " " + hg18id;
+        String input = "count " + inputFile + " " + fullout + " " + genomePath;
         String[] args = input.split("\\s+");
         igvTools.run(args);
 
@@ -126,7 +130,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
 
         //Write to a file
         String fileOutArg = TestUtils.TMP_OUTPUT_DIR + "testfilewig.wig";
-        String input = "count " + inputFile + " " + fileOutArg + " " + hg18id;
+        String input = "count " + inputFile + " " + fileOutArg + " " + genomePath;
         String[] args = input.split("\\s+");
         igvTools.run(args);
 
@@ -135,7 +139,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
         PrintStream oldOut = System.out;
         System.setOut(new PrintStream(os));
 
-        input = "count " + inputFile + " " + IgvTools.STDOUT_FILE_STR + " " + hg18id;
+        input = "count " + inputFile + " " + IgvTools.STDOUT_FILE_STR + " " + genomePath;
         args = input.split("\\s+");
         (new IgvTools()).run(args);
 
@@ -230,7 +234,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
             if (ind == 0) refOpt = opt;
 
             String fullout = outputFile + ind + "." + outputExt;
-            String input = "count " + opt + " " + inputFile + " " + fullout + " " + hg18id;
+            String input = "count " + opt + " " + inputFile + " " + fullout + " " + genomePath;
             String[] args = input.split("\\s+");
             igvTools.run(args);
 
@@ -253,7 +257,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
                 assertTrue(outFile.canRead());
 
                 ResourceLocator locator = new ResourceLocator(fullout);
-                WiggleDataset ds = (new WiggleParser(locator, IgvTools.loadGenome(hg18id))).parse();
+                WiggleDataset ds = (new WiggleParser(locator, IgvTools.loadGenome(genomePath))).parse();
 
                 //We miss a few alignments with this option sometimes,
                 //so it doesn't total up the same
@@ -358,7 +362,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
         for (int ind = 0; ind < opts.length; ind++) {
             String opt = opts[ind];
             String fullout = outputFile + ind + ".tdf";
-            String input = "count " + opt + " " + listArg + " " + fullout + " " + hg18id;
+            String input = "count " + opt + " " + listArg + " " + fullout + " " + genomePath;
             String[] args = input.split("\\s+");
             igvTools.run(args);
 
@@ -379,10 +383,10 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
 
         int pos = 9718611;
         String queryStr = queryChr + ":" + (pos - 100) + "-" + (pos + 100) + " ";
-        String cmd_nodups = "count --windowSize 1 -z 7 --query " + queryStr + inputFile + " " + outputFileND + " " + hg18id;
+        String cmd_nodups = "count --windowSize 1 -z 7 --query " + queryStr + inputFile + " " + outputFileND + " " + genomePath;
         igvTools.run(cmd_nodups.split("\\s+"));
 
-        String cmd_withdups = "count --includeDuplicates -z 7 --windowSize 1 --query " + queryStr + inputFile + " " + outputFileWithDup + " " + hg18id;
+        String cmd_withdups = "count --includeDuplicates -z 7 --windowSize 1 --query " + queryStr + inputFile + " " + outputFileWithDup + " " + genomePath;
         igvTools.run(cmd_withdups.split("\\s+"));
 
         assertTrue((new File(outputFileND).exists()));
@@ -532,7 +536,7 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
             wfs += wf.name() + ",";
         }
         wfs = wfs.substring(0, wfs.lastIndexOf(","));
-        String[] cmd = {"count", "--windowFunctions", wfs, inputFile, outputFile, hg18id};
+        String[] cmd = {"count", "--windowFunctions", wfs, inputFile, outputFile, genomePath};
         igvTools.run(cmd);
 
         TDFReader reader = new TDFReader(new ResourceLocator(outputFile));

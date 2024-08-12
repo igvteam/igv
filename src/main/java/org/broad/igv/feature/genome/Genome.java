@@ -224,7 +224,7 @@ public class Genome {
 
     /**
      * Alternate constructor for defining a minimal genome, usually from parsing a chrom.sizes file.  Used to
-     * create mock genomes for testing.
+     * create mock genomes for igvtools and testing.
      *
      * @param id
      * @param chromosomes
@@ -241,6 +241,7 @@ public class Genome {
             chromosomeNames.add(chromosome.getName());
             chromosomeMap.put(chromosome.getName(), chromosome);
         }
+        this.longChromosomeNames = computeLongChromosomeNames();
     }
 
     private void addTracks(GenomeConfig config) {
