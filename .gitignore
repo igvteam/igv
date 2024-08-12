@@ -11,15 +11,6 @@ test/data/out/
 .classpath
 /.idea/
 /.settings
-/proguard_log
-.vscode
-out/
-.DS_Store
-*.bedgraph
-*.bam
-*.csi.gz
-*.sai
 /test/batch/snapshots/
-/src/main/java/org/broad/igv/sam/mods/BMScale.java
-/src/main/java/org/broad/igv/sam/mods/BMScale.form
-/ignore/
+
+
