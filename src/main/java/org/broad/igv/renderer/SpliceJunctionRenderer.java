@@ -1,34 +1,35 @@
  /*
- * The MIT License (MIT)
- *
- * Copyright (c) 2007-2015 Fred Hutchinson Cancer Research Center and Broad Institute
- * Portions of code, copyright (c) 2013 by F. Hoffmann-La Roche Ltd and Tessella Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+  * The MIT License (MIT)
+  *
+  * Copyright (c) 2007-2015 Fred Hutchinson Cancer Research Center and Broad Institute
+  * Portions of code, copyright (c) 2013 by F. Hoffmann-La Roche Ltd and Tessella Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+  * of this software and associated documentation files (the "Software"), to deal
+  * in the Software without restriction, including without limitation the rights
+  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  * copies of the Software, and to permit persons to whom the Software is
+  * furnished to do so, subject to the following conditions:
+  *
+  * The above copyright notice and this permission notice shall be included in
+  * all copies or substantial portions of the Software.
+  *
+  *
+  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  * THE SOFTWARE.
+  */
 
 
-package org.broad.igv.renderer;
+ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+ import htsjdk.tribble.Feature;
  import org.broad.igv.logging.*;
  import org.broad.igv.feature.IGVFeature;
  import org.broad.igv.feature.SpliceJunctionFeature;
@@ -39,289 +40,256 @@ package org.broad.igv.renderer;
  import org.broad.igv.track.FeatureTrack;
  import org.broad.igv.track.RenderContext;
  import org.broad.igv.track.Track;
- import org.broad.igv.ui.FontManager;
 
  import java.awt.*;
  import java.awt.geom.GeneralPath;
- import java.util.ArrayList;
- import java.util.Collections;
  import java.util.List;
 
-/**
- * Renderer for splice junctions. Draws a filled-in arc for each junction, with the width of the
- * arc representing the depth of coverage. If coverage information is present for the flanking
- * regions, draws that, too; otherwise indicates flanking regions with rectangles
- *
- * @author dhmay
- */
-public class SpliceJunctionRenderer extends IGVFeatureRenderer {
+ /**
+  * Renderer for splice junctions. Draws a filled-in arc for each junction, with the width of the
+  * arc representing the depth of coverage. If coverage information is present for the flanking
+  * regions, draws that, too; otherwise indicates flanking regions with rectangles
+  *
+  * @author dhmay
+  */
+ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
-    private static Logger log = LogManager.getLogger(SpliceJunctionRenderer.class);
+     private static Logger log = LogManager.getLogger(SpliceJunctionRenderer.class);
 
-    //color for drawing all arcs
-    private static Color ARC_COLOR_NEG = new Color(50, 50, 150, 140); //transparent dull blue
-    private static Color ARC_COLOR_POS = new Color(150, 50, 50, 140); //transparent dull red
-    private static Color ARC_COLOR_HIGHLIGHT_NEG = new Color(90, 90, 255, 255); //opaque, brighter blue
-    private Color ARC_COLOR_HIGHLIGHT_POS = new Color(255, 90, 90, 255); //opaque, brighter red
-    private static Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
+     //color for drawing all arcs
+     private static Color ARC_COLOR_NEG = new Color(50, 50, 150, 140); //transparent dull blue
+     private static Color ARC_COLOR_POS = new Color(150, 50, 50, 140); //transparent dull red
+     private static Color ARC_COLOR_HIGHLIGHT_NEG = new Color(90, 90, 255, 255); //opaque, brighter blue
+     private Color ARC_COLOR_HIGHLIGHT_POS = new Color(255, 90, 90, 255); //opaque, brighter red
+     private static Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
 
-    private int maxDepth = 50;
+     private int maxDepth = 50;
 
-    /**
-     * Note:  assumption is that featureList is sorted by pStart position.
-     *
-     * @param featureList
-     * @param context
-     * @param trackRectangle
-     * @param track
-     */
-    @Override
-    public void render(List<IGVFeature> featureList,
-                       RenderContext context,
-                       Rectangle trackRectangle,
-                       Track track) {
-
-        double origin = context.getOrigin();
-        double locScale = context.getScale();
-
-        // TODO -- use enum instead of string "Color"
-        if ((featureList != null) && !featureList.isEmpty()) {
-
-            // Create a graphics object to draw font names.  Graphics are not cached
-            // by font, only by color, so its neccessary to create a new one to prevent
-            // affecting other tracks.
-            Font font = FontManager.getFont(track.getFontSize());
-            Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
-            fontGraphics.setFont(font);
-
-            //determine whether to show flanking regions
-            IGVPreferences prefs = PreferencesManager.getPreferences();
-            boolean shouldShowFlankingRegions = prefs.getAsBoolean(Constants.SAM_SHOW_JUNCTION_FLANKINGREGIONS);
-
-            // Track coordinates
-            double trackRectangleX = trackRectangle.getX();
-            double trackRectangleMaxX = trackRectangle.getMaxX();
-
- 
-            SpliceJunctionFeature selectedFeature =
-                    (SpliceJunctionFeature) ((FeatureTrack) track).getSelectedFeature();
+     /**
+      * Note:  assumption is that featureList is sorted by pStart position.
+      *
+      * @param featureList
+      * @param context
+      * @param trackRectangle
+      * @param track
+      */
+     @Override
+     public void render(List<IGVFeature> featureList,
+                        RenderContext context,
+                        Rectangle trackRectangle,
+                        Track track) {
 
 
-            for (IGVFeature feature : featureList) {
-                SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
-                //if same junction as selected feature, highlight
-                boolean shouldHighlight = false;
-                if (selectedFeature != null && selectedFeature.isSameJunction(junctionFeature)) {
-                    setHighlightFeature(junctionFeature);
-                    shouldHighlight = true;
-                }
+         // TODO -- use enum instead of string "Color"
+         if ((featureList != null) && !featureList.isEmpty()) {
 
-                // Get the pStart and pEnd of the entire feature.  at extreme zoom levels the
-                // virtual pixel value can be too large for an int, so the computation is
-                // done in double precision and cast to an int only when its confirmed its
-                // within the field of view.
-                int flankingStart = junctionFeature.getStart();
-                int flankingEnd = junctionFeature.getEnd();
+             Graphics2D g2D = null;
 
-                int junctionStart = junctionFeature.getJunctionStart();
-                int junctionEnd = junctionFeature.getJunctionEnd();
+             try {
+                 g2D = (Graphics2D) context.getGraphics().create();
 
-                double virtualPixelStart = Math.round((flankingStart - origin) / locScale);
-                double virtualPixelEnd = Math.round((flankingEnd - origin) / locScale);
+                 double origin = context.getOrigin();
+                 double locScale = context.getScale();
+                 double end = origin + locScale * trackRectangle.width;
 
-                double virtualPixelJunctionStart = Math.round((junctionStart - origin) / locScale);
-                double virtualPixelJunctionEnd = Math.round((junctionEnd - origin) / locScale);
+                 Feature selectedFeature =((FeatureTrack) track).getSelectedFeature();
+                 boolean shouldShowFlankingRegions = PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_SHOW_JUNCTION_FLANKINGREGIONS);
 
-                // If the any part of the feature fits in the
-                // Track rectangle draw it
-                if ((virtualPixelEnd >= trackRectangleX) && (virtualPixelStart <= trackRectangleMaxX)) {
+                 for (IGVFeature feature : featureList) {
+                     SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
 
-                    //
-                    int displayPixelEnd = (int) Math.min(trackRectangleMaxX, virtualPixelEnd);
-                    int displayPixelStart = (int) Math.max(trackRectangleX, virtualPixelStart);
+                     // If any part of the feature fits in the track rectangle draw it
+                     if (junctionFeature.getEnd() > origin && junctionFeature.getStart() < end) {
+                         boolean shouldHighlight = junctionFeature.isSameJunction(selectedFeature);
+                         drawFeature(junctionFeature, shouldShowFlankingRegions, shouldHighlight, origin, locScale, trackRectangle, g2D);
+                     }
+                 }
 
-                    float depth = junctionFeature.getJunctionDepth();
-                    Color color = feature.getColor();
+                 //draw a central horizontal line
+                 g2D.setColor(COLOR_CENTERLINE);
+                 g2D.drawLine(trackRectangle.x, (int) trackRectangle.getCenterY(),
+                         trackRectangle.x + trackRectangle.width, (int) trackRectangle.getCenterY());
+             } finally {
+                 g2D.dispose();
+             }
 
-                    drawFeature((int) virtualPixelStart, (int) virtualPixelEnd,
-                            (int) virtualPixelJunctionStart, (int) virtualPixelJunctionEnd, depth,
-                            trackRectangle, context, feature.getStrand(), junctionFeature, shouldHighlight, color,
-                            shouldShowFlankingRegions);
-                }
-            }
+         }
+     }
 
-            //draw a central horizontal line
-            Graphics2D g2D = context.getGraphic2DForColor(COLOR_CENTERLINE);
-            g2D.drawLine((int) trackRectangleX, (int) trackRectangle.getCenterY(),
-                    (int) trackRectangleMaxX, (int) trackRectangle.getCenterY());
+     /**
+      * Draw a filled arc representing a single feature. The thickness and height of the arc are proportional to the
+      * depth of coverage.  Some of this gets a bit arcane -- the result of lots of visual tweaking.
+      *
+      * @param junctionFeature
+      * @param highlight
+      * @param trackRectangle
+      * @param g2D
+      */
+     protected void drawFeature(SpliceJunctionFeature junctionFeature, boolean shouldShowFlankingRegions,
+                                boolean highlight, double origin, double locScale, Rectangle trackRectangle, Graphics2D g2D) {
 
-        }
-    }
+         int flankingStart = junctionFeature.getStart();
+         int flankingEnd = junctionFeature.getEnd();
 
+         int junctionStart = junctionFeature.getJunctionStart();
+         int junctionEnd = junctionFeature.getJunctionEnd();
 
-    /**
-     * Draw depth of coverage for the starting or ending flanking region
-     *
-     * @param g2D
-     * @param pixelStart
-     * @param pixelLength
-     * @param regionDepthArray
-     * @param maxPossibleArcHeight
-     * @param trackRectangle
-     * @param isPositiveStrand
-     */
-    protected void drawFlankingRegion(Graphics g2D, int pixelStart, int pixelLength, int[] regionDepthArray,
-                                      int maxPossibleArcHeight, Rectangle trackRectangle, boolean isPositiveStrand) {
-        for (int i = 0; i < pixelLength; i++) {
-            float arrayIndicesPerPixel = (float) regionDepthArray.length /
-                    (float) pixelLength;
-            int flankingRegionArrayPixelMinIndex = (int) (i * arrayIndicesPerPixel);
-            int flankingRegionArrayPixelMaxIndex = (int) ((i + 1) * arrayIndicesPerPixel);
-            flankingRegionArrayPixelMinIndex =
-                    Math.max(0, Math.min(flankingRegionArrayPixelMinIndex, regionDepthArray.length - 1));
-            flankingRegionArrayPixelMaxIndex =
-                    Math.max(0, Math.min(flankingRegionArrayPixelMaxIndex, regionDepthArray.length - 1));
+         int pixelFeatureStart = (int) Math.round((flankingStart - origin) / locScale);
+         int pixelFeatureEnd = (int) Math.round((flankingEnd - origin) / locScale);
 
-            int meanDepthThisPixel = 0;
-            for (int j = flankingRegionArrayPixelMinIndex; j <= flankingRegionArrayPixelMaxIndex; j++)
-                meanDepthThisPixel += regionDepthArray[j];
-            meanDepthThisPixel /= (flankingRegionArrayPixelMaxIndex - flankingRegionArrayPixelMinIndex + 1);
-            meanDepthThisPixel = Math.min(maxDepth, meanDepthThisPixel);
-            int pixelHeight = Math.max(maxPossibleArcHeight * meanDepthThisPixel / maxDepth, 2);
-            g2D.fillRect(pixelStart + i,
-                    (int) trackRectangle.getCenterY() + (isPositiveStrand ? -pixelHeight : 0),
-                    1, pixelHeight);
-        }
-    }
+         int pixelJunctionStart = (int) Math.round((junctionStart - origin) / locScale);
+         int pixelJunctionEnd = (int) Math.round((junctionEnd - origin) / locScale);
 
-    /**
-     * Draw a filled arc representing a single feature. The thickness and height of the arc are proportional to the
-     * depth of coverage.  Some of this gets a bit arcane -- the result of lots of visual tweaking.
-     *
-     * @param pixelFeatureStart  the starting position of the feature, whether on-screen or not
-     * @param pixelFeatureEnd    the ending position of the feature, whether on-screen or not
-     * @param pixelJunctionStart the starting position of the junction, whether on-screen or not
-     * @param pixelJunctionEnd   the ending position of the junction, whether on-screen or not
-     * @param depth              coverage depth
-     * @param trackRectangle
-     * @param context
-     * @param strand
-     * @param junctionFeature
-     * @param shouldHighlight
-     * @param featureColor       the color specified for this feature.  May be null.
-     */
-    protected void drawFeature(int pixelFeatureStart, int pixelFeatureEnd,
-                               int pixelJunctionStart, int pixelJunctionEnd, float depth,
-                               Rectangle trackRectangle, RenderContext context, Strand strand,
-                               SpliceJunctionFeature junctionFeature, boolean shouldHighlight, Color featureColor,
-                               boolean shouldShowFlankingRegions) {
+         Strand strand = junctionFeature.getStrand();
+         float depth = junctionFeature.getJunctionDepth();
+         Color featureColor = junctionFeature.getColor();
 
 
-        boolean isPositiveStrand = true;
-        // Get the feature's direction, color appropriately
-        if (strand != null && strand.equals(Strand.NEGATIVE))
-            isPositiveStrand = false;
+         boolean isPositiveStrand = true;
+         // Get the feature's direction, color appropriately
+         if (strand != null && strand.equals(Strand.NEGATIVE))
+             isPositiveStrand = false;
 
-        //If the feature color is specified, use it, except that we set our own alpha depending on whether
-        //the feature is highlighted.  Otherwise default based on strand and highlight.
-        Color color;
-        if (featureColor != null) {
-            int r = featureColor.getRed();
-            int g = featureColor.getGreen();
-            int b = featureColor.getBlue();
-            int alpha = shouldHighlight ? 255 : 140;
-            color = new Color(r, g, b, alpha);
-        } else {
-            if (isPositiveStrand)
-                color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_POS : ARC_COLOR_POS;
-            else
-                color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
-        }
+         //If the feature color is specified, use it, except that we set our own alpha depending on whether
+         //the feature is highlighted.  Otherwise default based on strand and highlight.
+         Color color;
+         if (featureColor != null) {
+             int r = featureColor.getRed();
+             int g = featureColor.getGreen();
+             int b = featureColor.getBlue();
+             int alpha = highlight ? 255 : 140;
+             color = new Color(r, g, b, alpha);
+         } else {
+             if (isPositiveStrand)
+                 color = highlight ? ARC_COLOR_HIGHLIGHT_POS : ARC_COLOR_POS;
+             else
+                 color = highlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
+         }
 
-        Graphics2D g2D = context.getGraphic2DForColor(color);
+         g2D.setColor(color);
 
-        //Height of top of an arc of maximum depth
-        int maxPossibleArcHeight = (trackRectangle.height - 1) / 2;
+         //Height of top of an arc of maximum depth
+         int maxPossibleArcHeight = (trackRectangle.height - 1) / 2;
 
-        if (shouldShowFlankingRegions) {
-            if (junctionFeature.hasFlankingRegionDepthArrays()) {
-                //draw a wigglegram of the splice junction flanking region depth of coverage
+         if (shouldShowFlankingRegions) {
+             if (junctionFeature.hasFlankingRegionDepthArrays()) {
+                 //draw a wigglegram of the splice junction flanking region depth of coverage
 
-                int startFlankingRegionPixelLength = pixelJunctionStart - pixelFeatureStart;
-                int endFlankingRegionPixelLength = pixelFeatureEnd - pixelJunctionEnd;
+                 int startFlankingRegionPixelLength = pixelJunctionStart - pixelFeatureStart;
+                 int endFlankingRegionPixelLength = pixelFeatureEnd - pixelJunctionEnd;
 
-                drawFlankingRegion(g2D, pixelFeatureStart, startFlankingRegionPixelLength,
-                        junctionFeature.getStartFlankingRegionDepthArray(), maxPossibleArcHeight,
-                        trackRectangle, isPositiveStrand);
-                drawFlankingRegion(g2D, pixelJunctionEnd + 1, endFlankingRegionPixelLength,
-                        junctionFeature.getEndFlankingRegionDepthArray(), maxPossibleArcHeight,
-                        trackRectangle, isPositiveStrand);
-            } else {
-                //Draw rectangles indicating the overlap on each side of the junction
-                int overlapRectHeight = 3;
-                int overlapRectTopX = (int) trackRectangle.getCenterY() + (isPositiveStrand ? -2 : 0);
-                if (pixelFeatureStart < pixelJunctionStart) {
-                    g2D.fillRect(pixelFeatureStart, overlapRectTopX,
-                            pixelJunctionStart - pixelFeatureStart, overlapRectHeight);
-                }
-                if (pixelJunctionEnd < pixelFeatureEnd) {
-                    g2D.fillRect(pixelJunctionEnd, overlapRectTopX,
-                            pixelFeatureEnd - pixelJunctionEnd, overlapRectHeight);
-                }
-            }
-        }
+                 drawFlankingRegion(g2D, pixelFeatureStart, startFlankingRegionPixelLength,
+                         junctionFeature.getStartFlankingRegionDepthArray(), maxPossibleArcHeight,
+                         trackRectangle, isPositiveStrand);
+                 drawFlankingRegion(g2D, pixelJunctionEnd + 1, endFlankingRegionPixelLength,
+                         junctionFeature.getEndFlankingRegionDepthArray(), maxPossibleArcHeight,
+                         trackRectangle, isPositiveStrand);
+             } else {
+                 //Draw rectangles indicating the overlap on each side of the junction
+                 int overlapRectHeight = 3;
+                 int overlapRectTopX = (int) trackRectangle.getCenterY() + (isPositiveStrand ? -2 : 0);
+                 if (pixelFeatureStart < pixelJunctionStart) {
+                     g2D.fillRect(pixelFeatureStart, overlapRectTopX,
+                             pixelJunctionStart - pixelFeatureStart, overlapRectHeight);
+                 }
+                 if (pixelJunctionEnd < pixelFeatureEnd) {
+                     g2D.fillRect(pixelJunctionEnd, overlapRectTopX,
+                             pixelFeatureEnd - pixelJunctionEnd, overlapRectHeight);
+                 }
+             }
+         }
 
-        //Create a path describing the arc, using Bezier curves. The Bezier control points for the top and
-        //bottom arcs are based on the boundary points of the rectangles containing the arcs
+         //Create a path describing the arc, using Bezier curves. The Bezier control points for the top and
+         //bottom arcs are based on the boundary points of the rectangles containing the arcs
 
-        //proportion of the maximum arc height used by a minimum-height arc
-        double minArcHeightProportion = 0.33;
+         //proportion of the maximum arc height used by a minimum-height arc
+         double minArcHeightProportion = 0.33;
 
-        int innerArcHeight = (int) (maxPossibleArcHeight * minArcHeightProportion);
-        float depthProportionOfMax = Math.min(1, depth / maxDepth);
-        int arcWidth = Math.max(1, (int) ((1 - minArcHeightProportion) * maxPossibleArcHeight * depthProportionOfMax));
-        int outerArcHeight = innerArcHeight + arcWidth;
+         int innerArcHeight = (int) (maxPossibleArcHeight * minArcHeightProportion);
+         float depthProportionOfMax = Math.min(1, depth / maxDepth);
+         int arcWidth = Math.max(1, (int) ((1 - minArcHeightProportion) * maxPossibleArcHeight * depthProportionOfMax));
+         int outerArcHeight = innerArcHeight + arcWidth;
 
 
-        //Height of bottom of the arc
-        int arcBeginY = (int) trackRectangle.getCenterY() +
-                (isPositiveStrand ? -1 : 1);
-        int outerArcPeakY = isPositiveStrand ?
-                arcBeginY - outerArcHeight :
-                arcBeginY + outerArcHeight;
-        int innerArcPeakY = isPositiveStrand ?
-                arcBeginY - innerArcHeight :
-                arcBeginY + innerArcHeight;
-        //dhmay: I don't really understand Bezier curves.  For some reason I have to put the Bezier control
-        //points farther up or down than I want the arcs to extend.  This multiplier seems about right
-        int outerBezierY = arcBeginY + (int) (1.3 * (outerArcPeakY - arcBeginY));
-        int innerBezierY = arcBeginY + (int) (1.3 * (innerArcPeakY - arcBeginY));
+         //Height of bottom of the arc
+         int arcBeginY = (int) trackRectangle.getCenterY() + (isPositiveStrand ? -1 : 1);
+         int outerArcPeakY = isPositiveStrand ? arcBeginY - outerArcHeight : arcBeginY + outerArcHeight;
+         int innerArcPeakY = isPositiveStrand ? arcBeginY - innerArcHeight : arcBeginY + innerArcHeight;
 
-        //Putting the Bezier control points slightly off to the sides of the arc 
-        int bezierXPad = Math.max(1, (pixelJunctionEnd - pixelJunctionStart) / 30);
+         //dhmay: I don't really understand Bezier curves.  For some reason I have to put the Bezier control
+         //points farther up or down than I want the arcs to extend.  This multiplier seems about right
+         int outerBezierY = arcBeginY + (int) (1.3 * (outerArcPeakY - arcBeginY));
+         int innerBezierY = arcBeginY + (int) (1.3 * (innerArcPeakY - arcBeginY));
 
-        GeneralPath arcPath = new GeneralPath();
-        arcPath.moveTo(pixelJunctionStart, arcBeginY);
-        arcPath.curveTo(pixelJunctionStart - bezierXPad, outerBezierY, //Bezier 1
-                pixelJunctionEnd + bezierXPad, outerBezierY,         //Bezier 2
-                pixelJunctionEnd, arcBeginY);        //Arc end
-        arcPath.curveTo(pixelJunctionEnd + bezierXPad, innerBezierY, //Bezier 1
-                pixelJunctionStart - bezierXPad, innerBezierY,         //Bezier 2
-                pixelJunctionStart, arcBeginY);        //Arc end
+         //Putting the Bezier control points slightly off to the sides of the arc
+         int bezierXPad = Math.max(1, (pixelJunctionEnd - pixelJunctionStart) / 30);
 
-        //Draw the arc, to ensure outline is drawn completely (fill won't do it, necessarily). This will also
-        //give the arc a darker outline
-        g2D.draw(arcPath);
-        //Fill the arc
-        g2D.fill(arcPath);
+         GeneralPath arcPath = new GeneralPath();
+         arcPath.moveTo(pixelJunctionStart, arcBeginY);
+         arcPath.curveTo(pixelJunctionStart - bezierXPad, outerBezierY, //Bezier 1
+                 pixelJunctionEnd + bezierXPad, outerBezierY,         //Bezier 2
+                 pixelJunctionEnd, arcBeginY);        //Arc end
+         arcPath.curveTo(pixelJunctionEnd + bezierXPad, innerBezierY, //Bezier 1
+                 pixelJunctionStart - bezierXPad, innerBezierY,         //Bezier 2
+                 pixelJunctionStart, arcBeginY);        //Arc end
 
-    }
+         g2D.setClip(new Rectangle(pixelJunctionStart, trackRectangle.y, pixelJunctionEnd - pixelJunctionStart, trackRectangle.height));
 
-    public int getMaxDepth() {
-        return maxDepth;
-    }
+         //Draw the arc, to ensure outline is drawn completely (fill won't do it, necessarily). This will also
+         //give the arc a darker outline
+         g2D.draw(arcPath);
+         //Fill the arc
+         g2D.fill(arcPath);
 
-    public void setMaxDepth(int maxDepth) {
-        this.maxDepth = maxDepth;
-    }
-}
+         g2D.setClip(null);
+         //g2D.drawLine(pixelJunctionStart, trackRectangle.y, pixelJunctionStart, trackRectangle.y + trackRectangle.height);
+         //g2D.drawLine(pixelJunctionEnd, trackRectangle.y, pixelJunctionEnd, trackRectangle.y + trackRectangle.height);
+
+     }
+
+
+
+     /**
+      * Draw depth of coverage for the starting or ending flanking region
+      *
+      * @param g2D
+      * @param pixelStart
+      * @param pixelLength
+      * @param regionDepthArray
+      * @param maxPossibleArcHeight
+      * @param trackRectangle
+      * @param isPositiveStrand
+      */
+     protected void drawFlankingRegion(Graphics g2D, int pixelStart, int pixelLength, int[] regionDepthArray,
+                                       int maxPossibleArcHeight, Rectangle trackRectangle, boolean isPositiveStrand) {
+         for (int i = 0; i < pixelLength; i++) {
+             float arrayIndicesPerPixel = (float) regionDepthArray.length /
+                     (float) pixelLength;
+             int flankingRegionArrayPixelMinIndex = (int) (i * arrayIndicesPerPixel);
+             int flankingRegionArrayPixelMaxIndex = (int) ((i + 1) * arrayIndicesPerPixel);
+             flankingRegionArrayPixelMinIndex =
+                     Math.max(0, Math.min(flankingRegionArrayPixelMinIndex, regionDepthArray.length - 1));
+             flankingRegionArrayPixelMaxIndex =
+                     Math.max(0, Math.min(flankingRegionArrayPixelMaxIndex, regionDepthArray.length - 1));
+
+             int meanDepthThisPixel = 0;
+             for (int j = flankingRegionArrayPixelMinIndex; j <= flankingRegionArrayPixelMaxIndex; j++)
+                 meanDepthThisPixel += regionDepthArray[j];
+             meanDepthThisPixel /= (flankingRegionArrayPixelMaxIndex - flankingRegionArrayPixelMinIndex + 1);
+             meanDepthThisPixel = Math.min(maxDepth, meanDepthThisPixel);
+             int pixelHeight = Math.max(maxPossibleArcHeight * meanDepthThisPixel / maxDepth, 2);
+             g2D.fillRect(pixelStart + i,
+                     (int) trackRectangle.getCenterY() + (isPositiveStrand ? -pixelHeight : 0),
+                     1, pixelHeight);
+         }
+     }
+
+
+     public int getMaxDepth() {
+         return maxDepth;
+     }
+
+     public void setMaxDepth(int maxDepth) {
+         this.maxDepth = maxDepth;
+     }
+ }
