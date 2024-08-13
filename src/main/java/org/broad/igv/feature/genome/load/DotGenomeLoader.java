@@ -102,7 +102,7 @@ public class DotGenomeLoader extends GenomeLoader {
             config.fastaURL = sequencePath;
             config.indexURL =  sequencePath + ".fai";
             if (sequencePath.endsWith(".gz")) {
-                config.gziIndexURL = sequencePath + "gzi";
+                config.gziIndexURL = sequencePath + ".gzi";
             }
         }
 

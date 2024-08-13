@@ -93,8 +93,6 @@ public class IGVToolsCountTest extends AbstractHeadlessTest {
     @Test
     public void testCountBEDoutWigCheckBW() throws Exception {
 
-        GenomeUtils.main(null);
-
         String inputFile = TestUtils.DATA_DIR + "bed/test2.bed";
         String fullout = TestUtils.TMP_OUTPUT_DIR + "twig.wig";
         String input = "count " + inputFile + " " + fullout + " " + genomePath;

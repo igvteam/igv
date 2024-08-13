@@ -139,7 +139,7 @@ public class Genome {
         List<Chromosome> chromosomeList = null;
         if (config.chromSizesURL != null) {
             chromosomeList = ChromSizesParser.parse(config.chromSizesURL);
-        } else if (sequence.hasChromosomes()) {
+        } else if (sequence != null && sequence.hasChromosomes()) {
             chromosomeList = sequence.getChromosomes();
         } else if (config.indexURL != null) {
             FastaIndex index = new FastaIndex(config.indexURL);
@@ -173,7 +173,7 @@ public class Genome {
 
         // Whole genome view is enabled by default if we have the chromosome information amd the
         // number of chromosomes is not too large
-        showWholeGenomeView = config.wholeGenomeView  &&
+        showWholeGenomeView = config.wholeGenomeView &&
                 chromosomeList.size() > 1 &&
                 longChromosomeNames.size() <= MAX_WHOLE_GENOME_LONG;
 
@@ -242,6 +242,7 @@ public class Genome {
             chromosomeMap.put(chromosome.getName(), chromosome);
         }
         this.longChromosomeNames = computeLongChromosomeNames();
+        this.chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
     }
 
     private void addTracks(GenomeConfig config) {
@@ -291,7 +292,9 @@ public class Genome {
                 ChromAlias aliasRecord = chromAliasSource.search(str);
                 if (aliasRecord != null) {
                     String chr = aliasRecord.getChr();
-                    chrAliasCache.put(str, chr);
+                    for (String a : aliasRecord.values()) {
+                        chrAliasCache.put(a, chr);
+                    }
                     return chr;
                 }
             } catch (IOException e) {
@@ -404,17 +407,16 @@ public class Genome {
         String chrName = getCanonicalChrName(name);
         if (chromosomeMap.containsKey(chrName)) {
             return chromosomeMap.get(chrName);
-        } else {
+        } else if (sequence != null) {
             int length = this.sequence.getChromosomeLength(chrName);
             if (length > 0) {
                 int idx = this.chromosomeMap.size();
                 Chromosome chromosome = new Chromosome(idx, chrName, length);
                 chromosomeMap.put(chrName, chromosome);
                 return chromosome;
-            } else {
-                return null;
             }
         }
+        return null;
     }
 
 
