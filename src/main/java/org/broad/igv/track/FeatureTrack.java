@@ -820,7 +820,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     protected String getZoomInMessage(String chr) {
-        return chr.equals(Globals.CHR_ALL) ? "Zoom in to see features." :
+        return chr.equals(Globals.CHR_ALL) ? "Select a chromosome and zoom in to see features." :
                 "Zoom in to see features, or right-click to increase Feature Visibility Window.";
     }
 
