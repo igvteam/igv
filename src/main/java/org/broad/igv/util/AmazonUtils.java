@@ -83,7 +83,7 @@ public class AmazonUtils {
 
 
     /**
-     * Test to see if aws credentials are avaialable, either through IGV configuration of Cognito, or from the
+     * Test to see if aws credentials are available, either through IGV configuration of Cognito, or from the
      * default provider chain.  See https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-default
      *
      * @return
