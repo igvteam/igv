@@ -382,7 +382,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         if (showFeatures) {
 
-            List<Feature> allFeatures = getAllFeatureAt(position, mouseY, frame);
+            List<Feature> allFeatures = getAllFeaturesContaining(position, mouseY, frame);
             if (allFeatures == null) {
                 return null;
             }
@@ -495,7 +495,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @param frame
      * @return
      */
-    protected List<Feature> getAllFeatureAt(double position, int y, ReferenceFrame frame) {
+    protected List<Feature> getAllFeaturesContaining(double position, int y, ReferenceFrame frame) {
         // Determine the level number (for expanded tracks)
         int featureRow = getFeatureRow(y);
         return getFeaturesAtPositionInFeatureRow(position, featureRow, frame);
@@ -549,19 +549,15 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         //If features are stacked we look at only the row.
         //If they are collapsed on top of each other, we get all features in all rows
-        List<Feature> possFeatures;
-        if (getDisplayMode() == DisplayMode.COLLAPSED) {
-            possFeatures = packedFeatures.getFeatures();
-        } else {
-            possFeatures = rows.get(featureRow).getFeatures();
-        }
+        List<Feature> possFeatures = rows.get(featureRow).getFeatures();
+
 
         List<Feature> featureList = null;
         if (possFeatures != null) {
             // give a minum 2 pixel or 1/2 bp window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
             double flanking = 4 * bpPerPixel;
-            featureList = FeatureUtils.getAllFeaturesAt(position, flanking, possFeatures);
+            featureList = FeatureUtils.getAllFeaturesContaining(position, flanking, possFeatures);
         }
         return featureList;
     }
@@ -631,7 +627,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         final ReferenceFrame referenceFrame = te.getFrame();
         if (referenceFrame != null) {
             double location = referenceFrame.getChromosomePosition(e);
-            List<Feature> features = getAllFeatureAt(location, e.getY(), referenceFrame);
+            List<Feature> features = getAllFeaturesContaining(location, e.getY(), referenceFrame);
             return (features != null && features.size() > 0) ? features.get(0) : null;
         } else {
             return null;

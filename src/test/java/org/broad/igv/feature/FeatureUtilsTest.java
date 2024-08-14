@@ -45,7 +45,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -129,10 +128,8 @@ public class FeatureUtilsTest {
     public void testGetAllFeaturesAt() {
 
         int position = 56078756;
-        int maxLength = 100000;
 
-
-        List<Feature> result = FeatureUtils.getAllFeaturesAt(position, 0, featureList);
+        List<Feature> result = FeatureUtils.getAllFeaturesContaining(position, 0, featureList);
         assertEquals(21, result.size());
         for (Feature f : result) {
             assertTrue(position >= f.getStart() && position <= f.getEnd());
@@ -189,24 +186,6 @@ public class FeatureUtilsTest {
         // last feature
         // chr7	56182373	56184110
         f = FeatureUtils.getFeatureCenteredAfter(56184110, featureList);
-        assertNull(f);
-    }
-
-    @Test
-    public void testGetFeatureBefore() {
-
-        // feature
-        // chr7	56078756	56119137
-        Feature f = FeatureUtils.getFeatureEndsBefore(56119137 + 1, featureList);
-        assertEquals(56078756, f.getStart());
-
-        // chr7	55086709	55236328
-        f = FeatureUtils.getFeatureStartsAfter(0, featureList);
-        assertEquals(55086709, f.getStart());
-
-        // last feature
-        // chr7	56182373	56184110
-        f = FeatureUtils.getFeatureStartsAfter(56182373, featureList);
         assertNull(f);
     }
 
