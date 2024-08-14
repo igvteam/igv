@@ -134,7 +134,10 @@ public class AlignmentTileLoader implements IGVEventObserver {
         boolean filterSecondaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SECONDARY_ALIGNMENTS);
         boolean filterSupplementaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS);
         ReadGroupFilter filter = ReadGroupFilter.getFilter();
-        boolean filterDuplicates = renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.FILTERED;
+        boolean filterDuplicates = renderOptions != null
+                ? renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.FILTERED
+                : prefMgr.getAsBoolean(SAM_FILTER_DUPLICATES);
+
         int qualityThreshold = prefMgr.getAsInt(SAM_QUALITY_THRESHOLD);
         int alignmentScoreTheshold = prefMgr.getAsInt(SAM_ALIGNMENT_SCORE_THRESHOLD);
 
