@@ -136,9 +136,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public enum DuplicatesOption {
-        FILTERED("filtered", true),
-        VISIBLE("visible", false),
-        TEXTURED("textured", false);
+        FILTER("filter duplicates", true),
+        SHOW("show duplicates", false),
+        TEXTURE("texture duplicates", false);
 
         public final String label;
         public final boolean filtered;
@@ -1493,8 +1493,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 return duplicatesOption;
             } else {
                 duplicatesOption = prefs.getAsBoolean(SAM_FILTER_DUPLICATES)
-                        ? DuplicatesOption.FILTERED
-                        : DuplicatesOption.VISIBLE;
+                        ? DuplicatesOption.FILTER
+                        : DuplicatesOption.SHOW;
             }
             return duplicatesOption;
         }

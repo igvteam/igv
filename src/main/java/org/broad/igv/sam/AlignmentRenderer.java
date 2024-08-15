@@ -758,7 +758,7 @@ public class AlignmentRenderer {
                     else if (block.getCigarOperator() == 'X') g = context.getGraphics2D("MISMATCH");
                 }
 
-                if(renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.TEXTURED && alignment.isDuplicate()) {
+                if(renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.TEXTURE && alignment.isDuplicate()) {
                     final Graphics2D tg = (Graphics2D) g.create();
 
                     final TexturePaint tp = getDuplicateTexture(tg.getColor());

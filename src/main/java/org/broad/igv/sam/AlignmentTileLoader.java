@@ -26,7 +26,6 @@
 package org.broad.igv.sam;
 
 import htsjdk.samtools.SAMFileHeader;
-import htsjdk.samtools.SAMTag;
 import htsjdk.samtools.util.CloseableIterator;
 import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
@@ -43,7 +42,6 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
@@ -135,7 +133,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
         boolean filterSupplementaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS);
         ReadGroupFilter filter = ReadGroupFilter.getFilter();
         boolean filterDuplicates = renderOptions != null
-                ? renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.FILTERED
+                ? renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.FILTER
                 : prefMgr.getAsBoolean(SAM_FILTER_DUPLICATES);
 
         int qualityThreshold = prefMgr.getAsInt(SAM_QUALITY_THRESHOLD);
