@@ -2,6 +2,8 @@ package org.broad.igv.sam;
 
 import htsjdk.samtools.SAMTag;
 import org.broad.igv.Globals;
+import org.broad.igv.event.AlignmentTrackEvent;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.jbrowse.CircularViewUtilities;
@@ -455,15 +457,14 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                 AlignmentTrack.GroupOption.SUPPLEMENTARY, AlignmentTrack.GroupOption.REFERENCE_CONCORDANCE,
                 AlignmentTrack.GroupOption.MOVIE, AlignmentTrack.GroupOption.ZMW, AlignmentTrack.GroupOption.READ_ORDER,
                 AlignmentTrack.GroupOption.LINKED, AlignmentTrack.GroupOption.PHASE,
-                AlignmentTrack.GroupOption.MAPPING_QUALITY
+                AlignmentTrack.GroupOption.MAPPING_QUALITY,
+                AlignmentTrack.GroupOption.DUPLICATE
         };
 
         for (final AlignmentTrack.GroupOption option : groupOptions) {
             JCheckBoxMenuItem mi = new JCheckBoxMenuItem(option.label);
             mi.setSelected(renderOptions.getGroupByOption() == option);
-            mi.addActionListener(aEvt -> {
-                groupAlignments(option, null, null);
-            });
+            mi.addActionListener(aEvt -> groupAlignments(option, null, null));
             groupMenu.add(mi);
             group.add(mi);
         }
