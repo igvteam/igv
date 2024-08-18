@@ -35,7 +35,6 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.sam.mods.BaseModificationRenderer;
@@ -55,6 +54,7 @@ import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,6 +118,7 @@ public class AlignmentRenderer {
     private static Map<String, AlignmentTrack.OrientationType> f2f1OrientationTypes;
     private static Map<String, AlignmentTrack.OrientationType> rfOrientationTypes;
     private static Map<AlignmentTrack.OrientationType, Color> typeToColorMap;
+    private static final Map<Color, TexturePaint> duplicateTextures = new HashMap<>();
 
     public static final HSLColorTable tenXColorTable1 = new HSLColorTable(30);
     public static final HSLColorTable tenXColorTable2 = new HSLColorTable(270);
@@ -325,11 +326,11 @@ public class AlignmentRenderer {
             int lastPixelDrawn = -1;
 
             for (Alignment alignment : alignments) {
-                // Compute the start and dend of the alignment in pixels
+                // Compute the start and end of the alignment in pixels
                 double pixelStart = ((alignment.getStart() - origin) / locScale);
                 double pixelEnd = ((alignment.getEnd() - origin) / locScale);
 
-                // If any any part of the feature fits in the track rectangle draw  it
+                // If any part of the feature fits in the track rectangle draw  it
                 if (pixelEnd < rowRect.x || pixelStart > rowRect.getMaxX()) {
                     continue;
                 }
@@ -757,7 +758,18 @@ public class AlignmentRenderer {
                     else if (block.getCigarOperator() == 'X') g = context.getGraphics2D("MISMATCH");
                 }
 
-                g.fill(blockShape);
+                if(renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.TEXTURE && alignment.isDuplicate()) {
+                    final Graphics2D tg = (Graphics2D) g.create();
+
+                    final TexturePaint tp = getDuplicateTexture(tg.getColor());
+                    // Add the texture paint to the graphics context.
+                    tg.setPaint(tp);
+                    tg.fill(blockShape);
+                    tg.dispose();
+                }  else {
+                    g.fill(blockShape);
+                }
+
                 if (outlineGraphics != null) {
                     outlineGraphics.draw(blockShape);
                 }
@@ -942,6 +954,35 @@ public class AlignmentRenderer {
             }
         }
 
+    }
+
+    /**
+     * get a texture to apply to duplicate reads, caches the created textures according to their color
+     * @param baseColor the color to render the read
+     * @return a texture matching the base color with shading
+     */
+    private TexturePaint getDuplicateTexture(Color baseColor) {
+        return duplicateTextures.computeIfAbsent(baseColor, color -> {
+            BufferedImage texture = new BufferedImage(5, 5, BufferedImage.TYPE_INT_RGB);
+            Graphics2D big = texture.createGraphics();
+            //Render into the BufferedImage graphics to create the texture
+            big.setColor(baseColor);
+            big.fillRect(0, 0, 5, 5);
+
+            final Color darker = baseColor.darker();
+            big.setColor(darker);
+            // hash pattern, probably better to save it as a bitmap somewhere
+            big.drawLine(0, 2, 0, 3);
+            big.drawLine(1, 3, 1, 4);
+            big.drawLine(2, 4, 2, 4);
+            big.drawLine(2, 0, 2, 0);
+            big.drawLine(3, 0, 3, 1);
+            big.drawLine(4, 1, 4, 2);
+            big.dispose();
+            // Create a texture paint from the buffered image
+            Rectangle r = new Rectangle(0, 0, 5, 5);
+            return new TexturePaint(texture, r);
+        });
     }
 
     private static void drawClippedEnds(final Graphics2D g, final int[] xPoly, final int[] yPoly,
