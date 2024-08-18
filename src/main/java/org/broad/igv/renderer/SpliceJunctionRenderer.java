@@ -35,7 +35,6 @@
  import org.broad.igv.feature.SpliceJunctionFeature;
  import org.broad.igv.feature.Strand;
  import org.broad.igv.prefs.Constants;
- import org.broad.igv.prefs.IGVPreferences;
  import org.broad.igv.prefs.PreferencesManager;
  import org.broad.igv.track.FeatureTrack;
  import org.broad.igv.track.RenderContext;
@@ -101,7 +100,7 @@
                      // If any part of the feature fits in the track rectangle draw it
                      if (junctionFeature.getEnd() > origin && junctionFeature.getStart() < end) {
                          boolean shouldHighlight = junctionFeature.isSameJunction(selectedFeature);
-                         drawFeature(junctionFeature, shouldShowFlankingRegions, shouldHighlight, origin, locScale, trackRectangle, g2D);
+                         drawFeature(junctionFeature, shouldShowFlankingRegions, shouldHighlight, origin, locScale, trackRectangle, track, g2D);
                      }
                  }
 
@@ -126,7 +125,7 @@
       * @param g2D
       */
      protected void drawFeature(SpliceJunctionFeature junctionFeature, boolean shouldShowFlankingRegions,
-                                boolean highlight, double origin, double locScale, Rectangle trackRectangle, Graphics2D g2D) {
+                                boolean highlight, double origin, double locScale, Rectangle trackRectangle, Track track, Graphics2D g2D) {
 
          int flankingStart = junctionFeature.getStart();
          int flankingEnd = junctionFeature.getEnd();
@@ -150,20 +149,25 @@
          if (strand != null && strand.equals(Strand.NEGATIVE))
              isPositiveStrand = false;
 
-         //If the feature color is specified, use it, except that we set our own alpha depending on whether
-         //the feature is highlighted.  Otherwise default based on strand and highlight.
-         Color color;
-         if (featureColor != null) {
-             int r = featureColor.getRed();
-             int g = featureColor.getGreen();
-             int b = featureColor.getBlue();
-             int alpha = highlight ? 255 : 140;
-             color = new Color(r, g, b, alpha);
-         } else {
-             if (isPositiveStrand)
+         /*
+            Choose the feature color:
+            1. Check if the user specified a positive / negative track color
+            2. Check if the feature has its own color
+            3. Use the default
+            We modify the alpha value of the chosen color to indicate if it is highlighted
+          */
+         final Color color;
+         final Color trackColor = isPositiveStrand ? track.getExplicitColor() : track.getExplicitAltColor();
+         if( trackColor != null ) {
+             color = adjustAlpha(trackColor, highlight);
+         } else if (featureColor != null) {
+             color = adjustAlpha(featureColor, highlight);
+         }  else {
+             if (isPositiveStrand) {
                  color = highlight ? ARC_COLOR_HIGHLIGHT_POS : ARC_COLOR_POS;
-             else
-                 color = highlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
+             } else {
+                color = highlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
+             }
          }
 
          g2D.setColor(color);
@@ -247,6 +251,18 @@
 
      }
 
+     /**
+      * @return  a variant of the input color with a different alpha depending on if it is a highlight color or not
+      */
+     private static Color adjustAlpha(final Color featureColor, final boolean highlight) {
+         Color color;
+         int r = featureColor.getRed();
+         int g = featureColor.getGreen();
+         int b = featureColor.getBlue();
+         int alpha = highlight ? 255 : 140;
+         color = new Color(r, g, b, alpha);
+         return color;
+     }
 
 
      /**

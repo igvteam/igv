@@ -94,7 +94,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         this.dataManager = dataManager;
         this.dataManager.subscribe(this);
         this.alignmentTrack = alignmentTrack;
-        this.strandOption = ignoreStrand;
+        SpliceJunctionTrack.strandOption = ignoreStrand;
     }
 
     public SpliceJunctionTrack() {
