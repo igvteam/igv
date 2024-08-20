@@ -414,7 +414,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 });
             }
         } else if (event instanceof ViewChange viewChange) {
-            if(viewChange.type == ViewChange.Type.LocusChange && !viewChange.panning) {
+            if(viewChange.type == ViewChange.Type.LocusChange && !viewChange.panning && getDisplayMode() == DisplayMode.FULL) {
                 packAlignments();
             }
         }
