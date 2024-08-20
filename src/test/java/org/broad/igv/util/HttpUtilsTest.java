@@ -66,6 +66,7 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
         HttpURLConnection conn = null;
         try {
             conn = (HttpURLConnection) (HttpUtils.createURL(broadURLString)).openConnection();
+            conn.setRequestProperty("User-Agent", "IGV");
             String contentLength = conn.getHeaderField("Content-length");
             assertEquals("52330665", contentLength);
 

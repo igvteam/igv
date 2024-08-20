@@ -43,8 +43,8 @@ import static junit.framework.Assert.assertTrue;
 
 public class IGVReferenceSourceTest {
 
-    public static final String FASTA_URL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa";
-    public static final String COMPRESSED_FASTA_URL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.gz";
+    public static final String FASTA_URL = "https://igv-genepattern-org.s3.amazonaws.com/genomes/seq/hg38/hg38.fa";
+    public static final String COMPRESSED_FASTA_URL = "https://igv-genepattern-org.s3.amazonaws.com/genomes/seq/hg38/hg38.fa.gz";
     public static final String EXPECTED_REFERENCE_BASES = "AAACCCAGGGCAAAGAATCTGGCCCTA"; //bases at 22:27198875-271988902
 
     @Before

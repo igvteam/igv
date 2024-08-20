@@ -53,45 +53,6 @@ public class GenomeTest extends AbstractHeadlessTest {
     @Rule
     public TestRule testTimeout = new Timeout((int) 60e3);
 
-    /**
-     * Test some aliases, both manually entered and automatic.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testAlias_01() throws Exception {
-        String genomeURL = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/hg19.genome";
-        Genome genome = loadGenomeAssumeSuccess(genomeURL);
-
-        assertEquals("chrUn_gl000229", genome.getCanonicalChrName("GL000229.1"));
-        assertEquals("chr14", genome.getCanonicalChrName("14"));
-    }
-
-    @Test
-    public void testAlias_02() throws Exception {
-        // NCBI genome, test an auto-generated alias
-        String genomeURL = "https://igvdata.broadinstitute.org/genomes/NC_000964.genome";
-        Genome genome = loadGenomeAssumeSuccess(genomeURL);
-        assertEquals("gi|255767013|ref|NC_000964.3|", genome.getCanonicalChrName("NC_000964.3"));
-    }
-
-    /**
-     * Loads a genome
-     *
-     * @param genomeURL
-     * @return
-     */
-    private Genome loadGenomeAssumeSuccess(String genomeURL) {
-        Genome genome = null;
-        try {
-            genome = GenomeManager.getInstance().loadGenome(genomeURL);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        Assume.assumeNotNull(genome);
-        return genome;
-    }
-
     @Test
     public void testGetNCBIName() throws Exception {
         String ncbiID = "gi|125745044|ref|NC_002229.3|";

@@ -36,27 +36,3 @@ public class JsonGenomeLoaderTest {
     public void loadDescriptor() {
     }
 }
-
-
-/*
-{
-  "id": "hg38",
-  "name": "Human (GRCh38/hg38)",
-  "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa",
-  "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.fai",
-  "cytobandURL": "https://s3.amazonaws.com/igv.org.genomes/hg38/annotations/cytoBandIdeo.txt.gz",
-  "aliasURL": "https://s3.amazonaws.com/igv.org.genomes/hg38/hg38_alias.tab",
-  "tracks": [
-    {
-      "name": "Refseq Genes",
-      "format": "refgene",
-      "url": "https://s3.amazonaws.com/igv.org.genomes/hg38/ncbiRefSeq.sorted.txt.gz",
-      "indexURL": "https://s3.amazonaws.com/igv.org.genomes/hg38/ncbiRefSeq.sorted.txt.gz.tbi",
-      "visibilityWindow": -1,
-      "removable": false,
-      "order": 1000000
-    }
-  ],
-  "chromosomeOrder": "chr1, chr2, chr3, chr4, chr5, chr6, chr7, chr8, chr9, chr10, chr11, chr12, chr13, chr14, chr15, chr16, chr17, chr18, chr19, chr20, chr21, chr22, chrX, chrY"
-}
- */

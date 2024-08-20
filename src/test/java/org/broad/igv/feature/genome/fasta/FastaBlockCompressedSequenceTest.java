@@ -15,7 +15,7 @@ public class FastaBlockCompressedSequenceTest {
     @Test
     public void findBlockContaining() throws Exception {
 
-        String fasta = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.gz";
+        String fasta = "https://igv-genepattern-org.s3.amazonaws.com/genomes/seq/hg38/hg38.fa.gz";
 
         FastaBlockCompressedSequence seq = new FastaBlockCompressedSequence(fasta);
 
@@ -28,18 +28,18 @@ public class FastaBlockCompressedSequenceTest {
     @Test
     public void compareSequences() throws Exception {
 
-        String sequencePath = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa";
-        String compressedSequencePath = "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.gz";
+        String sequencePath = "https://igv-genepattern-org.s3.amazonaws.com/genomes/seq/hg38/hg38.fa";
+        String compressedSequencePath = "https://igv-genepattern-org.s3.amazonaws.com/genomes/seq/hg38/hg38.fa.gz";
 
         Sequence fastaSequence = new FastaIndexedSequence(sequencePath);
         Sequence bgSequence = new FastaBlockCompressedSequence(compressedSequencePath);
 
-        int len1 = fastaSequence.getChromosomeLength("chr12");
         int len2 = bgSequence.getChromosomeLength("chr12");
+        int len1 = fastaSequence.getChromosomeLength("chr12");
         assertEquals(len1, len2);
 
+        byte[] seq2 = bgSequence.getSequence("chr12", 50000, 51000);
         byte[] seq1 = fastaSequence.getSequence("chr12", 50000, 51000);
-        byte[] seq2 = fastaSequence.getSequence("chr12", 50000, 51000);
 
         for (int i = 0; i < seq1.length; i++) {
             byte b1 = seq1[i];
