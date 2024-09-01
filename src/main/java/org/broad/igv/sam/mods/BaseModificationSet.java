@@ -53,7 +53,7 @@ public class BaseModificationSet {
     public String valueString(int pos) {
         int l = (int) (100.0 * Byte.toUnsignedInt(likelihoods.get(pos)) / 255);
         return "Base modification: " +
-                ((codeValues.containsKey(modification)) ? codeValues.get(modification) : "Uknown") +  " (" + l + "%)";
+                ((codeValues.containsKey(modification)) ? codeValues.get(modification) : modification) +  " (" + l + "%)";
     }
 
     static Map<String, String> codeValues;
