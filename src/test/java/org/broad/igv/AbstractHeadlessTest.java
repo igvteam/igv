@@ -58,14 +58,14 @@ public class AbstractHeadlessTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         setUpHeadless();
-        GenomeManager.getInstance().setCurrentGenome(null);
+        GenomeManager.getInstance().setCurrentGenomeForTest(null);
         genome = TestUtils.loadGenome();
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
         TestUtils.clearOutputDir();
-        GenomeManager.getInstance().setCurrentGenome(null);
+        GenomeManager.getInstance().setCurrentGenomeForTest(null);
     }
 
     @Before

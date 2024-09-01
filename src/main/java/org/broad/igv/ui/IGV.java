@@ -62,7 +62,6 @@ import org.broad.igv.session.autosave.AutosaveTimerTask;
 import org.broad.igv.session.autosave.SessionAutosaveManager;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.WaitCursorManager.CursorToken;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.dnd.GhostGlassPane;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
@@ -1942,21 +1941,26 @@ public class IGV implements IGVEventObserver {
                     } catch (Exception e) {
                         MessageUtils.showErrorMessage("Error loading genome " + genomeId + "<br/>" + e.getMessage(), e);
                         genomeLoaded = false;
-                     }
+                    }
 
                     if (!genomeLoaded) {
-                        // If the error is with the default genome try refreshing it.
-                        if(genomeId.equals(GenomeListManager.DEFAULT_GENOME.getId())) {
-                            GenomeManager.getInstance().refreshHostedGenome(genomeId);
-                        }
+                        Genome genome = Genome.nullGenome();
+                        GenomeManager.getInstance().setCurrentGenome("", genome);
 
-                        genomeId = GenomeListManager.DEFAULT_GENOME.getId();
-                        try {
-                            GenomeManager.getInstance().loadGenomeById(genomeId);
-                        } catch (IOException e) {
-                            MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                            log.error("Error loading genome: " + genomeId, e);
-                        }
+
+                        //GenomeManager.getInstance().setCurrentGenome(Genome.NoneGenome());
+                        // If the error is with the default genome try refreshing it.
+//                        if(genomeId.equals(GenomeListManager.DEFAULT_GENOME.getId())) {
+//                            GenomeManager.getInstance().refreshHostedGenome(genomeId);
+//                        }
+//
+//                        genomeId = GenomeListManager.DEFAULT_GENOME.getId();
+//                        try {
+//                            GenomeManager.getInstance().loadGenomeById(genomeId);
+//                        } catch (IOException e) {
+//                            MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+//                            log.error("Error loading genome: " + genomeId, e);
+//                        }
                     }
                 }
 

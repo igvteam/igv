@@ -55,6 +55,7 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ucsc.Hub;
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
 
@@ -242,6 +243,7 @@ public class Genome {
             chromosomeMap.put(chromosome.getName(), chromosome);
         }
         this.longChromosomeNames = computeLongChromosomeNames();
+        this.homeChromosome = this.longChromosomeNames.size() > 1 ? Globals.CHR_ALL : chromosomeNames.get(0);
         this.chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
     }
 
@@ -623,18 +625,15 @@ public class Genome {
     }
 
 
-    // TODO A hack (obviously),  we need to record a species in the genome definitions to support old style
-    // blat servers.
+    // Species mapping to support old style blat servers.  This should not be needed for current IGV releases.
     private static Map<String, String> ucscSpeciesMap;
 
     private static synchronized String getSpeciesForID(String id) {
         if (ucscSpeciesMap == null) {
             ucscSpeciesMap = new HashMap<>();
 
-            InputStream is = null;
+            try (InputStream is = Genome.class.getResourceAsStream("speciesMapping.txt")) {
 
-            try {
-                is = Genome.class.getResourceAsStream("speciesMapping.txt");
                 BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
                 String nextLine;
@@ -649,14 +648,7 @@ public class Genome {
                 }
             } catch (IOException e) {
                 log.error("Error reading species mapping table", e);
-            } finally {
-                if (is != null) try {
-                    is.close();
-                } catch (IOException e) {
-                    log.error("", e);
-                }
             }
-
         }
 
         for (Map.Entry<String, String> entry : ucscSpeciesMap.entrySet()) {
@@ -683,18 +675,6 @@ public class Genome {
 
     public List<ResourceLocator> getAnnotationResources() {
         return annotationResources;
-    }
-
-    /**
-     * Mock genome for unit tests
-     */
-
-    private Genome(String id) {
-        this.id = id;
-    }
-
-    public boolean getShowWholeGenomeView() {
-        return showWholeGenomeView;
     }
 
     public Map<String, Liftover> getLiftoverMap() {
@@ -809,4 +789,12 @@ public class Genome {
         this.hub = hub;
     }
 
+    public synchronized static Genome nullGenome() {
+        if(nullGenome == null) {
+            nullGenome = new Genome("None", Arrays.asList(new Chromosome(0, "", 0)));
+        }
+        return  nullGenome;
+    }
+
+    private static Genome nullGenome = null;
 }

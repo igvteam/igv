@@ -13,11 +13,13 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -35,17 +37,16 @@ public class JsonGenomeLoader extends GenomeLoader {
     @Override
     public Genome loadGenome() throws IOException {
 
-        BufferedReader reader = null;
 
-        try {
-            reader = ParsingUtils.openBufferedReader(genomePath);
-            String jsonString = ParsingUtils.readContentsAsString(genomePath);
+        try (InputStream is = ParsingUtils.openInputStream(genomePath + "..")){
+
+            String jsonString = ParsingUtils.readContentsFromStream(is);
 
             if (jsonString.contains("chromosomeOrder")) {
                 jsonString = fixChromosomeOrder(jsonString);
             }
 
-            GenomeConfig genomeConfig =  GenomeConfig.fromJson (jsonString);
+            GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
 
             fixPaths(genomeConfig);
 
@@ -68,8 +69,6 @@ public class JsonGenomeLoader extends GenomeLoader {
 
             return genome;
 
-        } finally {
-            reader.close();
         }
     }
 
@@ -168,10 +167,9 @@ public class JsonGenomeLoader extends GenomeLoader {
     }
 
     private String stripQuotes(String str) {
-        if(str.startsWith("\"")) {
+        if (str.startsWith("\"")) {
             return str.substring(1, str.length() - 1);  // Assume also ends with
-        }
-        else {
+        } else {
             return str;
         }
     }
