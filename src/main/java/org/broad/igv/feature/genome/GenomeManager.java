@@ -234,15 +234,19 @@ public class GenomeManager {
         if (IGV.hasInstance()) {
             IGV.getInstance().goToLocus(newGenome.getHomeChromosome()); //  newGenome.getDefaultPos());
             FrameManager.getDefaultFrame().setChromosomeName(newGenome.getHomeChromosome(), true);
-
             loadGenomeAnnotations(newGenome);
             IGV.getInstance().resetFrames();
             IGV.getInstance().getSession().clearHistory();
 
-            PreferencesManager.getPreferences().setLastGenome(newGenome.getId());
+            if(newGenome != Genome.nullGenome()) {
+                // This should only occur on startup failure
+                PreferencesManager.getPreferences().setLastGenome(newGenome.getId());
+            }
+
             if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
                 CircularViewUtilities.changeGenome(newGenome);
             }
+
             IGVEventBus.getInstance().post(new GenomeChangeEvent(newGenome));
         }
     }
