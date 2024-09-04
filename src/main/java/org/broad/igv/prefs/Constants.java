@@ -292,6 +292,7 @@ final public class Constants {
 
     // OAuth provisioning
     public static final String PROVISIONING_URL = "PROVISIONING.URL";
+    public static final String PROVISIONING_URL_DEFAULT = "PROVISIONING_URL_DEFAULT";
 
     // JBrowse circular view integration
     public static final String CIRC_VIEW_ENABLED = "CIRC_VIEW_ENABLED";

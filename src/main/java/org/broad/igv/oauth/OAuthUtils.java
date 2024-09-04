@@ -30,6 +30,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.MessageUtils;
@@ -124,7 +125,7 @@ public class OAuthUtils {
             try {
                 log.info("Loading Google oAuth properties");
                 googleProvider = loadDefaultOauthProperties();
-                if (IGVMenuBar.getInstance() != null) {
+                if (googleProvider != null && IGVMenuBar.getInstance() != null) {
                     IGVMenuBar.getInstance().enableGoogleMenu(true);
                 }
             } catch (IOException e) {
@@ -142,10 +143,15 @@ public class OAuthUtils {
      * @throws IOException
      */
     private OAuthProvider loadDefaultOauthProperties() throws IOException {
-        String json = loadAsString(PROPERTIES_URL);
-        JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(json).getAsJsonObject();
-        return parseProviderObject(obj);
+        String propertiesURL = PreferencesManager.getPreferences().get(Constants.PROVISIONING_URL_DEFAULT);
+        if(propertiesURL != null && propertiesURL.length() > 0) {
+            String json = loadAsString(propertiesURL);
+            JsonParser parser = new JsonParser();
+            JsonObject obj = parser.parse(json).getAsJsonObject();
+            return parseProviderObject(obj);
+        } else {
+            return null;
+        }
     }
 
     /**
