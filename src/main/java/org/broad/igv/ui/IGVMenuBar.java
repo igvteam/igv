@@ -187,9 +187,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // by loading a protected Google resource
         try {
             googleMenu = createGoogleMenu();
-            boolean enabled = PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU);
-            enableGoogleMenu(enabled);
-            menus.add(googleMenu);
+            if(googleMenu != null) {
+                boolean enabled = PreferencesManager.getPreferences().getAsBoolean(ENABLE_GOOGLE_MENU);
+                enableGoogleMenu(enabled);
+                menus.add(googleMenu);
+            }
         } catch (IOException e) {
             log.error("Error creating google menu: " + e.getMessage());
         }
@@ -1049,12 +1051,20 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private JMenu createGoogleMenu() {
 
+        final OAuthProvider googleProvider = OAuthUtils.getInstance().getGoogleProvider();
+        if(googleProvider == null) {
+            log.error("Error creating google oauth provider");
+            return null;
+        }
+
+
         googleMenu = new JMenu("Google");
 
         final JMenuItem login = new JMenuItem("Login ... ");
+
         login.addActionListener(e -> {
             try {
-                OAuthUtils.getInstance().getGoogleProvider().openAuthorizationPage();
+                googleProvider.openAuthorizationPage();
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage("Error fetching oAuth tokens.  See log for details", ex);
                 log.error("Error fetching oAuth tokens", ex);
@@ -1065,7 +1075,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         final JMenuItem logout = new JMenuItem("Logout ");
         logout.addActionListener(e -> {
-            OAuthUtils.getInstance().getGoogleProvider().logout();
+            googleProvider.logout();
             GoogleUtils.setProjectID(null);
         });
         googleMenu.add(logout);
@@ -1077,10 +1087,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         googleMenu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
-                OAuthProvider oauth = OAuthUtils.getInstance().getGoogleProvider();
-                boolean loggedIn = oauth.isLoggedIn();
-                if (loggedIn && oauth.getCurrentUserName() != null) {
-                    login.setText(oauth.getCurrentUserName());
+                boolean loggedIn = googleProvider.isLoggedIn();
+                if (loggedIn && googleProvider.getCurrentUserName() != null) {
+                    login.setText(googleProvider.getCurrentUserName());
                 } else {
                     login.setText("Login ...");
                 }
@@ -1112,7 +1121,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
      * @throws IOException
      */
     public void enableGoogleMenu(boolean enable) throws IOException {
-        googleMenu.setVisible(enable);
+        if(googleMenu != null) {
+            googleMenu.setVisible(enable);
+        }
     }
 
 //    public void enableRemoveGenomes() {
