@@ -143,8 +143,14 @@ public class Genome {
         } else if (sequence != null && sequence.hasChromosomes()) {
             chromosomeList = sequence.getChromosomes();
         } else if (config.indexURL != null) {
-            FastaIndex index = new FastaIndex(config.indexURL);
-            chromosomeList = index.getChromosomes();
+            try {
+                // If chromosome info is not otherwise available try to parse the fasta index, if available.  This
+                // situation can occur if a twoBitURL is defined but chromSizes is not.
+                FastaIndex index = new FastaIndex(config.indexURL);
+                chromosomeList = index.getChromosomes();
+            } catch (IOException e) {
+                log.error("Error loading fasta index", e);
+            }
         }
 
         // If list of chromosomes is specified use it for the whole genome view, and to prepopulate the
@@ -225,7 +231,7 @@ public class Genome {
 
     /**
      * Alternate constructor for defining a minimal genome, usually from parsing a chrom.sizes file.  Used to
-     * create mock genomes for igvtools and testing.
+     * create mock genomes for igvtools and for testing.
      *
      * @param id
      * @param chromosomes
