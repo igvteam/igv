@@ -110,7 +110,11 @@ public class SpliceJunctionHelper {
 
         // Determine strand.  First check for explicit attribute.
         boolean isNegativeStrand;
-        Object strandAttr = alignment.getAttribute("XS");
+        Object strandAttr = alignment.getAttribute("TS");
+        if(strandAttr == null) {
+            strandAttr = alignment.getAttribute("XS");   // Older convention
+        }
+
         if (strandAttr != null) {
             isNegativeStrand = strandAttr.toString().charAt(0) == '-';
         } else {
