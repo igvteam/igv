@@ -87,7 +87,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     static {
         ColorPalette palette = ColorUtilities.getDefaultPalette();
-        plotColors = Arrays.asList(palette.getColors());
+        plotColors = Arrays.asList(palette.colors());
     }
 
     public SashimiPlot(ReferenceFrame iframe, Collection<AlignmentTrack> alignmentTracks, FeatureTrack geneTrack) {

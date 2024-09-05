@@ -29,58 +29,111 @@ import org.broad.igv.Globals;
 
 import java.awt.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A lookup table mapping symbols (strings) -> color.  Can be initiated with our without a palette.  If
  * a palette is used colors are selected sequentially from the palette as needed until it is exhausted.
  * <p/>
  *
+ * If a default color is supplied then it is used for all unknown values
  * @author jrobinso
  * @date Feb 26, 2010
  */
-public class PaletteColorTable implements ColorTable {
+public class PaletteColorTable extends ColorTable {
 
-    LinkedHashMap<String, Color> colorMap;
-    Color[] colors;
-    Color defaultColor;
+
+    private static final String PALETTE_KEY = "PALETTE=";
+    private static final String DEFAULT_KEY = "DEFAULT=";
+    private static final Color NULL_COLOR = Color.LIGHT_GRAY;
+    public static final String SERIALIZATION_ID = "PaletteColorTable";
+
+    //list of predefined colors to use
+    private final ColorPalette palette;
+    private final Color defaultColor;
 
     public PaletteColorTable() {
-        colorMap = new LinkedHashMap();
+        this(null, null);
     }
 
     public PaletteColorTable(Color defaultColor) {
-        this.defaultColor = defaultColor;
-        colorMap = new LinkedHashMap();
+        this(null, defaultColor);
     }
 
     public PaletteColorTable(ColorPalette palette) {
-        if (palette != null) {
-            this.colors = palette.getColors();
-        }
-        colorMap = new LinkedHashMap();
+        this(palette, null);
     }
+
+    private PaletteColorTable(ColorPalette palette, Color defaultColor){
+        this.palette = palette;
+        this.defaultColor = defaultColor;
+    }
+
 
     public void put(String key, Color c) {
         colorMap.put(key.toLowerCase(), c);
     }
 
+    @Override
     public Color get(String key) {
-        key =key.toLowerCase();
-        Color c = colorMap.get(key);
-        if (c == null) {
-            if(defaultColor != null) {
-                c = defaultColor;
+        if(key == null) {
+             return NULL_COLOR;
+        }
+        return super.get(key.toLowerCase());
+    }
+
+    @Override
+    protected Color computeColor(String key) {
+        final Color c;
+        if(defaultColor != null) {
+            c = defaultColor;
+        } else {
+            final int colorIdx = colorMap.size();
+            if (palette != null && colorIdx < palette.colors().length) {
+                c = palette.colors()[colorIdx];
             } else {
-                final int colorIdx = colorMap.size();
-                if (colors != null && colorIdx < colors.length) {
-                    c = colors[colorIdx];
-                } else {
-                    c = ColorUtilities.randomColor(colorIdx);
-                }
-                colorMap.put(key, c);
+                c = ColorUtilities.randomColor(colorIdx);
             }
         }
         return c;
+    }
+
+    @Override
+    public String asString(){
+        StringBuilder sb = new StringBuilder(SERIALIZATION_ID+";");
+        sb.append(defaultColor == null ? "" : DEFAULT_KEY +ColorUtilities.colorToString(defaultColor) + ";");
+        sb.append(palette == null ? "" : PALETTE_KEY + palette.name() + ";");
+        sb.append(getMapAsString());
+        return sb.toString();
+    }
+
+    public PaletteColorTable(String string){
+        try {
+            String[] tokens = Globals.semicolonPattern.split(string);
+            int leadingTokens = 1;
+            if (tokens.length >= leadingTokens + 1 && tokens[leadingTokens].startsWith(DEFAULT_KEY)) {
+                String[] split = Globals.equalPattern.split(tokens[1]);
+                defaultColor = ColorUtilities.stringToColor(split[1]);
+                leadingTokens++;
+            } else {
+                defaultColor = null;
+            }
+
+            if (tokens.length >= leadingTokens + 1 && tokens[leadingTokens].startsWith(PALETTE_KEY)) {
+                String[] split = Globals.equalPattern.split(tokens[1]);
+                palette = ColorUtilities.getPalette(split[1]);
+                leadingTokens++;
+            } else {
+                palette = null;
+            }
+
+            for (int i = leadingTokens; i < tokens.length; i++) {
+                String[] kv = Globals.equalPattern.split(tokens[i]);
+                colorMap.put(kv[0], ColorUtilities.stringToColor(kv[1]));
+            }
+        } catch( Exception e){
+            throw new IllegalArgumentException("Could not parse palette color string: " + string, e);
+        }
     }
 
     public Collection<String> getKeys() {
@@ -91,25 +144,17 @@ public class PaletteColorTable implements ColorTable {
         return colorMap.entrySet();
     }
 
+    public ColorPalette getPalette() {
+        return palette;
+    }
 
     public String getMapAsString() {
-        StringBuffer buf = new StringBuffer();
-        boolean firstEntry = true;
-        for (Map.Entry<String, Color> entry : colorMap.entrySet()) {
-            if (!firstEntry) {
-                buf.append(";");
-            }
-            String cs = ColorUtilities.colorToString(entry.getValue());
-            buf.append(entry.getKey());
-            buf.append("=");
-            buf.append(cs);
-            firstEntry = false;
-        }
-        return buf.toString();
+        return colorMap.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + ColorUtilities.colorToString(entry.getValue()))
+                .collect(Collectors.joining(";"));
     }
 
     public void restoreMapFromString(String string) {
-
         if (string == null || string.isEmpty()) return;
         colorMap.clear();
         String[] tokens = Globals.semicolonPattern.split(string);
@@ -120,32 +165,7 @@ public class PaletteColorTable implements ColorTable {
     }
 
 
-    /**
-     * Return object state as a map of key-value string pairs
-     *
-     * @return
-     */
-    public Map<String, String> getPersistentState() {
-        Map<String, String> state = new HashMap<String, String>();
-        if (colorMap != null && colorMap.size() > 0) {
-            state.put("colorMap", getMapAsString());
-        }
-        return state;
-    }
-
-    /**
-     * Restore object state from a map of key-value string pairs
-     *
-     * @param values
-     */
-    public void restorePersistentState(Map<String, String> values) {
-        String colorMapString = values.get("colorMap");
-        if (colorMapString != null) {
-            restoreMapFromString(colorMapString);
-        }
-    }
-
-    public LinkedHashMap<String,Color> getColorMap() {
+    public Map<String,Color> getColorMap() {
         return colorMap;
     }
 }

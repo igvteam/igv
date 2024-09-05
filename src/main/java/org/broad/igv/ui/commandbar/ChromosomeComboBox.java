@@ -10,7 +10,6 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by jrobinso on 7/6/17.
@@ -40,8 +39,7 @@ public class ChromosomeComboBox extends JComboBox {
 
         UIUtilities.invokeAndWaitOnEventThread(() -> {
 
-            List<String> allChromosomeNames = genome.getChromosomeNames().stream().map(chr -> genome.getChromosomeDisplayName(chr)).collect(Collectors.toList());
-
+            List<String> allChromosomeNames = genome.getChromosomeNames();
             if (allChromosomeNames.size() > 1) {
                 this.setVisible(true);
 

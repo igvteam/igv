@@ -277,7 +277,7 @@ public class RulerPanel extends JPanel {
             if (dw > 5) {
                 int center = x + dw / 2;
 
-                String displayName = genome.getChromosomeDisplayName(chrName);
+                String displayName = chrName;
                 if (chrName.startsWith("gi|")) {
                     displayName = Genome.getNCBIName(chrName);
                 } else if (chrName.length() < 6) {

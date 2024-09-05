@@ -278,7 +278,7 @@ public class VCFVariant implements Variant {
      * Return the methylation rate as annoted with a MR attribute.  A value of -1 indicates
      * no annotation (unknown methylation rate).  This option is only applicable for dna methylation data.
      */
-    public double getMethlationRate() {
+    public double getMethylationRate() {
         if (Double.isNaN(methylationRate)) {
             computeMethylationRate();
         }
@@ -305,7 +305,7 @@ public class VCFVariant implements Variant {
         return genotypeMap.get(sample);
     }
 
-    public Collection<String> getFilters() {
+    public Set<String> getFilters() {
         return variantContext.getFilters();
     }
 

@@ -1110,13 +1110,8 @@ public class IGVSessionReader implements SessionReader {
      *
      * @param className
      * @return
-     * @throws ClassNotFoundException
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     * @throws java.lang.reflect.InvocationTargetException
-     * @throws NoSuchMethodException
      */
-    private Track createTrack(String className, Element element) throws ClassNotFoundException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
+    private Track createTrack(String className, Element element) {
 
         if (className.contains("BasePairTrack")) {
             return new BasePairTrack();
@@ -1163,7 +1158,7 @@ public class IGVSessionReader implements SessionReader {
         } else {
             log.warn("Unrecognized class name: " + className);
             try {
-                Class clazz = SessionElement.getClass(className);
+                Class<?> clazz = SessionElement.getClass(className);
                 return (Track) clazz.getConstructor().newInstance();
             } catch (Exception e) {
                 log.error("Error attempting Track creation ", e);

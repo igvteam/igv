@@ -6,6 +6,7 @@ public class ColorByTagValueList {
 
     public boolean handlesTag(final String tag) {
 
+
         // must contain list prefix
         return tag.contains(":");
     }

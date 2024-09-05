@@ -26,7 +26,7 @@ public class DSITrack extends FeatureTrack {
     @Override
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
-        List<Feature> allFeatures = getAllFeaturesContaining(position, mouseY, frame);
+        List<Feature> allFeatures = getAllFeatureAt(position, mouseY, frame);
         if (allFeatures == null) {
             return null;
         }

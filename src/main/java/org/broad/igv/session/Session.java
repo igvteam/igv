@@ -71,7 +71,7 @@ public class Session implements IGVEventObserver {
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
     private TrackFilter filter;
     private HashMap<String, String> preferences;
-    private HashMap<TrackType, ContinuousColorScale> colorScales;
+    private HashMap<TrackType, ContinuousColorScale> trackColorScales;
     private boolean removeEmptyPanels = false;
     double[] dividerFractions = null;
 
@@ -108,7 +108,7 @@ public class Session implements IGVEventObserver {
         this.regionsOfInterest = new LinkedHashMap<>();
         this.regionsOfInterestObservable = new ObservableForObject<>(regionsOfInterest);
         this.preferences = new HashMap<>();
-        this.colorScales = new HashMap<>();
+        this.trackColorScales = new HashMap<>();
         this.hiddenAttributes = null;
         this.history = new History(100);
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
@@ -195,12 +195,12 @@ public class Session implements IGVEventObserver {
     }
 
     public void setColorScale(TrackType trackType, ContinuousColorScale colorScale) {
-        colorScales.put(trackType, colorScale);
+        trackColorScales.put(trackType, colorScale);
     }
 
     public ContinuousColorScale getColorScale(TrackType trackType) {
-        if (colorScales.containsKey(trackType)) {
-            return colorScales.get(trackType);
+        if (trackColorScales.containsKey(trackType)) {
+            return trackColorScales.get(trackType);
         } else {
             return PreferencesManager.getPreferences().getColorScale(trackType);
         }

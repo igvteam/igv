@@ -23,15 +23,18 @@ public class PreferencesManager implements IGVEventObserver {
 
     public static final String SEPARATOR_KEY = "---";
     public static final String INFO_KEY = "info";
+    public static final String COMMENT_KEY = "//";
+    public static final String GROUP_KEY = "##";
+    public static final String TAB_KEY = "#";
 
     private static List<PreferenceGroup> preferenceGroupList;
-    private static Logger log = LogManager.getLogger(PreferencesManager.class);
-    private static Map<String, IGVPreferences> preferencesMap = Collections.synchronizedMap(new HashMap<>());
+    private static final Logger log = LogManager.getLogger(PreferencesManager.class);
+    private static final Map<String, IGVPreferences> preferencesMap = Collections.synchronizedMap(new HashMap<>());
     private static Map<String, String> genericDefaults;
 
     private static String prefFile;  // User preferences file
 
-    static Hashtable<String, String> aliasTable = new Hashtable<String, String>();
+    static Hashtable<String, String> aliasTable = new Hashtable<>();
 
 
     static {
@@ -258,7 +261,7 @@ public class PreferencesManager implements IGVEventObserver {
             while ((nextLine = reader.readLine()) != null) {
                 nextLine = nextLine.trim();
 
-                if (nextLine.startsWith("//") || nextLine.length() == 0) {
+                if (nextLine.startsWith(COMMENT_KEY) || nextLine.isEmpty()) {
                     continue;
                 } else if (nextLine.startsWith(SEPARATOR_KEY)) {
                     prefList.add(new Preference(SEPARATOR_KEY, group));
@@ -267,14 +270,14 @@ public class PreferencesManager implements IGVEventObserver {
                     Preference preference = new Preference(INFO_KEY, nextLine.substring(INFO_KEY.length()).trim(), group);
                     prefList.add(preference);   // "Blank" preference
                     continue;
-                } else if (nextLine.startsWith("##")) {
+                } else if (nextLine.startsWith(GROUP_KEY)) {
 
                     group = null;  // End previous group
                     if (nextLine.length() > 2) {
                         group = nextLine.substring(2);  // New group
                     }
                     continue;
-                } else if (nextLine.startsWith("#")) {
+                } else if (nextLine.startsWith(TAB_KEY)) {
 
                     // New tab
                     String[] tokens = Globals.tabPattern.split(nextLine);
@@ -390,15 +393,7 @@ public class PreferencesManager implements IGVEventObserver {
         }
     }
 
-    static class KeyValue {
-        String key;
-        String value;
-
-        public KeyValue(String key, String value) {
-            this.key = key;
-            this.value = value;
-        }
-    }
+    record KeyValue(String key, String value) {}
 
     static class Preference {
 
@@ -451,9 +446,9 @@ public class PreferencesManager implements IGVEventObserver {
 
     static class PreferenceGroup {
 
-        String tabLabel;
-        String category;
-        List<Preference> preferences;
+        final String tabLabel;
+        final String category;
+        final List<Preference> preferences;
 
         public PreferenceGroup(String tabLabel, String category, List<Preference> preferences) {
             this.tabLabel = tabLabel;

@@ -29,13 +29,17 @@
  */
 package org.broad.igv.ui.util;
 
+import htsjdk.variant.vcf.VCFCompoundHeaderLine;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
-
+import org.broad.igv.variant.SelectVcfFieldDialog;
+import java.util.List;
 import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Provides thread-safe, Swing-safe, utilities for interacting with JOptionPane.  Accounts for
@@ -48,11 +52,9 @@ public class MessageUtils {
 
     private static Logger log = LogManager.getLogger(MessageUtils.class);
 
-    public enum InputType {INT, FLOAT, STRING}
-
     // Somewhat silly class, needed to pass values between threads
-    static class ValueHolder {
-        Object value;
+    private static class ValueHolder<T> {
+        T value;
     }
 
     /**
@@ -132,95 +134,78 @@ public class MessageUtils {
      */
     public static synchronized boolean confirm(final Component component, final String message) {
 
-
         if (Globals.isHeadless() || Globals.isBatch()) {
             return true;
         }
 
-        if (SwingUtilities.isEventDispatchThread()) {
+        return threadAwareInvokeAndGetValue(()  -> {
             int opt = JOptionPane.showConfirmDialog(component, message, "Confirm", JOptionPane.YES_NO_OPTION);
             return opt == JOptionPane.YES_OPTION;
-        } else {
-            final ValueHolder returnValue = new ValueHolder();
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    int opt = JOptionPane.showConfirmDialog(component, message, "Confirm", JOptionPane.YES_NO_OPTION);
-                    returnValue.value = (opt == JOptionPane.YES_OPTION);
-                }
-            };
-            try {
-                SwingUtilities.invokeAndWait(runnable);
-            } catch (InterruptedException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e.getCause());
-            }
+        });
+    }
 
-            return (Boolean) (returnValue.value);
+    ;
+    public static Optional<SelectVcfFieldDialog.ColorResult> showInputDialog(String message, String defaultValue, List<? extends VCFCompoundHeaderLine> valueOptions) {
 
-        }
+        final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
+        //Pad message with spaces so it's as wide as the defaultValue
+        final String actMsg = padToMatchWidth(message, defaultValue);
+        return threadAwareInvokeAndGetValue(() ->  SelectVcfFieldDialog.showValueChooseDialog(parent, actMsg, defaultValue, valueOptions));
     }
 
     public static String showInputDialog(String message, String defaultValue) {
 
         final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
+        final String actMsg = padToMatchWidth(message, defaultValue);
+        return threadAwareInvokeAndGetValue(() -> JOptionPane.showInputDialog(parent, actMsg, defaultValue));
+    }
+
+    private static String padToMatchWidth(String message, final String defaultValue) {
         //Pad message with spaces so it's as wide as the defaultValue
         if (defaultValue != null && message.length() < defaultValue.length()) {
             message = String.format("%-" + defaultValue.length() + "s", message);
         }
-        final String actMsg = message;
+        return message;
+    }
 
+    /**
+     * If this is the event thread run the supplier here, otherwise run it on the event thread
+     */
+    private static <T> T threadAwareInvokeAndGetValue(Supplier<T> supplier){
         if (SwingUtilities.isEventDispatchThread()) {
-            String val = JOptionPane.showInputDialog(parent, actMsg, defaultValue);
-            return val;
+            return supplier.get();
         } else {
-            final ValueHolder returnValue = new ValueHolder();
-            Runnable runnable = () -> {
-                String val = JOptionPane.showInputDialog(parent, actMsg, defaultValue);
-                returnValue.value = val;
-            };
-            try {
-                SwingUtilities.invokeAndWait(runnable);
-            } catch (InterruptedException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e.getCause());
-            }
-
-            return (String) (returnValue.value);
+            return invokeAndGetValue(supplier);
         }
+    }
+
+    /**
+     * Wraps a Supplier into a Runnable and pass it to SwingUtilities.invokeAndWait and then return the produced value
+     * Useful for popping up dialogue boxes that provide a result.
+     * @param supplier a function which must be run on the Swing Event Thread
+     * @return the result of supplier.get(), throws a RuntimeException if an exception occurs
+     * @param <T>  type of the returned value
+     */
+    private synchronized static <T> T invokeAndGetValue(Supplier<T> supplier) {
+        final ValueHolder<T> returnValue = new ValueHolder<>();
+        Runnable runnable = () -> returnValue.value = supplier.get();
+        try {
+            SwingUtilities.invokeAndWait(runnable);
+        } catch (InterruptedException e) {
+            log.error("Error in showMessage", e);
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            log.error("Error in showMessage", e);
+            throw new RuntimeException(e.getCause());
+        }
+
+        return returnValue.value;
     }
 
     public static String showInputDialog(final String message) {
 
         final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
-        if (SwingUtilities.isEventDispatchThread()) {
-            String val = JOptionPane.showInputDialog(parent, message);
-            return val;
-        } else {
-            final ValueHolder returnValue = new ValueHolder();
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    String val = JOptionPane.showInputDialog(parent, message);
-                    returnValue.value = val;
-                }
-            };
-            try {
-                SwingUtilities.invokeAndWait(runnable);
-            } catch (InterruptedException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e.getCause());
-            }
-
-            return (String) (returnValue.value);
-        }
+        return threadAwareInvokeAndGetValue(() -> JOptionPane.showInputDialog(parent, message));
     }
 
 

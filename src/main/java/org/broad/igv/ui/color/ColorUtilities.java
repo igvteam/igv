@@ -43,13 +43,13 @@ import java.util.*;
  *
  * @author Jim Robinson
  */
-public class ColorUtilities {
+public final class ColorUtilities {
 
-    private static Logger log = LogManager.getLogger(ColorUtilities.class);
+    private static final Logger log = LogManager.getLogger(ColorUtilities.class);
 
     public static ObjectCache<Object, Color> colorCache = new ObjectCache<>(1000);
-    private static ObjectCache<Color, Color> slightlyDarkerCache = new ObjectCache<>(1000);
-    private static Map<Integer, Color> grayscaleColors = new HashMap();
+    private static final ObjectCache<Color, Color> slightlyDarkerCache = new ObjectCache<>(1000);
+    private static final Map<Integer, Color> grayscaleColors = new HashMap();
 
     // HTML 4.1 color table,  + orange and magenta
     static Map<String, String> colorSymbols = new HashMap();
@@ -164,14 +164,7 @@ public class ColorUtilities {
 
 
     public static String colorToString(Color color) {
-
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(color.getRed());
-        buffer.append(",");
-        buffer.append(color.getGreen());
-        buffer.append(",");
-        buffer.append(color.getBlue());
-        return buffer.toString();
+        return "%d,%d,%d".formatted(color.getRed(), color.getGreen(), color.getBlue());
     }
 
     public static Color stringToColor(String string) {
@@ -318,14 +311,14 @@ public class ColorUtilities {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         String nextLine;
 
-        palettes = new LinkedHashMap<String, ColorPalette>();
-        palleteNames = new ArrayList();
+        palettes = new LinkedHashMap<>();
+        palleteNames = new ArrayList<>();
 
         String currentPalletName = null;
-        java.util.List<Color> currentColorList = new ArrayList();
+        java.util.List<Color> currentColorList = new ArrayList<>();
         while ((nextLine = br.readLine()) != null) {
             nextLine = nextLine.trim();
-            if (nextLine.length() == 0) continue;
+            if (nextLine.isEmpty()) continue;
             if (nextLine.startsWith("#")) {
                 if (currentPalletName != null) {
                     ColorPalette palette = new ColorPalette(currentPalletName, currentColorList.toArray(new Color[currentColorList.size()]));
@@ -356,7 +349,7 @@ public class ColorUtilities {
     }
 
     static int nextPaletteIdx = 0;
-    static ArrayList<String> palleteNames = new ArrayList();
+    static ArrayList<String> palleteNames = new ArrayList<>();
 
     public static ColorPalette getNextPalette() {
         try {
@@ -485,4 +478,27 @@ public class ColorUtilities {
     }
 
 
+    /**
+     * Get a color which will be clearly visible over the given background color
+     * @param background color of the background
+     * @return either White or Black depending on how bright the background color is
+     */
+    public static Color getVisibleOverlay(Color background){
+        double luma = getPerceivedBrightness(background);
+        if(luma < 120){ // This threshold is just me eyeballing what looks ok
+           return Color.WHITE;
+        } else {
+            return Color.BLACK;
+        }
+    }
+
+    /**
+     * estimate the perceptual brightness (luma) of a color
+     * see: https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
+     *
+     * @return an estimate of the perceived brightness of the input color
+     */
+    public static double getPerceivedBrightness(Color color) {
+        return 0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue();
+    }
 }

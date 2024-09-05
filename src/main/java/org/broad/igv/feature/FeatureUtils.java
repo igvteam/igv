@@ -117,6 +117,33 @@ public class FeatureUtils {
         return null;
     }
 
+    public static Feature getFeatureEndsBefore(double position, List<? extends Feature> features) {
+
+        int index = getIndexBefore(position, features);
+        Feature prevFeature = null;
+        while (index >= 0) {
+            Feature f = features.get(index);
+            if (f.getEnd() < position) {
+                if (prevFeature == null) {
+                    prevFeature = f;
+                } else {
+                    if (f.getStart() == prevFeature.getStart()) {
+                        // Prefer smallest feature
+                        if (f.getEnd() < prevFeature.getEnd()) {
+                            prevFeature = f;
+                        }
+                    } else {
+                        // Done
+                        break;
+                    }
+                }
+            }
+            index--;
+        }
+        return prevFeature;
+
+    }
+
     /**
      * Return the first feature whose center is > the given position.  If no features satisfy the criteria
      * return null;
@@ -348,13 +375,15 @@ public class FeatureUtils {
      * @param features
      * @return
      */
-    public static List<Feature> getAllFeaturesContaining(double position,
-                                                         double flanking,
-                                                         List<? extends htsjdk.tribble.Feature> features) {
+    public static List<Feature> getAllFeaturesAt(double position,
+                                                 double flanking,
+                                                 List<? extends htsjdk.tribble.Feature> features) {
 
         List<Feature> returnList = null;
 
-        for (Feature feature : features) {
+        int startIdx = Math.max(0, getIndexBefore(position, features));
+        for (int idx = startIdx; idx < features.size(); idx++) {
+            Feature feature = features.get(idx);
             if (feature.getStart() > position + flanking) {
                 break;
             }

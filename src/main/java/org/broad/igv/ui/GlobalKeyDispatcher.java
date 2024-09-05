@@ -36,8 +36,6 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.SortOption;
@@ -46,7 +44,6 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.variant.VariantTrack;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -404,73 +401,19 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
      * @param forward the direction, true for forward and false for back
      */
     private void nextFeature(boolean forward) {
-
         // Ignore (Disable) if we are in gene list mode
         if (FrameManager.isGeneListMode()) {
             return;
         }
 
         ReferenceFrame frame = FrameManager.getDefaultFrame();
-        Collection<Track> tracks = IGV.getInstance().getSelectedTracks();
+        List<Track> tracks = IGV.getInstance().getSelectedTracks();
         if (tracks.size() == 1) {
-            try {
-                Track t = tracks.iterator().next();
-                if (!(t instanceof FeatureTrack || t instanceof VariantTrack)) {
-                    //JOptionPane.showMessageDialog(IGV.getInstance(),
-                    //        "Track panning is not enabled for data tracks.");
-                    return;
-                }
-
-                Feature f = null;
-                if (t instanceof FeatureTrack) {
-                    f = ((FeatureTrack) t).nextFeature(frame.getChrName(), frame.getCenter(), forward, frame);
-                } else if (t instanceof VariantTrack) {
-                    f = ((VariantTrack) t).nextFeature(frame.getChrName(), frame.getCenter(), forward, frame);
-                }
-
-                if (f != null) {
-                    String chr = GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(f.getChr());
-                    double newCenter = (f.getStart() + f.getEnd()) / 2.0;
-
-                    boolean fitToWindow = PreferencesManager.getPreferences().getAsBoolean(NEXT_FIT_TO_WINDOW);
-
-                    if(fitToWindow) {
-                        int flankingRegion = PreferencesManager.getPreferences().getAsInt(Constants.NEXT_FLANKING_REGION);
-                        int delta;
-                        int start = f.getStart();
-                        int end = f.getEnd();
-                        if ((end - start) == 1) {
-                            delta = 20; // Don't show flanking region for single base jumps, use 40bp window
-                        } else if (flankingRegion < 0) {
-                            delta = (-flankingRegion * (end - start)) / 100;
-                        } else {
-                            delta = flankingRegion;
-                        }
-                        start = Math.max(0, start - delta);
-                        end = end + delta;
-                        frame.jumpTo(chr, start, end);
-                    }
-                    else {
-                        if (!chr.equals(frame.getChrName())) {
-                            // Switch chromosomes.  We have to do some tricks to maintain the same resolution scale.
-                            double range = frame.getEnd() - frame.getOrigin();
-                            int newOrigin = (int) Math.max(newCenter - range / 2, 0);
-                            int newEnd = (int) (newOrigin + range);
-                            frame.jumpTo(chr, newOrigin, newEnd);
-                        } else {
-                            frame.centerOnLocation(newCenter);
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                MessageUtils.showErrorMessage("Error encountered reading features: " + e.getMessage(), e);
-
+            Track t = tracks.get(0);
+            if (t instanceof FeatureTrack ft) {
+                ft.moveToNextFeature(forward, frame);
             }
-        } else {
-            //MessageUtils.showMessage("To use track panning you must first select a single feature track.");
         }
-
-
     }
 
     /**

@@ -36,7 +36,7 @@ import javax.swing.*;
 
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
-import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.IGVDialog;
 import org.broad.igv.ui.color.ColorChooserPanel;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
@@ -44,18 +44,16 @@ import org.jdesktop.layout.LayoutStyle;
 /**
  * @author Stan Diamond
  */
-public class HeatmapLegendEditor extends org.broad.igv.ui.IGVDialog  {
+public class ContinuousLegendEditor extends IGVDialog {
     private boolean canceled = true;
     private ContinuousColorScale colorScheme;
-    private TrackType type;
 
     /**
      * Creates new form HeatmapLegendEditor2
      */
-    public HeatmapLegendEditor(java.awt.Frame parent, boolean modal, TrackType type, ColorScale colorScheme) {
+    public ContinuousLegendEditor(java.awt.Frame parent, boolean modal, ColorScale colorScheme) {
         super(parent, modal);
         this.colorScheme = (ContinuousColorScale) colorScheme;
-        this.type = type;
         initComponents();
         initValues();
         this.setLocationRelativeTo(parent);
@@ -89,7 +87,6 @@ public class HeatmapLegendEditor extends org.broad.igv.ui.IGVDialog  {
     }
 
     private boolean updateValues() {
-
         try {
             double negStart = 0;
             double negEnd = 0;

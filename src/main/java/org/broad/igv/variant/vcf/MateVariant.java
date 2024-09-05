@@ -7,6 +7,7 @@ import org.broad.igv.variant.Variant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents the mate of a structural variant, defined by CHR2 and END attributes.
@@ -105,13 +106,13 @@ public class MateVariant implements Variant {
     }
 
     @Override
-    public Collection<String> getFilters() {
+    public Set<String> getFilters() {
         return mate.getFilters();
     }
 
     @Override
-    public double getMethlationRate() {
-        return mate.getMethlationRate();
+    public double getMethylationRate() {
+        return mate.getMethylationRate();
     }
 
     @Override

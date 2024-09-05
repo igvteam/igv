@@ -657,7 +657,7 @@ public class IGVPreferences {
     public void override(String key, String value) {
         userPreferences.put(key, value);
         overrideKeys.add(key);    // <= order here is important, must be after userPreferences statement
-        Map<String, String> updatedPrefs = new HashMap<String, String>();
+        Map<String, String> updatedPrefs = new HashMap<>();
         updatedPrefs.put(key, value);
         checkForAlignmentChanges(updatedPrefs);
         clearCaches();
@@ -719,8 +719,6 @@ public class IGVPreferences {
      * @param type
      * @return
      */
-
-
     public ContinuousColorScale getColorScale(TrackType type) {
         if (type == null) {
             return null;
@@ -736,7 +734,6 @@ public class IGVPreferences {
                 scale = getDefaultColorScale(type);
             }
             if (scale != null) {
-                scale.setDefault(true);
                 colorScaleCache.put(type, scale);
             }
         }
@@ -744,13 +741,13 @@ public class IGVPreferences {
     }
 
 
-    static Set<String> scaledTypes = new HashSet(Arrays.asList(
+    static Set<TrackType> scaledTypes = new HashSet<>(Arrays.asList(
             TrackType.LOH, TrackType.RNAI, TrackType.POOLED_RNAI, TrackType.DNA_METHYLATION,
             TrackType.GENE_EXPRESSION, TrackType.COPY_NUMBER, TrackType.ALLELE_SPECIFIC_COPY_NUMBER, TrackType.CNV));
 
 
     /**
-     * Return the default color scale.  This si the scale for track type "generic",
+     * Return the default color scale.  This is the scale for track type "generic",
      * as well as any track type without a specific scale.
      *
      * @param type
@@ -880,24 +877,16 @@ public class IGVPreferences {
     }
 
     static String getMutationColorKey(String type) {
-        switch (type) {
-            case "Indel":
-                return MUTATION_INDEL_COLOR_KEY;
-            case "Missense":
-                return MUTATION_MISSENSE_COLOR_KEY;
-            case "Nonsense":
-                return MUTATION_NONSENSE_COLOR_KEY;
-            case "Splice_site":
-                return MUTATION_SPLICE_SITE_COLOR_KEY;
-            case "Synonymous":
-                return MUTATION_SYNONYMOUS_COLOR_KEY;
-            case "Targeted_region":
-                return MUTATION_TARGETED_REGION_COLOR_KEY;
-            case "Unknown":
-                return MUTATION_UNKNOWN_COLOR_KEY;
-            default:
-                return "MUTATION_" + type + "_COLOR";
-        }
+        return switch (type) {
+            case "Indel" -> MUTATION_INDEL_COLOR_KEY;
+            case "Missense" -> MUTATION_MISSENSE_COLOR_KEY;
+            case "Nonsense" -> MUTATION_NONSENSE_COLOR_KEY;
+            case "Splice_site" -> MUTATION_SPLICE_SITE_COLOR_KEY;
+            case "Synonymous" -> MUTATION_SYNONYMOUS_COLOR_KEY;
+            case "Targeted_region" -> MUTATION_TARGETED_REGION_COLOR_KEY;
+            case "Unknown" -> MUTATION_UNKNOWN_COLOR_KEY;
+            default -> "MUTATION_" + type + "_COLOR";
+        };
     }
 
 

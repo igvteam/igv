@@ -25,13 +25,11 @@
 
 package org.broad.igv.ui.color;
 
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.IGVMouseInputAdapter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.Serializable;
@@ -48,7 +46,7 @@ import java.util.Map;
 public class ColorPanel extends JPanel implements Serializable {
 
     Map<String, ColorPalette> paletteMap;
-    List<Palette> paletteList = new ArrayList<Palette>();
+    List<Palette> paletteList = new ArrayList<>();
     boolean showGrayScale = false;
 
     public ColorPanel() {
@@ -174,7 +172,7 @@ public class ColorPanel extends JPanel implements Serializable {
 
             y += 10;
 
-            for (Color c : entry.getValue().getColors()) {
+            for (Color c : entry.getValue().colors()) {
                 y += 20;
                 Rectangle r = new Rectangle(x, y, 18, 18);
                 palette.swatches.add(new Swatch(r, c));

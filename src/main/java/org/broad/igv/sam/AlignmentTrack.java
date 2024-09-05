@@ -135,19 +135,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    public enum DuplicatesOption {
-        FILTER("filter duplicates", true),
-        SHOW("show duplicates", false),
-        TEXTURE("texture duplicates", false);
-
-        public final String label;
-        public final boolean filtered;
-
-        DuplicatesOption(String label, Boolean filtered) {
-            this.label = label;
-            this.filtered = filtered;
-        }
-    }
 
     public enum ShadeAlignmentsOption {
         NONE("none"),
@@ -182,8 +169,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         LINKED("linked"),
         PHASE("phase"),
         REFERENCE_CONCORDANCE("reference concordance"),
-        MAPPING_QUALITY("mapping quality"),
-        DUPLICATE("duplicate flag");
+        MAPPING_QUALITY("mapping quality");
 
         public final String label;
         public final boolean reverse;
@@ -414,7 +400,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 });
             }
         } else if (event instanceof ViewChange viewChange) {
-            if(viewChange.type == ViewChange.Type.LocusChange && !viewChange.panning && getDisplayMode() == DisplayMode.FULL) {
+            if(viewChange.type == ViewChange.Type.LocusChange && !viewChange.panning) {
                 packAlignments();
             }
         }
@@ -557,11 +543,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (viewWindowSize > getVisibilityWindow()) {
             Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g2 = context.getGraphic2DForColor(Color.gray);
-            String message = context.getReferenceFrame().getChrName().equals(Globals.CHR_ALL) ?
-                    "Select a chromosome and zoom in to see alignments." :
-                    "Zoom in to see alignments.";
-
-            GraphicUtils.drawCenteredText(message, visibleRect, g2);
+            GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g2);
             return;
         }
 
@@ -1235,7 +1217,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private SortOption sortOption;
         private GroupOption groupByOption;
         private ShadeAlignmentsOption shadeAlignmentsOption;
-        private DuplicatesOption duplicatesOption;
         private Integer mappingQualityLow;
         private Integer mappingQualityHigh;
         private boolean viewPairs = false;
@@ -1487,22 +1468,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
         }
 
-        public DuplicatesOption getDuplicatesOption() {
-            final IGVPreferences prefs = getPreferences();
-            if (duplicatesOption != null) {
-                return duplicatesOption;
-            } else {
-                duplicatesOption = prefs.getAsBoolean(SAM_FILTER_DUPLICATES)
-                        ? DuplicatesOption.FILTER
-                        : DuplicatesOption.SHOW;
-            }
-            return duplicatesOption;
-        }
-
-        public void setDuplicatesOption(final DuplicatesOption duplicatesOption) {
-            this.duplicatesOption = duplicatesOption;
-        }
-
         public int getMappingQualityLow() {
             return mappingQualityLow == null ? getPreferences().getAsInt(SAM_SHADE_QUALITY_LOW) : mappingQualityLow;
         }
@@ -1625,9 +1590,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if (shadeAlignmentsOption != null) {
                 element.setAttribute("shadeAlignmentsByOption", shadeAlignmentsOption.toString());
-            }
-            if (duplicatesOption != null) {
-                element.setAttribute("duplicatesOption", duplicatesOption.toString());
             }
             if (mappingQualityLow != null) {
                 element.setAttribute("mappingQualityLow", mappingQualityLow.toString());
@@ -1758,9 +1720,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (element.hasAttribute("shadeAlignmentsByOption")) {
                 shadeAlignmentsOption = ShadeAlignmentsOption.valueOf(element.getAttribute("shadeAlignmentsByOption"));
             }
-            if (element.hasAttribute("duplicatesOption")) {
-                duplicatesOption = CollUtils.valueOf(DuplicatesOption.class, element.getAttribute("duplicatesOption"), null);
-            }
             if (element.hasAttribute("mappingQualityLow")) {
                 mappingQualityLow = Integer.parseInt(element.getAttribute("mappingQualityLow"));
             }
@@ -1835,7 +1794,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 minJunctionCoverage = Integer.parseInt(element.getAttribute("minJunctionCoverage"));
             }
         }
-
     }
 
 

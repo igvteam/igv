@@ -438,64 +438,69 @@ public class AlignmentPacker {
         Range pos = renderOptions.getGroupByPos();
         String readNameParts[], movieName, zmw;
 
-        return switch (groupBy) {
-            case CLUSTER -> al.getClusterName();
-            case STRAND -> al.isNegativeStrand() ? "-" : "+";
-            case SAMPLE -> al.getSample();
-            case LIBRARY -> al.getLibrary();
-            case READ_GROUP -> al.getReadGroup();
-            case LINKED -> (al instanceof LinkedAlignment) ? "Linked" : "";
-            case PHASE -> al.getAttribute("HP");
-            case TAG -> {
+        switch (groupBy) {
+            case CLUSTER:
+                return al.getClusterName();
+            case STRAND:
+                return al.isNegativeStrand() ? "-" : "+";
+            case SAMPLE:
+                return al.getSample();
+            case LIBRARY:
+                return al.getLibrary();
+            case READ_GROUP:
+                return al.getReadGroup();
+            case LINKED:
+                return (al instanceof LinkedAlignment) ? "Linked" : "";
+            case PHASE:
+                return al.getAttribute("HP");
+            case TAG:
                 Object tagValue = tag == null ? null : al.getAttribute(tag);
                 if (tagValue == null) {
-                    yield null;
+                    return null;
                 } else if (tagValue instanceof Integer || tagValue instanceof Float || tagValue instanceof Double) {
-                    yield tagValue;
+                    return tagValue;
                 } else {
-                    yield tagValue.toString();
+                    return tagValue.toString();
                 }
-            }
-            case FIRST_OF_PAIR_STRAND -> {
+            case FIRST_OF_PAIR_STRAND:
                 Strand strand = al.getFirstOfPairStrand();
-                yield strand == Strand.NONE ? null : strand.toString();
-            }
-            case READ_ORDER -> {
+                String strandString = strand == Strand.NONE ? null : strand.toString();
+                return strandString;
+            case READ_ORDER:
                 if (al.isPaired() && al.isFirstOfPair()) {
-                    yield "FIRST";
+                    return "FIRST";
                 } else if (al.isPaired() && al.isSecondOfPair()) {
-                    yield "SECOND";
+                    return "SECOND";
                 } else {
-                    yield "";
+                    return "";
                 }
-            }
-            case PAIR_ORIENTATION -> {
+            case PAIR_ORIENTATION:
                 PEStats peStats = AlignmentRenderer.getPEStats(al, renderOptions);
                 AlignmentTrack.OrientationType type = AlignmentRenderer.getOrientationType(al, peStats);
                 if (type == null) {
-                    yield AlignmentTrack.OrientationType.UNKNOWN.name();
+                    return AlignmentTrack.OrientationType.UNKNOWN.name();
                 }
-                yield type.name();
-            }
-            case MATE_CHROMOSOME -> {
+                return type.name();
+            case MATE_CHROMOSOME:
                 ReadMate mate = al.getMate();
                 if (mate == null) {
-                    yield null;
+                    return null;
                 }
                 if (!mate.isMapped()) {
-                    yield "UNMAPPED";
+                    return "UNMAPPED";
                 } else {
-                    yield mate.getChr();
+                    return mate.getChr();
                 }
-            }
-            case NONE -> null;
-            case CHIMERIC -> al.getAttribute(SAMTag.SA.name()) != null ? "CHIMERIC" : "";
-            case SUPPLEMENTARY -> al.isSupplementary() ? "SUPPLEMENTARY" : "";
-            case REFERENCE_CONCORDANCE -> !al.isProperPair() ||
-                    al.getCigarString().toUpperCase().contains("S") ||
-                    al.isSupplementary() ?
-                    "DISCORDANT" : "";
-            case BASE_AT_POS -> {
+            case CHIMERIC:
+                return al.getAttribute(SAMTag.SA.name()) != null ? "CHIMERIC" : "";
+            case SUPPLEMENTARY:
+                return al.isSupplementary() ? "SUPPLEMENTARY" : "";
+            case REFERENCE_CONCORDANCE:
+                return !al.isProperPair() ||
+                        al.getCigarString().toUpperCase().contains("S") ||
+                        al.isSupplementary() ?
+                        "DISCORDANT" : "";
+            case BASE_AT_POS:
                 // Use a string prefix to enforce grouping rules:
                 //    1: alignments with a base at the position
                 //    2: alignments with a gap at the position
@@ -508,15 +513,14 @@ public class AlignmentPacker {
 
                     byte[] baseAtPos = new byte[]{al.getBase(pos.getStart())};
                     if (baseAtPos[0] == 0) { // gap at position
-                        yield "2:";
+                        return "2:";
                     } else { // base at position
-                        yield "1:" + new String(baseAtPos);
+                        return "1:" + new String(baseAtPos);
                     }
                 } else { // does not overlap position
-                    yield "3:";
+                    return "3:";
                 }
-            }
-            case INSERTION_AT_POS -> {
+            case INSERTION_AT_POS:
                 // Use a string prefix to enforce grouping rules:
                 //    1: alignments with a base at the position
                 //    2: alignments with a gap at the position
@@ -534,32 +538,31 @@ public class AlignmentPacker {
                     if (rightInsertion != null) {
                         insertionBaseCount += rightInsertion.getLength();
                     }
-                    yield insertionBaseCount;
+                    return insertionBaseCount;
 
                 } else {
-                    yield 0;
+                    return 0;
                 }
-            }
-            case MOVIE -> {
+
+            case MOVIE: // group PacBio reads by movie
                 readNameParts = al.getReadName().split("/");
                 if (readNameParts.length < 3) {
-                    yield "";
+                    return "";
                 }
                 movieName = readNameParts[0];
-                yield movieName; // group PacBio reads by movie
-            }
-            case ZMW -> {
+                return movieName;
+            case ZMW: // group PacBio reads by ZMW
                 readNameParts = al.getReadName().split("/");
                 if (readNameParts.length < 3) {
-                    yield "";
+                    return "";
                 }
                 movieName = readNameParts[0];
                 zmw = readNameParts[1];
-                yield movieName + "/" + zmw; // group PacBio reads by ZMW
-            }
-            case MAPPING_QUALITY -> al.getMappingQuality();
-            case DUPLICATE -> al.isDuplicate() ? "duplicate" : "non-duplicate";
-        };
+                return movieName + "/" + zmw;
+            case MAPPING_QUALITY:
+                return al.getMappingQuality();
+        }
+        return null;
     }
 
     interface BucketCollection {

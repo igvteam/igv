@@ -30,19 +30,18 @@
 package org.broad.igv.ui.legend;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.*;
 
+import org.broad.igv.ui.IGVDialog;
 import org.broad.igv.ui.color.*;
 
 /**
  * @author Jim Robinson
  */
-public class MutationColorMapEditor extends org.broad.igv.ui.IGVDialog  {
+public class MutationColorMapEditor extends IGVDialog {
 
     boolean canceled = false;
 
@@ -59,7 +58,7 @@ public class MutationColorMapEditor extends org.broad.igv.ui.IGVDialog  {
     public MutationColorMapEditor(Frame owner, Map<String, Color> colors, boolean useColors) {
         super(owner);
         setModal(true);
-        changedColors = new HashMap<String, Color>();
+        changedColors = new HashMap<>();
         initComponents();
         initContent(colors);
         setSize(300, 500);
@@ -87,25 +86,17 @@ public class MutationColorMapEditor extends org.broad.igv.ui.IGVDialog  {
             editPanel.add(label);
             editPanel.add(colorChooserPanel);
 
-            colorChooserPanel.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent actionEvent) {
-                    String key = label.getText();
-                    Color c = colorChooserPanel.getSelectedColor();
-                    if(!colors.get(key).equals(c)) {
-                         changedColors.put(key, c);
-                    }
+            colorChooserPanel.addActionListener(actionEvent -> {
+                String key = label.getText();
+                Color c = colorChooserPanel.getSelectedColor();
+                if(!colors.get(key).equals(c)) {
+                     changedColors.put(key, c);
                 }
             });
         }
         editPanel.invalidate();
     }
 
-
-
-    public MutationColorMapEditor(Dialog owner) {
-        super(owner);
-        initComponents();
-    }
 
     private void initComponents() {
         buttonBar = new JPanel();
@@ -132,11 +123,9 @@ public class MutationColorMapEditor extends org.broad.igv.ui.IGVDialog  {
 
                 //---- okButton ----
                 okButton.setText("OK");
-                okButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        setVisible(false);
-                        dispose();
-                    }
+                okButton.addActionListener(actionEvent -> {
+                    setVisible(false);
+                    dispose();
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
@@ -144,12 +133,10 @@ public class MutationColorMapEditor extends org.broad.igv.ui.IGVDialog  {
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
-                cancelButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        canceled = false;
-                        setVisible(false);
-                        dispose();
-                    }
+                cancelButton.addActionListener(actionEvent -> {
+                    canceled = false;
+                    setVisible(false);
+                    dispose();
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,

@@ -31,6 +31,7 @@ package org.broad.igv.feature;
  */
 public interface IGVNamedFeature extends htsjdk.tribble.NamedFeature {
 
+    @Override
     String getName();
 
     default String getDisplayName(String property) {

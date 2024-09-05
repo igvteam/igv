@@ -370,48 +370,48 @@ public class HeatmapScaleDialog extends org.broad.igv.ui.IGVDialog  {
         setLocationRelativeTo(getOwner());
     }
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    private void cancelButtonActionPerformed(ActionEvent evt) {
         canceled = true;
         setVisible(false);
     }
 
-    private void okButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void okButton1ActionPerformed(ActionEvent evt) {
         setVisible(false);
     }
 
-    private void setNegColorAction(java.awt.event.ActionEvent evt) {
+    private void setNegColorAction(ActionEvent evt) {
         colorScale.setMinColor(negColor.getSelectedColor());
         legendPanel.repaint();
 
     }
 
-    private void posColorActionPerformed(java.awt.event.ActionEvent evt) {
+    private void posColorActionPerformed(ActionEvent evt) {
         colorScale.setMaxColor(posColor.getSelectedColor());
         legendPanel.repaint();
     }
 
-    private void midColorActionPerformed(java.awt.event.ActionEvent evt) {
+    private void midColorActionPerformed(ActionEvent evt) {
         colorScale.setMidColor(midColor.getSelectedColor());
         legendPanel.repaint();
     }
 
-    private void minFieldFocusLost(java.awt.event.FocusEvent evt) {
+    private void minFieldFocusLost(FocusEvent evt) {
         minFieldActionPerformed(null);
     }
 
-    private void maxFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_maxFieldFocusLost
+    private void maxFieldFocusLost(FocusEvent evt) {//GEN-FIRST:event_maxFieldFocusLost
         maxFieldActionPerformed(null);
     }//GEN-LAST:event_maxFieldFocusLost
 
-    private void neutralFromFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_neutralFromFieldFocusLost
+    private void neutralFromFieldFocusLost(FocusEvent evt) {//GEN-FIRST:event_neutralFromFieldFocusLost
         neutralFromFieldActionPerformed(null);
     }//GEN-LAST:event_neutralFromFieldFocusLost
 
-    private void neutralToFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_neutralToFieldFocusLost
+    private void neutralToFieldFocusLost(FocusEvent evt) {//GEN-FIRST:event_neutralToFieldFocusLost
         neutralToFieldActionPerformed(null);
     }//GEN-LAST:event_neutralToFieldFocusLost
 
-    private void minFieldActionPerformed(java.awt.event.ActionEvent evt) {
+    private void minFieldActionPerformed(ActionEvent evt) {
         try {
             colorScale.setNegEnd(Double.parseDouble(minField.getText()));
             legendPanel.repaint();
@@ -421,7 +421,7 @@ public class HeatmapScaleDialog extends org.broad.igv.ui.IGVDialog  {
         }
     }
 
-    private void maxFieldActionPerformed(java.awt.event.ActionEvent evt) {
+    private void maxFieldActionPerformed(ActionEvent evt) {
         try {
             colorScale.setPosEnd(Double.parseDouble(maxField.getText()));
             legendPanel.repaint();
@@ -431,7 +431,7 @@ public class HeatmapScaleDialog extends org.broad.igv.ui.IGVDialog  {
         }
     }
 
-    private void neutralFromFieldActionPerformed(java.awt.event.ActionEvent evt) {
+    private void neutralFromFieldActionPerformed(ActionEvent evt) {
         try {
             colorScale.setNegStart(Double.parseDouble(neutralFromField.getText()));
             legendPanel.repaint();
@@ -442,7 +442,7 @@ public class HeatmapScaleDialog extends org.broad.igv.ui.IGVDialog  {
 
     }
 
-    private void neutralToFieldActionPerformed(java.awt.event.ActionEvent evt) {
+    private void neutralToFieldActionPerformed(ActionEvent evt) {
         try {
             colorScale.setPosStart(Double.parseDouble(neutralToField.getText()));
             legendPanel.repaint();
@@ -453,17 +453,16 @@ public class HeatmapScaleDialog extends org.broad.igv.ui.IGVDialog  {
     }
 
     public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                HeatmapScaleDialog dialog = new HeatmapScaleDialog(new javax.swing.JFrame(),
-                        (ContinuousColorScale) PreferencesManager.getPreferences().getDefaultColorScale(TrackType.COPY_NUMBER));
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
+
+        java.awt.EventQueue.invokeLater(() -> {
+            HeatmapScaleDialog dialog = new HeatmapScaleDialog(new JFrame(),
+                    PreferencesManager.getPreferences().getDefaultColorScale(TrackType.COPY_NUMBER));
+            dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                public void windowClosing(java.awt.event.WindowEvent e) {
+                    System.exit(0);
+                }
+            });
+            dialog.setVisible(true);
         });
     }
 

@@ -30,6 +30,7 @@
 package org.broad.igv.ui.legend;
 
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.IGVDialog;
 import org.broad.igv.ui.util.UIUtilities;
 import org.jdesktop.layout.GroupLayout;
 
@@ -41,7 +42,7 @@ import java.awt.event.ActionListener;
 /**
  * @author Stan Diamond
  */
-public class LegendDialog extends org.broad.igv.ui.IGVDialog  {
+public class LegendDialog extends IGVDialog {
 
     public LegendDialog(Frame owner) {
         super(owner);
@@ -92,10 +93,6 @@ public class LegendDialog extends org.broad.igv.ui.IGVDialog  {
 
     private void lohButtonActionPerformed(ActionEvent e) {
         ((LegendPanel) lohCanvas).edit();
-    }
-
-    private void mutationButtonActionPerformed(ActionEvent e) {
-        // ((LegendPanel) mutationCanvas).edit();
     }
 
 

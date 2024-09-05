@@ -31,15 +31,18 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * @author jrobinso
  */
-public class DataRangeDialog extends org.broad.igv.ui.IGVDialog  {
+public class DataRangeDialog extends IGVDialog  {
 
     private boolean canceled;
     private float min;
@@ -50,7 +53,7 @@ public class DataRangeDialog extends org.broad.igv.ui.IGVDialog  {
     /**
      * Creates new form DataRangeDialog
      */
-    public DataRangeDialog(java.awt.Frame parent, DataRange axisDefinition) {
+    public DataRangeDialog(Frame parent, DataRange axisDefinition) {
         super(parent, true);
         this.setLocationRelativeTo(parent);
         initComponents();
@@ -96,7 +99,13 @@ public class DataRangeDialog extends org.broad.igv.ui.IGVDialog  {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Data Range");
 
-        jLabel1.setFont(FontManager.getFont(Font.BOLD, 12));
+        Font font;
+        try{
+            font = FontManager.getFont(Font.BOLD, 12);
+        } catch (Exception e){
+            font =  new Font("default", Font.BOLD, 12);
+        }
+        jLabel1.setFont(font);
         jLabel1.setText("Data Range");
 
         jLabel2.setText("Min");
@@ -207,16 +216,14 @@ public class DataRangeDialog extends org.broad.igv.ui.IGVDialog  {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                DataRangeDialog dialog = new DataRangeDialog(new javax.swing.JFrame(), null);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
+        EventQueue.invokeLater(() -> {
+            DataRangeDialog dialog = new DataRangeDialog(new JFrame(), new DataRange(0, 50, 100, true, false));
+            dialog.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    System.exit(0);
+                }
+            });
+            dialog.setVisible(true);
         });
     }
 

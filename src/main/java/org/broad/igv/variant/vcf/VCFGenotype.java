@@ -29,6 +29,7 @@ package org.broad.igv.variant.vcf;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
+import htsjdk.variant.vcf.VCFEncoder;
 
 import java.util.ArrayList;
 import java.util.HashMap;

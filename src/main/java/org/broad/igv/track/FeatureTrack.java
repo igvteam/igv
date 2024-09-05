@@ -31,19 +31,19 @@ import htsjdk.tribble.TribbleException;
 import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
-import org.broad.igv.event.DataLoadedEvent;
-import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.tools.motiffinder.MotifFinderSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.BrowserLauncher;
@@ -60,6 +60,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.broad.igv.prefs.Constants.NEXT_FIT_TO_WINDOW;
 
 /**
  * Track which displays features, typically showing regions of the genome
@@ -185,6 +187,59 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         this(featureTrack.getId(), featureTrack.getName(), featureTrack.source);
     }
 
+    /**
+     * Skip to the next feature in this track
+     *
+     * @param forward the direction, true for forward and false for back
+     * @param frame the reference frame to advance along
+     */
+    public void moveToNextFeature(final boolean forward, final ReferenceFrame frame) {
+        // Ignore (Disable) if we are in gene list mode
+        if (FrameManager.isGeneListMode()) {
+            return;
+        }
+        try {
+            Feature f = nextFeature(frame.getChrName(), frame.getCenter(), forward, frame);
+            if (f != null) {
+                String chr = GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(f.getChr());
+                double newCenter = (f.getStart() + f.getEnd()) / 2.0;
+
+                final IGVPreferences preferences = PreferencesManager.getPreferences();
+                boolean fitToWindow = preferences.getAsBoolean(NEXT_FIT_TO_WINDOW);
+
+                if(fitToWindow) {
+                    int flankingRegion = preferences.getAsInt(Constants.NEXT_FLANKING_REGION);
+                    int delta;
+                    int start = f.getStart();
+                    int end = f.getEnd();
+                    if ((end - start) == 1) {
+                        delta = 20; // Don'track show flanking region for single base jumps, use 40bp window
+                    } else if (flankingRegion < 0) {
+                        delta = (-flankingRegion * (end - start)) / 100;
+                    } else {
+                        delta = flankingRegion;
+                    }
+                    start = Math.max(0, start - delta);
+                    end = end + delta;
+                    frame.jumpTo(chr, start, end);
+                }
+                else {
+                    if (!chr.equals(frame.getChrName())) {
+                        // Switch chromosomes.  We have to do some tricks to maintain the same resolution scale.
+                        double range = frame.getEnd() - frame.getOrigin();
+                        int newOrigin = (int) Math.max(newCenter - range / 2, 0);
+                        int newEnd = (int) (newOrigin + range);
+                        frame.jumpTo(chr, newOrigin, newEnd);
+                    } else {
+                        frame.centerOnLocation(newCenter);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            MessageUtils.showErrorMessage("Error encountered reading features: " + e.getMessage(), e);
+        }
+    }
+
     protected void init(ResourceLocator locator, FeatureSource source) {
 
         this.source = source;
@@ -208,9 +263,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         this.renderer = locator != null && locator.getPath().endsWith("junctions.bed") ?
                 new SpliceJunctionRenderer() : new IGVFeatureRenderer();
-
-        IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
-
     }
 
     @Override
@@ -221,22 +273,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    /**
-     * Called after features are finished loading, which can be asynchronous
-     */
-    public void receiveEvent(IGVEvent e) {
-        if (e instanceof DataLoadedEvent) {
-//            DataLoadedEvent event = (DataLoadedEvent) e;
-//            if (IGV.hasInstance()) {
-//                // TODO -- WHY IS THIS HERE????
-//                //TODO Assuming this is necessary, there can be many data loaded events in succession,
-//                //don't want to layout for each one
-//                IGV.getInstance().layoutMainPanel();
-//            }
-        } else {
-            log.warn("Unknown event type: " + e.getClass());
-        }
-    }
+
+    @Override
+    public void receiveEvent(IGVEvent e) {}
 
     @Override
     public int getHeight() {
@@ -382,7 +421,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         if (showFeatures) {
 
-            List<Feature> allFeatures = getAllFeaturesContaining(position, mouseY, frame);
+            List<Feature> allFeatures = getAllFeatureAt(position, mouseY, frame);
             if (allFeatures == null) {
                 return null;
             }
@@ -495,7 +534,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @param frame
      * @return
      */
-    protected List<Feature> getAllFeaturesContaining(double position, int y, ReferenceFrame frame) {
+    protected List<Feature> getAllFeatureAt(double position, int y, ReferenceFrame frame) {
         // Determine the level number (for expanded tracks)
         int featureRow = getFeatureRow(y);
         return getFeaturesAtPositionInFeatureRow(position, featureRow, frame);
@@ -549,15 +588,19 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         //If features are stacked we look at only the row.
         //If they are collapsed on top of each other, we get all features in all rows
-        List<Feature> possFeatures = rows.get(featureRow).getFeatures();
-
+        List<Feature> possFeatures;
+        if (getDisplayMode() == DisplayMode.COLLAPSED) {
+            possFeatures = packedFeatures.getFeatures();
+        } else {
+            possFeatures = rows.get(featureRow).getFeatures();
+        }
 
         List<Feature> featureList = null;
         if (possFeatures != null) {
             // give a minum 2 pixel or 1/2 bp window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
             double flanking = 4 * bpPerPixel;
-            featureList = FeatureUtils.getAllFeaturesContaining(position, flanking, possFeatures);
+            featureList = FeatureUtils.getAllFeaturesAt(position, flanking, possFeatures);
         }
         return featureList;
     }
@@ -627,7 +670,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         final ReferenceFrame referenceFrame = te.getFrame();
         if (referenceFrame != null) {
             double location = referenceFrame.getChromosomePosition(e);
-            List<Feature> features = getAllFeaturesContaining(location, e.getY(), referenceFrame);
+            List<Feature> features = getAllFeatureAt(location, e.getY(), referenceFrame);
             return (features != null && features.size() > 0) ? features.get(0) : null;
         } else {
             return null;
@@ -820,7 +863,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     protected String getZoomInMessage(String chr) {
-        return chr.equals(Globals.CHR_ALL) ? "Select a chromosome and zoom in to see features." :
+        return chr.equals(Globals.CHR_ALL) ? "Zoom in to see features." :
                 "Zoom in to see features, or right-click to increase Feature Visibility Window.";
     }
 

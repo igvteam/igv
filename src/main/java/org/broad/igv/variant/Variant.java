@@ -26,10 +26,12 @@
 package org.broad.igv.variant;
 
 import htsjdk.tribble.Feature;
+import htsjdk.variant.variantcontext.VariantContext;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a variant call on a collection of samples.
@@ -130,7 +132,7 @@ public interface Variant extends Feature {
     /**
      * @return the list of filters applied to this variant.  Should not return null, return an empty collection if no filters.
      */
-    Collection<String> getFilters();
+    Set<String> getFilters();
 
 //    /**
 //     * @return the count of genotypes for this variant called as homozygous variant
@@ -152,7 +154,7 @@ public interface Variant extends Feature {
 //     */
 //    public int getNoCallCount();
 
-    double getMethlationRate();
+    double getMethylationRate();
 
     double getCoveredSampleFraction();
 

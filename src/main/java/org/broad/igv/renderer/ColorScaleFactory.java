@@ -29,6 +29,9 @@
  */
 package org.broad.igv.renderer;
 
+import org.broad.igv.Globals;
+import org.broad.igv.ui.color.PaletteColorTable;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,25 +39,14 @@ import java.util.Map;
  * @author jrobinso
  */
 public class ColorScaleFactory {
-
-    static Map<String, ColorScale> colorScaleMap = new HashMap();
-
-
-    public static synchronized ColorScale getScaleFromString(String string) {
-
-        ColorScale cs = colorScaleMap.get(string);
-        if (cs == null) {
-
-            String[] tokens = string.split(";");
-            if (tokens[0].trim().equals(ContinuousColorScale.serializedClassName)) {
-                cs = new ContinuousColorScale(string);
-            } else if (tokens[0].trim().equals(MappedColorScale.serializationClassId)) {
-                cs = new MappedColorScale(string);
-            } else {
-                throw new RuntimeException("Illegal ColorScale: " + string);
-            }
-        }
-        return cs;
+    public static ColorScale getScaleFromString(String string) {
+        String[] tokens = Globals.semicolonPattern.split(string);
+        String trimmed = tokens[0].trim();
+        return switch (trimmed){
+            case ContinuousColorScale.serializedClassName -> new ContinuousColorScale(string);
+            case MappedColorScale.serializationClassId -> new MappedColorScale(string);
+            case PaletteColorTable.SERIALIZATION_ID -> new PaletteColorTable(string);
+            default -> throw new RuntimeException("Illegal ColorScale: " + string);
+        };
     }
-
 }

@@ -32,7 +32,6 @@ import htsjdk.tribble.Feature;
 import htsjdk.variant.variantcontext.GenotypeType;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEvent;
-import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.event.TrackGroupEvent;
 import org.broad.igv.feature.FeatureUtils;
@@ -71,9 +70,9 @@ import static org.broad.igv.prefs.Constants.*;
 public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
 
-    private static Logger log = LogManager.getLogger(VariantTrack.class);
+    private static final Logger log = LogManager.getLogger(VariantTrack.class);
 
-    static final DecimalFormat numFormat = new DecimalFormat("#.###");
+    private static final DecimalFormat numFormat = new DecimalFormat("#.###");
 
     private static final Color CIRC_VIEW_DEFAULT_COLOR = new Color(27, 192, 249);
     private static final int GROUP_BORDER_WIDTH = 3;
@@ -93,12 +92,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     // TODO -- this needs to be settable
     public static int METHYLATION_MIN_BASE_COUNT = 10;
 
+
     public static boolean isVCF(String format) {
-        return (format.equals("vcf3") ||
-                format.equals("vcf4") ||
-                format.equals("vcf") ||
-                format.equals("bcf") ||
-                format.equals("gvcf"));
+        return List.of("vcf3", "vcf4", "vcf", "bcf", "gvcf").contains(format);
     }
 
 
@@ -118,7 +114,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private boolean showGenotypes;
 
     /**
-     * The height of a single row in in squished mode
+     * The height of a single row in squished mode
      */
     private int squishedHeight = DEFAULT_SQUISHED_HEIGHT;
 
@@ -141,16 +137,18 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * Map of group -> samples.  Each entry defines a group, the key is the group name and the value the list of
      * samples in the group.
      */
-    LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap<String, List<String>>();
+    LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap<>();
 
 
     /**
      * Current coloring option
      */
     private ColorMode genotypeColorMode = ColorMode.GENOTYPE;
+    private SelectVcfFieldDialog.ColorResult colorByFormatField;
 
 
     private ColorMode siteColorMode;
+    private SelectVcfFieldDialog.ColorResult colorByInfoField;
 
     /**
      * When true, variants that are marked filtering are not drawn.
@@ -193,11 +191,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public VariantTrack() {
     }
 
-    public VariantTrack(String name, FeatureSource source) {
-        this(null, source, Collections.<String>emptyList(), false);
-        this.setName(name);
-    }
-
     public VariantTrack(ResourceLocator locator, FeatureSource source, List<String> samples,
                         boolean enableMethylationRateSupport) {
         super(locator, source);
@@ -214,21 +207,19 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             genotypeColorMode = ColorMode.METHYLATION_RATE;
         }
 
+        //TODO boolean choice where we need multiple choice
         this.siteColorMode = prefMgr.getAsBoolean(VARIANT_COLOR_BY_ALLELE_FREQ) ?
                 ColorMode.ALLELE_FREQUENCY :
                 ColorMode.ALLELE_FRACTION;
 
         this.allSamples = samples;
 
-        // this handles the new attribute grouping mechanism:
-        setupGroupsFromAttributes();
-
         setDisplayMode(DisplayMode.EXPANDED);
 
         int sampleCount = sampleCount();
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
-        squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
+        squishedHeight = sampleCount == 0 || !showGenotypes ? DEFAULT_SQUISHED_HEIGHT :
                 Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (height - getVariantBandHeight() - margins) / sampleCount));
         showGenotypes = defaultShowGenotypes();
 
@@ -258,7 +249,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         // Set visibility window.  These values are appropriate for human dbsnp/1kg files, probably conservative otherwise
         // Ugly test on source is to avoid having to add "isIndexed" to a zillion feature source classes.  The intent
         // is to skip this if using a non-indexed source.
-        if (!(source instanceof TribbleFeatureSource && ((TribbleFeatureSource) source).isIndexed() == false)) {
+        if (!(source instanceof TribbleFeatureSource tribbleSource && !(tribbleSource).isIndexed())) {
             int defVisibilityWindow = prefMgr.getAsInt(DEFAULT_VISIBILITY_WINDOW);
             if (defVisibilityWindow > 0) {
                 setVisibilityWindow(defVisibilityWindow * 1000);
@@ -267,9 +258,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 setVisibilityWindow(vw);
             }
         }
-
-        IGVEventBus.getInstance().subscribe(TrackGroupEvent.class, this);
-
     }
 
     private boolean defaultShowGenotypes() {
@@ -277,45 +265,37 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     private void loadAlignmentMappings(String bamListPath) {
-        alignmentFiles = new HashMap<String, String>();
-        BufferedReader br = null;
+        alignmentFiles = new HashMap<>();
 
-        try {
-            br = ParsingUtils.openBufferedReader(bamListPath);
+        try (BufferedReader br = ParsingUtils.openBufferedReader(bamListPath)) {
             String nextLine;
             while ((nextLine = br.readLine()) != null) {
                 String[] tokens = ParsingUtils.TAB_PATTERN.split(nextLine);
                 if (tokens.length < 2) {
                     log.warn("Skipping bam mapping file line: " + nextLine);
                 } else {
-
                     String alignmentPath = tokens[1];
-                    boolean isAbsolute;
-                    if (alignmentPath.startsWith("http://") || alignmentPath.startsWith("ftp:")) {
-                        isAbsolute = true;
-                    } else {
-                        String absolutePath = (new File(alignmentPath)).getAbsolutePath();
-                        String prefix = absolutePath.substring(0, 3);
-                        isAbsolute = alignmentPath.startsWith(prefix);
-                    }
-                    if (!isAbsolute) {
+                    if (!isAbsolute(alignmentPath)) {
                         alignmentPath = FileUtils.getAbsolutePath(alignmentPath, bamListPath);
                     }
-
 
                     alignmentFiles.put(tokens[0], alignmentPath);
                 }
             }
         } catch (IOException e) {
             MessageUtils.showMessage("<html>Error loading bam mapping file: " + bamListPath + "<br>" + e.getMessage());
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
+        }
+    }
 
-                }
-            }
+    private static boolean isAbsolute(final String alignmentPath) {
+        if (alignmentPath.startsWith("http://")
+                || alignmentPath.startsWith("https://")
+                || alignmentPath.startsWith("ftp:")) {
+            return true;
+        } else {
+            final String absolutePath = (new File(alignmentPath)).getAbsolutePath();
+            final String prefix = absolutePath.substring(0, 3);
+            return alignmentPath.startsWith(prefix);
         }
     }
 
@@ -375,9 +355,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     public void sortSamples(Comparator<String> comparator) {
         if (allSamples != null) {
-            Collections.sort(allSamples, comparator);
+            allSamples.sort(comparator);
             for (List<String> samples : samplesByGroups.values()) {
-                Collections.sort(samples, comparator);
+                samples.sort(comparator);
             }
         }
     }
@@ -394,15 +374,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @return
      */
     public int getGenotypeBandHeight() {
-        switch (getDisplayMode()) {
-            case SQUISHED:
-                return getSquishedHeight();
-            case COLLAPSED:
-                return 0;
-            default:
-                return DEFAULT_EXPANDED_GENOTYPE_HEIGHT;
-
-        }
+        return switch (getDisplayMode()) {
+            case SQUISHED -> getSquishedHeight();
+            case COLLAPSED -> 0;
+            default -> DEFAULT_EXPANDED_GENOTYPE_HEIGHT;
+        };
     }
 
     /**
@@ -424,10 +400,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     public Object getHeader() {
-        if (source instanceof TribbleFeatureSource) {
-            return ((TribbleFeatureSource) source).getHeader();
-        }
-        return null;
+        return source.getHeader();
     }
 
     public int sampleCount() {
@@ -460,18 +433,15 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         // If height is < expanded height try "squishing" track, otherwise expand it
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
-        int sampleCount = showGenotypes == false ? 0 : sampleCount();
+        int sampleCount = showGenotypes ? sampleCount() : 0;
         final int expandedHeight = getVariantBandHeight() + margins + (sampleCount * getGenotypeBandHeight());
         if (height < expandedHeight) {
             setDisplayMode(DisplayMode.SQUISHED);
-        } else {
-            if (displayMode != DisplayMode.EXPANDED) {
-                setDisplayMode(DisplayMode.EXPANDED);
-            }
+        } else if (displayMode != DisplayMode.EXPANDED) {
+            setDisplayMode(DisplayMode.EXPANDED);
         }
 
-        squishedHeight = showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
-                Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (height - getVariantBandHeight() - margins) / sampleCount));
+        squishedHeight = showGenotypes ? Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (height - getVariantBandHeight() - margins) / sampleCount)) : DEFAULT_SQUISHED_HEIGHT;
     }
 
 
@@ -507,7 +477,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         int curRowTop = top;
 
-        if (rows.size() > 0) {
+        if (!rows.isEmpty()) {
             final double locScale = context.getScale();
             final double origin = context.getOrigin();
 
@@ -515,8 +485,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             final double pXMax = tmpRect.getMaxX();
             tmpRect.height = getVariantBandHeight();
 
-            int lastEndX = -1;
-            int minSpacing = 3;
             for (PackedFeatures.FeatureRow row : rows) {
                 List<Feature> features = row.getFeatures();
                 for (Feature feature : features) {
@@ -554,11 +522,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                     tmpRect.y = curRowTop;
                     if (tmpRect.intersects(visibleRectangle)) {
                         renderer.renderSiteBand(variant, tmpRect, x, w, context);
-                        lastEndX = x + w - 1;
                     }
 
                     if (showGenotypes) {
-                        renderSamples(g2D, visibleRectangle, variant, context, overallSampleRect, x, w);
+                        renderSamples(visibleRectangle, variant, context, overallSampleRect, x, w);
                         boolean isSelected = selectedVariant != null && selectedVariant == variant;
                         if (isSelected) {
                             Graphics2D selectionGraphics = context.getGraphic2DForColor(Color.black);
@@ -569,7 +536,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 }
 
                 curRowTop += getVariantBandHeight();
-                lastEndX = -1;
 
             }
         } else {
@@ -596,7 +562,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
     }
 
-    private void renderSamples(Graphics2D g2D, Rectangle visibleRectangle, Variant variant, RenderContext context, Rectangle overallSampleRect, int x, int w) {
+    private void renderSamples(Rectangle visibleRectangle, Variant variant, RenderContext context, Rectangle overallSampleRect, int x, int w) {
 
         Rectangle tmpRect = new Rectangle(overallSampleRect);
         tmpRect.height = getGenotypeBandHeight();
@@ -907,6 +873,22 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         this.siteColorMode = siteColorMode;
     }
 
+    public SelectVcfFieldDialog.ColorResult getColorByInfoField(){
+        return colorByInfoField;
+    }
+
+    public void setColorByInfoField(SelectVcfFieldDialog.ColorResult infoField){
+        this.colorByInfoField = infoField;
+    }
+
+    public SelectVcfFieldDialog.ColorResult getColorByFormatField(){
+        return colorByFormatField;
+    }
+
+    public void setColorByFormatField(SelectVcfFieldDialog.ColorResult formatField){
+        this.colorByFormatField = formatField;
+    }
+
     @Override
     public void setColor(Color color) {
         // Setting color implicitly turns of "color by" modes
@@ -1044,7 +1026,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         String id = variant.getID();
 
         StringBuffer toolTip = new StringBuffer();
-        if(id.length() > 0) {
+        if(!id.isEmpty()) {
             toolTip.append("ID: " + id + "<br>");
         }
         toolTip.append("Chr: " + variant.getChr());
@@ -1052,7 +1034,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         toolTip.append("<br>Reference: " + variant.getReference());
         List<Allele> alternates = variant.getAlternateAlleles();
         String alternateString = null;
-        if (alternates.size() > 0) {
+        if (!alternates.isEmpty()) {
             String tmp = alternates.get(0).toString();
             alternateString = StringUtils.join(alternates, ",");
             toolTip.append("<br>Alternate: " + alternateString);
@@ -1086,14 +1068,14 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
             int totalAlleleCount = variant.getTotalAlleleCount();
             if (totalAlleleCount > 0) {
-                toolTip.append("<br>Total # Alleles: " + String.valueOf(totalAlleleCount));
+                toolTip.append("<br>Total # Alleles: " + totalAlleleCount);
             }
 
             double[] af = variant.getAlleleFreqs();
 
             int nonNegativeCounts=0;
-            for(int i=0; i<af.length;i++) {
-                if(af[i] >= 0) nonNegativeCounts++;
+            for (final double v : af) {
+                if (v >= 0) nonNegativeCounts++;
             }
             if(nonNegativeCounts > 0) {
                 String afString = nonNegativeCounts > 1 ? "<br>Allele Fequencies: " : "<br>Allele Frequency: ";
@@ -1106,7 +1088,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 toolTip.append(afString);
             }
         }
-        if (variant.getAttributes().size() > 0) {
+        if (!variant.getAttributes().isEmpty()) {
             toolTip.append(getVariantInfo(variant));
         }
 
@@ -1116,20 +1098,20 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     protected String getVariantInfo(Variant variant) {
         Set<String> keys = variant.getAttributes().keySet();
-        if (keys.size() > 0) {
+        if (!keys.isEmpty()) {
             String toolTip = "<br><br><b>Variant Attributes</b>";
             int count = 0;
 
             // Put AF and GMAF and put at the top, if present
             String k = "AF";
             String afValue = variant.getAttributeAsString(k);
-            if (afValue != null && afValue.length() > 0 && !afValue.equals("null")) {
+            if (afValue != null && !afValue.isEmpty() && !afValue.equals("null")) {
                 toolTip = toolTip.concat("<br>" + getFullName(k) + ": " + variant.getAttributeAsString(k));
             }
 
             k = "GMAF";
             afValue = variant.getAttributeAsString(k);
-            if (afValue != null && afValue.length() > 0 && !afValue.equals("null")) {
+            if (afValue != null && !afValue.isEmpty() && !afValue.equals("null")) {
                 toolTip = toolTip.concat("<br>" + getFullName(k) + ": " + variant.getAttributeAsString(k));
             }
             int maxFilterLines = getMaxFilterLines();
@@ -1221,15 +1203,15 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     public enum ColorMode {
-        GENOTYPE, METHYLATION_RATE, ALLELE_FREQUENCY, NONE, ALLELE_FRACTION
+        GENOTYPE, METHYLATION_RATE, ALLELE_FREQUENCY, NONE, VARIANT_TYPE, ALLELE_FRACTION, INFO_FIELD, FORMAT_FIELD, GENOTYPE_TYPE
     }
 
-    public static enum BackgroundType {
+    public enum BackgroundType {
         NAME, ATTRIBUTE, DATA;
     }
 
 
-    static Map<String, String> fullNames = new HashMap();
+    static Map<String, String> fullNames = new HashMap<>();
 
     static {
         fullNames.put("AA", "Ancestral Allele");
@@ -1247,7 +1229,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     static String getFullName(String key) {
-        return fullNames.containsKey(key) ? fullNames.get(key) : key;
+        return fullNames.getOrDefault(key, key);
     }
 
 
@@ -1260,30 +1242,30 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             return sample;
         }
         String id = variant.getID();
-        StringBuffer toolTip = new StringBuffer();
-        toolTip = toolTip.append("Chr: " + variant.getChr());
-        toolTip = toolTip.append("<br>Position: " + variant.getPositionString());
-        toolTip = toolTip.append("<br>ID: " + id + "<br>");
-        toolTip = toolTip.append("<br><b>Genotype Information</b>");
-        toolTip = toolTip.append("<br>Sample: " + sample);
+        final StringBuffer toolTip = new StringBuffer();
+        toolTip.append("Chr: ").append(variant.getChr());
+        toolTip.append("<br>Position: " + variant.getPositionString());
+        toolTip.append("<br>ID: " + id + "<br>");
+        toolTip.append("<br><b>Genotype Information</b>");
+        toolTip.append("<br>Sample: " + sample);
 
         Genotype genotype = variant.getGenotype(sample);
         if (genotype != null) {
-            toolTip = toolTip.append("<br>Genotype: " + genotype.getGenotypeString());
-            toolTip = toolTip.append("<br>Quality: " + numFormat.format(genotype.getPhredScaledQual()));
-            toolTip = toolTip.append("<br>Type: " + genotype.getTypeString());
+            toolTip.append("<br>Genotype: " + genotype.getGenotypeString());
+            toolTip.append("<br>Quality: " + numFormat.format(genotype.getPhredScaledQual()));
+            toolTip.append("<br>Type: " + genotype.getTypeString());
         }
         if (variant.isFiltered()) {
-            toolTip = toolTip.append("<br>Is Filtered Out: Yes</b>");
-            toolTip = toolTip.append(getFilterTooltip(variant));
+            toolTip.append("<br>Is Filtered Out: Yes</b>");
+            toolTip.append(getFilterTooltip(variant));
         } else {
-            toolTip = toolTip.append("<br>Is Filtered Out: No</b><br>");
+            toolTip.append("<br>Is Filtered Out: No</b><br>");
         }
 
         if (genotype != null) {
             String sInfoStr = getGenotypeInfo(genotype);
             if (sInfoStr != null) {
-                toolTip = toolTip.append(sInfoStr + "<br>");
+                toolTip.append(sInfoStr + "<br>");
             }
         }
         return toolTip.toString();
@@ -1291,13 +1273,12 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
 
     private String getFilterTooltip(Variant variant) {
-        Collection filters = variant.getFilters();
-        String toolTip = "<br>";
-        for (Object filter : filters) {
-            toolTip = toolTip.concat("- " + (String) filter + "<br>");
+        Set<String> filters = variant.getFilters();
+        StringBuilder toolTip = new StringBuilder("<br>");
+        for (String filter : filters) {
+           toolTip.append("- " + filter + "<br>");
         }
-
-        return toolTip;
+        return String.valueOf(toolTip);
     }
 
 
@@ -1449,54 +1430,52 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     public void loadSelectedBams() {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                // Use a set to enforce uniqueness
-                final int nSamples = selectedSamples.size();
-                if (nSamples == 0) {
-                    return;
-                }
+        Runnable runnable = () -> {
+            // Use a set to enforce uniqueness
+            final int nSamples = selectedSamples.size();
+            if (nSamples == 0) {
+                return;
+            }
 
-                Set<String> bams = new HashSet<String>(nSamples);
-                String name = "";
-                int n = 0;
-                for (String sample : selectedSamples) {
-                    bams.add(getBamFileForSample(sample));
-                    n++;
-                    if (n < 7) {
-                        if (n == 6) {
-                            name += "...";
-                        } else {
-                            name += sample;
-                            if (n < nSamples) name += ", ";
-                        }
+            Set<String> bams = selectedSamples.stream().map(this::getBamFileForSample).collect(Collectors.toSet());
+            String name = "";
+            int n = 0;
+
+            for (String sample : selectedSamples) {
+                bams.add(getBamFileForSample(sample));
+                n++;
+                if (n < 7) {
+                    if (n == 6) {
+                        name += "...";
+                    } else {
+                        name += sample;
+                        if (n < nSamples) name += ", ";
                     }
                 }
-
-                if (bams.size() > 20) {
-                    boolean proceed = MessageUtils.confirm("Are you sure you want to load " + nSamples + " bams?");
-                    if (!proceed) return;
-                }
-
-                String bamList = "";
-                for (String bam : bams) {
-                    bamList += bam + ",";
-
-                }
-                ResourceLocator loc = new ResourceLocator(bamList);
-                loc.setFormat("alist");
-                loc.setName(name);
-                List<Track> tracks = null;
-                try {
-                    tracks = IGV.getInstance().load(loc);
-                } catch (Exception e) {
-                    log.error("Error loading bam: " + loc.getPath(), e);
-                }
-
-                TrackPanel panel = IGV.getInstance().getVcfBamPanel();
-                panel.clearTracks();
-                panel.addTracks(tracks);
             }
+
+            if (bams.size() > 20) {
+                boolean proceed = MessageUtils.confirm("Are you sure you want to load " + nSamples + " bams?");
+                if (!proceed) return;
+            }
+
+            StringBuilder bamList = new StringBuilder();
+            for (String bam : bams) {
+                bamList.append(bam).append(",");
+            }
+            ResourceLocator loc = new ResourceLocator(bamList.toString());
+            loc.setFormat("alist");
+            loc.setName(name);
+            List<Track> tracks = Collections.emptyList();
+            try {
+                tracks = IGV.getInstance().load(loc);
+            } catch (Exception e) {
+                log.error("Error loading bam: " + loc.getPath(), e);
+            }
+
+            TrackPanel panel = IGV.getInstance().getVcfBamPanel();
+            panel.clearTracks();
+            panel.addTracks(tracks);
         };
 
         LongRunningTask.submit(runnable);

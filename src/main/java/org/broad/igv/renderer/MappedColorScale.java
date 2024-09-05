@@ -33,7 +33,7 @@ package org.broad.igv.renderer;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -43,18 +43,15 @@ import java.util.Map;
  */
 public class MappedColorScale extends AbstractColorScale {
 
-    public static String serializationClassId = "MappedColorScale";
-    Map<String, Color> colorMap;
-    boolean defaultCS = false;
+    public static final String serializationClassId = "MappedColorScale";
+    final Map<String, Color> colorMap = new LinkedHashMap<>();
 
     /**
-     * Construct an instance from a serizled string representation.
+     * Construct an instance from a serialized string representation.
      *
      * @param serializedInstance
      */
     public MappedColorScale(String serializedInstance) {
-
-        colorMap = new HashMap<String, Color>();
 
         String[] tokens = serializedInstance.split(";");
 
@@ -75,29 +72,23 @@ public class MappedColorScale extends AbstractColorScale {
      * @param colorMap
      */
     public MappedColorScale(Map<String, Color> colorMap) {
-        this.colorMap = new HashMap<String, Color>();
         this.colorMap.putAll(colorMap);
     }
 
 
-    public boolean isDefault() {
-        return defaultCS;
-    }
-
     /**
-     * Return a string representing the state fo this instance
+     * Return a string representing the state of this instance
      *
      * @return
      */
     public String asString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(serializationClassId);
-        for (Map.Entry<String, Color> mapEntry : colorMap.entrySet()) {
+        colorMap.forEach((key, value) -> {
             buf.append(";");
-            buf.append(mapEntry.getKey() + " ");
-            buf.append(ColorUtilities.colorToString(mapEntry.getValue()));
-
-        }
+            buf.append(key + " ");
+            buf.append(ColorUtilities.colorToString(value));
+        });
         return buf.toString();
     }
 
@@ -109,33 +100,9 @@ public class MappedColorScale extends AbstractColorScale {
         return colorMap.size();
     }
 
-    /**
-     * Comparison method.  Primary use is to support unit tests.
-     *
-     * @param anotherCS
-     * @return
-     */
-    public boolean isSame(MappedColorScale anotherCS) {
-
-        if (this.getSize() != anotherCS.getSize()) {
-            return false;
-        }
-        for (String key : colorMap.keySet()) {
-            if (!this.getColor(key).equals(anotherCS.getColor(key))) {
-                return false;
-            }
-        }
-        return true;
-
-    }
-
     @Override
     public Color getColor(String key) {
-        return colorMap.containsKey(key) ? colorMap.get(key) : defaultColor;
-    }
-
-    public Color getNoDataColor() {
-        return noDataColor;
+        return colorMap.getOrDefault(key, DEFAULT_COLOR);
     }
 
 }

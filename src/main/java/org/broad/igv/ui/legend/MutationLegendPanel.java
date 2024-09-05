@@ -34,8 +34,6 @@ package org.broad.igv.ui.legend;
 
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.renderer.ColorScale;
-import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.PaletteColorTable;
 
@@ -47,53 +45,41 @@ import java.util.Map;
  *
  * @author jrobinso
  */
-public class MutationLegendPanel extends LegendPanel {
-
-    PaletteColorTable colorTable;
+public class MutationLegendPanel extends DiscreteLegendPanel {
 
     public MutationLegendPanel() {
-        init();
+        super(new PaletteColorTable());
+        reloadPreferences();
     }
 
-    private void init() {
+    @Override
+    protected void reloadPreferences() {
         PaletteColorTable prefTable = PreferencesManager.getPreferences().getMutationColorScheme();
         colorTable = new PaletteColorTable();
         for (String key : prefTable.getKeys()) {
             colorTable.put(key, prefTable.get(key));
         }
-    }
-
-    protected void persistResetPreferences() {
-        PreferencesManager.getPreferences().resetMutationColorScheme();
-        reloadPreferences();
-    }
-
-    protected void reloadPreferences() {
-        init();
         repaint();
-    }
-
-    protected ColorScale getColorScale() {
-
-        // TODO Refactor the base class this empty method is not needed
-        return null;
     }
 
     @Override
     protected void resetPreferencesToDefault() {
-
-        persistResetPreferences();
+        PreferencesManager.getPreferences().resetMutationColorScheme();
+        reloadPreferences();
         showResetDisplay();
     }
 
-    /**
-     * Open the user preferences dialog
-     */
+    @Override
+    protected void persistCurrentPreferences() {
+        //mutation edits are persisted on edit
+    }
+
+    @Override
     public void edit() {
 
-        boolean useColors =  IGV.getInstance().getSession().getColorOverlay();
+        boolean useColors = IGV.getInstance().getSession().getColorOverlay();
         PaletteColorTable ct = PreferencesManager.getPreferences().getMutationColorScheme();
-        MutationColorMapEditor editor = new MutationColorMapEditor(IGV.getInstance().getMainFrame(), ct.getColorMap(),useColors);
+        MutationColorMapEditor editor = new MutationColorMapEditor(IGV.getInstance().getMainFrame(), ct.getColorMap(), useColors);
         editor.setVisible(true);
 
         Map<String, Color> changedColors = editor.getChangedColors();
@@ -107,49 +93,9 @@ public class MutationLegendPanel extends LegendPanel {
         }
 
         boolean useColorsNew = editor.getUseColors();
-        if(useColorsNew != useColors) {
+        if (useColorsNew != useColors) {
             PreferencesManager.getPreferences().put(Constants.COLOR_MUTATIONS, String.valueOf(useColorsNew));
         }
     }
 
-
-    @Override
-    public void paintLegend(Graphics2D g2D) {
-
-
-        if (colorTable == null) {
-            return;
-        }
-
-        g2D.setFont(FontManager.getFont(10));
-
-        FontMetrics fm = g2D.getFontMetrics();
-        int dh = fm.getHeight() / 2 + 3;
-
-        int x = 0;
-        int lineHeight = 12;
-        int y = lineHeight;
-        int colCount = 0;
-
-        for (Map.Entry<String, Color> entry : colorTable.entrySet()) {
-
-            String mutType = entry.getKey();
-            String label = mutType.replace("_", " ");
-            int labelWidth = (int) fm.getStringBounds(label, g2D).getWidth();
-
-            g2D.setColor(entry.getValue());
-            g2D.fillRect(x, y, 10, 10);
-            g2D.setColor(Color.BLACK);
-            g2D.drawRect(x, y, 10, 10);
-            g2D.drawString(label, x + 20, y + dh);
-            x += labelWidth + 40;
-            colCount++;
-
-            if (colCount % 5 == 0) {
-                y += lineHeight + 5;
-                x = 0;
-            }
-        }
-
-    }
 }

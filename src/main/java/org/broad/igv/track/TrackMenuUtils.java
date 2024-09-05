@@ -1030,7 +1030,7 @@ public class TrackMenuUtils {
 
     public static void changeFeatureVisibilityWindow(final Collection<Track> selectedTracks) {
 
-        Collection<Track> featureTracks = new ArrayList(selectedTracks.size());
+        List<Track> featureTracks = new ArrayList<>(selectedTracks.size());
         for (Track t : selectedTracks) {
             if (t instanceof FeatureTrack) {
                 featureTracks.add(t);
@@ -1042,7 +1042,7 @@ public class TrackMenuUtils {
         }
 
 
-        int origValue = featureTracks.iterator().next().getVisibilityWindow();
+        int origValue = featureTracks.get(0).getVisibilityWindow();
         double origValueKB = (origValue / 1000.0);
         Double value = getDoubleInput("Enter visibility window in kilo-bases.  To load all data enter zero.", origValueKB);
         if (value == null) {
@@ -1087,7 +1087,7 @@ public class TrackMenuUtils {
                     String.valueOf(value));
 
             //strValue will be null if dialog cancelled
-            if ((strValue == null) || strValue.trim().equals("")) {
+            if ((strValue == null) || strValue.trim().isEmpty()) {
                 return null;
             }
 
@@ -1110,7 +1110,7 @@ public class TrackMenuUtils {
                     String.valueOf(value));
 
             //strValue will be null if dialog cancelled
-            if ((strValue == null) || strValue.trim().equals("")) {
+            if ((strValue == null) || strValue.trim().isEmpty()) {
                 return null;
             }
 
@@ -1196,30 +1196,25 @@ public class TrackMenuUtils {
 
     public static JMenuItem getCopyDetailsItem(final Feature f, final TrackClickEvent evt) {
         JMenuItem item = new JMenuItem("Copy Details to Clipboard");
-        item.addActionListener(new ActionListener() {
+        item.addActionListener(e -> {
 
-            public void actionPerformed(ActionEvent e) {
+            ReferenceFrame frame = evt.getFrame();
+            int mouseX = evt.getMouseEvent().getX();
 
-                ReferenceFrame frame = evt.getFrame();
-                int mouseX = evt.getMouseEvent().getX();
-
-                double location = frame.getChromosomePosition(mouseX);
-                if (f instanceof IGVFeature) {
-                    String details = f.getChr() + ":" + (f.getStart() + 1) + "-" + f.getEnd() +
-                            System.getProperty("line.separator") + System.getProperty("line.separator");
-                    String valueString = ((IGVFeature) f).getValueString(location, mouseX, null);
-                    if (details != null) {
-                        details += valueString;
-                        details = details.replace("<br>", System.getProperty("line.separator"));
-                        details = details.replace("<br/>", System.getProperty("line.separator"));
-                        details = details.replace("<b>", "");
-                        details = details.replace("</b>", "");
-                        details = details.replace("&nbsp;", " ");
-                        details = details.replace("<hr>",
-                                System.getProperty("line.separator") + "--------------------------" + System.getProperty("line.separator"));
-                        StringUtils.copyTextToClipboard(details);
-                    }
-                }
+            double location = frame.getChromosomePosition(mouseX);
+            if (f instanceof IGVFeature igvFeature) {
+                final String sep = System.lineSeparator();
+                String details = f.getChr() + ":" + (igvFeature.getStart() + 1) + "-" + f.getEnd() + sep + sep;
+                String valueString = igvFeature.getValueString(location, mouseX, null);
+                details += valueString;
+                details = details.replace("<br>", sep);
+                details = details.replace("<br/>", sep);
+                details = details.replace("<b>", "");
+                details = details.replace("</b>", "");
+                details = details.replace("&nbsp;", " ");
+                details = details.replace("<hr>",
+                        sep + "--------------------------" + sep);
+                StringUtils.copyTextToClipboard(details);
             }
         });
         return item;
@@ -1228,18 +1223,16 @@ public class TrackMenuUtils {
     public static JMenuItem getCopySequenceItem(final Feature f) {
 
         final Strand strand;
-        if (f instanceof IGVFeature) {
-            strand = ((IGVFeature) f).getStrand();
+        if (f instanceof final IGVFeature igvFeature) {
+            strand = igvFeature.getStrand();
         } else {
             strand = Strand.NONE;
         }
 
         JMenuItem item = new JMenuItem("Copy Sequence");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                IGV.copySequenceToClipboard(genome, f.getChr(), f.getStart(), f.getEnd(), strand);
-            }
+        item.addActionListener(evt -> {
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            IGV.copySequenceToClipboard(genome, f.getChr(), f.getStart(), f.getEnd(), strand);
         });
         return item;
     }
@@ -1323,10 +1316,10 @@ public class TrackMenuUtils {
     }
 
     public static JMenuItem getShowFeatureNames(final Collection<Track> selectedTracks) {
-        boolean currentValue = selectedTracks.stream().allMatch(t -> t.isShowFeatureNames());
+        boolean currentValue = selectedTracks.stream().allMatch(Track::isShowFeatureNames);
         String label = currentValue ? "Hide Feature Names" : "Show Feature Names";
         JMenuItem item = new JMenuItem(label);
-        item.addActionListener(evt -> selectedTracks.stream().forEach(t -> t.setShowFeatureNames(!currentValue)));
+        item.addActionListener(evt -> selectedTracks.forEach(t -> t.setShowFeatureNames(!currentValue)));
         return item;
     }
 
@@ -1340,9 +1333,9 @@ public class TrackMenuUtils {
             if (newVal == null) {
                 return; // Dialog canceled
             }
-            selectedTracks.stream().forEach(t -> {
-                if (t instanceof FeatureTrack) {
-                    ((FeatureTrack) t).setLabelField(newVal);
+            selectedTracks.forEach(t -> {
+                if (t instanceof FeatureTrack ft) {
+                   ft.setLabelField(newVal);
                 }
             });
             IGV.getInstance().repaint(selectedTracks);
@@ -1357,30 +1350,5 @@ public class TrackMenuUtils {
         item.addActionListener(evt -> changeFontSize(selectedTracks));
         return item;
     }
-
-
-    // Experimental methods follow
-
-    public static JMenuItem getShowSortFramesItem(final Track track) {
-
-        final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Sort frames");
-
-        item.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Runnable runnable = new Runnable() {
-                    public void run() {
-                        FrameManager.sortFrames(track);
-                        IGV.getInstance().resetFrames();
-                    }
-                };
-                LongRunningTask.submit(runnable);
-            }
-
-        });
-        return item;
-    }
-
 }
 

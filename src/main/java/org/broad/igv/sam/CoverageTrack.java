@@ -224,10 +224,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         if (viewWindowSize > getVisibilityWindow() && dataSource == null) {
             Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
-            String message = context.getReferenceFrame().getChrName().equals(Globals.CHR_ALL) ?
-                    "Select a chromosome and zoom in to see coverage." :
-                    "Zoom in to see coverage.";
-            GraphicUtils.drawCenteredText(message, visibleRect, g);
+            GraphicUtils.drawCenteredText("Zoom in to see coverage.", visibleRect, g);
             return;
         }
 

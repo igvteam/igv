@@ -26,6 +26,7 @@
 package org.broad.igv.renderer;
 
 import java.awt.*;
+import java.util.Arrays;
 
 /**
  * @author jrobinso
@@ -34,14 +35,13 @@ import java.awt.*;
 public class MonocolorScale extends AbstractColorScale {
 
     static int nSteps = 10;
-    float maxAlpha = 1.0f;
-    float minAlpha = 0.1f;
+    final float maxAlpha = 1.0f;
+    final float minAlpha = 0.1f;
 
-    float minValue;
-    float maxValue;
-    Color [] colorTable = new Color[nSteps];
+    final float minValue;
+    final float maxValue;
+    final Color [] colorTable = new Color[nSteps];
     private final float range;
-
 
     public MonocolorScale(float x1, float x2, Color baseColor) {
 
@@ -50,9 +50,7 @@ public class MonocolorScale extends AbstractColorScale {
         range = maxValue - minValue;
 
         if(x1 == x2) {
-            for(int i=0; i<colorTable.length; i++)  {
-                colorTable[i] = baseColor;
-            }
+            Arrays.fill(colorTable, baseColor);
         }
         else {
             float alphaStep = (maxAlpha - minAlpha) / (nSteps - 1);
@@ -64,9 +62,6 @@ public class MonocolorScale extends AbstractColorScale {
         }
 
     }
-
-
-
 
     @Override
     public Color getColor(float value) {
@@ -84,7 +79,4 @@ public class MonocolorScale extends AbstractColorScale {
         return null;
     }
 
-    public boolean isDefault() {
-        return false;  
-    }
 }

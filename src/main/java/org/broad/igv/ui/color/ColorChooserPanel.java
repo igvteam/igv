@@ -47,7 +47,7 @@ public class ColorChooserPanel extends JPanel implements Serializable {
 
     Color selectedColor;
 
-    java.util.List<ActionListener> listeners = new ArrayList<ActionListener>();
+    java.util.List<ActionListener> listeners = new ArrayList<>();
 
 
     public ColorChooserPanel() {

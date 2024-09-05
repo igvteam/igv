@@ -25,12 +25,32 @@
 
 package org.broad.igv.ui.color;
 
+import org.broad.igv.renderer.ColorScale;
+
 import java.awt.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.SequencedMap;
 
 /**
  * @author Jim Robinson
  * @date 11/5/11
  */
-public interface ColorTable {
-    Color get(String key);
+public abstract class ColorTable implements ColorScale {
+    final SequencedMap<String, Color> colorMap = new LinkedHashMap<>();
+
+    public Color get(String key) {
+        return colorMap.computeIfAbsent(key, this::computeColor);
+    }
+
+    public Color getColor(String key) { return get(key);}
+    public Color getColor(float value) {
+        return get(Double.toString(value));
+    }
+
+    public String asString(){
+        return null;
+    }
+
+    protected abstract Color computeColor(String key);
 }

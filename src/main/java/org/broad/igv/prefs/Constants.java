@@ -234,6 +234,13 @@ final public class Constants {
     public static final String AF_REF_COLOR = "AF_REF.COLOR";
     public static final String AF_VAR_COLOR = "AF_VAR.COLOR";
 
+    // Variant Attribute Display Settings
+    public static final String DEFAULT_CONTINUOUS_COLOR_SCALE = "DEFAULT_CONTINUOUS_COLOR_SCALE";
+    public static final String DEFAULT_DISCRETE_COLOR_SCALE = "DEFAULT_DISCRETE_COLOR_SCALE";
+    public static final String DEFAULT_BOOLEAN_COLOR_SCALE = "DEFAULT_BOOLEAN_COLOR_SCALE";
+
+
+
     // Heatmap settings
     public static final String NO_DATA_COLOR = "NO_DATA.COLOR";
     public static final String NO_CALL_COLOR = "NO_CALL.COLOR";

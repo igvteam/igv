@@ -27,8 +27,8 @@ package org.broad.igv.variant;
 
 import htsjdk.variant.variantcontext.GenotypeType;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents a genotype,  that is a variant call on a single sample
@@ -46,7 +46,7 @@ public interface Genotype {
 
     /**
      * @return The GenotypeType.
-     *         Should be GenotypeType.UNAVAILABLE if not known, never null
+     *         Should be {@linkplain GenotypeType#UNAVAILABLE} if not known, never null
      *         See {@link htsjdk.variant.variantcontext.GenotypeType}
      */
     GenotypeType getType();
@@ -100,5 +100,18 @@ public interface Genotype {
      * @return true if this genotype is a no-call
      */
     boolean isNoCall();
+
+    default List<String> getAttributeAsStringList(String key) {
+            Object o = this.getAttributes().get(key);
+            return switch(o) {
+                case null -> Collections.emptyList();
+                case String string -> Arrays.stream(string.split(",")).toList();
+                case List<?> list -> list.stream().map(Object::toString).toList();
+                case int[] integers -> Arrays.stream(integers).boxed().map(String::valueOf).toList();
+                case double[] doubles -> Arrays.stream(doubles).boxed().map(String::valueOf).toList();
+                case Object[] objects -> Arrays.stream(objects).map(Object::toString).toList();
+                default -> Collections.singletonList(o.toString());
+            };
+    }
 
 }

@@ -32,7 +32,6 @@ package org.broad.igv.renderer;
 
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.ui.UIConstants;
 
 import java.awt.*;
 
@@ -41,15 +40,20 @@ import java.awt.*;
  */
 public abstract class AbstractColorScale implements ColorScale {
 
-    final protected static Color defaultColor = Color.BLACK;
+    final static Color DEFAULT_COLOR = Color.BLACK;
     protected Color noDataColor = PreferencesManager.getPreferences().getAsColor(Constants.NO_DATA_COLOR);
 
+    /* default behavior is parse the input as a float and look up the color by number*/
     public Color getColor(String symbol) {
-        return defaultColor;
+        try{
+            return getColor(Float.parseFloat(symbol));
+        } catch (NumberFormatException |  NullPointerException e){
+            return DEFAULT_COLOR;
+        }
     }
 
     public Color getColor(float value) {
-        return defaultColor;
+        return DEFAULT_COLOR;
     }
 
     /**

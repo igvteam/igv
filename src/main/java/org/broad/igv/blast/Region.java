@@ -25,6 +25,7 @@
 
 package org.broad.igv.blast;
 
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.Color;
@@ -108,20 +109,9 @@ public class Region extends AbstractMapping
 
     pw.print(getFromChr() + "\t" + getFromStart() + "\t" + getFromEnd() + "\t" + name + "\t1000\t" +
             (getDirection() ? "+" : "-") + "\t" + getFromStart() + "\t" + getFromEnd() + "\t" +
-            convertColorToRGBString(ChromosomeColors.getColor(getToChr())) + "\t" + blockCount + "\t" +
+            ColorUtilities.colorToString(ChromosomeColors.getColor(getToChr())) + "\t" + blockCount + "\t" +
             blockSizes + "\t" + blockStarts);
 
     return sw.toString();
-  }
-
-  public static String convertColorToRGBString(Color color)
-  {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append(color.getRed());
-    buffer.append(",");
-    buffer.append(color.getGreen());
-    buffer.append(",");
-    buffer.append(color.getBlue());
-    return buffer.toString();
   }
 }

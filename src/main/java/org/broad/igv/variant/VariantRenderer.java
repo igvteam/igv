@@ -25,16 +25,25 @@
 
 package org.broad.igv.variant;
 
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.*;
 import org.broad.igv.logging.*;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.color.ColorPalette;
+import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.color.PaletteColorTable;
+import org.broad.igv.variant.vcf.VCFVariant;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -46,15 +55,16 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class VariantRenderer { //extends FeatureRenderer {
 
-    private static Logger log = LogManager.getLogger(VariantRenderer.class);
+    private static final Logger log = LogManager.getLogger(VariantRenderer.class);
 
     private static final int BOTTOM_MARGIN = 0;
     private static final int TOP_MARGIN = 3;
-    private static float alphaValue = 0.2f;
+    private static final float ALPHA_VALUE = 0.2f;
 
-    static Map<Character, Color> nucleotideColors = new HashMap<Character, Color>();
+    static Map<Character, Color> nucleotideColors;
 
     static {
+        nucleotideColors = new HashMap<>();
         nucleotideColors.put('A', Color.GREEN);
         nucleotideColors.put('a', Color.GREEN);
         nucleotideColors.put('C', Color.BLUE);
@@ -70,7 +80,7 @@ public class VariantRenderer { //extends FeatureRenderer {
     }
 
 
-    private VariantTrack track;
+    private final VariantTrack track;
 
     private Color colorAlleleBandVar;
     private Color colorAlleleBandVarAlpha;
@@ -87,6 +97,25 @@ public class VariantRenderer { //extends FeatureRenderer {
 
     private Color nonRefColor = new Color(200, 200, 215);
 
+    //Variant Type Colors
+    private Color snpColor = new Color(34, 179, 246);
+    private Color mnpColor = new Color(34, 101, 246);
+    private Color insertionColor = new Color(225, 32, 243);
+    private Color deletionColor = new Color(255, 170, 63);
+    private Color mixedColor = new Color(223, 24, 24);
+    private Color symbolicColor = new Color(10, 228, 107);
+    private Color missingColor = new Color(97, 97, 97);
+    private Color lightMissingColor = new Color( 240, 240 ,240);
+    //boolean colors
+    private Color trueColor = Color.BLACK;
+    private Color falseColor =  Color.red;
+
+
+    private ColorPalette palette = ColorUtilities.getPalette("Pastel 1");
+    private ColorTable defaultTagValueTable = new PaletteColorTable(palette);
+    private ColorScale infoTagScale = defaultTagValueTable;
+    private ColorScale formatTagScale = defaultTagValueTable;
+
     public VariantRenderer(VariantTrack track) {
         this.track = track;
         updateColors();
@@ -101,29 +130,29 @@ public class VariantRenderer { //extends FeatureRenderer {
 
         if (!prefMgr.getAsColor(AF_VAR_COLOR).equals(colorAlleleBandVar)) {
             colorAlleleBandVar = prefMgr.getAsColor(AF_VAR_COLOR);
-            colorAlleleBandVarAlpha = ColorUtilities.getCompositeColor(colorAlleleBandVar, alphaValue);
+            colorAlleleBandVarAlpha = ColorUtilities.getCompositeColor(colorAlleleBandVar, ALPHA_VALUE);
 
         }
         if (!prefMgr.getAsColor(AF_REF_COLOR).equals(colorAlleleBandRef)) {
             colorAlleleBandRef = prefMgr.getAsColor(AF_REF_COLOR);
-            colorAlleleBandRefAlpha = ColorUtilities.getCompositeColor(colorAlleleBandRef, alphaValue);
+            colorAlleleBandRefAlpha = ColorUtilities.getCompositeColor(colorAlleleBandRef, ALPHA_VALUE);
 
         }
         if (!prefMgr.getAsColor(HOMREF_COLOR).equals(colorHomRef)) {
             colorHomRef = prefMgr.getAsColor(HOMREF_COLOR);
-            colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef, alphaValue);
+            colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef, ALPHA_VALUE);
         }
         if (!prefMgr.getAsColor(HOMVAR_COLOR).equals(colorHomVar)) {
             colorHomVar = prefMgr.getAsColor(HOMVAR_COLOR);
-            colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar, alphaValue);
+            colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar, ALPHA_VALUE);
         }
         if (!prefMgr.getAsColor(HETVAR_COLOR).equals(colorHet)) {
             colorHet = prefMgr.getAsColor(HETVAR_COLOR);
-            colorHetAlpha = ColorUtilities.getCompositeColor(colorHet, alphaValue);
+            colorHetAlpha = ColorUtilities.getCompositeColor(colorHet, ALPHA_VALUE);
         }
         if (!prefMgr.getAsColor(NOCALL_COLOR).equals(colorNoCall)) {
             colorNoCall = prefMgr.getAsColor(NOCALL_COLOR);
-            colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall, alphaValue);
+            colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall, ALPHA_VALUE);
         }
 
     }
@@ -153,21 +182,20 @@ public class VariantRenderer { //extends FeatureRenderer {
         Color colorAlleleRef = variant.isNonRef() ? nonRefColor :   track.getColor();
         //colorAlleleRef = new Color(((int)(Math.random()*255)),((int)(Math.random()*255)),((int)(Math.random()*255)));
 
-        Color colorAlleleRefAlpha = useAlpha ? ColorUtilities.getCompositeColor(colorAlleleRef, alphaValue) : colorAlleleRef;
-
-        if(track.getSiteColorMode() == VariantTrack.ColorMode.NONE) {
-            refColor = track.getColor();
-            alleleColor = track.getColor();
-            percent = 0;
-        }
-        else if (track.getSiteColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
-            alleleColor = this.convertMethylationRateToColor((float) variant.getMethlationRate() / 100);
+        Color colorAlleleRefAlpha = useAlpha ? ColorUtilities.getCompositeColor(colorAlleleRef, ALPHA_VALUE) : colorAlleleRef;
+        final List<ColorBand> colorBands;
+        final VariantTrack.ColorMode siteColorMode = track.getSiteColorMode();
+        if (siteColorMode == VariantTrack.ColorMode.METHYLATION_RATE) {
+            alleleColor = this.convertMethylationRateToColor((float) variant.getMethylationRate() / 100);
             percent = variant.getCoveredSampleFraction();
             refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
-        } else {
+            colorBands = List.of(new ColorBand(refColor, 1.0 - percent), new ColorBand(alleleColor, percent));
+        }
+        else if (siteColorMode == VariantTrack.ColorMode.ALLELE_FREQUENCY
+                || siteColorMode == VariantTrack.ColorMode.ALLELE_FRACTION ) {
             alleleColor = useAlpha ? colorAlleleBandVarAlpha : colorAlleleBandVar; // Red
 
-            double af = track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FREQUENCY ?
+            double af = siteColorMode == VariantTrack.ColorMode.ALLELE_FREQUENCY ?
                     variant.getAlternateAlleleFrequency() :
                     variant.getAlleleFraction();
             percent = Math.min(1, af);
@@ -178,24 +206,158 @@ public class VariantRenderer { //extends FeatureRenderer {
             } else {
                 refColor = useAlpha ? colorAlleleBandRefAlpha : colorAlleleBandRef;                      // Blue
             }
-
+            colorBands = List.of(new ColorBand(refColor, 1.0 - percent), new ColorBand(alleleColor, percent));
+        }
+        else if ( track.getSiteColorMode() == VariantTrack.ColorMode.VARIANT_TYPE){
+            Color solidColor = switch (variant.getType()) {
+                case "NO_VARIATION" -> nonRefColor;
+                case "SNP" -> snpColor;
+                case "MNP" -> mnpColor;
+                case "INDEL" -> {
+                    final int refLength = variant.getReference().length();
+                    final List<Allele> alternateAlleles = variant.getAlternateAlleles();
+                    boolean seenDeletion = false ;
+                    boolean seenInsertion = false;
+                    for(Allele allele : alternateAlleles) {
+                        final int altLength = allele.getBases().length;
+                        if(altLength > refLength){
+                            seenInsertion = true;
+                        } else if(altLength < refLength) {
+                            seenDeletion = true;
+                        }
+                    }
+                    if(seenDeletion && seenInsertion){
+                        yield mixedColor;
+                    } else if( seenDeletion){
+                        yield deletionColor;
+                    } else {
+                        yield insertionColor;
+                    }
+                }
+                case "SYMBOLIC" -> symbolicColor;
+                case "MIXED"  -> mixedColor;
+                default -> mixedColor;
+            };
+            refColor = useAlpha ? ColorUtilities.getCompositeColor(solidColor, ALPHA_VALUE) : solidColor;
+            colorBands = List.of(new ColorBand(refColor, 1.0));
+        } else if(track.getSiteColorMode() == VariantTrack.ColorMode.INFO_FIELD){
+            final SelectVcfFieldDialog.ColorResult infoField = track.getColorByInfoField();
+            colorBands = getColorsForInfoField(variant, infoField);
+        }
+        else {
+            colorBands = List.of(new ColorBand(track.getColor(), 1.0));
         }
 
-        final int bottomY = calculateBottomYSiteBand(bandRectangle);
-        final int barHeight = calculateBarHeightSiteBand(bandRectangle);
 
-        final int alleleBarHeight = (int) (percent * barHeight);
-        final int remainderHeight = barHeight - alleleBarHeight;
+        drawBars(pixelX, calculateBottomYSiteBand(bandRectangle), xWidth, calculateBarHeightSiteBand(bandRectangle), context, colorBands);
+    }
 
-        if (remainderHeight > 0) {
-            Graphics2D g = context.getGraphic2DForColor(refColor);
-            g.fillRect(pixelX, bottomY - alleleBarHeight - remainderHeight, xWidth, remainderHeight);
+    private void drawBars(int pixelX, int bottomY, int xWidth, int height, RenderContext context, List<ColorBand> colorBands) {
+
+        //keep the sum as a double so we don't end up with repeated rounding errors
+        double totalFractionConsumed = 0;
+        for(ColorBand band: colorBands){
+            double bandHeight = (band.fraction * height);
+            totalFractionConsumed  += band.fraction;
+            totalFractionConsumed = Math.max(0, Math.min(totalFractionConsumed, 1.0));
+            double remainderHeight = (1.0 - totalFractionConsumed) * height;
+            Graphics2D g = context.getGraphic2DForColor(band.color);
+
+            if(bandHeight > 0) {
+                //use double rect to avoid white spaces due to rounding issues
+                Rectangle2D bar = new Rectangle2D.Double(pixelX, bottomY - bandHeight -(remainderHeight), xWidth, bandHeight);
+                g.fill(bar);
+            }
         }
+    }
 
-        if (alleleBarHeight > 0) {
-            Graphics2D g = context.getGraphic2DForColor(alleleColor);
-            g.fillRect(pixelX, bottomY - alleleBarHeight, xWidth, alleleBarHeight);
+    /**
+     * internal record to pass around colors and how much of the bar they should fill
+     * @param color color to use
+     * @param fraction what fraction of the total bar this particular band should fill.
+     */
+    private record ColorBand(Color color, double fraction){}
+
+    private List<ColorBand> getColorsForInfoField(Variant variant, SelectVcfFieldDialog.ColorResult infoField){
+        if (infoField != null) {
+            if(infoField.colors() != null){
+                infoTagScale = infoField.colors();
+            }
+            final String fieldName = infoField.value();
+            if (fieldName != null && !fieldName.isEmpty()) {
+                final Object header = track.getHeader();
+                if (header instanceof VCFHeader vcfHeader && variant instanceof VCFVariant vcfVariant) {
+                    VariantContext vc = vcfVariant.getVariantContext();
+                    final VCFCompoundHeaderLine headerLine = vcfHeader.getInfoHeaderLine(fieldName);
+                    if (headerLine != null) {
+                        //handle flag specially
+                        if (headerLine.getType() == VCFHeaderLineType.Flag) {
+                            return vc.hasAttribute(fieldName)
+                                    ? List.of(new ColorBand(infoTagScale.getColor("true"), 1.0))
+                                    : List.of(new ColorBand(infoTagScale.getColor("false"), 1.0));
+                        } else if (vc.hasAttribute(fieldName)) {
+                            List<String> values = vc.getAttributeAsStringList(fieldName, "");
+                            if (values.isEmpty()) {
+                                return List.of(new ColorBand(missingColor, 1.0));
+                            } else {
+                                final double percent = 1.0 / values.size();
+                                return values.stream()
+                                        .map(infoTagScale::getColor)
+                                        .map(color -> new ColorBand(color, percent))
+                                        .toList();
+                            }
+                        }
+                    } else {
+                        // we don't know anything about this attribute so the best we can do is pick a consistent
+                        final String value = variant.getAttributeAsString(fieldName);
+                        Color color = (value == null || value.isEmpty() || value.equals(VCFConstants.MISSING_VALUE_v4)) // best guess at missing value here
+                                ? missingColor
+                                : infoTagScale.getColor(value);
+                        return List.of(new ColorBand(color, 1.0));
+                    }
+                }
+            }
         }
+        return List.of(new ColorBand(missingColor, 1.0));
+    }
+
+    private List<ColorBand> getColorsForFormatField(Genotype genotype, SelectVcfFieldDialog.ColorResult formatField){
+        if (formatField != null) {
+            if(formatField.colors() != null){
+                formatTagScale = formatField.colors();
+            }
+            final String fieldName = formatField.value();
+            if (fieldName != null && !fieldName.isEmpty()) {
+                final Object header = track.getHeader();
+                if (header instanceof VCFHeader vcfHeader) {
+                    final VCFCompoundHeaderLine headerLine = vcfHeader.getFormatHeaderLine(fieldName);
+                    if (headerLine != null) {
+                      if (genotype.getAttributes().get(fieldName) != null || fieldName.equals("GT")) {
+                            List<String> values = fieldName.equals("GT")  // special case for GT TODO use numericGT
+                                    ? List.of(genotype.getGenotypeString())
+                                    :genotype.getAttributeAsStringList(fieldName);
+                            if (values.isEmpty()) {
+                                return List.of(new ColorBand(lightMissingColor, 1.0));
+                            } else {
+                                final double percent = 1.0 / values.size();
+                                return values.stream()
+                                        .map(formatTagScale::getColor)
+                                        .map(color -> new ColorBand(color, percent))
+                                        .toList();
+                            }
+                        }
+                    } else {
+                        // we don't know anything about this attribute so the best we can do is pick a consistent
+                        final Object value = genotype.getAttributes().get(fieldName);
+                        Color color = (value == null || value.toString().isEmpty() || value.equals(VCFConstants.MISSING_VALUE_v4)) // best guess at missing value here
+                                ? lightMissingColor
+                                : formatTagScale.getColor(value.toString());
+                        return List.of(new ColorBand(color, 1.0));
+                    }
+                }
+            }
+        }
+        return List.of(new ColorBand(missingColor, 1.0));
     }
 
     protected int calculateBottomYSiteBand(Rectangle bandRectangle) {
@@ -238,23 +400,16 @@ public class VariantRenderer { //extends FeatureRenderer {
         if (genotype == null) {
             log.error("Genotype not found for sample " + sampleName);
         } else {
-            Color b1Color = Color.gray;
-            Color b2Color = Color.gray;
-            char b1 = ' ';
-            char b2 = ' ';
+//            Color b1Color = Color.gray;
+//            Color b2Color = Color.gray;
+
             //Assign proper coloring
-            switch (coloring) {
-                case GENOTYPE:
-
-                    b1Color = getGenotypeColor(genotype, isFiltered);
-                    b2Color = b1Color;
-                    break;
-
-                case METHYLATION_RATE:
-
+            List<ColorBand> colorBands = switch (coloring) {
+                case GENOTYPE -> List.of(new ColorBand(getGenotypeColor(genotype, isFiltered), 1.0));
+                case METHYLATION_RATE -> {
                     final double goodBaseCount = genotype.getAttributeAsDouble("GB");
-                    b1Color = colorNoCall;
-                    b2Color = b1Color;
+                    Color b1Color = colorNoCall;
+                    Color b2Color = b1Color;
                     final double value = genotype.getAttributeAsDouble("MR");
                     if (!Double.isNaN(goodBaseCount) && !Double.isNaN(value)) {
                         if (goodBaseCount < VariantTrack.METHYLATION_MIN_BASE_COUNT || Double.isNaN(value)) {
@@ -269,40 +424,43 @@ public class VariantRenderer { //extends FeatureRenderer {
                     } else {
                         log.error("GB and MR fields must be defined for all records in a VCF methylation file.");
                     }
-                    break;
-
-                default:
-                    b1Color = colorNoCall;
-                    b2Color = b1Color;
-            }
+                    yield List.of(new ColorBand(b1Color, 0.5), new ColorBand(b2Color, 0.5));
+                }
+                case FORMAT_FIELD -> getColorsForFormatField(genotype, track.getColorByFormatField());
+                default ->  List.of(new ColorBand(missingColor, 1.0));
+            };
 
 
             int y0 = track.getDisplayMode() == Track.DisplayMode.EXPANDED ? pY + 1 : pY;
             int h = Math.max(1, track.getDisplayMode() == Track.DisplayMode.EXPANDED ? dY - 2 : dY);
 
-            if (coloring == VariantTrack.ColorMode.GENOTYPE) {
 
-                g.setColor(b1Color);
-                g.fillRect(pX0, y0, dX, h);
-            } else {
+            if (coloring == VariantTrack.ColorMode.METHYLATION_RATE || colorBands.size() == 2) {
+                // This is just drawBars but horizontal instead of vertical
+                // NOTE: I think it used to be for alleles but it was co-opted for methylation and
+                // the original allele use was lost
                 // Color by allele
-                g.setColor(b1Color);
+                colorBands.getFirst();
+                g.setColor(colorBands.getFirst().color());
                 g.fillRect(pX0, y0, (dX / 2), h);
-                g.setColor(b2Color);
+                g.setColor(colorBands.getLast().color());
                 g.fillRect(pX0 + (dX / 2), y0, (dX / 2), h);
-
+            } else {
+                g.setColor(colorBands.getFirst().color());
+                g.fillRect(pX0, y0, dX, h);
+                 //todo drawBars(pX0, y0 - h, dX, dY, context, colorBands);
             }
 
+            doMysteryThing(pX0, dX, dY, colorBands.getFirst().color(), g, pY, tOffset, bOffset);
+        }
+    }
 
-            if ((dX >= 10) && (dY >= 18)) {
-                if (b1Color == Color.blue) {
-                    g.setColor(Color.white);
-                } else {
-                    g.setColor(Color.black);
-                }
-                drawCenteredText(g, new char[]{b1}, pX0, pY - tOffset, dX, dY);
-                drawCenteredText(g, new char[]{b2}, pX0, pY + (dY / 2) - bOffset, dX, dY);
-            }
+    //TODO this seems like it's doing nothing but it's hard to tell
+    private static void doMysteryThing(int pX0, int dX, int dY, Color b1Color, Graphics2D g, int pY, int tOffset, int bOffset) {
+        if ((dX >= 10) && (dY >= 18)) {
+            g.setColor(b1Color == Color.blue ? Color.white : Color.black);
+            drawCenteredText(g, new char[]{' '}, pX0, pY - tOffset, dX, dY);
+            drawCenteredText(g, new char[]{' '}, pX0, pY + (dY / 2) - bOffset, dX, dY);
         }
     }
 
@@ -342,7 +500,7 @@ public class VariantRenderer { //extends FeatureRenderer {
         return Color.white;
     }
 
-    private void drawCenteredText(Graphics2D g, char[] chars, int x, int y,
+    private static void drawCenteredText(Graphics2D g, char[] chars, int x, int y,
                                   int w, int h) {
 
         // Get measures needed to center the message

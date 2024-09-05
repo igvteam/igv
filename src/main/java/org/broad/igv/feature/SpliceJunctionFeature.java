@@ -26,7 +26,6 @@
 
 package org.broad.igv.feature;
 
-import htsjdk.tribble.Feature;
 import org.broad.igv.track.WindowFunction;
 
 import java.util.ArrayList;
@@ -46,8 +45,8 @@ public class SpliceJunctionFeature extends BasicFeature {
     protected int junctionDepth = 0;
 
     //start and end locations of the junction
-    private int junctionStart = 0;
-    private int junctionEnd = 0;
+    protected int junctionStart = 0;
+    protected int junctionEnd = 0;
 
     int[] startFlankingRegionDepthArray, endFlankingRegionDepthArray;
 
@@ -70,11 +69,11 @@ public class SpliceJunctionFeature extends BasicFeature {
      * @param otherFeature
      * @return
      */
-    public boolean isSameJunction(Feature otherFeature) {
-        return (otherFeature != null &&
-                otherFeature instanceof SpliceJunctionFeature &&
-                ((SpliceJunctionFeature) otherFeature).getJunctionStart() == getJunctionStart() &&
-                    ((SpliceJunctionFeature) otherFeature).getJunctionEnd() == getJunctionEnd());
+    public boolean isSameJunction(SpliceJunctionFeature otherFeature) {
+        if (otherFeature.getJunctionStart() == getJunctionStart() &&
+                otherFeature.getJunctionEnd() == getJunctionEnd())
+            return true;
+        return false;
     }
 
     /**

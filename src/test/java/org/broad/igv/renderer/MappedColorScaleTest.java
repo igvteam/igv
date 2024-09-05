@@ -30,28 +30,32 @@
 
 package org.broad.igv.renderer;
 
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import org.junit.BeforeClass;
+
 import org.junit.Test;
 
 import java.awt.*;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.SequencedMap;
 
 /**
  * @author jrobinso
  */
 public class MappedColorScaleTest {
 
-    public MappedColorScaleTest() {
-    }
+    @Test
+    public void testNoChangesToSerialization(){
+        SequencedMap<String, Color> map = new LinkedHashMap<>();
+        map.put("abc", Color.black);
+        map.put("def", Color.blue);
+        map.put("ghi", Color.red);
+        MappedColorScale expected = new MappedColorScale(map);
+        String serialized = "MappedColorScale;abc 0,0,0;def 0,0,255;ghi 255,0,0";
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+        assertEquals(expected.asString(), serialized);
+        assertColorMapsEqual(map, new MappedColorScale(serialized), expected);
     }
 
     /**
@@ -60,7 +64,7 @@ public class MappedColorScaleTest {
     @Test
     public void testSerialization() {
 
-        HashMap<String, Color> colorMap = new HashMap();
+        HashMap<String, Color> colorMap = new HashMap<>();
         colorMap.put("abc", Color.black);
         colorMap.put("def", Color.blue);
         colorMap.put("ghi", Color.red);
@@ -71,6 +75,11 @@ public class MappedColorScaleTest {
 
         MappedColorScale cs2 = new MappedColorScale(stringRep);
 
+        assertColorMapsEqual(colorMap, cs, cs2);
+
+    }
+
+    private static void assertColorMapsEqual(Map<String, Color> colorMap, MappedColorScale cs, MappedColorScale cs2) {
         assertEquals(colorMap.size(), cs.getSize());
         assertEquals(cs.getSize(), cs2.getSize());
 
@@ -78,7 +87,6 @@ public class MappedColorScaleTest {
             assertEquals(colorMap.get(key), cs.getColor(key));
             assertEquals(cs.getColor(key), cs2.getColor(key));
         }
-
     }
 
 

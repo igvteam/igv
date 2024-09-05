@@ -4,18 +4,24 @@ import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.oauth.OAuthUtils;
+import org.broad.igv.renderer.ColorScale;
+import org.broad.igv.renderer.ColorScaleFactory;
+import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorSwatch;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
+import org.broad.igv.ui.legend.ContinuousLegendPanel;
+import org.broad.igv.ui.legend.DiscreteLegendPanel;
+import org.broad.igv.ui.legend.LegendPanel;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Utilities;
+import org.broad.igv.variant.AttributeColorManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
@@ -182,7 +188,7 @@ public class PreferencesEditor {
 //                                .toArray(String[]::new);
 
 
-                        final JComboBox<String> comboBox = new JComboBox<String>(selections);
+                        final JComboBox<String> comboBox = new JComboBox<>(selections);
                         comboBox.setSelectedItem(preferences.get(pref.getKey()));
                         comboBox.addActionListener(event -> {
                             updatedPrefs.put(pref.getKey(), comboBox.getSelectedItem().toString());
@@ -196,6 +202,16 @@ public class PreferencesEditor {
                             label.setToolTipText(pref.getComment());
                             comboBox.setToolTipText(pref.getComment());
                         }
+                    } else if (pref.getType().startsWith("colorScale")){
+                        String scaleString = preferences.get(pref.getKey());
+                        ColorScale scale = ColorScaleFactory.getScaleFromString(scaleString);
+                        LegendPanel legend = getLegendPanel(pref, scale, updatedPrefs);
+                        JLabel label = new JLabel(pref.getLabel());
+
+                        grid.addLayoutComponent(label, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(3, 5, 2, 3), 2, 2));
+                        grid.addLayoutComponent(legend, new GridBagConstraints(1, row, 100, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(3, 2, 2, 5), 2, 2));
+                        group.add(label);
+                        group.add(legend);
                     } else if (pref.getType().startsWith("color")) {
                         String colorString = preferences.get(pref.getKey());
                         Color c;
@@ -222,7 +238,7 @@ public class PreferencesEditor {
                         if (pref.getKey().equals(Constants.PROXY_PW) && fieldText != null && fieldText.length() > 0) {
                             fieldText = Utilities.base64Decode(fieldText);
                         }
-                        PreferencesTextField field = new PreferencesTextField(pref.getKey().equals(Constants.PROXY_PW) ? new JPasswordField(fieldText) : new JTextField(fieldText));
+                        PreferencesTextField<?> field = new PreferencesTextField<>(pref.getKey().equals(Constants.PROXY_PW) ? new JPasswordField(fieldText) : new JTextField(fieldText));
                         Dimension d = field.get().getPreferredSize();
                         d.width = 300;
                         field.get().setPreferredSize(d);
@@ -354,7 +370,7 @@ public class PreferencesEditor {
         saveButton.setMaximumSize(new Dimension(100, 30));
         saveButton.setDefaultCapable(true);
         saveButton.addActionListener((event) -> {
-            saveAction(event, updatedPreferencesMap);
+            saveAction(updatedPreferencesMap);
             SwingUtilities.invokeLater(() -> parent.setVisible(false));
         });
 
@@ -370,7 +386,17 @@ public class PreferencesEditor {
         panel.add(saveCancelPanel, BorderLayout.SOUTH);
     }
 
-    private static void saveAction(ActionEvent event, Map<String, Map<String, String>> updatedPreferencesMap) {
+    private static LegendPanel getLegendPanel(PreferencesManager.Preference pref, ColorScale scale, Map<String, String> updatedPrefs) {
+        LegendPanel legend = switch (scale) {
+            case ContinuousColorScale continuousColorScale -> new ContinuousLegendPanel(pref.getLabel(), continuousColorScale);
+            case PaletteColorTable discreteScale -> new DiscreteLegendPanel(discreteScale) ;
+            default -> throw new IllegalStateException("No display avaialable for ColorScale:" + scale);
+        };
+        legend.addChangeListener(cs -> updatedPrefs.put(pref.getKey(), cs.asString()));
+        return legend;
+    }
+
+    private static void saveAction(Map<String, Map<String, String>> updatedPreferencesMap) {
 
         for (Map<String, String> prefs : updatedPreferencesMap.values()) {
             extractMutationPreferences(prefs);
@@ -418,7 +444,7 @@ public class PreferencesEditor {
     static private void extractMutationPreferences(Map<String, String> prefs) {
 
         PaletteColorTable ct = PreferencesManager.getPreferences().getMutationColorScheme();
-        Set<String> keys = new HashSet(ct.getKeys());
+        Set<String> keys = new HashSet<>(ct.getKeys());
         keys.addAll(Arrays.asList("Indel", "Missense", "Nonsense", "Splice_site", "Synonymous", "Targeted_Region",
                 "Unknown", "Truncating", "Non-coding_Transcript", "Other_AA_changing", "Other_likely_neutral"));
 

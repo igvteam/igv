@@ -40,9 +40,9 @@ import java.util.concurrent.*;
  *
  * @author jrobinso
  */
-public class LongRunningTask implements Callable<Void> {
+public class LongRunningTask implements Callable {
 
-    private static final Logger log = LogManager.getLogger(LongRunningTask.class);
+    private static Logger log = LogManager.getLogger(LongRunningTask.class);
 
     private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
 
@@ -52,7 +52,7 @@ public class LongRunningTask implements Callable<Void> {
         return threadExecutor;
     }
 
-    public static Future<Void> submit(Runnable runnable) {
+    public static Future submit(Runnable runnable) {
         if (Globals.isBatch()) {
             runnable.run();
             return null;
@@ -65,8 +65,7 @@ public class LongRunningTask implements Callable<Void> {
         this.runnable = runnable;
     }
 
-    @Override
-    public Void call() {
+    public Object call() {
 
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {

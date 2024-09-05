@@ -47,5 +47,9 @@ module org.igv {
     // because amazon resolves the unmodularized 1.2.0 version while htjsdk brings in the modular 1.3.0
     requires org.apache.commons.logging;
 
+    //JIDE
     requires jide.oss;
+
+    //Intellij Forms
+    requires forms.rt;
 }

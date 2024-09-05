@@ -5,7 +5,7 @@ IGV.track.show.attribute.views	Show attribute panel	boolean	FALSE
 SHOW_DEFAULT_TRACK_ATTRIBUTES	Show default track attributes	boolean	FALSE
 SHOW_REGION_BARS	Show region-of-interest boundaries	boolean	FALSE
 ENABLE_GOOGLE_MENU	Enable Google access	boolean	FALSE	Enable loading from Google apis.
-FLANKING_REGION	"Search for feature" padding region in bp, < 0 is interpreted as a percentage.	integer	2000	
+FLANKING_REGION	"Search for feature" padding region in bp, < 0 is interpreted as a percentage.	integer	2000
 DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases), < 0 disables visibility window.	float	-1
 
 ## Session Autosave
@@ -53,6 +53,23 @@ NOCALL.COLOR	No call	color	255,255,255
 AF_REF.COLOR	Allele frequency - reference	color	0,0,220
 AF_VAR.COLOR	Allele frequency - variant	color	255,0,0
 VARIANT_COLOR_BY_ALLELE_FREQ	Color by allele frequency (uncheck to color by allele fraction)	boolean	TRUE
+
+##Default Attribute Color Scales
+//info	Default Color Scales to use for attributes of different types
+DEFAULT_CONTINUOUS_COLOR_SCALE	Default Continuous Scale	colorScale	ContinuousColorScale;0;100;216,216,216;0,200,0
+DEFAULT_BOOLEAN_COLOR_SCALE	Default Boolean Scale	colorScale	PaletteColorTable;DEFAULT=100,100,100;true=0,0,0;false=255,0,0
+DEFAULT_DISCRETE_COLOR_SCALE	Default Discrete Scale	colorScale	PaletteColorTable;PALETTE=Pastel 1;
+
+##Attribute Colors
+##InfoField
+VARIANT_INFO_DP	Site Depth (DP)	colorScale	ContinuousColorScale;0;100;216,216,216;0,200,0
+VARIANT_INFO_SAS_AF	SAS_AF	colorScale	ContinuousColorScale;0;1;20,20,20;0,200,200
+VARIANT_INFO_VT	Varinat Type (VT)	colorScale	PaletteColorTable;PALETTE=Set 1;snp=0,200,200;indel=200,0,200
+
+##FormatField
+VARIANT_FORMAT_DP	Genotype Depth (DP)	colorScale	ContinuousColorScale;0;10;216,216,216;0,200,0
+VARIANT_FORMAT_GQ	Genotype Quality (GQ)	colorScale	ContinuousColorScale;0;99;216,216,216;0,200,0
+VARIANT_FORMAT_AD	Allele Depth (AD)	colorScale	ContinuousColorScale;0;10;216,216,216;0,200,0
 
 #Mutations
 info	Settings on this tab apply to TCGA  "maf" and "mut" files.
@@ -107,7 +124,7 @@ SAM.ALLELE_USE_QUALITY	Quality weight allele fraction	boolean	TRUE
 
 SAM.COLOR_BY	Color alignments by	select NONE|READ_STRAND|FIRST_OF_PAIR_STRAND|PAIR_ORIENTATION|UNEXPECTED_PAIR|INSERT_SIZE|BASE_MODIFICATION|BASE_MODIFICATION_2COLOR|SAMPLE|READ_GROUP|LIBRARY|MOVIE|ZMW|BISULFITE|NOMESEQ|TAG|MAPPED_SIZE|LINK_STRAND|YC_TAG|READ_ORDER	UNEXPECTED_PAIR
 SAM.COLOR_BY_TAG	Color by TAG	string
-SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE|MAPPING_QUALITY|DUPLICATE
+SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE|MAPPING_QUALITY
 SAM.GROUP_BY_TAG	Group by TAG	string
 SAM.GROUP_ALL	Syncrohize alignment track grouping	boolean	FALSE
 
