@@ -46,8 +46,8 @@ public class TwoBitSequence implements Sequence {
         index = BPTree.loadBPTree(indexPath, 0);
     }
 
-    UnsignedByteBuffer loadBinaryBuffer(long start, int size) throws IOException {
-        return UnsignedByteBuffer.loadBinaryBuffer(path, byteOrder, start, size);
+    UnsignedByteBufferImpl loadBinaryBuffer(long start, int size) throws IOException {
+        return UnsignedByteBufferImpl.loadBinaryBuffer(path, byteOrder, start, size);
     }
 
     private void init(String path) throws IOException {
@@ -56,7 +56,7 @@ public class TwoBitSequence implements Sequence {
         this.sequenceRecordCache = new HashMap<>();
 
         long filePosition = 0;
-        UnsignedByteBuffer buffer = UnsignedByteBuffer.loadBinaryBuffer(path, byteOrder, filePosition, 64);
+        UnsignedByteBuffer buffer = UnsignedByteBufferImpl.loadBinaryBuffer(path, byteOrder, filePosition, 64);
 
         int signature = buffer.getInt();
         if (SIGNATURE != signature) {
@@ -140,7 +140,7 @@ public class TwoBitSequence implements Sequence {
             long start = record.packedPos + baseBytesOffset;
             int size = regionEnd / 4 - baseBytesOffset + 1;
 
-            UnsignedByteBuffer buffer = loadBinaryBuffer(start, size);
+            UnsignedByteBufferImpl buffer = loadBinaryBuffer(start, size);
             byte[] baseBytes = buffer.array();
 
             //new byte[size];

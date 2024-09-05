@@ -1,7 +1,6 @@
 package org.broad.igv.ucsc.bb;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import htsjdk.tribble.NamedFeature;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.LocusScore;
@@ -13,6 +12,8 @@ import org.broad.igv.ucsc.Trix;
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.broad.igv.ucsc.bb.codecs.BBCodec;
 import org.broad.igv.ucsc.bb.codecs.BBCodecFactory;
+import org.broad.igv.ucsc.twobit.UnsignedByteBufferDynamic;
+import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
@@ -110,7 +111,7 @@ public class BBFile {
         return autosql;
     }
 
-    public String [] getChromosomeNames() {
+    public String[] getChromosomeNames() {
         return chrNames;
     }
 
@@ -148,7 +149,7 @@ public class BBFile {
     BBHeader readHeader() throws IOException {
 
         ByteOrder order = ByteOrder.LITTLE_ENDIAN;
-        UnsignedByteBuffer buffer = UnsignedByteBuffer.loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
+        UnsignedByteBuffer buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
         long magic = buffer.getUInt();
         if (magic == BIGWIG_MAGIC) {
             this.type = Type.BIGWIG;
@@ -157,7 +158,7 @@ public class BBFile {
         } else {
             //Try big endian order
             order = ByteOrder.BIG_ENDIAN;
-            buffer = UnsignedByteBuffer.loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
+            buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
             magic = buffer.getUInt();
             if (magic == BIGWIG_MAGIC) {
                 this.type = Type.BIGWIG;
@@ -183,9 +184,9 @@ public class BBFile {
         header.extensionOffset = buffer.getLong();
 
         // Read rest of fields up to full data offset
-        buffer = UnsignedByteBuffer.loadBinaryBuffer(this.path, order, BBFILE_HEADER_SIZE, (int) (header.fullDataOffset - BBFILE_HEADER_SIZE + 4));
+        buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, BBFILE_HEADER_SIZE, (int) (header.fullDataOffset - BBFILE_HEADER_SIZE + 4));
 
-        // Zoom headers
+        // Zoom headers -- immediately follows the common header
         this.zoomHeaders = new BBZoomHeader[header.nZoomLevels];
         for (int i = 0; i < header.nZoomLevels; ++i) {
             BBZoomHeader zlh = new BBZoomHeader();
@@ -198,28 +199,33 @@ public class BBFile {
         // Sort in order of decreasing reduction level (increasing resolution
         Arrays.sort(zoomHeaders, (o1, o2) -> o2.reductionLevel - o1.reductionLevel);
 
-        // Autosql
+        // Autosql -- spec implies this follows the zoom headers
         final int startOffset = BBFILE_HEADER_SIZE;
         if (header.autoSqlOffset > 0) {
             buffer.position((int) (header.autoSqlOffset - startOffset));
             this.autosql = buffer.getString();
         }
 
-        // Total summary -- present in versions >= 2
+        // Total summary -- present in versions >= 2.  Follows the zoom headers and autosql
         if (header.version > 1 && header.totalSummaryOffset > 0) {
             buffer.position((int) (header.totalSummaryOffset - startOffset));
             this.totalSummary = BBTotalSummary.parseSummary(buffer);
         }
 
-        // Chromosome tree
-        // TODO replace with BPTree
-        buffer.position((int) (header.chromTreeOffset - startOffset));
-        this.chromTree = ChromTree.parseTree(buffer, startOffset, this.genome);
-        this.chrNames = this.chromTree.names();
-
         //Total data count -- for bigbed this is the number of features, for bigwig it is number of sections
         buffer.position((int) (header.fullDataOffset - BBFILE_HEADER_SIZE));
         header.dataCount = buffer.getInt();
+
+        // Chromosome tree -- this normally preceeds fullDataOffset so will be within the buffer.  However, this
+        // isn't guaranteed, we have to check
+        int chromtreeBufferPosition = (int) (header.chromTreeOffset - startOffset);
+        if(chromtreeBufferPosition > 0 && chromtreeBufferPosition < buffer.position() + buffer.remaining()) {
+            buffer.position((int) (header.chromTreeOffset - startOffset));
+       } else {
+            buffer = UnsignedByteBufferDynamic.loadBinaryBuffer(this.path, order, header.chromTreeOffset, 1000);
+        }
+        this.chromTree = ChromTree.parseTree(buffer, startOffset, this.genome);
+        this.chrNames = this.chromTree.names();
 
         this.header = header;
 
@@ -230,7 +236,7 @@ public class BBFile {
 
         // total summary stats
         if (header.version > 1) {
-            buffer = UnsignedByteBuffer.loadBinaryBuffer(this.path, order, header.totalSummaryOffset, 40);
+            buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, header.totalSummaryOffset, 40);
             this.totalSummary = BBTotalSummary.parseSummary(buffer);
         }
 
@@ -247,7 +253,7 @@ public class BBFile {
 
     void loadExtendedHeader(long offset) throws IOException {
 
-        UnsignedByteBuffer binaryParser = UnsignedByteBuffer.loadBinaryBuffer(this.path, byteOrder, offset, BBFILE_EXTENDED_HEADER_HEADER_SIZE);
+        UnsignedByteBuffer binaryParser = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, byteOrder, offset, BBFILE_EXTENDED_HEADER_HEADER_SIZE);
 
         int extensionSize = binaryParser.getUShort();
         int extraIndexCount = binaryParser.getUShort();
@@ -255,7 +261,7 @@ public class BBFile {
         if (extraIndexCount == 0) return;
 
         int sz = extraIndexCount * (2 + 2 + 8 + 4 + 10 * (2 + 2));
-        binaryParser = UnsignedByteBuffer.loadBinaryBuffer(this.path, byteOrder, extraIndexListOffset, sz);
+        binaryParser = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, byteOrder, extraIndexListOffset, sz);
 
         // const type = []
         // const fieldCount = []
@@ -303,9 +309,9 @@ public class BBFile {
 
         // Load the R Tree and fine leaf items
         RPTree rpTree = rTreeCache.get(treeOffset);
-        if(rpTree == null) {
-             rpTree = RPTree.loadTree(this.path, treeOffset);
-             rTreeCache.put(treeOffset, rpTree);
+        if (rpTree == null) {
+            rpTree = RPTree.loadTree(this.path, treeOffset);
+            rTreeCache.put(treeOffset, rpTree);
         }
 
         List<byte[]> leafChunks = new ArrayList<>();
@@ -383,16 +389,21 @@ public class BBFile {
      * @param bpPerPixel -- the resolution in bp per pixel.
      * @return A zoom header, or null if no appropriate zoom data is available for the resolution.
      */
+
     BBZoomHeader zoomLevelForScale(double bpPerPixel) {
+        return zoomLevelForScale(bpPerPixel, 2);
+    }
+
+    BBZoomHeader zoomLevelForScale(double bpPerPixel, int tolerance) {
         BBZoomHeader level = null;
         for (BBZoomHeader zl : this.zoomHeaders) {
             if (zl.reductionLevel < bpPerPixel) {
                 return zl;
             }
         }
-        // For the highest resolution, allow up to a factor of 2
+        // For the lowest resolution, consider a match if within a factor "tolerance" of the requested resolution
         BBZoomHeader lastLevel = this.zoomHeaders[this.zoomHeaders.length - 1];
-        return lastLevel.reductionLevel / 2 < bpPerPixel ? lastLevel : null;
+        return lastLevel.reductionLevel / tolerance < bpPerPixel ? lastLevel : null;
     }
 
     public boolean isSearchable() {
@@ -465,7 +476,7 @@ public class BBFile {
         }
 
 
-        UnsignedByteBuffer bb = UnsignedByteBuffer.wrap(uncompressed, byteOrder);
+        UnsignedByteBufferImpl bb = UnsignedByteBufferImpl.wrap(uncompressed, byteOrder);
         while (bb.remaining() > 0) {
 
             int chromId = bb.getInt();
@@ -495,7 +506,7 @@ public class BBFile {
             uncompressed = buffer;    // use uncompressed read buffer directly
         }
 
-        UnsignedByteBuffer bb = UnsignedByteBuffer.wrap(uncompressed, byteOrder);
+        UnsignedByteBufferImpl bb = UnsignedByteBufferImpl.wrap(uncompressed, byteOrder);
         while (bb.remaining() > 0) {
 
             int chromId = bb.getInt();
@@ -545,7 +556,7 @@ public class BBFile {
             uncompressed = buffer;    // use uncompressed read buffer directly
         }
 
-        UnsignedByteBuffer binaryParser = UnsignedByteBuffer.wrap(uncompressed, byteOrder);
+        UnsignedByteBuffer binaryParser = UnsignedByteBufferImpl.wrap(uncompressed, byteOrder);
         int chromId = binaryParser.getInt();
         int blockStart = binaryParser.getInt();
         int chromStart = blockStart;
