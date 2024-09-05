@@ -1,15 +1,12 @@
 package org.broad.igv.track;
 
-import htsjdk.samtools.seekablestream.SeekableBufferedStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedInputStream;
-import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
+import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
@@ -65,7 +62,7 @@ public class FileFormatUtils {
         }
 
         // BIGWIG - BIGBED
-        UnsignedByteBuffer byteBuffer = UnsignedByteBuffer.wrap(bytes);
+        UnsignedByteBuffer byteBuffer = UnsignedByteBufferImpl.wrap(bytes);
         long m = byteBuffer.getUInt();
         if (m == BIGWIG_MAGIC) {
             return "bigwig";

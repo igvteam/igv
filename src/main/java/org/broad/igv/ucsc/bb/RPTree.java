@@ -2,6 +2,7 @@ package org.broad.igv.ucsc.bb;
 
 
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
+import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -36,11 +37,11 @@ public class RPTree {
     }
 
     void init() throws IOException {
-        UnsignedByteBuffer binaryParser = UnsignedByteBuffer.loadBinaryBuffer(this.path, this.byteOrder, this.startOffset, RPTREE_HEADER_SIZE);
+        UnsignedByteBuffer binaryParser = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, this.byteOrder, this.startOffset, RPTREE_HEADER_SIZE);
         int magic = binaryParser.getInt();
         if (magic != RPTree.magic) {
             this.byteOrder = ByteOrder.BIG_ENDIAN;
-            binaryParser = UnsignedByteBuffer.loadBinaryBuffer(this.path, this.byteOrder, this.startOffset, RPTREE_HEADER_SIZE);
+            binaryParser = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, this.byteOrder, this.startOffset, RPTREE_HEADER_SIZE);
             magic = binaryParser.getInt();
             if (magic != RPTree.magic) {
                 throw new RuntimeException("Bad magic number " + magic);
@@ -102,13 +103,13 @@ public class RPTree {
             return this.nodeCache.get(nodeKey);
         }
 
-        UnsignedByteBuffer binaryParser = UnsignedByteBuffer.loadBinaryBuffer(this.path, this.byteOrder, offset, 4);
+        UnsignedByteBuffer binaryParser = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, this.byteOrder, offset, 4);
         byte type = binaryParser.get();
         boolean isLeaf = (type == 1);
         byte reserved = binaryParser.get();
         int count = binaryParser.getUShort();
         int bytesRequired = count * (isLeaf ? RPTREE_NODE_LEAF_ITEM_SIZE : RPTREE_NODE_CHILD_ITEM_SIZE);
-        binaryParser = UnsignedByteBuffer.loadBinaryBuffer(this.path, this.byteOrder, offset + 4, bytesRequired);
+        binaryParser = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, this.byteOrder, offset + 4, bytesRequired);
 
         Item[] items = new Item[count];
         for (int i = 0; i < count; i++) {

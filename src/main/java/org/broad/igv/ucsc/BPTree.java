@@ -43,6 +43,7 @@ package org.broad.igv.ucsc;
 
 
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
+import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -83,7 +84,7 @@ public class BPTree implements BPIndex{
     }
 
     UnsignedByteBuffer loadBinaryBuffer(long start, int size) throws IOException {
-        return UnsignedByteBuffer.loadBinaryBuffer(this.path, this.byteOrder, start, size);
+        return UnsignedByteBufferImpl.loadBinaryBuffer(this.path, this.byteOrder, start, size);
     }
 
     private void init() throws IOException {

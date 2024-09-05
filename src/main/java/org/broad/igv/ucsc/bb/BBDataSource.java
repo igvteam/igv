@@ -25,6 +25,7 @@
 
 package org.broad.igv.ucsc.bb;
 
+import htsjdk.samtools.util.Locatable;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.BasicScore;
@@ -260,7 +261,7 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                     ArrayList<LocusScore> scores = new ArrayList<LocusScore>();
                     wholeGenomeScores.put(windowFunction, scores);
 
-                    BBZoomHeader lowestResHeader = reader.zoomLevelForScale(scale);
+                    BBZoomHeader lowestResHeader = reader.zoomLevelForScale(scale, 1000);
                     if (lowestResHeader == null) return null;
 
                     Set<String> wgChrNames = new HashSet<>(genome.getLongChromosomeNames());
@@ -282,7 +283,7 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                             scores.add(new BasicScore(genomeStart, genomeEnd, rec.getScore()));
                         }
                     }
-                    scores.sort((o1, o2) -> o1.getStart() - o2.getStart());
+                    scores.sort(Comparator.comparingInt(Locatable::getStart));
 
                 }
                 return wholeGenomeScores.get(windowFunction);
