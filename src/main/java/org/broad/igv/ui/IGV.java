@@ -1925,8 +1925,7 @@ public class IGV implements IGVEventObserver {
                 if (igvArgs.getGenomeId() != null) {
                     String genomeId = igvArgs.getGenomeId();
                     try {
-                        GenomeManager.getInstance().loadGenomeById(genomeId);
-                        genomeLoaded = true;
+                        genomeLoaded = GenomeManager.getInstance().loadGenomeById(genomeId);
                     } catch (IOException e) {
                         MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
                         log.error("Error loading genome: " + genomeId, e);
@@ -1936,8 +1935,7 @@ public class IGV implements IGVEventObserver {
                 if (igvArgs.getSessionFile() == null && !loadAutosave && !genomeLoaded) {
                     String genomeId = preferences.getDefaultGenome();
                     try {
-                        GenomeManager.getInstance().loadGenomeById(genomeId);
-                        genomeLoaded = true;
+                        genomeLoaded = GenomeManager.getInstance().loadGenomeById(genomeId);
                     } catch (Exception e) {
                         MessageUtils.showErrorMessage("Error loading genome " + genomeId + "<br/>" + e.getMessage(), e);
                         genomeLoaded = false;

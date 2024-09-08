@@ -139,27 +139,33 @@ public class GenomeManager {
         this.currentGenome = genome;
     }
 
-    public void loadGenomeById(String genomeId) throws IOException {
+    /**
+     * Load a genome by ID, which might be a file path or URL
+     *
+     * @param genomeId - ID for an IGV hosted genome, or file path or url
+     * @return boolean flag indicating success
+     * @throws IOException
+     */
+    public boolean loadGenomeById(String genomeId) throws IOException {
+
         final Genome currentGenome = getCurrentGenome();
         if (currentGenome != null && genomeId.equals(currentGenome.getId())) {
-            return; // Already loaded
+            return false;
         }
 
-        String genomePath = null;
+        String genomePath;
         if (org.broad.igv.util.ParsingUtils.fileExists(genomeId)) {
             genomePath = genomeId;
         } else {
             GenomeListItem item = genomeListManager.getGenomeListItem(genomeId);
             if (item == null) {
                 MessageUtils.showMessage("Could not locate genome with ID: " + genomeId);
-                return;
+                return false;
             } else {
                 genomePath = item.getPath();
             }
         }
-
-        loadGenome(genomePath); // monitor[0]);
-
+        return loadGenome(genomePath) != null; // monitor[0]);
     }
 
 

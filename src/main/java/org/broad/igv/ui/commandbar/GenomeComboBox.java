@@ -6,7 +6,6 @@ import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.genome.GenomeServerException;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
@@ -21,7 +20,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 /**
  * Created by jrobinso on 7/6/17.
@@ -96,29 +94,24 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 return;
             }
 
-            final Runnable runnable = new Runnable() {
+            final Runnable runnable = () -> {
 
-                public void run() {
+                if (genomeListItem != null && genomeListItem.getPath() != null) {
 
-                    if (genomeListItem != null && genomeListItem.getPath() != null) {
+                    if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {
+                        loadGenomeFromServer();
+                    } else {
 
-                        //log.warn("Loading " + genomeListItem.getId());
-
-                        //User selected "more", pull up dialog and revert combo box
-                        if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {
-                            loadGenomeFromServer();
-                            return;
-                        }
-
+                        boolean success = false;
+                        Exception error = null;
                         try {
-                            GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
-                        } catch (GenomeServerException e) {
-                            log.error("Error loading genome: " + genomeListItem.getId() + "  " + genomeListItem.getPath(), e);
-                            JOptionPane.showMessageDialog(
-                                    IGV.getInstance().getMainFrame(),
-                                    "Error loading genome: " + genomeListItem.getDisplayableName());
+                            success = GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
                         } catch (Exception e) {
                             log.error(e);
+                            error = e;
+                        }
+
+                        if (!success) {
                             int choice = JOptionPane.showConfirmDialog(
                                     IGV.getInstance().getMainFrame(), "The genome [" + genomeListItem.getId() +
                                             "] could not be read. Would you like to remove the selected entry?",
@@ -127,12 +120,9 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                             if (choice == JOptionPane.OK_OPTION) {
                                 GenomeListManager.getInstance().removeGenomeListItem(genomeListItem);
                                 refreshGenomeListComboBox();
-                                log.error("Error initializing genome", e);
+                                log.error("Error initializing genome", error);
                             }
-                        } finally {
-
                         }
-
                     }
                 }
             };
@@ -231,27 +221,27 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 IGVEventBus.getInstance().post(new GenomeResetEvent());
             } else {
                 GenomeListItem selectedValue = dialog.getSelectedValue();
-                    if (selectedValue != null) {
+                if (selectedValue != null) {
 
-                        try {
-                            GenomeManager.getInstance().loadGenome(selectedValue.getPath());
+                    try {
+                        GenomeManager.getInstance().loadGenome(selectedValue.getPath());
 
-                            GenomeListManager.getInstance().addServerGenomeItem(selectedValue);
+                        GenomeListManager.getInstance().addServerGenomeItem(selectedValue);
 
-                            GenomeListManager.getInstance().removeUserDefinedGenome(selectedValue.getId());
+                        GenomeListManager.getInstance().removeUserDefinedGenome(selectedValue.getId());
 
-                            // If this is a .json genome, attempt to remove existing .genome files
-                            if(selectedValue.getPath().endsWith(".json")) {
-                                removeDotGenomeFile(selectedValue.getId());
-                            }
-
-                        } catch (IOException e) {
-                            GenomeListManager.getInstance().removeGenomeListItem(selectedValue);
-                            MessageUtils.showErrorMessage("Error loading genome " + selectedValue.getDisplayableName(), e);
-                            log.error("Error loading genome " + selectedValue.getDisplayableName(), e);
+                        // If this is a .json genome, attempt to remove existing .genome files
+                        if (selectedValue.getPath().endsWith(".json")) {
+                            removeDotGenomeFile(selectedValue.getId());
                         }
 
+                    } catch (IOException e) {
+                        GenomeListManager.getInstance().removeGenomeListItem(selectedValue);
+                        MessageUtils.showErrorMessage("Error loading genome " + selectedValue.getDisplayableName(), e);
+                        log.error("Error loading genome " + selectedValue.getDisplayableName(), e);
                     }
+
+                }
             }
         };
 
@@ -265,7 +255,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
     public static void removeDotGenomeFile(String id) {
         try {
             File dotGenomeFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + ".genome");
-            if(dotGenomeFile.exists()) {
+            if (dotGenomeFile.exists()) {
                 dotGenomeFile.delete();
             }
         } catch (Exception e) {
