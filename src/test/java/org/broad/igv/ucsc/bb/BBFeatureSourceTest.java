@@ -3,7 +3,6 @@ package org.broad.igv.ucsc.bb;
 import htsjdk.tribble.Feature;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ucsc.Trix;
 import org.broad.igv.util.TestUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -76,7 +75,7 @@ public class BBFeatureSourceTest {
 
         String path = TestUtils.DATA_DIR + "bb/chr21.refseq.bb";
         BBFile bbReader = new BBFile(path, null);
-        assertTrue(bbReader.type == BBFile.Type.BIGBED);
+        assertTrue(bbReader.getType() == BBFile.Type.BIGBED);
 
         BBFeatureSource bbSource = new BBFeatureSource(bbReader, null);
 
@@ -94,6 +93,34 @@ public class BBFeatureSourceTest {
             count++;
         }
         assertEquals("Feature count", 225, count);
+
+    }
+
+    /**
+     * Test the 'dataCount' value, which should equal the total count of feature records in the file.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testDataCount() throws IOException {
+
+        String path = TestUtils.DATA_DIR + "bb/chr21.refseq.bb";
+        BBFile bbReader = new BBFile(path, null);
+
+        assertTrue(bbReader.getType() == BBFile.Type.BIGBED);
+
+        BBFeatureSource bbSource = new BBFeatureSource(bbReader, null);
+        String [] chrNames = bbReader.getChromosomeNames();
+
+        int count = 0;
+        for(String chr : chrNames) {
+            Iterator<BasicFeature> iter = bbSource.getFeatures(chr, 0, Integer.MAX_VALUE);
+            while (iter.hasNext()) {
+                iter.next();
+                count++;
+            }
+        }
+        assertEquals("Feature count", bbReader.getHeader().dataCount, count);
 
     }
 

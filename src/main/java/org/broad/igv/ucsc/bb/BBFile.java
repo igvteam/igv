@@ -12,7 +12,6 @@ import org.broad.igv.ucsc.Trix;
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.broad.igv.ucsc.bb.codecs.BBCodec;
 import org.broad.igv.ucsc.bb.codecs.BBCodecFactory;
-import org.broad.igv.ucsc.twobit.UnsignedByteBufferDynamic;
 import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -83,51 +82,28 @@ import java.util.*;
  */
 public class BBFile {
 
+    enum Type {BIGWIG, BIGBED}
+
     static public final int BBFILE_HEADER_SIZE = 64;
     static public final long BIGWIG_MAGIC = 2291137574l; // BigWig Magic
     static public final long BIGBED_MAGIC = 2273964779l; // BigBed Magic
     static public final int BBFILE_EXTENDED_HEADER_HEADER_SIZE = 64;
     private Trix trix;
-    String autosql;
+    private String autosql;
     private ChromTree chromTree;
     private String[] chrNames;
-    double featureDensity;
-
-    Map<String, String> chrAliasTable;
-    public BBTotalSummary totalSummary;
+    private double featureDensity;
+    private Map<String, String> chrAliasTable;
+    private BBTotalSummary totalSummary;
     private BPTree[] _searchTrees;
     private Map<Long, RPTree> rTreeCache;
-    BBCodec bedCodec;
-
-    public boolean isBigWigFile() {
-        return type == Type.BIGWIG;
-    }
-
-    public boolean isBigBedFile() {
-        return type == Type.BIGBED;
-    }
-
-    public String getAutoSql() {
-        return autosql;
-    }
-
-    public String[] getChromosomeNames() {
-        return chrNames;
-    }
-
-    public void setTrix(Trix trix) {
-    }
-
-
-    enum Type {BIGWIG, BIGBED}
-
-    String path;
-    Type type;
-    BBHeader header = null;
-
-    BBZoomHeader[] zoomHeaders;
-    ByteOrder byteOrder;
-    Genome genome;
+    private BBCodec bedCodec;
+    private String path;
+    private Type type;
+    private BBHeader header = null;
+    private BBZoomHeader[] zoomHeaders;
+    private ByteOrder byteOrder;
+    private Genome genome;
 
     public BBFile(String path, Genome genome) throws IOException {
         this.path = path;
@@ -146,8 +122,43 @@ public class BBFile {
         this.header = readHeader();
     }
 
+    public BBTotalSummary getTotalSummary() {
+        return totalSummary;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public BBHeader getHeader() {
+        return header;
+    }
+
+    public Genome getGenome() {
+        return genome;
+    }
+    public boolean isBigWigFile() {
+        return type == Type.BIGWIG;
+    }
+
+    public boolean isBigBedFile() {
+        return type == Type.BIGBED;
+    }
+
+    public double getFeatureDensity() {
+        return featureDensity;
+    }
+    public String getAutoSQL() {
+        return autosql;
+    }
+
+    public String[] getChromosomeNames() {
+        return chrNames;
+    }
+
     BBHeader readHeader() throws IOException {
 
+        // The common header
         ByteOrder order = ByteOrder.LITTLE_ENDIAN;
         UnsignedByteBuffer buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
         long magic = buffer.getUInt();
@@ -183,8 +194,12 @@ public class BBFile {
         header.uncompressBuffSize = buffer.getInt();
         header.extensionOffset = buffer.getLong();
 
-        // Read rest of fields up to full data offset
-        buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, BBFILE_HEADER_SIZE, (int) (header.fullDataOffset - BBFILE_HEADER_SIZE + 4));
+        // Zoom headers, autosql, and total summary if present
+        int size = (int) (header.totalSummaryOffset > 0 ?
+                header.totalSummaryOffset - BBFILE_HEADER_SIZE + 40 :
+                Math.min(header.fullDataOffset, header.chromTreeOffset) - BBFILE_HEADER_SIZE);
+
+        buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, BBFILE_HEADER_SIZE, size);
 
         // Zoom headers -- immediately follows the common header
         this.zoomHeaders = new BBZoomHeader[header.nZoomLevels];
@@ -212,38 +227,28 @@ public class BBFile {
             this.totalSummary = BBTotalSummary.parseSummary(buffer);
         }
 
-        //Total data count -- for bigbed this is the number of features, for bigwig it is number of sections
-        buffer.position((int) (header.fullDataOffset - BBFILE_HEADER_SIZE));
-        header.dataCount = buffer.getInt();
-
         // Chromosome tree -- this normally preceeds fullDataOffset so will be within the buffer.  However, this
         // isn't guaranteed, we have to check
-        int chromtreeBufferPosition = (int) (header.chromTreeOffset - startOffset);
-        if(chromtreeBufferPosition > 0 && chromtreeBufferPosition < buffer.position() + buffer.remaining()) {
-            buffer.position((int) (header.chromTreeOffset - startOffset));
-       } else {
-            buffer = UnsignedByteBufferDynamic.loadBinaryBuffer(this.path, order, header.chromTreeOffset, 1000);
-        }
+        int chromtreeBufferSize = (int) Math.min(1000000, Math.max(10000, header.fullDataOffset - header.chromTreeOffset));
+        buffer = UnsignedByteBufferDynamic.loadBinaryBuffer(this.path, order, header.chromTreeOffset, chromtreeBufferSize);
         this.chromTree = ChromTree.parseTree(buffer, startOffset, this.genome);
         this.chrNames = this.chromTree.names();
+
+
+        if (type == Type.BIGBED) {
+            //Total data count -- for bigbed this is the number of features, for bigwig it is number of sections
+            buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, header.fullDataOffset, 4);
+            header.dataCount = buffer.getInt();
+            this.featureDensity = ((double) header.dataCount) / chromTree.sumLengths;
+
+            bedCodec = BBCodecFactory.getCodec(autosql, header.definedFieldCount);
+        }
 
         this.header = header;
 
         //extension
         if (header.extensionOffset > 0) {
             this.loadExtendedHeader(header.extensionOffset);
-        }
-
-        // total summary stats
-        if (header.version > 1) {
-            buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, header.totalSummaryOffset, 40);
-            this.totalSummary = BBTotalSummary.parseSummary(buffer);
-        }
-
-        this.featureDensity = ((double) header.dataCount) / chromTree.sumLengths;
-
-        if (type == Type.BIGBED) {
-            bedCodec = BBCodecFactory.getCodec(autosql, header.definedFieldCount);
         }
 
 

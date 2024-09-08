@@ -1,6 +1,7 @@
-package org.broad.igv.ucsc.twobit;
+package org.broad.igv.ucsc.bb;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.ByteArrayOutputStream;
@@ -12,7 +13,7 @@ import java.nio.ByteOrder;
 /**
  * A UnsignedByteBuffer that refills its backing buffer as needed from the underlying file resource. This class was
  * created specifically to load the chromTree of a BB file, where the start position is known but total size is
- * not.
+ * not.  It might have general utility but has not been tested with any other use case.
  */
 public class UnsignedByteBufferDynamic implements UnsignedByteBuffer {
 

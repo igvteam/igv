@@ -65,7 +65,7 @@ public class BBFeatureSource implements FeatureSource {
         this.reader = reader;
 
         // viz window to load average of 10,000 features per screen
-        featureVisiblityWindow = reader.featureDensity > 0 ? (int) (10000 / reader.featureDensity) : -1;
+        featureVisiblityWindow = reader.getFeatureDensity() > 0 ? (int) (10000 / reader.getFeatureDensity()) : -1;
 
     }
 
@@ -93,7 +93,7 @@ public class BBFeatureSource implements FeatureSource {
      */
     public Iterator<BasicFeature> getFeatures(String chr, int start, int end) throws IOException {
 
-        long rTreeOffset = reader.header.fullIndexOffset;
+        long rTreeOffset = reader.getHeader().fullIndexOffset;
         Integer chrIdx = reader.getIdForChr(chr);
         if(chrIdx == null) {
             return Collections.emptyIterator();
