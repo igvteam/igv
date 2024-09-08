@@ -69,7 +69,7 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
      */
     private void initMinMax() {
 
-        BBTotalSummary totalSummary = reader.totalSummary;
+        BBTotalSummary totalSummary = reader.getTotalSummary();
         if (totalSummary == null) {
             dataMin = 0;
             dataMax = 100;
@@ -144,7 +144,7 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
     protected DataTile getRawData(String chr, int start, int end) {
 
         try {
-            long rTreeOffset = reader.header.fullIndexOffset;
+            long rTreeOffset = reader.getHeader().fullIndexOffset;
             List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
 
             Integer chrIdx = reader.getIdForChr(chr);
