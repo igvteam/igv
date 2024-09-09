@@ -111,7 +111,6 @@ dependencies {
             [group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'],
             [group: 'commons-io', name: 'commons-io', version: '2.7'],
             [group: 'org.apache.commons', name: 'commons-compress', version: '1.26.0'],
-            [group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.10.4'],
             [group: 'org.apache.commons', name: 'commons-jexl', version: '2.1.1'],
             [group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'],
             [group: 'com.github.samtools', name: 'htsjdk', version: '4.1.1'],
@@ -186,7 +185,6 @@ tasks.withType(Test) {
     systemProperties['make.fail'] = 'false'
     systemProperties['include.longrunning'] = 'false'
     systemProperties['ignore.ioexceptions'] = 'false'
-    systemProperties['org.xerial.snappy.tempdir'] = 'build/tmp'
     maxHeapSize = '2g'
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     useJUnitPlatform()
