@@ -251,6 +251,9 @@ public class IgvTools {
         try {
             Globals.setHeadless(true);
 
+            // Disable "snappy", used by htsjdk for sorting but not supported by IGV
+            System.setProperty("snappy.disable", "true");
+            
             (new IgvTools()).run(argv);
 
             userMessageWriter.println("Done");
