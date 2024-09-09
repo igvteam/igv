@@ -68,7 +68,6 @@ public abstract class AsciiSorter implements Sorter {
         this.writeStdOut = outputFile == null;
         this.tmpDir = new File(System.getProperty("java.io.tmpdir"), System.getProperty("user.name"));
 
-        System.setProperty("snappy.disable", "true");
         if (!tmpDir.exists()) {
             tmpDir.mkdir();
         }
