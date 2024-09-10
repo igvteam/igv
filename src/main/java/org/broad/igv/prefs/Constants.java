@@ -197,6 +197,9 @@ final public class Constants {
     public static final String BASEMOD_B_COLOR = "BASEMOD.B_COLOR";
     public static final String BASEMOD_A_COLOR = "BASEMOD.A_COLOR";
     public static final String BASEMOD_O_COLOR = "BASEMOD.O_COLOR";
+    public static final String BASEMOD_17082_COLOR = "BASEMOD.17082_COLOR";
+    public static final String BASEMOD_17596_COLOR = "BASEMOD.17596_COLOR";
+    public static final String BASEMOD_21839_COLOR = "BASEMOD.21839_COLOR";
     public static final String BASEMOD_OTHER_COLOR = "BASEMOD.OTHER_COLOR";
 
     public static final String BASEMOD_NONE_A_COLOR = "BASEMOD.NONE_A_COLOR";
@@ -204,6 +207,8 @@ final public class Constants {
     public static final String BASEMOD_NONE_T_COLOR = "BASEMOD.NONE_T_COLOR";
     public static final String BASEMOD_NONE_G_COLOR = "BASEMOD.NONE_G_COLOR";
     public static final String BASEMOD_NONE_N_COLOR = "BASEMOD.NONE_N_COLOR";
+
+
     public static final String BASEMOD_GROUP_BY_STRAND = "BASEMOD.GROUP_BY_STRAND";
     public static final String BASEMOD_SKIPPED_BASES = "BASEMOD.SKIPPED_BASES";
     public static final String SMRT_KINETICS_SHOW_OPTIONS = "SMRT_KINETICS.SHOW_OPTIONS";
@@ -298,7 +303,6 @@ final public class Constants {
     public static final String CIRC_VIEW_ENABLED = "CIRC_VIEW_ENABLED";
     public static final String CIRC_VIEW_PORT = "CIRC_VIEW_PORT";
     public static final String CIRC_VIEW_HOST = "CIRC_VIEW_HOST";
-
 
 
     /**
