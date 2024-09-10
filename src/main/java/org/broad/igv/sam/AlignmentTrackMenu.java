@@ -123,10 +123,17 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         smallIndelsItem.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
             if (smallIndelsItem.isSelected()) {
                 String sith = MessageUtils.showInputDialog("Small indel threshold: ", String.valueOf(renderOptions.getSmallIndelThreshold()));
-                try {
-                    renderOptions.setSmallIndelThreshold(Integer.parseInt(sith));
-                } catch (NumberFormatException exc) {
-                    log.error("Error setting small indel threshold - not an integer", exc);
+                if (sith == null) {
+                    // dialogue was cancelled so no change should be made
+                    return;
+                } else {
+                    try {
+                        renderOptions.setSmallIndelThreshold(Integer.parseInt(sith));
+                    } catch (NumberFormatException exc) {
+                        log.error("Error setting small indel threshold - not an integer", exc);
+                        //error so no change should be made
+                        return;
+                    }
                 }
             }
             renderOptions.setHideSmallIndels(smallIndelsItem.isSelected());
