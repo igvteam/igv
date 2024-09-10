@@ -180,24 +180,30 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     public void updateCurrentCoordinates() {
 
         if (IGV.hasInstance()) {
-            String p = "";
-            ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
-            final String chrName = defaultFrame.getChrName();
-            if (!Globals.CHR_ALL.equals(chrName) && !FrameManager.isGeneListMode()) {
-                p = defaultFrame.getFormattedLocusString();
-            }
-            final String position = p;
-            final History history = IGV.getInstance().getSession().getHistory();
 
-            UIUtilities.invokeOnEventThread(new Runnable() {
-                public void run() {
+            if(GenomeManager.getInstance().getCurrentGenome() == Genome.nullGenome()) {
+                UIUtilities.invokeOnEventThread(() -> {
+                    searchTextField.setText("");
+                });
+
+            } else {
+                String p = "";
+                ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
+                final String chrName = defaultFrame.getChrName();
+                if (!Globals.CHR_ALL.equals(chrName) && !FrameManager.isGeneListMode()) {
+                    p = defaultFrame.getFormattedLocusString();
+                }
+                final String position = p;
+                final History history = IGV.getInstance().getSession().getHistory();
+
+                UIUtilities.invokeOnEventThread(() -> {
                     searchTextField.setText(position);
                     forwardButton.setEnabled(history.canGoForward());
                     backButton.setEnabled(history.canGoBack());
                     roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
                     zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName) && !FrameManager.isGeneListMode());
-                }
-            });
+                });
+            }
         }
     }
 

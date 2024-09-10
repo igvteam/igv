@@ -134,48 +134,46 @@ public class GenomeManager {
         return archiveFile;
     }
 
-    public void setCurrentGenome(Genome genome) {
-        if (genome != null) {
-            PreferencesManager.getPreferences().setLastGenome(genome.getId());
-        }
+    // Setter provided for unit tests
+    public void setCurrentGenomeForTest(Genome genome) {
         this.currentGenome = genome;
-        if (genome != null) {
-            if (IGV.hasInstance()) {
-                IGV.getInstance().getSession().clearHistory();
-                FrameManager.getDefaultFrame().setChromosomeName(genome.getHomeChromosome(), true);
-                IGVEventBus.getInstance().post(new GenomeChangeEvent(genome));
-            }
-        }
     }
 
+    /**
+     * Load a genome by ID, which might be a file path or URL
+     *
+     * @param genomeId - ID for an IGV hosted genome, or file path or url
+     * @return boolean flag indicating success
+     * @throws IOException
+     */
+    public boolean loadGenomeById(String genomeId) throws IOException {
 
-    public void loadGenomeById(String genomeId) throws IOException {
         final Genome currentGenome = getCurrentGenome();
         if (currentGenome != null && genomeId.equals(currentGenome.getId())) {
-            return; // Already loaded
+            return false;
         }
 
-        String genomePath = null;
+        String genomePath;
         if (org.broad.igv.util.ParsingUtils.fileExists(genomeId)) {
             genomePath = genomeId;
         } else {
             GenomeListItem item = genomeListManager.getGenomeListItem(genomeId);
             if (item == null) {
                 MessageUtils.showMessage("Could not locate genome with ID: " + genomeId);
-                return;
+                return false;
             } else {
                 genomePath = item.getPath();
             }
         }
-
-        loadGenome(genomePath); // monitor[0]);
-
+        return loadGenome(genomePath) != null; // monitor[0]);
     }
 
 
     /**
      * The main load method -- loads a genome from a file or url path.  Note this is a long running operation and
      * should not be done on the Swing event thread as it will block the UI.
+     * <p>
+     * NOTE: The member 'currentGenome' is set here as a side effect.
      *
      * @param genomePath
      * @return
@@ -214,26 +212,8 @@ public class GenomeManager {
                 IGV.getInstance().resetSession(null);
             }
 
-            GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
-            final Set<String> serverGenomeIDs = genomeListManager.getServerGenomeIDs();
+            setCurrentGenome(genomePath, newGenome);
 
-            boolean userDefined = !serverGenomeIDs.contains(newGenome.getId());
-            genomeListManager.addGenomeItem(genomeListItem, userDefined);
-
-            setCurrentGenome(newGenome);
-
-            // hasInstance() test needed for unit tests
-            if (IGV.hasInstance()) {
-                IGV.getInstance().goToLocus(newGenome.getHomeChromosome()); //  newGenome.getDefaultPos());
-                loadGenomeAnnotations(newGenome);
-                IGV.getInstance().resetFrames();
-            }
-
-            if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
-                CircularViewUtilities.changeGenome(newGenome);
-            }
-
-            // log.warn("Genome loaded.  id= " + newGenome.getId());
             return currentGenome;
 
         } catch (SocketException e) {
@@ -243,6 +223,37 @@ public class GenomeManager {
                 IGV.getInstance().setStatusBarMessage("");
                 WaitCursorManager.removeWaitCursor(cursorToken);
             }
+        }
+    }
+
+    public void setCurrentGenome(String genomePath, Genome newGenome) {
+
+        GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
+        final Set<String> serverGenomeIDs = genomeListManager.getServerGenomeIDs();
+
+        boolean userDefined = !serverGenomeIDs.contains(newGenome.getId());
+        genomeListManager.addGenomeItem(genomeListItem, userDefined);
+
+        this.currentGenome = newGenome;
+
+        // hasInstance() check to filters unit test
+        if (IGV.hasInstance()) {
+            IGV.getInstance().goToLocus(newGenome.getHomeChromosome()); //  newGenome.getDefaultPos());
+            FrameManager.getDefaultFrame().setChromosomeName(newGenome.getHomeChromosome(), true);
+            loadGenomeAnnotations(newGenome);
+            IGV.getInstance().resetFrames();
+            IGV.getInstance().getSession().clearHistory();
+
+            if(newGenome != Genome.nullGenome()) {
+                // This should only occur on startup failure
+                PreferencesManager.getPreferences().setLastGenome(newGenome.getId());
+            }
+
+            if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+                CircularViewUtilities.changeGenome(newGenome);
+            }
+
+            IGVEventBus.getInstance().post(new GenomeChangeEvent(newGenome));
         }
     }
 
@@ -458,7 +469,7 @@ public class GenomeManager {
     public void refreshHostedGenome(String genomeId) {
 
         Map<String, GenomeListItem> itemMap = GenomeListManager.getInstance().getServerGenomeMap();
-        if(itemMap.containsKey(genomeId)) {
+        if (itemMap.containsKey(genomeId)) {
             downloadGenome(itemMap.get(genomeId), false);
         }
     }

@@ -236,7 +236,12 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         end = Math.min(end + w / 2 + 2, chromosomeLength);
 
         Genome genome = currentGenome;
-        String sequence = new String(genome.getSequence(chr, start, end));
+        byte [] seqBytes = genome.getSequence(chr, start, end);
+        if(seqBytes == null) {
+            return;
+
+        }
+        String sequence = new String(seqBytes);
 
         int mod = start % 3;
         int n1 = normalize3(3 - mod);

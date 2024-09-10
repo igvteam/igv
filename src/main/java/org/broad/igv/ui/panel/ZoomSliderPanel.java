@@ -106,7 +106,7 @@ public class ZoomSliderPanel extends JPanel {
     }
 
     private void updateTickCount() {
-        int tmp = getReferenceFrame().getMaxZoom() + 1;
+        int tmp = Math.max(0, getReferenceFrame().getMaxZoom() + 1);
         if (tmp != numZoomLevels) {
             numZoomLevels = tmp;
             zoomLevelRects = new Rectangle[numZoomLevels];

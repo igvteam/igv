@@ -641,13 +641,14 @@ public class ReferenceFrame {
      */
     public String getFormattedLocusString() {
 
-//        if (zoom == 0) {
-//            return getGenome().getChromosomeDisplayName(getChrName());
-//        } else {
         Range range = getCurrentRange();
-        String c = getGenome().getChromosomeDisplayName(range.getChr());
-        return Locus.getFormattedLocusString(c, range.getStart(), range.getEnd());
-        // }
+        final Genome genome = getGenome();
+        if(genome != null) {
+            String c = genome.getChromosomeDisplayName(range.getChr());
+            return Locus.getFormattedLocusString(c, range.getStart(), range.getEnd());
+        } else {
+            return "";
+        }
     }
 
     public Range getCurrentRange() {

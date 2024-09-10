@@ -25,6 +25,7 @@
 
 package org.broad.igv.session;
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.RegionOfInterest;
@@ -426,13 +427,16 @@ public class SessionWriter {
         if (currentTrackFileLocators != null) {
 
             // Filter data files that are included in genome annotations
-            List<ResourceLocator> genomeResources = GenomeManager.getInstance().getCurrentGenome().getAnnotationResources();
-            Set<String> absoluteGenomeAnnotationPaths = genomeResources == null ? Collections.emptySet() :
-                    genomeResources.stream().map(rl -> rl.getPath()).collect(Collectors.toSet());
+            final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+            if(currentGenome != null) {
+                List<ResourceLocator> genomeResources = currentGenome.getAnnotationResources();
+                Set<String> absoluteGenomeAnnotationPaths = genomeResources == null ? Collections.emptySet() :
+                        genomeResources.stream().map(rl -> rl.getPath()).collect(Collectors.toSet());
 
-            for (ResourceLocator locator : currentTrackFileLocators) {
-                if (!absoluteGenomeAnnotationPaths.contains(locator.getPath())) {
-                    locators.add(locator);
+                for (ResourceLocator locator : currentTrackFileLocators) {
+                    if (!absoluteGenomeAnnotationPaths.contains(locator.getPath())) {
+                        locators.add(locator);
+                    }
                 }
             }
         }
