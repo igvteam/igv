@@ -26,6 +26,7 @@ java -version
 if [ -e "$HOME/.igv/java_arguments" ]; then
     java --module-path="${prefix}/lib" -Xmx8g \
         @"${prefix}/igv.args" \
+        -Dsamjdk.snappy.disable=true \
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
         -Djava.net.useSystemProxies=true \
@@ -34,6 +35,7 @@ if [ -e "$HOME/.igv/java_arguments" ]; then
 else
     java --module-path="${prefix}/lib" -Xmx8g \
         @"${prefix}/igv.args" \
+        -Dsamjdk.snappy.disable=true \
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
         -Djava.net.useSystemProxies=true \

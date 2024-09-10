@@ -1884,9 +1884,6 @@ public class IGV implements IGVEventObserver {
 
             final IGVPreferences preferences = PreferencesManager.getPreferences();
 
-            // Disable "snappy", used by htsjdk for sorting but not supported by IGV
-            System.setProperty("snappy.disable", "true");
-
             // Start CommandsServer **before** loading the initial genome, as credentials might need to be set for
             // privately hosted genomes.
             startCommandsServer(igvArgs, preferences);
