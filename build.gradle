@@ -185,6 +185,7 @@ tasks.withType(Test) {
     systemProperties['make.fail'] = 'false'
     systemProperties['include.longrunning'] = 'false'
     systemProperties['ignore.ioexceptions'] = 'false'
+    systemProperties['samjdk.snappy.disable'] = 'true'
     maxHeapSize = '2g'
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     useJUnitPlatform()
