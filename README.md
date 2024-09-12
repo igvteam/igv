@@ -15,7 +15,7 @@ at [http://software.broadinstitute.org/software/igv/download](http://software.br
 
 Builds are executed from the IGV project directory. Files will be created in the 'build' subdirectory.
 
-IGV requires **Java 17** to build and run. Later versions of Java should work but we build and test on **Java 17**.
+IGV requires **Java 21** to build and run. Later versions of Java should work but we build and test on **Java 21**.
 
 NOTE: If on a Windows platform use ```./gradlew.bat'``` in the instructions below
 
