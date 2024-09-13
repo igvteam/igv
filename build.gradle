@@ -21,19 +21,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-apply plugin: 'java'
-apply plugin: 'maven-publish'
-apply plugin: 'application'
-
-import org.apache.tools.ant.filters.ReplaceTokens
-
-mainClassName = 'org.broad.igv.ui.Main'
-ext.moduleName = 'org.igv'
-
 buildscript {
     repositories {
         mavenCentral()
     }
+}
+
+plugins {
+    id('java')
+    id('maven-publish')
+    id('application')
+    id("org.gradlex.extra-java-module-info") version("1.8")
 }
 
 repositories {
@@ -41,9 +39,16 @@ repositories {
     mavenLocal()
 }
 
+import org.apache.tools.ant.filters.ReplaceTokens
+
+application {
+    mainClass = 'org.broad.igv.ui.Main'
+    mainModule = 'org.igv'
+}
+
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -54,6 +59,10 @@ sourceSets {
             exclude "**/*LICENSE*", "**/META-INF, **/log4j2_*.xml"
         }
     }
+}
+
+extraJavaModuleInfo {
+    deriveAutomaticModuleNamesFromFileNames.set(true)
 }
 
 configurations {
@@ -130,12 +139,16 @@ dependencies {
     )
 
     testImplementation(
-            [group: 'junit', name: 'junit', version: '4.13.1'],
+            [group: 'junit', name: 'junit', version: '4.13.2'],
             [group: 'com.sparkjava', name: 'spark-core', version: '2.9.4'],
             [group: 'org.glassfish.jersey.core', name: 'jersey-common', version: '2.34']
     )
     testRuntimeOnly(
-           [group: 'org.junit.vintage', name:'junit-vintage-engine', version:'5.8.2']
+           [group: 'org.junit.vintage', name:'junit-vintage-engine', version:'5.8.2'] ,
+           //required by gradle 9+
+           //see https://docs.gradle.org/8.10.1/userguide/upgrading_version_8.html#test_framework_implementation_dependencies
+           [group: 'org.junit.platform', name:'junit-platform-launcher']
+
     )
 }
 
@@ -160,7 +173,7 @@ jar {
                 "Permissions": "all-permissions",
                 "Application-Name": "IGV",
                 "Built-By": System.getProperty('user.name'),
-                "Main-Class": mainClassName,
+                "Main-Class": application.mainClass,
         )
     }
 }
@@ -169,18 +182,9 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-compileJava {
-    inputs.property("moduleName", moduleName)
-    doFirst {
-        options.compilerArgs = [
-                '--module-path', classpath.asPath,
-        ]
-        classpath = files()
-    }
-}
-
-tasks.withType(Test) {
-    systemProperties = System.getProperties()
+tasks.withType(Test).configureEach {
+    systemProperties.clear()
+    systemProperties.putAll( System.getProperties() )
     systemProperties['java.awt.headless'] = 'true'
     systemProperties['make.fail'] = 'false'
     systemProperties['include.longrunning'] = 'false'
@@ -191,7 +195,8 @@ tasks.withType(Test) {
     useJUnitPlatform()
 }
 
-task createDist(type: Copy, dependsOn: jar) {
+tasks.register('createDist', Copy) {
+    dependsOn jar
     from("web/IGV_64.png")
     from("scripts") {
         include '*.bat'
@@ -204,14 +209,14 @@ task createDist(type: Copy, dependsOn: jar) {
     with copySpec {
         from("${buildDir}/libs")
         from("lib") {
-            include '*.jar' 
+            include '*.jar'
         }
         into "lib"
     }
     // Copies all Maven-fetched dependency jars
     with copySpec {
         from configurations.runtimeClasspath {
-            exclude '**/*log4j*.jar' 
+            exclude '**/*log4j*.jar'
         }
         into "lib"
         duplicatesStrategy DuplicatesStrategy.EXCLUDE
@@ -226,14 +231,16 @@ tasks.distTar.enabled = false
 tasks.startScripts.enabled = false
 
 // Create the platform agnostic zip distribution
-task createDistZip(type: Zip, dependsOn: createDist) {
+tasks.register('createDistZip', Zip) {
+    dependsOn createDist
     archiveFileName = "IGV_${version}.zip"
     from("${buildDir}/IGV-dist")
     into "IGV_${version}"
 }
 
 // Create a linux distribution for IGV , excluding igvtools.  Basically identical to generic dist without window and mac scripts
-task createLinuxDistZip(type: Zip, dependsOn: createDist) {
+tasks.register('createLinuxDistZip', Zip) {
+    dependsOn createDist
     archiveFileName = "IGV_Linux_${version}.zip"
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
@@ -245,9 +252,10 @@ task createLinuxDistZip(type: Zip, dependsOn: createDist) {
 }
 
 // Create a linux distrubtion with bundled Java
-task createLinuxWithJavaDistZip(type: Zip, dependsOn: createDist) {
+tasks.register('createLinuxWithJavaDistZip', Zip) {
+    dependsOn createDist
     archiveFileName = "IGV_Linux_${version}_WithJava.zip"
-    with copySpec { from jdkBundleLinux into "jdk-17" }
+    with copySpec { from jdkBundleLinux into "jdk-21" }
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*.command"
@@ -262,7 +270,8 @@ task createLinuxWithJavaDistZip(type: Zip, dependsOn: createDist) {
     }
 }
 
-task createMacDistZip(type: Zip, dependsOn: createDist) {
+tasks.register('createMacDistZip', Zip) {
+    dependsOn createDist
     archiveFileName = "IGV_MacApp_${version}.zip"
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
@@ -274,9 +283,10 @@ task createMacDistZip(type: Zip, dependsOn: createDist) {
     into "IGV_MacApp_${version}"
 }
 
-task createMacWithJavaDistZip(type: Zip, dependsOn: createDist) {
+tasks.register('createMacWithJavaDistZip', Zip) {
+    dependsOn createDist
     archiveFileName = "IGV_MacApp_${version}_WithJava.zip"
-    with copySpec { from jdkBundleMac into "jdk-17" }
+    with copySpec { from jdkBundleMac into "jdk-21" }
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
         exclude "*_hidpi*"
@@ -291,7 +301,8 @@ task createMacWithJavaDistZip(type: Zip, dependsOn: createDist) {
     }
 }
 
-task createMacAppDist(type: Copy, dependsOn: createDist) {
+tasks.register('createMacAppDist', Copy) {
+    dependsOn createDist
     with copySpec {
         from("scripts/mac.app") {
             exclude "Contents/Info.plist.template"
@@ -324,8 +335,9 @@ task createMacAppDist(type: Copy, dependsOn: createDist) {
     }
 }
 
-task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
-    archiveFileName  = "IGV_MacApp_${version}.zip"
+tasks.register('createMacAppDistZip', Zip) {
+    dependsOn createMacAppDist
+    archiveFileName = "IGV_MacApp_${version}.zip"
     from("${buildDir}/IGV-MacApp-dist")
 
     doLast {
@@ -333,9 +345,10 @@ task createMacAppDistZip(type: Zip, dependsOn: createMacAppDist) {
     }
 }
 
-task createMacAppWithJavaDistZip(type: Zip, dependsOn: createMacAppDist) {
+tasks.register('createMacAppWithJavaDistZip', Zip) {
+    dependsOn createMacAppDist
     archiveFileName = "IGV_MacApp_${version}_WithJava.zip"
-    with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-17" }
+    with copySpec { from jdkBundleMac into "IGV_${version}.app/Contents/jdk-21" }
     from("${buildDir}/IGV-MacApp-dist")
 
     doLast {
@@ -368,8 +381,9 @@ task createWinDist(type: Copy, dependsOn: createDist) {
     into "${buildDir}/IGV-WinExe-dist"
 }
 
-task createWinWithJavaDist(type: Copy, dependsOn: createWinDist) {
-    with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-17" }
+tasks.register('createWinWithJavaDist', Copy) {
+    dependsOn createWinDist
+    with copySpec { from jdkBundleWindows into "IGV_${version}/jdk-21" }
     with copySpec {
         from("${buildDir}/IGV-WinExe-dist/IGV_${version}") { exclude 'installer.nsi' }
         into "IGV_${version}"
@@ -388,7 +402,8 @@ task createWinWithJavaDist(type: Copy, dependsOn: createWinDist) {
     }
 }
 
-task createWinExeDist(type: Exec, dependsOn: createWinDist) {
+tasks.register('createWinExeDist', Exec) {
+    dependsOn createWinDist
     commandLine(makensisCommand, "-O${buildDir}/tmp/nsis-WithJava-build.log",
             "${buildDir}/IGV-WinExe-dist/installer.nsi")
     doLast {
@@ -398,7 +413,8 @@ task createWinExeDist(type: Exec, dependsOn: createWinDist) {
     }
 }
 
-task createWinWithJavaExeDist(type: Exec, dependsOn: createWinWithJavaDist) {
+tasks.register('createWinWithJavaExeDist', Exec) {
+    dependsOn createWinWithJavaDist
     commandLine(makensisCommand, "-O${buildDir}/tmp/nsis-build.log",
             "${buildDir}/IGV-WinExe-WithJava-dist/installer.nsi")
     doLast {
@@ -411,7 +427,8 @@ task createWinWithJavaExeDist(type: Exec, dependsOn: createWinWithJavaDist) {
     }
 }
 
-task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
+tasks.register('signWinExeDist', Exec) {
+    dependsOn createWinExeDist
     standardInput = new ByteArrayInputStream(keyPassword.getBytes());
     commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha512",
             "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
@@ -450,7 +467,7 @@ task fullJar(type: Jar, dependsOn: jar) {
                 "Permissions": "all-permissions",
                 "Application-Name": "IGV",
                 "Built-By": System.getProperty('user.name'),
-                "Main-Class": mainClassName,
+                "Main-Class": application.mainClass,
 
                 "Class-Path": configurations.runtimeClasspath.collect { it.getName() }.join(' ')
         )
