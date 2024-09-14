@@ -3,10 +3,10 @@ setlocal
 for %%x in (%0) do set BatchPath=%%~dpsx
 for %%x in (%BatchPath%) do set BatchPath=%%~dpsx
 
-if exist %BatchPath%\jdk-17 (
+if exist %BatchPath%\jdk-21 (
   echo "Using bundled JDK."
-  set JAVA_HOME=%BatchPath%\jdk-17
-  set JAVA_CMD=%BatchPath%\jdk-17\bin\java
+  set JAVA_HOME=%BatchPath%\jdk-21
+  set JAVA_CMD=%BatchPath%\jdk-21\bin\java
 ) else (
   echo "Using system JDK."
   set JAVA_CMD=java

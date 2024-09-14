@@ -1,9 +1,9 @@
 setlocal
 
-if exist jdk-17 (
+if exist jdk-21 (
   echo "Using bundled JDK."
-  set JAVA_HOME=jdk-17
-  set JAVA_CMD=jdk-17\bin\javaw
+  set JAVA_HOME=jdk-21
+  set JAVA_CMD=jdk-21\bin\javaw
 ) else (
   echo "Using system JDK."
   set JAVA_CMD=java

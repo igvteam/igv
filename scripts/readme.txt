@@ -75,14 +75,14 @@ command-line.  To use the default Java, independently installed (java 11 require
 
      java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
      
-To use the java included with our packaged bundles substitute "./jdk-17/bin/java" for "java", as follows.
+To use the java included with our packaged bundles substitute "./jdk-21/bin/java" for "java", as follows.
 
-    ./jdk-17/bin/java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
+    ./jdk-21/bin/java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.broad.igv.ui.Main
 
 The above commands assume that you are launching IGV from the directory where it was unpacked.
 
 Note that this lists the memory specification directly, and that the java_arguments file will be skipped.
-If you wish to use the java_arguments file (assuming one exists), modify the above to (substituting ./jdk-17/bin/java for java as required):
+If you wish to use the java_arguments file (assuming one exists), modify the above to (substituting ./jdk-21/bin/java for java as required):
 
      java --module-path=lib @igv.args @"$HOME/.igv/java_arguments" --module=org.igv/org.broad.igv.ui.Main
 
