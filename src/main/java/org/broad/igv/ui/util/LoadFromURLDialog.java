@@ -29,10 +29,13 @@
 
 package org.broad.igv.ui.util;
 
+import org.broad.igv.Globals;
+
 import java.awt.*;
 import java.awt.event.*;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
 
@@ -74,12 +77,20 @@ public class LoadFromURLDialog extends org.broad.igv.ui.IGVDialog {
         return canceled;
     }
 
-    public String getFileURL() {
-        return fileURL;
+    public List<String> getFileURLs() {
+        return splitOnWhiteSpace(fileURL);
     }
 
-    public String getIndexURL() {
-        return indexURL;
+    private static List<String> splitOnWhiteSpace(String string) {
+        if (string != null && !string.isBlank()) {
+            String[] inputs = Globals.whitespacePattern.split(string.trim());
+            return Arrays.asList(inputs);
+        }
+        return Collections.emptyList();
+    }
+
+    public List<String> getIndexURLs() {
+        return splitOnWhiteSpace(indexURL);
     }
 
     private void initComponents(boolean isHtsget) {

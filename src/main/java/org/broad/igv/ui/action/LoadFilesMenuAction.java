@@ -33,6 +33,7 @@ import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -49,8 +50,8 @@ import java.util.List;
  */
 public class LoadFilesMenuAction extends MenuAction {
 
-    static Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
-    IGV igv;
+    private static final Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
+    private final IGV igv;
 
     public LoadFilesMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
@@ -59,9 +60,7 @@ public class LoadFilesMenuAction extends MenuAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
                 loadFiles(chooseTrackFiles());
-
     }
 
     private File[] chooseTrackFiles() {
@@ -85,12 +84,12 @@ public class LoadFilesMenuAction extends MenuAction {
         return trackFiles;
     }
 
-    private void loadFiles(File[] files) {
+    private void loadFiles(final File[] files) {
 
         if (files != null && files.length > 0) {
 
-            List<File> validFileList = new ArrayList();
-            StringBuffer buffer = new StringBuffer();
+            final List<File> validFiles = new ArrayList<>();
+            StringBuilder buffer = new StringBuilder();
             buffer.append("File(s) not found: ");
             boolean allFilesExist = true;
             for (File file : files) {
@@ -102,8 +101,7 @@ public class LoadFilesMenuAction extends MenuAction {
                 } else {
 
                     String path = file.getAbsolutePath();
-                    if (path.endsWith(Globals.SESSION_FILE_EXTENSION)) {
-                        // TODO -- a better test for session file than just the extension!
+                    if (SessionReader.isSessionFile(path)) {
                         final String msg = "File " + path +
                                 " appears to be an IGV Session file - " +
                                 "please use the Open Session menu item " +
@@ -111,12 +109,11 @@ public class LoadFilesMenuAction extends MenuAction {
                         log.error(msg);
                         MessageUtils.showMessage(msg);
                     } else {
-                        validFileList.add(file);
+                        validFiles.add(file);
                     }
                 }
 
             }
-            files = validFileList.toArray(new File[validFileList.size()]);
 
             if (!allFilesExist) {
                 final String msg = buffer.toString();
@@ -124,10 +121,10 @@ public class LoadFilesMenuAction extends MenuAction {
                 MessageUtils.showMessage(msg);
             }
 
-            if (files.length > 0) {
-                // Create DataResouceLocators for the selected files
-                final List<ResourceLocator> locators = ResourceLocator.getLocators(Arrays.asList(files));
-               igv.loadTracks(locators);
+            if (!validFiles.isEmpty()) {
+                // Create DataResourceLocators for the selected files
+                final List<ResourceLocator> locators = ResourceLocator.getLocators(validFiles);
+                igv.loadTracks(locators);
             }
         }
     }
