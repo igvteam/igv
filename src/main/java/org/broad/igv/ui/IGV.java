@@ -1173,7 +1173,7 @@ public class IGV implements IGVEventObserver {
 
         for (final ResourceLocator locator : locators) {
 
-            // If its a local file, check explicitly for existence (rather than rely on exception)
+            // If it's a local file, check explicitly for existence (rather than rely on exception)
             if (locator.isLocal()) {
                 File trackSetFile = new File(locator.getPath());
                 if (!trackSetFile.exists()) {
